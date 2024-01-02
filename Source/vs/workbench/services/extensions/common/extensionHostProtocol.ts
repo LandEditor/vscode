@@ -3,14 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from "vs/base/common/buffer";
-import { URI, UriComponents, UriDto } from "vs/base/common/uri";
-import {
-	ExtensionIdentifier,
-	IExtensionDescription,
-} from "vs/platform/extensions/common/extensions";
-import { ILoggerResource, LogLevel } from "vs/platform/log/common/log";
-import { IRemoteConnectionData } from "vs/platform/remote/common/remoteAuthorityResolver";
+import { VSBuffer } from 'vs/base/common/buffer';
+import { URI, UriComponents, UriDto } from 'vs/base/common/uri';
+import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { ILoggerResource, LogLevel } from 'vs/platform/log/common/log';
+import { IRemoteConnectionData } from 'vs/platform/remote/common/remoteAuthorityResolver';
 
 export interface IExtensionDescriptionSnapshot {
 	readonly versionId: number;
@@ -51,11 +48,7 @@ export interface IExtensionHostInitData {
 	loggers: UriDto<ILoggerResource>[];
 	logsLocation: URI;
 	autoStart: boolean;
-	remote: {
-		isRemote: boolean;
-		authority: string | undefined;
-		connectionData: IRemoteConnectionData | null;
-	};
+	remote: { isRemote: boolean; authority: string | undefined; connectionData: IRemoteConnectionData | null };
 	consoleForward: { includeStack: boolean; logNative: boolean };
 	uiKind: UIKind;
 	messagePorts?: ReadonlyMap<string, MessagePortLike>;
@@ -89,28 +82,28 @@ export interface IStaticWorkspaceData {
 
 export interface MessagePortLike {
 	postMessage(message: any, transfer?: any[]): void;
-	addEventListener(type: "message", listener: (e: any) => any): void;
-	removeEventListener(type: "message", listener: (e: any) => any): void;
+	addEventListener(type: 'message', listener: (e: any) => any): void;
+	removeEventListener(type: 'message', listener: (e: any) => any): void;
 	start(): void;
 }
 
 export enum UIKind {
 	Desktop = 1,
-	Web = 2,
+	Web = 2
 }
 
-export enum ExtensionHostExitCode {
+export const enum ExtensionHostExitCode {
 	// nodejs uses codes 1-13 and exit codes >128 are signal exits
 	VersionMismatch = 55,
 	UnexpectedError = 81,
 }
 
 export interface IExtHostReadyMessage {
-	type: "VSCODE_EXTHOST_IPC_READY";
+	type: 'VSCODE_EXTHOST_IPC_READY';
 }
 
 export interface IExtHostSocketMessage {
-	type: "VSCODE_EXTHOST_IPC_SOCKET";
+	type: 'VSCODE_EXTHOST_IPC_SOCKET';
 	initialDataChunk: string;
 	skipWebSocketFrames: boolean;
 	permessageDeflate: boolean;
@@ -118,31 +111,22 @@ export interface IExtHostSocketMessage {
 }
 
 export interface IExtHostReduceGraceTimeMessage {
-	type: "VSCODE_EXTHOST_IPC_REDUCE_GRACE_TIME";
+	type: 'VSCODE_EXTHOST_IPC_REDUCE_GRACE_TIME';
 }
 
-export enum MessageType {
-	Initialized = 0,
-	Ready = 1,
-	Terminate = 2,
+export const enum MessageType {
+	Initialized,
+	Ready,
+	Terminate
 }
 
 export function createMessageOfType(type: MessageType): VSBuffer {
 	const result = VSBuffer.alloc(1);
 
 	switch (type) {
-		case MessageType.Initialized: {
-			result.writeUInt8(1, 0);
-			break;
-		}
-		case MessageType.Ready: {
-			result.writeUInt8(2, 0);
-			break;
-		}
-		case MessageType.Terminate: {
-			result.writeUInt8(3, 0);
-			break;
-		}
+		case MessageType.Initialized: result.writeUInt8(1, 0); break;
+		case MessageType.Ready: result.writeUInt8(2, 0); break;
+		case MessageType.Terminate: result.writeUInt8(3, 0); break;
 	}
 
 	return result;
@@ -154,18 +138,14 @@ export function isMessageOfType(message: VSBuffer, type: MessageType): boolean {
 	}
 
 	switch (message.readUInt8(0)) {
-		case 1:
-			return type === MessageType.Initialized;
-		case 2:
-			return type === MessageType.Ready;
-		case 3:
-			return type === MessageType.Terminate;
-		default:
-			return false;
+		case 1: return type === MessageType.Initialized;
+		case 2: return type === MessageType.Ready;
+		case 3: return type === MessageType.Terminate;
+		default: return false;
 	}
 }
 
-export enum NativeLogMarkers {
-	Start = "START_NATIVE_LOG",
-	End = "END_NATIVE_LOG",
+export const enum NativeLogMarkers {
+	Start = 'START_NATIVE_LOG',
+	End = 'END_NATIVE_LOG',
 }

@@ -3,14 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./marginDecorations";
-import { RenderingContext } from "vs/editor/browser/view/renderingContext";
-import {
-	DecorationToRender,
-	DedupOverlay,
-} from "vs/editor/browser/viewParts/glyphMargin/glyphMargin";
-import * as viewEvents from "vs/editor/common/viewEvents";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import 'vs/css!./marginDecorations';
+import { DecorationToRender, DedupOverlay } from 'vs/editor/browser/viewParts/glyphMargin/glyphMargin';
+import { RenderingContext } from 'vs/editor/browser/view/renderingContext';
+import { ViewContext } from 'vs/editor/common/viewModel/viewContext';
+import * as viewEvents from 'vs/editor/common/viewEvents';
 
 export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 	private readonly _context: ViewContext;
@@ -31,42 +28,28 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 
 	// --- begin event handlers
 
-	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
-	): boolean {
+	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		return true;
 	}
-	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent,
-	): boolean {
+	public override onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
 		return true;
 	}
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
-	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent,
-	): boolean {
+	public override onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
 		return true;
 	}
-	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent,
-	): boolean {
+	public override onLinesDeleted(e: viewEvents.ViewLinesDeletedEvent): boolean {
 		return true;
 	}
-	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent,
-	): boolean {
+	public override onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean {
 		return true;
 	}
-	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
-	): boolean {
+	public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
 		return e.scrollTopChanged;
 	}
-	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
-	): boolean {
+	public override onZonesChanged(e: viewEvents.ViewZonesChangedEvent): boolean {
 		return true;
 	}
 
@@ -81,12 +64,7 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 			const marginClassName = d.options.marginClassName;
 			const zIndex = d.options.zIndex;
 			if (marginClassName) {
-				r[rLen++] = new DecorationToRender(
-					d.range.startLineNumber,
-					d.range.endLineNumber,
-					marginClassName,
-					zIndex,
-				);
+				r[rLen++] = new DecorationToRender(d.range.startLineNumber, d.range.endLineNumber, marginClassName, null, zIndex);
 			}
 		}
 		return r;
@@ -95,23 +73,15 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 	public prepareRender(ctx: RenderingContext): void {
 		const visibleStartLineNumber = ctx.visibleRange.startLineNumber;
 		const visibleEndLineNumber = ctx.visibleRange.endLineNumber;
-		const toRender = this._render(
-			visibleStartLineNumber,
-			visibleEndLineNumber,
-			this._getDecorations(ctx),
-		);
+		const toRender = this._render(visibleStartLineNumber, visibleEndLineNumber, this._getDecorations(ctx));
 
 		const output: string[] = [];
-		for (
-			let lineNumber = visibleStartLineNumber;
-			lineNumber <= visibleEndLineNumber;
-			lineNumber++
-		) {
+		for (let lineNumber = visibleStartLineNumber; lineNumber <= visibleEndLineNumber; lineNumber++) {
 			const lineIndex = lineNumber - visibleStartLineNumber;
 			const decorations = toRender[lineIndex].getDecorations();
-			let lineOutput = "";
+			let lineOutput = '';
 			for (const decoration of decorations) {
-				lineOutput += `<div class="cmdr ${decoration.className}" style=""></div>`;
+				lineOutput += '<div class="cmdr ' + decoration.className + '" style=""></div>';
 			}
 			output[lineIndex] = lineOutput;
 		}
@@ -121,7 +91,7 @@ export class MarginViewLineDecorationsOverlay extends DedupOverlay {
 
 	public render(startLineNumber: number, lineNumber: number): string {
 		if (!this._renderResult) {
-			return "";
+			return '';
 		}
 		return this._renderResult[lineNumber - startLineNumber];
 	}

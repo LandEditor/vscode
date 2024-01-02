@@ -8,12 +8,11 @@ export interface ITask<T> {
 }
 
 export class Delayer<T> {
+
 	public defaultDelay: number;
 	private _timeout: any; // Timer
 	private _cancelTimeout: Promise<T | null> | null;
-	private _onSuccess:
-		| ((value: T | PromiseLike<T> | undefined) => void)
-		| null;
+	private _onSuccess: ((value: T | PromiseLike<T> | undefined) => void) | null;
 	private _task: ITask<T> | null;
 
 	constructor(defaultDelay: number) {
@@ -28,10 +27,7 @@ export class Delayer<T> {
 		this._doCancelTimeout();
 	}
 
-	public trigger(
-		task: ITask<T>,
-		delay: number = this.defaultDelay,
-	): Promise<T | null> {
+	public trigger(task: ITask<T>, delay: number = this.defaultDelay): Promise<T | null> {
 		this._task = task;
 		if (delay >= 0) {
 			this._doCancelTimeout();
@@ -43,20 +39,17 @@ export class Delayer<T> {
 			}).then(() => {
 				this._cancelTimeout = null;
 				this._onSuccess = null;
-				const result = this._task?.();
+				const result = this._task && this._task?.();
 				this._task = null;
 				return result;
 			});
 		}
 
 		if (delay >= 0 || this._timeout === null) {
-			this._timeout = setTimeout(
-				() => {
-					this._timeout = null;
-					this._onSuccess?.(undefined);
-				},
-				delay >= 0 ? delay : this.defaultDelay,
-			);
+			this._timeout = setTimeout(() => {
+				this._timeout = null;
+				this._onSuccess?.(undefined);
+			}, delay >= 0 ? delay : this.defaultDelay);
 		}
 
 		return this._cancelTimeout;

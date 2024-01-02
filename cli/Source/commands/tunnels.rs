@@ -91,9 +91,12 @@ fn fulfill_existing_tunnel_args(
 			})
 		}
 
-		(Some(tunnel_id), Some(cluster), Some(host_token)) => {
-			Some(dev_tunnels::ExistingTunnel { tunnel_id, tunnel_name, host_token, cluster })
-		}
+		(Some(tunnel_id), Some(cluster), Some(host_token)) => Some(dev_tunnels::ExistingTunnel {
+			tunnel_id,
+			tunnel_name,
+			host_token,
+			cluster,
+		}),
 
 		_ => None,
 	}
@@ -158,7 +161,9 @@ pub async fn command_shell(ctx: CommandContext, args: CommandShellArgs) -> Resul
 				.await
 				.map_err(|e| wrap(e, "error listening on socket"))?;
 
-			params.log.result(format!("Listening on {}", socket.display()));
+			params
+				.log
+				.result(format!("Listening on {}", socket.display()));
 
 			Box::new(listener)
 		}
@@ -168,7 +173,9 @@ pub async fn command_shell(ctx: CommandContext, args: CommandShellArgs) -> Resul
 				.await
 				.map_err(|e| wrap(e, "error listening on port"))?;
 
-			params.log.result(format!("Listening on {}", listener.local_addr().unwrap()));
+			params
+				.log
+				.result(format!("Listening on {}", listener.local_addr().unwrap()));
 
 			Box::new(listener)
 		}
@@ -248,7 +255,9 @@ pub async fn service(
 			manager.show_logs().await?;
 		}
 		TunnelServiceSubCommands::InternalRun => {
-			manager.run(ctx.paths.clone(), TunnelServiceContainer::new(ctx.args)).await?;
+			manager
+				.run(ctx.paths.clone(), TunnelServiceContainer::new(ctx.args))
+				.await?;
 		}
 	}
 
@@ -259,8 +268,11 @@ pub async fn user(ctx: CommandContext, user_args: TunnelUserSubCommands) -> Resu
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
 	match user_args {
 		TunnelUserSubCommands::Login(login_args) => {
-			auth.login(login_args.provider.map(|p| p.into()), login_args.access_token.to_owned())
-				.await?;
+			auth.login(
+				login_args.provider.map(|p| p.into()),
+				login_args.access_token.to_owned(),
+			)
+			.await?;
 		}
 		TunnelUserSubCommands::Logout => {
 			auth.clear_credentials()?;
@@ -283,7 +295,10 @@ pub async fn rename(ctx: CommandContext, rename_args: TunnelRenameArgs) -> Resul
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
 	let mut dt = dev_tunnels::DevTunnels::new_remote_tunnel(&ctx.log, auth, &ctx.paths);
 	dt.rename_tunnel(&rename_args.name).await?;
-	ctx.log.result(format!("Successfully renamed this tunnel to {}", &rename_args.name));
+	ctx.log.result(format!(
+		"Successfully renamed this tunnel to {}",
+		&rename_args.name
+	));
 
 	Ok(0)
 }
@@ -335,8 +350,10 @@ pub async fn status(ctx: CommandContext) -> Result<i32, AnyError> {
 	)
 	.await;
 
-	let service_installed =
-		create_service_manager(ctx.log.clone(), &ctx.paths).is_installed().await.unwrap_or(false);
+	let service_installed = create_service_manager(ctx.log.clone(), &ctx.paths)
+		.is_installed()
+		.await
+		.unwrap_or(false);
 
 	ctx.log.result(
 		serde_json::to_string(&StatusOutput {
@@ -360,7 +377,8 @@ pub async fn prune(ctx: CommandContext) -> Result<i32, AnyError> {
 		.map(|s| s.server_paths(&ctx.paths))
 		.filter(|s| s.get_running_pid().is_none())
 		.try_for_each(|s| {
-			ctx.log.result(format!("Deleted {}", s.server_dir.display()));
+			ctx.log
+				.result(format!("Deleted {}", s.server_dir.display()));
 			s.delete()
 		})
 		.map_err(AnyError::from)?;
@@ -372,7 +390,9 @@ pub async fn prune(ctx: CommandContext) -> Result<i32, AnyError> {
 
 /// Starts the gateway server.
 pub async fn serve(ctx: CommandContext, gateway_args: TunnelServeArgs) -> Result<i32, AnyError> {
-	let CommandContext { log, paths, args, .. } = ctx;
+	let CommandContext {
+		log, paths, args, ..
+	} = ctx;
 
 	let no_sleep = match gateway_args.no_sleep.then(SleepInhibitor::new) {
 		Some(i) => match i.await {
@@ -456,14 +476,17 @@ pub async fn forward(
 
 	// #region singleton handler
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
-	if let (Some(p), Some(at)) =
-		(forward_args.login.provider.take(), forward_args.login.access_token.take())
-	{
+	if let (Some(p), Some(at)) = (
+		forward_args.login.provider.take(),
+		forward_args.login.access_token.take(),
+	) {
 		auth.login(Some(p.into()), Some(at)).await?;
 	}
 
 	let mut tunnels = DevTunnels::new_port_forwarding(&ctx.log, auth, &ctx.paths);
-	let tunnel = tunnels.start_new_launcher_tunnel(None, true, &forward_args.ports).await?;
+	let tunnel = tunnels
+		.start_new_launcher_tunnel(None, true, &forward_args.ports)
+		.await?;
 
 	local_forwarding::server(ctx.log, tunnel, server, own_ports_rx, shutdown).await?;
 
@@ -500,9 +523,14 @@ async fn serve_with_csa(
 	// current_exe will point to the wrong path.
 	let current_exe = std::env::current_exe().unwrap();
 
-	let mut vec =
-		vec![ShutdownRequest::CtrlC, ShutdownRequest::ExeUninstalled(current_exe.to_owned())];
-	if let Some(p) = gateway_args.parent_process_id.and_then(|p| Pid::from_str(&p).ok()) {
+	let mut vec = vec![
+		ShutdownRequest::CtrlC,
+		ShutdownRequest::ExeUninstalled(current_exe.to_owned()),
+	];
+	if let Some(p) = gateway_args
+		.parent_process_id
+		.and_then(|p| Pid::from_str(&p).ok())
+	{
 		vec.push(ShutdownRequest::ParentProcessKilled(p));
 	}
 	let mut shutdown = ShutdownRequest::create_rx(vec);

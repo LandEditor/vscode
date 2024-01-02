@@ -3,19 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IClipboardService } from "vs/platform/clipboard/common/clipboardService";
-import { extHostNamedCustomer } from "vs/workbench/services/extensions/common/extHostCustomers";
-import {
-	MainContext,
-	MainThreadClipboardShape,
-} from "../common/extHost.protocol";
+import { extHostNamedCustomer } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { MainContext, MainThreadClipboardShape } from '../common/extHost.protocol';
+import { IClipboardService } from 'vs/platform/clipboard/common/clipboardService';
 
 @extHostNamedCustomer(MainContext.MainThreadClipboard)
 export class MainThreadClipboard implements MainThreadClipboardShape {
+
 	constructor(
 		_context: any,
-		@IClipboardService private readonly _clipboardService: IClipboardService
-	) {}
+		@IClipboardService private readonly _clipboardService: IClipboardService,
+	) { }
 
 	dispose(): void {
 		// nothing

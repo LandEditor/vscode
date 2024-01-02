@@ -3,26 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import {
-	IExtHostContext,
-	extHostNamedCustomer,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import { IHostService } from "vs/workbench/services/host/browser/host";
-import { IUserActivityService } from "vs/workbench/services/userActivity/common/userActivityService";
-import {
-	ExtHostContext,
-	ExtHostWindowShape,
-	IOpenUriOptions,
-	MainContext,
-	MainThreadWindowShape,
-} from "../common/extHost.protocol";
+import { Event } from 'vs/base/common/event';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { ExtHostContext, ExtHostWindowShape, IOpenUriOptions, MainContext, MainThreadWindowShape } from '../common/extHost.protocol';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
+import { IUserActivityService } from 'vs/workbench/services/userActivity/common/userActivityService';
 
 @extHostNamedCustomer(MainContext.MainThreadWindow)
 export class MainThreadWindow implements MainThreadWindowShape {
+
 	private readonly proxy: ExtHostWindowShape;
 	private readonly disposables = new DisposableStore();
 
@@ -30,21 +22,13 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		extHostContext: IExtHostContext,
 		@IHostService private readonly hostService: IHostService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IUserActivityService
-		private readonly userActivityService: IUserActivityService
+		@IUserActivityService private readonly userActivityService: IUserActivityService,
 	) {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostWindow);
 
-		Event.latch(hostService.onDidChangeFocus)(
-			this.proxy.$onDidChangeWindowFocus,
-			this.proxy,
-			this.disposables
-		);
-		userActivityService.onDidChangeIsActive(
-			this.proxy.$onDidChangeWindowActive,
-			this.proxy,
-			this.disposables
-		);
+		Event.latch(hostService.onDidChangeFocus)
+			(this.proxy.$onDidChangeWindowFocus, this.proxy, this.disposables);
+		userActivityService.onDidChangeIsActive(this.proxy.$onDidChangeWindowActive, this.proxy, this.disposables);
 	}
 
 	dispose(): void {
@@ -58,11 +42,7 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		});
 	}
 
-	async $openUri(
-		uriComponents: UriComponents,
-		uriString: string | undefined,
-		options: IOpenUriOptions,
-	): Promise<boolean> {
+	async $openUri(uriComponents: UriComponents, uriString: string | undefined, options: IOpenUriOptions): Promise<boolean> {
 		const uri = URI.from(uriComponents);
 		let target: URI | string;
 		if (uriString && URI.parse(uriString).toString() === uri.toString()) {
@@ -79,14 +59,8 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		});
 	}
 
-	async $asExternalUri(
-		uriComponents: UriComponents,
-		options: IOpenUriOptions,
-	): Promise<UriComponents> {
-		const result = await this.openerService.resolveExternalUri(
-			URI.revive(uriComponents),
-			options,
-		);
+	async $asExternalUri(uriComponents: UriComponents, options: IOpenUriOptions): Promise<UriComponents> {
+		const result = await this.openerService.resolveExternalUri(URI.revive(uriComponents), options);
 		return result.resolved;
 	}
 }

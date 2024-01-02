@@ -48,59 +48,45 @@ export abstract class LoaderStats {
 		}
 
 		let stats: readonly LoaderEvent[] = [];
-		if (
-			typeof require === "function" &&
-			typeof require.getStats === "function"
-		) {
-			stats = require
-				.getStats()
-				.slice(0)
-				.sort((a, b) => a.timestamp - b.timestamp);
+		if (typeof require === 'function' && typeof require.getStats === 'function') {
+			stats = require.getStats().slice(0).sort((a, b) => a.timestamp - b.timestamp);
 		}
 
 		for (const stat of stats) {
 			switch (stat.type) {
-				case LoaderEventType.BeginLoadingScript: {
+				case LoaderEventType.BeginLoadingScript:
 					mark(amdLoadScript, stat);
 					break;
-				}
 				case LoaderEventType.EndLoadingScriptOK:
-				case LoaderEventType.EndLoadingScriptError: {
+				case LoaderEventType.EndLoadingScriptError:
 					diff(amdLoadScript, stat);
 					break;
-				}
 
-				case LoaderEventType.BeginInvokeFactory: {
+				case LoaderEventType.BeginInvokeFactory:
 					mark(amdInvokeFactory, stat);
 					break;
-				}
-				case LoaderEventType.EndInvokeFactory: {
+				case LoaderEventType.EndInvokeFactory:
 					diff(amdInvokeFactory, stat);
 					break;
-				}
 
-				case LoaderEventType.NodeBeginNativeRequire: {
+				case LoaderEventType.NodeBeginNativeRequire:
 					mark(nodeRequire, stat);
 					break;
-				}
-				case LoaderEventType.NodeEndNativeRequire: {
+				case LoaderEventType.NodeEndNativeRequire:
 					diff(nodeRequire, stat);
 					break;
-				}
 
-				case LoaderEventType.NodeBeginEvaluatingScript: {
+				case LoaderEventType.NodeBeginEvaluatingScript:
 					mark(nodeEval, stat);
 					break;
-				}
-				case LoaderEventType.NodeEndEvaluatingScript: {
+				case LoaderEventType.NodeEndEvaluatingScript:
 					diff(nodeEval, stat);
 					break;
-				}
 			}
 		}
 
 		let nodeRequireTotal = 0;
-		nodeRequire.forEach((value) => (nodeRequireTotal += value));
+		nodeRequire.forEach(value => nodeRequireTotal += value);
 
 		function to2dArray(map: Map<string, number>): [string, number][] {
 			const res: [string, number][] = [];
@@ -113,24 +99,21 @@ export abstract class LoaderStats {
 			amdInvoke: to2dArray(amdInvokeFactory),
 			nodeRequire: to2dArray(nodeRequire),
 			nodeEval: to2dArray(nodeEval),
-			nodeRequireTotal,
+			nodeRequireTotal
 		};
 	}
 
-	static toMarkdownTable(
-		header: string[],
-		rows: Array<Array<{ toString(): string } | undefined>>,
-	): string {
-		let result = "";
+	static toMarkdownTable(header: string[], rows: Array<Array<{ toString(): string } | undefined>>): string {
+		let result = '';
 
 		const lengths: number[] = [];
 		header.forEach((cell, ci) => {
 			lengths[ci] = cell.length;
 		});
-		rows.forEach((row) => {
+		rows.forEach(row => {
 			row.forEach((cell, ci) => {
-				if (typeof cell === "undefined") {
-					cell = row[ci] = "-";
+				if (typeof cell === 'undefined') {
+					cell = row[ci] = '-';
 				}
 				const len = cell.toString().length;
 				lengths[ci] = Math.max(len, lengths[ci]);
@@ -138,27 +121,19 @@ export abstract class LoaderStats {
 		});
 
 		// header
-		header.forEach((cell, ci) => {
-			result += `| ${
-				cell + " ".repeat(lengths[ci] - cell.toString().length)
-			} `;
-		});
-		result += "|\n";
-		header.forEach((_cell, ci) => {
-			result += `| ${"-".repeat(lengths[ci])} `;
-		});
-		result += "|\n";
+		header.forEach((cell, ci) => { result += `| ${cell + ' '.repeat(lengths[ci] - cell.toString().length)} `; });
+		result += '|\n';
+		header.forEach((_cell, ci) => { result += `| ${'-'.repeat(lengths[ci])} `; });
+		result += '|\n';
 
 		// cells
-		rows.forEach((row) => {
+		rows.forEach(row => {
 			row.forEach((cell, ci) => {
-				if (typeof cell !== "undefined") {
-					result += `| ${
-						cell + " ".repeat(lengths[ci] - cell.toString().length)
-					} `;
+				if (typeof cell !== 'undefined') {
+					result += `| ${cell + ' '.repeat(lengths[ci] - cell.toString().length)} `;
 				}
 			});
-			result += "|\n";
+			result += '|\n';
 		});
 
 		return result;

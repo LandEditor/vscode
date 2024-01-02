@@ -3,16 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { IDisposable, IReference } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import { ITextModel, ITextSnapshot } from "vs/editor/common/model";
-import { IResolvableEditorModel } from "vs/platform/editor/common/editor";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { Event } from 'vs/base/common/event';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { IDisposable, IReference } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { ITextModel, ITextSnapshot } from 'vs/editor/common/model';
+import { IResolvableEditorModel } from 'vs/platform/editor/common/editor';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const ITextModelService =
-	createDecorator<ITextModelService>("textModelService");
+export const ITextModelService = createDecorator<ITextModelService>('textModelService');
 
 export interface ITextModelService {
 	readonly _serviceBrand: undefined;
@@ -21,17 +20,12 @@ export interface ITextModelService {
 	 * Provided a resource URI, it will return a model reference
 	 * which should be disposed once not needed anymore.
 	 */
-	createModelReference(
-		resource: URI,
-	): Promise<IReference<IResolvedTextEditorModel>>;
+	createModelReference(resource: URI): Promise<IReference<IResolvedTextEditorModel>>;
 
 	/**
 	 * Registers a specific `scheme` content provider.
 	 */
-	registerTextModelContentProvider(
-		scheme: string,
-		provider: ITextModelContentProvider,
-	): IDisposable;
+	registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable;
 
 	/**
 	 * Check if the given resource can be resolved to a text model.
@@ -40,6 +34,7 @@ export interface ITextModelService {
 }
 
 export interface ITextModelContentProvider {
+
 	/**
 	 * Given a resource, return the content of the resource as `ITextModel`.
 	 */
@@ -47,6 +42,7 @@ export interface ITextModelContentProvider {
 }
 
 export interface ITextEditorModel extends IResolvableEditorModel {
+
 	/**
 	 * Emitted when the text model is about to be disposed.
 	 */
@@ -80,15 +76,14 @@ export interface ITextEditorModel extends IResolvableEditorModel {
 }
 
 export interface IResolvedTextEditorModel extends ITextEditorModel {
+
 	/**
 	 * Same as ITextEditorModel#textEditorModel, but never null.
 	 */
 	readonly textEditorModel: ITextModel;
 }
 
-export function isResolvedTextEditorModel(
-	model: ITextEditorModel,
-): model is IResolvedTextEditorModel {
+export function isResolvedTextEditorModel(model: ITextEditorModel): model is IResolvedTextEditorModel {
 	const candidate = model as IResolvedTextEditorModel;
 
 	return !!candidate.textEditorModel;

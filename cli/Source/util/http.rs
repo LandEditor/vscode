@@ -37,8 +37,9 @@ pub async fn download_into_file<T>(
 where
 	T: ReportCopyProgress,
 {
-	let mut file =
-		fs::File::create(filename).await.map_err(|e| errors::wrap(e, "failed to create file"))?;
+	let mut file = fs::File::create(filename)
+		.await
+		.map_err(|e| errors::wrap(e, "failed to create file"))?;
 
 	let content_length = res
 		.headers
@@ -63,9 +64,10 @@ pub struct SimpleResponse {
 
 impl SimpleResponse {
 	pub fn url_path_basename(&self) -> Option<String> {
-		self.url
-			.as_ref()
-			.and_then(|u| u.path_segments().and_then(|s| s.last().map(|s| s.to_owned())))
+		self.url.as_ref().and_then(|u| {
+			u.path_segments()
+				.and_then(|s| s.last().map(|s| s.to_owned()))
+		})
 	}
 }
 
@@ -86,7 +88,10 @@ impl SimpleResponse {
 		self.read.read_to_string(&mut body).await.ok();
 
 		StatusError {
-			url: self.url.map(|u| u.to_string()).unwrap_or_else(|| "<invalid url>".to_owned()),
+			url: self
+				.url
+				.map(|u| u.to_string())
+				.unwrap_or_else(|| "<invalid url>".to_owned()),
 			status_code: self.status_code.as_u16(),
 			body,
 		}
@@ -98,7 +103,10 @@ impl SimpleResponse {
 
 		// ideally serde would deserialize a stream, but it does not appear that
 		// is supported. reqwest itself reads and decodes separately like we do here:
-		self.read.read_to_end(&mut buf).await.map_err(|e| wrap(e, "error reading response"))?;
+		self.read
+			.read_to_end(&mut buf)
+			.await
+			.map_err(|e| wrap(e, "error reading response"))?;
 
 		let t = serde_json::from_slice(&buf)
 			.map_err(|e| wrap(e, format!("error decoding json from {:?}", self.url)))?;
@@ -156,8 +164,11 @@ impl SimpleHttp for ReqwestSimpleHttp {
 		method: &'static str,
 		url: String,
 	) -> Result<SimpleResponse, AnyError> {
-		let res =
-			self.client.request(reqwest::Method::try_from(method).unwrap(), &url).send().await?;
+		let res = self
+			.client
+			.request(reqwest::Method::try_from(method).unwrap(), &url)
+			.send()
+			.await?;
 
 		Ok(SimpleResponse {
 			status_code: res.status(),
@@ -174,7 +185,10 @@ impl SimpleHttp for ReqwestSimpleHttp {
 }
 
 enum DelegatedHttpEvent {
-	InitResponse { status_code: u16, headers: Vec<(String, String)> },
+	InitResponse {
+		status_code: u16,
+		headers: Vec<(String, String)>,
+	},
 	Body(Vec<u8>),
 	End,
 }
@@ -188,7 +202,12 @@ pub struct DelegatedHttpRequest {
 
 impl DelegatedHttpRequest {
 	pub fn initial_response(&self, status_code: u16, headers: Vec<(String, String)>) {
-		self.ch.send(DelegatedHttpEvent::InitResponse { status_code, headers }).ok();
+		self.ch
+			.send(DelegatedHttpEvent::InitResponse {
+				status_code,
+				headers,
+			})
+			.ok();
 	}
 
 	pub fn body(&self, chunk: Vec<u8>) {
@@ -214,7 +233,13 @@ pub struct DelegatedSimpleHttp {
 impl DelegatedSimpleHttp {
 	pub fn new(log: log::Logger) -> (Self, mpsc::Receiver<DelegatedHttpRequest>) {
 		let (tx, rx) = mpsc::channel(4);
-		(DelegatedSimpleHttp { log, start_request: tx }, rx)
+		(
+			DelegatedSimpleHttp {
+				log,
+				start_request: tx,
+			},
+			rx,
+		)
 	}
 }
 
@@ -229,7 +254,11 @@ impl SimpleHttp for DelegatedSimpleHttp {
 		let (tx, mut rx) = mpsc::unbounded_channel();
 		let sent = self
 			.start_request
-			.send(DelegatedHttpRequest { method, url: url.clone(), ch: tx })
+			.send(DelegatedHttpRequest {
+				method,
+				url: url.clone(),
+				ch: tx,
+			})
 			.await;
 
 		if sent.is_err() {
@@ -237,7 +266,10 @@ impl SimpleHttp for DelegatedSimpleHttp {
 		}
 
 		match rx.recv().await {
-			Some(DelegatedHttpEvent::InitResponse { status_code, headers }) => {
+			Some(DelegatedHttpEvent::InitResponse {
+				status_code,
+				headers,
+			}) => {
 				trace!(
 					self.log,
 					"delegated request to {} resulted in status = {}",
@@ -246,9 +278,10 @@ impl SimpleHttp for DelegatedSimpleHttp {
 				);
 				let mut headers_map = HeaderMap::with_capacity(headers.len());
 				for (k, v) in &headers {
-					if let (Ok(key), Ok(value)) =
-						(HeaderName::from_str(&k.to_lowercase()), HeaderValue::from_str(v))
-					{
+					if let (Ok(key), Ok(value)) = (
+						HeaderName::from_str(&k.to_lowercase()),
+						HeaderValue::from_str(v),
+					) {
 						headers_map.insert(key, value);
 					}
 				}
@@ -275,7 +308,10 @@ struct DelegatedReader {
 
 impl DelegatedReader {
 	pub fn new(rx: mpsc::UnboundedReceiver<DelegatedHttpEvent>) -> Self {
-		DelegatedReader { readbuf: ReadBuffer::default(), receiver: rx }
+		DelegatedReader {
+			readbuf: ReadBuffer::default(),
+			receiver: rx,
+		}
 	}
 }
 

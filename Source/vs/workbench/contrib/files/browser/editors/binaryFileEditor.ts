@@ -3,50 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import {
-	EditorResolution,
-	IEditorOptions,
-} from "vs/platform/editor/common/editor";
-import { IStorageService } from "vs/platform/storage/common/storage";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { BaseBinaryResourceEditor } from "vs/workbench/browser/parts/editor/binaryEditor";
-import { isEditorInputWithOptions } from "vs/workbench/common/editor";
-import { DiffEditorInput } from "vs/workbench/common/editor/diffEditorInput";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { FileEditorInput } from "vs/workbench/contrib/files/browser/editors/fileEditorInput";
-import {
-	BINARY_FILE_EDITOR_ID,
-	BINARY_TEXT_FILE_MODE,
-} from "vs/workbench/contrib/files/common/files";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import {
-	IEditorResolverService,
-	ResolvedEditor,
-	ResolvedStatus,
-} from "vs/workbench/services/editor/common/editorResolverService";
+import { localize } from 'vs/nls';
+import { BaseBinaryResourceEditor } from 'vs/workbench/browser/parts/editor/binaryEditor';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { FileEditorInput } from 'vs/workbench/contrib/files/browser/editors/fileEditorInput';
+import { BINARY_FILE_EDITOR_ID, BINARY_TEXT_FILE_MODE } from 'vs/workbench/contrib/files/common/files';
+import { IStorageService } from 'vs/platform/storage/common/storage';
+import { EditorResolution, IEditorOptions } from 'vs/platform/editor/common/editor';
+import { IEditorResolverService, ResolvedStatus, ResolvedEditor } from 'vs/workbench/services/editor/common/editorResolverService';
+import { isEditorInputWithOptions } from 'vs/workbench/common/editor';
+import { DiffEditorInput } from 'vs/workbench/common/editor/diffEditorInput';
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
 
 /**
  * An implementation of editor for binary files that cannot be displayed.
  */
 export class BinaryFileEditor extends BaseBinaryResourceEditor {
+
 	static readonly ID = BINARY_FILE_EDITOR_ID;
 
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IEditorResolverService
-		private readonly editorResolverService: IEditorResolverService,
+		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
 		@IStorageService storageService: IStorageService,
-		@IEditorGroupsService
-		private readonly editorGroupService: IEditorGroupsService
+		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService
 	) {
 		super(
 			BinaryFileEditor.ID,
 			{
-				openInternal: (input, options) =>
-					this.openInternal(input, options),
+				openInternal: (input, options) => this.openInternal(input, options)
 			},
 			telemetryService,
 			themeService,
@@ -54,11 +42,9 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 		);
 	}
 
-	private async openInternal(
-		input: EditorInput,
-		options: IEditorOptions | undefined,
-	): Promise<void> {
+	private async openInternal(input: EditorInput, options: IEditorOptions | undefined): Promise<void> {
 		if (input instanceof FileEditorInput && this.group?.activeEditor) {
+
 			// We operate on the active editor here to support re-opening
 			// diff editors where `input` may just be one side of the
 			// diff editor.
@@ -72,17 +58,13 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 			}
 
 			// Try to let the user pick an editor
-			let resolvedEditor: ResolvedEditor | undefined =
-				await this.editorResolverService.resolveEditor(
-					{
-						...untypedActiveEditor,
-						options: {
-							...options,
-							override: EditorResolution.PICK,
-						},
-					},
-					this.group,
-				);
+			let resolvedEditor: ResolvedEditor | undefined = await this.editorResolverService.resolveEditor({
+				...untypedActiveEditor,
+				options: {
+					...options,
+					override: EditorResolution.PICK
+				}
+			}, this.group);
 
 			if (resolvedEditor === ResolvedStatus.NONE) {
 				resolvedEditor = undefined;
@@ -93,13 +75,7 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 			// If the result if a file editor, the user indicated to open
 			// the binary file as text. As such we adjust the input for that.
 			if (isEditorInputWithOptions(resolvedEditor)) {
-				for (const editor of resolvedEditor.editor instanceof
-				DiffEditorInput
-					? [
-							resolvedEditor.editor.original,
-							resolvedEditor.editor.modified,
-					  ]
-					: [resolvedEditor.editor]) {
+				for (const editor of resolvedEditor.editor instanceof DiffEditorInput ? [resolvedEditor.editor.original, resolvedEditor.editor.modified] : [resolvedEditor.editor]) {
 					if (editor instanceof FileEditorInput) {
 						editor.setForceOpenAsText();
 						editor.setPreferredLanguageId(BINARY_TEXT_FILE_MODE); // https://github.com/microsoft/vscode/issues/131076
@@ -108,23 +84,17 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 			}
 
 			// Replace the active editor with the picked one
-			await (
-				this.group ?? this.editorGroupService.activeGroup
-			).replaceEditors([
-				{
-					editor: activeEditor,
-					replacement: resolvedEditor?.editor ?? input,
-					options: {
-						...(resolvedEditor?.options ?? options),
-					},
-				},
-			]);
+			await (this.group ?? this.editorGroupService.activeGroup).replaceEditors([{
+				editor: activeEditor,
+				replacement: resolvedEditor?.editor ?? input,
+				options: {
+					...resolvedEditor?.options ?? options
+				}
+			}]);
 		}
 	}
 
 	override getTitle(): string {
-		return this.input
-			? this.input.getName()
-			: localize("binaryFileEditor", "Binary File Viewer");
+		return this.input ? this.input.getName() : localize('binaryFileEditor', "Binary File Viewer");
 	}
 }

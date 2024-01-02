@@ -31,7 +31,11 @@ pub struct WindowsService {
 
 impl WindowsService {
 	pub fn new(log: log::Logger, paths: &LauncherPaths) -> Self {
-		Self { log, tunnel_lock: paths.tunnel_lockfile(), log_file: paths.service_log_file() }
+		Self {
+			log,
+			tunnel_lock: paths.tunnel_lockfile(),
+			log_file: paths.service_log_file(),
+		}
 	}
 
 	fn open_key() -> Result<RegKey, AnyError> {
@@ -73,7 +77,8 @@ impl CliServiceManager for WindowsService {
 		cmd.stdout(Stdio::null());
 		cmd.stdin(Stdio::null());
 		cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS);
-		cmd.spawn().map_err(|e| wrapdbg(e, "error starting service"))?;
+		cmd.spawn()
+			.map_err(|e| wrapdbg(e, "error starting service"))?;
 
 		info!(self.log, "Tunnel service successfully started");
 		Ok(())

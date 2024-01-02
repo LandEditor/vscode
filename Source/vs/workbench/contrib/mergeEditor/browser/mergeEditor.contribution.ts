@@ -3,103 +3,59 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "vs/nls";
-import { registerAction2 } from "vs/platform/actions/common/actions";
+import { localize } from 'vs/nls';
+import { registerAction2 } from 'vs/platform/actions/common/actions';
+import { Extensions, IConfigurationRegistry } from 'vs/platform/configuration/common/configurationRegistry';
+import { SyncDescriptor } from 'vs/platform/instantiation/common/descriptors';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { EditorPaneDescriptor, IEditorPaneRegistry } from 'vs/workbench/browser/editor';
+import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } from 'vs/workbench/common/contributions';
+import { EditorExtensions, IEditorFactoryRegistry } from 'vs/workbench/common/editor';
 import {
-	Extensions,
-	IConfigurationRegistry,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { SyncDescriptor } from "vs/platform/instantiation/common/descriptors";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	EditorPaneDescriptor,
-	IEditorPaneRegistry,
-} from "vs/workbench/browser/editor";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import {
-	EditorExtensions,
-	IEditorFactoryRegistry,
-} from "vs/workbench/common/editor";
-import {
-	AcceptAllInput1,
-	AcceptAllInput2,
-	AcceptMerge,
-	CompareInput1WithBaseCommand,
-	CompareInput2WithBaseCommand,
-	GoToNextUnhandledConflict,
-	GoToPreviousUnhandledConflict,
-	OpenBaseFile,
-	OpenMergeEditor,
-	OpenResultResource,
-	ResetCloseWithConflictsChoice,
-	ResetToBaseAndAutoMergeCommand,
-	SetColumnLayout,
-	SetMixedLayout,
-	ShowHideBase,
-	ShowHideCenterBase,
-	ShowHideTopBase,
-	ShowNonConflictingChanges,
-	ToggleActiveConflictInput1,
-	ToggleActiveConflictInput2,
-} from "vs/workbench/contrib/mergeEditor/browser/commands/commands";
-import {
-	MergeEditorCopyContentsToJSON,
-	MergeEditorLoadContentsFromFolder,
-	MergeEditorSaveContentsToFolder,
-} from "vs/workbench/contrib/mergeEditor/browser/commands/devCommands";
-import { MergeEditorInput } from "vs/workbench/contrib/mergeEditor/browser/mergeEditorInput";
-import {
-	MergeEditor,
-	MergeEditorOpenHandlerContribution,
-	MergeEditorResolverContribution,
-} from "vs/workbench/contrib/mergeEditor/browser/view/mergeEditor";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
-import { MergeEditorSerializer } from "./mergeEditorSerializer";
+	AcceptAllInput1, AcceptAllInput2, AcceptMerge, CompareInput1WithBaseCommand,
+	CompareInput2WithBaseCommand, GoToNextUnhandledConflict, GoToPreviousUnhandledConflict, OpenBaseFile, OpenMergeEditor,
+	OpenResultResource, ResetToBaseAndAutoMergeCommand, SetColumnLayout, SetMixedLayout, ShowHideTopBase, ShowHideCenterBase, ShowHideBase,
+	ShowNonConflictingChanges, ToggleActiveConflictInput1, ToggleActiveConflictInput2, ResetCloseWithConflictsChoice
+} from 'vs/workbench/contrib/mergeEditor/browser/commands/commands';
+import { MergeEditorCopyContentsToJSON, MergeEditorLoadContentsFromFolder, MergeEditorSaveContentsToFolder } from 'vs/workbench/contrib/mergeEditor/browser/commands/devCommands';
+import { MergeEditorInput } from 'vs/workbench/contrib/mergeEditor/browser/mergeEditorInput';
+import { MergeEditor, MergeEditorOpenHandlerContribution, MergeEditorResolverContribution } from 'vs/workbench/contrib/mergeEditor/browser/view/mergeEditor';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
+import { MergeEditorSerializer } from './mergeEditorSerializer';
 
-Registry.as<IEditorPaneRegistry>(
-	EditorExtensions.EditorPane,
-).registerEditorPane(
+Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(
 	EditorPaneDescriptor.create(
 		MergeEditor,
 		MergeEditor.ID,
-		localize("name", "Merge Editor"),
+		localize('name', "Merge Editor")
 	),
-	[new SyncDescriptor(MergeEditorInput)],
+	[
+		new SyncDescriptor(MergeEditorInput)
+	]
 );
 
-Registry.as<IEditorFactoryRegistry>(
-	EditorExtensions.EditorFactory,
-).registerEditorSerializer(MergeEditorInput.ID, MergeEditorSerializer);
+Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(
+	MergeEditorInput.ID,
+	MergeEditorSerializer
+);
 
-Registry.as<IConfigurationRegistry>(
-	Extensions.Configuration,
-).registerConfiguration({
+Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfiguration({
 	properties: {
-		"mergeEditor.diffAlgorithm": {
-			type: "string",
-			enum: ["legacy", "advanced"],
-			default: "advanced",
+		'mergeEditor.diffAlgorithm': {
+			type: 'string',
+			enum: ['legacy', 'advanced'],
+			default: 'advanced',
 			markdownEnumDescriptions: [
-				localize(
-					"diffAlgorithm.legacy",
-					"Uses the legacy diffing algorithm.",
-				),
-				localize(
-					"diffAlgorithm.advanced",
-					"Uses the advanced diffing algorithm.",
-				),
-			],
+				localize('diffAlgorithm.legacy', "Uses the legacy diffing algorithm."),
+				localize('diffAlgorithm.advanced', "Uses the advanced diffing algorithm."),
+			]
 		},
-		"mergeEditor.showDeletionMarkers": {
-			type: "boolean",
+		'mergeEditor.showDeletionMarkers': {
+			type: 'boolean',
 			default: true,
-			description:
-				"Controls if deletions in base or one of the inputs should be indicated by a vertical bar.",
+			description: 'Controls if deletions in base or one of the inputs should be indicated by a vertical bar.',
 		},
-	},
+	}
 });
 
 registerAction2(OpenResultResource);
@@ -134,16 +90,10 @@ registerAction2(MergeEditorCopyContentsToJSON);
 registerAction2(MergeEditorSaveContentsToFolder);
 registerAction2(MergeEditorLoadContentsFromFolder);
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
-	MergeEditorOpenHandlerContribution,
-	LifecyclePhase.Restored,
-);
+Registry
+	.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
+	.registerWorkbenchContribution(MergeEditorOpenHandlerContribution, LifecyclePhase.Restored);
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
-	MergeEditorResolverContribution,
-	LifecyclePhase.Starting,
-);
+Registry
+	.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
+	.registerWorkbenchContribution(MergeEditorResolverContribution, LifecyclePhase.Starting);

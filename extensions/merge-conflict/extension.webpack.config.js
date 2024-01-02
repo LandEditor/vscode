@@ -5,14 +5,16 @@
 
 //@ts-check
 
-const withDefaults = require("../shared.webpack.config");
+'use strict';
+
+const withDefaults = require('../shared.webpack.config');
 
 module.exports = withDefaults({
 	context: __dirname,
 	entry: {
-		extension: "./src/mergeConflictMain.ts",
+		extension: './src/mergeConflictMain.ts'
 	},
 	output: {
-		filename: "mergeConflictMain.js",
+		filename: 'mergeConflictMain.js'
 	},
 });

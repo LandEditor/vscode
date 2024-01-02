@@ -3,27 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { URI } from "vs/base/common/uri";
-import { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { Selection } from "vs/editor/common/core/selection";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IChatWidgetContrib } from "vs/workbench/contrib/chat/browser/chatWidget";
-import {
-	IChatRequestViewModel,
-	IChatResponseViewModel,
-	IChatViewModel,
-	IChatWelcomeMessageViewModel,
-} from "vs/workbench/contrib/chat/common/chatViewModel";
+import { Event } from 'vs/base/common/event';
+import { URI } from 'vs/base/common/uri';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { Selection } from 'vs/editor/common/core/selection';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IChatWidgetContrib } from 'vs/workbench/contrib/chat/browser/chatWidget';
+import { IChatRequestViewModel, IChatResponseViewModel, IChatViewModel, IChatWelcomeMessageViewModel } from 'vs/workbench/contrib/chat/common/chatViewModel';
 
-export const IChatWidgetService =
-	createDecorator<IChatWidgetService>("chatWidgetService");
-export const IQuickChatService =
-	createDecorator<IQuickChatService>("quickChatService");
-export const IChatAccessibilityService =
-	createDecorator<IChatAccessibilityService>("chatAccessibilityService");
+export const IChatWidgetService = createDecorator<IChatWidgetService>('chatWidgetService');
+export const IQuickChatService = createDecorator<IQuickChatService>('quickChatService');
+export const IChatAccessibilityService = createDecorator<IChatAccessibilityService>('chatAccessibilityService');
 
 export interface IChatWidgetService {
+
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -71,10 +64,7 @@ export interface IQuickChatOpenOptions {
 export interface IChatAccessibilityService {
 	readonly _serviceBrand: undefined;
 	acceptRequest(): number;
-	acceptResponse(
-		response: IChatResponseViewModel | string | undefined,
-		requestId: number,
-	): void;
+	acceptResponse(response: IChatResponseViewModel | string | undefined, requestId: number): void;
 }
 
 export interface IChatCodeBlockInfo {
@@ -89,14 +79,11 @@ export interface IChatFileTreeInfo {
 	focus(): void;
 }
 
-export type ChatTreeItem =
-	| IChatRequestViewModel
-	| IChatResponseViewModel
-	| IChatWelcomeMessageViewModel;
+export type ChatTreeItem = IChatRequestViewModel | IChatResponseViewModel | IChatWelcomeMessageViewModel;
 
 export interface IChatWidgetViewOptions {
 	renderInputOnTop?: boolean;
-	renderStyle?: "default" | "compact";
+	renderStyle?: 'default' | 'compact';
 	supportsFileReferences?: boolean;
 }
 
@@ -108,9 +95,7 @@ export interface IChatResourceViewContext {
 	resource: boolean;
 }
 
-export type IChatWidgetViewContext =
-	| IChatViewViewContext
-	| IChatResourceViewContext;
+export type IChatWidgetViewContext = IChatViewViewContext | IChatResourceViewContext;
 
 export interface IChatWidget {
 	readonly onDidChangeViewModel: Event<void>;
@@ -124,7 +109,7 @@ export interface IChatWidget {
 	getContrib<T extends IChatWidgetContrib>(id: string): T | undefined;
 	reveal(item: ChatTreeItem): void;
 	focus(item: ChatTreeItem): void;
-	moveFocus(item: ChatTreeItem, type: "next" | "previous"): void;
+	moveFocus(item: ChatTreeItem, type: 'next' | 'previous'): void;
 	getFocus(): ChatTreeItem | undefined;
 	setInput(query?: string): void;
 	getInput(): string;
@@ -136,15 +121,9 @@ export interface IChatWidget {
 	focusInput(): void;
 	hasInputFocus(): boolean;
 	getCodeBlockInfoForEditor(uri: URI): IChatCodeBlockInfo | undefined;
-	getCodeBlockInfosForResponse(
-		response: IChatResponseViewModel,
-	): IChatCodeBlockInfo[];
-	getFileTreeInfosForResponse(
-		response: IChatResponseViewModel,
-	): IChatFileTreeInfo[];
-	getLastFocusedFileTreeForResponse(
-		response: IChatResponseViewModel,
-	): IChatFileTreeInfo | undefined;
+	getCodeBlockInfosForResponse(response: IChatResponseViewModel): IChatCodeBlockInfo[];
+	getFileTreeInfosForResponse(response: IChatResponseViewModel): IChatFileTreeInfo[];
+	getLastFocusedFileTreeForResponse(response: IChatResponseViewModel): IChatFileTreeInfo | undefined;
 	clear(): void;
 }
 

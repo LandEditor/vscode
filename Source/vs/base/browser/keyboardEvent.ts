@@ -3,15 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as browser from "vs/base/browser/browser";
-import {
-	EVENT_KEY_CODE_MAP,
-	KeyCode,
-	KeyCodeUtils,
-	KeyMod,
-} from "vs/base/common/keyCodes";
-import { KeyCodeChord } from "vs/base/common/keybindings";
-import * as platform from "vs/base/common/platform";
+import * as browser from 'vs/base/browser/browser';
+import { EVENT_KEY_CODE_MAP, KeyCode, KeyCodeUtils, KeyMod } from 'vs/base/common/keyCodes';
+import { KeyCodeChord } from 'vs/base/common/keybindings';
+import * as platform from 'vs/base/common/platform';
+
+
 
 function extractKeyCode(e: KeyboardEvent): KeyCode {
 	if (e.charCode) {
@@ -27,29 +24,18 @@ function extractKeyCode(e: KeyboardEvent): KeyCode {
 		return KeyCode.PauseBreak;
 	} else if (browser.isFirefox) {
 		switch (keyCode) {
-			case 59:
-				return KeyCode.Semicolon;
-			case 60: {
-				if (platform.isLinux) {
-					return KeyCode.IntlBackslash;
-				}
+			case 59: return KeyCode.Semicolon;
+			case 60:
+				if (platform.isLinux) { return KeyCode.IntlBackslash; }
 				break;
-			}
-			case 61:
-				return KeyCode.Equal;
+			case 61: return KeyCode.Equal;
 			// based on: https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode#numpad_keys
-			case 107:
-				return KeyCode.NumpadAdd;
-			case 109:
-				return KeyCode.NumpadSubtract;
-			case 173:
-				return KeyCode.Minus;
-			case 224: {
-				if (platform.isMacintosh) {
-					return KeyCode.Meta;
-				}
+			case 107: return KeyCode.NumpadAdd;
+			case 109: return KeyCode.NumpadSubtract;
+			case 173: return KeyCode.Minus;
+			case 224:
+				if (platform.isMacintosh) { return KeyCode.Meta; }
 				break;
-			}
 		}
 	} else if (browser.isWebKit) {
 		if (platform.isMacintosh && keyCode === 93) {
@@ -65,6 +51,7 @@ function extractKeyCode(e: KeyboardEvent): KeyCode {
 }
 
 export interface IKeyboardEvent {
+
 	readonly _standardKeyboardEventBrand: true;
 
 	readonly browserEvent: KeyboardEvent;
@@ -88,50 +75,47 @@ export interface IKeyboardEvent {
 	stopPropagation(): void;
 }
 
-const ctrlKeyMod = platform.isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd;
+const ctrlKeyMod = (platform.isMacintosh ? KeyMod.WinCtrl : KeyMod.CtrlCmd);
 const altKeyMod = KeyMod.Alt;
 const shiftKeyMod = KeyMod.Shift;
-const metaKeyMod = platform.isMacintosh ? KeyMod.CtrlCmd : KeyMod.WinCtrl;
+const metaKeyMod = (platform.isMacintosh ? KeyMod.CtrlCmd : KeyMod.WinCtrl);
 
 export function printKeyboardEvent(e: KeyboardEvent): string {
 	const modifiers: string[] = [];
 	if (e.ctrlKey) {
-		modifiers.push("ctrl");
+		modifiers.push(`ctrl`);
 	}
 	if (e.shiftKey) {
-		modifiers.push("shift");
+		modifiers.push(`shift`);
 	}
 	if (e.altKey) {
-		modifiers.push("alt");
+		modifiers.push(`alt`);
 	}
 	if (e.metaKey) {
-		modifiers.push("meta");
+		modifiers.push(`meta`);
 	}
-	return `modifiers: [${modifiers.join(",")}], code: ${e.code}, keyCode: ${
-		e.keyCode
-	}, key: ${e.key}`;
+	return `modifiers: [${modifiers.join(',')}], code: ${e.code}, keyCode: ${e.keyCode}, key: ${e.key}`;
 }
 
 export function printStandardKeyboardEvent(e: StandardKeyboardEvent): string {
 	const modifiers: string[] = [];
 	if (e.ctrlKey) {
-		modifiers.push("ctrl");
+		modifiers.push(`ctrl`);
 	}
 	if (e.shiftKey) {
-		modifiers.push("shift");
+		modifiers.push(`shift`);
 	}
 	if (e.altKey) {
-		modifiers.push("alt");
+		modifiers.push(`alt`);
 	}
 	if (e.metaKey) {
-		modifiers.push("meta");
+		modifiers.push(`meta`);
 	}
-	return `modifiers: [${modifiers.join(",")}], code: ${e.code}, keyCode: ${
-		e.keyCode
-	} ('${KeyCodeUtils.toString(e.keyCode)}')`;
+	return `modifiers: [${modifiers.join(',')}], code: ${e.code}, keyCode: ${e.keyCode} ('${KeyCodeUtils.toString(e.keyCode)}')`;
 }
 
 export class StandardKeyboardEvent implements IKeyboardEvent {
+
 	readonly _standardKeyboardEventBrand = true;
 
 	public readonly browserEvent: KeyboardEvent;
@@ -158,7 +142,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
 		this.shiftKey = e.shiftKey;
 		this.altKey = e.altKey;
 		this.metaKey = e.metaKey;
-		this.altGraphKey = e.getModifierState("AltGraph");
+		this.altGraphKey = e.getModifierState('AltGraph');
 		this.keyCode = extractKeyCode(e);
 		this.code = e.code;
 
@@ -176,13 +160,13 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
 	}
 
 	public preventDefault(): void {
-		if (this.browserEvent?.preventDefault) {
+		if (this.browserEvent && this.browserEvent.preventDefault) {
 			this.browserEvent.preventDefault();
 		}
 	}
 
 	public stopPropagation(): void {
-		if (this.browserEvent?.stopPropagation) {
+		if (this.browserEvent && this.browserEvent.stopPropagation) {
 			this.browserEvent.stopPropagation();
 		}
 	}
@@ -197,12 +181,7 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
 
 	private _computeKeybinding(): number {
 		let key = KeyCode.Unknown;
-		if (
-			this.keyCode !== KeyCode.Ctrl &&
-			this.keyCode !== KeyCode.Shift &&
-			this.keyCode !== KeyCode.Alt &&
-			this.keyCode !== KeyCode.Meta
-		) {
+		if (this.keyCode !== KeyCode.Ctrl && this.keyCode !== KeyCode.Shift && this.keyCode !== KeyCode.Alt && this.keyCode !== KeyCode.Meta) {
 			key = this.keyCode;
 		}
 
@@ -226,20 +205,9 @@ export class StandardKeyboardEvent implements IKeyboardEvent {
 
 	private _computeKeyCodeChord(): KeyCodeChord {
 		let key = KeyCode.Unknown;
-		if (
-			this.keyCode !== KeyCode.Ctrl &&
-			this.keyCode !== KeyCode.Shift &&
-			this.keyCode !== KeyCode.Alt &&
-			this.keyCode !== KeyCode.Meta
-		) {
+		if (this.keyCode !== KeyCode.Ctrl && this.keyCode !== KeyCode.Shift && this.keyCode !== KeyCode.Alt && this.keyCode !== KeyCode.Meta) {
 			key = this.keyCode;
 		}
-		return new KeyCodeChord(
-			this.ctrlKey,
-			this.shiftKey,
-			this.altKey,
-			this.metaKey,
-			key,
-		);
+		return new KeyCodeChord(this.ctrlKey, this.shiftKey, this.altKey, this.metaKey, key);
 	}
 }

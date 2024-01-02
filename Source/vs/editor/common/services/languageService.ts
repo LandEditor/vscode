@@ -3,46 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { firstOrDefault } from "vs/base/common/arrays";
-import { Emitter, Event } from "vs/base/common/event";
-import { Disposable, IDisposable } from "vs/base/common/lifecycle";
-import { URI } from "vs/base/common/uri";
-import {
-	ILanguageIdCodec,
-	TokenizationRegistry,
-} from "vs/editor/common/languages";
-import {
-	ILanguageExtensionPoint,
-	ILanguageIcon,
-	ILanguageNameIdPair,
-	ILanguageSelection,
-	ILanguageService,
-} from "vs/editor/common/languages/language";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import { LanguagesRegistry } from "vs/editor/common/services/languagesRegistry";
+import { Emitter, Event } from 'vs/base/common/event';
+import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { LanguagesRegistry } from 'vs/editor/common/services/languagesRegistry';
+import { ILanguageNameIdPair, ILanguageSelection, ILanguageService, ILanguageIcon, ILanguageExtensionPoint } from 'vs/editor/common/languages/language';
+import { firstOrDefault } from 'vs/base/common/arrays';
+import { ILanguageIdCodec, TokenizationRegistry } from 'vs/editor/common/languages';
+import { PLAINTEXT_LANGUAGE_ID } from 'vs/editor/common/languages/modesRegistry';
 
 export class LanguageService extends Disposable implements ILanguageService {
 	public _serviceBrand: undefined;
 
 	static instanceCount = 0;
 
-	private readonly _onDidRequestBasicLanguageFeatures = this._register(
-		new Emitter<string>(),
-	);
-	public readonly onDidRequestBasicLanguageFeatures =
-		this._onDidRequestBasicLanguageFeatures.event;
+	private readonly _onDidRequestBasicLanguageFeatures = this._register(new Emitter<string>());
+	public readonly onDidRequestBasicLanguageFeatures = this._onDidRequestBasicLanguageFeatures.event;
 
-	private readonly _onDidRequestRichLanguageFeatures = this._register(
-		new Emitter<string>(),
-	);
-	public readonly onDidRequestRichLanguageFeatures =
-		this._onDidRequestRichLanguageFeatures.event;
+	private readonly _onDidRequestRichLanguageFeatures = this._register(new Emitter<string>());
+	public readonly onDidRequestRichLanguageFeatures = this._onDidRequestRichLanguageFeatures.event;
 
-	protected readonly _onDidChange = this._register(
-		new Emitter<void>({
-			leakWarningThreshold: 200 /* https://github.com/microsoft/vscode/issues/119968 */,
-		}),
-	);
+	protected readonly _onDidChange = this._register(new Emitter<void>({ leakWarningThreshold: 200 /* https://github.com/microsoft/vscode/issues/119968 */ }));
 	public readonly onDidChange: Event<void> = this._onDidChange.event;
 
 	private readonly _requestedBasicLanguages = new Set<string>();
@@ -54,13 +35,9 @@ export class LanguageService extends Disposable implements ILanguageService {
 	constructor(warnOnOverwrite = false) {
 		super();
 		LanguageService.instanceCount++;
-		this._registry = this._register(
-			new LanguagesRegistry(true, warnOnOverwrite),
-		);
+		this._registry = this._register(new LanguagesRegistry(true, warnOnOverwrite));
 		this.languageIdCodec = this._registry.languageIdCodec;
-		this._register(
-			this._registry.onDidChange(() => this._onDidChange.fire()),
-		);
+		this._register(this._registry.onDidChange(() => this._onDidChange.fire()));
 	}
 
 	public override dispose(): void {
@@ -72,9 +49,7 @@ export class LanguageService extends Disposable implements ILanguageService {
 		return this._registry.registerLanguage(def);
 	}
 
-	public isRegisteredLanguageId(
-		languageId: string | null | undefined,
-	): boolean {
+	public isRegisteredLanguageId(languageId: string | null | undefined): boolean {
 		return this._registry.isRegisteredLanguageId(languageId);
 	}
 
@@ -98,15 +73,15 @@ export class LanguageService extends Disposable implements ILanguageService {
 		return this._registry.getIcon(languageId);
 	}
 
-	public getExtensions(languageId: string): readonly string[] {
+	public getExtensions(languageId: string): ReadonlyArray<string> {
 		return this._registry.getExtensions(languageId);
 	}
 
-	public getFilenames(languageId: string): readonly string[] {
+	public getFilenames(languageId: string): ReadonlyArray<string> {
 		return this._registry.getFilenames(languageId);
 	}
 
-	public getConfigurationFiles(languageId: string): readonly URI[] {
+	public getConfigurationFiles(languageId: string): ReadonlyArray<URI> {
 		return this._registry.getConfigurationFiles(languageId);
 	}
 
@@ -114,57 +89,37 @@ export class LanguageService extends Disposable implements ILanguageService {
 		return this._registry.getLanguageIdByLanguageName(languageName);
 	}
 
-	public getLanguageIdByMimeType(
-		mimeType: string | null | undefined,
-	): string | null {
+	public getLanguageIdByMimeType(mimeType: string | null | undefined): string | null {
 		return this._registry.getLanguageIdByMimeType(mimeType);
 	}
 
-	public guessLanguageIdByFilepathOrFirstLine(
-		resource: URI | null,
-		firstLine?: string,
-	): string | null {
-		const languageIds = this._registry.guessLanguageIdByFilepathOrFirstLine(
-			resource,
-			firstLine,
-		);
+	public guessLanguageIdByFilepathOrFirstLine(resource: URI | null, firstLine?: string): string | null {
+		const languageIds = this._registry.guessLanguageIdByFilepathOrFirstLine(resource, firstLine);
 		return firstOrDefault(languageIds, null);
 	}
 
-	public createById(
-		languageId: string | null | undefined,
-	): ILanguageSelection {
+	public createById(languageId: string | null | undefined): ILanguageSelection {
 		return new LanguageSelection(this.onDidChange, () => {
 			return this._createAndGetLanguageIdentifier(languageId);
 		});
 	}
 
-	public createByMimeType(
-		mimeType: string | null | undefined,
-	): ILanguageSelection {
+	public createByMimeType(mimeType: string | null | undefined): ILanguageSelection {
 		return new LanguageSelection(this.onDidChange, () => {
 			const languageId = this.getLanguageIdByMimeType(mimeType);
 			return this._createAndGetLanguageIdentifier(languageId);
 		});
 	}
 
-	public createByFilepathOrFirstLine(
-		resource: URI | null,
-		firstLine?: string,
-	): ILanguageSelection {
+	public createByFilepathOrFirstLine(resource: URI | null, firstLine?: string): ILanguageSelection {
 		return new LanguageSelection(this.onDidChange, () => {
-			const languageId = this.guessLanguageIdByFilepathOrFirstLine(
-				resource,
-				firstLine,
-			);
+			const languageId = this.guessLanguageIdByFilepathOrFirstLine(resource, firstLine);
 			return this._createAndGetLanguageIdentifier(languageId);
 		});
 	}
 
-	private _createAndGetLanguageIdentifier(
-		languageId: string | null | undefined,
-	): string {
-		if (!(languageId && this.isRegisteredLanguageId(languageId))) {
+	private _createAndGetLanguageIdentifier(languageId: string | null | undefined): string {
+		if (!languageId || !this.isRegisteredLanguageId(languageId)) {
 			// Fall back to plain text if language is unknown
 			languageId = PLAINTEXT_LANGUAGE_ID;
 		}
@@ -195,6 +150,7 @@ export class LanguageService extends Disposable implements ILanguageService {
 }
 
 class LanguageSelection implements ILanguageSelection {
+
 	public languageId: string;
 
 	private _listener: IDisposable | null = null;
@@ -202,7 +158,7 @@ class LanguageSelection implements ILanguageSelection {
 
 	constructor(
 		private readonly _onDidChangeLanguages: Event<void>,
-		private readonly _selector: () => string,
+		private readonly _selector: () => string
 	) {
 		this.languageId = this._selector();
 	}
@@ -226,7 +182,7 @@ class LanguageSelection implements ILanguageSelection {
 			this._emitter = new Emitter<string>({
 				onDidRemoveLastListener: () => {
 					this._dispose();
-				},
+				}
 			});
 		}
 		return this._emitter.event;

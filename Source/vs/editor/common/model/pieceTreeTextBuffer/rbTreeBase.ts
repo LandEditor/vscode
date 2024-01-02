@@ -3,10 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Piece,
-	PieceTreeBase,
-} from "vs/editor/common/model/pieceTreeTextBuffer/pieceTreeBase";
+import { Piece, PieceTreeBase } from 'vs/editor/common/model/pieceTreeTextBuffer/pieceTreeBase';
 
 export class TreeNode {
 	parent: TreeNode;
@@ -80,7 +77,7 @@ export class TreeNode {
 	}
 }
 
-export enum NodeColor {
+export const enum NodeColor {
 	Black = 0,
 	Red = 1,
 }
@@ -199,7 +196,7 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 		return;
 	}
 
-	const yWasRed = y.color === NodeColor.Red;
+	const yWasRed = (y.color === NodeColor.Red);
 
 	if (y === y.parent.left) {
 		y.parent.left = x;
@@ -227,10 +224,12 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 
 		if (z === tree.root) {
 			tree.root = y;
-		} else if (z === z.parent.left) {
-			z.parent.left = y;
 		} else {
-			z.parent.right = y;
+			if (z === z.parent.left) {
+				z.parent.left = y;
+			} else {
+				z.parent.right = y;
+			}
 		}
 
 		if (y.left !== SENTINEL) {
@@ -251,10 +250,7 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 	if (x.parent.left === x) {
 		const newSizeLeft = calculateSize(x);
 		const newLFLeft = calculateLF(x);
-		if (
-			newSizeLeft !== x.parent.size_left ||
-			newLFLeft !== x.parent.lf_left
-		) {
+		if (newSizeLeft !== x.parent.size_left || newLFLeft !== x.parent.lf_left) {
 			const delta = newSizeLeft - x.parent.size_left;
 			const lf_delta = newLFLeft - x.parent.lf_left;
 			x.parent.size_left = newSizeLeft;
@@ -283,10 +279,7 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 				w = x.parent.right;
 			}
 
-			if (
-				w.left.color === NodeColor.Black &&
-				w.right.color === NodeColor.Black
-			) {
+			if (w.left.color === NodeColor.Black && w.right.color === NodeColor.Black) {
 				w.color = NodeColor.Red;
 				x = x.parent;
 			} else {
@@ -313,12 +306,10 @@ export function rbDelete(tree: PieceTreeBase, z: TreeNode) {
 				w = x.parent.left;
 			}
 
-			if (
-				w.left.color === NodeColor.Black &&
-				w.right.color === NodeColor.Black
-			) {
+			if (w.left.color === NodeColor.Black && w.right.color === NodeColor.Black) {
 				w.color = NodeColor.Red;
 				x = x.parent;
+
 			} else {
 				if (w.left.color === NodeColor.Black) {
 					w.right.color = NodeColor.Black;
@@ -384,12 +375,7 @@ export function fixInsert(tree: PieceTreeBase, x: TreeNode) {
 	tree.root.color = NodeColor.Black;
 }
 
-export function updateTreeMetadata(
-	tree: PieceTreeBase,
-	x: TreeNode,
-	delta: number,
-	lineFeedCntDelta: number,
-): void {
+export function updateTreeMetadata(tree: PieceTreeBase, x: TreeNode, delta: number, lineFeedCntDelta: number): void {
 	// node length change or line feed count change
 	while (x !== tree.root && x !== SENTINEL) {
 		if (x.parent.left === x) {
@@ -425,6 +411,7 @@ export function recomputeTreeMetadata(tree: PieceTreeBase, x: TreeNode) {
 	lf_delta = calculateLF(x.left) - x.lf_left;
 	x.size_left += delta;
 	x.lf_left += lf_delta;
+
 
 	// go upwards till root. O(logN)
 	while (x !== tree.root && (delta !== 0 || lf_delta !== 0)) {

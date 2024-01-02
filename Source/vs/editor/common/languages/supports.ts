@@ -3,30 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { StandardTokenType } from "vs/editor/common/encodedTokenAttributes";
-import { LineTokens } from "vs/editor/common/tokens/lineTokens";
+import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
+import { StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
 
-export function createScopedLineTokens(
-	context: LineTokens,
-	offset: number,
-): ScopedLineTokens {
+export function createScopedLineTokens(context: LineTokens, offset: number): ScopedLineTokens {
 	const tokenCount = context.getCount();
 	const tokenIndex = context.findTokenIndexAtOffset(offset);
 	const desiredLanguageId = context.getLanguageId(tokenIndex);
 
 	let lastTokenIndex = tokenIndex;
-	while (
-		lastTokenIndex + 1 < tokenCount &&
-		context.getLanguageId(lastTokenIndex + 1) === desiredLanguageId
-	) {
+	while (lastTokenIndex + 1 < tokenCount && context.getLanguageId(lastTokenIndex + 1) === desiredLanguageId) {
 		lastTokenIndex++;
 	}
 
 	let firstTokenIndex = tokenIndex;
-	while (
-		firstTokenIndex > 0 &&
-		context.getLanguageId(firstTokenIndex - 1) === desiredLanguageId
-	) {
+	while (firstTokenIndex > 0 && context.getLanguageId(firstTokenIndex - 1) === desiredLanguageId) {
 		firstTokenIndex--;
 	}
 
@@ -36,7 +27,7 @@ export function createScopedLineTokens(
 		firstTokenIndex,
 		lastTokenIndex + 1,
 		context.getStartOffset(firstTokenIndex),
-		context.getEndOffset(lastTokenIndex),
+		context.getEndOffset(lastTokenIndex)
 	);
 }
 
@@ -56,7 +47,7 @@ export class ScopedLineTokens {
 		firstTokenIndex: number,
 		lastTokenIndex: number,
 		firstCharOffset: number,
-		lastCharOffset: number,
+		lastCharOffset: number
 	) {
 		this._actual = actual;
 		this.languageId = languageId;
@@ -68,10 +59,7 @@ export class ScopedLineTokens {
 
 	public getLineContent(): string {
 		const actualLineContent = this._actual.getLineContent();
-		return actualLineContent.substring(
-			this.firstCharOffset,
-			this._lastCharOffset,
-		);
+		return actualLineContent.substring(this.firstCharOffset, this._lastCharOffset);
 	}
 
 	public getActualLineContentBefore(offset: number): string {
@@ -84,27 +72,18 @@ export class ScopedLineTokens {
 	}
 
 	public findTokenIndexAtOffset(offset: number): number {
-		return (
-			this._actual.findTokenIndexAtOffset(offset + this.firstCharOffset) -
-			this._firstTokenIndex
-		);
+		return this._actual.findTokenIndexAtOffset(offset + this.firstCharOffset) - this._firstTokenIndex;
 	}
 
 	public getStandardTokenType(tokenIndex: number): StandardTokenType {
-		return this._actual.getStandardTokenType(
-			tokenIndex + this._firstTokenIndex,
-		);
+		return this._actual.getStandardTokenType(tokenIndex + this._firstTokenIndex);
 	}
 }
 
-enum IgnoreBracketsInTokens {
-	value = StandardTokenType.Comment |
-		StandardTokenType.String |
-		StandardTokenType.RegEx,
+const enum IgnoreBracketsInTokens {
+	value = StandardTokenType.Comment | StandardTokenType.String | StandardTokenType.RegEx
 }
 
-export function ignoreBracketsInToken(
-	standardTokenType: StandardTokenType,
-): boolean {
+export function ignoreBracketsInToken(standardTokenType: StandardTokenType): boolean {
 	return (standardTokenType & IgnoreBracketsInTokens.value) !== 0;
 }

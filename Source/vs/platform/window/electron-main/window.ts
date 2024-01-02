@@ -3,26 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserWindow, Rectangle } from "electron";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { ISerializableCommandAction } from "vs/platform/action/common/action";
-import { NativeParsedArgs } from "vs/platform/environment/common/argv";
-import { IUserDataProfile } from "vs/platform/userDataProfile/common/userDataProfile";
-import { INativeWindowConfiguration } from "vs/platform/window/common/window";
-import {
-	ISingleFolderWorkspaceIdentifier,
-	IWorkspaceIdentifier,
-} from "vs/platform/workspace/common/workspace";
+import { BrowserWindow, Rectangle } from 'electron';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Event } from 'vs/base/common/event';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { ISerializableCommandAction } from 'vs/platform/action/common/action';
+import { NativeParsedArgs } from 'vs/platform/environment/common/argv';
+import { IUserDataProfile } from 'vs/platform/userDataProfile/common/userDataProfile';
+import { INativeWindowConfiguration } from 'vs/platform/window/common/window';
+import { ISingleFolderWorkspaceIdentifier, IWorkspaceIdentifier } from 'vs/platform/workspace/common/workspace';
 
 export interface IBaseWindow extends IDisposable {
+
 	readonly onDidMaximize: Event<void>;
 	readonly onDidUnmaximize: Event<void>;
-	readonly onDidTriggerSystemContextMenu: Event<{
-		readonly x: number;
-		readonly y: number;
-	}>;
+	readonly onDidTriggerSystemContextMenu: Event<{ readonly x: number; readonly y: number }>;
+	readonly onDidEnterFullScreen: Event<void>;
+	readonly onDidLeaveFullScreen: Event<void>;
 	readonly onDidClose: Event<void>;
 
 	readonly id: number;
@@ -42,14 +39,11 @@ export interface IBaseWindow extends IDisposable {
 	readonly isFullScreen: boolean;
 	toggleFullScreen(): void;
 
-	updateWindowControls(options: {
-		height?: number;
-		backgroundColor?: string;
-		foregroundColor?: string;
-	}): void;
+	updateWindowControls(options: { height?: number; backgroundColor?: string; foregroundColor?: string }): void;
 }
 
 export interface ICodeWindow extends IBaseWindow {
+
 	readonly onWillLoad: Event<ILoadEvent>;
 	readonly onDidSignalReady: Event<void>;
 	readonly onDidDestroy: Event<void>;
@@ -58,9 +52,7 @@ export interface ICodeWindow extends IBaseWindow {
 
 	readonly config: INativeWindowConfiguration | undefined;
 
-	readonly openedWorkspace?:
-		| IWorkspaceIdentifier
-		| ISingleFolderWorkspaceIdentifier;
+	readonly openedWorkspace?: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier;
 
 	readonly profile?: IUserDataProfile;
 
@@ -77,10 +69,7 @@ export interface ICodeWindow extends IBaseWindow {
 
 	addTabbedWindow(window: ICodeWindow): void;
 
-	load(
-		config: INativeWindowConfiguration,
-		options?: { isReload?: boolean },
-	): void;
+	load(config: INativeWindowConfiguration, options?: { isReload?: boolean }): void;
 	reload(cli?: NativeParsedArgs): void;
 
 	close(): void;
@@ -88,18 +77,17 @@ export interface ICodeWindow extends IBaseWindow {
 	getBounds(): Rectangle;
 
 	send(channel: string, ...args: any[]): void;
-	sendWhenReady(
-		channel: string,
-		token: CancellationToken,
-		...args: any[]
-	): void;
+	sendWhenReady(channel: string, token: CancellationToken, ...args: any[]): void;
 
 	updateTouchBar(items: ISerializableCommandAction[][]): void;
+
+	notifyZoomLevel(zoomLevel: number | undefined): void;
 
 	serializeWindowState(): IWindowState;
 }
 
-export enum LoadReason {
+export const enum LoadReason {
+
 	/**
 	 * The window is loaded for the first time.
 	 */
@@ -108,15 +96,16 @@ export enum LoadReason {
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD = 2,
+	LOAD,
 
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD = 3,
+	RELOAD
 }
 
-export enum UnloadReason {
+export const enum UnloadReason {
+
 	/**
 	 * The window is closed.
 	 */
@@ -125,17 +114,17 @@ export enum UnloadReason {
 	/**
 	 * All windows unload because the application quits.
 	 */
-	QUIT = 2,
+	QUIT,
 
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD = 3,
+	RELOAD,
 
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD = 4,
+	LOAD
 }
 
 export interface IWindowState {
@@ -144,31 +133,32 @@ export interface IWindowState {
 	x?: number;
 	y?: number;
 	mode?: WindowMode;
+	zoomLevel?: number;
 	readonly display?: number;
 }
 
-export const defaultWindowState = (mode = WindowMode.Normal): IWindowState => ({
-	width: 1024,
-	height: 768,
-	mode,
-});
+export const defaultWindowState = function (mode = WindowMode.Normal): IWindowState {
+	return {
+		width: 1024,
+		height: 768,
+		mode
+	};
+};
 
-export enum WindowMode {
-	Maximized = 0,
-	Normal = 1,
-	Minimized = 2, // not used anymore, but also cannot remove due to existing stored UI state (needs migration)
-	Fullscreen = 3,
+export const enum WindowMode {
+	Maximized,
+	Normal,
+	Minimized, // not used anymore, but also cannot remove due to existing stored UI state (needs migration)
+	Fullscreen
 }
 
 export interface ILoadEvent {
-	readonly workspace:
-		| IWorkspaceIdentifier
-		| ISingleFolderWorkspaceIdentifier
-		| undefined;
+	readonly workspace: IWorkspaceIdentifier | ISingleFolderWorkspaceIdentifier | undefined;
 	readonly reason: LoadReason;
 }
 
-export enum WindowError {
+export const enum WindowError {
+
 	/**
 	 * Maps to the `unresponsive` event on a `BrowserWindow`.
 	 */
@@ -182,5 +172,5 @@ export enum WindowError {
 	/**
 	 * Maps to the `did-fail-load` event on a `WebContents`.
 	 */
-	LOAD = 3,
+	LOAD = 3
 }

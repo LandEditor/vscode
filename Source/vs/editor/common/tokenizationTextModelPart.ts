@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IPosition } from "vs/editor/common/core/position";
-import { Range } from "vs/editor/common/core/range";
-import { StandardTokenType } from "vs/editor/common/encodedTokenAttributes";
-import { LineTokens } from "vs/editor/common/tokens/lineTokens";
-import { SparseMultilineTokens } from "vs/editor/common/tokens/sparseMultilineTokens";
+import { IPosition } from 'vs/editor/common/core/position';
+import { Range } from 'vs/editor/common/core/range';
+import { StandardTokenType } from 'vs/editor/common/encodedTokenAttributes';
+import { LineTokens } from 'vs/editor/common/tokens/lineTokens';
+import { SparseMultilineTokens } from 'vs/editor/common/tokens/sparseMultilineTokens';
 
 /**
  * Provides tokenization related functionality of the text model.
- */
+*/
 export interface ITokenizationTextModelPart {
 	readonly hasTokens: boolean;
 
@@ -19,19 +19,13 @@ export interface ITokenizationTextModelPart {
 	 * Replaces all semantic tokens with the provided `tokens`.
 	 * @internal
 	 */
-	setSemanticTokens(
-		tokens: SparseMultilineTokens[] | null,
-		isComplete: boolean,
-	): void;
+	setSemanticTokens(tokens: SparseMultilineTokens[] | null, isComplete: boolean): void;
 
 	/**
 	 * Merges the provided semantic tokens into existing semantic tokens.
 	 * @internal
 	 */
-	setPartialSemanticTokens(
-		range: Range,
-		tokens: SparseMultilineTokens[] | null,
-	): void;
+	setPartialSemanticTokens(range: Range, tokens: SparseMultilineTokens[] | null): void;
 
 	/**
 	 * @internal
@@ -77,24 +71,16 @@ export interface ITokenizationTextModelPart {
 	getLineTokens(lineNumber: number): LineTokens;
 
 	/**
-	 * Returns the standard token type for a character if the character were to be inserted at
-	 * the given position. If the result cannot be accurate, it returns null.
-	 * @internal
-	 */
-	getTokenTypeIfInsertingCharacter(
-		lineNumber: number,
-		column: number,
-		character: string,
-	): StandardTokenType;
+	* Returns the standard token type for a character if the character were to be inserted at
+	* the given position. If the result cannot be accurate, it returns null.
+	* @internal
+	*/
+	getTokenTypeIfInsertingCharacter(lineNumber: number, column: number, character: string): StandardTokenType;
 
 	/**
 	 * @internal
-	 */
-	tokenizeLineWithEdit(
-		position: IPosition,
-		length: number,
-		newText: string,
-	): LineTokens | null;
+	*/
+	tokenizeLineWithEdit(position: IPosition, length: number, newText: string): LineTokens | null;
 
 	getLanguageId(): string;
 	getLanguageIdAtPosition(lineNumber: number, column: number): string;
@@ -104,7 +90,7 @@ export interface ITokenizationTextModelPart {
 	readonly backgroundTokenizationState: BackgroundTokenizationState;
 }
 
-export enum BackgroundTokenizationState {
+export const enum BackgroundTokenizationState {
 	InProgress = 1,
 	Completed = 2,
 }

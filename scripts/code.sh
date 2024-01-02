@@ -17,10 +17,10 @@ function code() {
 	cd "$ROOT"
 
 	if [[ "$OSTYPE" == "darwin"* ]]; then
-		NAME=$(node -p "require('./product.json').nameLong")
+		NAME=`node -p "require('./product.json').nameLong"`
 		CODE="./.build/electron/$NAME.app/Contents/MacOS/Electron"
 	else
-		NAME=$(node -p "require('./product.json').applicationName")
+		NAME=`node -p "require('./product.json').applicationName"`
 		CODE=".build/electron/$NAME"
 	fi
 
@@ -46,13 +46,14 @@ function code() {
 	exec "$CODE" . "$@"
 }
 
-function code-wsl() {
+function code-wsl()
+{
 	HOST_IP=$(echo "" | powershell.exe -noprofile -Command "& {(Get-NetIPAddress | Where-Object {\$_.InterfaceAlias -like '*WSL*' -and \$_.AddressFamily -eq 'IPv4'}).IPAddress | Write-Host -NoNewline}")
 	export DISPLAY="$HOST_IP:0"
 
 	# in a wsl shell
 	ELECTRON="$ROOT/.build/electron/Code - OSS.exe"
-	if [ -f "$ELECTRON" ]; then
+	if [ -f "$ELECTRON"  ]; then
 		local CWD=$(pwd)
 		cd $ROOT
 		export WSLENV=ELECTRON_RUN_AS_NODE/w:VSCODE_DEV/w:$WSLENV

@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FontInfo } from "vs/editor/common/config/fontInfo";
-import { NotebookCellTextModel } from "vs/workbench/contrib/notebook/common/model/notebookCellTextModel";
-import { NotebookDocumentMetadata } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { FontInfo } from 'vs/editor/common/config/fontInfo';
+import { NotebookCellTextModel } from 'vs/workbench/contrib/notebook/common/model/notebookCellTextModel';
+import { NotebookDocumentMetadata } from 'vs/workbench/contrib/notebook/common/notebookCommon';
 
 export interface NotebookLayoutInfo {
 	width: number;
@@ -42,34 +42,32 @@ export interface NotebookLayoutChangeEvent {
 export enum NotebookViewEventType {
 	LayoutChanged = 1,
 	MetadataChanged = 2,
-	CellStateChanged = 3,
+	CellStateChanged = 3
 }
 
 export class NotebookLayoutChangedEvent {
 	public readonly type = NotebookViewEventType.LayoutChanged;
 
-	constructor(
-		readonly source: NotebookLayoutChangeEvent,
-		readonly value: NotebookLayoutInfo,
-	) {}
+	constructor(readonly source: NotebookLayoutChangeEvent, readonly value: NotebookLayoutInfo) {
+
+	}
 }
+
 
 export class NotebookMetadataChangedEvent {
 	public readonly type = NotebookViewEventType.MetadataChanged;
 
-	constructor(readonly source: NotebookDocumentMetadata) {}
+	constructor(readonly source: NotebookDocumentMetadata) {
+
+	}
 }
 
 export class NotebookCellStateChangedEvent {
 	public readonly type = NotebookViewEventType.CellStateChanged;
 
-	constructor(
-		readonly source: CellViewModelStateChangeEvent,
-		readonly cell: NotebookCellTextModel,
-	) {}
+	constructor(readonly source: CellViewModelStateChangeEvent, readonly cell: NotebookCellTextModel) {
+
+	}
 }
 
-export type NotebookViewEvent =
-	| NotebookLayoutChangedEvent
-	| NotebookMetadataChangedEvent
-	| NotebookCellStateChangedEvent;
+export type NotebookViewEvent = NotebookLayoutChangedEvent | NotebookMetadataChangedEvent | NotebookCellStateChangedEvent;

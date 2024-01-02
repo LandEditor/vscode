@@ -3,48 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ScrollEvent } from "vs/base/common/scrollable";
-import {
-	ConfigurationChangedEvent,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
-import { Range } from "vs/editor/common/core/range";
-import { Selection } from "vs/editor/common/core/selection";
-import { CursorChangeReason } from "vs/editor/common/cursorEvents";
-import { ScrollType } from "vs/editor/common/editorCommon";
-import { IModelDecorationsChangedEvent } from "vs/editor/common/textModelEvents";
-import { IColorTheme } from "vs/platform/theme/common/themeService";
+import { ScrollEvent } from 'vs/base/common/scrollable';
+import { ConfigurationChangedEvent, EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Range } from 'vs/editor/common/core/range';
+import { Selection } from 'vs/editor/common/core/selection';
+import { CursorChangeReason } from 'vs/editor/common/cursorEvents';
+import { ScrollType } from 'vs/editor/common/editorCommon';
+import { IModelDecorationsChangedEvent } from 'vs/editor/common/textModelEvents';
+import { IColorTheme } from 'vs/platform/theme/common/themeService';
 
-export enum ViewEventType {
-	ViewCompositionStart = 0,
-	ViewCompositionEnd = 1,
-	ViewConfigurationChanged = 2,
-	ViewCursorStateChanged = 3,
-	ViewDecorationsChanged = 4,
-	ViewFlushed = 5,
-	ViewFocusChanged = 6,
-	ViewLanguageConfigurationChanged = 7,
-	ViewLineMappingChanged = 8,
-	ViewLinesChanged = 9,
-	ViewLinesDeleted = 10,
-	ViewLinesInserted = 11,
-	ViewRevealRangeRequest = 12,
-	ViewScrollChanged = 13,
-	ViewThemeChanged = 14,
-	ViewTokensChanged = 15,
-	ViewTokensColorsChanged = 16,
-	ViewZonesChanged = 17,
+export const enum ViewEventType {
+	ViewCompositionStart,
+	ViewCompositionEnd,
+	ViewConfigurationChanged,
+	ViewCursorStateChanged,
+	ViewDecorationsChanged,
+	ViewFlushed,
+	ViewFocusChanged,
+	ViewLanguageConfigurationChanged,
+	ViewLineMappingChanged,
+	ViewLinesChanged,
+	ViewLinesDeleted,
+	ViewLinesInserted,
+	ViewRevealRangeRequest,
+	ViewScrollChanged,
+	ViewThemeChanged,
+	ViewTokensChanged,
+	ViewTokensColorsChanged,
+	ViewZonesChanged,
 }
 
 export class ViewCompositionStartEvent {
 	public readonly type = ViewEventType.ViewCompositionStart;
+	constructor() { }
 }
 
 export class ViewCompositionEndEvent {
 	public readonly type = ViewEventType.ViewCompositionEnd;
+	constructor() { }
 }
 
 export class ViewConfigurationChangedEvent {
+
 	public readonly type = ViewEventType.ViewConfigurationChanged;
 
 	public readonly _source: ConfigurationChangedEvent;
@@ -59,16 +59,18 @@ export class ViewConfigurationChangedEvent {
 }
 
 export class ViewCursorStateChangedEvent {
+
 	public readonly type = ViewEventType.ViewCursorStateChanged;
 
 	constructor(
 		public readonly selections: Selection[],
 		public readonly modelSelections: Selection[],
-		public readonly reason: CursorChangeReason,
-	) {}
+		public readonly reason: CursorChangeReason
+	) { }
 }
 
 export class ViewDecorationsChangedEvent {
+
 	public readonly type = ViewEventType.ViewDecorationsChanged;
 
 	readonly affectsMinimap: boolean;
@@ -89,10 +91,16 @@ export class ViewDecorationsChangedEvent {
 }
 
 export class ViewFlushedEvent {
+
 	public readonly type = ViewEventType.ViewFlushed;
+
+	constructor() {
+		// Nothing to do
+	}
 }
 
 export class ViewFocusChangedEvent {
+
 	public readonly type = ViewEventType.ViewFocusChanged;
 
 	public readonly isFocused: boolean;
@@ -103,14 +111,21 @@ export class ViewFocusChangedEvent {
 }
 
 export class ViewLanguageConfigurationEvent {
+
 	public readonly type = ViewEventType.ViewLanguageConfigurationChanged;
 }
 
 export class ViewLineMappingChangedEvent {
+
 	public readonly type = ViewEventType.ViewLineMappingChanged;
+
+	constructor() {
+		// Nothing to do
+	}
 }
 
 export class ViewLinesChangedEvent {
+
 	public readonly type = ViewEventType.ViewLinesChanged;
 
 	constructor(
@@ -122,10 +137,11 @@ export class ViewLinesChangedEvent {
 		 * The number of lines that have changed.
 		 */
 		public readonly count: number,
-	) {}
+	) { }
 }
 
 export class ViewLinesDeletedEvent {
+
 	public readonly type = ViewEventType.ViewLinesDeleted;
 
 	/**
@@ -144,6 +160,7 @@ export class ViewLinesDeletedEvent {
 }
 
 export class ViewLinesInsertedEvent {
+
 	public readonly type = ViewEventType.ViewLinesInserted;
 
 	/**
@@ -161,7 +178,7 @@ export class ViewLinesInsertedEvent {
 	}
 }
 
-export enum VerticalRevealType {
+export const enum VerticalRevealType {
 	Simple = 0,
 	Center = 1,
 	CenterIfOutsideViewport = 2,
@@ -172,7 +189,9 @@ export enum VerticalRevealType {
 }
 
 export class ViewRevealRangeRequestEvent {
+
 	public readonly type = ViewEventType.ViewRevealRangeRequest;
+
 
 	constructor(
 		/**
@@ -203,11 +222,12 @@ export class ViewRevealRangeRequestEvent {
 		/**
 		 * The scroll type.
 		 */
-		public readonly scrollType: ScrollType,
-	) {}
+		public readonly scrollType: ScrollType
+	) { }
 }
 
 export class ViewScrollChangedEvent {
+
 	public readonly type = ViewEventType.ViewScrollChanged;
 
 	public readonly scrollWidth: number;
@@ -234,12 +254,16 @@ export class ViewScrollChangedEvent {
 }
 
 export class ViewThemeChangedEvent {
+
 	public readonly type = ViewEventType.ViewThemeChanged;
 
-	constructor(public readonly theme: IColorTheme) {}
+	constructor(
+		public readonly theme: IColorTheme
+	) { }
 }
 
 export class ViewTokensChangedEvent {
+
 	public readonly type = ViewEventType.ViewTokensChanged;
 
 	public readonly ranges: {
@@ -259,15 +283,25 @@ export class ViewTokensChangedEvent {
 }
 
 export class ViewTokensColorsChangedEvent {
+
 	public readonly type = ViewEventType.ViewTokensColorsChanged;
+
+	constructor() {
+		// Nothing to do
+	}
 }
 
 export class ViewZonesChangedEvent {
+
 	public readonly type = ViewEventType.ViewZonesChanged;
+
+	constructor() {
+		// Nothing to do
+	}
 }
 
-export type ViewEvent =
-	| ViewCompositionStartEvent
+export type ViewEvent = (
+	ViewCompositionStartEvent
 	| ViewCompositionEndEvent
 	| ViewConfigurationChangedEvent
 	| ViewCursorStateChangedEvent
@@ -284,4 +318,5 @@ export type ViewEvent =
 	| ViewThemeChangedEvent
 	| ViewTokensChangedEvent
 	| ViewTokensColorsChangedEvent
-	| ViewZonesChangedEvent;
+	| ViewZonesChangedEvent
+);

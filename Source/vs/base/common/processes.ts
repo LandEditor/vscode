@@ -3,11 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IProcessEnvironment,
-	isLinux,
-	isMacintosh,
-} from "vs/base/common/platform";
+import { IProcessEnvironment, isLinux, isMacintosh } from 'vs/base/common/platform';
 
 /**
  * Options to be passed to the external program or shell.
@@ -54,9 +50,9 @@ export interface ForkOptions extends CommandOptions {
 	execArgv?: string[];
 }
 
-export enum Source {
-	stdout = 0,
-	stderr = 1,
+export const enum Source {
+	stdout,
+	stderr
 }
 
 /**
@@ -84,7 +80,7 @@ export interface TerminateResponse {
 	error?: any;
 }
 
-export enum TerminateResponseCode {
+export const enum TerminateResponseCode {
 	Success = 0,
 	Unknown = 1,
 	AccessDenied = 2,
@@ -105,17 +101,11 @@ export interface ProcessItem {
 /**
  * Sanitizes a VS Code process environment by removing all Electron/VS Code-related values.
  */
-export function sanitizeProcessEnvironment(
-	env: IProcessEnvironment,
-	...preserve: string[]
-): void {
-	const set = preserve.reduce(
-		(set, key) => {
-			set[key] = true;
-			return set;
-		},
-		{} as Record<string, boolean>,
-	);
+export function sanitizeProcessEnvironment(env: IProcessEnvironment, ...preserve: string[]): void {
+	const set = preserve.reduce((set, key) => {
+		set[key] = true;
+		return set;
+	}, {} as Record<string, boolean>);
 	const keysToRemove = [
 		/^ELECTRON_.+$/,
 		/^VSCODE_(?!(PORTABLE|SHELL_LOGIN|ENV_REPLACE|ENV_APPEND|ENV_PREPEND)).+$/,
@@ -124,8 +114,8 @@ export function sanitizeProcessEnvironment(
 	];
 	const envKeys = Object.keys(env);
 	envKeys
-		.filter((key) => !set[key])
-		.forEach((envKey) => {
+		.filter(key => !set[key])
+		.forEach(envKey => {
 			for (let i = 0; i < keysToRemove.length; i++) {
 				if (envKey.search(keysToRemove[i]) !== -1) {
 					delete env[envKey];
@@ -141,27 +131,25 @@ export function sanitizeProcessEnvironment(
  *
  * @param env The env object to change
  */
-export function removeDangerousEnvVariables(
-	env: IProcessEnvironment | undefined,
-): void {
+export function removeDangerousEnvVariables(env: IProcessEnvironment | undefined): void {
 	if (!env) {
 		return;
 	}
 
 	// Unset `DEBUG`, as an invalid value might lead to process crashes
 	// See https://github.com/microsoft/vscode/issues/130072
-	env["DEBUG"] = undefined;
+	delete env['DEBUG'];
 
 	if (isMacintosh) {
 		// Unset `DYLD_LIBRARY_PATH`, as it leads to process crashes
 		// See https://github.com/microsoft/vscode/issues/104525
 		// See https://github.com/microsoft/vscode/issues/105848
-		env["DYLD_LIBRARY_PATH"] = undefined;
+		delete env['DYLD_LIBRARY_PATH'];
 	}
 
 	if (isLinux) {
 		// Unset `LD_PRELOAD`, as it might lead to process crashes
 		// See https://github.com/microsoft/vscode/issues/134177
-		env["LD_PRELOAD"] = undefined;
+		delete env['LD_PRELOAD'];
 	}
 }

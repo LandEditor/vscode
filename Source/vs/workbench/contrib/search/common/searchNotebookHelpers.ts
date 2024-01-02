@@ -3,20 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI, UriComponents } from "vs/base/common/uri";
-import { Range } from "vs/editor/common/core/range";
-import { FindMatch, IReadonlyTextBuffer } from "vs/editor/common/model";
-import {
-	IFileMatch,
-	ITextSearchMatch,
-	TextSearchMatch,
-} from "vs/workbench/services/search/common/search";
 
-export type IRawClosedNotebookFileMatch =
-	INotebookFileMatchNoModel<UriComponents>;
+import { FindMatch, IReadonlyTextBuffer } from 'vs/editor/common/model';
+import { TextSearchMatch, IFileMatch, ITextSearchMatch } from 'vs/workbench/services/search/common/search';
+import { Range } from 'vs/editor/common/core/range';
+import { URI, UriComponents } from 'vs/base/common/uri';
 
-export interface INotebookFileMatchNoModel<U extends UriComponents = URI>
-	extends IFileMatch<U> {
+export type IRawClosedNotebookFileMatch = INotebookFileMatchNoModel<UriComponents>;
+
+export interface INotebookFileMatchNoModel<U extends UriComponents = URI> extends IFileMatch<U> {
 	cellResults: INotebookCellMatchNoModel<U>[];
 }
 
@@ -26,18 +21,13 @@ export interface INotebookCellMatchNoModel<U extends UriComponents = URI> {
 	webviewResults: ITextSearchMatch<U>[];
 }
 
-export function isINotebookFileMatchNoModel(
-	object: IFileMatch,
-): object is INotebookFileMatchNoModel {
-	return "cellResults" in object;
+export function isINotebookFileMatchNoModel(object: IFileMatch): object is INotebookFileMatchNoModel {
+	return 'cellResults' in object;
 }
 
-export const rawCellPrefix = "rawCell#";
+export const rawCellPrefix = 'rawCell#';
 
-export function genericCellMatchesToTextSearchMatches(
-	contentMatches: FindMatch[],
-	buffer: IReadonlyTextBuffer,
-) {
+export function genericCellMatchesToTextSearchMatches(contentMatches: FindMatch[], buffer: IReadonlyTextBuffer) {
 	let previousEndLine = -1;
 	const contextGroupings: FindMatch[][] = [];
 	let currentContextGrouping: FindMatch[] = [];
@@ -66,18 +56,11 @@ export function genericCellMatchesToTextSearchMatches(
 			lineTexts.push(buffer.getLineContent(i));
 		}
 		return new TextSearchMatch(
-			`${lineTexts.join("\n")}\n`,
-			grouping.map(
-				(m) =>
-					new Range(
-						m.range.startLineNumber - 1,
-						m.range.startColumn - 1,
-						m.range.endLineNumber - 1,
-						m.range.endColumn - 1,
-					),
-			),
+			lineTexts.join('\n') + '\n',
+			grouping.map(m => new Range(m.range.startLineNumber - 1, m.range.startColumn - 1, m.range.endLineNumber - 1, m.range.endColumn - 1)),
 		);
 	});
 
 	return textSearchResults;
 }
+

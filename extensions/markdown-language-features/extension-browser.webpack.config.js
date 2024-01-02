@@ -5,16 +5,15 @@
 
 //@ts-check
 
-const withBrowserDefaults = require("../shared.webpack.config").browser;
+'use strict';
 
-module.exports = withBrowserDefaults(
-	{
-		context: __dirname,
-		entry: {
-			extension: "./src/extension.browser.ts",
-		},
-	},
-	{
-		configFile: "tsconfig.browser.json",
-	},
-);
+const withBrowserDefaults = require('../shared.webpack.config').browser;
+
+module.exports = withBrowserDefaults({
+	context: __dirname,
+	entry: {
+		extension: './src/extension.browser.ts'
+	}
+}, {
+	configFile: 'tsconfig.browser.json'
+});

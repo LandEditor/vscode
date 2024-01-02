@@ -3,21 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const IEncryptionService =
-	createDecorator<IEncryptionService>("encryptionService");
+export const IEncryptionService = createDecorator<IEncryptionService>('encryptionService');
 export interface IEncryptionService extends ICommonEncryptionService {
 	setUsePlainTextEncryption(): Promise<void>;
 	getKeyStorageProvider(): Promise<KnownStorageProvider>;
 }
 
-export const IEncryptionMainService = createDecorator<IEncryptionMainService>(
-	"encryptionMainService",
-);
-export type IEncryptionMainService = IEncryptionService;
+export const IEncryptionMainService = createDecorator<IEncryptionMainService>('encryptionMainService');
+export interface IEncryptionMainService extends IEncryptionService { }
 
 export interface ICommonEncryptionService {
+
 	readonly _serviceBrand: undefined;
 
 	encrypt(value: string): Promise<string>;
@@ -30,50 +28,46 @@ export interface ICommonEncryptionService {
 // The values provided to the `password-store` command line switch.
 // Notice that they are not the same as the values returned by
 // `getSelectedStorageBackend` in the `safeStorage` API.
-export enum PasswordStoreCLIOption {
-	kwallet = "kwallet",
-	kwallet5 = "kwallet5",
-	gnome = "gnome",
-	gnomeKeyring = "gnome-keyring",
-	gnomeLibsecret = "gnome-libsecret",
-	basic = "basic",
+export const enum PasswordStoreCLIOption {
+	kwallet = 'kwallet',
+	kwallet5 = 'kwallet5',
+	gnome = 'gnome',
+	gnomeKeyring = 'gnome-keyring',
+	gnomeLibsecret = 'gnome-libsecret',
+	basic = 'basic'
 }
 
 // The values returned by `getSelectedStorageBackend` in the `safeStorage` API.
-export enum KnownStorageProvider {
-	unknown = "unknown",
-	basicText = "basic_text",
+export const enum KnownStorageProvider {
+	unknown = 'unknown',
+	basicText = 'basic_text',
 
 	// Linux
-	gnomeAny = "gnome_any",
-	gnomeLibsecret = "gnome_libsecret",
-	gnomeKeyring = "gnome_keyring",
-	kwallet = "kwallet",
-	kwallet5 = "kwallet5",
-	kwallet6 = "kwallet6",
+	gnomeAny = 'gnome_any',
+	gnomeLibsecret = 'gnome_libsecret',
+	gnomeKeyring = 'gnome_keyring',
+	kwallet = 'kwallet',
+	kwallet5 = 'kwallet5',
+	kwallet6 = 'kwallet6',
 
 	// The rest of these are not returned by `getSelectedStorageBackend`
 	// but these were added for platform completeness.
 
 	// Windows
-	dplib = "dpapi",
+	dplib = 'dpapi',
 
 	// macOS
-	keychainAccess = "keychain_access",
+	keychainAccess = 'keychain_access',
 }
 
 export function isKwallet(backend: string): boolean {
-	return (
-		backend === KnownStorageProvider.kwallet ||
-		backend === KnownStorageProvider.kwallet5 ||
-		backend === KnownStorageProvider.kwallet6
-	);
+	return backend === KnownStorageProvider.kwallet
+		|| backend === KnownStorageProvider.kwallet5
+		|| backend === KnownStorageProvider.kwallet6;
 }
 
 export function isGnome(backend: string): boolean {
-	return (
-		backend === KnownStorageProvider.gnomeAny ||
-		backend === KnownStorageProvider.gnomeLibsecret ||
-		backend === KnownStorageProvider.gnomeKeyring
-	);
+	return backend === KnownStorageProvider.gnomeAny
+		|| backend === KnownStorageProvider.gnomeLibsecret
+		|| backend === KnownStorageProvider.gnomeKeyring;
 }

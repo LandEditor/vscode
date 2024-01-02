@@ -1,11 +1,15 @@
 {
 	"comments": {
-		"blockComment": ["<!--", "-->"]
+		"blockComment": [ "<!--", "-->" ]
 	},
-	"brackets": [["<!--", "-->"], ["{", "}"], ["(", ")"]],
+	"brackets": [
+		["<!--", "-->"],
+		["{", "}"],
+		["(", ")"]
+	],
 	"autoClosingPairs": [
-		{ "open": "{", "close": "}" },
-		{ "open": "[", "close": "]" },
+		{ "open": "{", "close": "}"},
+		{ "open": "[", "close": "]"},
 		{ "open": "(", "close": ")" },
 		{ "open": "'", "close": "'" },
 		{ "open": "\"", "close": "\"" }

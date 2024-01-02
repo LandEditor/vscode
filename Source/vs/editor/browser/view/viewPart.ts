@@ -3,15 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FastDomNode } from "vs/base/browser/fastDomNode";
-import {
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "vs/editor/browser/view/renderingContext";
-import { ViewEventHandler } from "vs/editor/common/viewEventHandler";
-import { ViewContext } from "vs/editor/common/viewModel/viewContext";
+import { FastDomNode } from 'vs/base/browser/fastDomNode';
+import { RenderingContext, RestrictedRenderingContext } from 'vs/editor/browser/view/renderingContext';
+import { ViewContext } from 'vs/editor/common/viewModel/viewContext';
+import { ViewEventHandler } from 'vs/editor/common/viewEventHandler';
 
 export abstract class ViewPart extends ViewEventHandler {
+
 	_context: ViewContext;
 
 	constructor(context: ViewContext) {
@@ -29,29 +27,27 @@ export abstract class ViewPart extends ViewEventHandler {
 	public abstract render(ctx: RestrictedRenderingContext): void;
 }
 
-export enum PartFingerprint {
-	None = 0,
-	ContentWidgets = 1,
-	OverflowingContentWidgets = 2,
-	OverflowGuard = 3,
-	OverlayWidgets = 4,
-	OverflowingOverlayWidgets = 5,
-	ScrollableElement = 6,
-	TextArea = 7,
-	ViewLines = 8,
-	Minimap = 9,
+export const enum PartFingerprint {
+	None,
+	ContentWidgets,
+	OverflowingContentWidgets,
+	OverflowGuard,
+	OverlayWidgets,
+	OverflowingOverlayWidgets,
+	ScrollableElement,
+	TextArea,
+	ViewLines,
+	Minimap
 }
 
 export class PartFingerprints {
-	public static write(
-		target: Element | FastDomNode<HTMLElement>,
-		partId: PartFingerprint,
-	) {
-		target.setAttribute("data-mprt", String(partId));
+
+	public static write(target: Element | FastDomNode<HTMLElement>, partId: PartFingerprint) {
+		target.setAttribute('data-mprt', String(partId));
 	}
 
 	public static read(target: Element): PartFingerprint {
-		const r = target.getAttribute("data-mprt");
+		const r = target.getAttribute('data-mprt');
 		if (r === null) {
 			return PartFingerprint.None;
 		}
@@ -67,7 +63,7 @@ export class PartFingerprints {
 				break;
 			}
 			if (child.nodeType === child.ELEMENT_NODE) {
-				result[resultLen++] = PartFingerprints.read(child);
+				result[resultLen++] = this.read(child);
 			}
 			child = child.parentElement;
 		}

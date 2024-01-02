@@ -3,12 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Event } from 'vs/base/common/event';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const ILifecycleService =
-	createDecorator<ILifecycleService>("lifecycleService");
+export const ILifecycleService = createDecorator<ILifecycleService>('lifecycleService');
 
 /**
  * An event that is send out when the window is about to close. Clients have a chance to veto
@@ -20,6 +19,7 @@ export const ILifecycleService =
  * to return a boolean directly. Returning a promise has quite an impact on the shutdown sequence!
  */
 export interface BeforeShutdownEvent {
+
 	/**
 	 * The reason why the application will be shutting down.
 	 */
@@ -36,6 +36,7 @@ export interface BeforeShutdownEvent {
 }
 
 export interface InternalBeforeShutdownEvent extends BeforeShutdownEvent {
+
 	/**
 	 * Allows to set a veto operation to run after all other
 	 * vetos have been handled from the `BeforeShutdownEvent`
@@ -52,6 +53,7 @@ export interface InternalBeforeShutdownEvent extends BeforeShutdownEvent {
  * condition that is treated like a veto.
  */
 export interface BeforeShutdownErrorEvent {
+
 	/**
 	 * The reason why the application is shutting down.
 	 */
@@ -77,6 +79,7 @@ export interface IWillShutdownEventJoiner {
  * to return a boolean directly. Returning a promise has quite an impact on the shutdown sequence!
  */
 export interface WillShutdownEvent {
+
 	/**
 	 * The reason why the application is shutting down.
 	 */
@@ -109,7 +112,8 @@ export interface WillShutdownEvent {
 	force(): void;
 }
 
-export enum ShutdownReason {
+export const enum ShutdownReason {
+
 	/**
 	 * The window is closed.
 	 */
@@ -118,37 +122,35 @@ export enum ShutdownReason {
 	/**
 	 * The window closes because the application quits.
 	 */
-	QUIT = 2,
+	QUIT,
 
 	/**
 	 * The window is reloaded.
 	 */
-	RELOAD = 3,
+	RELOAD,
 
 	/**
 	 * The window is loaded into a different workspace context.
 	 */
-	LOAD = 4,
+	LOAD
 }
 
-export enum StartupKind {
+export const enum StartupKind {
 	NewWindow = 1,
 	ReloadedWindow = 3,
-	ReopenedWindow = 4,
+	ReopenedWindow = 4
 }
 
 export function StartupKindToString(startupKind: StartupKind): string {
 	switch (startupKind) {
-		case StartupKind.NewWindow:
-			return "NewWindow";
-		case StartupKind.ReloadedWindow:
-			return "ReloadedWindow";
-		case StartupKind.ReopenedWindow:
-			return "ReopenedWindow";
+		case StartupKind.NewWindow: return 'NewWindow';
+		case StartupKind.ReloadedWindow: return 'ReloadedWindow';
+		case StartupKind.ReopenedWindow: return 'ReopenedWindow';
 	}
 }
 
-export enum LifecyclePhase {
+export const enum LifecyclePhase {
+
 	/**
 	 * The first phase signals that we are about to startup getting ready.
 	 *
@@ -175,19 +177,15 @@ export enum LifecyclePhase {
 	 * The last phase after views, panels and editors have restored and
 	 * some time has passed (2-5 seconds).
 	 */
-	Eventually = 4,
+	Eventually = 4
 }
 
 export function LifecyclePhaseToString(phase: LifecyclePhase): string {
 	switch (phase) {
-		case LifecyclePhase.Starting:
-			return "Starting";
-		case LifecyclePhase.Ready:
-			return "Ready";
-		case LifecyclePhase.Restored:
-			return "Restored";
-		case LifecyclePhase.Eventually:
-			return "Eventually";
+		case LifecyclePhase.Starting: return 'Starting';
+		case LifecyclePhase.Ready: return 'Ready';
+		case LifecyclePhase.Restored: return 'Restored';
+		case LifecyclePhase.Eventually: return 'Eventually';
 	}
 }
 
@@ -196,6 +194,7 @@ export function LifecyclePhaseToString(phase: LifecyclePhase): string {
  * application, such as shutdown.
  */
 export interface ILifecycleService {
+
 	readonly _serviceBrand: undefined;
 
 	/**

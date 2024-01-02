@@ -3,19 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	CancellationToken,
-	CancellationTokenSource,
-} from "vs/base/common/cancellation";
-import { IDisposable } from "vs/base/common/lifecycle";
+import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 export interface CacheResult<T> extends IDisposable {
 	promise: Promise<T>;
 }
 
 export class Cache<T> {
+
 	private result: CacheResult<T> | null = null;
-	constructor(private task: (ct: CancellationToken) => Promise<T>) {}
+	constructor(private task: (ct: CancellationToken) => Promise<T>) { }
 
 	get(): CacheResult<T> {
 		if (this.result) {
@@ -31,7 +29,7 @@ export class Cache<T> {
 				this.result = null;
 				cts.cancel();
 				cts.dispose();
-			},
+			}
 		};
 
 		return this.result;
@@ -42,12 +40,13 @@ export class Cache<T> {
  * Uses a LRU cache to make a given parametrized function cached.
  * Caches just the last value.
  * The key must be JSON serializable.
- */
+*/
 export class LRUCachedFunction<TArg, TComputed> {
 	private lastCache: TComputed | undefined = undefined;
 	private lastArgKey: string | undefined = undefined;
 
-	constructor(private readonly fn: (arg: TArg) => TComputed) {}
+	constructor(private readonly fn: (arg: TArg) => TComputed) {
+	}
 
 	public get(arg: TArg): TComputed {
 		const key = JSON.stringify(arg);
@@ -61,14 +60,14 @@ export class LRUCachedFunction<TArg, TComputed> {
 
 /**
  * Uses an unbounded cache (referential equality) to memoize the results of the given function.
- */
+*/
 export class CachedFunction<TArg, TValue> {
 	private readonly _map = new Map<TArg, TValue>();
 	public get cachedValues(): ReadonlyMap<TArg, TValue> {
 		return this._map;
 	}
 
-	constructor(private readonly fn: (arg: TArg) => TValue) {}
+	constructor(private readonly fn: (arg: TArg) => TValue) { }
 
 	public get(arg: TArg): TValue {
 		if (this._map.has(arg)) {

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export enum Constants {
+export const enum Constants {
 	START_CH_CODE = 32, // Space
 	END_CH_CODE = 126, // Tilde (~)
 	UNKNOWN_CODE = 65533, // UTF placeholder code
@@ -16,12 +16,10 @@ export enum Constants {
 	BASE_CHAR_WIDTH = 1,
 
 	RGBA_CHANNELS_CNT = 4,
-	RGBA_SAMPLED_ROW_WIDTH = RGBA_CHANNELS_CNT *
-		CHAR_COUNT *
-		SAMPLED_CHAR_WIDTH,
+	RGBA_SAMPLED_ROW_WIDTH = RGBA_CHANNELS_CNT * CHAR_COUNT * SAMPLED_CHAR_WIDTH
 }
 
-export const allCharCodes: readonly number[] = (() => {
+export const allCharCodes: ReadonlyArray<number> = (() => {
 	const v: number[] = [];
 	for (let i = Constants.START_CH_CODE; i <= Constants.END_CH_CODE; i++) {
 		v.push(i);

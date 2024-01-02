@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CharCode } from "vs/base/common/charCode";
-import { ResolvedKeybinding } from "vs/base/common/keybindings";
-import { ContextKeyExpression } from "vs/platform/contextkey/common/contextkey";
+import { CharCode } from 'vs/base/common/charCode';
+import { ResolvedKeybinding } from 'vs/base/common/keybindings';
+import { ContextKeyExpression } from 'vs/platform/contextkey/common/contextkey';
 
 export class ResolvedKeybindingItem {
 	_resolvedKeybindingItemBrand: void = undefined;
@@ -20,29 +20,15 @@ export class ResolvedKeybindingItem {
 	public readonly extensionId: string | null;
 	public readonly isBuiltinExtension: boolean;
 
-	constructor(
-		resolvedKeybinding: ResolvedKeybinding | undefined,
-		command: string | null,
-		commandArgs: any,
-		when: ContextKeyExpression | undefined,
-		isDefault: boolean,
-		extensionId: string | null,
-		isBuiltinExtension: boolean,
-	) {
+	constructor(resolvedKeybinding: ResolvedKeybinding | undefined, command: string | null, commandArgs: any, when: ContextKeyExpression | undefined, isDefault: boolean, extensionId: string | null, isBuiltinExtension: boolean) {
 		this.resolvedKeybinding = resolvedKeybinding;
-		this.chords = resolvedKeybinding
-			? toEmptyArrayIfContainsNull(resolvedKeybinding.getDispatchChords())
-			: [];
+		this.chords = resolvedKeybinding ? toEmptyArrayIfContainsNull(resolvedKeybinding.getDispatchChords()) : [];
 		if (resolvedKeybinding && this.chords.length === 0) {
 			// handle possible single modifier chord keybindings
-			this.chords = toEmptyArrayIfContainsNull(
-				resolvedKeybinding.getSingleModifierDispatchChords(),
-			);
+			this.chords = toEmptyArrayIfContainsNull(resolvedKeybinding.getSingleModifierDispatchChords());
 		}
-		this.bubble = command
-			? command.charCodeAt(0) === CharCode.Caret
-			: false;
-		this.command = this.bubble ? command?.substr(1) : command;
+		this.bubble = (command ? command.charCodeAt(0) === CharCode.Caret : false);
+		this.command = this.bubble ? command!.substr(1) : command;
 		this.commandArgs = commandArgs;
 		this.when = when;
 		this.isDefault = isDefault;

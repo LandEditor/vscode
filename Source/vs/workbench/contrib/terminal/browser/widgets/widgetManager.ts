@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from "vs/base/common/lifecycle";
-import { ITerminalWidget } from "vs/workbench/contrib/terminal/browser/widgets/widgets";
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { ITerminalWidget } from 'vs/workbench/contrib/terminal/browser/widgets/widgets';
 
 export class TerminalWidgetManager implements IDisposable {
 	private _container: HTMLElement | undefined;
@@ -12,14 +12,14 @@ export class TerminalWidgetManager implements IDisposable {
 
 	attachToElement(terminalWrapper: HTMLElement) {
 		if (!this._container) {
-			this._container = document.createElement("div");
-			this._container.classList.add("terminal-widget-container");
+			this._container = document.createElement('div');
+			this._container.classList.add('terminal-widget-container');
 			terminalWrapper.appendChild(this._container);
 		}
 	}
 
 	dispose(): void {
-		if (this._container?.parentElement) {
+		if (this._container && this._container.parentElement) {
 			this._container.parentElement.removeChild(this._container);
 			this._container = undefined;
 		}
@@ -39,7 +39,7 @@ export class TerminalWidgetManager implements IDisposable {
 					this._attached.delete(widget.id);
 					widget.dispose();
 				}
-			},
+			}
 		};
 	}
 }

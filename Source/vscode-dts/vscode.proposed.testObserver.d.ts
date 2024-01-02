@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/107467
 
 	export namespace tests {
@@ -12,10 +13,7 @@ declare module "vscode" {
 		 * @param run Run options to use.
 		 * @param token Cancellation token for the test run
 		 */
-		export function runTests(
-			run: TestRunRequest,
-			token?: CancellationToken,
-		): Thenable<void>;
+		export function runTests(run: TestRunRequest, token?: CancellationToken): Thenable<void>;
 
 		/**
 		 * Returns an observer that watches and can request tests.
@@ -25,7 +23,7 @@ declare module "vscode" {
 		 * List of test results stored by the editor, sorted in descending
 		 * order by their `completedAt` time.
 		 */
-		export const testResults: readonly TestRunResult[];
+		export const testResults: ReadonlyArray<TestRunResult>;
 
 		/**
 		 * Event that fires when the {@link testResults} array is updated.
@@ -37,7 +35,7 @@ declare module "vscode" {
 		/**
 		 * List of tests returned by test provider for files in the workspace.
 		 */
-		readonly tests: readonly TestItem[];
+		readonly tests: ReadonlyArray<TestItem>;
 
 		/**
 		 * An event that fires when an existing test in the collection changes, or
@@ -57,17 +55,17 @@ declare module "vscode" {
 		/**
 		 * List of all tests that are newly added.
 		 */
-		readonly added: readonly TestItem[];
+		readonly added: ReadonlyArray<TestItem>;
 
 		/**
 		 * List of existing tests that have updated.
 		 */
-		readonly updated: readonly TestItem[];
+		readonly updated: ReadonlyArray<TestItem>;
 
 		/**
 		 * List of existing tests that have been removed.
 		 */
-		readonly removed: readonly TestItem[];
+		readonly removed: ReadonlyArray<TestItem>;
 	}
 
 	/**
@@ -94,7 +92,7 @@ declare module "vscode" {
 		 * List of test results. The items in this array are the items that
 		 * were passed in the {@link tests.runTests} method.
 		 */
-		readonly results: readonly Readonly<TestResultSnapshot>[];
+		readonly results: ReadonlyArray<Readonly<TestResultSnapshot>>;
 	}
 
 	/**
@@ -139,7 +137,7 @@ declare module "vscode" {
 		 * State of the test in each task. In the common case, a test will only
 		 * be executed in a single task and the length of this array will be 1.
 		 */
-		readonly taskStates: readonly TestSnapshotTaskState[];
+		readonly taskStates: ReadonlyArray<TestSnapshotTaskState>;
 
 		/**
 		 * Optional list of nested tests for this item.
@@ -163,7 +161,7 @@ declare module "vscode" {
 		 * Associated test run message. Can, for example, contain assertion
 		 * failure information if the test fails.
 		 */
-		readonly messages: readonly TestMessage[];
+		readonly messages: ReadonlyArray<TestMessage>;
 	}
 
 	/**
@@ -181,6 +179,6 @@ declare module "vscode" {
 		// Test run has been skipped
 		Skipped = 5,
 		// Test run failed for some other reason (compilation error, timeout, etc)
-		Errored = 6,
+		Errored = 6
 	}
 }

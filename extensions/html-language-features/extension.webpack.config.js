@@ -5,16 +5,18 @@
 
 //@ts-check
 
-const withDefaults = require("../shared.webpack.config");
-const path = require("path");
+'use strict';
+
+const withDefaults = require('../shared.webpack.config');
+const path = require('path');
 
 module.exports = withDefaults({
-	context: path.join(__dirname, "client"),
+	context: path.join(__dirname, 'client'),
 	entry: {
-		extension: "./src/node/htmlClientMain.ts",
+		extension: './src/node/htmlClientMain.ts',
 	},
 	output: {
-		filename: "htmlClientMain.js",
-		path: path.join(__dirname, "client", "dist", "node"),
-	},
+		filename: 'htmlClientMain.js',
+		path: path.join(__dirname, 'client', 'dist', 'node')
+	}
 });

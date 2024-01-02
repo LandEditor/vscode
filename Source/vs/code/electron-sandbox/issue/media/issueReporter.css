@@ -33,25 +33,24 @@ label {
 }
 
 .block-settingsSearchResults-details {
-	padding-bottom: 0.5rem;
+	padding-bottom: .5rem;
 }
 
 .block-settingsSearchResults-details > div {
-	padding: 0.5rem 0.75rem;
+	padding: .5rem .75rem;
 }
 
 .section {
-	margin-bottom: 0.5em;
+	margin-bottom: .5em;
 }
 
 /**
  * Forms
  */
-input[type="text"],
-textarea {
+input[type="text"], textarea {
 	display: block;
 	width: 100%;
-	padding: 0.375rem 0.75rem;
+	padding: .375rem .75rem;
 	font-size: 1rem;
 	line-height: 1.5;
 	color: #495057;
@@ -92,14 +91,12 @@ select {
 	box-sizing: border-box;
 }
 
-textarea,
-input,
-select {
+textarea, input, select {
 	font-family: inherit;
 }
 
 html {
-	color: #cccccc;
+	color: #CCCCCC;
 	height: 100%;
 }
 
@@ -110,63 +107,24 @@ html {
 
 /* Font Families (with CJK support) */
 
-.mac {
-	font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-}
-.mac:lang(zh-Hans) {
-	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
-		"Hiragino Sans GB", sans-serif;
-}
-.mac:lang(zh-Hant) {
-	font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
-}
-.mac:lang(ja) {
-	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro",
-		sans-serif;
-}
-.mac:lang(ko) {
-	font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic",
-		"Apple SD Gothic Neo", "AppleGothic", sans-serif;
-}
+.mac { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+.mac:lang(zh-Hans) { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
+.mac:lang(zh-Hant) { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
+.mac:lang(ja) { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
+.mac:lang(ko) { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
 
-.windows {
-	font-family: "Segoe WPC", "Segoe UI", sans-serif;
-}
-.windows:lang(zh-Hans) {
-	font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif;
-}
-.windows:lang(zh-Hant) {
-	font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif;
-}
-.windows:lang(ja) {
-	font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI",
-		sans-serif;
-}
-.windows:lang(ko) {
-	font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif;
-}
+.windows { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
+.windows:lang(zh-Hans) { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
+.windows:lang(zh-Hant) { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
+.windows:lang(ja) { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
+.windows:lang(ko) { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
 
 /* Linux: add `system-ui` as first font and not `Ubuntu` to allow other distribution pick their standard OS font */
-.linux {
-	font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif;
-}
-.linux:lang(zh-Hans) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC",
-		"Source Han Sans CN", "Source Han Sans", sans-serif;
-}
-.linux:lang(zh-Hant) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC",
-		"Source Han Sans TW", "Source Han Sans", sans-serif;
-}
-.linux:lang(ja) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J",
-		"Source Han Sans JP", "Source Han Sans", sans-serif;
-}
-.linux:lang(ko) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K",
-		"Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim",
-		sans-serif;
-}
+.linux { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
+.linux:lang(zh-Hans) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
+.linux:lang(zh-Hant) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
+.linux:lang(ja) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
+.linux:lang(ko) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
 
 body {
 	margin: 0;
@@ -243,18 +201,18 @@ textarea {
 	margin-top: 1em;
 }
 
-select,
-input,
-textarea {
+select, input, textarea {
 	border: 1px solid transparent;
 	margin-top: 10px;
 }
+
 
 #issue-reporter .validation-error {
 	font-size: 12px;
 	padding: 10px;
 	border-top: 0px !important;
 }
+
 
 input[type="checkbox"] {
 	width: auto;
@@ -275,18 +233,17 @@ input:disabled {
 
 .instructions {
 	font-size: 12px;
-	margin-top: 0.5em;
+	margin-top: .5em;
 }
 
-a,
-.workbenchCommand {
+a, .workbenchCommand {
 	cursor: pointer;
 	border: 1px solid transparent;
 }
 
 .workbenchCommand:disabled {
 	color: #868e96;
-	cursor: default;
+	cursor: default
 }
 
 .block-extensions .block-info {
@@ -294,16 +251,14 @@ a,
 }
 
 /* Default styles, overwritten if a theme is provided */
-input,
-select,
-textarea {
+input, select, textarea {
 	background-color: #3c3c3c;
 	border: none;
 	color: #cccccc;
 }
 
 a {
-	color: #cccccc;
+	color: #CCCCCC;
 	text-decoration: none;
 }
 
@@ -311,8 +266,7 @@ a {
 	margin-left: 100px;
 }
 
-.section .inline-form-control,
-.section .inline-label {
+.section .inline-form-control, .section .inline-label {
 	display: inline-block;
 }
 
@@ -320,8 +274,7 @@ a {
 	width: 95px;
 }
 
-.section .inline-form-control,
-.section .input-group .validation-error {
+.section .inline-form-control, .section .input-group .validation-error  {
 	width: calc(100% - 100px);
 }
 
@@ -347,8 +300,7 @@ a {
 		margin-left: calc(15% + 1em);
 	}
 
-	.section .inline-form-control,
-	.section .input-group .validation-error {
+	.section .inline-form-control, .section .input-group .validation-error  {
 		width: calc(85% - 5px);
 	}
 
@@ -366,13 +318,11 @@ a {
 		margin-left: 1em;
 	}
 
-	.section .inline-form-control,
-	.section .input-group .validation-error {
+	.section .inline-form-control, .section .input-group .validation-error  {
 		width: 100%;
 	}
 
-	#similar-issues,
-	.section .input-group .validation-error {
+	#similar-issues, .section .input-group .validation-error {
 		margin-left: 0;
 	}
 }
@@ -391,7 +341,7 @@ a {
 
 .issues-container {
 	margin-left: 1.5em;
-	margin-top: 0.5em;
+	margin-top: .5em;
 	max-height: 92px;
 	overflow-y: auto;
 }
@@ -417,9 +367,9 @@ a {
 	width: 77px;
 	padding: 3px 6px;
 	margin-right: 5px;
-	color: #cccccc;
+	color: #CCCCCC;
 	background-color: #3c3c3c;
-	border-radius: 0.25rem;
+	border-radius: .25rem;
 }
 
 .issues-container > .issue .label {

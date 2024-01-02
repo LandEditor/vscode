@@ -6,9 +6,9 @@
 export const empty = Object.freeze([]);
 
 export function equals<T>(
-	a: readonly T[],
-	b: readonly T[],
-	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b,
+	a: ReadonlyArray<T>,
+	b: ReadonlyArray<T>,
+	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b
 ): boolean {
 	if (a === b) {
 		return true;
@@ -20,5 +20,5 @@ export function equals<T>(
 }
 
 export function coalesce<T>(array: ReadonlyArray<T | undefined>): T[] {
-	return <T[]>array.filter((e) => !!e);
+	return <T[]>array.filter(e => !!e);
 }

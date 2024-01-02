@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MessagePoster } from "./messaging";
-import { SettingsManager } from "./settings";
-import { getStrings } from "./strings";
+import { MessagePoster } from './messaging';
+import { SettingsManager } from './settings';
+import { getStrings } from './strings';
 
 /**
  * Shows an alert when there is a content security policy violation.
@@ -16,13 +16,15 @@ export class CspAlerter {
 
 	private messaging?: MessagePoster;
 
-	constructor(private readonly settingsManager: SettingsManager) {
-		document.addEventListener("securitypolicyviolation", () => {
+	constructor(
+		private readonly settingsManager: SettingsManager,
+	) {
+		document.addEventListener('securitypolicyviolation', () => {
 			this.onCspWarning();
 		});
 
-		window.addEventListener("message", (event) => {
-			if (event?.data && event.data.name === "vscode-did-block-svg") {
+		window.addEventListener('message', (event) => {
+			if (event && event.data && event.data.name === 'vscode-did-block-svg') {
 				this.onCspWarning();
 			}
 		});
@@ -44,26 +46,20 @@ export class CspAlerter {
 		const strings = getStrings();
 		const settings = this.settingsManager.settings;
 
-		if (
-			this.didShow ||
-			settings.disableSecurityWarnings ||
-			!this.messaging
-		) {
+		if (this.didShow || settings.disableSecurityWarnings || !this.messaging) {
 			return;
 		}
 		this.didShow = true;
 
-		const notification = document.createElement("a");
+		const notification = document.createElement('a');
 		notification.innerText = strings.cspAlertMessageText;
-		notification.setAttribute("id", "code-csp-warning");
-		notification.setAttribute("title", strings.cspAlertMessageTitle);
+		notification.setAttribute('id', 'code-csp-warning');
+		notification.setAttribute('title', strings.cspAlertMessageTitle);
 
-		notification.setAttribute("role", "button");
-		notification.setAttribute("aria-label", strings.cspAlertMessageLabel);
+		notification.setAttribute('role', 'button');
+		notification.setAttribute('aria-label', strings.cspAlertMessageLabel);
 		notification.onclick = () => {
-			this.messaging?.postMessage("showPreviewSecuritySelector", {
-				source: settings.source,
-			});
+			this.messaging!.postMessage('showPreviewSecuritySelector', { source: settings.source });
 		};
 		document.body.appendChild(notification);
 	}

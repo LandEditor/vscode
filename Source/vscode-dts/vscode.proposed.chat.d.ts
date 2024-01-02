@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// ChatML
 	export enum ChatMessageRole {
 		System = 0,
@@ -20,4 +21,5 @@ declare module "vscode" {
 
 		constructor(role: ChatMessageRole, content: string);
 	}
+
 }

@@ -3,29 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	AuthInfo,
-	AuthenticationResponseDetails,
-	Event as ElectronEvent,
-	WebContents,
-	app,
-} from "electron";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Event } from "vs/base/common/event";
-import { hash } from "vs/base/common/hash";
-import { Disposable } from "vs/base/common/lifecycle";
-import { generateUuid } from "vs/base/common/uuid";
-import { IEncryptionMainService } from "vs/platform/encryption/common/encryptionService";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import { IApplicationStorageMainService } from "vs/platform/storage/electron-main/storageMainService";
-import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
+import { app, AuthenticationResponseDetails, AuthInfo, Event as ElectronEvent, WebContents } from 'electron';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Event } from 'vs/base/common/event';
+import { hash } from 'vs/base/common/hash';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { generateUuid } from 'vs/base/common/uuid';
+import { IEncryptionMainService } from 'vs/platform/encryption/common/encryptionService';
+import { ILogService } from 'vs/platform/log/common/log';
+import { StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IApplicationStorageMainService } from 'vs/platform/storage/electron-main/storageMainService';
+import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
 
-interface ElectronAuthenticationResponseDetails
-	extends AuthenticationResponseDetails {
+interface ElectronAuthenticationResponseDetails extends AuthenticationResponseDetails {
 	firstAuthAttempt?: boolean; // https://github.com/electron/electron/blob/84a42a050e7d45225e69df5bd2d2bf9f1037ea41/shell/browser/login_handler.cc#L70
 }
 
@@ -43,6 +33,7 @@ type Credentials = {
 };
 
 enum ProxyAuthState {
+
 	/**
 	 * Initial state: we will try to use stored credentials
 	 * first to reply to the auth challenge.
@@ -53,21 +44,21 @@ enum ProxyAuthState {
 	 * We used stored credentials and are still challenged,
 	 * so we will show a login dialog next.
 	 */
-	StoredCredentialsUsed = 2,
+	StoredCredentialsUsed,
 
 	/**
 	 * Finally, if we showed a login dialog already, we will
 	 * not show any more login dialogs until restart to reduce
 	 * the UI noise.
 	 */
-	LoginDialogShown = 3,
+	LoginDialogShown
 }
 
 export class ProxyAuthHandler extends Disposable {
-	private readonly PROXY_CREDENTIALS_SERVICE_KEY = "proxy-credentials://";
 
-	private pendingProxyResolve: Promise<Credentials | undefined> | undefined =
-		undefined;
+	private readonly PROXY_CREDENTIALS_SERVICE_KEY = 'proxy-credentials://';
+
+	private pendingProxyResolve: Promise<Credentials | undefined> | undefined = undefined;
 
 	private state = ProxyAuthState.Initial;
 
@@ -75,12 +66,9 @@ export class ProxyAuthHandler extends Disposable {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService
-		private readonly windowsMainService: IWindowsMainService,
-		@IEncryptionMainService
-		private readonly encryptionMainService: IEncryptionMainService,
-		@IApplicationStorageMainService
-		private readonly applicationStorageMainService: IApplicationStorageMainService
+		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IEncryptionMainService private readonly encryptionMainService: IEncryptionMainService,
+		@IApplicationStorageMainService private readonly applicationStorageMainService: IApplicationStorageMainService
 	) {
 		super();
 
@@ -88,38 +76,17 @@ export class ProxyAuthHandler extends Disposable {
 	}
 
 	private registerListeners(): void {
-		const onLogin = Event.fromNodeEventEmitter<LoginEvent>(
-			app,
-			"login",
-			(
-				event: ElectronEvent,
-				webContents: WebContents,
-				req: ElectronAuthenticationResponseDetails,
-				authInfo: AuthInfo,
-				callback,
-			) => ({ event, webContents, req, authInfo, callback }),
-		);
+		const onLogin = Event.fromNodeEventEmitter<LoginEvent>(app, 'login', (event: ElectronEvent, webContents: WebContents, req: ElectronAuthenticationResponseDetails, authInfo: AuthInfo, callback) => ({ event, webContents, req, authInfo, callback }));
 		this._register(onLogin(this.onLogin, this));
 	}
 
-	private async onLogin({
-		event,
-		authInfo,
-		req,
-		callback,
-	}: LoginEvent): Promise<void> {
+	private async onLogin({ event, authInfo, req, callback }: LoginEvent): Promise<void> {
 		if (!authInfo.isProxy) {
 			return; // only for proxy
 		}
 
-		if (
-			!this.pendingProxyResolve &&
-			this.state === ProxyAuthState.LoginDialogShown &&
-			req.firstAuthAttempt
-		) {
-			this.logService.trace(
-				"auth#onLogin (proxy) - exit - proxy dialog already shown",
-			);
+		if (!this.pendingProxyResolve && this.state === ProxyAuthState.LoginDialogShown && req.firstAuthAttempt) {
+			this.logService.trace('auth#onLogin (proxy) - exit - proxy dialog already shown');
 
 			return; // only one dialog per session at max (except when firstAuthAttempt: false which indicates a login problem)
 		}
@@ -129,16 +96,8 @@ export class ProxyAuthHandler extends Disposable {
 		event.preventDefault();
 
 		let credentials: Credentials | undefined = undefined;
-		if (this.pendingProxyResolve) {
-			this.logService.trace(
-				"auth#onLogin (proxy) - pending proxy handling found",
-			);
-
-			credentials = await this.pendingProxyResolve;
-		} else {
-			this.logService.trace(
-				"auth#onLogin (proxy) - no pending proxy handling found, starting new",
-			);
+		if (!this.pendingProxyResolve) {
+			this.logService.trace('auth#onLogin (proxy) - no pending proxy handling found, starting new');
 
 			this.pendingProxyResolve = this.resolveProxyCredentials(authInfo);
 			try {
@@ -146,6 +105,10 @@ export class ProxyAuthHandler extends Disposable {
 			} finally {
 				this.pendingProxyResolve = undefined;
 			}
+		} else {
+			this.logService.trace('auth#onLogin (proxy) - pending proxy handling found');
+
+			credentials = await this.pendingProxyResolve;
 		}
 
 		// According to Electron docs, it is fine to call back without
@@ -158,65 +121,41 @@ export class ProxyAuthHandler extends Disposable {
 		callback(credentials?.username, credentials?.password);
 	}
 
-	private async resolveProxyCredentials(
-		authInfo: AuthInfo,
-	): Promise<Credentials | undefined> {
-		this.logService.trace("auth#resolveProxyCredentials (proxy) - enter");
+	private async resolveProxyCredentials(authInfo: AuthInfo): Promise<Credentials | undefined> {
+		this.logService.trace('auth#resolveProxyCredentials (proxy) - enter');
 
 		try {
 			const credentials = await this.doResolveProxyCredentials(authInfo);
 			if (credentials) {
-				this.logService.trace(
-					"auth#resolveProxyCredentials (proxy) - got credentials",
-				);
+				this.logService.trace('auth#resolveProxyCredentials (proxy) - got credentials');
 
 				return credentials;
 			} else {
-				this.logService.trace(
-					"auth#resolveProxyCredentials (proxy) - did not get credentials",
-				);
+				this.logService.trace('auth#resolveProxyCredentials (proxy) - did not get credentials');
 			}
 		} finally {
-			this.logService.trace(
-				"auth#resolveProxyCredentials (proxy) - exit",
-			);
+			this.logService.trace('auth#resolveProxyCredentials (proxy) - exit');
 		}
 
 		return undefined;
 	}
 
-	private async doResolveProxyCredentials(
-		authInfo: AuthInfo,
-	): Promise<Credentials | undefined> {
-		this.logService.trace(
-			"auth#doResolveProxyCredentials - enter",
-			authInfo,
-		);
+	private async doResolveProxyCredentials(authInfo: AuthInfo): Promise<Credentials | undefined> {
+		this.logService.trace('auth#doResolveProxyCredentials - enter', authInfo);
 
 		// Compute a hash over the authentication info to be used
 		// with the credentials store to return the right credentials
 		// given the properties of the auth request
 		// (see https://github.com/microsoft/vscode/issues/109497)
-		const authInfoHash = String(
-			hash({
-				scheme: authInfo.scheme,
-				host: authInfo.host,
-				port: authInfo.port,
-			}),
-		);
+		const authInfoHash = String(hash({ scheme: authInfo.scheme, host: authInfo.host, port: authInfo.port }));
 
 		let storedUsername: string | undefined;
 		let storedPassword: string | undefined;
 		try {
 			// Try to find stored credentials for the given auth info
-			const encryptedValue = this.applicationStorageMainService.get(
-				this.PROXY_CREDENTIALS_SERVICE_KEY + authInfoHash,
-				StorageScope.APPLICATION,
-			);
+			const encryptedValue = this.applicationStorageMainService.get(this.PROXY_CREDENTIALS_SERVICE_KEY + authInfoHash, StorageScope.APPLICATION);
 			if (encryptedValue) {
-				const credentials: Credentials = JSON.parse(
-					await this.encryptionMainService.decrypt(encryptedValue),
-				);
+				const credentials: Credentials = JSON.parse(await this.encryptionMainService.decrypt(encryptedValue));
 				storedUsername = credentials.username;
 				storedPassword = credentials.password;
 			}
@@ -227,14 +166,8 @@ export class ProxyAuthHandler extends Disposable {
 		// Reply with stored credentials unless we used them already.
 		// In that case we need to show a login dialog again because
 		// they seem invalid.
-		if (
-			this.state !== ProxyAuthState.StoredCredentialsUsed &&
-			typeof storedUsername === "string" &&
-			typeof storedPassword === "string"
-		) {
-			this.logService.trace(
-				"auth#doResolveProxyCredentials (proxy) - exit - found stored credentials to use",
-			);
+		if (this.state !== ProxyAuthState.StoredCredentialsUsed && typeof storedUsername === 'string' && typeof storedPassword === 'string') {
+			this.logService.trace('auth#doResolveProxyCredentials (proxy) - exit - found stored credentials to use');
 			this.state = ProxyAuthState.StoredCredentialsUsed;
 
 			return { username: storedUsername, password: storedPassword };
@@ -243,92 +176,55 @@ export class ProxyAuthHandler extends Disposable {
 		// Find suitable window to show dialog: prefer to show it in the
 		// active window because any other network request will wait on
 		// the credentials and we want the user to present the dialog.
-		const window =
-			this.windowsMainService.getFocusedWindow() ||
-			this.windowsMainService.getLastActiveWindow();
+		const window = this.windowsMainService.getFocusedWindow() || this.windowsMainService.getLastActiveWindow();
 		if (!window) {
-			this.logService.trace(
-				"auth#doResolveProxyCredentials (proxy) - exit - no opened window found to show dialog in",
-			);
+			this.logService.trace('auth#doResolveProxyCredentials (proxy) - exit - no opened window found to show dialog in');
 
 			return undefined; // unexpected
 		}
 
-		this.logService.trace(
-			`auth#doResolveProxyCredentials (proxy) - asking window ${window.id} to handle proxy login`,
-		);
+		this.logService.trace(`auth#doResolveProxyCredentials (proxy) - asking window ${window.id} to handle proxy login`);
 
 		// Open proxy dialog
 		const payload = {
 			authInfo,
 			username: this.sessionCredentials?.username ?? storedUsername, // prefer to show already used username (if any) over stored
 			password: this.sessionCredentials?.password ?? storedPassword, // prefer to show already used password (if any) over stored
-			replyChannel: `vscode:proxyAuthResponse:${generateUuid()}`,
+			replyChannel: `vscode:proxyAuthResponse:${generateUuid()}`
 		};
-		window.sendWhenReady(
-			"vscode:openProxyAuthenticationDialog",
-			CancellationToken.None,
-			payload,
-		);
+		window.sendWhenReady('vscode:openProxyAuthenticationDialog', CancellationToken.None, payload);
 		this.state = ProxyAuthState.LoginDialogShown;
 
 		// Handle reply
-		const loginDialogCredentials = await new Promise<
-			Credentials | undefined
-		>((resolve) => {
-			const proxyAuthResponseHandler = async (
-				event: ElectronEvent,
-				channel: string,
-				reply:
-					| (Credentials & { remember: boolean })
-					| undefined /* canceled */,
-			) => {
+		const loginDialogCredentials = await new Promise<Credentials | undefined>(resolve => {
+			const proxyAuthResponseHandler = async (event: ElectronEvent, channel: string, reply: Credentials & { remember: boolean } | undefined /* canceled */) => {
 				if (channel === payload.replyChannel) {
-					this.logService.trace(
-						`auth#doResolveProxyCredentials - exit - received credentials from window ${window.id}`,
-					);
-					window.win?.webContents.off(
-						"ipc-message",
-						proxyAuthResponseHandler,
-					);
+					this.logService.trace(`auth#doResolveProxyCredentials - exit - received credentials from window ${window.id}`);
+					window.win?.webContents.off('ipc-message', proxyAuthResponseHandler);
 
 					// We got credentials from the window
 					if (reply) {
-						const credentials: Credentials = {
-							username: reply.username,
-							password: reply.password,
-						};
+						const credentials: Credentials = { username: reply.username, password: reply.password };
 
 						// Update stored credentials based on `remember` flag
 						try {
 							if (reply.remember) {
-								const encryptedSerializedCredentials =
-									await this.encryptionMainService.encrypt(
-										JSON.stringify(credentials),
-									);
+								const encryptedSerializedCredentials = await this.encryptionMainService.encrypt(JSON.stringify(credentials));
 								this.applicationStorageMainService.store(
-									this.PROXY_CREDENTIALS_SERVICE_KEY +
-										authInfoHash,
+									this.PROXY_CREDENTIALS_SERVICE_KEY + authInfoHash,
 									encryptedSerializedCredentials,
 									StorageScope.APPLICATION,
 									// Always store in machine scope because we do not want these values to be synced
-									StorageTarget.MACHINE,
+									StorageTarget.MACHINE
 								);
 							} else {
-								this.applicationStorageMainService.remove(
-									this.PROXY_CREDENTIALS_SERVICE_KEY +
-										authInfoHash,
-									StorageScope.APPLICATION,
-								);
+								this.applicationStorageMainService.remove(this.PROXY_CREDENTIALS_SERVICE_KEY + authInfoHash, StorageScope.APPLICATION);
 							}
 						} catch (error) {
 							this.logService.error(error); // handle gracefully
 						}
 
-						resolve({
-							username: credentials.username,
-							password: credentials.password,
-						});
+						resolve({ username: credentials.username, password: credentials.password });
 					}
 
 					// We did not get any credentials from the window (e.g. cancelled)
@@ -338,7 +234,7 @@ export class ProxyAuthHandler extends Disposable {
 				}
 			};
 
-			window.win?.webContents.on("ipc-message", proxyAuthResponseHandler);
+			window.win?.webContents.on('ipc-message', proxyAuthResponseHandler);
 		});
 
 		// Remember credentials for the session in case

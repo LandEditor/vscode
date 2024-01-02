@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { tmpdir } from "os";
-import { Queue } from "vs/base/common/async";
-import { randomPath } from "vs/base/common/extpath";
-import { Promises } from "vs/base/node/pfs";
-import { resolveTerminalEncoding } from "vs/base/node/terminalEncoding";
+import { tmpdir } from 'os';
+import { Queue } from 'vs/base/common/async';
+import { randomPath } from 'vs/base/common/extpath';
+import { Promises } from 'vs/base/node/pfs';
+import { resolveTerminalEncoding } from 'vs/base/node/terminalEncoding';
 
 export function hasStdinWithoutTty() {
 	try {
@@ -19,41 +19,36 @@ export function hasStdinWithoutTty() {
 }
 
 export function stdinDataListener(durationinMs: number): Promise<boolean> {
-	return new Promise((resolve) => {
+	return new Promise(resolve => {
 		const dataListener = () => resolve(true);
 
 		// wait for 1s maximum...
 		setTimeout(() => {
-			process.stdin.removeListener("data", dataListener);
+			process.stdin.removeListener('data', dataListener);
 
 			resolve(false);
 		}, durationinMs);
 
 		// ...but finish early if we detect data
-		process.stdin.once("data", dataListener);
+		process.stdin.once('data', dataListener);
 	});
 }
 
 export function getStdinFilePath(): string {
-	return randomPath(tmpdir(), "code-stdin", 3);
+	return randomPath(tmpdir(), 'code-stdin', 3);
 }
 
-export async function readFromStdin(
-	targetPath: string,
-	verbose: boolean,
-	onEnd?: Function,
-): Promise<void> {
+export async function readFromStdin(targetPath: string, verbose: boolean, onEnd?: Function): Promise<void> {
+
 	let [encoding, iconv] = await Promise.all([
-		resolveTerminalEncoding(verbose), // respect terminal encoding when piping into file
-		import("@vscode/iconv-lite-umd"), // lazy load encoding module for usage
-		Promises.appendFile(targetPath, ""), // make sure file exists right away (https://github.com/microsoft/vscode/issues/155341)
+		resolveTerminalEncoding(verbose),	// respect terminal encoding when piping into file
+		import('@vscode/iconv-lite-umd'),	// lazy load encoding module for usage
+		Promises.appendFile(targetPath, '') // make sure file exists right away (https://github.com/microsoft/vscode/issues/155341)
 	]);
 
 	if (!iconv.encodingExists(encoding)) {
-		console.log(
-			`Unsupported terminal encoding: ${encoding}, falling back to UTF-8.`,
-		);
-		encoding = "utf8";
+		console.log(`Unsupported terminal encoding: ${encoding}, falling back to UTF-8.`);
+		encoding = 'utf8';
 	}
 
 	// Use a `Queue` to be able to use `appendFile`
@@ -66,17 +61,17 @@ export async function readFromStdin(
 
 	const decoder = iconv.getDecoder(encoding);
 
-	process.stdin.on("data", (chunk) => {
+	process.stdin.on('data', chunk => {
 		const chunkStr = decoder.write(chunk);
 		appendFileQueue.queue(() => Promises.appendFile(targetPath, chunkStr));
 	});
 
-	process.stdin.on("end", () => {
+	process.stdin.on('end', () => {
 		const end = decoder.end();
 
 		appendFileQueue.queue(async () => {
 			try {
-				if (typeof end === "string") {
+				if (typeof end === 'string') {
 					await Promises.appendFile(targetPath, end);
 				}
 			} finally {

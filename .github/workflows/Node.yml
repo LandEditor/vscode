@@ -420,6 +420,33 @@ jobs:
               with:
                   node-version: ${{ matrix.node-version }}
                   cache: "pnpm"
+                  cache-dependency-path: ./extensions/vscode-api-tests/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./extensions/vscode-api-tests
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./extensions/vscode-colorize-tests/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./extensions/vscode-colorize-tests
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./extensions/vscode-test-resolver/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./extensions/vscode-test-resolver
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
                   cache-dependency-path: ./pnpm-lock.yaml
 
             - run: pnpm install
@@ -445,3 +472,59 @@ jobs:
 
             - run: pnpm install
               working-directory: ./remote/web
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./test/automation/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./test/automation
+
+            - run: pnpm run prepublishOnly
+              working-directory: .
+
+            - uses: actions/upload-artifact@v4.0.0
+              with:
+                  name: .-test-automation-Node-${{ matrix.node-version }}-Target
+                  path: ./test/automation/Target
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./test/integration/browser/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./test/integration/browser
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./test/leaks/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./test/leaks
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./test/monaco/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./test/monaco
+
+            - run: pnpm run test
+              working-directory: ./test/monaco
+
+            - uses: actions/setup-node@v4.0.1
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+                  cache-dependency-path: ./test/smoke/pnpm-lock.yaml
+
+            - run: pnpm install
+              working-directory: ./test/smoke

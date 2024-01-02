@@ -3,26 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable, toDisposable } from "vs/base/common/lifecycle";
-import { ResourceLabelFormatter } from "vs/platform/label/common/label";
-import {
-	ExtHostLabelServiceShape,
-	IMainContext,
-	MainContext,
-	MainThreadLabelServiceShape,
-} from "vs/workbench/api/common/extHost.protocol";
+import { ResourceLabelFormatter } from 'vs/platform/label/common/label';
+import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { MainThreadLabelServiceShape, ExtHostLabelServiceShape, MainContext, IMainContext } from 'vs/workbench/api/common/extHost.protocol';
 
 export class ExtHostLabelService implements ExtHostLabelServiceShape {
+
 	private readonly _proxy: MainThreadLabelServiceShape;
-	private _handlePool = 0;
+	private _handlePool: number = 0;
 
 	constructor(mainContext: IMainContext) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadLabelService);
 	}
 
-	$registerResourceLabelFormatter(
-		formatter: ResourceLabelFormatter,
-	): IDisposable {
+	$registerResourceLabelFormatter(formatter: ResourceLabelFormatter): IDisposable {
 		const handle = this._handlePool++;
 		this._proxy.$registerResourceLabelFormatter(handle, formatter);
 

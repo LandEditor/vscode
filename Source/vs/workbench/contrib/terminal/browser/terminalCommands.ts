@@ -3,11 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	KeybindingWeight,
-	KeybindingsRegistry,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import { ITerminalGroupService } from "vs/workbench/contrib/terminal/browser/terminal";
+import { KeybindingsRegistry, KeybindingWeight } from 'vs/platform/keybinding/common/keybindingsRegistry';
+import { ITerminalGroupService } from 'vs/workbench/contrib/terminal/browser/terminal';
 
 export function setupTerminalCommands(): void {
 	registerOpenTerminalAtIndexCommands();
@@ -23,12 +20,10 @@ function registerOpenTerminalAtIndexCommands(): void {
 			weight: KeybindingWeight.WorkbenchContrib,
 			when: undefined,
 			primary: 0,
-			handler: (accessor) => {
-				accessor
-					.get(ITerminalGroupService)
-					.setActiveInstanceByIndex(terminalIndex);
+			handler: accessor => {
+				accessor.get(ITerminalGroupService).setActiveInstanceByIndex(terminalIndex);
 				return accessor.get(ITerminalGroupService).showPanel(true);
-			},
+			}
 		});
 	}
 }

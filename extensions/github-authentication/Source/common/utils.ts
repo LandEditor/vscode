@@ -3,45 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, Event, EventEmitter } from "vscode";
+import { EventEmitter, Event, Disposable } from 'vscode';
 
-export function filterEvent<T>(
-	event: Event<T>,
-	filter: (e: T) => boolean,
-): Event<T> {
-	return (listener, thisArgs = null, disposables?) =>
-		event(
-			(e) => filter(e) && listener.call(thisArgs, e),
-			null,
-			disposables,
-		);
+export function filterEvent<T>(event: Event<T>, filter: (e: T) => boolean): Event<T> {
+	return (listener, thisArgs = null, disposables?) => event(e => filter(e) && listener.call(thisArgs, e), null, disposables);
 }
 
 export function onceEvent<T>(event: Event<T>): Event<T> {
 	return (listener, thisArgs = null, disposables?) => {
-		const result = event(
-			(e) => {
-				result.dispose();
-				return listener.call(thisArgs, e);
-			},
-			null,
-			disposables,
-		);
+		const result = event(e => {
+			result.dispose();
+			return listener.call(thisArgs, e);
+		}, null, disposables);
 
 		return result;
 	};
 }
 
+
 export interface PromiseAdapter<T, U> {
 	(
 		value: T,
-		resolve: (value: U | PromiseLike<U>) => void,
-		reject: (reason: any) => void,
+		resolve:
+			(value: U | PromiseLike<U>) => void,
+		reject:
+			(reason: any) => void
 	): any;
 }
 
-const passthrough = (value: any, resolve: (value?: any) => void) =>
-	resolve(value);
+const passthrough = (value: any, resolve: (value?: any) => void) => resolve(value);
 
 /**
  * Return a promise that resolves with the next emitted event, or with some future
@@ -59,18 +49,16 @@ const passthrough = (value: any, resolve: (value?: any) => void) =>
  */
 export function promiseFromEvent<T, U>(
 	event: Event<T>,
-	adapter: PromiseAdapter<T, U> = passthrough,
-): { promise: Promise<U>; cancel: EventEmitter<void> } {
+	adapter: PromiseAdapter<T, U> = passthrough): { promise: Promise<U>; cancel: EventEmitter<void> } {
 	let subscription: Disposable;
 	const cancel = new EventEmitter<void>();
 	return {
 		promise: new Promise<U>((resolve, reject) => {
-			cancel.event((_) => reject("Cancelled"));
+			cancel.event(_ => reject('Cancelled'));
 			subscription = event((value: T) => {
 				try {
-					Promise.resolve(adapter(value, resolve, reject)).catch(
-						reject,
-					);
+					Promise.resolve(adapter(value, resolve, reject))
+						.catch(reject);
 				} catch (error) {
 					reject(error);
 				}
@@ -80,25 +68,21 @@ export function promiseFromEvent<T, U>(
 				subscription.dispose();
 				return result;
 			},
-			(error) => {
+			error => {
 				subscription.dispose();
 				throw error;
-			},
+			}
 		),
-		cancel,
+		cancel
 	};
 }
 
-export function arrayEquals<T>(
-	one: readonly T[] | undefined,
-	other: readonly T[] | undefined,
-	itemEquals: (a: T, b: T) => boolean = (a, b) => a === b,
-): boolean {
+export function arrayEquals<T>(one: ReadonlyArray<T> | undefined, other: ReadonlyArray<T> | undefined, itemEquals: (a: T, b: T) => boolean = (a, b) => a === b): boolean {
 	if (one === other) {
 		return true;
 	}
 
-	if (!(one && other)) {
+	if (!one || !other) {
 		return false;
 	}
 
@@ -115,9 +99,11 @@ export function arrayEquals<T>(
 	return true;
 }
 
+
 export class StopWatch {
+
 	private _startTime: number = Date.now();
-	private _stopTime = -1;
+	private _stopTime: number = -1;
 
 	public stop(): void {
 		this._stopTime = Date.now();

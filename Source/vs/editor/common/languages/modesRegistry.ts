@@ -3,28 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { Mimes } from "vs/base/common/mime";
-import { ILanguageExtensionPoint } from "vs/editor/common/languages/language";
-import * as nls from "vs/nls";
-import {
-	Extensions as ConfigurationExtensions,
-	IConfigurationRegistry,
-} from "vs/platform/configuration/common/configurationRegistry";
-import { Registry } from "vs/platform/registry/common/platform";
+import * as nls from 'vs/nls';
+import { Emitter, Event } from 'vs/base/common/event';
+import { ILanguageExtensionPoint } from 'vs/editor/common/languages/language';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { Mimes } from 'vs/base/common/mime';
+import { IConfigurationRegistry, Extensions as ConfigurationExtensions } from 'vs/platform/configuration/common/configurationRegistry';
 
 // Define extension point ids
 export const Extensions = {
-	ModesRegistry: "editor.modesRegistry",
+	ModesRegistry: 'editor.modesRegistry'
 };
 
 export class EditorModesRegistry {
+
 	private readonly _languages: ILanguageExtensionPoint[];
 
 	private readonly _onDidChangeLanguages = new Emitter<void>();
-	public readonly onDidChangeLanguages: Event<void> =
-		this._onDidChangeLanguages.event;
+	public readonly onDidChangeLanguages: Event<void> = this._onDidChangeLanguages.event;
 
 	constructor() {
 		this._languages = [];
@@ -41,11 +38,11 @@ export class EditorModesRegistry {
 						return;
 					}
 				}
-			},
+			}
 		};
 	}
 
-	public getLanguages(): readonly ILanguageExtensionPoint[] {
+	public getLanguages(): ReadonlyArray<ILanguageExtensionPoint> {
 		return this._languages;
 	}
 }
@@ -53,25 +50,22 @@ export class EditorModesRegistry {
 export const ModesRegistry = new EditorModesRegistry();
 Registry.add(Extensions.ModesRegistry, ModesRegistry);
 
-export const PLAINTEXT_LANGUAGE_ID = "plaintext";
-export const PLAINTEXT_EXTENSION = ".txt";
+export const PLAINTEXT_LANGUAGE_ID = 'plaintext';
+export const PLAINTEXT_EXTENSION = '.txt';
 
 ModesRegistry.registerLanguage({
 	id: PLAINTEXT_LANGUAGE_ID,
 	extensions: [PLAINTEXT_EXTENSION],
-	aliases: [nls.localize("plainText.alias", "Plain Text"), "text"],
-	mimetypes: [Mimes.text],
+	aliases: [nls.localize('plainText.alias', "Plain Text"), 'text'],
+	mimetypes: [Mimes.text]
 });
 
-Registry.as<IConfigurationRegistry>(
-	ConfigurationExtensions.Configuration,
-).registerDefaultConfigurations([
-	{
+Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+	.registerDefaultConfigurations([{
 		overrides: {
-			"[plaintext]": {
-				"editor.unicodeHighlight.ambiguousCharacters": false,
-				"editor.unicodeHighlight.invisibleCharacters": false,
-			},
-		},
-	},
-]);
+			'[plaintext]': {
+				'editor.unicodeHighlight.ambiguousCharacters': false,
+				'editor.unicodeHighlight.invisibleCharacters': false
+			}
+		}
+	}]);

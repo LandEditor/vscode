@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
-import * as viewEvents from "vs/editor/common/viewEvents";
+import { Disposable } from 'vs/base/common/lifecycle';
+import * as viewEvents from 'vs/editor/common/viewEvents';
 
 export class ViewEventHandler extends Disposable {
+
 	private _shouldRender: boolean;
 
 	constructor() {
@@ -32,27 +33,19 @@ export class ViewEventHandler extends Disposable {
 
 	// --- begin event handlers
 
-	public onCompositionStart(
-		e: viewEvents.ViewCompositionStartEvent,
-	): boolean {
+	public onCompositionStart(e: viewEvents.ViewCompositionStartEvent): boolean {
 		return false;
 	}
 	public onCompositionEnd(e: viewEvents.ViewCompositionEndEvent): boolean {
 		return false;
 	}
-	public onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
-	): boolean {
+	public onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		return false;
 	}
-	public onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent,
-	): boolean {
+	public onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
 		return false;
 	}
-	public onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent,
-	): boolean {
+	public onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
 		return false;
 	}
 	public onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
@@ -61,14 +54,10 @@ export class ViewEventHandler extends Disposable {
 	public onFocusChanged(e: viewEvents.ViewFocusChangedEvent): boolean {
 		return false;
 	}
-	public onLanguageConfigurationChanged(
-		e: viewEvents.ViewLanguageConfigurationEvent,
-	): boolean {
+	public onLanguageConfigurationChanged(e: viewEvents.ViewLanguageConfigurationEvent): boolean {
 		return false;
 	}
-	public onLineMappingChanged(
-		e: viewEvents.ViewLineMappingChangedEvent,
-	): boolean {
+	public onLineMappingChanged(e: viewEvents.ViewLineMappingChangedEvent): boolean {
 		return false;
 	}
 	public onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
@@ -80,9 +69,7 @@ export class ViewEventHandler extends Disposable {
 	public onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean {
 		return false;
 	}
-	public onRevealRangeRequest(
-		e: viewEvents.ViewRevealRangeRequestEvent,
-	): boolean {
+	public onRevealRangeRequest(e: viewEvents.ViewRevealRangeRequestEvent): boolean {
 		return false;
 	}
 	public onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
@@ -94,9 +81,7 @@ export class ViewEventHandler extends Disposable {
 	public onTokensChanged(e: viewEvents.ViewTokensChangedEvent): boolean {
 		return false;
 	}
-	public onTokensColorsChanged(
-		e: viewEvents.ViewTokensColorsChangedEvent,
-	): boolean {
+	public onTokensColorsChanged(e: viewEvents.ViewTokensColorsChangedEvent): boolean {
 		return false;
 	}
 	public onZonesChanged(e: viewEvents.ViewZonesChangedEvent): boolean {
@@ -106,143 +91,125 @@ export class ViewEventHandler extends Disposable {
 	// --- end event handlers
 
 	public handleEvents(events: viewEvents.ViewEvent[]): void {
+
 		let shouldRender = false;
 
 		for (let i = 0, len = events.length; i < len; i++) {
 			const e = events[i];
 
 			switch (e.type) {
-				case viewEvents.ViewEventType.ViewCompositionStart: {
+
+				case viewEvents.ViewEventType.ViewCompositionStart:
 					if (this.onCompositionStart(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewCompositionEnd: {
+				case viewEvents.ViewEventType.ViewCompositionEnd:
 					if (this.onCompositionEnd(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewConfigurationChanged: {
+				case viewEvents.ViewEventType.ViewConfigurationChanged:
 					if (this.onConfigurationChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewCursorStateChanged: {
+				case viewEvents.ViewEventType.ViewCursorStateChanged:
 					if (this.onCursorStateChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewDecorationsChanged: {
+				case viewEvents.ViewEventType.ViewDecorationsChanged:
 					if (this.onDecorationsChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewFlushed: {
+				case viewEvents.ViewEventType.ViewFlushed:
 					if (this.onFlushed(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewFocusChanged: {
+				case viewEvents.ViewEventType.ViewFocusChanged:
 					if (this.onFocusChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType
-					.ViewLanguageConfigurationChanged: {
+				case viewEvents.ViewEventType.ViewLanguageConfigurationChanged:
 					if (this.onLanguageConfigurationChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewLineMappingChanged: {
+				case viewEvents.ViewEventType.ViewLineMappingChanged:
 					if (this.onLineMappingChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewLinesChanged: {
+				case viewEvents.ViewEventType.ViewLinesChanged:
 					if (this.onLinesChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewLinesDeleted: {
+				case viewEvents.ViewEventType.ViewLinesDeleted:
 					if (this.onLinesDeleted(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewLinesInserted: {
+				case viewEvents.ViewEventType.ViewLinesInserted:
 					if (this.onLinesInserted(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewRevealRangeRequest: {
+				case viewEvents.ViewEventType.ViewRevealRangeRequest:
 					if (this.onRevealRangeRequest(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewScrollChanged: {
+				case viewEvents.ViewEventType.ViewScrollChanged:
 					if (this.onScrollChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewTokensChanged: {
+				case viewEvents.ViewEventType.ViewTokensChanged:
 					if (this.onTokensChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewThemeChanged: {
+				case viewEvents.ViewEventType.ViewThemeChanged:
 					if (this.onThemeChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewTokensColorsChanged: {
+				case viewEvents.ViewEventType.ViewTokensColorsChanged:
 					if (this.onTokensColorsChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				case viewEvents.ViewEventType.ViewZonesChanged: {
+				case viewEvents.ViewEventType.ViewZonesChanged:
 					if (this.onZonesChanged(e)) {
 						shouldRender = true;
 					}
 					break;
-				}
 
-				default: {
-					console.info("View received unknown event: ");
+				default:
+					console.info('View received unknown event: ');
 					console.info(e);
-				}
 			}
 		}
 

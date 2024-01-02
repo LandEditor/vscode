@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Extension, Uri, extensions } from "vscode";
+import { Extension, extensions, Uri } from 'vscode';
 
 export interface RemoteHubApi {
 	getProviderUri(uri: Uri): Uri;
@@ -16,6 +16,7 @@ export interface RemoteHubApi {
 }
 
 namespace RemoteRepositories {
+
 	let remoteHub: Extension<RemoteHubApi> | undefined;
 
 	function getRemoteExtension(): Extension<RemoteHubApi> {
@@ -23,15 +24,12 @@ namespace RemoteRepositories {
 			return remoteHub;
 		}
 
-		remoteHub =
-			extensions.getExtension<RemoteHubApi>(
-				"ms-vscode.remote-repositories",
-			) ??
-			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub") ??
-			extensions.getExtension<RemoteHubApi>("GitHub.remoteHub-insiders");
+		remoteHub = extensions.getExtension<RemoteHubApi>('ms-vscode.remote-repositories')
+			?? extensions.getExtension<RemoteHubApi>('GitHub.remoteHub')
+			?? extensions.getExtension<RemoteHubApi>('GitHub.remoteHub-insiders');
 
 		if (remoteHub === undefined) {
-			throw new Error("No Remote repository extension found.");
+			throw new Error(`No Remote repository extension found.`);
 		}
 		return remoteHub;
 	}

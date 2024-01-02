@@ -12,17 +12,20 @@ export function rot(index: number, modulo: number): number {
 }
 
 export class Counter {
+	private _next = 0;
+
 	getNext(): number {
 		return this._next++;
 	}
 }
 
 export class MovingAverage {
+
 	private _n = 1;
 	private _val = 0;
 
 	update(value: number): number {
-		this._val += (value - this._val) / this._n;
+		this._val = this._val + (value - this._val) / this._n;
 		this._n += 1;
 		return this._val;
 	}
@@ -33,11 +36,12 @@ export class MovingAverage {
 }
 
 export class SlidingWindowAverage {
-	private _n = 0;
+
+	private _n: number = 0;
 	private _val = 0;
 
 	private readonly _values: number[] = [];
-	private _index = 0;
+	private _index: number = 0;
 	private _sum = 0;
 
 	constructor(size: number) {

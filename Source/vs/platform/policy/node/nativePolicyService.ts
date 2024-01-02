@@ -3,21 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { PolicyUpdate, Watcher } from "@vscode/policy-watcher";
-import { Throttler } from "vs/base/common/async";
-import { IStringDictionary } from "vs/base/common/collections";
-import { MutableDisposable } from "vs/base/common/lifecycle";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	AbstractPolicyService,
-	IPolicyService,
-	PolicyDefinition,
-} from "vs/platform/policy/common/policy";
+import { AbstractPolicyService, IPolicyService, PolicyDefinition } from 'vs/platform/policy/common/policy';
+import { IStringDictionary } from 'vs/base/common/collections';
+import { Throttler } from 'vs/base/common/async';
+import type { PolicyUpdate, Watcher } from '@vscode/policy-watcher';
+import { MutableDisposable } from 'vs/base/common/lifecycle';
+import { ILogService } from 'vs/platform/log/common/log';
 
-export class NativePolicyService
-	extends AbstractPolicyService
-	implements IPolicyService
-{
+export class NativePolicyService extends AbstractPolicyService implements IPolicyService {
+
 	private throttler = new Throttler();
 	private watcher = this._register(new MutableDisposable<Watcher>());
 
@@ -28,48 +22,26 @@ export class NativePolicyService
 		super();
 	}
 
-	protected async _updatePolicyDefinitions(
-		policyDefinitions: IStringDictionary<PolicyDefinition>,
-	): Promise<void> {
-		this.logService.trace(
-			`NativePolicyService#_updatePolicyDefinitions - Found ${
-				Object.keys(policyDefinitions).length
-			} policy definitions`,
-		);
+	protected async _updatePolicyDefinitions(policyDefinitions: IStringDictionary<PolicyDefinition>): Promise<void> {
+		this.logService.trace(`NativePolicyService#_updatePolicyDefinitions - Found ${Object.keys(policyDefinitions).length} policy definitions`);
 
-		const { createWatcher } = await import("@vscode/policy-watcher");
+		const { createWatcher } = await import('@vscode/policy-watcher');
 
-		await this.throttler.queue(
-			() =>
-				new Promise<void>((c, e) => {
-					try {
-						this.watcher.value = createWatcher(
-							this.productName,
-							policyDefinitions,
-							(update) => {
-								this._onDidPolicyChange(update);
-								c();
-							},
-						);
-					} catch (err) {
-						this.logService.error(
-							"NativePolicyService#_updatePolicyDefinitions - Error creating watcher:",
-							err,
-						);
-						e(err);
-					}
-				}),
-		);
+		await this.throttler.queue(() => new Promise<void>((c, e) => {
+			try {
+				this.watcher.value = createWatcher(this.productName, policyDefinitions, update => {
+					this._onDidPolicyChange(update);
+					c();
+				});
+			} catch (err) {
+				this.logService.error(`NativePolicyService#_updatePolicyDefinitions - Error creating watcher:`, err);
+				e(err);
+			}
+		}));
 	}
 
-	private _onDidPolicyChange(
-		update: PolicyUpdate<IStringDictionary<PolicyDefinition>>,
-	): void {
-		this.logService.trace(
-			`NativePolicyService#_onDidPolicyChange - Updated policy values: ${JSON.stringify(
-				update,
-			)}`,
-		);
+	private _onDidPolicyChange(update: PolicyUpdate<IStringDictionary<PolicyDefinition>>): void {
+		this.logService.trace(`NativePolicyService#_onDidPolicyChange - Updated policy values: ${JSON.stringify(update)}`);
 
 		for (const key in update) {
 			const value = update[key] as any;

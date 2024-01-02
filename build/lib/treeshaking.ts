@@ -3,28 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
-import * as path from "path";
-import type * as ts from "typescript";
+import * as fs from 'fs';
+import * as path from 'path';
+import type * as ts from 'typescript';
 
-const TYPESCRIPT_LIB_FOLDER = path.dirname(
-	require.resolve("typescript/lib/lib.d.ts"),
-);
+const TYPESCRIPT_LIB_FOLDER = path.dirname(require.resolve('typescript/lib/lib.d.ts'));
 
-export enum ShakeLevel {
+export const enum ShakeLevel {
 	Files = 0,
 	InnerFile = 1,
-	ClassMembers = 2,
+	ClassMembers = 2
 }
 
 export function toStringShakeLevel(shakeLevel: ShakeLevel): string {
 	switch (shakeLevel) {
 		case ShakeLevel.Files:
-			return "Files (0)";
+			return 'Files (0)';
 		case ShakeLevel.InnerFile:
-			return "InnerFile (1)";
+			return 'InnerFile (1)';
 		case ShakeLevel.ClassMembers:
-			return "ClassMembers (2)";
+			return 'ClassMembers (2)';
 	}
 }
 
@@ -66,47 +64,42 @@ export interface ITreeShakingResult {
 	[file: string]: string;
 }
 
-function printDiagnostics(
-	options: ITreeShakingOptions,
-	diagnostics: readonly ts.Diagnostic[],
-): void {
+function printDiagnostics(options: ITreeShakingOptions, diagnostics: ReadonlyArray<ts.Diagnostic>): void {
 	for (const diag of diagnostics) {
-		let result = "";
+		let result = '';
 		if (diag.file) {
 			result += `${path.join(options.sourcesRoot, diag.file.fileName)}`;
 		}
 		if (diag.file && diag.start) {
-			const location = diag.file.getLineAndCharacterOfPosition(
-				diag.start,
-			);
+			const location = diag.file.getLineAndCharacterOfPosition(diag.start);
 			result += `:${location.line + 1}:${location.character}`;
 		}
-		result += ` - ${JSON.stringify(diag.messageText)}`;
+		result += ` - ` + JSON.stringify(diag.messageText);
 		console.log(result);
 	}
 }
 
 export function shake(options: ITreeShakingOptions): ITreeShakingResult {
-	const ts = require("typescript") as typeof import("typescript");
+	const ts = require('typescript') as typeof import('typescript');
 	const languageService = createTypeScriptLanguageService(ts, options);
 	const program = languageService.getProgram()!;
 
 	const globalDiagnostics = program.getGlobalDiagnostics();
 	if (globalDiagnostics.length > 0) {
 		printDiagnostics(options, globalDiagnostics);
-		throw new Error("Compilation Errors encountered.");
+		throw new Error(`Compilation Errors encountered.`);
 	}
 
 	const syntacticDiagnostics = program.getSyntacticDiagnostics();
 	if (syntacticDiagnostics.length > 0) {
 		printDiagnostics(options, syntacticDiagnostics);
-		throw new Error("Compilation Errors encountered.");
+		throw new Error(`Compilation Errors encountered.`);
 	}
 
 	const semanticDiagnostics = program.getSemanticDiagnostics();
 	if (semanticDiagnostics.length > 0) {
 		printDiagnostics(options, semanticDiagnostics);
-		throw new Error("Compilation Errors encountered.");
+		throw new Error(`Compilation Errors encountered.`);
 	}
 
 	markNodes(ts, languageService, options);
@@ -115,10 +108,7 @@ export function shake(options: ITreeShakingOptions): ITreeShakingResult {
 }
 
 //#region Discovery, LanguageService & Setup
-function createTypeScriptLanguageService(
-	ts: typeof import("typescript"),
-	options: ITreeShakingOptions,
-): ts.LanguageService {
+function createTypeScriptLanguageService(ts: typeof import('typescript'), options: ITreeShakingOptions): ts.LanguageService {
 	// Discover referenced files
 	const FILES = discoverAndReadFiles(ts, options);
 
@@ -136,27 +126,16 @@ function createTypeScriptLanguageService(
 	// Resolve libs
 	const RESOLVED_LIBS = processLibFiles(ts, options);
 
-	const compilerOptions = ts.convertCompilerOptionsFromJson(
-		options.compilerOptions,
-		options.sourcesRoot,
-	).options;
+	const compilerOptions = ts.convertCompilerOptionsFromJson(options.compilerOptions, options.sourcesRoot).options;
 
-	const host = new TypeScriptLanguageServiceHost(
-		ts,
-		RESOLVED_LIBS,
-		FILES,
-		compilerOptions,
-	);
+	const host = new TypeScriptLanguageServiceHost(ts, RESOLVED_LIBS, FILES, compilerOptions);
 	return ts.createLanguageService(host);
 }
 
 /**
  * Read imports and follow them until all files have been handled
  */
-function discoverAndReadFiles(
-	ts: typeof import("typescript"),
-	options: ITreeShakingOptions,
-): IFileMap {
+function discoverAndReadFiles(ts: typeof import('typescript'), options: ITreeShakingOptions): IFileMap {
 	const FILES: IFileMap = {};
 
 	const in_queue: { [module: string]: boolean } = Object.create(null);
@@ -164,7 +143,7 @@ function discoverAndReadFiles(
 
 	const enqueue = (moduleId: string) => {
 		// To make the treeshaker work on windows...
-		moduleId = moduleId.replace(/\\/g, "/");
+		moduleId = moduleId.replace(/\\/g, '/');
 		if (in_queue[moduleId]) {
 			return;
 		}
@@ -176,14 +155,14 @@ function discoverAndReadFiles(
 
 	while (queue.length > 0) {
 		const moduleId = queue.shift()!;
-		const dts_filename = path.join(options.sourcesRoot, `${moduleId}.d.ts`);
+		const dts_filename = path.join(options.sourcesRoot, moduleId + '.d.ts');
 		if (fs.existsSync(dts_filename)) {
 			const dts_filecontents = fs.readFileSync(dts_filename).toString();
 			FILES[`${moduleId}.d.ts`] = dts_filecontents;
 			continue;
 		}
 
-		const js_filename = path.join(options.sourcesRoot, `${moduleId}.js`);
+		const js_filename = path.join(options.sourcesRoot, moduleId + '.js');
 		if (fs.existsSync(js_filename)) {
 			// This is an import for a .js file, so ignore it...
 			continue;
@@ -191,12 +170,9 @@ function discoverAndReadFiles(
 
 		let ts_filename: string;
 		if (options.redirects[moduleId]) {
-			ts_filename = path.join(
-				options.sourcesRoot,
-				`${options.redirects[moduleId]}.ts`,
-			);
+			ts_filename = path.join(options.sourcesRoot, options.redirects[moduleId] + '.ts');
 		} else {
-			ts_filename = path.join(options.sourcesRoot, `${moduleId}.ts`);
+			ts_filename = path.join(options.sourcesRoot, moduleId + '.ts');
 		}
 		const ts_filecontents = fs.readFileSync(ts_filename).toString();
 		const info = ts.preProcessFile(ts_filecontents);
@@ -210,10 +186,7 @@ function discoverAndReadFiles(
 
 			let importedModuleId = importedFileName;
 			if (/(^\.\/)|(^\.\.\/)/.test(importedModuleId)) {
-				importedModuleId = path.join(
-					path.dirname(moduleId),
-					importedModuleId,
-				);
+				importedModuleId = path.join(path.dirname(moduleId), importedModuleId);
 			}
 			enqueue(importedModuleId);
 		}
@@ -227,15 +200,13 @@ function discoverAndReadFiles(
 /**
  * Read lib files and follow lib references
  */
-function processLibFiles(
-	ts: typeof import("typescript"),
-	options: ITreeShakingOptions,
-): ILibMap {
+function processLibFiles(ts: typeof import('typescript'), options: ITreeShakingOptions): ILibMap {
+
 	const stack: string[] = [...options.compilerOptions.lib];
 	const result: ILibMap = {};
 
 	while (stack.length > 0) {
-		const filename = `lib.${stack.shift()?.toLowerCase()}.d.ts`;
+		const filename = `lib.${stack.shift()!.toLowerCase()}.d.ts`;
 		const key = `defaultLib:${filename}`;
 		if (!result[key]) {
 			// add this file
@@ -254,28 +225,20 @@ function processLibFiles(
 	return result;
 }
 
-interface ILibMap {
-	[libName: string]: string;
-}
-interface IFileMap {
-	[fileName: string]: string;
-}
+interface ILibMap { [libName: string]: string }
+interface IFileMap { [fileName: string]: string }
 
 /**
  * A TypeScript language service host
  */
 class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
-	private readonly _ts: typeof import("typescript");
+
+	private readonly _ts: typeof import('typescript');
 	private readonly _libs: ILibMap;
 	private readonly _files: IFileMap;
 	private readonly _compilerOptions: ts.CompilerOptions;
 
-	constructor(
-		ts: typeof import("typescript"),
-		libs: ILibMap,
-		files: IFileMap,
-		compilerOptions: ts.CompilerOptions,
-	) {
+	constructor(ts: typeof import('typescript'), libs: ILibMap, files: IFileMap, compilerOptions: ts.CompilerOptions) {
 		this._ts = ts;
 		this._libs = libs;
 		this._files = files;
@@ -288,15 +251,17 @@ class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
 		return this._compilerOptions;
 	}
 	getScriptFileNames(): string[] {
-		return ([] as string[])
-			.concat(Object.keys(this._libs))
-			.concat(Object.keys(this._files));
+		return (
+			([] as string[])
+				.concat(Object.keys(this._libs))
+				.concat(Object.keys(this._files))
+		);
 	}
 	getScriptVersion(_fileName: string): string {
-		return "1";
+		return '1';
 	}
 	getProjectVersion(): string {
-		return "1";
+		return '1';
 	}
 	getScriptSnapshot(fileName: string): ts.IScriptSnapshot {
 		if (this._files.hasOwnProperty(fileName)) {
@@ -304,17 +269,17 @@ class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
 		} else if (this._libs.hasOwnProperty(fileName)) {
 			return this._ts.ScriptSnapshot.fromString(this._libs[fileName]);
 		} else {
-			return this._ts.ScriptSnapshot.fromString("");
+			return this._ts.ScriptSnapshot.fromString('');
 		}
 	}
 	getScriptKind(_fileName: string): ts.ScriptKind {
 		return this._ts.ScriptKind.TS;
 	}
 	getCurrentDirectory(): string {
-		return "";
+		return '';
 	}
 	getDefaultLibFileName(_options: ts.CompilerOptions): string {
-		return "defaultLib:lib.d.ts";
+		return 'defaultLib:lib.d.ts';
 	}
 	isDefaultLibFileName(fileName: string): boolean {
 		return fileName === this.getDefaultLibFileName(this._compilerOptions);
@@ -330,10 +295,10 @@ class TypeScriptLanguageServiceHost implements ts.LanguageServiceHost {
 
 //#region Tree Shaking
 
-enum NodeColor {
+const enum NodeColor {
 	White = 0,
 	Gray = 1,
-	Black = 2,
+	Black = 2
 }
 
 function getColor(node: ts.Node): NodeColor {
@@ -370,16 +335,11 @@ function nodeOrChildIsBlack(node: ts.Node): boolean {
 	return false;
 }
 
-function isSymbolWithDeclarations(
-	symbol: ts.Symbol | undefined | null,
-): symbol is ts.Symbol & { declarations: ts.Declaration[] } {
-	return !!symbol?.declarations;
+function isSymbolWithDeclarations(symbol: ts.Symbol | undefined | null): symbol is ts.Symbol & { declarations: ts.Declaration[] } {
+	return !!(symbol && symbol.declarations);
 }
 
-function isVariableStatementWithSideEffects(
-	ts: typeof import("typescript"),
-	node: ts.Node,
-): boolean {
+function isVariableStatementWithSideEffects(ts: typeof import('typescript'), node: ts.Node): boolean {
 	if (!ts.isVariableStatement(node)) {
 		return false;
 	}
@@ -391,10 +351,7 @@ function isVariableStatementWithSideEffects(
 		}
 		if (ts.isCallExpression(node) || ts.isNewExpression(node)) {
 			// TODO: assuming `createDecorator` and `refineServiceDecorator` calls are side-effect free
-			const isSideEffectFree =
-				/(createDecorator|refineServiceDecorator)/.test(
-					node.expression.getText(),
-				);
+			const isSideEffectFree = /(createDecorator|refineServiceDecorator)/.test(node.expression.getText());
 			if (!isSideEffectFree) {
 				hasSideEffects = true;
 			}
@@ -405,19 +362,14 @@ function isVariableStatementWithSideEffects(
 	return hasSideEffects;
 }
 
-function isStaticMemberWithSideEffects(
-	ts: typeof import("typescript"),
-	node: ts.ClassElement | ts.TypeElement,
-): boolean {
+function isStaticMemberWithSideEffects(ts: typeof import('typescript'), node: ts.ClassElement | ts.TypeElement): boolean {
 	if (!ts.isPropertyDeclaration(node)) {
 		return false;
 	}
 	if (!node.modifiers) {
 		return false;
 	}
-	if (
-		!node.modifiers.some((mod) => mod.kind === ts.SyntaxKind.StaticKeyword)
-	) {
+	if (!node.modifiers.some(mod => mod.kind === ts.SyntaxKind.StaticKeyword)) {
 		return false;
 	}
 	let hasSideEffects = false;
@@ -435,14 +387,10 @@ function isStaticMemberWithSideEffects(
 	return hasSideEffects;
 }
 
-function markNodes(
-	ts: typeof import("typescript"),
-	languageService: ts.LanguageService,
-	options: ITreeShakingOptions,
-) {
+function markNodes(ts: typeof import('typescript'), languageService: ts.LanguageService, options: ITreeShakingOptions) {
 	const program = languageService.getProgram();
 	if (!program) {
-		throw new Error("Could not get program from language service");
+		throw new Error('Could not get program from language service');
 	}
 
 	if (options.shakeLevel === ShakeLevel.Files) {
@@ -459,12 +407,11 @@ function markNodes(
 	const sourceFilesLoaded: { [fileName: string]: boolean } = {};
 
 	function enqueueTopLevelModuleStatements(sourceFile: ts.SourceFile): void {
+
 		sourceFile.forEachChild((node: ts.Node) => {
+
 			if (ts.isImportDeclaration(node)) {
-				if (
-					!node.importClause &&
-					ts.isStringLiteral(node.moduleSpecifier)
-				) {
+				if (!node.importClause && ts.isStringLiteral(node.moduleSpecifier)) {
 					setColor(node, NodeColor.Black);
 					enqueueImport(node, node.moduleSpecifier.text);
 				}
@@ -472,11 +419,7 @@ function markNodes(
 			}
 
 			if (ts.isExportDeclaration(node)) {
-				if (
-					!node.exportClause &&
-					node.moduleSpecifier &&
-					ts.isStringLiteral(node.moduleSpecifier)
-				) {
+				if (!node.exportClause && node.moduleSpecifier && ts.isStringLiteral(node.moduleSpecifier)) {
 					// export * from "foo";
 					setColor(node, NodeColor.Black);
 					enqueueImport(node, node.moduleSpecifier.text);
@@ -494,10 +437,10 @@ function markNodes(
 			}
 
 			if (
-				ts.isExpressionStatement(node) ||
-				ts.isIfStatement(node) ||
-				ts.isIterationStatement(node, true) ||
-				ts.isExportAssignment(node)
+				ts.isExpressionStatement(node)
+				|| ts.isIfStatement(node)
+				|| ts.isIterationStatement(node, true)
+				|| ts.isExportAssignment(node)
 			) {
 				enqueue_black(node);
 			}
@@ -508,15 +451,14 @@ function markNodes(
 					enqueue_black(node);
 				}
 			}
+
 		});
 	}
 
 	/**
 	 * Return the parent of `node` which is an ImportDeclaration
 	 */
-	function findParentImportDeclaration(
-		node: ts.Declaration,
-	): ts.ImportDeclaration | null {
+	function findParentImportDeclaration(node: ts.Declaration): ts.ImportDeclaration | null {
 		let _node: ts.Node = node;
 		do {
 			if (ts.isImportDeclaration(_node)) {
@@ -579,41 +521,22 @@ function markNodes(
 		setColor(node, NodeColor.Black);
 		black_queue.push(node);
 
-		if (
-			options.shakeLevel === ShakeLevel.ClassMembers &&
-			(ts.isMethodDeclaration(node) ||
-				ts.isMethodSignature(node) ||
-				ts.isPropertySignature(node) ||
-				ts.isPropertyDeclaration(node) ||
-				ts.isGetAccessor(node) ||
-				ts.isSetAccessor(node))
-		) {
-			const references = languageService.getReferencesAtPosition(
-				node.getSourceFile().fileName,
-				node.name.pos + node.name.getLeadingTriviaWidth(),
-			);
+		if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isMethodDeclaration(node) || ts.isMethodSignature(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node) || ts.isGetAccessor(node) || ts.isSetAccessor(node))) {
+			const references = languageService.getReferencesAtPosition(node.getSourceFile().fileName, node.name.pos + node.name.getLeadingTriviaWidth());
 			if (references) {
 				for (let i = 0, len = references.length; i < len; i++) {
 					const reference = references[i];
-					const referenceSourceFile = program?.getSourceFile(
-						reference.fileName,
-					);
+					const referenceSourceFile = program!.getSourceFile(reference.fileName);
 					if (!referenceSourceFile) {
 						continue;
 					}
 
-					const referenceNode = getTokenAtPosition(
-						ts,
-						referenceSourceFile,
-						reference.textSpan.start,
-						false,
-						false,
-					);
+					const referenceNode = getTokenAtPosition(ts, referenceSourceFile, reference.textSpan.start, false, false);
 					if (
-						ts.isMethodDeclaration(referenceNode.parent) ||
-						ts.isPropertyDeclaration(referenceNode.parent) ||
-						ts.isGetAccessor(referenceNode.parent) ||
-						ts.isSetAccessor(referenceNode.parent)
+						ts.isMethodDeclaration(referenceNode.parent)
+						|| ts.isPropertyDeclaration(referenceNode.parent)
+						|| ts.isGetAccessor(referenceNode.parent)
+						|| ts.isSetAccessor(referenceNode.parent)
 					) {
 						enqueue_gray(referenceNode.parent);
 					}
@@ -623,7 +546,7 @@ function markNodes(
 	}
 
 	function enqueueFile(filename: string): void {
-		const sourceFile = program?.getSourceFile(filename);
+		const sourceFile = program!.getSourceFile(filename);
 		if (!sourceFile) {
 			console.warn(`Cannot find source file ${filename}`);
 			return;
@@ -642,21 +565,16 @@ function markNodes(
 		const nodeSourceFile = node.getSourceFile();
 		let fullPath: string;
 		if (/(^\.\/)|(^\.\.\/)/.test(importText)) {
-			fullPath = `${path.join(
-				path.dirname(nodeSourceFile.fileName),
-				importText,
-			)}.ts`;
+			fullPath = path.join(path.dirname(nodeSourceFile.fileName), importText) + '.ts';
 		} else {
-			fullPath = `${importText}.ts`;
+			fullPath = importText + '.ts';
 		}
 		enqueueFile(fullPath);
 	}
 
-	options.entryPoints.forEach((moduleId) => enqueueFile(`${moduleId}.ts`));
+	options.entryPoints.forEach(moduleId => enqueueFile(moduleId + '.ts'));
 	// Add fake usage files
-	options.inlineEntryPoints.forEach((_, index) =>
-		enqueueFile(`inlineEntryPoint.${index}.ts`),
-	);
+	options.inlineEntryPoints.forEach((_, index) => enqueueFile(`inlineEntryPoint.${index}.ts`));
 
 	let step = 0;
 
@@ -666,25 +584,14 @@ function markNodes(
 		let node: ts.Node;
 
 		if (step % 100 === 0) {
-			console.log(
-				`Treeshaking - ${Math.floor(
-					(100 * step) /
-						(step + black_queue.length + gray_queue.length),
-				)}% - ${step}/${
-					step + black_queue.length + gray_queue.length
-				} (${black_queue.length}, ${gray_queue.length})`,
-			);
+			console.log(`Treeshaking - ${Math.floor(100 * step / (step + black_queue.length + gray_queue.length))}% - ${step}/${step + black_queue.length + gray_queue.length} (${black_queue.length}, ${gray_queue.length})`);
 		}
 
 		if (black_queue.length === 0) {
 			for (let i = 0; i < gray_queue.length; i++) {
 				const node = gray_queue[i];
 				const nodeParent = node.parent;
-				if (
-					(ts.isClassDeclaration(nodeParent) ||
-						ts.isInterfaceDeclaration(nodeParent)) &&
-					nodeOrChildIsBlack(nodeParent)
-				) {
+				if ((ts.isClassDeclaration(nodeParent) || ts.isInterfaceDeclaration(nodeParent)) && nodeOrChildIsBlack(nodeParent)) {
 					gray_queue.splice(i, 1);
 					black_queue.push(node);
 					setColor(node, NodeColor.Black);
@@ -706,30 +613,14 @@ function markNodes(
 			for (const { symbol, symbolImportNode } of symbols) {
 				if (symbolImportNode) {
 					setColor(symbolImportNode, NodeColor.Black);
-					const importDeclarationNode =
-						findParentImportDeclaration(symbolImportNode);
-					if (
-						importDeclarationNode &&
-						ts.isStringLiteral(
-							importDeclarationNode.moduleSpecifier,
-						)
-					) {
-						enqueueImport(
-							importDeclarationNode,
-							importDeclarationNode.moduleSpecifier.text,
-						);
+					const importDeclarationNode = findParentImportDeclaration(symbolImportNode);
+					if (importDeclarationNode && ts.isStringLiteral(importDeclarationNode.moduleSpecifier)) {
+						enqueueImport(importDeclarationNode, importDeclarationNode.moduleSpecifier.text);
 					}
 				}
 
-				if (
-					isSymbolWithDeclarations(symbol) &&
-					!nodeIsInItsOwnDeclaration(nodeSourceFile, node, symbol)
-				) {
-					for (
-						let i = 0, len = symbol.declarations.length;
-						i < len;
-						i++
-					) {
+				if (isSymbolWithDeclarations(symbol) && !nodeIsInItsOwnDeclaration(nodeSourceFile, node, symbol)) {
+					for (let i = 0, len = symbol.declarations.length; i < len; i++) {
 						const declaration = symbol.declarations[i];
 						if (ts.isSourceFile(declaration)) {
 							// Do not enqueue full source files
@@ -737,41 +628,23 @@ function markNodes(
 							continue;
 						}
 
-						if (
-							options.shakeLevel === ShakeLevel.ClassMembers &&
-							(ts.isClassDeclaration(declaration) ||
-								ts.isInterfaceDeclaration(declaration)) &&
-							!isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(
-								ts,
-								program,
-								checker,
-								declaration,
-							)
-						) {
+						if (options.shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(declaration) || ts.isInterfaceDeclaration(declaration)) && !isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(ts, program, checker, declaration)) {
 							enqueue_black(declaration.name!);
 
-							for (
-								let j = 0;
-								j < declaration.members.length;
-								j++
-							) {
+							for (let j = 0; j < declaration.members.length; j++) {
 								const member = declaration.members[j];
-								const memberName = member.name
-									? member.name.getText()
-									: null;
+								const memberName = member.name ? member.name.getText() : null;
 								if (
-									ts.isConstructorDeclaration(member) ||
-									ts.isConstructSignatureDeclaration(
-										member,
-									) ||
-									ts.isIndexSignatureDeclaration(member) ||
-									ts.isCallSignatureDeclaration(member) ||
-									memberName === "[Symbol.iterator]" ||
-									memberName === "[Symbol.toStringTag]" ||
-									memberName === "toJSON" ||
-									memberName === "toString" ||
-									memberName === "dispose" || // TODO: keeping all `dispose` methods
-									/^_(.*)Brand$/.test(memberName || "") // TODO: keeping all members ending with `Brand`...
+									ts.isConstructorDeclaration(member)
+									|| ts.isConstructSignatureDeclaration(member)
+									|| ts.isIndexSignatureDeclaration(member)
+									|| ts.isCallSignatureDeclaration(member)
+									|| memberName === '[Symbol.iterator]'
+									|| memberName === '[Symbol.toStringTag]'
+									|| memberName === 'toJSON'
+									|| memberName === 'toString'
+									|| memberName === 'dispose'// TODO: keeping all `dispose` methods
+									|| /^_(.*)Brand$/.test(memberName || '') // TODO: keeping all members ending with `Brand`...
 								) {
 									enqueue_black(member);
 								}
@@ -809,21 +682,14 @@ function markNodes(
 		}
 		const aliased = checker.getAliasedSymbol(symbol);
 		if (aliased.declarations && aliased.declarations.length > 0) {
-			if (
-				nodeOrParentIsBlack(aliased.declarations[0]) ||
-				nodeOrChildIsBlack(aliased.declarations[0])
-			) {
+			if (nodeOrParentIsBlack(aliased.declarations[0]) || nodeOrChildIsBlack(aliased.declarations[0])) {
 				setColor(node, NodeColor.Black);
 			}
 		}
 	}
 }
 
-function nodeIsInItsOwnDeclaration(
-	nodeSourceFile: ts.SourceFile,
-	node: ts.Node,
-	symbol: ts.Symbol & { declarations: ts.Declaration[] },
-): boolean {
+function nodeIsInItsOwnDeclaration(nodeSourceFile: ts.SourceFile, node: ts.Node, symbol: ts.Symbol & { declarations: ts.Declaration[] }): boolean {
 	for (let i = 0, len = symbol.declarations.length; i < len; i++) {
 		const declaration = symbol.declarations[i];
 		const declarationSourceFile = declaration.getSourceFile();
@@ -838,14 +704,10 @@ function nodeIsInItsOwnDeclaration(
 	return false;
 }
 
-function generateResult(
-	ts: typeof import("typescript"),
-	languageService: ts.LanguageService,
-	shakeLevel: ShakeLevel,
-): ITreeShakingResult {
+function generateResult(ts: typeof import('typescript'), languageService: ts.LanguageService, shakeLevel: ShakeLevel): ITreeShakingResult {
 	const program = languageService.getProgram();
 	if (!program) {
-		throw new Error("Could not get program from language service");
+		throw new Error('Could not get program from language service');
 	}
 
 	const result: ITreeShakingResult = {};
@@ -867,7 +729,7 @@ function generateResult(
 		}
 
 		const text = sourceFile.text;
-		let result = "";
+		let result = '';
 
 		function keep(node: ts.Node): void {
 			result += text.substring(node.pos, node.end);
@@ -883,11 +745,7 @@ function generateResult(
 
 			// Always keep certain top-level statements
 			if (ts.isSourceFile(node.parent)) {
-				if (
-					ts.isExpressionStatement(node) &&
-					ts.isStringLiteral(node.expression) &&
-					node.expression.text === "use strict"
-				) {
+				if (ts.isExpressionStatement(node) && ts.isStringLiteral(node.expression) && node.expression.text === 'use strict') {
 					return keep(node);
 				}
 
@@ -898,109 +756,55 @@ function generateResult(
 
 			// Keep the entire import in import * as X cases
 			if (ts.isImportDeclaration(node)) {
-				if (node.importClause?.namedBindings) {
+				if (node.importClause && node.importClause.namedBindings) {
 					if (ts.isNamespaceImport(node.importClause.namedBindings)) {
-						if (
-							getColor(node.importClause.namedBindings) ===
-							NodeColor.Black
-						) {
+						if (getColor(node.importClause.namedBindings) === NodeColor.Black) {
 							return keep(node);
 						}
 					} else {
 						const survivingImports: string[] = [];
-						for (const importNode of node.importClause.namedBindings
-							.elements) {
+						for (const importNode of node.importClause.namedBindings.elements) {
 							if (getColor(importNode) === NodeColor.Black) {
-								survivingImports.push(
-									importNode.getFullText(sourceFile),
-								);
+								survivingImports.push(importNode.getFullText(sourceFile));
 							}
 						}
 						const leadingTriviaWidth = node.getLeadingTriviaWidth();
-						const leadingTrivia = sourceFile.text.substr(
-							node.pos,
-							leadingTriviaWidth,
-						);
+						const leadingTrivia = sourceFile.text.substr(node.pos, leadingTriviaWidth);
 						if (survivingImports.length > 0) {
-							if (
-								node.importClause?.name &&
-								getColor(node.importClause) === NodeColor.Black
-							) {
-								return write(
-									`${leadingTrivia}import ${
-										node.importClause.name.text
-									}, {${survivingImports.join(
-										",",
-									)} } from${node.moduleSpecifier.getFullText(
-										sourceFile,
-									)};`,
-								);
+							if (node.importClause && node.importClause.name && getColor(node.importClause) === NodeColor.Black) {
+								return write(`${leadingTrivia}import ${node.importClause.name.text}, {${survivingImports.join(',')} } from${node.moduleSpecifier.getFullText(sourceFile)};`);
 							}
-							return write(
-								`${leadingTrivia}import {${survivingImports.join(
-									",",
-								)} } from${node.moduleSpecifier.getFullText(
-									sourceFile,
-								)};`,
-							);
-						} else if (
-							node.importClause?.name &&
-							getColor(node.importClause) === NodeColor.Black
-						) {
-							return write(
-								`${leadingTrivia}import ${
-									node.importClause.name.text
-								} from${node.moduleSpecifier.getFullText(
-									sourceFile,
-								)};`,
-							);
+							return write(`${leadingTrivia}import {${survivingImports.join(',')} } from${node.moduleSpecifier.getFullText(sourceFile)};`);
+						} else {
+							if (node.importClause && node.importClause.name && getColor(node.importClause) === NodeColor.Black) {
+								return write(`${leadingTrivia}import ${node.importClause.name.text} from${node.moduleSpecifier.getFullText(sourceFile)};`);
+							}
 						}
 					}
-				} else if (
-					node.importClause &&
-					getColor(node.importClause) === NodeColor.Black
-				) {
-					return keep(node);
+				} else {
+					if (node.importClause && getColor(node.importClause) === NodeColor.Black) {
+						return keep(node);
+					}
 				}
 			}
 
 			if (ts.isExportDeclaration(node)) {
-				if (
-					node.exportClause &&
-					node.moduleSpecifier &&
-					ts.isNamedExports(node.exportClause)
-				) {
+				if (node.exportClause && node.moduleSpecifier && ts.isNamedExports(node.exportClause)) {
 					const survivingExports: string[] = [];
 					for (const exportSpecifier of node.exportClause.elements) {
 						if (getColor(exportSpecifier) === NodeColor.Black) {
-							survivingExports.push(
-								exportSpecifier.getFullText(sourceFile),
-							);
+							survivingExports.push(exportSpecifier.getFullText(sourceFile));
 						}
 					}
 					const leadingTriviaWidth = node.getLeadingTriviaWidth();
-					const leadingTrivia = sourceFile.text.substr(
-						node.pos,
-						leadingTriviaWidth,
-					);
+					const leadingTrivia = sourceFile.text.substr(node.pos, leadingTriviaWidth);
 					if (survivingExports.length > 0) {
-						return write(
-							`${leadingTrivia}export {${survivingExports.join(
-								",",
-							)} } from${node.moduleSpecifier.getFullText(
-								sourceFile,
-							)};`,
-						);
+						return write(`${leadingTrivia}export {${survivingExports.join(',')} } from${node.moduleSpecifier.getFullText(sourceFile)};`);
 					}
 				}
 			}
 
-			if (
-				shakeLevel === ShakeLevel.ClassMembers &&
-				(ts.isClassDeclaration(node) ||
-					ts.isInterfaceDeclaration(node)) &&
-				nodeOrChildIsBlack(node)
-			) {
+			if (shakeLevel === ShakeLevel.ClassMembers && (ts.isClassDeclaration(node) || ts.isInterfaceDeclaration(node)) && nodeOrChildIsBlack(node)) {
 				let toWrite = node.getFullText();
 				for (let i = node.members.length - 1; i >= 0; i--) {
 					const member = node.members[i];
@@ -1011,8 +815,7 @@ function generateResult(
 
 					const pos = member.pos - node.pos;
 					const end = member.end - node.pos;
-					toWrite =
-						toWrite.substring(0, pos) + toWrite.substring(end);
+					toWrite = toWrite.substring(0, pos) + toWrite.substring(end);
 				}
 				return write(toWrite);
 			}
@@ -1026,21 +829,21 @@ function generateResult(
 		}
 
 		if (getColor(sourceFile) !== NodeColor.Black) {
-			if (nodeOrChildIsBlack(sourceFile)) {
-				sourceFile.forEachChild(writeMarkedNodes);
-				result += sourceFile.endOfFileToken.getFullText(sourceFile);
-			} else {
+			if (!nodeOrChildIsBlack(sourceFile)) {
 				// none of the elements are reachable
 				if (isNeededSourceFile(sourceFile)) {
 					// this source file must be written, even if nothing is used from it
 					// because there is an import somewhere for it.
 					// However, TS complains with empty files with the error "x" is not a module,
 					// so we will export a dummy variable
-					result = "export const __dummy = 0;";
+					result = 'export const __dummy = 0;';
 				} else {
 					// don't write this file at all!
 					return;
 				}
+			} else {
+				sourceFile.forEachChild(writeMarkedNodes);
+				result += sourceFile.endOfFileToken.getFullText(sourceFile);
 			}
 		} else {
 			result = text;
@@ -1056,26 +859,14 @@ function generateResult(
 
 //#region Utils
 
-function isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(
-	ts: typeof import("typescript"),
-	program: ts.Program,
-	checker: ts.TypeChecker,
-	declaration: ts.ClassDeclaration | ts.InterfaceDeclaration,
-): boolean {
-	if (
-		!program.isSourceFileDefaultLibrary(declaration.getSourceFile()) &&
-		declaration.heritageClauses
-	) {
+function isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(ts: typeof import('typescript'), program: ts.Program, checker: ts.TypeChecker, declaration: ts.ClassDeclaration | ts.InterfaceDeclaration): boolean {
+	if (!program.isSourceFileDefaultLibrary(declaration.getSourceFile()) && declaration.heritageClauses) {
 		for (const heritageClause of declaration.heritageClauses) {
 			for (const type of heritageClause.types) {
 				const symbol = findSymbolFromHeritageType(ts, checker, type);
 				if (symbol) {
-					const decl =
-						symbol.valueDeclaration || symbol.declarations?.[0];
-					if (
-						decl &&
-						program.isSourceFileDefaultLibrary(decl.getSourceFile())
-					) {
+					const decl = symbol.valueDeclaration || (symbol.declarations && symbol.declarations[0]);
+					if (decl && program.isSourceFileDefaultLibrary(decl.getSourceFile())) {
 						return true;
 					}
 				}
@@ -1085,17 +876,13 @@ function isLocalCodeExtendingOrInheritingFromDefaultLibSymbol(
 	return false;
 }
 
-function findSymbolFromHeritageType(
-	ts: typeof import("typescript"),
-	checker: ts.TypeChecker,
-	type: ts.ExpressionWithTypeArguments | ts.Expression | ts.PrivateIdentifier,
-): ts.Symbol | null {
+function findSymbolFromHeritageType(ts: typeof import('typescript'), checker: ts.TypeChecker, type: ts.ExpressionWithTypeArguments | ts.Expression | ts.PrivateIdentifier): ts.Symbol | null {
 	if (ts.isExpressionWithTypeArguments(type)) {
 		return findSymbolFromHeritageType(ts, checker, type.expression);
 	}
 	if (ts.isIdentifier(type)) {
 		const tmp = getRealNodeSymbol(ts, checker, type);
-		return tmp.length > 0 ? tmp[0].symbol : null;
+		return (tmp.length > 0 ? tmp[0].symbol : null);
 	}
 	if (ts.isPropertyAccessExpression(type)) {
 		return findSymbolFromHeritageType(ts, checker, type.name);
@@ -1106,36 +893,20 @@ function findSymbolFromHeritageType(
 class SymbolImportTuple {
 	constructor(
 		public readonly symbol: ts.Symbol | null,
-		public readonly symbolImportNode: ts.Declaration | null,
-	) {}
+		public readonly symbolImportNode: ts.Declaration | null
+	) { }
 }
 
 /**
  * Returns the node's symbol and the `import` node (if the symbol resolved from a different module)
  */
-function getRealNodeSymbol(
-	ts: typeof import("typescript"),
-	checker: ts.TypeChecker,
-	node: ts.Node,
-): SymbolImportTuple[] {
+function getRealNodeSymbol(ts: typeof import('typescript'), checker: ts.TypeChecker, node: ts.Node): SymbolImportTuple[] {
+
 	// Use some TypeScript internals to avoid code duplication
-	type ObjectLiteralElementWithName = ts.ObjectLiteralElement & {
-		name: ts.PropertyName;
-		parent: ts.ObjectLiteralExpression | ts.JsxAttributes;
-	};
-	const getPropertySymbolsFromContextualType: (
-		node: ObjectLiteralElementWithName,
-		checker: ts.TypeChecker,
-		contextualType: ts.Type,
-		unionSymbolOk: boolean,
-	) => readonly ts.Symbol[] = (<any>ts).getPropertySymbolsFromContextualType;
-	const getContainingObjectLiteralElement: (
-		node: ts.Node,
-	) => ObjectLiteralElementWithName | undefined = (<any>ts)
-		.getContainingObjectLiteralElement;
-	const getNameFromPropertyName: (
-		name: ts.PropertyName,
-	) => string | undefined = (<any>ts).getNameFromPropertyName;
+	type ObjectLiteralElementWithName = ts.ObjectLiteralElement & { name: ts.PropertyName; parent: ts.ObjectLiteralExpression | ts.JsxAttributes };
+	const getPropertySymbolsFromContextualType: (node: ObjectLiteralElementWithName, checker: ts.TypeChecker, contextualType: ts.Type, unionSymbolOk: boolean) => ReadonlyArray<ts.Symbol> = (<any>ts).getPropertySymbolsFromContextualType;
+	const getContainingObjectLiteralElement: (node: ts.Node) => ObjectLiteralElementWithName | undefined = (<any>ts).getContainingObjectLiteralElement;
+	const getNameFromPropertyName: (name: ts.PropertyName) => string | undefined = (<any>ts).getNameFromPropertyName;
 
 	// Go to the original declaration for cases:
 	//
@@ -1143,10 +914,7 @@ function getRealNodeSymbol(
 	//   (2) when the aliased symbol is originating from an import.
 	//
 	function shouldSkipAlias(node: ts.Node, declaration: ts.Node): boolean {
-		if (
-			!ts.isShorthandPropertyAssignment(node) &&
-			node.kind !== ts.SyntaxKind.Identifier
-		) {
+		if (!ts.isShorthandPropertyAssignment(node) && node.kind !== ts.SyntaxKind.Identifier) {
 			return false;
 		}
 		if (node.parent === declaration) {
@@ -1171,21 +939,18 @@ function getRealNodeSymbol(
 
 	const { parent } = node;
 
-	let symbol = ts.isShorthandPropertyAssignment(node)
-		? checker.getShorthandAssignmentValueSymbol(node)
-		: checker.getSymbolAtLocation(node);
+	let symbol = (
+		ts.isShorthandPropertyAssignment(node)
+			? checker.getShorthandAssignmentValueSymbol(node)
+			: checker.getSymbolAtLocation(node)
+	);
 
 	let importNode: ts.Declaration | null = null;
 	// If this is an alias, and the request came at the declaration location
 	// get the aliased symbol instead. This allows for goto def on an import e.g.
 	//   import {A, B} from "mod";
 	// to jump to the implementation directly.
-	if (
-		symbol &&
-		symbol.flags & ts.SymbolFlags.Alias &&
-		symbol.declarations &&
-		shouldSkipAlias(node, symbol.declarations[0])
-	) {
+	if (symbol && symbol.flags & ts.SymbolFlags.Alias && symbol.declarations && shouldSkipAlias(node, symbol.declarations[0])) {
 		const aliased = checker.getAliasedSymbol(symbol);
 		if (aliased.declarations) {
 			// We should mark the import as visited
@@ -1201,9 +966,7 @@ function getRealNodeSymbol(
 		// is performed at the location of property access, we would like to go to definition of the property in the short-hand
 		// assignment. This case and others are handled by the following code.
 		if (node.parent.kind === ts.SyntaxKind.ShorthandPropertyAssignment) {
-			symbol = checker.getShorthandAssignmentValueSymbol(
-				symbol.valueDeclaration,
-			);
+			symbol = checker.getShorthandAssignmentValueSymbol(symbol.valueDeclaration);
 		}
 
 		// If the node is the name of a BindingElement within an ObjectBindingPattern instead of just returning the
@@ -1217,12 +980,8 @@ function getRealNodeSymbol(
 		//          pr/*destination*/op1: number
 		//      }
 		//      bar<Test>(({pr/*goto*/op1})=>{});
-		if (
-			ts.isPropertyName(node) &&
-			ts.isBindingElement(parent) &&
-			ts.isObjectBindingPattern(parent.parent) &&
-			node === (parent.propertyName || parent.name)
-		) {
+		if (ts.isPropertyName(node) && ts.isBindingElement(parent) && ts.isObjectBindingPattern(parent.parent) &&
+			(node === (parent.propertyName || parent.name))) {
 			const name = getNameFromPropertyName(node);
 			const type = checker.getTypeAtLocation(parent.parent);
 			if (name && type) {
@@ -1248,15 +1007,9 @@ function getRealNodeSymbol(
 		//      Foo( { pr/*1*/op1: 10, prop2: false })
 		const element = getContainingObjectLiteralElement(node);
 		if (element) {
-			const contextualType =
-				element && checker.getContextualType(element.parent);
+			const contextualType = element && checker.getContextualType(element.parent);
 			if (contextualType) {
-				const propertySymbols = getPropertySymbolsFromContextualType(
-					element,
-					checker,
-					contextualType,
-					/*unionSymbolOk*/ false,
-				);
+				const propertySymbols = getPropertySymbolsFromContextualType(element, checker, contextualType, /*unionSymbolOk*/ false);
 				if (propertySymbols) {
 					symbol = propertySymbols[0];
 				}
@@ -1264,21 +1017,17 @@ function getRealNodeSymbol(
 		}
 	}
 
-	if (symbol?.declarations) {
+	if (symbol && symbol.declarations) {
 		return [new SymbolImportTuple(symbol, importNode)];
 	}
 
 	return [];
 
-	function generateMultipleSymbols(
-		type: ts.UnionType,
-		name: string,
-		importNode: ts.Declaration | null,
-	): SymbolImportTuple[] {
+	function generateMultipleSymbols(type: ts.UnionType, name: string, importNode: ts.Declaration | null): SymbolImportTuple[] {
 		const result: SymbolImportTuple[] = [];
 		for (const t of type.types) {
 			const prop = t.getProperty(name);
-			if (prop?.declarations) {
+			if (prop && prop.declarations) {
 				result.push(new SymbolImportTuple(prop, importNode));
 			}
 		}
@@ -1287,32 +1036,19 @@ function getRealNodeSymbol(
 }
 
 /** Get the token whose text contains the position */
-function getTokenAtPosition(
-	ts: typeof import("typescript"),
-	sourceFile: ts.SourceFile,
-	position: number,
-	allowPositionInLeadingTrivia: boolean,
-	includeEndPosition: boolean,
-): ts.Node {
+function getTokenAtPosition(ts: typeof import('typescript'), sourceFile: ts.SourceFile, position: number, allowPositionInLeadingTrivia: boolean, includeEndPosition: boolean): ts.Node {
 	let current: ts.Node = sourceFile;
 	outer: while (true) {
 		// find the child that contains 'position'
 		for (const child of current.getChildren()) {
-			const start = allowPositionInLeadingTrivia
-				? child.getFullStart()
-				: child.getStart(sourceFile, /*includeJsDoc*/ true);
+			const start = allowPositionInLeadingTrivia ? child.getFullStart() : child.getStart(sourceFile, /*includeJsDoc*/ true);
 			if (start > position) {
 				// If this child begins after position, then all subsequent children will as well.
 				break;
 			}
 
 			const end = child.getEnd();
-			if (
-				position < end ||
-				(position === end &&
-					(child.kind === ts.SyntaxKind.EndOfFileToken ||
-						includeEndPosition))
-			) {
+			if (position < end || (position === end && (child.kind === ts.SyntaxKind.EndOfFileToken || includeEndPosition))) {
 				current = child;
 				continue outer;
 			}

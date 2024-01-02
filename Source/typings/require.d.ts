@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare enum LoaderEventType {
+declare const enum LoaderEventType {
 	LoaderAvailable = 1,
 
 	BeginLoadingScript = 10,
@@ -32,11 +32,7 @@ declare class LoaderEvent {
 }
 
 declare const define: {
-	(
-		moduleName: string,
-		dependencies: string[],
-		callback: (...args: any[]) => any,
-	): any;
+	(moduleName: string, dependencies: string[], callback: (...args: any[]) => any): any;
 	(moduleName: string, dependencies: string[], definition: any): any;
 	(moduleName: string, callback: (...args: any[]) => any): any;
 	(moduleName: string, definition: any): any;
@@ -57,20 +53,12 @@ interface NodeRequire {
 	 */
 	__$__nodeRequire<T>(moduleName: string): T;
 
-	(
-		dependencies: string[],
-		callback: (...args: any[]) => any,
-		errorback?: (err: any) => void,
-	): any;
+	(dependencies: string[], callback: (...args: any[]) => any, errorback?: (err: any) => void): any;
 	config(data: any): any;
 	onError: Function;
-	getStats?(): readonly LoaderEvent[];
+	getStats?(): ReadonlyArray<LoaderEvent>;
 	hasDependencyCycle?(): boolean;
-	define(
-		amdModuleId: string,
-		dependencies: string[],
-		callback: (...args: any[]) => any,
-	): any;
+	define(amdModuleId: string, dependencies: string[], callback: (...args: any[]) => any): any;
 }
 
-declare let require: NodeRequire;
+declare var require: NodeRequire;

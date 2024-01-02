@@ -3,35 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { KeyCode, KeyMod } from "vs/base/common/keyCodes";
-import {
-	Disposable,
-	IDisposable,
-	combinedDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import {
-	ContextKeyExpr,
-	IContextKey,
-	IContextKeyService,
-	RawContextKey,
-} from "vs/platform/contextkey/common/contextkey";
-import {
-	KeybindingWeight,
-	KeybindingsRegistry,
-} from "vs/platform/keybinding/common/keybindingsRegistry";
-import {
-	WorkbenchListFocusContextKey,
-	WorkbenchListScrollAtBottomContextKey,
-	WorkbenchListScrollAtTopContextKey,
-} from "vs/platform/list/browser/listService";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	Extensions as WorkbenchExtensions,
-	IWorkbenchContributionsRegistry,
-} from "vs/workbench/common/contributions";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { KeyMod, KeyCode } from 'vs/base/common/keyCodes';
+import { ContextKeyExpr, IContextKey, IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { KeybindingWeight, KeybindingsRegistry } from 'vs/platform/keybinding/common/keybindingsRegistry';
+import { WorkbenchListFocusContextKey, WorkbenchListScrollAtBottomContextKey, WorkbenchListScrollAtTopContextKey } from 'vs/platform/list/browser/listService';
+import { Event } from 'vs/base/common/event';
+import { combinedDisposable, toDisposable, IDisposable, Disposable } from 'vs/base/common/lifecycle';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 
 /** INavigableContainer represents a logical container composed of widgets that can
 	be navigated back and forth with key shortcuts */
@@ -56,35 +36,25 @@ interface IFocusNotifier {
 	readonly onDidBlur: Event<any>;
 }
 
-function handleFocusEventsGroup(
-	group: readonly IFocusNotifier[],
-	handler: (isFocus: boolean) => void,
-): IDisposable {
+function handleFocusEventsGroup(group: readonly IFocusNotifier[], handler: (isFocus: boolean) => void): IDisposable {
 	const focusedIndices = new Set<number>();
-	return combinedDisposable(
-		...group.map((events, index) =>
-			combinedDisposable(
-				events.onDidFocus(() => {
-					if (!focusedIndices.size) {
-						handler(true);
-					}
-					focusedIndices.add(index);
-				}),
-				events.onDidBlur(() => {
-					focusedIndices.delete(index);
-					if (!focusedIndices.size) {
-						handler(false);
-					}
-				}),
-			),
-		),
-	);
+	return combinedDisposable(...group.map((events, index) => combinedDisposable(
+		events.onDidFocus(() => {
+			if (!focusedIndices.size) {
+				handler(true);
+			}
+			focusedIndices.add(index);
+		}),
+		events.onDidBlur(() => {
+			focusedIndices.delete(index);
+			if (!focusedIndices.size) {
+				handler(false);
+			}
+		}),
+	)));
 }
 
-const NavigableContainerFocusedContextKey = new RawContextKey<boolean>(
-	"navigableContainerFocused",
-	false,
-);
+const NavigableContainerFocusedContextKey = new RawContextKey<boolean>('navigableContainerFocused', false);
 
 class NavigableContainerManager implements IDisposable {
 	private static INSTANCE: NavigableContainerManager | undefined;
@@ -93,9 +63,9 @@ class NavigableContainerManager implements IDisposable {
 	private lastContainer: INavigableContainer | undefined;
 	private focused: IContextKey<boolean>;
 
+
 	constructor(@IContextKeyService contextKeyService: IContextKeyService) {
-		this.focused =
-			NavigableContainerFocusedContextKey.bindTo(contextKeyService);
+		this.focused = NavigableContainerFocusedContextKey.bindTo(contextKeyService);
 		NavigableContainerManager.INSTANCE = this;
 	}
 
@@ -106,7 +76,7 @@ class NavigableContainerManager implements IDisposable {
 	}
 
 	static register(container: INavigableContainer): IDisposable {
-		const instance = NavigableContainerManager.INSTANCE;
+		const instance = this.INSTANCE;
 		if (!instance) {
 			return Disposable.None;
 		}
@@ -128,58 +98,52 @@ class NavigableContainerManager implements IDisposable {
 					instance.focused.set(false);
 					instance.lastContainer = undefined;
 				}
-			}),
+			})
 		);
 	}
 
 	static getActive(): INavigableContainer | undefined {
-		return NavigableContainerManager.INSTANCE?.lastContainer;
+		return this.INSTANCE?.lastContainer;
 	}
 }
 
-export function registerNavigableContainer(
-	container: INavigableContainer,
-): IDisposable {
+export function registerNavigableContainer(container: INavigableContainer): IDisposable {
 	return NavigableContainerManager.register(container);
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
-	NavigableContainerManager,
-	LifecyclePhase.Starting,
-);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
+	.registerWorkbenchContribution(NavigableContainerManager, LifecyclePhase.Starting);
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
-	id: "widgetNavigation.focusPrevious",
+	id: 'widgetNavigation.focusPrevious',
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		NavigableContainerFocusedContextKey,
 		ContextKeyExpr.or(
 			WorkbenchListFocusContextKey?.negate(),
 			WorkbenchListScrollAtTopContextKey,
-		),
+		)
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.UpArrow,
 	handler: () => {
 		const activeContainer = NavigableContainerManager.getActive();
 		activeContainer?.focusPreviousWidget();
-	},
+	}
 });
 
 KeybindingsRegistry.registerCommandAndKeybindingRule({
-	id: "widgetNavigation.focusNext",
+	id: 'widgetNavigation.focusNext',
 	weight: KeybindingWeight.WorkbenchContrib,
 	when: ContextKeyExpr.and(
 		NavigableContainerFocusedContextKey,
 		ContextKeyExpr.or(
 			WorkbenchListFocusContextKey?.negate(),
 			WorkbenchListScrollAtBottomContextKey,
-		),
+		)
 	),
 	primary: KeyMod.CtrlCmd | KeyCode.DownArrow,
 	handler: () => {
 		const activeContainer = NavigableContainerManager.getActive();
 		activeContainer?.focusNextWidget();
-	},
+	}
 });

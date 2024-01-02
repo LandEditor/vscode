@@ -16,22 +16,10 @@
 	margin-left: 2px;
 }
 
-.monaco-workbench.reduce-motion
-	.monaco-editor
-	.margin-view-overlays
-	.codicon-folding-manual-collapsed,
-.monaco-workbench.reduce-motion
-	.monaco-editor
-	.margin-view-overlays
-	.codicon-folding-manual-expanded,
-.monaco-workbench.reduce-motion
-	.monaco-editor
-	.margin-view-overlays
-	.codicon-folding-expanded,
-.monaco-workbench.reduce-motion
-	.monaco-editor
-	.margin-view-overlays
-	.codicon-folding-collapsed {
+.monaco-workbench.reduce-motion .monaco-editor .margin-view-overlays .codicon-folding-manual-collapsed,
+.monaco-workbench.reduce-motion .monaco-editor .margin-view-overlays .codicon-folding-manual-expanded,
+.monaco-workbench.reduce-motion .monaco-editor .margin-view-overlays .codicon-folding-expanded,
+.monaco-workbench.reduce-motion .monaco-editor .margin-view-overlays .codicon-folding-collapsed {
 	transition: initial;
 }
 
@@ -61,3 +49,4 @@
 .monaco-editor .cldr.codicon.codicon-folding-manual-collapsed {
 	color: var(--vscode-editorGutter-foldingControlForeground) !important;
 }
+

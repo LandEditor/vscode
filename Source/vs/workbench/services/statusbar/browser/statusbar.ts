@@ -3,21 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
-import { ThemeColor } from "vs/base/common/themables";
-import { Command } from "vs/editor/common/languages";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { ColorIdentifier } from "vs/platform/theme/common/colorRegistry";
-import {
-	IAuxiliaryStatusbarPart,
-	IStatusbarEntryContainer,
-} from "vs/workbench/browser/parts/statusbar/statusbarPart";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+import { ThemeColor } from 'vs/base/common/themables';
+import { Command } from 'vs/editor/common/languages';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { ColorIdentifier } from 'vs/platform/theme/common/colorRegistry';
+import { IAuxiliaryStatusbarPart, IStatusbarEntryContainer } from 'vs/workbench/browser/parts/statusbar/statusbarPart';
 
-export const IStatusbarService =
-	createDecorator<IStatusbarService>("statusbarService");
+export const IStatusbarService = createDecorator<IStatusbarService>('statusbarService');
 
 export interface IStatusbarService extends IStatusbarEntryContainer {
+
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -28,26 +25,22 @@ export interface IStatusbarService extends IStatusbarEntryContainer {
 	/**
 	 * Creates a new auxililary status bar part in the provided container.
 	 */
-	createAuxiliaryStatusbarPart(
-		container: HTMLElement,
-	): IAuxiliaryStatusbarPart;
+	createAuxiliaryStatusbarPart(container: HTMLElement): IAuxiliaryStatusbarPart;
 
 	/**
 	 * Create a scoped status bar service that only operates on the provided
 	 * status entry container.
 	 */
-	createScoped(
-		statusbarEntryContainer: IStatusbarEntryContainer,
-		disposables: DisposableStore,
-	): IStatusbarService;
+	createScoped(statusbarEntryContainer: IStatusbarEntryContainer, disposables: DisposableStore): IStatusbarService;
 }
 
-export enum StatusbarAlignment {
-	LEFT = 0,
-	RIGHT = 1,
+export const enum StatusbarAlignment {
+	LEFT,
+	RIGHT
 }
 
 export interface IStatusbarEntryLocation {
+
 	/**
 	 * The identifier of another status bar entry to
 	 * position relative to.
@@ -68,18 +61,14 @@ export interface IStatusbarEntryLocation {
 	compact?: boolean;
 }
 
-export function isStatusbarEntryLocation(
-	thing: unknown,
-): thing is IStatusbarEntryLocation {
+export function isStatusbarEntryLocation(thing: unknown): thing is IStatusbarEntryLocation {
 	const candidate = thing as IStatusbarEntryLocation | undefined;
 
-	return (
-		typeof candidate?.id === "string" &&
-		typeof candidate.alignment === "number"
-	);
+	return typeof candidate?.id === 'string' && typeof candidate.alignment === 'number';
 }
 
 export interface IStatusbarEntryPriority {
+
 	/**
 	 * The main priority of the entry that
 	 * defines the order of appearance:
@@ -101,21 +90,15 @@ export interface IStatusbarEntryPriority {
 	readonly secondary: number;
 }
 
-export function isStatusbarEntryPriority(
-	thing: unknown,
-): thing is IStatusbarEntryPriority {
+export function isStatusbarEntryPriority(thing: unknown): thing is IStatusbarEntryPriority {
 	const candidate = thing as IStatusbarEntryPriority | undefined;
 
-	return (
-		(typeof candidate?.primary === "number" ||
-			isStatusbarEntryLocation(candidate?.primary)) &&
-		typeof candidate?.secondary === "number"
-	);
+	return (typeof candidate?.primary === 'number' || isStatusbarEntryLocation(candidate?.primary)) && typeof candidate?.secondary === 'number';
 }
 
 export const ShowTooltipCommand: Command = {
-	id: "statusBar.entry.showTooltip",
-	title: "",
+	id: 'statusBar.entry.showTooltip',
+	title: ''
 };
 
 export interface IStatusbarStyleOverride {
@@ -125,26 +108,14 @@ export interface IStatusbarStyleOverride {
 	readonly border?: ColorIdentifier;
 }
 
-export type StatusbarEntryKind =
-	| "standard"
-	| "warning"
-	| "error"
-	| "prominent"
-	| "remote"
-	| "offline";
-export const StatusbarEntryKinds: StatusbarEntryKind[] = [
-	"standard",
-	"warning",
-	"error",
-	"prominent",
-	"remote",
-	"offline",
-];
+export type StatusbarEntryKind = 'standard' | 'warning' | 'error' | 'prominent' | 'remote' | 'offline';
+export const StatusbarEntryKinds: StatusbarEntryKind[] = ['standard', 'warning', 'error', 'prominent', 'remote', 'offline'];
 
 /**
  * A declarative way of describing a status bar entry
  */
 export interface IStatusbarEntry {
+
 	/**
 	 * The (short) name to show for the entry like 'Language Indicator',
 	 * 'Git Status' etc.
@@ -205,7 +176,7 @@ export interface IStatusbarEntry {
 	 * Will enable a spinning icon in front of the text to indicate progress. When `true` is
 	 * specified, `syncing` will be used.
 	 */
-	readonly showProgress?: boolean | "syncing" | "loading";
+	readonly showProgress?: boolean | 'syncing' | 'loading';
 
 	/**
 	 * The kind of status bar entry. This applies different colors to the entry.
@@ -214,6 +185,7 @@ export interface IStatusbarEntry {
 }
 
 export interface IStatusbarEntryAccessor extends IDisposable {
+
 	/**
 	 * Allows to update an existing status bar entry.
 	 */

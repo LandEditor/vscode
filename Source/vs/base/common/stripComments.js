@@ -3,17 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+'use strict';
+
 //@ts-check
 
-(() => {
+(function () {
 	function factory(path, os, productName, cwd) {
 		// First group matches a double quoted string
 		// Second group matches a single quoted string
 		// Third group matches a multi line comment
 		// Forth group matches a single line comment
 		// Fifth group matches a trailing comma
-		const regexp =
-			/("[^"\\]*(?:\\.[^"\\]*)*")|('[^'\\]*(?:\\.[^'\\]*)*')|(\/\*[^\/\*]*(?:(?:\*|\/)[^\/\*]*)*?\*\/)|(\/{2,}.*?(?:(?:\r?\n)|$))|(,\s*[}\]])/g;
+		const regexp = /("[^"\\]*(?:\\.[^"\\]*)*")|('[^'\\]*(?:\\.[^'\\]*)*')|(\/\*[^\/\*]*(?:(?:\*|\/)[^\/\*]*)*?\*\/)|(\/{2,}.*?(?:(?:\r?\n)|$))|(,\s*[}\]])/g;
 
 		/**
 		 *
@@ -21,19 +22,20 @@
 		 * @returns {string}
 		 */
 		function stripComments(content) {
-			return content.replace(regexp, (match, _m1, _m2, m3, m4, m5) => {
+			return content.replace(regexp, function (match, _m1, _m2, m3, m4, m5) {
 				// Only one of m1, m2, m3, m4, m5 matches
 				if (m3) {
 					// A block comment. Replace with nothing
-					return "";
+					return '';
 				} else if (m4) {
 					// Since m4 is a single line comment is is at least of length 2 (e.g. //)
 					// If it ends in \r?\n then keep it.
 					const length = m4.length;
-					if (m4[length - 1] === "\n") {
-						return m4[length - 2] === "\r" ? "\r\n" : "\n";
-					} else {
-						return "";
+					if (m4[length - 1] === '\n') {
+						return m4[length - 2] === '\r' ? '\r\n' : '\n';
+					}
+					else {
+						return '';
 					}
 				} else if (m5) {
 					// Remove the trailing comma
@@ -45,22 +47,18 @@
 			});
 		}
 		return {
-			stripComments,
+			stripComments
 		};
 	}
 
-	if (typeof define === "function") {
+
+	if (typeof define === 'function') {
 		// amd
-		define([], () => factory());
-	} else if (
-		typeof module === "object" &&
-		typeof module.exports === "object"
-	) {
+		define([], function () { return factory(); });
+	} else if (typeof module === 'object' && typeof module.exports === 'object') {
 		// commonjs
 		module.exports = factory();
 	} else {
-		console.trace(
-			"strip comments defined in UNKNOWN context (neither requirejs or commonjs)",
-		);
+		console.trace('strip comments defined in UNKNOWN context (neither requirejs or commonjs)');
 	}
 })();

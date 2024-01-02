@@ -7,9 +7,7 @@
 	cursor: pointer;
 }
 
-.codicon-debug-hint:not([class*="codicon-debug-breakpoint"]):not(
-		[class*="codicon-debug-stackframe"]
-	) {
+.codicon-debug-hint:not([class*='codicon-debug-breakpoint']):not([class*='codicon-debug-stackframe']) {
 	opacity: 0.4 !important;
 }
 
@@ -35,7 +33,7 @@
 
 .codicon-debug-breakpoint.codicon-debug-stackframe-focused::after,
 .codicon-debug-breakpoint.codicon-debug-stackframe::after {
-	content: "\eb8a";
+	content: '\eb8a';
 	position: absolute;
 }
 
@@ -71,6 +69,7 @@
 }
 
 /* Expressions */
+
 
 .monaco-workbench .monaco-list-row .expression {
 	display: flex;
@@ -116,16 +115,8 @@
 }
 
 /* White color when element is selected and list is focused. White looks better on blue selection background. */
-.monaco-workbench
-	.monaco-list:focus
-	.monaco-list-row.selected
-	.expression
-	.name,
-.monaco-workbench
-	.monaco-list:focus
-	.monaco-list-row.selected
-	.expression
-	.value {
+.monaco-workbench .monaco-list:focus .monaco-list-row.selected .expression .name,
+.monaco-workbench .monaco-list:focus .monaco-list-row.selected .expression .value {
 	color: inherit;
 }
 

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BugIndicatingError, onUnexpectedError } from "vs/base/common/errors";
+import { BugIndicatingError, onUnexpectedError } from 'vs/base/common/errors';
 
 /**
  * Throws an error with the provided message if the provided value does not evaluate to a true Javascript value.
@@ -21,19 +21,17 @@ import { BugIndicatingError, onUnexpectedError } from "vs/base/common/errors";
  */
 export function ok(value?: unknown, message?: string) {
 	if (!value) {
-		throw new Error(
-			message ? `Assertion failed (${message})` : "Assertion Failed",
-		);
+		throw new Error(message ? `Assertion failed (${message})` : 'Assertion Failed');
 	}
 }
 
-export function assertNever(value: never, message = "Unreachable"): never {
+export function assertNever(value: never, message = 'Unreachable'): never {
 	throw new Error(message);
 }
 
 export function assert(condition: boolean): void {
 	if (!condition) {
-		throw new BugIndicatingError("Assertion Failed");
+		throw new BugIndicatingError('Assertion Failed');
 	}
 }
 
@@ -42,16 +40,15 @@ export function assert(condition: boolean): void {
  */
 export function assertFn(condition: () => boolean): void {
 	if (!condition()) {
+		// eslint-disable-next-line no-debugger
+		debugger;
 		// Reevaluate `condition` again to make debugging easier
 		condition();
-		onUnexpectedError(new BugIndicatingError("Assertion Failed"));
+		onUnexpectedError(new BugIndicatingError('Assertion Failed'));
 	}
 }
 
-export function checkAdjacentItems<T>(
-	items: readonly T[],
-	predicate: (item1: T, item2: T) => boolean,
-): boolean {
+export function checkAdjacentItems<T>(items: readonly T[], predicate: (item1: T, item2: T) => boolean): boolean {
 	let i = 0;
 	while (i < items.length - 1) {
 		const a = items[i];

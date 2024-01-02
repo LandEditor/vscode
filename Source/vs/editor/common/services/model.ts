@@ -3,35 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import { URI } from "vs/base/common/uri";
-import {
-	DocumentRangeSemanticTokensProvider,
-	DocumentSemanticTokensProvider,
-} from "vs/editor/common/languages";
-import { ILanguageSelection } from "vs/editor/common/languages/language";
-import {
-	ITextBufferFactory,
-	ITextModel,
-	ITextModelCreationOptions,
-} from "vs/editor/common/model";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { Event } from 'vs/base/common/event';
+import { URI } from 'vs/base/common/uri';
+import { ITextBufferFactory, ITextModel, ITextModelCreationOptions } from 'vs/editor/common/model';
+import { ILanguageSelection } from 'vs/editor/common/languages/language';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { DocumentSemanticTokensProvider, DocumentRangeSemanticTokensProvider } from 'vs/editor/common/languages';
 
-export const IModelService = createDecorator<IModelService>("modelService");
+export const IModelService = createDecorator<IModelService>('modelService');
 
-export type DocumentTokensProvider =
-	| DocumentSemanticTokensProvider
-	| DocumentRangeSemanticTokensProvider;
+export type DocumentTokensProvider = DocumentSemanticTokensProvider | DocumentRangeSemanticTokensProvider;
 
 export interface IModelService {
 	readonly _serviceBrand: undefined;
 
-	createModel(
-		value: string | ITextBufferFactory,
-		languageSelection: ILanguageSelection | null,
-		resource?: URI,
-		isForSimpleWidget?: boolean,
-	): ITextModel;
+	createModel(value: string | ITextBufferFactory, languageSelection: ILanguageSelection | null, resource?: URI, isForSimpleWidget?: boolean): ITextModel;
 
 	updateModel(model: ITextModel, value: string | ITextBufferFactory): void;
 
@@ -39,11 +25,7 @@ export interface IModelService {
 
 	getModels(): ITextModel[];
 
-	getCreationOptions(
-		language: string,
-		resource: URI,
-		isForSimpleWidget: boolean,
-	): ITextModelCreationOptions;
+	getCreationOptions(language: string, resource: URI, isForSimpleWidget: boolean): ITextModelCreationOptions;
 
 	getModel(resource: URI): ITextModel | null;
 

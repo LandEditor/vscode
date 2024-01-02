@@ -3,13 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/30066/
 
 	/**
 	 * Provider invoked when the user copies and pastes code.
 	 */
 	interface DocumentPasteEditProvider {
+
 		/**
 		 * Optional method invoked after the user copies text in a file.
 		 *
@@ -21,12 +23,7 @@ declare module "vscode" {
 		 * @param dataTransfer The data transfer associated with the copy. You can store additional values on this for later use in  {@link provideDocumentPasteEdits}.
 		 * @param token A cancellation token.
 		 */
-		prepareDocumentPaste?(
-			document: TextDocument,
-			ranges: readonly Range[],
-			dataTransfer: DataTransfer,
-			token: CancellationToken,
-		): void | Thenable<void>;
+		prepareDocumentPaste?(document: TextDocument, ranges: readonly Range[], dataTransfer: DataTransfer, token: CancellationToken): void | Thenable<void>;
 
 		/**
 		 * Invoked before the user pastes into a document.
@@ -40,18 +37,14 @@ declare module "vscode" {
 		 *
 		 * @return Optional workspace edit that applies the paste. Return undefined to use standard pasting.
 		 */
-		provideDocumentPasteEdits?(
-			document: TextDocument,
-			ranges: readonly Range[],
-			dataTransfer: DataTransfer,
-			token: CancellationToken,
-		): ProviderResult<DocumentPasteEdit>;
+		provideDocumentPasteEdits?(document: TextDocument, ranges: readonly Range[], dataTransfer: DataTransfer, token: CancellationToken): ProviderResult<DocumentPasteEdit>;
 	}
 
 	/**
 	 * An operation applied on paste
 	 */
 	class DocumentPasteEdit {
+
 		/**
 		 * Human readable label that describes the edit.
 		 */
@@ -113,10 +106,6 @@ declare module "vscode" {
 	}
 
 	namespace languages {
-		export function registerDocumentPasteEditProvider(
-			selector: DocumentSelector,
-			provider: DocumentPasteEditProvider,
-			metadata: DocumentPasteProviderMetadata,
-		): Disposable;
+		export function registerDocumentPasteEditProvider(selector: DocumentSelector, provider: DocumentPasteEditProvider, metadata: DocumentPasteProviderMetadata): Disposable;
 	}
 }

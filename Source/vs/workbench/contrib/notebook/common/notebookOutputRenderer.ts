@@ -3,22 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as glob from "vs/base/common/glob";
-import { Iterable } from "vs/base/common/iterator";
-import { joinPath } from "vs/base/common/resources";
-import { URI } from "vs/base/common/uri";
-import {
-	ExtensionIdentifier,
-	IExtensionDescription,
-} from "vs/platform/extensions/common/extensions";
-import {
-	ContributedNotebookRendererEntrypoint,
-	INotebookRendererInfo,
-	INotebookStaticPreloadInfo,
-	NotebookRendererEntrypoint,
-	NotebookRendererMatch,
-	RendererMessagingSpec,
-} from "vs/workbench/contrib/notebook/common/notebookCommon";
+import * as glob from 'vs/base/common/glob';
+import { Iterable } from 'vs/base/common/iterator';
+import { joinPath } from 'vs/base/common/resources';
+import { URI } from 'vs/base/common/uri';
+import { ExtensionIdentifier, IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { INotebookRendererInfo, ContributedNotebookRendererEntrypoint, NotebookRendererMatch, RendererMessagingSpec, NotebookRendererEntrypoint, INotebookStaticPreloadInfo as INotebookStaticPreloadInfo } from 'vs/workbench/contrib/notebook/common/notebookCommon';
 
 class DependencyList {
 	private readonly value: ReadonlySet<string>;
@@ -30,14 +20,15 @@ class DependencyList {
 	}
 
 	/** Gets whether any of the 'available' dependencies match the ones in this list */
-	public matches(available: readonly string[]) {
+	public matches(available: ReadonlyArray<string>) {
 		// For now this is simple, but this may expand to support globs later
 		// @see https://github.com/microsoft/vscode/issues/119899
-		return available.some((v) => this.value.has(v));
+		return available.some(v => this.value.has(v));
 	}
 }
 
 export class NotebookOutputRendererInfo implements INotebookRendererInfo {
+
 	readonly id: string;
 	readonly entrypoint: NotebookRendererEntrypoint;
 	readonly displayName: string;
@@ -67,34 +58,24 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
 		this.extensionLocation = descriptor.extension.extensionLocation;
 		this.isBuiltin = descriptor.extension.isBuiltin;
 
-		if (typeof descriptor.entrypoint === "string") {
+		if (typeof descriptor.entrypoint === 'string') {
 			this.entrypoint = {
 				extends: undefined,
-				path: joinPath(this.extensionLocation, descriptor.entrypoint),
+				path: joinPath(this.extensionLocation, descriptor.entrypoint)
 			};
 		} else {
 			this.entrypoint = {
 				extends: descriptor.entrypoint.extends,
-				path: joinPath(
-					this.extensionLocation,
-					descriptor.entrypoint.path,
-				),
+				path: joinPath(this.extensionLocation, descriptor.entrypoint.path)
 			};
 		}
 
 		this.displayName = descriptor.displayName;
 		this.mimeTypes = descriptor.mimeTypes;
-		this.mimeTypeGlobs = this.mimeTypes.map((pattern) =>
-			glob.parse(pattern),
-		);
-		this.hardDependencies = new DependencyList(
-			descriptor.dependencies ?? Iterable.empty(),
-		);
-		this.optionalDependencies = new DependencyList(
-			descriptor.optionalDependencies ?? Iterable.empty(),
-		);
-		this.messaging =
-			descriptor.requiresMessaging ?? RendererMessagingSpec.Never;
+		this.mimeTypeGlobs = this.mimeTypes.map(pattern => glob.parse(pattern));
+		this.hardDependencies = new DependencyList(descriptor.dependencies ?? Iterable.empty());
+		this.optionalDependencies = new DependencyList(descriptor.optionalDependencies ?? Iterable.empty());
+		this.messaging = descriptor.requiresMessaging ?? RendererMessagingSpec.Never;
 	}
 
 	public matchesWithoutKernel(mimeType: string) {
@@ -113,7 +94,7 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
 		return NotebookRendererMatch.Pure;
 	}
 
-	public matches(mimeType: string, kernelProvides: readonly string[]) {
+	public matches(mimeType: string, kernelProvides: ReadonlyArray<string>) {
 		if (!this.matchesMimeTypeOnly(mimeType)) {
 			return NotebookRendererMatch.Never;
 		}
@@ -130,19 +111,16 @@ export class NotebookOutputRendererInfo implements INotebookRendererInfo {
 	}
 
 	private matchesMimeTypeOnly(mimeType: string) {
-		if (this.entrypoint.extends) {
-			// We're extending another renderer
+		if (this.entrypoint.extends) { // We're extending another renderer
 			return false;
 		}
 
-		return (
-			this.mimeTypeGlobs.some((pattern) => pattern(mimeType)) ||
-			this.mimeTypes.some((pattern) => pattern === mimeType)
-		);
+		return this.mimeTypeGlobs.some(pattern => pattern(mimeType)) || this.mimeTypes.some(pattern => pattern === mimeType);
 	}
 }
 
 export class NotebookStaticPreloadInfo implements INotebookStaticPreloadInfo {
+
 	readonly type: string;
 	readonly entrypoint: URI;
 	readonly extensionLocation: URI;
@@ -156,13 +134,8 @@ export class NotebookStaticPreloadInfo implements INotebookStaticPreloadInfo {
 	}) {
 		this.type = descriptor.type;
 
-		this.entrypoint = joinPath(
-			descriptor.extension.extensionLocation,
-			descriptor.entrypoint,
-		);
+		this.entrypoint = joinPath(descriptor.extension.extensionLocation, descriptor.entrypoint);
 		this.extensionLocation = descriptor.extension.extensionLocation;
-		this.localResourceRoots = descriptor.localResourceRoots.map((root) =>
-			joinPath(descriptor.extension.extensionLocation, root),
-		);
+		this.localResourceRoots = descriptor.localResourceRoots.map(root => joinPath(descriptor.extension.extensionLocation, root));
 	}
 }

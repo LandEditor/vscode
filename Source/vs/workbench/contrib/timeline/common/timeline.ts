@@ -3,31 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	CancellationToken,
-	CancellationTokenSource,
-} from "vs/base/common/cancellation";
-import { Event } from "vs/base/common/event";
-import { IMarkdownString } from "vs/base/common/htmlContent";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { ThemeIcon } from "vs/base/common/themables";
-import { URI } from "vs/base/common/uri";
-import { Command } from "vs/editor/common/languages";
-import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { CancellationToken, CancellationTokenSource } from 'vs/base/common/cancellation';
+import { Event } from 'vs/base/common/event';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { Command } from 'vs/editor/common/languages';
+import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IAccessibilityInformation } from 'vs/platform/accessibility/common/accessibility';
+import { ThemeIcon } from 'vs/base/common/themables';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
 
 export function toKey(extension: ExtensionIdentifier | string, source: string) {
-	return `${
-		typeof extension === "string"
-			? extension
-			: ExtensionIdentifier.toKey(extension)
-	}|${source}`;
+	return `${typeof extension === 'string' ? extension : ExtensionIdentifier.toKey(extension)}|${source}`;
 }
 
-export const TimelinePaneId = "timeline";
+export const TimelinePaneId = 'timeline';
 
 export interface TimelineItem {
+
 	/**
 	 * The handle of the item must be unique across all the
 	 * timeline items provided by this source.
@@ -62,6 +56,7 @@ export interface TimelineItem {
 }
 
 export interface TimelineChangeEvent {
+
 	/**
 	 * The identifier of the timeline provider this event is from.
 	 */
@@ -87,6 +82,7 @@ export interface TimelineOptions {
 }
 
 export interface Timeline {
+
 	/**
 	 * The identifier of the timeline provider this timeline is from.
 	 */
@@ -99,16 +95,10 @@ export interface Timeline {
 	};
 }
 
-export interface TimelineProvider
-	extends TimelineProviderDescriptor,
-		IDisposable {
+export interface TimelineProvider extends TimelineProviderDescriptor, IDisposable {
 	onDidChange?: Event<TimelineChangeEvent>;
 
-	provideTimeline(
-		uri: URI,
-		options: TimelineOptions,
-		token: CancellationToken,
-	): Promise<Timeline | undefined>;
+	provideTimeline(uri: URI, options: TimelineOptions, token: CancellationToken): Promise<Timeline | undefined>;
 }
 
 export interface TimelineSource {
@@ -117,6 +107,7 @@ export interface TimelineSource {
 }
 
 export interface TimelineProviderDescriptor {
+
 	/**
 	 * An identifier of the source of the timeline items. This can be used to filter sources.
 	 */
@@ -158,16 +149,10 @@ export interface ITimelineService {
 
 	getSources(): TimelineSource[];
 
-	getTimeline(
-		id: string,
-		uri: URI,
-		options: TimelineOptions,
-		tokenSource: CancellationTokenSource,
-	): TimelineRequest | undefined;
+	getTimeline(id: string, uri: URI, options: TimelineOptions, tokenSource: CancellationTokenSource): TimelineRequest | undefined;
 
 	setUri(uri: URI): void;
 }
 
-const TIMELINE_SERVICE_ID = "timeline";
-export const ITimelineService =
-	createDecorator<ITimelineService>(TIMELINE_SERVICE_ID);
+const TIMELINE_SERVICE_ID = 'timeline';
+export const ITimelineService = createDecorator<ITimelineService>(TIMELINE_SERVICE_ID);

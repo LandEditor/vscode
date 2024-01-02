@@ -3,64 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "vs/base/common/event";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { IExtensionDescription } from "vs/platform/extensions/common/extensions";
-import { ExtHostTextEditor } from "vs/workbench/api/common/extHostTextEditor";
-import { ExtHostEditors } from "vs/workbench/api/common/extHostTextEditors";
-import {
-	WebviewRemoteInfo,
-	asWebviewUri,
-	webviewGenericCspSource,
-} from "vs/workbench/contrib/webview/common/webview";
-import type * as vscode from "vscode";
-import {
-	ExtHostEditorInsetsShape,
-	MainThreadEditorInsetsShape,
-} from "./extHost.protocol";
+import { Emitter } from 'vs/base/common/event';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { ExtHostTextEditor } from 'vs/workbench/api/common/extHostTextEditor';
+import { ExtHostEditors } from 'vs/workbench/api/common/extHostTextEditors';
+import { asWebviewUri, webviewGenericCspSource, WebviewRemoteInfo } from 'vs/workbench/contrib/webview/common/webview';
+import type * as vscode from 'vscode';
+import { ExtHostEditorInsetsShape, MainThreadEditorInsetsShape } from './extHost.protocol';
 
 export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
+
 	private _handlePool = 0;
 	private readonly _disposables = new DisposableStore();
-	private _insets = new Map<
-		number,
-		{
-			editor: vscode.TextEditor;
-			inset: vscode.WebviewEditorInset;
-			onDidReceiveMessage: Emitter<any>;
-		}
-	>();
+	private _insets = new Map<number, { editor: vscode.TextEditor; inset: vscode.WebviewEditorInset; onDidReceiveMessage: Emitter<any> }>();
 
 	constructor(
 		private readonly _proxy: MainThreadEditorInsetsShape,
 		private readonly _editors: ExtHostEditors,
-		private readonly _remoteInfo: WebviewRemoteInfo,
+		private readonly _remoteInfo: WebviewRemoteInfo
 	) {
+
 		// dispose editor inset whenever the hosting editor goes away
-		this._disposables.add(
-			_editors.onDidChangeVisibleTextEditors(() => {
-				const visibleEditor = _editors.getVisibleTextEditors();
-				for (const value of this._insets.values()) {
-					if (visibleEditor.indexOf(value.editor) < 0) {
-						value.inset.dispose(); // will remove from `this._insets`
-					}
+		this._disposables.add(_editors.onDidChangeVisibleTextEditors(() => {
+			const visibleEditor = _editors.getVisibleTextEditors();
+			for (const value of this._insets.values()) {
+				if (visibleEditor.indexOf(value.editor) < 0) {
+					value.inset.dispose(); // will remove from `this._insets`
 				}
-			}),
-		);
+			}
+		}));
 	}
 
 	dispose(): void {
-		this._insets.forEach((value) => value.inset.dispose());
+		this._insets.forEach(value => value.inset.dispose());
 		this._disposables.dispose();
 	}
 
-	createWebviewEditorInset(
-		editor: vscode.TextEditor,
-		line: number,
-		height: number,
-		options: vscode.WebviewOptions | undefined,
-		extension: IExtensionDescription,
-	): vscode.WebviewEditorInset {
+	createWebviewEditorInset(editor: vscode.TextEditor, line: number, height: number, options: vscode.WebviewOptions | undefined, extension: IExtensionDescription): vscode.WebviewEditorInset {
+
 		let apiEditor: ExtHostTextEditor | undefined;
 		for (const candidate of this._editors.getVisibleTextEditors(true)) {
 			if (candidate.value === editor) {
@@ -69,7 +50,7 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 			}
 		}
 		if (!apiEditor) {
-			throw new Error("not a visible editor");
+			throw new Error('not a visible editor');
 		}
 
 		const that = this;
@@ -77,8 +58,9 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 		const onDidReceiveMessage = new Emitter<any>();
 		const onDidDispose = new Emitter<void>();
 
-		const webview = new (class implements vscode.Webview {
-			private _html = "";
+		const webview = new class implements vscode.Webview {
+
+			private _html: string = '';
 			private _options: vscode.WebviewOptions = Object.create(null);
 
 			asWebviewUri(resource: vscode.Uri): vscode.Uri {
@@ -114,9 +96,10 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 			postMessage(message: any): Thenable<boolean> {
 				return that._proxy.$postMessage(handle, message);
 			}
-		})();
+		};
 
-		const inset = new (class implements vscode.WebviewEditorInset {
+		const inset = new class implements vscode.WebviewEditorInset {
+
 			readonly editor: vscode.TextEditor = editor;
 			readonly line: number = line;
 			readonly height: number = height;
@@ -134,18 +117,9 @@ export class ExtHostEditorInsets implements ExtHostEditorInsetsShape {
 					onDidReceiveMessage.dispose();
 				}
 			}
-		})();
+		};
 
-		this._proxy.$createEditorInset(
-			handle,
-			apiEditor.id,
-			apiEditor.value.document.uri,
-			line + 1,
-			height,
-			options || {},
-			extension.identifier,
-			extension.extensionLocation,
-		);
+		this._proxy.$createEditorInset(handle, apiEditor.id, apiEditor.value.document.uri, line + 1, height, options || {}, extension.identifier, extension.extensionLocation);
 		this._insets.set(handle, { editor, inset, onDidReceiveMessage });
 
 		return inset;

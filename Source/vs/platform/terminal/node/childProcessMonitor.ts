@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { debounce, throttle } from "vs/base/common/decorators";
-import { Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
-import { parse } from "vs/base/common/path";
-import { ProcessItem } from "vs/base/common/processes";
-import { listProcesses } from "vs/base/node/ps";
-import { ILogService } from "vs/platform/log/common/log";
+import { parse } from 'vs/base/common/path';
+import { debounce, throttle } from 'vs/base/common/decorators';
+import { Emitter } from 'vs/base/common/event';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { ProcessItem } from 'vs/base/common/processes';
+import { listProcesses } from 'vs/base/node/ps';
+import { ILogService } from 'vs/platform/log/common/log';
 
-enum Constants {
+const enum Constants {
 	/**
 	 * The amount of time to throttle checks when the process receives output.
 	 */
@@ -29,32 +29,24 @@ export const ignoreProcessNames: string[] = [];
  * calls into the monitor.
  */
 export class ChildProcessMonitor extends Disposable {
-	private _hasChildProcesses = false;
+	private _hasChildProcesses: boolean = false;
 	private set hasChildProcesses(value: boolean) {
 		if (this._hasChildProcesses !== value) {
 			this._hasChildProcesses = value;
-			this._logService.debug(
-				"ChildProcessMonitor: Has child processes changed",
-				value,
-			);
+			this._logService.debug('ChildProcessMonitor: Has child processes changed', value);
 			this._onDidChangeHasChildProcesses.fire(value);
 		}
 	}
 	/**
 	 * Whether the process has child processes.
 	 */
-	get hasChildProcesses(): boolean {
-		return this._hasChildProcesses;
-	}
+	get hasChildProcesses(): boolean { return this._hasChildProcesses; }
 
-	private readonly _onDidChangeHasChildProcesses = this._register(
-		new Emitter<boolean>(),
-	);
+	private readonly _onDidChangeHasChildProcesses = this._register(new Emitter<boolean>());
 	/**
 	 * An event that fires when whether the process has child processes changes.
 	 */
-	readonly onDidChangeHasChildProcesses =
-		this._onDidChangeHasChildProcesses.event;
+	readonly onDidChangeHasChildProcesses = this._onDidChangeHasChildProcesses.event;
 
 	constructor(
 		private readonly _pid: number,
@@ -86,10 +78,7 @@ export class ChildProcessMonitor extends Disposable {
 			const processItem = await listProcesses(this._pid);
 			this.hasChildProcesses = this._processContainsChildren(processItem);
 		} catch (e) {
-			this._logService.debug(
-				"ChildProcessMonitor: Fetching process tree failed",
-				e,
-			);
+			this._logService.debug('ChildProcessMonitor: Fetching process tree failed', e);
 		}
 	}
 
@@ -111,7 +100,7 @@ export class ChildProcessMonitor extends Disposable {
 			if (item.cmd.startsWith(`"`)) {
 				cmd = item.cmd.substring(1, item.cmd.indexOf(`"`, 1));
 			} else {
-				const spaceIndex = item.cmd.indexOf(" ");
+				const spaceIndex = item.cmd.indexOf(` `);
 				if (spaceIndex === -1) {
 					cmd = item.cmd;
 				} else {

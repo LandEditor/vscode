@@ -5,20 +5,23 @@
 
 //@ts-check
 
-const path = require("path");
-const withBrowserDefaults = require("../shared.webpack.config").browser;
+'use strict';
+
+const path = require('path');
+const withBrowserDefaults = require('../shared.webpack.config').browser;
 
 module.exports = withBrowserDefaults({
 	context: __dirname,
 	entry: {
-		extension: "./src/configurationEditingMain.ts",
+		extension: './src/configurationEditingMain.ts'
 	},
 	output: {
-		filename: "configurationEditingMain.js",
+		filename: 'configurationEditingMain.js'
 	},
 	resolve: {
 		alias: {
-			"./node/net": path.resolve(__dirname, "src", "browser", "net"),
-		},
-	},
+			'./node/net': path.resolve(__dirname, 'src', 'browser', 'net'),
+		}
+	}
 });
+

@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 export class DomReadingContext {
-	private _didDomLayout = false;
-	private _clientRectDeltaLeft = 0;
-	private _clientRectScale = 1;
-	private _clientRectRead = false;
+
+	private _didDomLayout: boolean = false;
+	private _clientRectDeltaLeft: number = 0;
+	private _clientRectScale: number = 1;
+	private _clientRectRead: boolean = false;
 
 	public get didDomLayout(): boolean {
 		return this._didDomLayout;
@@ -39,8 +40,9 @@ export class DomReadingContext {
 
 	constructor(
 		private readonly _domNode: HTMLElement,
-		public readonly endNode: HTMLElement,
-	) {}
+		public readonly endNode: HTMLElement
+	) {
+	}
 
 	public markDidDomLayout(): void {
 		this._didDomLayout = true;

@@ -6,15 +6,15 @@
 /**
  * Open ended enum at runtime
  */
-export enum LanguageId {
+export const enum LanguageId {
 	Null = 0,
-	PlainText = 1,
+	PlainText = 1
 }
 
 /**
  * A font style. Values are 2^x such that a bit mask can be used.
  */
-export enum FontStyle {
+export const enum FontStyle {
 	NotSet = -1,
 	None = 0,
 	Italic = 1,
@@ -26,20 +26,20 @@ export enum FontStyle {
 /**
  * Open ended enum at runtime
  */
-export enum ColorId {
+export const enum ColorId {
 	None = 0,
 	DefaultForeground = 1,
-	DefaultBackground = 2,
+	DefaultBackground = 2
 }
 
 /**
  * A standard token type.
  */
-export enum StandardTokenType {
+export const enum StandardTokenType {
 	Other = 0,
 	Comment = 1,
 	String = 2,
-	RegEx = 3,
+	RegEx = 3
 }
 
 /**
@@ -64,7 +64,7 @@ export enum StandardTokenType {
  *  - b = background color (9 bits)
  *
  */
-export enum MetadataConsts {
+export const enum MetadataConsts {
 	LANGUAGEID_MASK = 0b00000000000000000000000011111111,
 	TOKEN_TYPE_MASK = 0b00000000000000000000001100000000,
 	BALANCED_BRACKETS_MASK = 0b00000000000000000000010000000000,
@@ -91,24 +91,19 @@ export enum MetadataConsts {
 	BALANCED_BRACKETS_OFFSET = 10,
 	FONT_STYLE_OFFSET = 11,
 	FOREGROUND_OFFSET = 15,
-	BACKGROUND_OFFSET = 24,
+	BACKGROUND_OFFSET = 24
 }
 
 /**
  */
 export class TokenMetadata {
+
 	public static getLanguageId(metadata: number): LanguageId {
-		return (
-			(metadata & MetadataConsts.LANGUAGEID_MASK) >>>
-			MetadataConsts.LANGUAGEID_OFFSET
-		);
+		return (metadata & MetadataConsts.LANGUAGEID_MASK) >>> MetadataConsts.LANGUAGEID_OFFSET;
 	}
 
 	public static getTokenType(metadata: number): StandardTokenType {
-		return (
-			(metadata & MetadataConsts.TOKEN_TYPE_MASK) >>>
-			MetadataConsts.TOKEN_TYPE_OFFSET
-		);
+		return (metadata & MetadataConsts.TOKEN_TYPE_MASK) >>> MetadataConsts.TOKEN_TYPE_OFFSET;
 	}
 
 	public static containsBalancedBrackets(metadata: number): boolean {
@@ -116,79 +111,66 @@ export class TokenMetadata {
 	}
 
 	public static getFontStyle(metadata: number): FontStyle {
-		return (
-			(metadata & MetadataConsts.FONT_STYLE_MASK) >>>
-			MetadataConsts.FONT_STYLE_OFFSET
-		);
+		return (metadata & MetadataConsts.FONT_STYLE_MASK) >>> MetadataConsts.FONT_STYLE_OFFSET;
 	}
 
 	public static getForeground(metadata: number): ColorId {
-		return (
-			(metadata & MetadataConsts.FOREGROUND_MASK) >>>
-			MetadataConsts.FOREGROUND_OFFSET
-		);
+		return (metadata & MetadataConsts.FOREGROUND_MASK) >>> MetadataConsts.FOREGROUND_OFFSET;
 	}
 
 	public static getBackground(metadata: number): ColorId {
-		return (
-			(metadata & MetadataConsts.BACKGROUND_MASK) >>>
-			MetadataConsts.BACKGROUND_OFFSET
-		);
+		return (metadata & MetadataConsts.BACKGROUND_MASK) >>> MetadataConsts.BACKGROUND_OFFSET;
 	}
 
 	public static getClassNameFromMetadata(metadata: number): string {
-		const foreground = TokenMetadata.getForeground(metadata);
-		let className = `mtk${foreground}`;
+		const foreground = this.getForeground(metadata);
+		let className = 'mtk' + foreground;
 
-		const fontStyle = TokenMetadata.getFontStyle(metadata);
+		const fontStyle = this.getFontStyle(metadata);
 		if (fontStyle & FontStyle.Italic) {
-			className += " mtki";
+			className += ' mtki';
 		}
 		if (fontStyle & FontStyle.Bold) {
-			className += " mtkb";
+			className += ' mtkb';
 		}
 		if (fontStyle & FontStyle.Underline) {
-			className += " mtku";
+			className += ' mtku';
 		}
 		if (fontStyle & FontStyle.Strikethrough) {
-			className += " mtks";
+			className += ' mtks';
 		}
 
 		return className;
 	}
 
-	public static getInlineStyleFromMetadata(
-		metadata: number,
-		colorMap: string[],
-	): string {
-		const foreground = TokenMetadata.getForeground(metadata);
-		const fontStyle = TokenMetadata.getFontStyle(metadata);
+	public static getInlineStyleFromMetadata(metadata: number, colorMap: string[]): string {
+		const foreground = this.getForeground(metadata);
+		const fontStyle = this.getFontStyle(metadata);
 
 		let result = `color: ${colorMap[foreground]};`;
 		if (fontStyle & FontStyle.Italic) {
-			result += "font-style: italic;";
+			result += 'font-style: italic;';
 		}
 		if (fontStyle & FontStyle.Bold) {
-			result += "font-weight: bold;";
+			result += 'font-weight: bold;';
 		}
-		let textDecoration = "";
+		let textDecoration = '';
 		if (fontStyle & FontStyle.Underline) {
-			textDecoration += " underline";
+			textDecoration += ' underline';
 		}
 		if (fontStyle & FontStyle.Strikethrough) {
-			textDecoration += " line-through";
+			textDecoration += ' line-through';
 		}
 		if (textDecoration) {
 			result += `text-decoration:${textDecoration};`;
+
 		}
 		return result;
 	}
 
-	public static getPresentationFromMetadata(
-		metadata: number,
-	): ITokenPresentation {
-		const foreground = TokenMetadata.getForeground(metadata);
-		const fontStyle = TokenMetadata.getFontStyle(metadata);
+	public static getPresentationFromMetadata(metadata: number): ITokenPresentation {
+		const foreground = this.getForeground(metadata);
+		const fontStyle = this.getFontStyle(metadata);
 
 		return {
 			foreground: foreground,

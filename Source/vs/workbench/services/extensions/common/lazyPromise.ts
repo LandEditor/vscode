@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationError, onUnexpectedError } from "vs/base/common/errors";
+import { CancellationError, onUnexpectedError } from 'vs/base/common/errors';
 
 export class LazyPromise implements Promise<any> {
+
 	private _actual: Promise<any> | null;
 	private _actualOk: ((value?: any) => any) | null;
 	private _actualErr: ((err?: any) => any) | null;
@@ -57,7 +58,7 @@ export class LazyPromise implements Promise<any> {
 		this._value = value;
 
 		if (this._actual) {
-			this._actualOk?.(value);
+			this._actualOk!(value);
 		}
 	}
 
@@ -70,7 +71,7 @@ export class LazyPromise implements Promise<any> {
 		this._err = err;
 
 		if (this._actual) {
-			this._actualErr?.(err);
+			this._actualErr!(err);
 		} else {
 			// If nobody's listening at this point, it is safe to assume they never will,
 			// since resolving this promise is always "async"

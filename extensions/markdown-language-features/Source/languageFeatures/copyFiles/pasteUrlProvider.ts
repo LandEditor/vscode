@@ -3,19 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from "vscode";
-import { Mime } from "../../util/mimes";
-import {
-	PasteUrlAsFormattedLink,
-	createEditAddingLinksForUriList,
-	findValidUriInText,
-	getPasteUrlAsFormattedLinkSetting,
-} from "./shared";
+import * as vscode from 'vscode';
+import { Mime } from '../../util/mimes';
+import { createEditAddingLinksForUriList, findValidUriInText, getPasteUrlAsFormattedLinkSetting, PasteUrlAsFormattedLink } from './shared';
 
 class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
-	public static readonly id = "insertMarkdownLink";
 
-	public static readonly pasteMimeTypes = [Mime.textPlain];
+	public static readonly id = 'insertMarkdownLink';
+
+	public static readonly pasteMimeTypes = [
+		Mime.textPlain,
+	];
 
 	async provideDocumentPasteEdits(
 		document: vscode.TextDocument,
@@ -39,30 +37,18 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		const pasteEdit = createEditAddingLinksForUriList(
-			document,
-			ranges,
-			uriText,
-			true,
-			pasteUrlSetting === PasteUrlAsFormattedLink.Smart,
-		);
+		const pasteEdit = createEditAddingLinksForUriList(document, ranges, uriText, true, pasteUrlSetting === PasteUrlAsFormattedLink.Smart);
 		if (!pasteEdit) {
 			return;
 		}
 
-		const edit = new vscode.DocumentPasteEdit("", pasteEdit.label);
+		const edit = new vscode.DocumentPasteEdit('', pasteEdit.label);
 		edit.additionalEdit = pasteEdit.additionalEdits;
-		edit.yieldTo = pasteEdit.markdownLink
-			? undefined
-			: [{ mimeType: Mime.textPlain }];
+		edit.yieldTo = pasteEdit.markdownLink ? undefined : [{ mimeType: Mime.textPlain }];
 		return edit;
 	}
 }
 
-export function registerLinkPasteSupport(selector: vscode.DocumentSelector) {
-	return vscode.languages.registerDocumentPasteEditProvider(
-		selector,
-		new PasteUrlEditProvider(),
-		PasteUrlEditProvider,
-	);
+export function registerLinkPasteSupport(selector: vscode.DocumentSelector,) {
+	return vscode.languages.registerDocumentPasteEditProvider(selector, new PasteUrlEditProvider(), PasteUrlEditProvider);
 }

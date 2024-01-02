@@ -3,28 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas } from "vs/base/common/network";
-import { isAbsolute, normalize } from "vs/base/common/path";
-import * as resources from "vs/base/common/resources";
-import { URI } from "vs/base/common/uri";
-import { IRange } from "vs/editor/common/core/range";
-import * as nls from "vs/nls";
-import { TextEditorSelectionRevealType } from "vs/platform/editor/common/editor";
-import { ILogService } from "vs/platform/log/common/log";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IEditorPane } from "vs/workbench/common/editor";
-import { DEBUG_SCHEME } from "vs/workbench/contrib/debug/common/debug";
-import { isUri } from "vs/workbench/contrib/debug/common/debugUtils";
-import {
-	ACTIVE_GROUP,
-	IEditorService,
-	SIDE_GROUP,
-} from "vs/workbench/services/editor/common/editorService";
+import * as nls from 'vs/nls';
+import { URI } from 'vs/base/common/uri';
+import { normalize, isAbsolute } from 'vs/base/common/path';
+import * as resources from 'vs/base/common/resources';
+import { DEBUG_SCHEME } from 'vs/workbench/contrib/debug/common/debug';
+import { IRange } from 'vs/editor/common/core/range';
+import { IEditorService, SIDE_GROUP, ACTIVE_GROUP } from 'vs/workbench/services/editor/common/editorService';
+import { Schemas } from 'vs/base/common/network';
+import { isUri } from 'vs/workbench/contrib/debug/common/debugUtils';
+import { IEditorPane } from 'vs/workbench/common/editor';
+import { TextEditorSelectionRevealType } from 'vs/platform/editor/common/editor';
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
+import { ILogService } from 'vs/platform/log/common/log';
 
-export const UNKNOWN_SOURCE_LABEL = nls.localize(
-	"unknownSource",
-	"Unknown Source",
-);
+export const UNKNOWN_SOURCE_LABEL = nls.localize('unknownSource', "Unknown Source");
 
 /**
  * Debug URI format
@@ -40,20 +33,16 @@ export const UNKNOWN_SOURCE_LABEL = nls.localize(
  */
 
 export class Source {
+
 	readonly uri: URI;
 	available: boolean;
 	raw: DebugProtocol.Source;
 
-	constructor(
-		raw_: DebugProtocol.Source | undefined,
-		sessionId: string,
-		uriIdentityService: IUriIdentityService,
-		logService: ILogService,
-	) {
+	constructor(raw_: DebugProtocol.Source | undefined, sessionId: string, uriIdentityService: IUriIdentityService, logService: ILogService) {
 		let path: string;
 		if (raw_) {
 			this.raw = raw_;
-			path = this.raw.path || this.raw.name || "";
+			path = this.raw.path || this.raw.name || '';
 			this.available = true;
 		} else {
 			this.raw = { name: UNKNOWN_SOURCE_LABEL };
@@ -61,13 +50,7 @@ export class Source {
 			path = `${DEBUG_SCHEME}:${UNKNOWN_SOURCE_LABEL}`;
 		}
 
-		this.uri = getUriFromSource(
-			this.raw,
-			path,
-			sessionId,
-			uriIdentityService,
-			logService,
-		);
+		this.uri = getUriFromSource(this.raw, path, sessionId, uriIdentityService, logService);
 	}
 
 	get name() {
@@ -90,105 +73,73 @@ export class Source {
 		return this.uri.scheme === DEBUG_SCHEME;
 	}
 
-	openInEditor(
-		editorService: IEditorService,
-		selection: IRange,
-		preserveFocus?: boolean,
-		sideBySide?: boolean,
-		pinned?: boolean,
-	): Promise<IEditorPane | undefined> {
-		return this.available
-			? editorService.openEditor(
-					{
-						resource: this.uri,
-						description: this.origin,
-						options: {
-							preserveFocus,
-							selection,
-							revealIfOpened: true,
-							selectionRevealType:
-								TextEditorSelectionRevealType.CenterIfOutsideViewport,
-							pinned,
-						},
-					},
-					sideBySide ? SIDE_GROUP : ACTIVE_GROUP,
-			  )
-			: Promise.resolve(undefined);
+	openInEditor(editorService: IEditorService, selection: IRange, preserveFocus?: boolean, sideBySide?: boolean, pinned?: boolean): Promise<IEditorPane | undefined> {
+		return !this.available ? Promise.resolve(undefined) : editorService.openEditor({
+			resource: this.uri,
+			description: this.origin,
+			options: {
+				preserveFocus,
+				selection,
+				revealIfOpened: true,
+				selectionRevealType: TextEditorSelectionRevealType.CenterIfOutsideViewport,
+				pinned
+			}
+		}, sideBySide ? SIDE_GROUP : ACTIVE_GROUP);
 	}
 
-	static getEncodedDebugData(modelUri: URI): {
-		name: string;
-		path: string;
-		sessionId?: string;
-		sourceReference?: number;
-	} {
+	static getEncodedDebugData(modelUri: URI): { name: string; path: string; sessionId?: string; sourceReference?: number } {
 		let path: string;
 		let sourceReference: number | undefined;
 		let sessionId: string | undefined;
 
 		switch (modelUri.scheme) {
-			case Schemas.file: {
+			case Schemas.file:
 				path = normalize(modelUri.fsPath);
 				break;
-			}
-			case DEBUG_SCHEME: {
+			case DEBUG_SCHEME:
 				path = modelUri.path;
 				if (modelUri.query) {
-					const keyvalues = modelUri.query.split("&");
+					const keyvalues = modelUri.query.split('&');
 					for (const keyvalue of keyvalues) {
-						const pair = keyvalue.split("=");
+						const pair = keyvalue.split('=');
 						if (pair.length === 2) {
 							switch (pair[0]) {
-								case "session": {
+								case 'session':
 									sessionId = pair[1];
 									break;
-								}
-								case "ref": {
+								case 'ref':
 									sourceReference = parseInt(pair[1]);
 									break;
-								}
 							}
 						}
 					}
 				}
 				break;
-			}
-			default: {
+			default:
 				path = modelUri.toString();
 				break;
-			}
 		}
 
 		return {
 			name: resources.basenameOrAuthority(modelUri),
 			path,
 			sourceReference,
-			sessionId,
+			sessionId
 		};
 	}
 }
 
-export function getUriFromSource(
-	raw: DebugProtocol.Source,
-	path: string | undefined,
-	sessionId: string,
-	uriIdentityService: IUriIdentityService,
-	logService: ILogService,
-): URI {
+export function getUriFromSource(raw: DebugProtocol.Source, path: string | undefined, sessionId: string, uriIdentityService: IUriIdentityService, logService: ILogService): URI {
 	const _getUriFromSource = (path: string | undefined) => {
-		if (
-			typeof raw.sourceReference === "number" &&
-			raw.sourceReference > 0
-		) {
+		if (typeof raw.sourceReference === 'number' && raw.sourceReference > 0) {
 			return URI.from({
 				scheme: DEBUG_SCHEME,
-				path: path?.replace(/^\/+/g, "/"), // #174054
-				query: `session=${sessionId}&ref=${raw.sourceReference}`,
+				path: path?.replace(/^\/+/g, '/'), // #174054
+				query: `session=${sessionId}&ref=${raw.sourceReference}`
 			});
 		}
 
-		if (path && isUri(path)) {
-			// path looks like a uri
+		if (path && isUri(path)) {	// path looks like a uri
 			return uriIdentityService.asCanonicalUri(URI.parse(path));
 		}
 		// assume a filesystem path
@@ -197,19 +148,18 @@ export function getUriFromSource(
 		}
 		// path is relative: since VS Code cannot deal with this by itself
 		// create a debug url that will result in a DAP 'source' request when the url is resolved.
-		return uriIdentityService.asCanonicalUri(
-			URI.from({
-				scheme: DEBUG_SCHEME,
-				path,
-				query: `session=${sessionId}`,
-			}),
-		);
+		return uriIdentityService.asCanonicalUri(URI.from({
+			scheme: DEBUG_SCHEME,
+			path,
+			query: `session=${sessionId}`
+		}));
 	};
+
 
 	try {
 		return _getUriFromSource(path);
 	} catch (err) {
-		logService.error(`Invalid path from debug adapter: ${path}`);
-		return _getUriFromSource("/invalidDebugSource");
+		logService.error('Invalid path from debug adapter: ' + path);
+		return _getUriFromSource('/invalidDebugSource');
 	}
 }

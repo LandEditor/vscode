@@ -3,21 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import Severity from "vs/base/common/severity";
-import { compare } from "vs/base/common/strings";
-import { LanguageFeatureRegistry } from "vs/editor/common/languageFeatureRegistry";
-import { LanguageSelector } from "vs/editor/common/languageSelector";
-import { Command } from "vs/editor/common/languages";
-import { ITextModel } from "vs/editor/common/model";
-import { IAccessibilityInformation } from "vs/platform/accessibility/common/accessibility";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Event } from 'vs/base/common/event';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import Severity from 'vs/base/common/severity';
+import { compare } from 'vs/base/common/strings';
+import { ITextModel } from 'vs/editor/common/model';
+import { Command } from 'vs/editor/common/languages';
+import { LanguageFeatureRegistry } from 'vs/editor/common/languageFeatureRegistry';
+import { LanguageSelector } from 'vs/editor/common/languageSelector';
+import { IAccessibilityInformation } from 'vs/platform/accessibility/common/accessibility';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
 export interface ILanguageStatus {
 	readonly id: string;
@@ -33,17 +30,13 @@ export interface ILanguageStatus {
 }
 
 export interface ILanguageStatusProvider {
-	provideLanguageStatus(
-		langId: string,
-		token: CancellationToken,
-	): Promise<ILanguageStatus | undefined>;
+	provideLanguageStatus(langId: string, token: CancellationToken): Promise<ILanguageStatus | undefined>;
 }
 
-export const ILanguageStatusService = createDecorator<ILanguageStatusService>(
-	"ILanguageStatusService",
-);
+export const ILanguageStatusService = createDecorator<ILanguageStatusService>('ILanguageStatusService');
 
 export interface ILanguageStatusService {
+
 	_serviceBrand: undefined;
 
 	onDidChange: Event<void>;
@@ -53,7 +46,9 @@ export interface ILanguageStatusService {
 	getLanguageStatus(model: ITextModel): ILanguageStatus[];
 }
 
+
 class LanguageStatusServiceImpl implements ILanguageStatusService {
+
 	declare _serviceBrand: undefined;
 
 	private readonly _provider = new LanguageFeatureRegistry<ILanguageStatus>();
@@ -78,8 +73,4 @@ class LanguageStatusServiceImpl implements ILanguageStatusService {
 	}
 }
 
-registerSingleton(
-	ILanguageStatusService,
-	LanguageStatusServiceImpl,
-	InstantiationType.Delayed,
-);
+registerSingleton(ILanguageStatusService, LanguageStatusServiceImpl, InstantiationType.Delayed);

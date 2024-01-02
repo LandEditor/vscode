@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStringDictionary } from "vs/base/common/collections";
-import { Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IStringDictionary } from 'vs/base/common/collections';
+import { Event } from 'vs/base/common/event';
 
-export enum ExtensionRecommendationReason {
-	Workspace = 0,
-	File = 1,
-	Executable = 2,
-	WorkspaceConfig = 3,
-	DynamicWorkspace = 4,
-	Experimental = 5,
-	Application = 6,
+export const enum ExtensionRecommendationReason {
+	Workspace,
+	File,
+	Executable,
+	WorkspaceConfig,
+	DynamicWorkspace,
+	Experimental,
+	Application,
 }
 
 export interface IExtensionRecommendationReason {
@@ -22,10 +22,7 @@ export interface IExtensionRecommendationReason {
 	reasonText: string;
 }
 
-export const IExtensionRecommendationsService =
-	createDecorator<IExtensionRecommendationsService>(
-		"extensionRecommendationsService",
-	);
+export const IExtensionRecommendationsService = createDecorator<IExtensionRecommendationsService>('extensionRecommendationsService');
 
 export interface IExtensionRecommendationsService {
 	readonly _serviceBrand: undefined;
@@ -36,13 +33,8 @@ export interface IExtensionRecommendationsService {
 	getImportantRecommendations(): Promise<string[]>;
 	getOtherRecommendations(): Promise<string[]>;
 	getFileBasedRecommendations(): string[];
-	getExeBasedRecommendations(
-		exe?: string,
-	): Promise<{ important: string[]; others: string[] }>;
-	getConfigBasedRecommendations(): Promise<{
-		important: string[];
-		others: string[];
-	}>;
+	getExeBasedRecommendations(exe?: string): Promise<{ important: string[]; others: string[] }>;
+	getConfigBasedRecommendations(): Promise<{ important: string[]; others: string[] }>;
 	getWorkspaceRecommendations(): Promise<string[]>;
 	getKeymapRecommendations(): string[];
 	getLanguageRecommendations(): string[];
@@ -54,10 +46,7 @@ export type IgnoredRecommendationChangeNotification = {
 	isRecommended: boolean;
 };
 
-export const IExtensionIgnoredRecommendationsService =
-	createDecorator<IExtensionIgnoredRecommendationsService>(
-		"IExtensionIgnoredRecommendationsService",
-	);
+export const IExtensionIgnoredRecommendationsService = createDecorator<IExtensionIgnoredRecommendationsService>('IExtensionIgnoredRecommendationsService');
 
 export interface IExtensionIgnoredRecommendationsService {
 	readonly _serviceBrand: undefined;
@@ -67,8 +56,7 @@ export interface IExtensionIgnoredRecommendationsService {
 
 	onDidChangeGlobalIgnoredRecommendation: Event<IgnoredRecommendationChangeNotification>;
 	readonly globalIgnoredRecommendations: string[];
-	toggleGlobalIgnoredRecommendation(
-		extensionId: string,
-		ignore: boolean,
-	): void;
+	toggleGlobalIgnoredRecommendation(extensionId: string, ignore: boolean): void;
 }
+
+

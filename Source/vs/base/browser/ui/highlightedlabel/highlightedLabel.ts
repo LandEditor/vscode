@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "vs/base/browser/dom";
-import { renderLabelWithIcons } from "vs/base/browser/ui/iconLabel/iconLabels";
-import * as objects from "vs/base/common/objects";
+import * as dom from 'vs/base/browser/dom';
+import { renderLabelWithIcons } from 'vs/base/browser/ui/iconLabel/iconLabels';
+import * as objects from 'vs/base/common/objects';
 
 /**
  * A range to be highlighted.
@@ -17,6 +17,7 @@ export interface IHighlight {
 }
 
 export interface IHighlightedLabelOptions {
+
 	/**
 	 * Whether the label supports rendering icons.
 	 */
@@ -28,12 +29,13 @@ export interface IHighlightedLabelOptions {
  * originating from a filter function like the fuzzy matcher.
  */
 export class HighlightedLabel {
+
 	private readonly domNode: HTMLElement;
-	private text = "";
-	private title = "";
+	private text: string = '';
+	private title: string = '';
 	private highlights: readonly IHighlight[] = [];
 	private supportIcons: boolean;
-	private didEverRender = false;
+	private didEverRender: boolean = false;
 
 	/**
 	 * Create a new {@link HighlightedLabel}.
@@ -42,10 +44,7 @@ export class HighlightedLabel {
 	 */
 	constructor(container: HTMLElement, options?: IHighlightedLabelOptions) {
 		this.supportIcons = options?.supportIcons ?? false;
-		this.domNode = dom.append(
-			container,
-			dom.$("span.monaco-highlighted-label"),
-		);
+		this.domNode = dom.append(container, dom.$('span.monaco-highlighted-label'));
 	}
 
 	/**
@@ -64,14 +63,9 @@ export class HighlightedLabel {
 	 * @param escapeNewLines Whether to escape new lines.
 	 * @returns
 	 */
-	set(
-		text: string | undefined,
-		highlights: readonly IHighlight[] = [],
-		title = "",
-		escapeNewLines?: boolean,
-	) {
+	set(text: string | undefined, highlights: readonly IHighlight[] = [], title: string = '', escapeNewLines?: boolean) {
 		if (!text) {
-			text = "";
+			text = '';
 		}
 
 		if (escapeNewLines) {
@@ -79,12 +73,7 @@ export class HighlightedLabel {
 			text = HighlightedLabel.escapeNewLines(text, highlights);
 		}
 
-		if (
-			this.didEverRender &&
-			this.text === text &&
-			this.title === title &&
-			objects.equals(this.highlights, highlights)
-		) {
+		if (this.didEverRender && this.text === text && this.title === title && objects.equals(this.highlights, highlights)) {
 			return;
 		}
 
@@ -95,6 +84,7 @@ export class HighlightedLabel {
 	}
 
 	private render(): void {
+
 		const children: Array<HTMLSpanElement | string> = [];
 		let pos = 0;
 
@@ -114,13 +104,7 @@ export class HighlightedLabel {
 			}
 
 			const substring = this.text.substring(pos, highlight.end);
-			const element = dom.$(
-				"span.highlight",
-				undefined,
-				...(this.supportIcons
-					? renderLabelWithIcons(substring)
-					: [substring]),
-			);
+			const element = dom.$('span.highlight', undefined, ...this.supportIcons ? renderLabelWithIcons(substring) : [substring]);
 
 			if (highlight.extraClasses) {
 				element.classList.add(...highlight.extraClasses);
@@ -131,7 +115,7 @@ export class HighlightedLabel {
 		}
 
 		if (pos < this.text.length) {
-			const substring = this.text.substring(pos);
+			const substring = this.text.substring(pos,);
 			if (this.supportIcons) {
 				children.push(...renderLabelWithIcons(substring));
 			} else {
@@ -144,21 +128,18 @@ export class HighlightedLabel {
 		if (this.title) {
 			this.domNode.title = this.title;
 		} else {
-			this.domNode.removeAttribute("title");
+			this.domNode.removeAttribute('title');
 		}
 
 		this.didEverRender = true;
 	}
 
-	static escapeNewLines(
-		text: string,
-		highlights: readonly IHighlight[],
-	): string {
+	static escapeNewLines(text: string, highlights: readonly IHighlight[]): string {
 		let total = 0;
 		let extra = 0;
 
 		return text.replace(/\r\n|\r|\n/g, (match, offset) => {
-			extra = match === "\r\n" ? -1 : 0;
+			extra = match === '\r\n' ? -1 : 0;
 			offset += total;
 
 			for (const highlight of highlights) {
@@ -174,7 +155,7 @@ export class HighlightedLabel {
 			}
 
 			total += extra;
-			return "\u23CE";
+			return '\u23CE';
 		});
 	}
 }

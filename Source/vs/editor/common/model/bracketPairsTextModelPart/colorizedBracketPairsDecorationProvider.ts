@@ -3,33 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Color } from "vs/base/common/color";
-import { Emitter } from "vs/base/common/event";
-import { Disposable } from "vs/base/common/lifecycle";
+import { Color } from 'vs/base/common/color';
+import { Emitter } from 'vs/base/common/event';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { Range } from 'vs/editor/common/core/range';
+import { BracketPairColorizationOptions, IModelDecoration } from 'vs/editor/common/model';
+import { BracketInfo } from 'vs/editor/common/textModelBracketPairs';
+import { DecorationProvider } from 'vs/editor/common/model/decorationProvider';
+import { TextModel } from 'vs/editor/common/model/textModel';
 import {
-	editorBracketHighlightingForeground1,
-	editorBracketHighlightingForeground2,
-	editorBracketHighlightingForeground3,
-	editorBracketHighlightingForeground4,
-	editorBracketHighlightingForeground5,
-	editorBracketHighlightingForeground6,
-	editorBracketHighlightingUnexpectedBracketForeground,
-} from "vs/editor/common/core/editorColorRegistry";
-import { Range } from "vs/editor/common/core/range";
-import {
-	BracketPairColorizationOptions,
-	IModelDecoration,
-} from "vs/editor/common/model";
-import { DecorationProvider } from "vs/editor/common/model/decorationProvider";
-import { TextModel } from "vs/editor/common/model/textModel";
-import { BracketInfo } from "vs/editor/common/textModelBracketPairs";
-import { IModelOptionsChangedEvent } from "vs/editor/common/textModelEvents";
-import { registerThemingParticipant } from "vs/platform/theme/common/themeService";
+	editorBracketHighlightingForeground1, editorBracketHighlightingForeground2, editorBracketHighlightingForeground3, editorBracketHighlightingForeground4, editorBracketHighlightingForeground5, editorBracketHighlightingForeground6, editorBracketHighlightingUnexpectedBracketForeground
+} from 'vs/editor/common/core/editorColorRegistry';
+import { registerThemingParticipant } from 'vs/platform/theme/common/themeService';
+import { IModelOptionsChangedEvent } from 'vs/editor/common/textModelEvents';
 
-export class ColorizedBracketPairsDecorationProvider
-	extends Disposable
-	implements DecorationProvider
-{
+export class ColorizedBracketPairsDecorationProvider extends Disposable implements DecorationProvider {
 	private colorizationOptions: BracketPairColorizationOptions;
 	private readonly colorProvider = new ColorProvider();
 
@@ -39,31 +27,22 @@ export class ColorizedBracketPairsDecorationProvider
 	constructor(private readonly textModel: TextModel) {
 		super();
 
-		this.colorizationOptions =
-			textModel.getOptions().bracketPairColorizationOptions;
+		this.colorizationOptions = textModel.getOptions().bracketPairColorizationOptions;
 
-		this._register(
-			textModel.bracketPairs.onDidChange((e) => {
-				this.onDidChangeEmitter.fire();
-			}),
-		);
+		this._register(textModel.bracketPairs.onDidChange(e => {
+			this.onDidChangeEmitter.fire();
+		}));
 	}
 
 	//#region TextModel events
 
 	public handleDidChangeOptions(e: IModelOptionsChangedEvent): void {
-		this.colorizationOptions =
-			this.textModel.getOptions().bracketPairColorizationOptions;
+		this.colorizationOptions = this.textModel.getOptions().bracketPairColorizationOptions;
 	}
 
 	//#endregion
 
-	getDecorationsInRange(
-		range: Range,
-		ownerId?: number,
-		filterOutValidation?: boolean,
-		onlyMinimapDecorations?: boolean,
-	): IModelDecoration[] {
+	getDecorationsInRange(range: Range, ownerId?: number, filterOutValidation?: boolean, onlyMinimapDecorations?: boolean): IModelDecoration[] {
 		if (onlyMinimapDecorations) {
 			// Bracket pair colorization decorations are not rendered in the minimap
 			return [];
@@ -75,32 +54,23 @@ export class ColorizedBracketPairsDecorationProvider
 			return [];
 		}
 
-		const result = this.textModel.bracketPairs
-			.getBracketsInRange(range, true)
-			.map<IModelDecoration>((bracket) => ({
-				id: `bracket${bracket.range.toString()}-${
-					bracket.nestingLevel
-				}`,
-				options: {
-					description: "BracketPairColorization",
-					inlineClassName: this.colorProvider.getInlineClassName(
-						bracket,
-						this.colorizationOptions
-							.independentColorPoolPerBracketType,
-					),
-				},
-				ownerId: 0,
-				range: bracket.range,
-			}))
-			.toArray();
+		const result = this.textModel.bracketPairs.getBracketsInRange(range, true).map<IModelDecoration>(bracket => ({
+			id: `bracket${bracket.range.toString()}-${bracket.nestingLevel}`,
+			options: {
+				description: 'BracketPairColorization',
+				inlineClassName: this.colorProvider.getInlineClassName(
+					bracket,
+					this.colorizationOptions.independentColorPoolPerBracketType
+				),
+			},
+			ownerId: 0,
+			range: bracket.range,
+		})).toArray();
 
 		return result;
 	}
 
-	getAllDecorations(
-		ownerId?: number,
-		filterOutValidation?: boolean,
-	): IModelDecoration[] {
+	getAllDecorations(ownerId?: number, filterOutValidation?: boolean): IModelDecoration[] {
 		if (ownerId === undefined) {
 			return [];
 		}
@@ -110,27 +80,19 @@ export class ColorizedBracketPairsDecorationProvider
 		return this.getDecorationsInRange(
 			new Range(1, 1, this.textModel.getLineCount(), 1),
 			ownerId,
-			filterOutValidation,
+			filterOutValidation
 		);
 	}
 }
 
 class ColorProvider {
-	public readonly unexpectedClosingBracketClassName =
-		"unexpected-closing-bracket";
+	public readonly unexpectedClosingBracketClassName = 'unexpected-closing-bracket';
 
-	getInlineClassName(
-		bracket: BracketInfo,
-		independentColorPoolPerBracketType: boolean,
-	): string {
+	getInlineClassName(bracket: BracketInfo, independentColorPoolPerBracketType: boolean): string {
 		if (bracket.isInvalid) {
 			return this.unexpectedClosingBracketClassName;
 		}
-		return this.getInlineClassNameOfLevel(
-			independentColorPoolPerBracketType
-				? bracket.nestingLevelOfEqualBracketType
-				: bracket.nestingLevel,
-		);
+		return this.getInlineClassNameOfLevel(independentColorPoolPerBracketType ? bracket.nestingLevelOfEqualBracketType : bracket.nestingLevel);
 	}
 
 	getInlineClassNameOfLevel(level: number): string {
@@ -147,29 +109,19 @@ registerThemingParticipant((theme, collector) => {
 		editorBracketHighlightingForeground3,
 		editorBracketHighlightingForeground4,
 		editorBracketHighlightingForeground5,
-		editorBracketHighlightingForeground6,
+		editorBracketHighlightingForeground6
 	];
 	const colorProvider = new ColorProvider();
 
-	collector.addRule(
-		`.monaco-editor .${
-			colorProvider.unexpectedClosingBracketClassName
-		} { color: ${theme.getColor(
-			editorBracketHighlightingUnexpectedBracketForeground,
-		)}; }`,
-	);
+	collector.addRule(`.monaco-editor .${colorProvider.unexpectedClosingBracketClassName} { color: ${theme.getColor(editorBracketHighlightingUnexpectedBracketForeground)}; }`);
 
 	const colorValues = colors
-		.map((c) => theme.getColor(c))
+		.map(c => theme.getColor(c))
 		.filter((c): c is Color => !!c)
-		.filter((c) => !c.isTransparent());
+		.filter(c => !c.isTransparent());
 
 	for (let level = 0; level < 30; level++) {
 		const color = colorValues[level % colorValues.length];
-		collector.addRule(
-			`.monaco-editor .${colorProvider.getInlineClassNameOfLevel(
-				level,
-			)} { color: ${color}; }`,
-		);
+		collector.addRule(`.monaco-editor .${colorProvider.getInlineClassNameOfLevel(level)} { color: ${color}; }`);
 	}
 });

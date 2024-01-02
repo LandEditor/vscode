@@ -3,33 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Barrier, timeout } from "vs/base/common/async";
-import {
-	Disposable,
-	DisposableStore,
-	IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { generateUuid } from "vs/base/common/uuid";
-import { IPCClient, ProxyChannel } from "vs/base/parts/ipc/common/ipc";
-import { Client as MessagePortClient } from "vs/base/parts/ipc/common/ipc.mp";
-import { acquirePort } from "vs/base/parts/ipc/electron-sandbox/ipc.mp";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IMainProcessService } from "vs/platform/ipc/common/mainProcessService";
-import { ILogService } from "vs/platform/log/common/log";
-import {
-	IOnDidTerminateUtilityrocessWorkerProcess,
-	IUtilityProcessWorkerProcess,
-	IUtilityProcessWorkerService,
-	ipcUtilityProcessWorkerChannelName,
-} from "vs/platform/utilityProcess/common/utilityProcessWorkerService";
+import { ILogService } from 'vs/platform/log/common/log';
+import { Disposable, DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { IMainProcessService } from 'vs/platform/ipc/common/mainProcessService';
+import { Client as MessagePortClient } from 'vs/base/parts/ipc/common/ipc.mp';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IPCClient, ProxyChannel } from 'vs/base/parts/ipc/common/ipc';
+import { generateUuid } from 'vs/base/common/uuid';
+import { acquirePort } from 'vs/base/parts/ipc/electron-sandbox/ipc.mp';
+import { IOnDidTerminateUtilityrocessWorkerProcess, ipcUtilityProcessWorkerChannelName, IUtilityProcessWorkerProcess, IUtilityProcessWorkerService } from 'vs/platform/utilityProcess/common/utilityProcessWorkerService';
+import { Barrier, timeout } from 'vs/base/common/async';
 
-export const IUtilityProcessWorkerWorkbenchService =
-	createDecorator<IUtilityProcessWorkerWorkbenchService>(
-		"utilityProcessWorkerWorkbenchService",
-	);
+export const IUtilityProcessWorkerWorkbenchService = createDecorator<IUtilityProcessWorkerWorkbenchService>('utilityProcessWorkerWorkbenchService');
 
 export interface IUtilityProcessWorker extends IDisposable {
+
 	/**
 	 * A IPC client to communicate to the worker process.
 	 */
@@ -48,6 +36,7 @@ export interface IUtilityProcessWorker extends IDisposable {
 }
 
 export interface IUtilityProcessWorkerWorkbenchService {
+
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -72,9 +61,7 @@ export interface IUtilityProcessWorkerWorkbenchService {
 	 * @returns the worker IPC client to communicate with. Provides a `dispose` method that
 	 * allows to terminate the worker if needed.
 	 */
-	createWorker(
-		process: IUtilityProcessWorkerProcess,
-	): Promise<IUtilityProcessWorker>;
+	createWorker(process: IUtilityProcessWorkerProcess): Promise<IUtilityProcessWorker>;
 
 	/**
 	 * Notifies the service that the workbench window has restored.
@@ -82,22 +69,15 @@ export interface IUtilityProcessWorkerWorkbenchService {
 	notifyRestored(): void;
 }
 
-export class UtilityProcessWorkerWorkbenchService
-	extends Disposable
-	implements IUtilityProcessWorkerWorkbenchService
-{
+export class UtilityProcessWorkerWorkbenchService extends Disposable implements IUtilityProcessWorkerWorkbenchService {
+
 	declare readonly _serviceBrand: undefined;
 
-	private _utilityProcessWorkerService:
-		| IUtilityProcessWorkerService
-		| undefined = undefined;
+	private _utilityProcessWorkerService: IUtilityProcessWorkerService | undefined = undefined;
 	private get utilityProcessWorkerService(): IUtilityProcessWorkerService {
 		if (!this._utilityProcessWorkerService) {
-			const channel = this.mainProcessService.getChannel(
-				ipcUtilityProcessWorkerChannelName,
-			);
-			this._utilityProcessWorkerService =
-				ProxyChannel.toService<IUtilityProcessWorkerService>(channel);
+			const channel = this.mainProcessService.getChannel(ipcUtilityProcessWorkerChannelName);
+			this._utilityProcessWorkerService = ProxyChannel.toService<IUtilityProcessWorkerService>(channel);
 		}
 
 		return this._utilityProcessWorkerService;
@@ -108,16 +88,13 @@ export class UtilityProcessWorkerWorkbenchService
 	constructor(
 		readonly windowId: number,
 		@ILogService private readonly logService: ILogService,
-		@IMainProcessService
-		private readonly mainProcessService: IMainProcessService
+		@IMainProcessService private readonly mainProcessService: IMainProcessService
 	) {
 		super();
 	}
 
-	async createWorker(
-		process: IUtilityProcessWorkerProcess,
-	): Promise<IUtilityProcessWorker> {
-		this.logService.trace("Renderer->UtilityProcess#createWorker");
+	async createWorker(process: IUtilityProcessWorkerProcess): Promise<IUtilityProcessWorker> {
+		this.logService.trace('Renderer->UtilityProcess#createWorker');
 
 		// We want to avoid heavy utility process work to happen before
 		// the window has restored. As such, make sure we await the
@@ -128,57 +105,36 @@ export class UtilityProcessWorkerWorkbenchService
 
 		// Get ready to acquire the message port from the utility process worker
 		const nonce = generateUuid();
-		const responseChannel =
-			"vscode:createUtilityProcessWorkerMessageChannelResult";
-		const portPromise = acquirePort(
-			undefined /* we trigger the request via service call! */,
-			responseChannel,
-			nonce,
-		);
+		const responseChannel = 'vscode:createUtilityProcessWorkerMessageChannelResult';
+		const portPromise = acquirePort(undefined /* we trigger the request via service call! */, responseChannel, nonce);
 
 		// Actually talk with the utility process service
 		// to create a new process from a worker
 		const onDidTerminate = this.utilityProcessWorkerService.createWorker({
 			process,
-			reply: { windowId: this.windowId, channel: responseChannel, nonce },
+			reply: { windowId: this.windowId, channel: responseChannel, nonce }
 		});
 
 		// Dispose worker upon disposal via utility process service
 		const disposables = new DisposableStore();
-		disposables.add(
-			toDisposable(() => {
-				this.logService.trace(
-					"Renderer->UtilityProcess#disposeWorker",
-					process,
-				);
+		disposables.add(toDisposable(() => {
+			this.logService.trace('Renderer->UtilityProcess#disposeWorker', process);
 
-				this.utilityProcessWorkerService.disposeWorker({
-					process,
-					reply: { windowId: this.windowId },
-				});
-			}),
-		);
+			this.utilityProcessWorkerService.disposeWorker({
+				process,
+				reply: { windowId: this.windowId }
+			});
+		}));
 
 		const port = await portPromise;
-		const client = disposables.add(
-			new MessagePortClient(
-				port,
-				`window:${this.windowId},module:${process.moduleId}`,
-			),
-		);
-		this.logService.trace(
-			"Renderer->UtilityProcess#createWorkerChannel: connection established",
-		);
+		const client = disposables.add(new MessagePortClient(port, `window:${this.windowId},module:${process.moduleId}`));
+		this.logService.trace('Renderer->UtilityProcess#createWorkerChannel: connection established');
 
 		onDidTerminate.then(({ reason }) => {
 			if (reason?.code === 0) {
-				this.logService.trace(
-					`[UtilityProcessWorker]: terminated normally with code ${reason.code}, signal: ${reason.signal}`,
-				);
+				this.logService.trace(`[UtilityProcessWorker]: terminated normally with code ${reason.code}, signal: ${reason.signal}`);
 			} else {
-				this.logService.error(
-					`[UtilityProcessWorker]: terminated unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`,
-				);
+				this.logService.error(`[UtilityProcessWorker]: terminated unexpectedly with code ${reason?.code}, signal: ${reason?.signal}`);
 			}
 		});
 

@@ -4,19 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-(() => {
+(function () {
+	'use strict';
+
 	const bootstrapWindow = bootstrapWindowLib();
 
 	// Load issue reporter into window
-	bootstrapWindow.load(
-		["vs/code/electron-sandbox/issue/issueReporterMain"],
-		(issueReporter, configuration) => issueReporter.startup(configuration),
+	bootstrapWindow.load(['vs/code/electron-sandbox/issue/issueReporterMain'], function (issueReporter, configuration) {
+		return issueReporter.startup(configuration);
+	},
 		{
-			configureDeveloperSettings: () => ({
-				forceEnableDeveloperKeybindings: true,
-				disallowReloadKeybinding: true,
-			}),
-		},
+			configureDeveloperSettings: function () {
+				return {
+					forceEnableDeveloperKeybindings: true,
+					disallowReloadKeybinding: true
+				};
+			}
+		}
 	);
 
 	/**
@@ -40,4 +44,4 @@
 		// @ts-ignore (defined in bootstrap-window.js)
 		return window.MonacoBootstrapWindow;
 	}
-})();
+}());

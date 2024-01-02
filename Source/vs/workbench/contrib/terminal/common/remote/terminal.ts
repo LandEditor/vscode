@@ -3,24 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { UriComponents } from "vs/base/common/uri";
-import {
-	ISerializableEnvironmentDescriptionMap,
-	ISerializableEnvironmentVariableCollection,
-} from "vs/platform/terminal/common/environmentVariable";
-import {
-	IShellLaunchConfigDto,
-	ITerminalProcessOptions,
-} from "vs/platform/terminal/common/terminal";
-import { ICompleteTerminalConfiguration } from "vs/workbench/contrib/terminal/common/terminal";
+import { UriComponents } from 'vs/base/common/uri';
+import { IShellLaunchConfigDto, ITerminalProcessOptions } from 'vs/platform/terminal/common/terminal';
+import { ICompleteTerminalConfiguration } from 'vs/workbench/contrib/terminal/common/terminal';
+import { ISerializableEnvironmentDescriptionMap as ISerializableEnvironmentDescriptionMap, ISerializableEnvironmentVariableCollection } from 'vs/platform/terminal/common/environmentVariable';
 
-export const REMOTE_TERMINAL_CHANNEL_NAME = "remoteterminal";
+export const REMOTE_TERMINAL_CHANNEL_NAME = 'remoteterminal';
 
-export type ITerminalEnvironmentVariableCollections = [
-	string,
-	ISerializableEnvironmentVariableCollection,
-	ISerializableEnvironmentDescriptionMap,
-][];
+export type ITerminalEnvironmentVariableCollections = [string, ISerializableEnvironmentVariableCollection, ISerializableEnvironmentDescriptionMap][];
 
 export interface IWorkspaceFolderData {
 	uri: UriComponents;
@@ -42,7 +32,7 @@ export interface ICreateTerminalProcessArguments {
 	options: ITerminalProcessOptions;
 	cols: number;
 	rows: number;
-	unicodeVersion: "6" | "11";
+	unicodeVersion: '6' | '11';
 	resolverEnv: { [key: string]: string | null } | undefined;
 }
 
@@ -51,61 +41,61 @@ export interface ICreateTerminalProcessResult {
 	resolvedShellLaunchConfig: IShellLaunchConfigDto;
 }
 
-export enum RemoteTerminalChannelEvent {
-	OnPtyHostExitEvent = "$onPtyHostExitEvent",
-	OnPtyHostStartEvent = "$onPtyHostStartEvent",
-	OnPtyHostUnresponsiveEvent = "$onPtyHostUnresponsiveEvent",
-	OnPtyHostResponsiveEvent = "$onPtyHostResponsiveEvent",
-	OnPtyHostRequestResolveVariablesEvent = "$onPtyHostRequestResolveVariablesEvent",
-	OnProcessDataEvent = "$onProcessDataEvent",
-	OnProcessReadyEvent = "$onProcessReadyEvent",
-	OnProcessExitEvent = "$onProcessExitEvent",
-	OnProcessReplayEvent = "$onProcessReplayEvent",
-	OnProcessOrphanQuestion = "$onProcessOrphanQuestion",
-	OnExecuteCommand = "$onExecuteCommand",
-	OnDidRequestDetach = "$onDidRequestDetach",
-	OnDidChangeProperty = "$onDidChangeProperty",
+export const enum RemoteTerminalChannelEvent {
+	OnPtyHostExitEvent = '$onPtyHostExitEvent',
+	OnPtyHostStartEvent = '$onPtyHostStartEvent',
+	OnPtyHostUnresponsiveEvent = '$onPtyHostUnresponsiveEvent',
+	OnPtyHostResponsiveEvent = '$onPtyHostResponsiveEvent',
+	OnPtyHostRequestResolveVariablesEvent = '$onPtyHostRequestResolveVariablesEvent',
+	OnProcessDataEvent = '$onProcessDataEvent',
+	OnProcessReadyEvent = '$onProcessReadyEvent',
+	OnProcessExitEvent = '$onProcessExitEvent',
+	OnProcessReplayEvent = '$onProcessReplayEvent',
+	OnProcessOrphanQuestion = '$onProcessOrphanQuestion',
+	OnExecuteCommand = '$onExecuteCommand',
+	OnDidRequestDetach = '$onDidRequestDetach',
+	OnDidChangeProperty = '$onDidChangeProperty',
 }
 
-export enum RemoteTerminalChannelRequest {
-	RestartPtyHost = "$restartPtyHost",
-	CreateProcess = "$createProcess",
-	AttachToProcess = "$attachToProcess",
-	DetachFromProcess = "$detachFromProcess",
-	ListProcesses = "$listProcesses",
-	GetLatency = "$getLatency",
-	GetPerformanceMarks = "$getPerformanceMarks",
-	OrphanQuestionReply = "$orphanQuestionReply",
-	AcceptPtyHostResolvedVariables = "$acceptPtyHostResolvedVariables",
-	Start = "$start",
-	Input = "$input",
-	AcknowledgeDataEvent = "$acknowledgeDataEvent",
-	Shutdown = "$shutdown",
-	Resize = "$resize",
-	ClearBuffer = "$clearBuffer",
-	GetInitialCwd = "$getInitialCwd",
-	GetCwd = "$getCwd",
-	ProcessBinary = "$processBinary",
-	SendCommandResult = "$sendCommandResult",
-	InstallAutoReply = "$installAutoReply",
-	UninstallAllAutoReplies = "$uninstallAllAutoReplies",
-	GetDefaultSystemShell = "$getDefaultSystemShell",
-	GetProfiles = "$getProfiles",
-	GetEnvironment = "$getEnvironment",
-	GetWslPath = "$getWslPath",
-	GetTerminalLayoutInfo = "$getTerminalLayoutInfo",
-	SetTerminalLayoutInfo = "$setTerminalLayoutInfo",
-	SerializeTerminalState = "$serializeTerminalState",
-	ReviveTerminalProcesses = "$reviveTerminalProcesses",
-	GetRevivedPtyNewId = "$getRevivedPtyNewId",
-	SetUnicodeVersion = "$setUnicodeVersion",
-	ReduceConnectionGraceTime = "$reduceConnectionGraceTime",
-	UpdateIcon = "$updateIcon",
-	UpdateTitle = "$updateTitle",
-	UpdateProperty = "$updateProperty",
-	RefreshProperty = "$refreshProperty",
-	RequestDetachInstance = "$requestDetachInstance",
-	AcceptDetachInstanceReply = "$acceptDetachInstanceReply",
-	AcceptDetachedInstance = "$acceptDetachedInstance",
-	FreePortKillProcess = "$freePortKillProcess",
+export const enum RemoteTerminalChannelRequest {
+	RestartPtyHost = '$restartPtyHost',
+	CreateProcess = '$createProcess',
+	AttachToProcess = '$attachToProcess',
+	DetachFromProcess = '$detachFromProcess',
+	ListProcesses = '$listProcesses',
+	GetLatency = '$getLatency',
+	GetPerformanceMarks = '$getPerformanceMarks',
+	OrphanQuestionReply = '$orphanQuestionReply',
+	AcceptPtyHostResolvedVariables = '$acceptPtyHostResolvedVariables',
+	Start = '$start',
+	Input = '$input',
+	AcknowledgeDataEvent = '$acknowledgeDataEvent',
+	Shutdown = '$shutdown',
+	Resize = '$resize',
+	ClearBuffer = '$clearBuffer',
+	GetInitialCwd = '$getInitialCwd',
+	GetCwd = '$getCwd',
+	ProcessBinary = '$processBinary',
+	SendCommandResult = '$sendCommandResult',
+	InstallAutoReply = '$installAutoReply',
+	UninstallAllAutoReplies = '$uninstallAllAutoReplies',
+	GetDefaultSystemShell = '$getDefaultSystemShell',
+	GetProfiles = '$getProfiles',
+	GetEnvironment = '$getEnvironment',
+	GetWslPath = '$getWslPath',
+	GetTerminalLayoutInfo = '$getTerminalLayoutInfo',
+	SetTerminalLayoutInfo = '$setTerminalLayoutInfo',
+	SerializeTerminalState = '$serializeTerminalState',
+	ReviveTerminalProcesses = '$reviveTerminalProcesses',
+	GetRevivedPtyNewId = '$getRevivedPtyNewId',
+	SetUnicodeVersion = '$setUnicodeVersion',
+	ReduceConnectionGraceTime = '$reduceConnectionGraceTime',
+	UpdateIcon = '$updateIcon',
+	UpdateTitle = '$updateTitle',
+	UpdateProperty = '$updateProperty',
+	RefreshProperty = '$refreshProperty',
+	RequestDetachInstance = '$requestDetachInstance',
+	AcceptDetachInstanceReply = '$acceptDetachInstanceReply',
+	AcceptDetachedInstance = '$acceptDetachedInstance',
+	FreePortKillProcess = '$freePortKillProcess',
 }

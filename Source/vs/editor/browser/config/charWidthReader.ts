@@ -3,17 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $window } from "vs/base/browser/window";
-import { applyFontInfo } from "vs/editor/browser/config/domFontInfo";
-import { BareFontInfo } from "vs/editor/common/config/fontInfo";
+import { $window } from 'vs/base/browser/window';
+import { applyFontInfo } from 'vs/editor/browser/config/domFontInfo';
+import { BareFontInfo } from 'vs/editor/common/config/fontInfo';
 
-export enum CharWidthRequestType {
+export const enum CharWidthRequestType {
 	Regular = 0,
 	Italic = 1,
-	Bold = 2,
+	Bold = 2
 }
 
 export class CharWidthRequest {
+
 	public readonly chr: string;
 	public readonly type: CharWidthRequestType;
 	public width: number;
@@ -30,6 +31,7 @@ export class CharWidthRequest {
 }
 
 class DomCharWidthReader {
+
 	private readonly _bareFontInfo: BareFontInfo;
 	private readonly _requests: CharWidthRequest[];
 
@@ -62,27 +64,28 @@ class DomCharWidthReader {
 	}
 
 	private _createDomElements(): void {
-		const container = document.createElement("div");
-		container.style.position = "absolute";
-		container.style.top = "-50000px";
-		container.style.width = "50000px";
+		const container = document.createElement('div');
+		container.style.position = 'absolute';
+		container.style.top = '-50000px';
+		container.style.width = '50000px';
 
-		const regularDomNode = document.createElement("div");
+		const regularDomNode = document.createElement('div');
 		applyFontInfo(regularDomNode, this._bareFontInfo);
 		container.appendChild(regularDomNode);
 
-		const boldDomNode = document.createElement("div");
+		const boldDomNode = document.createElement('div');
 		applyFontInfo(boldDomNode, this._bareFontInfo);
-		boldDomNode.style.fontWeight = "bold";
+		boldDomNode.style.fontWeight = 'bold';
 		container.appendChild(boldDomNode);
 
-		const italicDomNode = document.createElement("div");
+		const italicDomNode = document.createElement('div');
 		applyFontInfo(italicDomNode, this._bareFontInfo);
-		italicDomNode.style.fontStyle = "italic";
+		italicDomNode.style.fontStyle = 'italic';
 		container.appendChild(italicDomNode);
 
 		const testElements: HTMLSpanElement[] = [];
 		for (const request of this._requests) {
+
 			let parent: HTMLElement;
 			if (request.type === CharWidthRequestType.Regular) {
 				parent = regularDomNode;
@@ -94,11 +97,11 @@ class DomCharWidthReader {
 				parent = italicDomNode;
 			}
 
-			parent?.appendChild(document.createElement("br"));
+			parent!.appendChild(document.createElement('br'));
 
-			const testElement = document.createElement("span");
+			const testElement = document.createElement('span');
 			DomCharWidthReader._render(testElement, request);
-			parent?.appendChild(testElement);
+			parent!.appendChild(testElement);
 
 			testElements.push(testElement);
 		}
@@ -107,12 +110,9 @@ class DomCharWidthReader {
 		this._testElements = testElements;
 	}
 
-	private static _render(
-		testElement: HTMLElement,
-		request: CharWidthRequest,
-	): void {
-		if (request.chr === " ") {
-			let htmlString = "\u00a0";
+	private static _render(testElement: HTMLElement, request: CharWidthRequest): void {
+		if (request.chr === ' ') {
+			let htmlString = '\u00a0';
 			// Repeat character 256 (2^8) times
 			for (let i = 0; i < 8; i++) {
 				htmlString += htmlString;
@@ -131,17 +131,14 @@ class DomCharWidthReader {
 	private _readFromDomElements(): void {
 		for (let i = 0, len = this._requests.length; i < len; i++) {
 			const request = this._requests[i];
-			const testElement = this._testElements?.[i];
+			const testElement = this._testElements![i];
 
 			request.fulfill(testElement.offsetWidth / 256);
 		}
 	}
 }
 
-export function readCharWidths(
-	bareFontInfo: BareFontInfo,
-	requests: CharWidthRequest[],
-): void {
+export function readCharWidths(bareFontInfo: BareFontInfo, requests: CharWidthRequest[]): void {
 	const reader = new DomCharWidthReader(bareFontInfo, requests);
 	reader.read();
 }

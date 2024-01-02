@@ -3,18 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI, UriComponents } from "vs/base/common/uri";
-import { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IEditorSerializer } from "vs/workbench/common/editor";
-import {
-	WebviewContentOptions,
-	WebviewExtensionDescription,
-	WebviewOptions,
-} from "vs/workbench/contrib/webview/browser/webview";
-import { WebviewIcons } from "vs/workbench/contrib/webviewPanel/browser/webviewIconManager";
-import { WebviewInput } from "./webviewEditorInput";
-import { IWebviewWorkbenchService } from "./webviewWorkbenchService";
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IEditorSerializer } from 'vs/workbench/common/editor';
+import { WebviewContentOptions, WebviewExtensionDescription, WebviewOptions } from 'vs/workbench/contrib/webview/browser/webview';
+import { WebviewIcons } from 'vs/workbench/contrib/webviewPanel/browser/webviewIconManager';
+import { WebviewInput } from './webviewEditorInput';
+import { IWebviewWorkbenchService } from './webviewWorkbenchService';
 
 export type SerializedWebviewOptions = WebviewOptions & WebviewContentOptions;
 
@@ -50,12 +46,12 @@ export interface DeserializedWebview {
 }
 
 export class WebviewEditorInputSerializer implements IEditorSerializer {
+
 	public static readonly ID = WebviewInput.typeId;
 
 	public constructor(
-		@IWebviewWorkbenchService
-		private readonly _webviewWorkbenchService: IWebviewWorkbenchService
-	) {}
+		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService
+	) { }
 
 	public canSerialize(input: WebviewInput): boolean {
 		return this._webviewWorkbenchService.shouldPersist(input);
@@ -76,7 +72,7 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 
 	public deserialize(
 		_instantiationService: IInstantiationService,
-		serializedEditorInput: string,
+		serializedEditorInput: string
 	): WebviewInput {
 		const data = this.fromJson(JSON.parse(serializedEditorInput));
 		return this._webviewWorkbenchService.openRevivedWebview({
@@ -92,17 +88,14 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			title: data.title,
 			iconPath: data.iconPath,
 			state: data.state,
-			group: data.group,
+			group: data.group
 		});
 	}
 
 	protected fromJson(data: SerializedWebview): DeserializedWebview {
 		return {
 			...data,
-			extension: reviveWebviewExtensionDescription(
-				data.extensionId,
-				data.extensionLocation,
-			),
+			extension: reviveWebviewExtensionDescription(data.extensionId, data.extensionLocation),
 			iconPath: reviveIconPath(data.iconPath),
 			state: reviveState(data.state),
 			webviewOptions: restoreWebviewOptions(data.options),
@@ -116,17 +109,12 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 			viewType: input.viewType,
 			providedId: input.providedId,
 			title: input.getName(),
-			options: {
-				...input.webview.options,
-				...input.webview.contentOptions,
-			},
+			options: { ...input.webview.options, ...input.webview.contentOptions },
 			extensionLocation: input.extension?.location,
 			extensionId: input.extension?.id.value,
 			state: input.webview.state,
-			iconPath: input.iconPath
-				? { light: input.iconPath.light, dark: input.iconPath.dark }
-				: undefined,
-			group: input.group,
+			iconPath: input.iconPath ? { light: input.iconPath.light, dark: input.iconPath.dark, } : undefined,
+			group: input.group
 		};
 	}
 }
@@ -168,7 +156,7 @@ function reviveUri(data: string | UriComponents | undefined): URI | undefined {
 	}
 
 	try {
-		if (typeof data === "string") {
+		if (typeof data === 'string') {
 			return URI.parse(data);
 		}
 		return URI.from(data);
@@ -178,22 +166,16 @@ function reviveUri(data: string | UriComponents | undefined): URI | undefined {
 }
 
 function reviveState(state: unknown | undefined): undefined | string {
-	return typeof state === "string" ? state : undefined;
+	return typeof state === 'string' ? state : undefined;
 }
 
-export function restoreWebviewOptions(
-	options: SerializedWebviewOptions,
-): WebviewOptions {
+export function restoreWebviewOptions(options: SerializedWebviewOptions): WebviewOptions {
 	return options;
 }
 
-export function restoreWebviewContentOptions(
-	options: SerializedWebviewOptions,
-): WebviewContentOptions {
+export function restoreWebviewContentOptions(options: SerializedWebviewOptions): WebviewContentOptions {
 	return {
 		...options,
-		localResourceRoots: options.localResourceRoots?.map((uri) =>
-			reviveUri(uri),
-		),
+		localResourceRoots: options.localResourceRoots?.map(uri => reviveUri(uri)),
 	};
 }

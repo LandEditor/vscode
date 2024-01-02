@@ -578,6 +578,24 @@ updates:
       versioning-strategy: increase
 
     - package-ecosystem: "npm"
+      directory: "/extensions/vscode-api-tests"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/extensions/vscode-colorize-tests"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/extensions/vscode-test-resolver"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
       directory: "/extensions/xml"
       schedule:
           interval: "daily"
@@ -603,6 +621,36 @@ updates:
 
     - package-ecosystem: "npm"
       directory: "/remote/web"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/test/automation"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/test/integration/browser"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/test/leaks"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/test/monaco"
+      schedule:
+          interval: "daily"
+      versioning-strategy: increase
+
+    - package-ecosystem: "npm"
+      directory: "/test/smoke"
       schedule:
           interval: "daily"
       versioning-strategy: increase

@@ -3,42 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Promises } from "vs/base/common/async";
-import { canceled } from "vs/base/common/errors";
-import { Event } from "vs/base/common/event";
-import { IDisposable } from "vs/base/common/lifecycle";
-import {
-	IExtensionHostProcessOptions,
-	IExtensionHostStarter,
-} from "vs/platform/extensions/common/extensionHostStarter";
-import { ILifecycleMainService } from "vs/platform/lifecycle/electron-main/lifecycleMainService";
-import { ILogService } from "vs/platform/log/common/log";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { WindowUtilityProcess } from "vs/platform/utilityProcess/electron-main/utilityProcess";
-import { IWindowsMainService } from "vs/platform/windows/electron-main/windows";
+import { canceled } from 'vs/base/common/errors';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { IExtensionHostProcessOptions, IExtensionHostStarter } from 'vs/platform/extensions/common/extensionHostStarter';
+import { Event } from 'vs/base/common/event';
+import { ILogService } from 'vs/platform/log/common/log';
+import { ILifecycleMainService } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
+import { Promises } from 'vs/base/common/async';
+import { WindowUtilityProcess } from 'vs/platform/utilityProcess/electron-main/utilityProcess';
+import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 
-export class ExtensionHostStarter
-	implements IDisposable, IExtensionHostStarter
-{
+export class ExtensionHostStarter implements IDisposable, IExtensionHostStarter {
+
 	readonly _serviceBrand: undefined;
 
-	private static _lastId = 0;
+	private static _lastId: number = 0;
 
 	private readonly _extHosts = new Map<string, WindowUtilityProcess>();
 	private _shutdown = false;
 
 	constructor(
 		@ILogService private readonly _logService: ILogService,
-		@ILifecycleMainService
-		private readonly _lifecycleMainService: ILifecycleMainService,
-		@IWindowsMainService
-		private readonly _windowsMainService: IWindowsMainService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService
+		@ILifecycleMainService private readonly _lifecycleMainService: ILifecycleMainService,
+		@IWindowsMainService private readonly _windowsMainService: IWindowsMainService,
+		@ITelemetryService private readonly _telemetryService: ITelemetryService,
 	) {
+
 		// On shutdown: gracefully await extension host shutdowns
-		this._lifecycleMainService.onWillShutdown((e) => {
+		this._lifecycleMainService.onWillShutdown(e => {
 			this._shutdown = true;
-			e.join("extHostStarter", this._waitForAllExit(6000));
+			e.join('extHostStarter', this._waitForAllExit(6000));
 		});
 	}
 
@@ -49,7 +44,7 @@ export class ExtensionHostStarter
 	private _getExtHost(id: string): WindowUtilityProcess {
 		const extHostProcess = this._extHosts.get(id);
 		if (!extHostProcess) {
-			throw new Error("Unknown extension host!");
+			throw new Error(`Unknown extension host!`);
 		}
 		return extHostProcess;
 	}
@@ -75,17 +70,10 @@ export class ExtensionHostStarter
 			throw canceled();
 		}
 		const id = String(++ExtensionHostStarter._lastId);
-		const extHost = new WindowUtilityProcess(
-			this._logService,
-			this._windowsMainService,
-			this._telemetryService,
-			this._lifecycleMainService,
-		);
+		const extHost = new WindowUtilityProcess(this._logService, this._windowsMainService, this._telemetryService, this._lifecycleMainService);
 		this._extHosts.set(id, extHost);
 		extHost.onExit(({ pid, code, signal }) => {
-			this._logService.info(
-				`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`,
-			);
+			this._logService.info(`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`);
 			setTimeout(() => {
 				extHost.dispose();
 				this._extHosts.delete(id);
@@ -99,9 +87,7 @@ export class ExtensionHostStarter
 			setTimeout(() => {
 				try {
 					process.kill(pid, 0); // will throw if the process doesn't exist anymore.
-					this._logService.error(
-						`Extension host with pid ${pid} still exists, forcefully killing it...`,
-					);
+					this._logService.error(`Extension host with pid ${pid} still exists, forcefully killing it...`);
 					process.kill(pid);
 				} catch (er) {
 					// ignore, as the process is already gone
@@ -111,23 +97,20 @@ export class ExtensionHostStarter
 		return { id };
 	}
 
-	async start(
-		id: string,
-		opts: IExtensionHostProcessOptions,
-	): Promise<{ pid: number | undefined }> {
+	async start(id: string, opts: IExtensionHostProcessOptions): Promise<{ pid: number | undefined }> {
 		if (this._shutdown) {
 			throw canceled();
 		}
 		const extHost = this._getExtHost(id);
 		extHost.start({
 			...opts,
-			type: "extensionHost",
-			entryPoint: "vs/workbench/api/node/extensionHostProcess",
-			args: ["--skipWorkspaceStorageLock"],
+			type: 'extensionHost',
+			entryPoint: 'vs/workbench/api/node/extensionHostProcess',
+			args: ['--skipWorkspaceStorageLock'],
 			execArgv: opts.execArgv,
 			allowLoadingUnsignedLibraries: true,
 			forceAllocationsToV8Sandbox: true,
-			correlationId: id,
+			correlationId: id
 		});
 		const pid = await Event.toPromise(extHost.onSpawn);
 		return { pid };
@@ -167,6 +150,6 @@ export class ExtensionHostStarter
 		for (const [, extHost] of this._extHosts) {
 			exitPromises.push(extHost.waitForExit(maxWaitTimeMs));
 		}
-		return Promises.settled(exitPromises).then(() => {});
+		return Promises.settled(exitPromises).then(() => { });
 	}
 }

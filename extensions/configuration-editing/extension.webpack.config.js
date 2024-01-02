@@ -5,17 +5,19 @@
 
 //@ts-check
 
-const withDefaults = require("../shared.webpack.config");
+'use strict';
+
+const withDefaults = require('../shared.webpack.config');
 
 module.exports = withDefaults({
 	context: __dirname,
 	entry: {
-		extension: "./src/configurationEditingMain.ts",
+		extension: './src/configurationEditingMain.ts',
 	},
 	output: {
-		filename: "configurationEditingMain.js",
+		filename: 'configurationEditingMain.js'
 	},
 	resolve: {
-		mainFields: ["module", "main"],
-	},
+		mainFields: ['module', 'main']
+	}
 });

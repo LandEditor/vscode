@@ -3,32 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { IDisposable } from "vs/base/common/lifecycle";
-import { Schemas } from "vs/base/common/network";
-import { splitLines } from "vs/base/common/strings";
-import { URI, UriComponents } from "vs/base/common/uri";
-import { ILogService } from "vs/platform/log/common/log";
-import { Disposable } from "vs/workbench/api/common/extHostTypes";
-import type * as vscode from "vscode";
-import {
-	ExtHostDocumentContentProvidersShape,
-	IMainContext,
-	MainContext,
-	MainThreadDocumentContentProvidersShape,
-} from "./extHost.protocol";
-import { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors";
+import { onUnexpectedError } from 'vs/base/common/errors';
+import { URI, UriComponents } from 'vs/base/common/uri';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { Disposable } from 'vs/workbench/api/common/extHostTypes';
+import type * as vscode from 'vscode';
+import { MainContext, ExtHostDocumentContentProvidersShape, MainThreadDocumentContentProvidersShape, IMainContext } from './extHost.protocol';
+import { ExtHostDocumentsAndEditors } from './extHostDocumentsAndEditors';
+import { Schemas } from 'vs/base/common/network';
+import { ILogService } from 'vs/platform/log/common/log';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { splitLines } from 'vs/base/common/strings';
 
-export class ExtHostDocumentContentProvider
-	implements ExtHostDocumentContentProvidersShape
-{
+export class ExtHostDocumentContentProvider implements ExtHostDocumentContentProvidersShape {
+
 	private static _handlePool = 0;
 
-	private readonly _documentContentProviders = new Map<
-		number,
-		vscode.TextDocumentContentProvider
-	>();
+	private readonly _documentContentProviders = new Map<number, vscode.TextDocumentContentProvider>();
 	private readonly _proxy: MainThreadDocumentContentProvidersShape;
 
 	constructor(
@@ -36,15 +27,10 @@ export class ExtHostDocumentContentProvider
 		private readonly _documentsAndEditors: ExtHostDocumentsAndEditors,
 		private readonly _logService: ILogService,
 	) {
-		this._proxy = mainContext.getProxy(
-			MainContext.MainThreadDocumentContentProviders,
-		);
+		this._proxy = mainContext.getProxy(MainContext.MainThreadDocumentContentProviders);
 	}
 
-	registerTextDocumentContentProvider(
-		scheme: string,
-		provider: vscode.TextDocumentContentProvider,
-	): vscode.Disposable {
+	registerTextDocumentContentProvider(scheme: string, provider: vscode.TextDocumentContentProvider): vscode.Disposable {
 		// todo@remote
 		// check with scheme from fs-providers!
 		if (Object.keys(Schemas).indexOf(scheme) >= 0) {
@@ -57,14 +43,13 @@ export class ExtHostDocumentContentProvider
 		this._proxy.$registerTextContentProvider(handle, scheme);
 
 		let subscription: IDisposable | undefined;
-		if (typeof provider.onDidChange === "function") {
+		if (typeof provider.onDidChange === 'function') {
+
 			let lastEvent: Promise<void> | undefined;
 
-			subscription = provider.onDidChange(async (uri) => {
+			subscription = provider.onDidChange(async uri => {
 				if (uri.scheme !== scheme) {
-					this._logService.warn(
-						`Provider for scheme '${scheme}' is firing event for schema '${uri.scheme}' which will be IGNORED`,
-					);
+					this._logService.warn(`Provider for scheme '${scheme}' is firing event for schema '${uri.scheme}' which will be IGNORED`);
 					return;
 				}
 				if (!this._documentsAndEditors.getDocument(uri)) {
@@ -77,13 +62,12 @@ export class ExtHostDocumentContentProvider
 				}
 
 				const thisEvent = this.$provideTextDocumentContent(handle, uri)
-					.then(async (value) => {
-						if (!value && typeof value !== "string") {
+					.then(async value => {
+						if (!value && typeof value !== 'string') {
 							return;
 						}
 
-						const document =
-							this._documentsAndEditors.getDocument(uri);
+						const document = this._documentsAndEditors.getDocument(uri);
 						if (!document) {
 							// disposed in the meantime
 							return;
@@ -94,10 +78,7 @@ export class ExtHostDocumentContentProvider
 
 						// broadcast event when content changed
 						if (!document.equalLines(lines)) {
-							return this._proxy.$onVirtualDocumentChange(
-								uri,
-								value,
-							);
+							return this._proxy.$onVirtualDocumentChange(uri, value);
 						}
 					})
 					.catch(onUnexpectedError)
@@ -121,21 +102,11 @@ export class ExtHostDocumentContentProvider
 		});
 	}
 
-	$provideTextDocumentContent(
-		handle: number,
-		uri: UriComponents,
-	): Promise<string | null | undefined> {
+	$provideTextDocumentContent(handle: number, uri: UriComponents): Promise<string | null | undefined> {
 		const provider = this._documentContentProviders.get(handle);
 		if (!provider) {
-			return Promise.reject(
-				new Error(`unsupported uri-scheme: ${uri.scheme}`),
-			);
+			return Promise.reject(new Error(`unsupported uri-scheme: ${uri.scheme}`));
 		}
-		return Promise.resolve(
-			provider.provideTextDocumentContent(
-				URI.revive(uri),
-				CancellationToken.None,
-			),
-		);
+		return Promise.resolve(provider.provideTextDocumentContent(URI.revive(uri), CancellationToken.None));
 	}
 }

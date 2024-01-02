@@ -3,72 +3,48 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Action } from "vs/base/common/actions";
-import { Schemas } from "vs/base/common/network";
-import { joinPath } from "vs/base/common/resources";
-import * as nls from "vs/nls";
-import { IFileService } from "vs/platform/files/common/files";
-import { INativeHostService } from "vs/platform/native/common/native";
-import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { Action } from 'vs/base/common/actions';
+import * as nls from 'vs/nls';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
+import { IFileService } from 'vs/platform/files/common/files';
+import { joinPath } from 'vs/base/common/resources';
+import { Schemas } from 'vs/base/common/network';
 
 export class OpenLogsFolderAction extends Action {
-	static readonly ID = "workbench.action.openLogsFolder";
-	static readonly TITLE = {
-		value: nls.localize("openLogsFolder", "Open Logs Folder"),
-		original: "Open Logs Folder",
-	};
 
-	constructor(
-		id: string,
-		label: string,
-		@INativeWorkbenchEnvironmentService
-		private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@INativeHostService
-		private readonly nativeHostService: INativeHostService
+	static readonly ID = 'workbench.action.openLogsFolder';
+	static readonly TITLE = { value: nls.localize('openLogsFolder', "Open Logs Folder"), original: 'Open Logs Folder' };
+
+	constructor(id: string, label: string,
+		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService private readonly nativeHostService: INativeHostService,
 	) {
 		super(id, label);
 	}
 
 	override run(): Promise<void> {
-		return this.nativeHostService.showItemInFolder(
-			joinPath(this.environmentService.logsHome, "main.log").with({
-				scheme: Schemas.file,
-			}).fsPath,
-		);
+		return this.nativeHostService.showItemInFolder(joinPath(this.environmentService.logsHome, 'main.log').with({ scheme: Schemas.file }).fsPath);
 	}
 }
 
 export class OpenExtensionLogsFolderAction extends Action {
-	static readonly ID = "workbench.action.openExtensionLogsFolder";
-	static readonly TITLE = {
-		value: nls.localize(
-			"openExtensionLogsFolder",
-			"Open Extension Logs Folder",
-		),
-		original: "Open Extension Logs Folder",
-	};
 
-	constructor(
-		id: string,
-		label: string,
-		@INativeWorkbenchEnvironmentService
-		private readonly environmentSerice: INativeWorkbenchEnvironmentService,
+	static readonly ID = 'workbench.action.openExtensionLogsFolder';
+	static readonly TITLE = { value: nls.localize('openExtensionLogsFolder', "Open Extension Logs Folder"), original: 'Open Extension Logs Folder' };
+
+	constructor(id: string, label: string,
+		@INativeWorkbenchEnvironmentService private readonly environmentSerice: INativeWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@INativeHostService
-		private readonly nativeHostService: INativeHostService
+		@INativeHostService private readonly nativeHostService: INativeHostService
 	) {
 		super(id, label);
 	}
 
 	override async run(): Promise<void> {
-		const folderStat = await this.fileService.resolve(
-			this.environmentSerice.extHostLogsPath,
-		);
-		if (folderStat.children?.[0]) {
-			return this.nativeHostService.showItemInFolder(
-				folderStat.children[0].resource.with({ scheme: Schemas.file })
-					.fsPath,
-			);
+		const folderStat = await this.fileService.resolve(this.environmentSerice.extHostLogsPath);
+		if (folderStat.children && folderStat.children[0]) {
+			return this.nativeHostService.showItemInFolder(folderStat.children[0].resource.with({ scheme: Schemas.file }).fsPath);
 		}
 	}
 }

@@ -3,131 +3,91 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IAction, toAction } from "vs/base/common/actions";
-import { Event } from "vs/base/common/event";
-import Severity from "vs/base/common/severity";
-import * as nls from "vs/nls";
-import { ICommandService } from "vs/platform/commands/common/commands";
-import {
-	IDialogService,
-	IPromptButton,
-} from "vs/platform/dialogs/common/dialogs";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import {
-	IExtHostContext,
-	extHostNamedCustomer,
-} from "vs/workbench/services/extensions/common/extHostCustomers";
-import {
-	MainContext,
-	MainThreadMessageOptions,
-	MainThreadMessageServiceShape,
-} from "../common/extHost.protocol";
+import * as nls from 'vs/nls';
+import Severity from 'vs/base/common/severity';
+import { IAction, toAction } from 'vs/base/common/actions';
+import { MainThreadMessageServiceShape, MainContext, MainThreadMessageOptions } from '../common/extHost.protocol';
+import { extHostNamedCustomer, IExtHostContext } from 'vs/workbench/services/extensions/common/extHostCustomers';
+import { IDialogService, IPromptButton } from 'vs/platform/dialogs/common/dialogs';
+import { INotificationService, INotificationSource } from 'vs/platform/notification/common/notification';
+import { Event } from 'vs/base/common/event';
+import { ICommandService } from 'vs/platform/commands/common/commands';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { IDisposable } from 'vs/base/common/lifecycle';
 
 @extHostNamedCustomer(MainContext.MainThreadMessageService)
 export class MainThreadMessageService implements MainThreadMessageServiceShape {
+
+	private extensionsListener: IDisposable;
+
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotificationService
-		private readonly _notificationService: INotificationService,
+		@INotificationService private readonly _notificationService: INotificationService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IDialogService private readonly _dialogService: IDialogService
+		@IDialogService private readonly _dialogService: IDialogService,
+		@IExtensionService extensionService: IExtensionService
 	) {
-		//
+		this.extensionsListener = extensionService.onDidChangeExtensions(e => {
+			for (const extension of e.removed) {
+				this._notificationService.removeFilter(extension.identifier.value);
+			}
+		});
 	}
 
 	dispose(): void {
-		//
+		this.extensionsListener.dispose();
 	}
 
-	$showMessage(
-		severity: Severity,
-		message: string,
-		options: MainThreadMessageOptions,
-		commands: {
-			title: string;
-			isCloseAffordance: boolean;
-			handle: number;
-		}[],
-	): Promise<number | undefined> {
+	$showMessage(severity: Severity, message: string, options: MainThreadMessageOptions, commands: { title: string; isCloseAffordance: boolean; handle: number }[]): Promise<number | undefined> {
 		if (options.modal) {
-			return this._showModalMessage(
-				severity,
-				message,
-				options.detail,
-				commands,
-				options.useCustom,
-			);
+			return this._showModalMessage(severity, message, options.detail, commands, options.useCustom);
 		} else {
 			return this._showMessage(severity, message, commands, options);
 		}
 	}
 
-	private _showMessage(
-		severity: Severity,
-		message: string,
-		commands: {
-			title: string;
-			isCloseAffordance: boolean;
-			handle: number;
-		}[],
-		options: MainThreadMessageOptions,
-	): Promise<number | undefined> {
-		return new Promise<number | undefined>((resolve) => {
-			const primaryActions: IAction[] = commands.map((command) =>
-				toAction({
-					id: `_extension_message_handle_${command.handle}`,
-					label: command.title,
-					enabled: true,
-					run: () => {
-						resolve(command.handle);
-						return Promise.resolve();
-					},
-				}),
-			);
+	private _showMessage(severity: Severity, message: string, commands: { title: string; isCloseAffordance: boolean; handle: number }[], options: MainThreadMessageOptions): Promise<number | undefined> {
 
-			let source: string | { label: string; id: string } | undefined;
+		return new Promise<number | undefined>(resolve => {
+
+			const primaryActions: IAction[] = commands.map(command => toAction({
+				id: `_extension_message_handle_${command.handle}`,
+				label: command.title,
+				enabled: true,
+				run: () => {
+					resolve(command.handle);
+					return Promise.resolve();
+				}
+			}));
+
+			let source: string | INotificationSource | undefined;
 			if (options.source) {
 				source = {
-					label: nls.localize(
-						"extensionSource",
-						"{0} (Extension)",
-						options.source.label,
-					),
-					id: options.source.identifier.value,
+					label: options.source.label,
+					id: options.source.identifier.value
 				};
 			}
 
 			if (!source) {
-				source = nls.localize("defaultSource", "Extension");
+				source = nls.localize('defaultSource', "Extension");
 			}
 
 			const secondaryActions: IAction[] = [];
 			if (options.source) {
-				secondaryActions.push(
-					toAction({
-						id: options.source.identifier.value,
-						label: nls.localize(
-							"manageExtension",
-							"Manage Extension",
-						),
-						run: () => {
-							return this._commandService.executeCommand(
-								"_extensions.manage",
-								options.source?.identifier.value,
-							);
-						},
-					}),
-				);
+				secondaryActions.push(toAction({
+					id: options.source.identifier.value,
+					label: nls.localize('manageExtension', "Manage Extension"),
+					run: () => {
+						return this._commandService.executeCommand('_extensions.manage', options.source!.identifier.value);
+					}
+				}));
 			}
 
 			const messageHandle = this._notificationService.notify({
 				severity,
 				message,
-				actions: {
-					primary: primaryActions,
-					secondary: secondaryActions,
-				},
-				source,
+				actions: { primary: primaryActions, secondary: secondaryActions },
+				source
 			});
 
 			// if promise has not been resolved yet, now is the time to ensure a return value
@@ -138,25 +98,14 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 		});
 	}
 
-	private async _showModalMessage(
-		severity: Severity,
-		message: string,
-		detail: string | undefined,
-		commands: {
-			title: string;
-			isCloseAffordance: boolean;
-			handle: number;
-		}[],
-		useCustom?: boolean,
-	): Promise<number | undefined> {
+	private async _showModalMessage(severity: Severity, message: string, detail: string | undefined, commands: { title: string; isCloseAffordance: boolean; handle: number }[], useCustom?: boolean): Promise<number | undefined> {
 		const buttons: IPromptButton<number>[] = [];
-		let cancelButton: IPromptButton<number | undefined> | undefined =
-			undefined;
+		let cancelButton: IPromptButton<number | undefined> | undefined = undefined;
 
 		for (const command of commands) {
 			const button: IPromptButton<number> = {
 				label: command.title,
-				run: () => command.handle,
+				run: () => command.handle
 			};
 
 			if (command.isCloseAffordance) {
@@ -169,16 +118,13 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 		if (!cancelButton) {
 			if (buttons.length > 0) {
 				cancelButton = {
-					label: nls.localize("cancel", "Cancel"),
-					run: () => undefined,
+					label: nls.localize('cancel', "Cancel"),
+					run: () => undefined
 				};
 			} else {
 				cancelButton = {
-					label: nls.localize(
-						{ key: "ok", comment: ["&& denotes a mnemonic"] },
-						"&&OK",
-					),
-					run: () => undefined,
+					label: nls.localize({ key: 'ok', comment: ['&& denotes a mnemonic'] }, "&&OK"),
+					run: () => undefined
 				};
 			}
 		}
@@ -189,7 +135,7 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 			detail,
 			buttons,
 			cancelButton,
-			custom: useCustom,
+			custom: useCustom
 		});
 
 		return result;

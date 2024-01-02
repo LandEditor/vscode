@@ -3,9 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IndentationRule } from "vs/editor/common/languages/languageConfiguration";
+import { IndentationRule } from 'vs/editor/common/languages/languageConfiguration';
 
-export enum IndentConsts {
+export const enum IndentConsts {
 	INCREASE_MASK = 0b00000001,
 	DECREASE_MASK = 0b00000010,
 	INDENT_NEXTLINE_MASK = 0b00000100,
@@ -21,6 +21,7 @@ function resetGlobalRegex(reg: RegExp) {
 }
 
 export class IndentRulesSupport {
+
 	private readonly _indentationRules: IndentationRule;
 
 	constructor(indentationRules: IndentationRule) {
@@ -29,13 +30,7 @@ export class IndentRulesSupport {
 
 	public shouldIncrease(text: string): boolean {
 		if (this._indentationRules) {
-			if (
-				this._indentationRules.increaseIndentPattern &&
-				resetGlobalRegex(
-					this._indentationRules.increaseIndentPattern,
-				) &&
-				this._indentationRules.increaseIndentPattern.test(text)
-			) {
+			if (this._indentationRules.increaseIndentPattern && resetGlobalRegex(this._indentationRules.increaseIndentPattern) && this._indentationRules.increaseIndentPattern.test(text)) {
 				return true;
 			}
 			// if (this._indentationRules.indentNextLinePattern && this._indentationRules.indentNextLinePattern.test(text)) {
@@ -46,22 +41,14 @@ export class IndentRulesSupport {
 	}
 
 	public shouldDecrease(text: string): boolean {
-		if (
-			this._indentationRules?.decreaseIndentPattern &&
-			resetGlobalRegex(this._indentationRules.decreaseIndentPattern) &&
-			this._indentationRules.decreaseIndentPattern.test(text)
-		) {
+		if (this._indentationRules && this._indentationRules.decreaseIndentPattern && resetGlobalRegex(this._indentationRules.decreaseIndentPattern) && this._indentationRules.decreaseIndentPattern.test(text)) {
 			return true;
 		}
 		return false;
 	}
 
 	public shouldIndentNextLine(text: string): boolean {
-		if (
-			this._indentationRules?.indentNextLinePattern &&
-			resetGlobalRegex(this._indentationRules.indentNextLinePattern) &&
-			this._indentationRules.indentNextLinePattern.test(text)
-		) {
+		if (this._indentationRules && this._indentationRules.indentNextLinePattern && resetGlobalRegex(this._indentationRules.indentNextLinePattern) && this._indentationRules.indentNextLinePattern.test(text)) {
 			return true;
 		}
 
@@ -70,11 +57,7 @@ export class IndentRulesSupport {
 
 	public shouldIgnore(text: string): boolean {
 		// the text matches `unIndentedLinePattern`
-		if (
-			this._indentationRules?.unIndentedLinePattern &&
-			resetGlobalRegex(this._indentationRules.unIndentedLinePattern) &&
-			this._indentationRules.unIndentedLinePattern.test(text)
-		) {
+		if (this._indentationRules && this._indentationRules.unIndentedLinePattern && resetGlobalRegex(this._indentationRules.unIndentedLinePattern) && this._indentationRules.unIndentedLinePattern.test(text)) {
 			return true;
 		}
 

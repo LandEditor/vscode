@@ -3,105 +3,58 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isFirefox } from "vs/base/browser/browser";
-import { DataTransfers, applyDragImage } from "vs/base/browser/dnd";
-import {
-	Dimension,
-	getActiveWindow,
-	getWindow,
-	isMouseEvent,
-} from "vs/base/browser/dom";
-import { StandardMouseEvent } from "vs/base/browser/mouseEvent";
-import {
-	ActionsOrientation,
-	IActionViewItem,
-	prepareActions,
-} from "vs/base/browser/ui/actionbar/actionbar";
-import { AnchorAlignment } from "vs/base/browser/ui/contextview/contextview";
-import { ActionRunner, IAction } from "vs/base/common/actions";
-import { isCancellationError } from "vs/base/common/errors";
-import { ResolvedKeybinding } from "vs/base/common/keybindings";
-import { DisposableStore, IDisposable } from "vs/base/common/lifecycle";
-import { isMacintosh } from "vs/base/common/platform";
-import { assertIsDefined } from "vs/base/common/types";
-import "vs/css!./media/editortabscontrol";
-import { DraggedTreeItemsIdentifier } from "vs/editor/common/services/treeViewsDnd";
-import { localize } from "vs/nls";
-import { createActionViewItem } from "vs/platform/actions/browser/menuEntryActionViewItem";
-import { WorkbenchToolBar } from "vs/platform/actions/browser/toolbar";
-import { MenuId } from "vs/platform/actions/common/actions";
-import {
-	IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { LocalSelectionTransfer } from "vs/platform/dnd/browser/dnd";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IQuickInputService } from "vs/platform/quickinput/common/quickInput";
-import {
-	listActiveSelectionBackground,
-	listActiveSelectionForeground,
-} from "vs/platform/theme/common/colorRegistry";
-import { IThemeService, Themable } from "vs/platform/theme/common/themeService";
-import {
-	DraggedEditorGroupIdentifier,
-	DraggedEditorIdentifier,
-	fillEditorsDragData,
-	isWindowDraggedOver,
-} from "vs/workbench/browser/dnd";
-import {
-	IEditorGroupView,
-	IEditorGroupsView,
-	IEditorPartsView,
-	IInternalEditorOpenOptions,
-} from "vs/workbench/browser/parts/editor/editor";
-import { EDITOR_CORE_NAVIGATION_COMMANDS } from "vs/workbench/browser/parts/editor/editorCommands";
-import { EditorPane } from "vs/workbench/browser/parts/editor/editorPane";
-import { IEditorTitleControlDimensions } from "vs/workbench/browser/parts/editor/editorTitleControl";
-import {
-	ActiveEditorAvailableEditorIdsContext,
-	ActiveEditorCanSplitInGroupContext,
-	ActiveEditorFirstInGroupContext,
-	ActiveEditorGroupLockedContext,
-	ActiveEditorLastInGroupContext,
-	ActiveEditorPinnedContext,
-	ActiveEditorStickyContext,
-	ResourceContextKey,
-	SideBySideEditorActiveContext,
-	applyAvailableEditorIds,
-} from "vs/workbench/common/contextkeys";
-import {
-	EditorInputCapabilities,
-	EditorResourceAccessor,
-	EditorsOrder,
-	GroupIdentifier,
-	IEditorCommandsContext,
-	IEditorPartOptions,
-	IToolbarActions,
-	SideBySideEditor,
-} from "vs/workbench/common/editor";
-import { IReadonlyEditorGroupModel } from "vs/workbench/common/editor/editorGroupModel";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { SideBySideEditorInput } from "vs/workbench/common/editor/sideBySideEditorInput";
-import {
-	IAuxiliaryEditorPart,
-	MergeGroupMode,
-} from "vs/workbench/services/editor/common/editorGroupsService";
-import { IEditorResolverService } from "vs/workbench/services/editor/common/editorResolverService";
-import { IHostService } from "vs/workbench/services/host/browser/host";
+import 'vs/css!./media/editortabscontrol';
+import { localize } from 'vs/nls';
+import { applyDragImage, DataTransfers } from 'vs/base/browser/dnd';
+import { Dimension, getActiveWindow, getWindow, isMouseEvent } from 'vs/base/browser/dom';
+import { StandardMouseEvent } from 'vs/base/browser/mouseEvent';
+import { ActionsOrientation, IActionViewItem, prepareActions } from 'vs/base/browser/ui/actionbar/actionbar';
+import { IAction, ActionRunner } from 'vs/base/common/actions';
+import { ResolvedKeybinding } from 'vs/base/common/keybindings';
+import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
+import { createActionViewItem } from 'vs/platform/actions/browser/menuEntryActionViewItem';
+import { MenuId } from 'vs/platform/actions/common/actions';
+import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { INotificationService } from 'vs/platform/notification/common/notification';
+import { IQuickInputService } from 'vs/platform/quickinput/common/quickInput';
+import { listActiveSelectionBackground, listActiveSelectionForeground } from 'vs/platform/theme/common/colorRegistry';
+import { IThemeService, Themable } from 'vs/platform/theme/common/themeService';
+import { DraggedEditorGroupIdentifier, DraggedEditorIdentifier, fillEditorsDragData, isWindowDraggedOver } from 'vs/workbench/browser/dnd';
+import { EditorPane } from 'vs/workbench/browser/parts/editor/editorPane';
+import { IEditorGroupsView, IEditorGroupView, IEditorPartsView, IInternalEditorOpenOptions } from 'vs/workbench/browser/parts/editor/editor';
+import { IEditorCommandsContext, EditorResourceAccessor, IEditorPartOptions, SideBySideEditor, EditorsOrder, EditorInputCapabilities, IToolbarActions, GroupIdentifier } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { ResourceContextKey, ActiveEditorPinnedContext, ActiveEditorStickyContext, ActiveEditorGroupLockedContext, ActiveEditorCanSplitInGroupContext, SideBySideEditorActiveContext, ActiveEditorFirstInGroupContext, ActiveEditorAvailableEditorIdsContext, applyAvailableEditorIds, ActiveEditorLastInGroupContext } from 'vs/workbench/common/contextkeys';
+import { AnchorAlignment } from 'vs/base/browser/ui/contextview/contextview';
+import { assertIsDefined } from 'vs/base/common/types';
+import { isFirefox } from 'vs/base/browser/browser';
+import { isCancellationError } from 'vs/base/common/errors';
+import { SideBySideEditorInput } from 'vs/workbench/common/editor/sideBySideEditorInput';
+import { WorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
+import { LocalSelectionTransfer } from 'vs/platform/dnd/browser/dnd';
+import { DraggedTreeItemsIdentifier } from 'vs/editor/common/services/treeViewsDnd';
+import { IEditorResolverService } from 'vs/workbench/services/editor/common/editorResolverService';
+import { IEditorTitleControlDimensions } from 'vs/workbench/browser/parts/editor/editorTitleControl';
+import { IReadonlyEditorGroupModel } from 'vs/workbench/common/editor/editorGroupModel';
+import { EDITOR_CORE_NAVIGATION_COMMANDS } from 'vs/workbench/browser/parts/editor/editorCommands';
+import { IAuxiliaryEditorPart, MergeGroupMode } from 'vs/workbench/services/editor/common/editorGroupsService';
+import { isMacintosh } from 'vs/base/common/platform';
+import { IHostService } from 'vs/workbench/services/host/browser/host';
+import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
 
 export class EditorCommandsContextActionRunner extends ActionRunner {
-	constructor(private context: IEditorCommandsContext) {
+
+	constructor(
+		private context: IEditorCommandsContext
+	) {
 		super();
 	}
 
-	override run(
-		action: IAction,
-		context?: { preserveFocus?: boolean },
-	): Promise<void> {
+	override run(action: IAction, context?: { preserveFocus?: boolean }): Promise<void> {
+
 		// Even though we have a fixed context for editor commands,
 		// allow to preserve the context that is given to us in case
 		// it applies.
@@ -110,7 +63,7 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 		if (context?.preserveFocus) {
 			mergedContext = {
 				...this.context,
-				preserveFocus: true,
+				preserveFocus: true
 			};
 		}
 
@@ -119,24 +72,13 @@ export class EditorCommandsContextActionRunner extends ActionRunner {
 }
 
 export interface IEditorTabsControl extends IDisposable {
-	updateOptions(
-		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions,
-	): void;
-	openEditor(
-		editor: EditorInput,
-		options?: IInternalEditorOpenOptions,
-	): boolean;
+	updateOptions(oldOptions: IEditorPartOptions, newOptions: IEditorPartOptions): void;
+	openEditor(editor: EditorInput, options?: IInternalEditorOpenOptions): boolean;
 	openEditors(editors: EditorInput[]): boolean;
 	beforeCloseEditor(editor: EditorInput): void;
 	closeEditor(editor: EditorInput): void;
 	closeEditors(editors: EditorInput[]): void;
-	moveEditor(
-		editor: EditorInput,
-		fromIndex: number,
-		targetIndex: number,
-		stickyStateChange: boolean,
-	): void;
+	moveEditor(editor: EditorInput, fromIndex: number, targetIndex: number, stickyStateChange: boolean): void;
 	pinEditor(editor: EditorInput): void;
 	stickEditor(editor: EditorInput): void;
 	unstickEditor(editor: EditorInput): void;
@@ -147,30 +89,21 @@ export interface IEditorTabsControl extends IDisposable {
 	getHeight(): number;
 }
 
-export abstract class EditorTabsControl
-	extends Themable
-	implements IEditorTabsControl
-{
-	protected readonly editorTransfer =
-		LocalSelectionTransfer.getInstance<DraggedEditorIdentifier>();
-	protected readonly groupTransfer =
-		LocalSelectionTransfer.getInstance<DraggedEditorGroupIdentifier>();
-	protected readonly treeItemsTransfer =
-		LocalSelectionTransfer.getInstance<DraggedTreeItemsIdentifier>();
+export abstract class EditorTabsControl extends Themable implements IEditorTabsControl {
+
+	protected readonly editorTransfer = LocalSelectionTransfer.getInstance<DraggedEditorIdentifier>();
+	protected readonly groupTransfer = LocalSelectionTransfer.getInstance<DraggedEditorGroupIdentifier>();
+	protected readonly treeItemsTransfer = LocalSelectionTransfer.getInstance<DraggedTreeItemsIdentifier>();
 
 	private static readonly EDITOR_TAB_HEIGHT = {
 		normal: 35 as const,
-		compact: 22 as const,
+		compact: 22 as const
 	};
 
 	protected editorActionsToolbarContainer: HTMLElement | undefined;
 	private editorActionsToolbar: WorkbenchToolBar | undefined;
-	private readonly editorActionsToolbarDisposables = this._register(
-		new DisposableStore(),
-	);
-	private readonly editorActionsDisposables = this._register(
-		new DisposableStore(),
-	);
+	private readonly editorActionsToolbarDisposables = this._register(new DisposableStore());
+	private readonly editorActionsDisposables = this._register(new DisposableStore());
 
 	private readonly contextMenuContextKeyService: IContextKeyService;
 	private resourceContext: ResourceContextKey;
@@ -194,67 +127,35 @@ export abstract class EditorTabsControl
 		protected readonly groupsView: IEditorGroupsView,
 		protected readonly groupView: IEditorGroupView,
 		protected readonly tabsModel: IReadonlyEditorGroupModel,
-		@IContextMenuService
-		protected readonly contextMenuService: IContextMenuService,
-		@IInstantiationService
-		protected instantiationService: IInstantiationService,
-		@IContextKeyService
-		protected readonly contextKeyService: IContextKeyService,
-		@IKeybindingService
-		private readonly keybindingService: IKeybindingService,
-		@INotificationService
-		private readonly notificationService: INotificationService,
+		@IContextMenuService protected readonly contextMenuService: IContextMenuService,
+		@IInstantiationService protected instantiationService: IInstantiationService,
+		@IContextKeyService protected readonly contextKeyService: IContextKeyService,
+		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@INotificationService private readonly notificationService: INotificationService,
 		@IQuickInputService protected quickInputService: IQuickInputService,
 		@IThemeService themeService: IThemeService,
-		@IEditorResolverService
-		private readonly editorResolverService: IEditorResolverService,
+		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
 		@IHostService private readonly hostService: IHostService
 	) {
 		super(themeService);
 
-		this.contextMenuContextKeyService = this._register(
-			this.contextKeyService.createScoped(parent)
-		);
-		const scopedInstantiationService =
-			this.instantiationService.createChild(
-				new ServiceCollection([
-					IContextKeyService,
-					this.contextMenuContextKeyService,
-				])
-			);
+		this.contextMenuContextKeyService = this._register(this.contextKeyService.createScoped(parent));
+		const scopedInstantiationService = this.instantiationService.createChild(new ServiceCollection(
+			[IContextKeyService, this.contextMenuContextKeyService],
+		));
 
-		this.resourceContext = this._register(
-			scopedInstantiationService.createInstance(ResourceContextKey)
-		);
+		this.resourceContext = this._register(scopedInstantiationService.createInstance(ResourceContextKey));
 
-		this.editorPinnedContext = ActiveEditorPinnedContext.bindTo(
-			this.contextMenuContextKeyService
-		);
-		this.editorIsFirstContext = ActiveEditorFirstInGroupContext.bindTo(
-			this.contextMenuContextKeyService
-		);
-		this.editorIsLastContext = ActiveEditorLastInGroupContext.bindTo(
-			this.contextMenuContextKeyService
-		);
-		this.editorStickyContext = ActiveEditorStickyContext.bindTo(
-			this.contextMenuContextKeyService
-		);
-		this.editorAvailableEditorIds =
-			ActiveEditorAvailableEditorIdsContext.bindTo(
-				this.contextMenuContextKeyService
-			);
+		this.editorPinnedContext = ActiveEditorPinnedContext.bindTo(this.contextMenuContextKeyService);
+		this.editorIsFirstContext = ActiveEditorFirstInGroupContext.bindTo(this.contextMenuContextKeyService);
+		this.editorIsLastContext = ActiveEditorLastInGroupContext.bindTo(this.contextMenuContextKeyService);
+		this.editorStickyContext = ActiveEditorStickyContext.bindTo(this.contextMenuContextKeyService);
+		this.editorAvailableEditorIds = ActiveEditorAvailableEditorIdsContext.bindTo(this.contextMenuContextKeyService);
 
-		this.editorCanSplitInGroupContext =
-			ActiveEditorCanSplitInGroupContext.bindTo(
-				this.contextMenuContextKeyService
-			);
-		this.sideBySideEditorContext = SideBySideEditorActiveContext.bindTo(
-			this.contextMenuContextKeyService
-		);
+		this.editorCanSplitInGroupContext = ActiveEditorCanSplitInGroupContext.bindTo(this.contextMenuContextKeyService);
+		this.sideBySideEditorContext = SideBySideEditorActiveContext.bindTo(this.contextMenuContextKeyService);
 
-		this.groupLockedContext = ActiveEditorGroupLockedContext.bindTo(
-			this.contextMenuContextKeyService
-		);
+		this.groupLockedContext = ActiveEditorGroupLockedContext.bindTo(this.contextMenuContextKeyService);
 
 		this.renderDropdownAsChildElement = false;
 
@@ -266,23 +167,15 @@ export abstract class EditorTabsControl
 	}
 
 	private get editorActionsEnabled(): boolean {
-		return (
-			this.groupsView.partOptions.editorActionsLocation === "default" &&
-			this.groupsView.partOptions.showTabs !== "none"
-		);
+		return this.groupsView.partOptions.editorActionsLocation === 'default' && this.groupsView.partOptions.showTabs !== 'none';
 	}
 
-	protected createEditorActionsToolBar(
-		parent: HTMLElement,
-		classes: string[],
-	): void {
-		this.editorActionsToolbarContainer = document.createElement("div");
+	protected createEditorActionsToolBar(parent: HTMLElement, classes: string[]): void {
+		this.editorActionsToolbarContainer = document.createElement('div');
 		this.editorActionsToolbarContainer.classList.add(...classes);
 		parent.appendChild(this.editorActionsToolbarContainer);
 
-		this.handleEditorActionToolBarVisibility(
-			this.editorActionsToolbarContainer,
-		);
+		this.handleEditorActionToolBarVisibility(this.editorActionsToolbarContainer);
 	}
 
 	private handleEditorActionToolBarVisibility(container: HTMLElement): void {
@@ -301,60 +194,41 @@ export abstract class EditorTabsControl
 			this.editorActionsDisposables.clear();
 		}
 
-		container.classList.toggle("hidden", !editorActionsEnabled);
+		container.classList.toggle('hidden', !editorActionsEnabled);
 	}
 
 	private doCreateEditorActionsToolBar(container: HTMLElement): void {
 		const context: IEditorCommandsContext = { groupId: this.groupView.id };
 
 		// Toolbar Widget
-		this.editorActionsToolbar = this.editorActionsToolbarDisposables.add(
-			this.instantiationService.createInstance(
-				WorkbenchToolBar,
-				container,
-				{
-					actionViewItemProvider: (action) =>
-						this.actionViewItemProvider(action),
-					orientation: ActionsOrientation.HORIZONTAL,
-					ariaLabel: localize(
-						"ariaLabelEditorActions",
-						"Editor actions",
-					),
-					getKeyBinding: (action) => this.getKeybinding(action),
-					actionRunner: this.editorActionsToolbarDisposables.add(
-						new EditorCommandsContextActionRunner(context),
-					),
-					anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
-					renderDropdownAsChildElement:
-						this.renderDropdownAsChildElement,
-					telemetrySource: "editorPart",
-					resetMenu: MenuId.EditorTitle,
-					overflowBehavior: {
-						maxItems: 9,
-						exempted: EDITOR_CORE_NAVIGATION_COMMANDS,
-					},
-					highlightToggledItems: true,
-				},
-			),
-		);
+		this.editorActionsToolbar = this.editorActionsToolbarDisposables.add(this.instantiationService.createInstance(WorkbenchToolBar, container, {
+			actionViewItemProvider: action => this.actionViewItemProvider(action),
+			orientation: ActionsOrientation.HORIZONTAL,
+			ariaLabel: localize('ariaLabelEditorActions', "Editor actions"),
+			getKeyBinding: action => this.getKeybinding(action),
+			actionRunner: this.editorActionsToolbarDisposables.add(new EditorCommandsContextActionRunner(context)),
+			anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
+			renderDropdownAsChildElement: this.renderDropdownAsChildElement,
+			telemetrySource: 'editorPart',
+			resetMenu: MenuId.EditorTitle,
+			overflowBehavior: { maxItems: 9, exempted: EDITOR_CORE_NAVIGATION_COMMANDS },
+			highlightToggledItems: true
+		}));
 
 		// Context
 		this.editorActionsToolbar.context = context;
 
 		// Action Run Handling
-		this.editorActionsToolbarDisposables.add(
-			this.editorActionsToolbar.actionRunner.onDidRun((e) => {
-				// Notify for Error
-				if (e.error && !isCancellationError(e.error)) {
-					this.notificationService.error(e.error);
-				}
-			}),
-		);
+		this.editorActionsToolbarDisposables.add(this.editorActionsToolbar.actionRunner.onDidRun(e => {
+
+			// Notify for Error
+			if (e.error && !isCancellationError(e.error)) {
+				this.notificationService.error(e.error);
+			}
+		}));
 	}
 
-	private actionViewItemProvider(
-		action: IAction,
-	): IActionViewItem | undefined {
+	private actionViewItemProvider(action: IAction): IActionViewItem | undefined {
 		const activeEditorPane = this.groupView.activeEditorPane;
 
 		// Check Active Editor
@@ -367,9 +241,7 @@ export abstract class EditorTabsControl
 		}
 
 		// Check extensions
-		return createActionViewItem(this.instantiationService, action, {
-			menuAsChild: this.renderDropdownAsChildElement,
-		});
+		return createActionViewItem(this.instantiationService, action, { menuAsChild: this.renderDropdownAsChildElement });
 	}
 
 	protected updateEditorActionsToolbar(): void {
@@ -379,31 +251,17 @@ export abstract class EditorTabsControl
 
 		this.editorActionsDisposables.clear();
 
-		const editorActions = this.groupView.createEditorActions(
-			this.editorActionsDisposables,
-		);
-		this.editorActionsDisposables.add(
-			editorActions.onDidChange(() => this.updateEditorActionsToolbar()),
-		);
+		const editorActions = this.groupView.createEditorActions(this.editorActionsDisposables);
+		this.editorActionsDisposables.add(editorActions.onDidChange(() => this.updateEditorActionsToolbar()));
 
 		const editorActionsToolbar = assertIsDefined(this.editorActionsToolbar);
-		const { primary, secondary } = this.prepareEditorActions(
-			editorActions.actions,
-		);
-		editorActionsToolbar.setActions(
-			prepareActions(primary),
-			prepareActions(secondary),
-		);
+		const { primary, secondary } = this.prepareEditorActions(editorActions.actions);
+		editorActionsToolbar.setActions(prepareActions(primary), prepareActions(secondary));
 	}
 
-	protected abstract prepareEditorActions(
-		editorActions: IToolbarActions,
-	): IToolbarActions;
+	protected abstract prepareEditorActions(editorActions: IToolbarActions): IToolbarActions;
 	private getEditorPaneAwareContextKeyService(): IContextKeyService {
-		return (
-			this.groupView.activeEditorPane?.scopedContextKeyService ??
-			this.contextKeyService
-		);
+		return this.groupView.activeEditorPane?.scopedContextKeyService ?? this.contextKeyService;
 	}
 
 	protected clearEditorActionsToolbar(): void {
@@ -423,74 +281,43 @@ export abstract class EditorTabsControl
 		const isNewWindowOperation = this.isNewWindowOperation(e);
 
 		// Set editor group as transfer
-		this.groupTransfer.setData(
-			[new DraggedEditorGroupIdentifier(this.groupView.id)],
-			DraggedEditorGroupIdentifier.prototype,
-		);
+		this.groupTransfer.setData([new DraggedEditorGroupIdentifier(this.groupView.id)], DraggedEditorGroupIdentifier.prototype);
 		if (e.dataTransfer) {
-			e.dataTransfer.effectAllowed = "copyMove";
+			e.dataTransfer.effectAllowed = 'copyMove';
 		}
 
 		// Drag all tabs of the group if tabs are enabled
 		let hasDataTransfer = false;
-		if (this.groupsView.partOptions.showTabs === "multiple") {
-			hasDataTransfer = this.doFillResourceDataTransfers(
-				this.groupView.getEditors(EditorsOrder.SEQUENTIAL),
-				e,
-				isNewWindowOperation,
-			);
+		if (this.groupsView.partOptions.showTabs === 'multiple') {
+			hasDataTransfer = this.doFillResourceDataTransfers(this.groupView.getEditors(EditorsOrder.SEQUENTIAL), e, isNewWindowOperation);
 		}
 
 		// Otherwise only drag the active editor
-		else if (this.groupView.activeEditor) {
-			hasDataTransfer = this.doFillResourceDataTransfers(
-				[this.groupView.activeEditor],
-				e,
-				isNewWindowOperation,
-			);
+		else {
+			if (this.groupView.activeEditor) {
+				hasDataTransfer = this.doFillResourceDataTransfers([this.groupView.activeEditor], e, isNewWindowOperation);
+			}
 		}
 
 		// Firefox: requires to set a text data transfer to get going
 		if (!hasDataTransfer && isFirefox) {
-			e.dataTransfer?.setData(
-				DataTransfers.TEXT,
-				String(this.groupView.label),
-			);
+			e.dataTransfer?.setData(DataTransfers.TEXT, String(this.groupView.label));
 		}
 
 		// Drag Image
 		if (this.groupView.activeEditor) {
 			let label = this.groupView.activeEditor.getName();
-			if (
-				this.groupsView.partOptions.showTabs === "multiple" &&
-				this.groupView.count > 1
-			) {
-				label = localize(
-					"draggedEditorGroup",
-					"{0} (+{1})",
-					label,
-					this.groupView.count - 1,
-				);
+			if (this.groupsView.partOptions.showTabs === 'multiple' && this.groupView.count > 1) {
+				label = localize('draggedEditorGroup', "{0} (+{1})", label, this.groupView.count - 1);
 			}
 
-			applyDragImage(
-				e,
-				label,
-				"monaco-editor-group-drag-image",
-				this.getColor(listActiveSelectionBackground),
-				this.getColor(listActiveSelectionForeground),
-			);
+			applyDragImage(e, label, 'monaco-editor-group-drag-image', this.getColor(listActiveSelectionBackground), this.getColor(listActiveSelectionForeground));
 		}
 
 		return isNewWindowOperation;
 	}
 
-	protected async onGroupDragEnd(
-		e: DragEvent,
-		previousDragEvent: DragEvent | undefined,
-		element: HTMLElement,
-		isNewWindowOperation: boolean,
-	): Promise<void> {
+	protected async onGroupDragEnd(e: DragEvent, previousDragEvent: DragEvent | undefined, element: HTMLElement, isNewWindowOperation: boolean): Promise<void> {
 		this.groupTransfer.clearData(DraggedEditorGroupIdentifier.prototype);
 
 		if (
@@ -501,55 +328,34 @@ export abstract class EditorTabsControl
 			return; // drag to open in new window is disabled
 		}
 
-		const auxiliaryEditorPart = await this.maybeCreateAuxiliaryEditorPartAt(
-			e,
-			element,
-		);
+		const auxiliaryEditorPart = await this.maybeCreateAuxiliaryEditorPartAt(e, element);
 		if (!auxiliaryEditorPart) {
 			return;
 		}
 
 		const targetGroup = auxiliaryEditorPart.activeGroup;
 		this.groupsView.mergeGroup(this.groupView, targetGroup.id, {
-			mode: this.isMoveOperation(previousDragEvent ?? e, targetGroup.id)
-				? MergeGroupMode.MOVE_EDITORS
-				: MergeGroupMode.COPY_EDITORS,
+			mode: this.isMoveOperation(previousDragEvent ?? e, targetGroup.id) ? MergeGroupMode.MOVE_EDITORS : MergeGroupMode.COPY_EDITORS
 		});
 
 		targetGroup.focus();
 	}
 
-	protected async maybeCreateAuxiliaryEditorPartAt(
-		e: DragEvent,
-		offsetElement: HTMLElement,
-	): Promise<IAuxiliaryEditorPart | undefined> {
-		const { point, display } =
-			(await this.hostService.getCursorScreenPoint()) ?? {
-				point: { x: e.screenX, y: e.screenY },
-			};
+	protected async maybeCreateAuxiliaryEditorPartAt(e: DragEvent, offsetElement: HTMLElement): Promise<IAuxiliaryEditorPart | undefined> {
+		const { point, display } = await this.hostService.getCursorScreenPoint() ?? { point: { x: e.screenX, y: e.screenY } };
 		const window = getActiveWindow();
-		if (
-			window.document.visibilityState === "visible" &&
-			window.document.hasFocus()
-		) {
-			if (
-				point.x >= window.screenX &&
-				point.x <= window.screenX + window.outerWidth &&
-				point.y >= window.screenY &&
-				point.y <= window.screenY + window.outerHeight
-			) {
+		if (window.document.visibilityState === 'visible' && window.document.hasFocus()) {
+			if (point.x >= window.screenX && point.x <= window.screenX + window.outerWidth && point.y >= window.screenY && point.y <= window.screenY + window.outerHeight) {
 				return; // refuse to create as long as the mouse was released over active focused window to reduce chance of opening by accident
 			}
 		}
 
 		const offsetX = offsetElement.offsetWidth / 2;
-		const offsetY =
-			30 /* take title bar height into account (approximation) */ +
-			offsetElement.offsetHeight / 2;
+		const offsetY = 30/* take title bar height into account (approximation) */ + offsetElement.offsetHeight / 2;
 
 		const bounds = {
 			x: point.x - offsetX,
-			y: point.y - offsetY,
+			y: point.y - offsetY
 		};
 
 		if (display) {
@@ -573,35 +379,19 @@ export abstract class EditorTabsControl
 		return e.altKey;
 	}
 
-	protected isMoveOperation(
-		e: DragEvent,
-		sourceGroup: GroupIdentifier,
-		sourceEditor?: EditorInput,
-	): boolean {
+	protected isMoveOperation(e: DragEvent, sourceGroup: GroupIdentifier, sourceEditor?: EditorInput): boolean {
 		if (sourceEditor?.hasCapability(EditorInputCapabilities.Singleton)) {
 			return true; // Singleton editors cannot be split
 		}
 
 		const isCopy = (e.ctrlKey && !isMacintosh) || (e.altKey && isMacintosh);
 
-		return !isCopy || sourceGroup === this.groupView.id;
+		return (!isCopy || sourceGroup === this.groupView.id);
 	}
 
-	protected doFillResourceDataTransfers(
-		editors: readonly EditorInput[],
-		e: DragEvent,
-		disableStandardTransfer: boolean,
-	): boolean {
+	protected doFillResourceDataTransfers(editors: readonly EditorInput[], e: DragEvent, disableStandardTransfer: boolean): boolean {
 		if (editors.length) {
-			this.instantiationService.invokeFunction(
-				fillEditorsDragData,
-				editors.map((editor) => ({
-					editor,
-					groupId: this.groupView.id,
-				})),
-				e,
-				{ disableStandardTransfer },
-			);
+			this.instantiationService.invokeFunction(fillEditorsDragData, editors.map(editor => ({ editor, groupId: this.groupView.id })), e, { disableStandardTransfer });
 
 			return true;
 		}
@@ -609,34 +399,18 @@ export abstract class EditorTabsControl
 		return false;
 	}
 
-	protected onTabContextMenu(
-		editor: EditorInput,
-		e: Event,
-		node: HTMLElement,
-	): void {
+	protected onTabContextMenu(editor: EditorInput, e: Event, node: HTMLElement): void {
+
 		// Update contexts based on editor picked and remember previous to restore
-		this.resourceContext.set(
-			EditorResourceAccessor.getOriginalUri(
-				editor,
-				{ supportSideBySide: SideBySideEditor.PRIMARY } ?? null,
-			),
-		);
+		this.resourceContext.set(EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.PRIMARY } ?? null));
 		this.editorPinnedContext.set(this.tabsModel.isPinned(editor));
 		this.editorIsFirstContext.set(this.tabsModel.isFirst(editor));
 		this.editorIsLastContext.set(this.tabsModel.isLast(editor));
 		this.editorStickyContext.set(this.tabsModel.isSticky(editor));
 		this.groupLockedContext.set(this.tabsModel.isLocked);
-		this.editorCanSplitInGroupContext.set(
-			editor.hasCapability(EditorInputCapabilities.CanSplitInGroup),
-		);
-		this.sideBySideEditorContext.set(
-			editor.typeId === SideBySideEditorInput.ID,
-		);
-		applyAvailableEditorIds(
-			this.editorAvailableEditorIds,
-			editor,
-			this.editorResolverService,
-		);
+		this.editorCanSplitInGroupContext.set(editor.hasCapability(EditorInputCapabilities.CanSplitInGroup));
+		this.sideBySideEditorContext.set(editor.typeId === SideBySideEditorInput.ID);
+		applyAvailableEditorIds(this.editorAvailableEditorIds, editor, this.editorResolverService);
 
 		// Find target anchor
 		let anchor: HTMLElement | StandardMouseEvent = node;
@@ -648,29 +422,16 @@ export abstract class EditorTabsControl
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => anchor,
 			menuId: MenuId.EditorTitleContext,
-			menuActionOptions: {
-				shouldForwardArgs: true,
-				arg: this.resourceContext.get(),
-			},
+			menuActionOptions: { shouldForwardArgs: true, arg: this.resourceContext.get() },
 			contextKeyService: this.contextMenuContextKeyService,
-			getActionsContext: () => ({
-				groupId: this.groupView.id,
-				editorIndex: this.groupView.getIndexOfEditor(editor),
-			}),
-			getKeyBinding: (action) =>
-				this.keybindingService.lookupKeybinding(
-					action.id,
-					this.contextMenuContextKeyService,
-				),
-			onHide: () => this.groupsView.activeGroup.focus(), // restore focus to active group
+			getActionsContext: () => ({ groupId: this.groupView.id, editorIndex: this.groupView.getIndexOfEditor(editor) }),
+			getKeyBinding: action => this.keybindingService.lookupKeybinding(action.id, this.contextMenuContextKeyService),
+			onHide: () => this.groupsView.activeGroup.focus() // restore focus to active group
 		});
 	}
 
 	protected getKeybinding(action: IAction): ResolvedKeybinding | undefined {
-		return this.keybindingService.lookupKeybinding(
-			action.id,
-			this.getEditorPaneAwareContextKeyService(),
-		);
+		return this.keybindingService.lookupKeybinding(action.id, this.getEditorPaneAwareContextKeyService());
 	}
 
 	protected getKeybindingLabel(action: IAction): string | undefined {
@@ -680,22 +441,15 @@ export abstract class EditorTabsControl
 	}
 
 	protected get tabHeight() {
-		return this.groupsView.partOptions.tabHeight !== "compact"
-			? EditorTabsControl.EDITOR_TAB_HEIGHT.normal
-			: EditorTabsControl.EDITOR_TAB_HEIGHT.compact;
+		return this.groupsView.partOptions.tabHeight !== 'compact' ? EditorTabsControl.EDITOR_TAB_HEIGHT.normal : EditorTabsControl.EDITOR_TAB_HEIGHT.compact;
 	}
 
 	protected updateTabHeight(): void {
-		this.parent.style.setProperty(
-			"--editor-group-tab-height",
-			`${this.tabHeight}px`,
-		);
+		this.parent.style.setProperty('--editor-group-tab-height', `${this.tabHeight}px`);
 	}
 
-	updateOptions(
-		oldOptions: IEditorPartOptions,
-		newOptions: IEditorPartOptions,
-	): void {
+	updateOptions(oldOptions: IEditorPartOptions, newOptions: IEditorPartOptions): void {
+
 		// Update tab height
 		if (oldOptions.tabHeight !== newOptions.tabHeight) {
 			this.updateTabHeight();
@@ -703,14 +457,11 @@ export abstract class EditorTabsControl
 
 		// Update Editor Actions Toolbar
 		if (
-			oldOptions.editorActionsLocation !==
-				newOptions.editorActionsLocation ||
+			oldOptions.editorActionsLocation !== newOptions.editorActionsLocation ||
 			oldOptions.showTabs !== newOptions.showTabs
 		) {
 			if (this.editorActionsToolbarContainer) {
-				this.handleEditorActionToolBarVisibility(
-					this.editorActionsToolbarContainer,
-				);
+				this.handleEditorActionToolBarVisibility(this.editorActionsToolbarContainer);
 				this.updateEditorActionsToolbar();
 			}
 		}
@@ -726,11 +477,7 @@ export abstract class EditorTabsControl
 
 	abstract closeEditors(editors: EditorInput[]): void;
 
-	abstract moveEditor(
-		editor: EditorInput,
-		fromIndex: number,
-		targetIndex: number,
-	): void;
+	abstract moveEditor(editor: EditorInput, fromIndex: number, targetIndex: number): void;
 
 	abstract pinEditor(editor: EditorInput): void;
 
