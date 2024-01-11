@@ -50,7 +50,7 @@
 	"devDependencies": {
 		"@types/jsdom": "21.1.6",
 		"@types/vscode-notebook-renderer": "1.72.3",
-		"jsdom": "23.0.1"
+		"jsdom": "23.2.0"
 	},
 	"repository": {
 		"type": "git",
