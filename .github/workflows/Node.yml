@@ -277,7 +277,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.0.0
+            - uses: actions/upload-artifact@v4.1.0
               with:
                   name: .-extensions-json-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/json-language-features/server/Target
@@ -303,7 +303,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.0.0
+            - uses: actions/upload-artifact@v4.1.0
               with:
                   name: .-extensions-markdown-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/markdown-language-features/server/Target
@@ -485,7 +485,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.0.0
+            - uses: actions/upload-artifact@v4.1.0
               with:
                   name: .-test-automation-Node-${{ matrix.node-version }}-Target
                   path: ./test/automation/Target
