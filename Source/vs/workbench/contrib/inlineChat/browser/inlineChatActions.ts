@@ -22,7 +22,7 @@ import { IEditorService, SIDE_GROUP } from 'vs/workbench/services/editor/common/
 import { IUntitledTextResourceEditorInput } from 'vs/workbench/common/editor';
 import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 import { fromNow } from 'vs/base/common/date';
-import { IInlineChatSessionService, Recording } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSession';
+import { IInlineChatSessionService, Recording } from './inlineChatSessionService';
 import { runAccessibilityHelpAction } from 'vs/workbench/contrib/chat/browser/actions/chatAccessibilityHelp';
 import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from 'vs/platform/accessibility/common/accessibility';
 import { Disposable } from 'vs/base/common/lifecycle';
@@ -303,6 +303,29 @@ export class NextFromHistory extends AbstractInlineChatAction {
 	}
 }
 
+export class DiscardHunkAction extends AbstractInlineChatAction {
+
+	constructor() {
+		super({
+			id: 'inlineChat.discardHunkChange',
+			title: localize('discard', 'Discard'),
+			icon: Codicon.clearAll,
+			precondition: CTX_INLINE_CHAT_VISIBLE,
+			menu: {
+				id: MENU_INLINE_CHAT_WIDGET_STATUS,
+				when: ContextKeyExpr.and(CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(InlineChatResponseTypes.OnlyMessages), CTX_INLINE_CHAT_EDIT_MODE.isEqualTo(EditMode.Live)),
+				group: '0_main',
+				order: 3
+			}
+		});
+	}
+
+	async runInlineChatCommand(_accessor: ServicesAccessor, ctrl: InlineChatController, _editor: ICodeEditor, ..._args: any[]): Promise<void> {
+		return ctrl.discardHunk();
+	}
+}
+
+
 MenuRegistry.appendMenuItem(MENU_INLINE_CHAT_WIDGET_STATUS, {
 	submenu: MENU_INLINE_CHAT_WIDGET_DISCARD,
 	title: localize('discardMenu', "Discard..."),
@@ -510,7 +533,7 @@ export class AcceptChanges extends AbstractInlineChatAction {
 				when: CTX_INLINE_CHAT_USER_DID_EDIT
 			}],
 			menu: {
-				when: ContextKeyExpr.and(CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(InlineChatResponseTypes.OnlyMessages), CTX_INLINE_CHAT_EDIT_MODE.notEqualsTo(EditMode.Live)),
+				when: ContextKeyExpr.and(CTX_INLINE_CHAT_RESPONSE_TYPES.notEqualsTo(InlineChatResponseTypes.OnlyMessages)),
 				id: MENU_INLINE_CHAT_WIDGET_STATUS,
 				group: '0_main',
 				order: 0
@@ -519,7 +542,7 @@ export class AcceptChanges extends AbstractInlineChatAction {
 	}
 
 	override async runInlineChatCommand(_accessor: ServicesAccessor, ctrl: InlineChatController): Promise<void> {
-		ctrl.acceptSession();
+		ctrl.acceptHunk();
 	}
 }
 
@@ -548,6 +571,7 @@ export class CancelSessionAction extends AbstractInlineChatAction {
 		ctrl.cancelSession();
 	}
 }
+
 
 export class CloseAction extends AbstractInlineChatAction {
 
