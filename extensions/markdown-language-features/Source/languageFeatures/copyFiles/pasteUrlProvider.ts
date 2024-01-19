@@ -3,22 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as vscode from 'vscode';
-import { IMdParser } from '../../markdownEngine';
-import { ITextDocument } from '../../types/textDocument';
-import { Mime } from '../../util/mimes';
-import { createInsertUriListEdit, externalUriSchemes } from './shared';
+import * as vscode from "vscode";
+import { IMdParser } from "../../markdownEngine";
+import { ITextDocument } from "../../types/textDocument";
+import { Mime } from "../../util/mimes";
+import { createInsertUriListEdit, externalUriSchemes } from "./shared";
 
 export enum PasteUrlAsMarkdownLink {
-	Always = 'always',
-	SmartWithSelection = 'smartWithSelection',
-	Smart = 'smart',
-	Never = 'never'
+	Always = "always",
+	SmartWithSelection = "smartWithSelection",
+	Smart = "smart",
+	Never = "never",
 }
 
-function getPasteUrlAsFormattedLinkSetting(document: vscode.TextDocument): PasteUrlAsMarkdownLink {
-	return vscode.workspace.getConfiguration('markdown', document)
-		.get<PasteUrlAsMarkdownLink>('editor.pasteUrlAsFormattedLink.enabled', PasteUrlAsMarkdownLink.SmartWithSelection);
+function getPasteUrlAsFormattedLinkSetting(
+	document: vscode.TextDocument,
+): PasteUrlAsMarkdownLink {
+	return vscode.workspace
+		.getConfiguration("markdown", document)
+		.get<PasteUrlAsMarkdownLink>(
+			"editor.pasteUrlAsFormattedLink.enabled",
+			PasteUrlAsMarkdownLink.SmartWithSelection,
+		);
 }
 
 /**
@@ -27,14 +33,11 @@ function getPasteUrlAsFormattedLinkSetting(document: vscode.TextDocument): Paste
  * This only applies to `text/plain`. Other mimes like `text/uri-list` are handled by ResourcePasteOrDropProvider.
  */
 class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
-
-	public static readonly id = 'insertMarkdownLink';
+	public static readonly id = "insertMarkdownLink";
 
 	public static readonly pasteMimeTypes = [Mime.textPlain];
 
-	constructor(
-		private readonly _parser: IMdParser,
-	) { }
+	constructor(private readonly _parser: IMdParser) {}
 
 	async provideDocumentPasteEdits(
 		document: vscode.TextDocument,
@@ -63,12 +66,20 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 			return;
 		}
 
-		const pasteEdit = new vscode.DocumentPasteEdit('', edit.label);
+		const pasteEdit = new vscode.DocumentPasteEdit("", edit.label);
 		const workspaceEdit = new vscode.WorkspaceEdit();
 		workspaceEdit.set(document.uri, edit.edits);
 		pasteEdit.additionalEdit = workspaceEdit;
 
-		if (!(await shouldInsertMarkdownLinkByDefault(this._parser, document, pasteUrlSetting, ranges, token))) {
+		if (
+			!(await shouldInsertMarkdownLinkByDefault(
+				this._parser,
+				document,
+				pasteUrlSetting,
+				ranges,
+				token,
+			))
+		) {
 			pasteEdit.yieldTo = [{ mimeType: Mime.textPlain }];
 		}
 
@@ -76,11 +87,18 @@ class PasteUrlEditProvider implements vscode.DocumentPasteEditProvider {
 	}
 }
 
-export function registerPasteUrlSupport(selector: vscode.DocumentSelector, parser: IMdParser) {
-	return vscode.languages.registerDocumentPasteEditProvider(selector, new PasteUrlEditProvider(parser), {
-		id: PasteUrlEditProvider.id,
-		pasteMimeTypes: PasteUrlEditProvider.pasteMimeTypes,
-	});
+export function registerPasteUrlSupport(
+	selector: vscode.DocumentSelector,
+	parser: IMdParser,
+) {
+	return vscode.languages.registerDocumentPasteEditProvider(
+		selector,
+		new PasteUrlEditProvider(parser),
+		{
+			id: PasteUrlEditProvider.id,
+			pasteMimeTypes: PasteUrlEditProvider.pasteMimeTypes,
+		},
+	);
 }
 
 const smartPasteLineRegexes = [
@@ -107,7 +125,11 @@ export async function shouldInsertMarkdownLinkByDefault(
 		}
 		case PasteUrlAsMarkdownLink.SmartWithSelection: {
 			// At least one range must not be empty
-			if (!ranges.some(range => document.getText(range).trim().length > 0)) {
+			if (
+				!ranges.some(
+					(range) => document.getText(range).trim().length > 0,
+				)
+			) {
 				return false;
 			}
 			// And all ranges must be smart
@@ -119,7 +141,18 @@ export async function shouldInsertMarkdownLinkByDefault(
 	}
 
 	async function checkSmart(): Promise<boolean> {
-		return (await Promise.all(ranges.map(range => shouldSmartPasteForSelection(parser, document, range, token)))).every(x => x);
+		return (
+			await Promise.all(
+				ranges.map((range) =>
+					shouldSmartPasteForSelection(
+						parser,
+						document,
+						range,
+						token,
+					),
+				),
+			)
+		).every((x) => x);
 	}
 }
 
@@ -150,18 +183,43 @@ async function shouldSmartPasteForSelection(
 		return false;
 	}
 	for (const token of tokens) {
-		if (token.map && token.map[0] <= selectedRange.start.line && token.map[1] > selectedRange.start.line) {
-			if (!['paragraph_open', 'inline', 'heading_open', 'ordered_list_open', 'bullet_list_open', 'list_item_open', 'blockquote_open'].includes(token.type)) {
+		if (
+			token.map &&
+			token.map[0] <= selectedRange.start.line &&
+			token.map[1] > selectedRange.start.line
+		) {
+			if (
+				![
+					"paragraph_open",
+					"inline",
+					"heading_open",
+					"ordered_list_open",
+					"bullet_list_open",
+					"list_item_open",
+					"blockquote_open",
+				].includes(token.type)
+			) {
 				return false;
 			}
 		}
 	}
 
 	// Run additional regex checks on the current line to check if we are inside an inline element
-	const line = document.getText(new vscode.Range(selectedRange.start.line, 0, selectedRange.start.line, Number.MAX_SAFE_INTEGER));
+	const line = document.getText(
+		new vscode.Range(
+			selectedRange.start.line,
+			0,
+			selectedRange.start.line,
+			Number.MAX_SAFE_INTEGER,
+		),
+	);
 	for (const regex of smartPasteLineRegexes) {
 		for (const match of line.matchAll(regex.regex)) {
-			if (match.index !== undefined && selectedRange.start.character >= match.index && selectedRange.start.character <= match.index + match[0].length) {
+			if (
+				match.index !== undefined &&
+				selectedRange.start.character >= match.index &&
+				selectedRange.start.character <= match.index + match[0].length
+			) {
 				return false;
 			}
 		}
@@ -186,7 +244,10 @@ export function findValidUriInText(text: string): string | undefined {
 		return;
 	}
 
-	if (!externalUriSchemes.includes(uri.scheme.toLowerCase()) || uri.authority.length <= 1) {
+	if (
+		!externalUriSchemes.includes(uri.scheme.toLowerCase()) ||
+		uri.authority.length <= 1
+	) {
 		return;
 	}
 

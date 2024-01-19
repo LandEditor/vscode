@@ -5,16 +5,14 @@
 
 //@ts-check
 
-'use strict';
-
-const withDefaults = require('../shared.webpack.config');
+const withDefaults = require("../shared.webpack.config");
 
 module.exports = withDefaults({
 	context: __dirname,
 	entry: {
-		extension: './src/ipynbMain.ts',
+		extension: "./src/ipynbMain.ts",
 	},
 	output: {
-		filename: 'ipynbMain.js'
-	}
+		filename: "ipynbMain.js",
+	},
 });

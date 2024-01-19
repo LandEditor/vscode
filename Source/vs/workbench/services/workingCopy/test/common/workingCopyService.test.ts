@@ -3,50 +3,66 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { IWorkingCopy } from 'vs/workbench/services/workingCopy/common/workingCopy';
-import { URI } from 'vs/base/common/uri';
-import { TestWorkingCopy } from 'vs/workbench/test/common/workbenchTestServices';
-import { IWorkingCopySaveEvent, WorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { DisposableStore } from 'vs/base/common/lifecycle';
+import * as assert from "assert";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { IWorkingCopy } from "vs/workbench/services/workingCopy/common/workingCopy";
+import {
+	IWorkingCopySaveEvent,
+	WorkingCopyService,
+} from "vs/workbench/services/workingCopy/common/workingCopyService";
+import { TestWorkingCopy } from "vs/workbench/test/common/workbenchTestServices";
 
-suite('WorkingCopyService', () => {
-
+suite("WorkingCopyService", () => {
 	const disposables = new DisposableStore();
 
 	teardown(() => {
 		disposables.clear();
 	});
 
-	test('registry - basics', () => {
+	test("registry - basics", () => {
 		const service = disposables.add(new WorkingCopyService());
 
 		const onDidChangeDirty: IWorkingCopy[] = [];
-		disposables.add(service.onDidChangeDirty(copy => onDidChangeDirty.push(copy)));
+		disposables.add(
+			service.onDidChangeDirty((copy) => onDidChangeDirty.push(copy)),
+		);
 
 		const onDidChangeContent: IWorkingCopy[] = [];
-		disposables.add(service.onDidChangeContent(copy => onDidChangeContent.push(copy)));
+		disposables.add(
+			service.onDidChangeContent((copy) => onDidChangeContent.push(copy)),
+		);
 
 		const onDidSave: IWorkingCopySaveEvent[] = [];
-		disposables.add(service.onDidSave(copy => onDidSave.push(copy)));
+		disposables.add(service.onDidSave((copy) => onDidSave.push(copy)));
 
 		const onDidRegister: IWorkingCopy[] = [];
-		disposables.add(service.onDidRegister(copy => onDidRegister.push(copy)));
+		disposables.add(
+			service.onDidRegister((copy) => onDidRegister.push(copy)),
+		);
 
 		const onDidUnregister: IWorkingCopy[] = [];
-		disposables.add(service.onDidUnregister(copy => onDidUnregister.push(copy)));
+		disposables.add(
+			service.onDidUnregister((copy) => onDidUnregister.push(copy)),
+		);
 
 		assert.strictEqual(service.hasDirty, false);
 		assert.strictEqual(service.dirtyCount, 0);
 		assert.strictEqual(service.workingCopies.length, 0);
-		assert.strictEqual(service.isDirty(URI.file('/')), false);
+		assert.strictEqual(service.isDirty(URI.file("/")), false);
 
 		// resource 1
-		const resource1 = URI.file('/some/folder/file.txt');
+		const resource1 = URI.file("/some/folder/file.txt");
 		assert.strictEqual(service.has(resource1), false);
-		assert.strictEqual(service.has({ resource: resource1, typeId: 'testWorkingCopyType' }), false);
-		assert.strictEqual(service.get({ resource: resource1, typeId: 'testWorkingCopyType' }), undefined);
+		assert.strictEqual(
+			service.has({ resource: resource1, typeId: "testWorkingCopyType" }),
+			false,
+		);
+		assert.strictEqual(
+			service.get({ resource: resource1, typeId: "testWorkingCopyType" }),
+			undefined,
+		);
 		assert.strictEqual(service.getAll(resource1), undefined);
 		const copy1 = disposables.add(new TestWorkingCopy(resource1));
 		const unregister1 = service.registerWorkingCopy(copy1);
@@ -86,7 +102,7 @@ suite('WorkingCopyService', () => {
 		assert.strictEqual(onDidSave.length, 1);
 		assert.strictEqual(onDidSave[0].workingCopy, copy1);
 
-		copy1.setContent('foo');
+		copy1.setContent("foo");
 
 		assert.strictEqual(onDidChangeContent.length, 1);
 		assert.strictEqual(onDidChangeContent[0], copy1);
@@ -107,7 +123,7 @@ suite('WorkingCopyService', () => {
 		assert.strictEqual(service.has(resource1), false);
 
 		// resource 2
-		const resource2 = URI.file('/some/folder/file-dirty.txt');
+		const resource2 = URI.file("/some/folder/file-dirty.txt");
 		const copy2 = disposables.add(new TestWorkingCopy(resource2, true));
 		const unregister2 = service.registerWorkingCopy(copy2);
 
@@ -120,7 +136,7 @@ suite('WorkingCopyService', () => {
 		assert.strictEqual(onDidChangeDirty.length, 3);
 		assert.strictEqual(onDidChangeDirty[2], copy2);
 
-		copy2.setContent('foo');
+		copy2.setContent("foo");
 
 		assert.strictEqual(onDidChangeContent.length, 2);
 		assert.strictEqual(onDidChangeContent[1], copy2);
@@ -135,10 +151,10 @@ suite('WorkingCopyService', () => {
 		assert.strictEqual(onDidChangeDirty[3], copy2);
 	});
 
-	test('registry - multiple copies on same resource throws (same type ID)', () => {
+	test("registry - multiple copies on same resource throws (same type ID)", () => {
 		const service = disposables.add(new WorkingCopyService());
 
-		const resource = URI.parse('custom://some/folder/custom.txt');
+		const resource = URI.parse("custom://some/folder/custom.txt");
 
 		const copy1 = disposables.add(new TestWorkingCopy(resource));
 		disposables.add(service.registerWorkingCopy(copy1));
@@ -148,21 +164,27 @@ suite('WorkingCopyService', () => {
 		assert.throws(() => service.registerWorkingCopy(copy2));
 	});
 
-	test('registry - multiple copies on same resource is supported (different type ID)', () => {
+	test("registry - multiple copies on same resource is supported (different type ID)", () => {
 		const service = disposables.add(new WorkingCopyService());
 
-		const resource = URI.parse('custom://some/folder/custom.txt');
+		const resource = URI.parse("custom://some/folder/custom.txt");
 
-		const typeId1 = 'testWorkingCopyTypeId1';
-		let copy1 = disposables.add(new TestWorkingCopy(resource, false, typeId1));
+		const typeId1 = "testWorkingCopyTypeId1";
+		let copy1 = disposables.add(
+			new TestWorkingCopy(resource, false, typeId1),
+		);
 		let dispose1 = service.registerWorkingCopy(copy1);
 
-		const typeId2 = 'testWorkingCopyTypeId2';
-		const copy2 = disposables.add(new TestWorkingCopy(resource, false, typeId2));
+		const typeId2 = "testWorkingCopyTypeId2";
+		const copy2 = disposables.add(
+			new TestWorkingCopy(resource, false, typeId2),
+		);
 		const dispose2 = service.registerWorkingCopy(copy2);
 
-		const typeId3 = 'testWorkingCopyTypeId3';
-		const copy3 = disposables.add(new TestWorkingCopy(resource, false, typeId3));
+		const typeId3 = "testWorkingCopyTypeId3";
+		const copy3 = disposables.add(
+			new TestWorkingCopy(resource, false, typeId3),
+		);
 		const dispose3 = service.registerWorkingCopy(copy3);
 
 		const copies = service.getAll(resource);

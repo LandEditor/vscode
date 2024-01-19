@@ -3,19 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { ensureNoDisposablesAreLeakedInTestSuite } from 'vs/base/test/common/utils';
-import { EditorService } from 'vs/workbench/services/editor/browser/editorService';
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { UntitledTextEditorInput } from 'vs/workbench/services/untitled/common/untitledTextEditorInput';
-import { IWorkingCopyEditorHandler, WorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService';
-import { createEditorPart, registerTestResourceEditor, TestEditorService, TestServiceAccessor, workbenchInstantiationService } from 'vs/workbench/test/browser/workbenchTestServices';
-import { TestWorkingCopy } from 'vs/workbench/test/common/workbenchTestServices';
+import * as assert from "assert";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { ensureNoDisposablesAreLeakedInTestSuite } from "vs/base/test/common/utils";
+import { EditorService } from "vs/workbench/services/editor/browser/editorService";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { UntitledTextEditorInput } from "vs/workbench/services/untitled/common/untitledTextEditorInput";
+import {
+	IWorkingCopyEditorHandler,
+	WorkingCopyEditorService,
+} from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
+import {
+	TestEditorService,
+	TestServiceAccessor,
+	createEditorPart,
+	registerTestResourceEditor,
+	workbenchInstantiationService,
+} from "vs/workbench/test/browser/workbenchTestServices";
+import { TestWorkingCopy } from "vs/workbench/test/common/workbenchTestServices";
 
-suite('WorkingCopyEditorService', () => {
-
+suite("WorkingCopyEditorService", () => {
 	const disposables = new DisposableStore();
 
 	setup(() => {
@@ -26,18 +34,26 @@ suite('WorkingCopyEditorService', () => {
 		disposables.clear();
 	});
 
-	test('registry - basics', () => {
-		const service = disposables.add(new WorkingCopyEditorService(disposables.add(new TestEditorService())));
+	test("registry - basics", () => {
+		const service = disposables.add(
+			new WorkingCopyEditorService(
+				disposables.add(new TestEditorService()),
+			),
+		);
 
 		let handlerEvent: IWorkingCopyEditorHandler | undefined = undefined;
-		disposables.add(service.onDidRegisterHandler(handler => {
-			handlerEvent = handler;
-		}));
+		disposables.add(
+			service.onDidRegisterHandler((handler) => {
+				handlerEvent = handler;
+			}),
+		);
 
 		const editorHandler: IWorkingCopyEditorHandler = {
-			handles: workingCopy => false,
+			handles: (workingCopy) => false,
 			isOpen: () => false,
-			createEditor: workingCopy => { throw new Error(); }
+			createEditor: (workingCopy) => {
+				throw new Error();
+			},
 		};
 
 		disposables.add(service.registerHandler(editorHandler));
@@ -45,35 +61,64 @@ suite('WorkingCopyEditorService', () => {
 		assert.strictEqual(handlerEvent, editorHandler);
 	});
 
-	test('findEditor', async () => {
+	test("findEditor", async () => {
 		const disposables = new DisposableStore();
 
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables,
+		);
 		const part = await createEditorPart(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, part);
 
-		const editorService = disposables.add(instantiationService.createInstance(EditorService, undefined));
-		const accessor = instantiationService.createInstance(TestServiceAccessor);
+		const editorService = disposables.add(
+			instantiationService.createInstance(EditorService, undefined),
+		);
+		const accessor =
+			instantiationService.createInstance(TestServiceAccessor);
 
-		const service = disposables.add(new WorkingCopyEditorService(editorService));
+		const service = disposables.add(
+			new WorkingCopyEditorService(editorService),
+		);
 
-		const resource = URI.parse('custom://some/folder/custom.txt');
-		const testWorkingCopy = disposables.add(new TestWorkingCopy(resource, false, 'testWorkingCopyTypeId1'));
+		const resource = URI.parse("custom://some/folder/custom.txt");
+		const testWorkingCopy = disposables.add(
+			new TestWorkingCopy(resource, false, "testWorkingCopyTypeId1"),
+		);
 
 		assert.strictEqual(service.findEditor(testWorkingCopy), undefined);
 
 		const editorHandler: IWorkingCopyEditorHandler = {
-			handles: workingCopy => workingCopy === testWorkingCopy,
+			handles: (workingCopy) => workingCopy === testWorkingCopy,
 			isOpen: (workingCopy, editor) => workingCopy === testWorkingCopy,
-			createEditor: workingCopy => { throw new Error(); }
+			createEditor: (workingCopy) => {
+				throw new Error();
+			},
 		};
 
 		disposables.add(service.registerHandler(editorHandler));
 
-		const editor1 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, accessor.untitledTextEditorService.create({ initialValue: 'foo' })));
-		const editor2 = disposables.add(instantiationService.createInstance(UntitledTextEditorInput, accessor.untitledTextEditorService.create({ initialValue: 'foo' })));
+		const editor1 = disposables.add(
+			instantiationService.createInstance(
+				UntitledTextEditorInput,
+				accessor.untitledTextEditorService.create({
+					initialValue: "foo",
+				}),
+			),
+		);
+		const editor2 = disposables.add(
+			instantiationService.createInstance(
+				UntitledTextEditorInput,
+				accessor.untitledTextEditorService.create({
+					initialValue: "foo",
+				}),
+			),
+		);
 
-		await editorService.openEditors([{ editor: editor1 }, { editor: editor2 }]);
+		await editorService.openEditors([
+			{ editor: editor1 },
+			{ editor: editor2 },
+		]);
 
 		assert.ok(service.findEditor(testWorkingCopy));
 

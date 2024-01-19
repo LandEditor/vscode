@@ -3,24 +3,40 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { TextDocument, FoldingRange, Position, Range, LanguageModes, LanguageMode } from './languageModes';
-import { CancellationToken } from 'vscode-languageserver';
+import { CancellationToken } from "vscode-languageserver";
+import {
+	FoldingRange,
+	LanguageMode,
+	LanguageModes,
+	Position,
+	Range,
+	TextDocument,
+} from "./languageModes";
 
-export async function getFoldingRanges(languageModes: LanguageModes, document: TextDocument, maxRanges: number | undefined, _cancellationToken: CancellationToken | null): Promise<FoldingRange[]> {
-	const htmlMode = languageModes.getMode('html');
-	const range = Range.create(Position.create(0, 0), Position.create(document.lineCount, 0));
+export async function getFoldingRanges(
+	languageModes: LanguageModes,
+	document: TextDocument,
+	maxRanges: number | undefined,
+	_cancellationToken: CancellationToken | null,
+): Promise<FoldingRange[]> {
+	const htmlMode = languageModes.getMode("html");
+	const range = Range.create(
+		Position.create(0, 0),
+		Position.create(document.lineCount, 0),
+	);
 	let result: FoldingRange[] = [];
-	if (htmlMode && htmlMode.getFoldingRanges) {
-		result.push(... await htmlMode.getFoldingRanges(document));
+	if (htmlMode?.getFoldingRanges) {
+		result.push(...(await htmlMode.getFoldingRanges(document)));
 	}
 
 	// cache folding ranges per mode
-	const rangesPerMode: { [mode: string]: FoldingRange[] } = Object.create(null);
+	const rangesPerMode: { [mode: string]: FoldingRange[] } =
+		Object.create(null);
 	const getRangesForMode = async (mode: LanguageMode) => {
 		if (mode.getFoldingRanges) {
 			let ranges = rangesPerMode[mode.getId()];
 			if (!Array.isArray(ranges)) {
-				ranges = await mode.getFoldingRanges(document) || [];
+				ranges = (await mode.getFoldingRanges(document)) || [];
 				rangesPerMode[mode.getId()] = ranges;
 			}
 			return ranges;
@@ -33,7 +49,13 @@ export async function getFoldingRanges(languageModes: LanguageModes, document: T
 		const mode = modeRange.mode;
 		if (mode && mode !== htmlMode && !modeRange.attributeValue) {
 			const ranges = await getRangesForMode(mode);
-			result.push(...ranges.filter(r => r.startLine >= modeRange.start.line && r.endLine < modeRange.end.line));
+			result.push(
+				...ranges.filter(
+					(r) =>
+						r.startLine >= modeRange.start.line &&
+						r.endLine < modeRange.end.line,
+				),
+			);
 		}
 	}
 	if (maxRanges && result.length > maxRanges) {
@@ -68,10 +90,7 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 	// compute nesting levels and sanitize
 	for (let i = 0; i < ranges.length; i++) {
 		const entry = ranges[i];
-		if (!top) {
-			top = entry;
-			setNestingLevel(i, 0);
-		} else {
+		if (top) {
 			if (entry.startLine > top.startLine) {
 				if (entry.endLine <= top.endLine) {
 					previous.push(top);
@@ -88,6 +107,9 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 					setNestingLevel(i, previous.length);
 				}
 			}
+		} else {
+			top = entry;
+			setNestingLevel(i, 0);
 		}
 	}
 	let entries = 0;
@@ -105,8 +127,11 @@ function limitRanges(ranges: FoldingRange[], maxRanges: number) {
 	const result = [];
 	for (let i = 0; i < ranges.length; i++) {
 		const level = nestingLevels[i];
-		if (typeof level === 'number') {
-			if (level < maxLevel || (level === maxLevel && entries++ < maxRanges)) {
+		if (typeof level === "number") {
+			if (
+				level < maxLevel ||
+				(level === maxLevel && entries++ < maxRanges)
+			) {
 				result.push(ranges[i]);
 			}
 		}

@@ -3,12 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler, runWhenGlobalIdle } from 'vs/base/common/async';
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IInstantiationService, createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { userActivityRegistry } from 'vs/workbench/services/userActivity/common/userActivityRegistry';
+import { RunOnceScheduler, runWhenGlobalIdle } from "vs/base/common/async";
+import { Emitter, Event } from "vs/base/common/event";
+import {
+	Disposable,
+	IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import {
+	IInstantiationService,
+	createDecorator,
+} from "vs/platform/instantiation/common/instantiation";
+import { userActivityRegistry } from "vs/workbench/services/userActivity/common/userActivityRegistry";
 
 /**
  * Service that observes user activity in the window.
@@ -34,16 +44,23 @@ export interface IUserActivityService {
 	markActive(): IDisposable;
 }
 
-export const IUserActivityService = createDecorator<IUserActivityService>('IUserActivityService');
+export const IUserActivityService = createDecorator<IUserActivityService>(
+	"IUserActivityService",
+);
 
-export class UserActivityService extends Disposable implements IUserActivityService {
+export class UserActivityService
+	extends Disposable
+	implements IUserActivityService
+{
 	declare readonly _serviceBrand: undefined;
-	private readonly markInactive = this._register(new RunOnceScheduler(() => {
-		this.isActive = false;
-		this.changeEmitter.fire(false);
-	}, 10_000));
+	private readonly markInactive = this._register(
+		new RunOnceScheduler(() => {
+			this.isActive = false;
+			this.changeEmitter.fire(false);
+		}, 10_000),
+	);
 
-	private readonly changeEmitter = this._register(new Emitter<boolean>);
+	private readonly changeEmitter = this._register(new Emitter<boolean>());
 	private active = 0;
 
 	/**
@@ -79,4 +96,8 @@ export class UserActivityService extends Disposable implements IUserActivityServ
 	}
 }
 
-registerSingleton(IUserActivityService, UserActivityService, InstantiationType.Delayed);
+registerSingleton(
+	IUserActivityService,
+	UserActivityService,
+	InstantiationType.Delayed,
+);

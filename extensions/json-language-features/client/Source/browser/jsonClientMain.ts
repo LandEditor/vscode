@@ -3,13 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ExtensionContext, Uri, l10n } from 'vscode';
-import { BaseLanguageClient, LanguageClientOptions } from 'vscode-languageclient';
-import { startClient, LanguageClientConstructor, SchemaRequestService } from '../jsonClient';
-import { LanguageClient } from 'vscode-languageclient/browser';
+import { ExtensionContext, Uri, l10n } from "vscode";
+import {
+	BaseLanguageClient,
+	LanguageClientOptions,
+} from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/browser";
+import {
+	LanguageClientConstructor,
+	SchemaRequestService,
+	startClient,
+} from "../jsonClient";
 
 declare const Worker: {
-	new(stringUrl: string): any;
+	new (stringUrl: string): any;
 };
 
 declare function fetch(uri: string, options: any): any;
@@ -18,26 +25,33 @@ let client: BaseLanguageClient | undefined;
 
 // this method is called when vs code is activated
 export async function activate(context: ExtensionContext) {
-	const serverMain = Uri.joinPath(context.extensionUri, 'server/dist/browser/jsonServerMain.js');
+	const serverMain = Uri.joinPath(
+		context.extensionUri,
+		"server/dist/browser/jsonServerMain.js",
+	);
 	try {
 		const worker = new Worker(serverMain.toString());
-		worker.postMessage({ i10lLocation: l10n.uri?.toString(false) ?? '' });
+		worker.postMessage({ i10lLocation: l10n.uri?.toString(false) ?? "" });
 
-		const newLanguageClient: LanguageClientConstructor = (id: string, name: string, clientOptions: LanguageClientOptions) => {
+		const newLanguageClient: LanguageClientConstructor = (
+			id: string,
+			name: string,
+			clientOptions: LanguageClientOptions,
+		) => {
 			return new LanguageClient(id, name, clientOptions, worker);
 		};
 
 		const schemaRequests: SchemaRequestService = {
 			getContent(uri: string) {
-				return fetch(uri, { mode: 'cors' })
-					.then(function (response: any) {
-						return response.text();
-					});
-			}
+				return fetch(uri, { mode: "cors" }).then((response: any) =>
+					response.text(),
+				);
+			},
 		};
 
-		client = await startClient(context, newLanguageClient, { schemaRequests });
-
+		client = await startClient(context, newLanguageClient, {
+			schemaRequests,
+		});
 	} catch (e) {
 		console.log(e);
 	}

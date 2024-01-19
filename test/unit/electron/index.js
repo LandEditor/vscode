@@ -4,26 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-'use strict';
 
 // mocha disables running through electron by default. Note that this must
 // come before any mocha imports.
-process.env.MOCHA_COLORS = '1';
+process.env.MOCHA_COLORS = "1";
 
-const { app, BrowserWindow, ipcMain, crashReporter } = require('electron');
-const product = require('../../../product.json');
-const { tmpdir } = require('os');
-const { existsSync, mkdirSync } = require('fs');
-const path = require('path');
-const mocha = require('mocha');
-const events = require('events');
-const MochaJUnitReporter = require('mocha-junit-reporter');
-const url = require('url');
-const net = require('net');
-const createStatsCollector = require('mocha/lib/stats-collector');
-const { applyReporter, importMochaReporter } = require('../reporter');
+const { app, BrowserWindow, ipcMain, crashReporter } = require("electron");
+const product = require("../../../product.json");
+const { tmpdir } = require("os");
+const { existsSync, mkdirSync } = require("fs");
+const path = require("path");
+const mocha = require("mocha");
+const events = require("events");
+const MochaJUnitReporter = require("mocha-junit-reporter");
+const url = require("url");
+const net = require("net");
+const createStatsCollector = require("mocha/lib/stats-collector");
+const { applyReporter, importMochaReporter } = require("../reporter");
 
-const minimist = require('minimist');
+const minimist = require("minimist");
 
 /**
  * @type {{
@@ -45,18 +44,30 @@ const minimist = require('minimist');
  * }}
  */
 const args = minimist(process.argv.slice(2), {
-	string: ['grep', 'run', 'runGlob', 'reporter', 'reporter-options', 'waitServer', 'timeout', 'crash-reporter-directory', 'tfs', 'coveragePath', 'coverageFormats'],
-	boolean: ['build', 'coverage', 'help', 'dev'],
+	string: [
+		"grep",
+		"run",
+		"runGlob",
+		"reporter",
+		"reporter-options",
+		"waitServer",
+		"timeout",
+		"crash-reporter-directory",
+		"tfs",
+		"coveragePath",
+		"coverageFormats",
+	],
+	boolean: ["build", "coverage", "help", "dev"],
 	alias: {
-		'grep': ['g', 'f'],
-		'runGlob': ['glob', 'runGrep'],
-		'dev': ['dev-tools', 'devTools'],
-		'help': 'h'
+		grep: ["g", "f"],
+		runGlob: ["glob", "runGrep"],
+		dev: ["dev-tools", "devTools"],
+		help: "h",
 	},
 	default: {
-		'reporter': 'spec',
-		'reporter-options': ''
-	}
+		reporter: "spec",
+		"reporter-options": "",
+	},
 });
 
 if (args.help) {
@@ -79,12 +90,14 @@ Options:
 	process.exit(0);
 }
 
-let crashReporterDirectory = args['crash-reporter-directory'];
+let crashReporterDirectory = args["crash-reporter-directory"];
 if (crashReporterDirectory) {
 	crashReporterDirectory = path.normalize(crashReporterDirectory);
 
 	if (!path.isAbsolute(crashReporterDirectory)) {
-		console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`);
+		console.error(
+			`The path '${crashReporterDirectory}' specified for --crash-reporter-directory must be absolute.`,
+		);
 		app.exit(1);
 	}
 
@@ -92,26 +105,32 @@ if (crashReporterDirectory) {
 		try {
 			mkdirSync(crashReporterDirectory);
 		} catch (error) {
-			console.error(`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`);
+			console.error(
+				`The path '${crashReporterDirectory}' specified for --crash-reporter-directory does not seem to exist or cannot be created.`,
+			);
 			app.exit(1);
 		}
 	}
 
 	// Crashes are stored in the crashDumps directory by default, so we
 	// need to change that directory to the provided one
-	console.log(`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`);
-	app.setPath('crashDumps', crashReporterDirectory);
+	console.log(
+		`Found --crash-reporter-directory argument. Setting crashDumps directory to be '${crashReporterDirectory}'`,
+	);
+	app.setPath("crashDumps", crashReporterDirectory);
 
 	crashReporter.start({
-		companyName: 'Microsoft',
-		productName: process.env['VSCODE_DEV'] ? `${product.nameShort} Dev` : product.nameShort,
+		companyName: "Microsoft",
+		productName: process.env["VSCODE_DEV"]
+			? `${product.nameShort} Dev`
+			: product.nameShort,
 		uploadToServer: false,
-		compress: true
+		compress: true,
 	});
 }
 
 if (!args.dev) {
-	app.setPath('userData', path.join(tmpdir(), `vscode-tests-${Date.now()}`));
+	app.setPath("userData", path.join(tmpdir(), `vscode-tests-${Date.now()}`));
 }
 
 function deserializeSuite(suite) {
@@ -125,7 +144,7 @@ function deserializeSuite(suite) {
 		timeout: () => suite.timeout,
 		retries: () => suite.retries,
 		slow: () => suite.slow,
-		bail: () => suite.bail
+		bail: () => suite.bail,
 	};
 }
 
@@ -138,7 +157,7 @@ function deserializeRunnable(runnable) {
 		slow: () => runnable.slow,
 		speed: runnable.speed,
 		duration: runnable.duration,
-		currentRetry: () => runnable.currentRetry
+		currentRetry: () => runnable.currentRetry,
 	};
 }
 
@@ -159,36 +178,50 @@ function deserializeError(err) {
 }
 
 class IPCRunner extends events.EventEmitter {
-
 	constructor() {
 		super();
 
 		this.didFail = false;
 		this.didEnd = false;
 
-		ipcMain.on('start', () => this.emit('start'));
-		ipcMain.on('end', () => {
+		ipcMain.on("start", () => this.emit("start"));
+		ipcMain.on("end", () => {
 			this.didEnd = true;
-			this.emit('end');
+			this.emit("end");
 		});
-		ipcMain.on('suite', (e, suite) => this.emit('suite', deserializeSuite(suite)));
-		ipcMain.on('suite end', (e, suite) => this.emit('suite end', deserializeSuite(suite)));
-		ipcMain.on('test', (e, test) => this.emit('test', deserializeRunnable(test)));
-		ipcMain.on('test end', (e, test) => this.emit('test end', deserializeRunnable(test)));
-		ipcMain.on('hook', (e, hook) => this.emit('hook', deserializeRunnable(hook)));
-		ipcMain.on('hook end', (e, hook) => this.emit('hook end', deserializeRunnable(hook)));
-		ipcMain.on('pass', (e, test) => this.emit('pass', deserializeRunnable(test)));
-		ipcMain.on('fail', (e, test, err) => {
+		ipcMain.on("suite", (e, suite) =>
+			this.emit("suite", deserializeSuite(suite)),
+		);
+		ipcMain.on("suite end", (e, suite) =>
+			this.emit("suite end", deserializeSuite(suite)),
+		);
+		ipcMain.on("test", (e, test) =>
+			this.emit("test", deserializeRunnable(test)),
+		);
+		ipcMain.on("test end", (e, test) =>
+			this.emit("test end", deserializeRunnable(test)),
+		);
+		ipcMain.on("hook", (e, hook) =>
+			this.emit("hook", deserializeRunnable(hook)),
+		);
+		ipcMain.on("hook end", (e, hook) =>
+			this.emit("hook end", deserializeRunnable(hook)),
+		);
+		ipcMain.on("pass", (e, test) =>
+			this.emit("pass", deserializeRunnable(test)),
+		);
+		ipcMain.on("fail", (e, test, err) => {
 			this.didFail = true;
-			this.emit('fail', deserializeRunnable(test), deserializeError(err));
+			this.emit("fail", deserializeRunnable(test), deserializeError(err));
 		});
-		ipcMain.on('pending', (e, test) => this.emit('pending', deserializeRunnable(test)));
+		ipcMain.on("pending", (e, test) =>
+			this.emit("pending", deserializeRunnable(test)),
+		);
 	}
 }
 
-app.on('ready', () => {
-
-	ipcMain.on('error', (_, err) => {
+app.on("ready", () => {
+	ipcMain.on("error", (_, err) => {
 		if (!args.dev) {
 			console.error(err);
 			app.exit(1);
@@ -198,37 +231,51 @@ app.on('ready', () => {
 	// We need to provide a basic `ISandboxConfiguration`
 	// for our preload script to function properly because
 	// some of our types depend on it (e.g. product.ts).
-	ipcMain.handle('vscode:test-vscode-window-config', async () => {
+	ipcMain.handle("vscode:test-vscode-window-config", async () => {
 		return {
 			product: {
-				version: '1.x.y',
-				nameShort: 'Code - OSS Dev',
-				nameLong: 'Code - OSS Dev',
-				applicationName: 'code-oss',
-				dataFolderName: '.vscode-oss',
-				urlProtocol: 'code-oss',
-			}
+				version: "1.x.y",
+				nameShort: "Code - OSS Dev",
+				nameLong: "Code - OSS Dev",
+				applicationName: "code-oss",
+				dataFolderName: ".vscode-oss",
+				urlProtocol: "code-oss",
+			},
 		};
 	});
 
 	// No-op since invoke the IPC as part of IIFE in the preload.
-	ipcMain.handle('vscode:fetchShellEnv', event => { });
+	ipcMain.handle("vscode:fetchShellEnv", (event) => {});
 
 	const win = new BrowserWindow({
 		height: 600,
 		width: 800,
 		show: false,
 		webPreferences: {
-			preload: path.join(__dirname, '..', '..', '..', 'src', 'vs', 'base', 'parts', 'sandbox', 'electron-sandbox', 'preload.js'), // ensure similar environment as VSCode as tests may depend on this
-			additionalArguments: [`--vscode-window-config=vscode:test-vscode-window-config`],
+			preload: path.join(
+				__dirname,
+				"..",
+				"..",
+				"..",
+				"src",
+				"vs",
+				"base",
+				"parts",
+				"sandbox",
+				"electron-sandbox",
+				"preload.js",
+			), // ensure similar environment as VSCode as tests may depend on this
+			additionalArguments: [
+				"--vscode-window-config=vscode:test-vscode-window-config",
+			],
 			nodeIntegration: true,
 			contextIsolation: false,
 			enableWebSQL: false,
-			spellcheck: false
-		}
+			spellcheck: false,
+		},
 	});
 
-	win.webContents.on('did-finish-load', () => {
+	win.webContents.on("did-finish-load", () => {
 		if (args.dev) {
 			win.show();
 			win.webContents.openDevTools();
@@ -245,19 +292,21 @@ app.on('ready', () => {
 		let timeout;
 		let socket;
 
-		return new Promise(resolve => {
-			socket = net.connect(port, '127.0.0.1');
-			socket.on('error', e => {
-				console.error('error connecting to waitServer', e);
+		return new Promise((resolve) => {
+			socket = net.connect(port, "127.0.0.1");
+			socket.on("error", (e) => {
+				console.error("error connecting to waitServer", e);
 				resolve(undefined);
 			});
 
-			socket.on('close', () => {
+			socket.on("close", () => {
 				resolve(undefined);
 			});
 
 			timeout = setTimeout(() => {
-				console.error('timed out waiting for before starting tests debugger');
+				console.error(
+					"timed out waiting for before starting tests debugger",
+				);
 				resolve(undefined);
 			}, 15000);
 		}).finally(() => {
@@ -269,18 +318,26 @@ app.on('ready', () => {
 	}
 
 	function sendRun() {
-		win.webContents.send('run', args);
+		win.webContents.send("run", args);
 	}
 
-	win.loadURL(url.format({ pathname: path.join(__dirname, 'renderer.html'), protocol: 'file:', slashes: true }));
+	win.loadURL(
+		url.format({
+			pathname: path.join(__dirname, "renderer.html"),
+			protocol: "file:",
+			slashes: true,
+		}),
+	);
 
 	const runner = new IPCRunner();
 	createStatsCollector(runner);
 
 	// Handle renderer crashes, #117068
-	win.webContents.on('render-process-gone', (evt, details) => {
+	win.webContents.on("render-process-gone", (evt, details) => {
 		if (!runner.didEnd) {
-			console.error(`Renderer process crashed with: ${JSON.stringify(details)}`);
+			console.error(
+				`Renderer process crashed with: ${JSON.stringify(details)}`,
+			);
 			app.exit(1);
 		}
 	});
@@ -290,17 +347,26 @@ app.on('ready', () => {
 		new MochaJUnitReporter(runner, {
 			reporterOptions: {
 				testsuitesTitle: `${args.tfs} ${process.platform}`,
-				mochaFile: process.env.BUILD_ARTIFACTSTAGINGDIRECTORY ? path.join(process.env.BUILD_ARTIFACTSTAGINGDIRECTORY, `test-results/${process.platform}-${process.arch}-${args.tfs.toLowerCase().replace(/[^\w]/g, '-')}-results.xml`) : undefined
-			}
+				mochaFile: process.env.BUILD_ARTIFACTSTAGINGDIRECTORY
+					? path.join(
+							process.env.BUILD_ARTIFACTSTAGINGDIRECTORY,
+							`test-results/${process.platform}-${
+								process.arch
+							}-${args.tfs
+								.toLowerCase()
+								.replace(/[^\w]/g, "-")}-results.xml`,
+					  )
+					: undefined,
+			},
 		});
 	} else {
 		// mocha patches symbols to use windows escape codes, but it seems like
 		// Electron mangles these in its output.
-		if (process.platform === 'win32') {
-			Object.assign(importMochaReporter('base').symbols, {
-				ok: '+',
-				err: 'X',
-				dot: '.',
+		if (process.platform === "win32") {
+			Object.assign(importMochaReporter("base").symbols, {
+				ok: "+",
+				err: "X",
+				dot: ".",
 			});
 		}
 
@@ -308,6 +374,6 @@ app.on('ready', () => {
 	}
 
 	if (!args.dev) {
-		ipcMain.on('all done', () => app.exit(runner.didFail ? 1 : 0));
+		ipcMain.on("all done", () => app.exit(runner.didFail ? 1 : 0));
 	}
 });

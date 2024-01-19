@@ -1,10 +1,7 @@
 {
 	"version": "2.0.0",
 	"command": "npm",
-	"args": [
-		"run",
-		"watch"
-	],
+	"args": ["run", "watch"],
 	"isBackground": true,
 	"problemMatcher": "$tsc-watch",
 	"tasks": [
@@ -12,10 +9,7 @@
 			"label": "npm",
 			"type": "shell",
 			"command": "npm",
-			"args": [
-				"run",
-				"watch"
-			],
+			"args": ["run", "watch"],
 			"isBackground": true,
 			"problemMatcher": "$tsc-watch",
 			"group": {

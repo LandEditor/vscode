@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface ChatAgent2<TResult extends ChatAgentResult2> {
 		/**
 		 * When true, this agent is invoked by default when no other agent is being invoked

@@ -1,10 +1,10 @@
 module.exports = {
-	"parserOptions": {
-		"tsconfigRootDir": __dirname,
-		"project": "./tsconfig.json"
+	parserOptions: {
+		tsconfigRootDir: __dirname,
+		project: "./tsconfig.json",
 	},
-	"rules": {
+	rules: {
 		"@typescript-eslint/prefer-optional-chain": "warn",
-		"@typescript-eslint/prefer-readonly": "warn"
-	}
+		"@typescript-eslint/prefer-readonly": "warn",
+	},
 };

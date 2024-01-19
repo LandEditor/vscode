@@ -6,5 +6,5 @@
 let y = 0;
 for (let i = 0; i < 100; i++) {
 	console.log(y);
-	y = y + i;
+	y += i;
 }

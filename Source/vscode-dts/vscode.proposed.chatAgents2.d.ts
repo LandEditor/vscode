@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface ChatAgentHistoryEntry {
 		request: ChatAgentRequest;
 		response: ChatAgentContentProgress[];
@@ -70,7 +69,9 @@ declare module 'vscode' {
 	/**
 	 * Represents user feedback for a result.
 	 */
-	export interface ChatAgentResult2Feedback<TResult extends ChatAgentResult2> {
+	export interface ChatAgentResult2Feedback<
+		TResult extends ChatAgentResult2,
+	> {
 		/**
 		 * This instance of ChatAgentResult2 is the same instance that was returned from the chat agent,
 		 * and it can be extended with arbitrary properties if needed.
@@ -119,7 +120,6 @@ declare module 'vscode' {
 	}
 
 	export interface ChatAgentSlashCommandProvider {
-
 		/**
 		 * Returns a list of slash commands that its agent is capable of handling. A slash command
 		 * can be selected by the user and will then be passed to the {@link ChatAgentHandler handler}
@@ -130,7 +130,9 @@ declare module 'vscode' {
 		 * @returns A list of slash commands. The lack of a result can be signaled by returning `undefined`, `null`, or
 		 * an empty array.
 		 */
-		provideSlashCommands(token: CancellationToken): ProviderResult<ChatAgentSlashCommand[]>;
+		provideSlashCommands(
+			token: CancellationToken,
+		): ProviderResult<ChatAgentSlashCommand[]>;
 	}
 
 	// TODO@API This should become a progress type, and use vscode.Command
@@ -162,7 +164,9 @@ declare module 'vscode' {
 		title?: string;
 	}
 
-	export type ChatAgentFollowup = ChatAgentCommandFollowup | ChatAgentReplyFollowup;
+	export type ChatAgentFollowup =
+		| ChatAgentCommandFollowup
+		| ChatAgentReplyFollowup;
 
 	/**
 	 * Will be invoked once after each request to get suggested followup questions to show the user. The user can click the followup to send it to the chat.
@@ -173,11 +177,13 @@ declare module 'vscode' {
 		 * @param result The same instance of the result object that was returned by the chat agent, and it can be extended with arbitrary properties if needed.
 		 * @param token A cancellation token.
 		 */
-		provideFollowups(result: TResult, token: CancellationToken): ProviderResult<ChatAgentFollowup[]>;
+		provideFollowups(
+			result: TResult,
+			token: CancellationToken,
+		): ProviderResult<ChatAgentFollowup[]>;
 	}
 
 	export interface ChatAgent2<TResult extends ChatAgentResult2> {
-
 		/**
 		 * The short name by which this agent is referred to in the UI, e.g `workspace`.
 		 */
@@ -196,16 +202,19 @@ declare module 'vscode' {
 		/**
 		 * Icon for the agent shown in UI.
 		 */
-		iconPath?: Uri | {
-			/**
-			 * The icon path for the light theme.
-			 */
-			light: Uri;
-			/**
-			 * The icon path for the dark theme.
-			 */
-			dark: Uri;
-		} | ThemeIcon;
+		iconPath?:
+			| Uri
+			| {
+					/**
+					 * The icon path for the light theme.
+					 */
+					light: Uri;
+					/**
+					 * The icon path for the dark theme.
+					 */
+					dark: Uri;
+			  }
+			| ThemeIcon;
 
 		/**
 		 * This provider will be called to retrieve the agent's slash commands.
@@ -238,7 +247,6 @@ declare module 'vscode' {
 	}
 
 	export interface ChatAgentRequest {
-
 		/**
 		 * The prompt entered by the user. The {@link ChatAgent2.name name} of the agent or the {@link ChatAgentSlashCommand.name slash command}
 		 * are not part of the prompt.
@@ -278,7 +286,9 @@ declare module 'vscode' {
 		| ChatAgentContentReference
 		| ChatAgentProgressMessage;
 
-	export type ChatAgentProgress = ChatAgentContentProgress | ChatAgentMetadataProgress;
+	export type ChatAgentProgress =
+		| ChatAgentContentProgress
+		| ChatAgentMetadataProgress;
 
 	/**
 	 * Is displayed in the UI to communicate steps of progress to the user. Should be used when the agent may be slow to respond, e.g. due to doing extra work before sending the actual request to the LLM.
@@ -392,10 +402,14 @@ declare module 'vscode' {
 		documents: ChatAgentDocumentContext[];
 	}
 
-	export type ChatAgentHandler = (request: ChatAgentRequest, context: ChatAgentContext, progress: Progress<ChatAgentProgress>, token: CancellationToken) => ProviderResult<ChatAgentResult2>;
+	export type ChatAgentHandler = (
+		request: ChatAgentRequest,
+		context: ChatAgentContext,
+		progress: Progress<ChatAgentProgress>,
+		token: CancellationToken,
+	) => ProviderResult<ChatAgentResult2>;
 
 	export namespace chat {
-
 		/**
 		 * Create a new {@link ChatAgent2 chat agent} instance.
 		 *
@@ -403,7 +417,10 @@ declare module 'vscode' {
 		 * @param handler The reply-handler of the agent.
 		 * @returns A new chat agent
 		 */
-		export function createChatAgent<TResult extends ChatAgentResult2>(name: string, handler: ChatAgentHandler): ChatAgent2<TResult>;
+		export function createChatAgent<TResult extends ChatAgentResult2>(
+			name: string,
+			handler: ChatAgentHandler,
+		): ChatAgent2<TResult>;
 
 		/**
 		 * Register a variable which can be used in a chat request to any agent.
@@ -411,7 +428,11 @@ declare module 'vscode' {
 		 * @param description A description of the variable for the chat input suggest widget.
 		 * @param resolver Will be called to provide the chat variable's value when it is used.
 		 */
-		export function registerVariable(name: string, description: string, resolver: ChatVariableResolver): Disposable;
+		export function registerVariable(
+			name: string,
+			description: string,
+			resolver: ChatVariableResolver,
+		): Disposable;
 	}
 
 	/**
@@ -420,7 +441,7 @@ declare module 'vscode' {
 	export enum ChatVariableLevel {
 		Short = 1,
 		Medium = 2,
-		Full = 3
+		Full = 3,
 	}
 
 	export interface ChatVariableValue {
@@ -454,6 +475,10 @@ declare module 'vscode' {
 		 * @param context Contextual information about this chat request.
 		 * @param token A cancellation token.
 		 */
-		resolve(name: string, context: ChatVariableContext, token: CancellationToken): ProviderResult<ChatVariableValue[]>;
+		resolve(
+			name: string,
+			context: ChatVariableContext,
+			token: CancellationToken,
+		): ProviderResult<ChatVariableValue[]>;
 	}
 }

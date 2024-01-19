@@ -3,16 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { basename } from 'path';
-import * as vscode from 'vscode';
-import * as languageIds from './languageIds';
+import { basename } from "path";
+import * as vscode from "vscode";
+import * as languageIds from "./languageIds";
 
-export const enum DiagnosticLanguage {
-	JavaScript,
-	TypeScript
+export enum DiagnosticLanguage {
+	JavaScript = 0,
+	TypeScript = 1,
 }
 
-export const allDiagnosticLanguages = [DiagnosticLanguage.JavaScript, DiagnosticLanguage.TypeScript];
+export const allDiagnosticLanguages = [
+	DiagnosticLanguage.JavaScript,
+	DiagnosticLanguage.TypeScript,
+];
 
 export interface LanguageDescription {
 	readonly id: string;
@@ -27,34 +30,23 @@ export interface LanguageDescription {
 
 export const standardLanguageDescriptions: LanguageDescription[] = [
 	{
-		id: 'typescript',
-		diagnosticOwner: 'typescript',
-		diagnosticSource: 'ts',
+		id: "typescript",
+		diagnosticOwner: "typescript",
+		diagnosticSource: "ts",
 		diagnosticLanguage: DiagnosticLanguage.TypeScript,
 		languageIds: [languageIds.typescript, languageIds.typescriptreact],
 		configFilePattern: /^tsconfig(\..*)?\.json$/gi,
-		standardFileExtensions: [
-			'ts',
-			'tsx',
-			'cts',
-			'mts'
-		],
-	}, {
-		id: 'javascript',
-		diagnosticOwner: 'typescript',
-		diagnosticSource: 'ts',
+		standardFileExtensions: ["ts", "tsx", "cts", "mts"],
+	},
+	{
+		id: "javascript",
+		diagnosticOwner: "typescript",
+		diagnosticSource: "ts",
 		diagnosticLanguage: DiagnosticLanguage.JavaScript,
 		languageIds: [languageIds.javascript, languageIds.javascriptreact],
 		configFilePattern: /^jsconfig(\..*)?\.json$/gi,
-		standardFileExtensions: [
-			'js',
-			'jsx',
-			'cjs',
-			'mjs',
-			'es6',
-			'pac',
-		],
-	}
+		standardFileExtensions: ["js", "jsx", "cjs", "mjs", "es6", "pac"],
+	},
 ];
 
 export function isTsConfigFileName(fileName: string): boolean {
@@ -65,10 +57,14 @@ export function isJsConfigOrTsConfigFileName(fileName: string): boolean {
 	return /^[jt]sconfig\.(.+\.)?json$/i.test(basename(fileName));
 }
 
-export function doesResourceLookLikeATypeScriptFile(resource: vscode.Uri): boolean {
+export function doesResourceLookLikeATypeScriptFile(
+	resource: vscode.Uri,
+): boolean {
 	return /\.(tsx?|mts|cts)$/i.test(resource.fsPath);
 }
 
-export function doesResourceLookLikeAJavaScriptFile(resource: vscode.Uri): boolean {
+export function doesResourceLookLikeAJavaScriptFile(
+	resource: vscode.Uri,
+): boolean {
 	return /\.(jsx?|mjs|cjs)$/i.test(resource.fsPath);
 }

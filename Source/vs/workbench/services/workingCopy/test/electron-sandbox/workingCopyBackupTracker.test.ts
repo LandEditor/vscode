@@ -3,53 +3,83 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { isMacintosh, isWindows } from 'vs/base/common/platform';
-import { join } from 'vs/base/common/path';
-import { URI } from 'vs/base/common/uri';
-import { hash } from 'vs/base/common/hash';
-import { NativeWorkingCopyBackupTracker } from 'vs/workbench/services/workingCopy/electron-sandbox/workingCopyBackupTracker';
-import { TextFileEditorModelManager } from 'vs/workbench/services/textfile/common/textFileEditorModelManager';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { EditorPart } from 'vs/workbench/browser/parts/editor/editorPart';
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { EditorService } from 'vs/workbench/services/editor/browser/editorService';
-import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { ensureNoDisposablesAreLeakedInTestSuite, toResource } from 'vs/base/test/common/utils';
-import { IFilesConfigurationService } from 'vs/workbench/services/filesConfiguration/common/filesConfigurationService';
-import { IWorkingCopyService } from 'vs/workbench/services/workingCopy/common/workingCopyService';
-import { ILogService } from 'vs/platform/log/common/log';
-import { HotExitConfiguration } from 'vs/platform/files/common/files';
-import { ShutdownReason, ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { IFileDialogService, ConfirmResult, IDialogService } from 'vs/platform/dialogs/common/dialogs';
-import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import { INativeHostService } from 'vs/platform/native/common/native';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { TestConfigurationService } from 'vs/platform/configuration/test/common/testConfigurationService';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { createEditorPart, registerTestFileEditor, TestBeforeShutdownEvent, TestEnvironmentService, TestFilesConfigurationService, TestFileService, TestTextResourceConfigurationService, workbenchTeardown } from 'vs/workbench/test/browser/workbenchTestServices';
-import { MockContextKeyService } from 'vs/platform/keybinding/test/common/mockKeybindingService';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IEnvironmentService } from 'vs/platform/environment/common/environment';
-import { TestWorkspace, Workspace } from 'vs/platform/workspace/test/common/testWorkspace';
-import { IProgressService } from 'vs/platform/progress/common/progress';
-import { IWorkingCopyEditorService } from 'vs/workbench/services/workingCopy/common/workingCopyEditorService';
-import { TestContextService, TestMarkerService, TestWorkingCopy } from 'vs/workbench/test/common/workbenchTestServices';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IWorkingCopyBackup, WorkingCopyCapabilities } from 'vs/workbench/services/workingCopy/common/workingCopy';
-import { Event, Emitter } from 'vs/base/common/event';
-import { generateUuid } from 'vs/base/common/uuid';
-import { Schemas } from 'vs/base/common/network';
-import { joinPath } from 'vs/base/common/resources';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { TestServiceAccessor, workbenchInstantiationService } from 'vs/workbench/test/electron-sandbox/workbenchTestServices';
-import { UriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentityService';
+import * as assert from "assert";
+import { VSBuffer } from "vs/base/common/buffer";
+import { CancellationToken } from "vs/base/common/cancellation";
+import { Emitter, Event } from "vs/base/common/event";
+import { hash } from "vs/base/common/hash";
+import { DisposableStore } from "vs/base/common/lifecycle";
+import { Schemas } from "vs/base/common/network";
+import { join } from "vs/base/common/path";
+import { isMacintosh, isWindows } from "vs/base/common/platform";
+import { joinPath } from "vs/base/common/resources";
+import { URI } from "vs/base/common/uri";
+import { generateUuid } from "vs/base/common/uuid";
+import {
+	ensureNoDisposablesAreLeakedInTestSuite,
+	toResource,
+} from "vs/base/test/common/utils";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { TestConfigurationService } from "vs/platform/configuration/test/common/testConfigurationService";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import {
+	ConfirmResult,
+	IDialogService,
+	IFileDialogService,
+} from "vs/platform/dialogs/common/dialogs";
+import { IEnvironmentService } from "vs/platform/environment/common/environment";
+import { HotExitConfiguration } from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { MockContextKeyService } from "vs/platform/keybinding/test/common/mockKeybindingService";
+import { ILogService } from "vs/platform/log/common/log";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { IProgressService } from "vs/platform/progress/common/progress";
+import { UriIdentityService } from "vs/platform/uriIdentity/common/uriIdentityService";
+import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import {
+	TestWorkspace,
+	Workspace,
+} from "vs/platform/workspace/test/common/testWorkspace";
+import { EditorPart } from "vs/workbench/browser/parts/editor/editorPart";
+import { EditorService } from "vs/workbench/services/editor/browser/editorService";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import { IFilesConfigurationService } from "vs/workbench/services/filesConfiguration/common/filesConfigurationService";
+import {
+	ILifecycleService,
+	ShutdownReason,
+} from "vs/workbench/services/lifecycle/common/lifecycle";
+import { TextFileEditorModelManager } from "vs/workbench/services/textfile/common/textFileEditorModelManager";
+import {
+	IWorkingCopyBackup,
+	WorkingCopyCapabilities,
+} from "vs/workbench/services/workingCopy/common/workingCopy";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
+import { IWorkingCopyEditorService } from "vs/workbench/services/workingCopy/common/workingCopyEditorService";
+import { IWorkingCopyService } from "vs/workbench/services/workingCopy/common/workingCopyService";
+import { NativeWorkingCopyBackupTracker } from "vs/workbench/services/workingCopy/electron-sandbox/workingCopyBackupTracker";
+import {
+	TestBeforeShutdownEvent,
+	TestEnvironmentService,
+	TestFileService,
+	TestFilesConfigurationService,
+	TestTextResourceConfigurationService,
+	createEditorPart,
+	registerTestFileEditor,
+	workbenchTeardown,
+} from "vs/workbench/test/browser/workbenchTestServices";
+import {
+	TestContextService,
+	TestMarkerService,
+	TestWorkingCopy,
+} from "vs/workbench/test/common/workbenchTestServices";
+import {
+	TestServiceAccessor,
+	workbenchInstantiationService,
+} from "vs/workbench/test/electron-sandbox/workbenchTestServices";
 
-suite('WorkingCopyBackupTracker (native)', function () {
-
+suite("WorkingCopyBackupTracker (native)", function () {
 	class TestWorkingCopyBackupTracker extends NativeWorkingCopyBackupTracker {
-
 		constructor(
 			@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
 			@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
@@ -64,9 +94,24 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			@IEnvironmentService environmentService: IEnvironmentService,
 			@IProgressService progressService: IProgressService,
 			@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
-			@IEditorGroupsService editorGroupService: IEditorGroupsService
+			@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		) {
-			super(workingCopyBackupService, filesConfigurationService, workingCopyService, lifecycleService, fileDialogService, dialogService, contextService, nativeHostService, logService, environmentService, progressService, workingCopyEditorService, editorService, editorGroupService);
+			super(
+				workingCopyBackupService,
+				filesConfigurationService,
+				workingCopyService,
+				lifecycleService,
+				fileDialogService,
+				dialogService,
+				contextService,
+				nativeHostService,
+				logService,
+				environmentService,
+				progressService,
+				workingCopyEditorService,
+				editorService,
+				editorGroupService,
+			);
 		}
 
 		protected override getBackupScheduleDelay(): number {
@@ -77,7 +122,9 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			return this.whenReady;
 		}
 
-		get pendingBackupOperationCount(): number { return this.pendingBackupOperations.size; }
+		get pendingBackupOperationCount(): number {
+			return this.pendingBackupOperations.size;
+		}
 
 		override dispose() {
 			super.dispose();
@@ -104,7 +151,7 @@ suite('WorkingCopyBackupTracker (native)', function () {
 					resume();
 
 					this._onDidResume.fire();
-				}
+				},
 			};
 		}
 	}
@@ -118,60 +165,111 @@ suite('WorkingCopyBackupTracker (native)', function () {
 	const disposables = new DisposableStore();
 
 	setup(async () => {
-		testDir = URI.file(join(generateUuid(), 'vsctests', 'workingcopybackuptracker')).with({ scheme: Schemas.inMemory });
-		backupHome = joinPath(testDir, 'Backups');
-		const workspacesJsonPath = joinPath(backupHome, 'workspaces.json');
+		testDir = URI.file(
+			join(generateUuid(), "vsctests", "workingcopybackuptracker"),
+		).with({ scheme: Schemas.inMemory });
+		backupHome = joinPath(testDir, "Backups");
+		const workspacesJsonPath = joinPath(backupHome, "workspaces.json");
 
-		const workspaceResource = URI.file(isWindows ? 'c:\\workspace' : '/workspace').with({ scheme: Schemas.inMemory });
-		workspaceBackupPath = joinPath(backupHome, hash(workspaceResource.toString()).toString(16));
+		const workspaceResource = URI.file(
+			isWindows ? "c:\\workspace" : "/workspace",
+		).with({ scheme: Schemas.inMemory });
+		workspaceBackupPath = joinPath(
+			backupHome,
+			hash(workspaceResource.toString()).toString(16),
+		);
 
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables,
+		);
 		accessor = instantiationService.createInstance(TestServiceAccessor);
-		disposables.add((<TextFileEditorModelManager>accessor.textFileService.files));
+		disposables.add(
+			<TextFileEditorModelManager>accessor.textFileService.files,
+		);
 
 		disposables.add(registerTestFileEditor());
 
 		await accessor.fileService.createFolder(backupHome);
 		await accessor.fileService.createFolder(workspaceBackupPath);
 
-		return accessor.fileService.writeFile(workspacesJsonPath, VSBuffer.fromString(''));
+		return accessor.fileService.writeFile(
+			workspacesJsonPath,
+			VSBuffer.fromString(""),
+		);
 	});
 
 	teardown(() => {
 		disposables.clear();
 	});
 
-	async function createTracker(autoSaveEnabled = false): Promise<{ accessor: TestServiceAccessor; part: EditorPart; tracker: TestWorkingCopyBackupTracker; instantiationService: IInstantiationService; cleanup: () => Promise<void> }> {
-		const instantiationService = workbenchInstantiationService(undefined, disposables);
+	async function createTracker(
+		autoSaveEnabled = false,
+	): Promise<{
+		accessor: TestServiceAccessor;
+		part: EditorPart;
+		tracker: TestWorkingCopyBackupTracker;
+		instantiationService: IInstantiationService;
+		cleanup: () => Promise<void>;
+	}> {
+		const instantiationService = workbenchInstantiationService(
+			undefined,
+			disposables,
+		);
 
 		const configurationService = new TestConfigurationService();
 		if (autoSaveEnabled) {
-			configurationService.setUserConfiguration('files', { autoSave: 'afterDelay', autoSaveDelay: 1 });
+			configurationService.setUserConfiguration("files", {
+				autoSave: "afterDelay",
+				autoSaveDelay: 1,
+			});
 		} else {
-			configurationService.setUserConfiguration('files', { autoSave: 'off', autoSaveDelay: 1 });
+			configurationService.setUserConfiguration("files", {
+				autoSave: "off",
+				autoSaveDelay: 1,
+			});
 		}
 		instantiationService.stub(IConfigurationService, configurationService);
 
-		instantiationService.stub(IFilesConfigurationService, disposables.add(new TestFilesConfigurationService(
-			<IContextKeyService>instantiationService.createInstance(MockContextKeyService),
-			configurationService,
-			new TestContextService(TestWorkspace),
-			TestEnvironmentService,
-			disposables.add(new UriIdentityService(disposables.add(new TestFileService()))),
-			disposables.add(new TestFileService()),
-			new TestMarkerService(),
-			new TestTextResourceConfigurationService(configurationService)
-		)));
+		instantiationService.stub(
+			IFilesConfigurationService,
+			disposables.add(
+				new TestFilesConfigurationService(
+					<IContextKeyService>(
+						instantiationService.createInstance(
+							MockContextKeyService,
+						)
+					),
+					configurationService,
+					new TestContextService(TestWorkspace),
+					TestEnvironmentService,
+					disposables.add(
+						new UriIdentityService(
+							disposables.add(new TestFileService()),
+						),
+					),
+					disposables.add(new TestFileService()),
+					new TestMarkerService(),
+					new TestTextResourceConfigurationService(
+						configurationService,
+					),
+				),
+			),
+		);
 
 		const part = await createEditorPart(instantiationService, disposables);
 		instantiationService.stub(IEditorGroupsService, part);
 
-		const editorService: EditorService = disposables.add(instantiationService.createInstance(EditorService, undefined));
+		const editorService: EditorService = disposables.add(
+			instantiationService.createInstance(EditorService, undefined),
+		);
 		instantiationService.stub(IEditorService, editorService);
 
 		accessor = instantiationService.createInstance(TestServiceAccessor);
 
-		const tracker = instantiationService.createInstance(TestWorkingCopyBackupTracker);
+		const tracker = instantiationService.createInstance(
+			TestWorkingCopyBackupTracker,
+		);
 
 		const cleanup = async () => {
 			await accessor.workingCopyBackupService.waitForAllBackups(); // File changes could also schedule some backup operations so we need to wait for them before finishing the test
@@ -185,41 +283,56 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		return { accessor, part, tracker, instantiationService, cleanup };
 	}
 
-	test('Track backups (file, auto save off)', function () {
-		return trackBackupsTest(toResource.call(this, '/path/index.txt'), false);
+	test("Track backups (file, auto save off)", function () {
+		return trackBackupsTest(
+			toResource.call(this, "/path/index.txt"),
+			false,
+		);
 	});
 
-	test('Track backups (file, auto save on)', function () {
-		return trackBackupsTest(toResource.call(this, '/path/index.txt'), true);
+	test("Track backups (file, auto save on)", function () {
+		return trackBackupsTest(toResource.call(this, "/path/index.txt"), true);
 	});
 
 	async function trackBackupsTest(resource: URI, autoSave: boolean) {
 		const { accessor, cleanup } = await createTracker(autoSave);
 
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const fileModel = accessor.textFileService.files.get(resource);
 		assert.ok(fileModel);
-		fileModel.textEditorModel?.setValue('Super Good');
+		fileModel.textEditorModel?.setValue("Super Good");
 
 		await accessor.workingCopyBackupService.joinBackupResource();
 
-		assert.strictEqual(accessor.workingCopyBackupService.hasBackupSync(fileModel), true);
+		assert.strictEqual(
+			accessor.workingCopyBackupService.hasBackupSync(fileModel),
+			true,
+		);
 
 		fileModel.dispose();
 
 		await accessor.workingCopyBackupService.joinDiscardBackup();
 
-		assert.strictEqual(accessor.workingCopyBackupService.hasBackupSync(fileModel), false);
+		assert.strictEqual(
+			accessor.workingCopyBackupService.hasBackupSync(fileModel),
+			false,
+		);
 
 		await cleanup();
 	}
 
-	test('onWillShutdown - no veto if no dirty files', async function () {
+	test("onWillShutdown - no veto if no dirty files", async function () {
 		const { accessor, cleanup } = await createTracker();
 
-		const resource = toResource.call(this, '/path/index.txt');
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		const resource = toResource.call(this, "/path/index.txt");
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const event = new TestBeforeShutdownEvent();
 		accessor.lifecycleService.fireBeforeShutdown(event);
@@ -230,19 +343,24 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - veto if user cancels (hot.exit: off)', async function () {
+	test("onWillShutdown - veto if user cancels (hot.exit: off)", async function () {
 		const { accessor, cleanup } = await createTracker();
 
-		const resource = toResource.call(this, '/path/index.txt');
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		const resource = toResource.call(this, "/path/index.txt");
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const model = accessor.textFileService.files.get(resource);
 
 		accessor.fileDialogService.setConfirmResult(ConfirmResult.CANCEL);
-		accessor.filesConfigurationService.testOnFilesConfigurationChange({ files: { hotExit: 'off' } });
+		accessor.filesConfigurationService.testOnFilesConfigurationChange({
+			files: { hotExit: "off" },
+		});
 
 		await model?.resolve();
-		model?.textEditorModel?.setValue('foo');
+		model?.textEditorModel?.setValue("foo");
 		assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 
 		const event = new TestBeforeShutdownEvent();
@@ -254,16 +372,21 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - no veto if auto save is on', async function () {
-		const { accessor, cleanup } = await createTracker(true /* auto save enabled */);
+	test("onWillShutdown - no veto if auto save is on", async function () {
+		const { accessor, cleanup } = await createTracker(
+			true /* auto save enabled */,
+		);
 
-		const resource = toResource.call(this, '/path/index.txt');
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		const resource = toResource.call(this, "/path/index.txt");
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const model = accessor.textFileService.files.get(resource);
 
 		await model?.resolve();
-		model?.textEditorModel?.setValue('foo');
+		model?.textEditorModel?.setValue("foo");
 		assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 
 		const event = new TestBeforeShutdownEvent();
@@ -277,31 +400,38 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - no veto and backups cleaned up if user does not want to save (hot.exit: off)', async function () {
+	test("onWillShutdown - no veto and backups cleaned up if user does not want to save (hot.exit: off)", async function () {
 		const { accessor, cleanup } = await createTracker();
 
-		const resource = toResource.call(this, '/path/index.txt');
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		const resource = toResource.call(this, "/path/index.txt");
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const model = accessor.textFileService.files.get(resource);
 
 		accessor.fileDialogService.setConfirmResult(ConfirmResult.DONT_SAVE);
-		accessor.filesConfigurationService.testOnFilesConfigurationChange({ files: { hotExit: 'off' } });
+		accessor.filesConfigurationService.testOnFilesConfigurationChange({
+			files: { hotExit: "off" },
+		});
 
 		await model?.resolve();
-		model?.textEditorModel?.setValue('foo');
+		model?.textEditorModel?.setValue("foo");
 		assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 		const event = new TestBeforeShutdownEvent();
 		accessor.lifecycleService.fireBeforeShutdown(event);
 
 		const veto = await event.value;
 		assert.ok(!veto);
-		assert.ok(accessor.workingCopyBackupService.discardedBackups.length > 0);
+		assert.ok(
+			accessor.workingCopyBackupService.discardedBackups.length > 0,
+		);
 
 		await cleanup();
 	});
 
-	test('onWillShutdown - no backups discarded when shutdown without dirty but tracker not ready', async function () {
+	test("onWillShutdown - no backups discarded when shutdown without dirty but tracker not ready", async () => {
 		const { accessor, cleanup } = await createTracker();
 
 		const event = new TestBeforeShutdownEvent();
@@ -314,7 +444,7 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - backups discarded when shutdown without dirty', async function () {
+	test("onWillShutdown - backups discarded when shutdown without dirty", async () => {
 		const { accessor, tracker, cleanup } = await createTracker();
 
 		await tracker.waitForReady();
@@ -329,19 +459,24 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - save (hot.exit: off)', async function () {
+	test("onWillShutdown - save (hot.exit: off)", async function () {
 		const { accessor, cleanup } = await createTracker();
 
-		const resource = toResource.call(this, '/path/index.txt');
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		const resource = toResource.call(this, "/path/index.txt");
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const model = accessor.textFileService.files.get(resource);
 
 		accessor.fileDialogService.setConfirmResult(ConfirmResult.SAVE);
-		accessor.filesConfigurationService.testOnFilesConfigurationChange({ files: { hotExit: 'off' } });
+		accessor.filesConfigurationService.testOnFilesConfigurationChange({
+			files: { hotExit: "off" },
+		});
 
 		await model?.resolve();
-		model?.textEditorModel?.setValue('foo');
+		model?.textEditorModel?.setValue("foo");
 		assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 		const event = new TestBeforeShutdownEvent();
 		accessor.lifecycleService.fireBeforeShutdown(event);
@@ -353,24 +488,29 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - veto if backup fails', async function () {
+	test("onWillShutdown - veto if backup fails", async function () {
 		const { accessor, cleanup } = await createTracker();
 
 		class TestBackupWorkingCopy extends TestWorkingCopy {
-
 			constructor(resource: URI) {
 				super(resource);
 
-				this._register(accessor.workingCopyService.registerWorkingCopy(this));
+				this._register(
+					accessor.workingCopyService.registerWorkingCopy(this),
+				);
 			}
 
-			override async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
-				throw new Error('unable to backup');
+			override async backup(
+				token: CancellationToken,
+			): Promise<IWorkingCopyBackup> {
+				throw new Error("unable to backup");
 			}
 		}
 
-		const resource = toResource.call(this, '/path/custom.txt');
-		const customWorkingCopy = disposables.add(new TestBackupWorkingCopy(resource));
+		const resource = toResource.call(this, "/path/custom.txt");
+		const customWorkingCopy = disposables.add(
+			new TestBackupWorkingCopy(resource),
+		);
 		customWorkingCopy.setDirty(true);
 
 		const event = new TestBeforeShutdownEvent();
@@ -386,21 +526,26 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - scratchpads - veto if backup fails', async function () {
+	test("onWillShutdown - scratchpads - veto if backup fails", async function () {
 		const { accessor, cleanup } = await createTracker();
 
 		class TestBackupWorkingCopy extends TestWorkingCopy {
-
 			constructor(resource: URI) {
 				super(resource);
 
-				this._register(accessor.workingCopyService.registerWorkingCopy(this));
+				this._register(
+					accessor.workingCopyService.registerWorkingCopy(this),
+				);
 			}
 
-			override capabilities = WorkingCopyCapabilities.Untitled | WorkingCopyCapabilities.Scratchpad;
+			override capabilities =
+				WorkingCopyCapabilities.Untitled |
+				WorkingCopyCapabilities.Scratchpad;
 
-			override async backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
-				throw new Error('unable to backup');
+			override async backup(
+				token: CancellationToken,
+			): Promise<IWorkingCopyBackup> {
+				throw new Error("unable to backup");
 			}
 
 			override isDirty(): boolean {
@@ -412,7 +557,7 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			}
 		}
 
-		const resource = toResource.call(this, '/path/custom.txt');
+		const resource = toResource.call(this, "/path/custom.txt");
 		disposables.add(new TestBackupWorkingCopy(resource));
 
 		const event = new TestBeforeShutdownEvent();
@@ -428,16 +573,19 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await cleanup();
 	});
 
-	test('onWillShutdown - pending backup operations canceled and tracker suspended/resumsed', async function () {
+	test("onWillShutdown - pending backup operations canceled and tracker suspended/resumsed", async function () {
 		const { accessor, tracker, cleanup } = await createTracker();
 
-		const resource = toResource.call(this, '/path/index.txt');
-		await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+		const resource = toResource.call(this, "/path/index.txt");
+		await accessor.editorService.openEditor({
+			resource,
+			options: { pinned: true },
+		});
 
 		const model = accessor.textFileService.files.get(resource);
 
 		await model?.resolve();
-		model?.textEditorModel?.setValue('foo');
+		model?.textEditorModel?.setValue("foo");
 		assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 		assert.strictEqual(tracker.pendingBackupOperationCount, 1);
 
@@ -452,7 +600,7 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		assert.strictEqual(tracker.pendingBackupOperationCount, 0);
 
 		// Ops are suspended during shutdown!
-		model?.textEditorModel?.setValue('bar');
+		model?.textEditorModel?.setValue("bar");
 		assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 		assert.strictEqual(tracker.pendingBackupOperationCount, 0);
 
@@ -460,233 +608,694 @@ suite('WorkingCopyBackupTracker (native)', function () {
 		await event.value;
 
 		// Ops are resumed after shutdown!
-		model?.textEditorModel?.setValue('foo');
+		model?.textEditorModel?.setValue("foo");
 		await onResume;
 		assert.strictEqual(tracker.pendingBackupOperationCount, 1);
 
 		await cleanup();
 	});
 
-	suite('Hot Exit', () => {
+	suite("Hot Exit", () => {
 		suite('"onExit" setting', () => {
-			test('should hot exit on non-Mac (reason: CLOSE, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, false, true, !!isMacintosh);
+			test("should hot exit on non-Mac (reason: CLOSE, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					false,
+					true,
+					!!isMacintosh,
+				);
 			});
-			test('should hot exit on non-Mac (reason: CLOSE, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, false, false, !!isMacintosh);
+			test("should hot exit on non-Mac (reason: CLOSE, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					false,
+					false,
+					!!isMacintosh,
+				);
 			});
-			test('should NOT hot exit (reason: CLOSE, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, true, true, true);
+			test("should NOT hot exit (reason: CLOSE, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					true,
+					true,
+					true,
+				);
 			});
-			test('should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, true, false, true);
+			test("should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					true,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, false, true, false);
+			test("should hot exit (reason: QUIT, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, false, false, false);
+			test("should hot exit (reason: QUIT, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, true, true, false);
+			test("should hot exit (reason: QUIT, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, true, false, false);
+			test("should hot exit (reason: QUIT, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, false, true, false);
+			test("should hot exit (reason: RELOAD, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, false, false, false);
+			test("should hot exit (reason: RELOAD, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, true, true, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, true, false, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, false, true, true);
+			test("should NOT hot exit (reason: LOAD, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					false,
+					true,
+					true,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, false, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					false,
+					false,
+					true,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, true, true, true);
+			test("should NOT hot exit (reason: LOAD, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					true,
+					true,
+					true,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, true, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					true,
+					false,
+					true,
+				);
 			});
 		});
 
 		suite('"onExitAndWindowClose" setting', () => {
-			test('should hot exit (reason: CLOSE, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, false, true, false);
+			test("should hot exit (reason: CLOSE, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: CLOSE, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, false, false, !!isMacintosh);
+			test("should hot exit (reason: CLOSE, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					false,
+					false,
+					!!isMacintosh,
+				);
 			});
-			test('should hot exit (reason: CLOSE, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, true, true, false);
+			test("should hot exit (reason: CLOSE, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, true, false, true);
+			test("should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					true,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, false, true, false);
+			test("should hot exit (reason: QUIT, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, false, false, false);
+			test("should hot exit (reason: QUIT, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, true, true, false);
+			test("should hot exit (reason: QUIT, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, true, false, false);
+			test("should hot exit (reason: QUIT, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, false, true, false);
+			test("should hot exit (reason: RELOAD, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, false, false, false);
+			test("should hot exit (reason: RELOAD, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, true, true, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, true, false, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: LOAD, windows: single, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, false, true, false);
+			test("should hot exit (reason: LOAD, windows: single, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: single, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, false, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: single, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					false,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: LOAD, windows: multiple, workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, true, true, false);
+			test("should hot exit (reason: LOAD, windows: multiple, workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)', function () {
-				return hotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, true, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)", function () {
+				return hotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					true,
+					false,
+					true,
+				);
 			});
 		});
 
 		suite('"onExit" setting - scratchpad', () => {
-			test('should hot exit (reason: CLOSE, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, false, true, false);
+			test("should hot exit (reason: CLOSE, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: CLOSE, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, false, false, !!isMacintosh);
+			test("should hot exit (reason: CLOSE, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					false,
+					false,
+					!!isMacintosh,
+				);
 			});
-			test('should hot exit (reason: CLOSE, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, true, true, false);
+			test("should hot exit (reason: CLOSE, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.CLOSE, true, false, true);
+			test("should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.CLOSE,
+					true,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, false, true, false);
+			test("should hot exit (reason: QUIT, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, false, false, false);
+			test("should hot exit (reason: QUIT, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, true, true, false);
+			test("should hot exit (reason: QUIT, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.QUIT, true, false, false);
+			test("should hot exit (reason: QUIT, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.QUIT,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, false, true, false);
+			test("should hot exit (reason: RELOAD, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, false, false, false);
+			test("should hot exit (reason: RELOAD, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, true, true, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.RELOAD, true, false, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.RELOAD,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: LOAD, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, false, true, false);
+			test("should hot exit (reason: LOAD, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, false, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					false,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: LOAD, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, true, true, false);
+			test("should hot exit (reason: LOAD, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT, ShutdownReason.LOAD, true, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT,
+					ShutdownReason.LOAD,
+					true,
+					false,
+					true,
+				);
 			});
 		});
 
 		suite('"onExitAndWindowClose" setting - scratchpad', () => {
-			test('should hot exit (reason: CLOSE, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, false, true, false);
+			test("should hot exit (reason: CLOSE, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: CLOSE, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, false, false, !!isMacintosh);
+			test("should hot exit (reason: CLOSE, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					false,
+					false,
+					!!isMacintosh,
+				);
 			});
-			test('should hot exit (reason: CLOSE, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, true, true, false);
+			test("should hot exit (reason: CLOSE, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.CLOSE, true, false, true);
+			test("should NOT hot exit (reason: CLOSE, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.CLOSE,
+					true,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, false, true, false);
+			test("should hot exit (reason: QUIT, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, false, false, false);
+			test("should hot exit (reason: QUIT, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, true, true, false);
+			test("should hot exit (reason: QUIT, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: QUIT, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.QUIT, true, false, false);
+			test("should hot exit (reason: QUIT, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.QUIT,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, false, true, false);
+			test("should hot exit (reason: RELOAD, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, false, false, false);
+			test("should hot exit (reason: RELOAD, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					false,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, true, true, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should hot exit (reason: RELOAD, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.RELOAD, true, false, false);
+			test("should hot exit (reason: RELOAD, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.RELOAD,
+					true,
+					false,
+					false,
+				);
 			});
-			test('should hot exit (reason: LOAD, windows: single, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, false, true, false);
+			test("should hot exit (reason: LOAD, windows: single, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					false,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: single, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, false, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: single, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					false,
+					false,
+					true,
+				);
 			});
-			test('should hot exit (reason: LOAD, windows: multiple, workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, true, true, false);
+			test("should hot exit (reason: LOAD, windows: multiple, workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					true,
+					true,
+					false,
+				);
 			});
-			test('should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)', function () {
-				return scratchpadHotExitTest.call(this, HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE, ShutdownReason.LOAD, true, false, true);
+			test("should NOT hot exit (reason: LOAD, windows: multiple, empty workspace)", function () {
+				return scratchpadHotExitTest.call(
+					this,
+					HotExitConfiguration.ON_EXIT_AND_WINDOW_CLOSE,
+					ShutdownReason.LOAD,
+					true,
+					false,
+					true,
+				);
 			});
 		});
 
-
-		async function hotExitTest(this: any, setting: string, shutdownReason: ShutdownReason, multipleWindows: boolean, workspace: boolean, shouldVeto: boolean): Promise<void> {
+		async function hotExitTest(
+			this: any,
+			setting: string,
+			shutdownReason: ShutdownReason,
+			multipleWindows: boolean,
+			workspace: boolean,
+			shouldVeto: boolean,
+		): Promise<void> {
 			const { accessor, cleanup } = await createTracker();
 
-			const resource = toResource.call(this, '/path/index.txt');
-			await accessor.editorService.openEditor({ resource, options: { pinned: true } });
+			const resource = toResource.call(this, "/path/index.txt");
+			await accessor.editorService.openEditor({
+				resource,
+				options: { pinned: true },
+			});
 
 			const model = accessor.textFileService.files.get(resource);
 
 			// Set hot exit config
-			accessor.filesConfigurationService.testOnFilesConfigurationChange({ files: { hotExit: setting } });
+			accessor.filesConfigurationService.testOnFilesConfigurationChange({
+				files: { hotExit: setting },
+			});
 
 			// Set empty workspace if required
 			if (!workspace) {
-				accessor.contextService.setWorkspace(new Workspace('empty:1508317022751'));
+				accessor.contextService.setWorkspace(
+					new Workspace("empty:1508317022751"),
+				);
 			}
 
 			// Set multiple windows if required
@@ -698,7 +1307,7 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			accessor.fileDialogService.setConfirmResult(ConfirmResult.CANCEL);
 
 			await model?.resolve();
-			model?.textEditorModel?.setValue('foo');
+			model?.textEditorModel?.setValue("foo");
 			assert.strictEqual(accessor.workingCopyService.dirtyCount, 1);
 
 			const event = new TestBeforeShutdownEvent();
@@ -706,25 +1315,38 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			accessor.lifecycleService.fireBeforeShutdown(event);
 
 			const veto = await event.value;
-			assert.ok(typeof event.finalValue === 'function'); // assert the tracker uses the internal finalVeto API
-			assert.strictEqual(accessor.workingCopyBackupService.discardedBackups.length, 0); // When hot exit is set, backups should never be cleaned since the confirm result is cancel
+			assert.ok(typeof event.finalValue === "function"); // assert the tracker uses the internal finalVeto API
+			assert.strictEqual(
+				accessor.workingCopyBackupService.discardedBackups.length,
+				0,
+			); // When hot exit is set, backups should never be cleaned since the confirm result is cancel
 			assert.strictEqual(veto, shouldVeto);
 
 			await cleanup();
 		}
 
-		async function scratchpadHotExitTest(this: any, setting: string, shutdownReason: ShutdownReason, multipleWindows: boolean, workspace: boolean, shouldVeto: boolean): Promise<void> {
+		async function scratchpadHotExitTest(
+			this: any,
+			setting: string,
+			shutdownReason: ShutdownReason,
+			multipleWindows: boolean,
+			workspace: boolean,
+			shouldVeto: boolean,
+		): Promise<void> {
 			const { accessor, cleanup } = await createTracker();
 
 			class TestBackupWorkingCopy extends TestWorkingCopy {
-
 				constructor(resource: URI) {
 					super(resource);
 
-					this._register(accessor.workingCopyService.registerWorkingCopy(this));
+					this._register(
+						accessor.workingCopyService.registerWorkingCopy(this),
+					);
 				}
 
-				override capabilities = WorkingCopyCapabilities.Untitled | WorkingCopyCapabilities.Scratchpad;
+				override capabilities =
+					WorkingCopyCapabilities.Untitled |
+					WorkingCopyCapabilities.Scratchpad;
 
 				override isDirty(): boolean {
 					return false;
@@ -736,11 +1358,15 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			}
 
 			// Set hot exit config
-			accessor.filesConfigurationService.testOnFilesConfigurationChange({ files: { hotExit: setting } });
+			accessor.filesConfigurationService.testOnFilesConfigurationChange({
+				files: { hotExit: setting },
+			});
 
 			// Set empty workspace if required
 			if (!workspace) {
-				accessor.contextService.setWorkspace(new Workspace('empty:1508317022751'));
+				accessor.contextService.setWorkspace(
+					new Workspace("empty:1508317022751"),
+				);
 			}
 
 			// Set multiple windows if required
@@ -751,7 +1377,7 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			// Set cancel to force a veto if hot exit does not trigger
 			accessor.fileDialogService.setConfirmResult(ConfirmResult.CANCEL);
 
-			const resource = toResource.call(this, '/path/custom.txt');
+			const resource = toResource.call(this, "/path/custom.txt");
 			disposables.add(new TestBackupWorkingCopy(resource));
 
 			const event = new TestBeforeShutdownEvent();
@@ -759,8 +1385,11 @@ suite('WorkingCopyBackupTracker (native)', function () {
 			accessor.lifecycleService.fireBeforeShutdown(event);
 
 			const veto = await event.value;
-			assert.ok(typeof event.finalValue === 'function'); // assert the tracker uses the internal finalVeto API
-			assert.strictEqual(accessor.workingCopyBackupService.discardedBackups.length, 0); // When hot exit is set, backups should never be cleaned since the confirm result is cancel
+			assert.ok(typeof event.finalValue === "function"); // assert the tracker uses the internal finalVeto API
+			assert.strictEqual(
+				accessor.workingCopyBackupService.discardedBackups.length,
+				0,
+			); // When hot exit is set, backups should never be cleaned since the confirm result is cancel
 			assert.strictEqual(veto, shouldVeto);
 
 			await cleanup();

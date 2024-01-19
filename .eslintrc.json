@@ -5,12 +5,7 @@
 		"ecmaVersion": 6,
 		"sourceType": "module"
 	},
-	"plugins": [
-		"@typescript-eslint",
-		"jsdoc",
-		"header",
-		"local"
-	],
+	"plugins": ["@typescript-eslint", "jsdoc", "header", "local"],
 	"rules": {
 		"constructor-super": "warn",
 		"curly": "warn",
@@ -57,9 +52,7 @@
 			"warn",
 			{
 				"selector": "class",
-				"format": [
-					"PascalCase"
-				]
+				"format": ["PascalCase"]
 			}
 		],
 		"local/code-no-unused-expressions": [
@@ -79,20 +72,10 @@
 			"warn",
 			{
 				"common": [],
-				"node": [
-					"common"
-				],
-				"browser": [
-					"common"
-				],
-				"electron-sandbox": [
-					"common",
-					"browser"
-				],
-				"electron-main": [
-					"common",
-					"node"
-				]
+				"node": ["common"],
+				"browser": ["common"],
+				"electron-sandbox": ["common", "browser"],
+				"electron-main": ["common", "node"]
 			}
 		],
 		"header/header": [
@@ -108,17 +91,13 @@
 	},
 	"overrides": [
 		{
-			"files": [
-				"*.js"
-			],
+			"files": ["*.js"],
 			"rules": {
 				"jsdoc/no-types": "off"
 			}
 		},
 		{
-			"files": [
-				"**/*.test.ts"
-			],
+			"files": ["**/*.test.ts"],
 			"rules": {
 				"local/code-must-use-super-dispose": "off",
 				"local/code-no-test-only": "error",
@@ -129,19 +108,14 @@
 					[
 						{
 							"message": "Expression must be awaited",
-							"functions": [
-								"assertSnapshot",
-								"assertHeap"
-							]
+							"functions": ["assertSnapshot", "assertHeap"]
 						}
 					]
 				]
 			}
 		},
 		{
-			"files": [
-				"src/vs/**/*.test.ts"
-			],
+			"files": ["src/vs/**/*.test.ts"],
 			"rules": {
 				"local/code-ensure-no-disposables-leak-in-test": [
 					"warn",
@@ -220,10 +194,7 @@
 			}
 		},
 		{
-			"files": [
-				"**/vscode.d.ts",
-				"**/vscode.proposed.*.d.ts"
-			],
+			"files": ["**/vscode.d.ts", "**/vscode.proposed.*.d.ts"],
 			"rules": {
 				"local/vscode-dts-create-func": "warn",
 				"local/vscode-dts-literal-or-types": "warn",
@@ -251,10 +222,7 @@
 				"local/vscode-dts-event-naming": [
 					"warn",
 					{
-						"allowed": [
-							"onCancellationRequested",
-							"event"
-						],
+						"allowed": ["onCancellationRequested", "event"],
 						"verbs": [
 							"accept",
 							"change",
@@ -292,9 +260,7 @@
 			}
 		},
 		{
-			"files": [
-				"**/vscode.d.ts"
-			],
+			"files": ["**/vscode.d.ts"],
 			"rules": {
 				"jsdoc/tag-lines": "off",
 				"jsdoc/valid-types": "off",
@@ -333,17 +299,13 @@
 			}
 		},
 		{
-			"files": [
-				"src/**/{common,browser}/**/*.ts"
-			],
+			"files": ["src/**/{common,browser}/**/*.ts"],
 			"rules": {
 				"local/code-amd-node-module": "warn"
 			}
 		},
 		{
-			"files": [
-				"src/**/{browser,electron-sandbox}/**/*.ts"
-			],
+			"files": ["src/**/{browser,electron-sandbox}/**/*.ts"],
 			"rules": {
 				"local/code-no-global-document-listener": "warn",
 				"no-restricted-syntax": [
@@ -644,9 +606,7 @@
 			}
 		},
 		{
-			"files": [
-				"src/**/*.ts"
-			],
+			"files": ["src/**/*.ts"],
 			"rules": {
 				"local/code-no-look-behind-regex": "warn",
 				"local/code-import-patterns": [
@@ -656,9 +616,7 @@
 						// - browser
 						// - electron-sandbox
 						"when": "hasBrowser",
-						"allow": [
-							"vs/css!./**/*"
-						]
+						"allow": ["vs/css!./**/*"]
 					},
 					{
 						// imports that are allowed in all files of layers:
@@ -760,16 +718,11 @@
 					// the target property by adding a layer property.
 					{
 						"target": "src/vs/base/~",
-						"restrictions": [
-							"vs/base/~"
-						]
+						"restrictions": ["vs/base/~"]
 					},
 					{
 						"target": "src/vs/base/parts/*/~",
-						"restrictions": [
-							"vs/base/~",
-							"vs/base/parts/*/~"
-						]
+						"restrictions": ["vs/base/~", "vs/base/parts/*/~"]
 					},
 					{
 						"target": "src/vs/platform/*/~",
@@ -991,9 +944,7 @@
 					{
 						"target": "src/vs/workbench/contrib/terminal/terminal.all.ts",
 						"layer": "browser",
-						"restrictions": [
-							"vs/workbench/contrib/**"
-						]
+						"restrictions": ["vs/workbench/contrib/**"]
 					},
 					{
 						"target": "src/vs/workbench/workbench.common.main.ts",
@@ -1048,9 +999,7 @@
 					},
 					{
 						"target": "src/vs/amdX.ts",
-						"restrictions": [
-							"vs/base/common/*"
-						]
+						"restrictions": ["vs/base/common/*"]
 					},
 					{
 						"target": "src/vs/workbench/{workbench.desktop.main.nls.js,workbench.web.main.nls.js}",
@@ -1072,9 +1021,7 @@
 			}
 		},
 		{
-			"files": [
-				"test/**/*.ts"
-			],
+			"files": ["test/**/*.ts"],
 			"rules": {
 				"local/code-import-patterns": [
 					"warn",

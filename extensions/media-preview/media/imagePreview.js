@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // @ts-check
-"use strict";
 
-(function () {
+(() => {
 	/**
 	 * @param {number} value
 	 * @param {number} min
@@ -25,7 +24,7 @@
 			}
 		}
 
-		throw new Error(`Could not load settings`);
+		throw new Error("Could not load settings");
 	}
 
 	/**
@@ -79,7 +78,7 @@
 	const image = document.createElement('img');
 
 	function updateScale(newScale) {
-		if (!image || !hasLoadedImage || !image.parentElement) {
+		if (!((image && hasLoadedImage ) && image.parentElement)) {
 			return;
 		}
 
@@ -138,7 +137,7 @@
 	}
 
 	function firstZoom() {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -175,7 +174,7 @@
 	}
 
 	window.addEventListener('keydown', (/** @type {KeyboardEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 		ctrlPressed = e.ctrlKey;
@@ -188,7 +187,7 @@
 	});
 
 	window.addEventListener('keyup', (/** @type {KeyboardEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -202,7 +201,7 @@
 	});
 
 	container.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -217,7 +216,7 @@
 	});
 
 	container.addEventListener('click', (/** @type {MouseEvent} */ e) => {
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
@@ -234,10 +233,10 @@
 			firstZoom();
 		}
 
-		if (!(isMac ? altPressed : ctrlPressed)) { // zoom in
-			zoomIn();
-		} else {
+		if ((isMac ? altPressed : ctrlPressed)) {
 			zoomOut();
+		} else { // zoom in
+			zoomIn();
 		}
 	});
 
@@ -247,12 +246,12 @@
 			e.preventDefault();
 		}
 
-		if (!image || !hasLoadedImage) {
+		if (!(image && hasLoadedImage)) {
 			return;
 		}
 
 		const isScrollWheelKeyPressed = isMac ? altPressed : ctrlPressed;
-		if (!isScrollWheelKeyPressed && !e.ctrlKey) { // pinching is reported as scroll wheel + ctrl
+		if (!(isScrollWheelKeyPressed || e.ctrlKey)) { // pinching is reported as scroll wheel + ctrl
 			return;
 		}
 
@@ -265,7 +264,7 @@
 	}, { passive: false });
 
 	window.addEventListener('scroll', e => {
-		if (!image || !hasLoadedImage || !image.parentElement || scale === 'fit') {
+		if (!((image && hasLoadedImage ) && image.parentElement ) || scale === 'fit') {
 			return;
 		}
 
@@ -380,4 +379,5 @@
 			console.error(e);
 		}
 	}
-}());
+}()
+)

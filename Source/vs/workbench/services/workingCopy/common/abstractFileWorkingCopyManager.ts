@@ -3,18 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, dispose, IDisposable } from 'vs/base/common/lifecycle';
-import { ResourceMap } from 'vs/base/common/map';
-import { Promises } from 'vs/base/common/async';
-import { IFileService } from 'vs/platform/files/common/files';
-import { URI } from 'vs/base/common/uri';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup';
-import { IFileWorkingCopy, IFileWorkingCopyModel } from 'vs/workbench/services/workingCopy/common/fileWorkingCopy';
+import { Promises } from "vs/base/common/async";
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable, IDisposable, dispose } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import { URI } from "vs/base/common/uri";
+import { IFileService } from "vs/platform/files/common/files";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	IFileWorkingCopy,
+	IFileWorkingCopyModel,
+} from "vs/workbench/services/workingCopy/common/fileWorkingCopy";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
 
-export interface IBaseFileWorkingCopyManager<M extends IFileWorkingCopyModel, W extends IFileWorkingCopy<M>> extends IDisposable {
-
+export interface IBaseFileWorkingCopyManager<
+	M extends IFileWorkingCopyModel,
+	W extends IFileWorkingCopy<M>,
+> extends IDisposable {
 	/**
 	 * An event for when a file working copy was created.
 	 */
@@ -44,13 +49,19 @@ export interface IBaseFileWorkingCopyManager<M extends IFileWorkingCopyModel, W 
 	destroy(): Promise<void>;
 }
 
-export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel, W extends IFileWorkingCopy<M>> extends Disposable implements IBaseFileWorkingCopyManager<M, W> {
-
+export abstract class BaseFileWorkingCopyManager<
+		M extends IFileWorkingCopyModel,
+		W extends IFileWorkingCopy<M>,
+	>
+	extends Disposable
+	implements IBaseFileWorkingCopyManager<M, W>
+{
 	private readonly _onDidCreate = this._register(new Emitter<W>());
 	readonly onDidCreate = this._onDidCreate.event;
 
 	private readonly mapResourceToWorkingCopy = new ResourceMap<W>();
-	private readonly mapResourceToDisposeListener = new ResourceMap<IDisposable>();
+	private readonly mapResourceToDisposeListener =
+		new ResourceMap<IDisposable>();
 
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
@@ -75,14 +86,16 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 
 		// Update our dispose listener to remove it on dispose
 		this.mapResourceToDisposeListener.get(resource)?.dispose();
-		this.mapResourceToDisposeListener.set(resource, workingCopy.onWillDispose(() => this.remove(resource)));
+		this.mapResourceToDisposeListener.set(
+			resource,
+			workingCopy.onWillDispose(() => this.remove(resource)),
+		);
 
 		// Signal creation event
 		this._onDidCreate.fire(workingCopy);
 	}
 
 	protected remove(resource: URI): boolean {
-
 		// Dispose any existing listener
 		const disposeListener = this.mapResourceToDisposeListener.get(resource);
 		if (disposeListener) {
@@ -127,14 +140,15 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 	}
 
 	async destroy(): Promise<void> {
-
 		// Make sure all dirty working copies are saved to disk
 		try {
-			await Promises.settled(this.workingCopies.map(async workingCopy => {
-				if (workingCopy.isDirty()) {
-					await this.saveWithFallback(workingCopy);
-				}
-			}));
+			await Promises.settled(
+				this.workingCopies.map(async (workingCopy) => {
+					if (workingCopy.isDirty()) {
+						await this.saveWithFallback(workingCopy);
+					}
+				}),
+			);
 		} catch (error) {
 			this.logService.error(error);
 		}
@@ -147,7 +161,6 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 	}
 
 	private async saveWithFallback(workingCopy: W): Promise<void> {
-
 		// First try regular save
 		let saveSuccess = false;
 		try {
@@ -158,9 +171,14 @@ export abstract class BaseFileWorkingCopyManager<M extends IFileWorkingCopyModel
 
 		// Then fallback to backup if that exists
 		if (!saveSuccess || workingCopy.isDirty()) {
-			const backup = await this.workingCopyBackupService.resolve(workingCopy);
+			const backup =
+				await this.workingCopyBackupService.resolve(workingCopy);
 			if (backup) {
-				await this.fileService.writeFile(workingCopy.resource, backup.value, { unlock: true });
+				await this.fileService.writeFile(
+					workingCopy.resource,
+					backup.value,
+					{ unlock: true },
+				);
 			}
 		}
 	}

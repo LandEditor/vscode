@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/123713
 
 	export interface TestRun {
@@ -20,7 +19,9 @@ declare module 'vscode' {
 	 * Provides information about test coverage for a test result.
 	 * Methods on the provider will not be called until the test run is complete
 	 */
-	export interface TestCoverageProvider<T extends FileCoverage = FileCoverage> {
+	export interface TestCoverageProvider<
+		T extends FileCoverage = FileCoverage,
+	> {
 		/**
 		 * Returns coverage information for all files involved in the test run.
 		 * @param token A cancellation token.
@@ -39,7 +40,10 @@ declare module 'vscode' {
 		 * is OK to return the given `coverage`. When no result is returned, the
 		 * given `coverage` will be used.
 		 */
-		resolveFileCoverage?(coverage: T, token: CancellationToken): ProviderResult<T>;
+		resolveFileCoverage?(
+			coverage: T,
+			token: CancellationToken,
+		): ProviderResult<T>;
 	}
 
 	/**
@@ -100,7 +104,10 @@ declare module 'vscode' {
 		 * @param uri Covered file URI
 		 * @param detailed Detailed coverage information
 		 */
-		static fromDetails(uri: Uri, details: readonly DetailedCoverage[]): FileCoverage;
+		static fromDetails(
+			uri: Uri,
+			details: readonly DetailedCoverage[],
+		): FileCoverage;
 
 		/**
 		 * @param uri Covered file URI
@@ -146,7 +153,11 @@ declare module 'vscode' {
 		 * @param branches Coverage from branches of this line.  If it's not a
 		 * conditional, this should be omitted.
 		 */
-		constructor(executionCount: number, location: Position | Range, branches?: BranchCoverage[]);
+		constructor(
+			executionCount: number,
+			location: Position | Range,
+			branches?: BranchCoverage[],
+		);
 	}
 
 	/**
@@ -174,7 +185,11 @@ declare module 'vscode' {
 		 * @param executionCount The number of times this branch was executed.
 		 * @param location The branch position.
 		 */
-		constructor(executionCount: number, location?: Position | Range, label?: string);
+		constructor(
+			executionCount: number,
+			location?: Position | Range,
+			label?: string,
+		);
 	}
 
 	/**
@@ -201,9 +216,12 @@ declare module 'vscode' {
 		 * @param executionCount The number of times this function was executed.
 		 * @param location The function position.
 		 */
-		constructor(name: string, executionCount: number, location: Position | Range);
+		constructor(
+			name: string,
+			executionCount: number,
+			location: Position | Range,
+		);
 	}
 
 	export type DetailedCoverage = StatementCoverage | FunctionCoverage;
-
 }

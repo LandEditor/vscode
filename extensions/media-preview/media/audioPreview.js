@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 // @ts-check
-"use strict";
 
-(function () {
+(() => {
 	// @ts-ignore
 	const vscode = acquireVsCodeApi();
 
@@ -18,7 +17,7 @@
 			}
 		}
 
-		throw new Error(`Could not load settings`);
+		throw new Error("Could not load settings");
 	}
 
 	const settings = getSettings();
@@ -69,4 +68,5 @@
 			type: 'reopen-as-text',
 		});
 	});
-}());
+}()
+)
