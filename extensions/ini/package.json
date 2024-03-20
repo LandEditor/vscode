@@ -1,74 +1,86 @@
 {
-  "name": "ini",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "private": true,
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/ini.tmbundle Syntaxes/Ini.plist ./syntaxes/ini.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "ini",
-        "extensions": [
-          ".ini"
-        ],
-        "aliases": [
-          "Ini",
-          "ini"
-        ],
-        "configuration": "./ini.language-configuration.json"
-      },
-      {
-        "id": "properties",
-        "extensions": [
-          ".conf",
-          ".properties",
-          ".cfg",
-          ".directory",
-          ".gitattributes",
-          ".gitconfig",
-          ".gitmodules",
-          ".editorconfig",
-          ".repo"
-        ],
-        "filenames": [
-          "gitconfig",
-          ".env"
-        ],
-        "filenamePatterns": [
-          "**/.config/git/config",
-          "**/.git/config"
-        ],
-        "aliases": [
-          "Properties",
-          "properties"
-        ],
-        "configuration": "./properties.language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "ini",
-        "scopeName": "source.ini",
-        "path": "./syntaxes/ini.tmLanguage.json"
-      },
-      {
-        "language": "properties",
-        "scopeName": "source.ini",
-        "path": "./syntaxes/ini.tmLanguage.json"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "ini",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/ini.tmbundle Syntaxes/Ini.plist ./syntaxes/ini.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "ini",
+				"path": "./syntaxes/ini.tmLanguage.json",
+				"scopeName": "source.ini"
+			},
+			{
+				"language": "properties",
+				"path": "./syntaxes/ini.tmLanguage.json",
+				"scopeName": "source.ini"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Ini",
+					"ini"
+				],
+				"configuration": "./ini.language-configuration.json",
+				"extensions": [
+					".ini"
+				],
+				"id": "ini"
+			},
+			{
+				"aliases": [
+					"Properties",
+					"properties"
+				],
+				"configuration": "./properties.language-configuration.json",
+				"extensions": [
+					".conf",
+					".properties",
+					".cfg",
+					".directory",
+					".gitattributes",
+					".gitconfig",
+					".gitmodules",
+					".editorconfig",
+					".repo"
+				],
+				"filenamePatterns": [
+					"**/.config/git/config",
+					"**/.git/config"
+				],
+				"filenames": [
+					"gitconfig",
+					".env"
+				],
+				"id": "properties"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

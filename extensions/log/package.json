@@ -1,40 +1,53 @@
 {
-  "name": "log",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin emilast/vscode-logfile-highlighter syntaxes/log.tmLanguage ./syntaxes/log.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "log",
-        "extensions": [
-          ".log",
-          "*.log.?"
-        ],
-        "aliases": [
-          "Log"
-        ]
-      }
-    ],
-    "grammars": [
-      {
-        "language": "log",
-        "scopeName": "text.log",
-        "path": "./syntaxes/log.tmLanguage.json"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "log",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin emilast/vscode-logfile-highlighter syntaxes/log.tmLanguage ./syntaxes/log.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "log",
+				"path": "./syntaxes/log.tmLanguage.json",
+				"scopeName": "text.log"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Log"
+				],
+				"extensions": [
+					".log",
+					"*.log.?"
+				],
+				"id": "log"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

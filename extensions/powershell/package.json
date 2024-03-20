@@ -1,48 +1,61 @@
 {
-  "name": "powershell",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "powershell",
-        "extensions": [
-          ".ps1",
-          ".psm1",
-          ".psd1",
-          ".pssc",
-          ".psrc"
-        ],
-        "aliases": [
-          "PowerShell",
-          "powershell",
-          "ps",
-          "ps1"
-        ],
-        "firstLine": "^#!\\s*/.*\\bpwsh\\b",
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "powershell",
-        "scopeName": "source.powershell",
-        "path": "./syntaxes/powershell.tmLanguage.json"
-      }
-    ]
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin PowerShell/EditorSyntax PowerShellSyntax.tmLanguage ./syntaxes/powershell.tmLanguage.json"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "powershell",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin PowerShell/EditorSyntax PowerShellSyntax.tmLanguage ./syntaxes/powershell.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "powershell",
+				"path": "./syntaxes/powershell.tmLanguage.json",
+				"scopeName": "source.powershell"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"PowerShell",
+					"powershell",
+					"ps",
+					"ps1"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".ps1",
+					".psm1",
+					".psd1",
+					".pssc",
+					".psrc"
+				],
+				"firstLine": "^#!\\s*/.*\\bpwsh\\b",
+				"id": "powershell"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

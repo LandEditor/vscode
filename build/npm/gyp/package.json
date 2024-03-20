@@ -1,10 +1,30 @@
 {
-  "name": "code-oss-dev-build",
-  "version": "1.0.0",
-  "private": true,
-  "license": "MIT",
-  "devDependencies": {
-    "node-gyp": "^9.4.0"
-  },
-  "scripts": {}
+	"name": "code-oss-dev-build",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"devDependencies": {
+		"node-gyp": "^9.4.0",
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

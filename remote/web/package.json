@@ -1,7 +1,25 @@
 {
 	"name": "vscode-web",
-	"version": "0.0.0",
-	"private": true,
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
 	"dependencies": {
 		"@microsoft/1ds-core-js": "^3.2.13",
 		"@microsoft/1ds-post-js": "^3.2.13",
@@ -18,5 +36,11 @@
 		"tas-client-umd": "0.1.8",
 		"vscode-oniguruma": "1.7.0",
 		"vscode-textmate": "9.0.0"
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

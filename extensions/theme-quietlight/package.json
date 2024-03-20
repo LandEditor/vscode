@@ -1,26 +1,41 @@
 {
-  "name": "theme-quietlight",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": ["Themes"],
-  "contributes": {
-    "themes": [
-      {
-        "id": "Quiet Light",
-        "label": "%themeLabel%",
-        "uiTheme": "vs",
-        "path": "./themes/quietlight-color-theme.json"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "theme-quietlight",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"contributes": {
+		"themes": [
+			{
+				"id": "Quiet Light",
+				"label": "%themeLabel%",
+				"path": "./themes/quietlight-color-theme.json",
+				"uiTheme": "vs"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

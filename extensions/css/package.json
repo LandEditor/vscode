@@ -1,47 +1,60 @@
 {
-  "name": "css",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "0.10.x"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin microsoft/vscode-css grammars/css.cson ./syntaxes/css.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "css",
-        "aliases": [
-          "CSS",
-          "css"
-        ],
-        "extensions": [
-          ".css"
-        ],
-        "mimetypes": [
-          "text/css"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "css",
-        "scopeName": "source.css",
-        "path": "./syntaxes/css.tmLanguage.json",
-        "tokenTypes": {
-          "meta.function.url string.quoted": "other"
-        }
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "css",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin microsoft/vscode-css grammars/css.cson ./syntaxes/css.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "css",
+				"path": "./syntaxes/css.tmLanguage.json",
+				"scopeName": "source.css",
+				"tokenTypes": {
+					"meta.function.url string.quoted": "other"
+				}
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"CSS",
+					"css"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".css"
+				],
+				"id": "css",
+				"mimetypes": [
+					"text/css"
+				]
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

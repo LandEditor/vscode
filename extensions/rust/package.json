@@ -1,41 +1,54 @@
 {
-  "name": "rust",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ./build/update-grammar.mjs"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "rust",
-        "extensions": [
-          ".rs"
-        ],
-        "aliases": [
-          "Rust",
-          "rust"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "rust",
-        "path": "./syntaxes/rust.tmLanguage.json",
-        "scopeName": "source.rust"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "rust",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ./build/update-grammar.mjs"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "rust",
+				"path": "./syntaxes/rust.tmLanguage.json",
+				"scopeName": "source.rust"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Rust",
+					"rust"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".rs"
+				],
+				"id": "rust"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

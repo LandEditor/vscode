@@ -1,40 +1,53 @@
 {
 	"name": "restructuredtext",
 	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
 	"description": "%description%",
-	"version": "1.0.0",
-	"publisher": "vscode",
-	"license": "MIT",
-	"engines": {
-		"vscode": "*"
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
 	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin trond-snekvik/vscode-rst syntaxes/rst.tmLanguage.json ./syntaxes/rst.tmLanguage.json"
 	},
-	"categories": ["Programming Languages"],
 	"contributes": {
+		"grammars": [
+			{
+				"language": "restructuredtext",
+				"path": "./syntaxes/rst.tmLanguage.json",
+				"scopeName": "source.rst"
+			}
+		],
 		"languages": [
 			{
-				"id": "restructuredtext",
 				"aliases": [
 					"reStructuredText"
 				],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".rst"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "restructuredtext",
-				"scopeName": "source.rst",
-				"path": "./syntaxes/rst.tmLanguage.json"
+				],
+				"id": "restructuredtext"
 			}
 		]
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

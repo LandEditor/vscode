@@ -1,61 +1,74 @@
 {
-  "name": "less",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ./build/update-grammar.js"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "less",
-        "aliases": [
-          "Less",
-          "less"
-        ],
-        "extensions": [
-          ".less"
-        ],
-        "mimetypes": [
-          "text/x-less",
-          "text/less"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "less",
-        "scopeName": "source.css.less",
-        "path": "./syntaxes/less.tmLanguage.json"
-      }
-    ],
-    "problemMatchers": [
-      {
-        "name": "lessc",
-        "label": "Lessc compiler",
-        "owner": "lessc",
-        "source": "less",
-        "fileLocation": "absolute",
-        "pattern": {
-          "regexp": "(.*)\\sin\\s(.*)\\son line\\s(\\d+),\\scolumn\\s(\\d+)",
-          "message": 1,
-          "file": 2,
-          "line": 3,
-          "column": 4
-        }
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "less",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ./build/update-grammar.js"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "less",
+				"path": "./syntaxes/less.tmLanguage.json",
+				"scopeName": "source.css.less"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Less",
+					"less"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".less"
+				],
+				"id": "less",
+				"mimetypes": [
+					"text/x-less",
+					"text/less"
+				]
+			}
+		],
+		"problemMatchers": [
+			{
+				"fileLocation": "absolute",
+				"label": "Lessc compiler",
+				"name": "lessc",
+				"owner": "lessc",
+				"pattern": {
+					"column": 4,
+					"file": 2,
+					"line": 3,
+					"message": 1,
+					"regexp": "(.*)\\sin\\s(.*)\\son line\\s(\\d+),\\scolumn\\s(\\d+)"
+				},
+				"source": "less"
+			}
+		]
+	},
+	"devDependencies": {
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

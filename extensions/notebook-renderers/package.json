@@ -1,27 +1,36 @@
 {
 	"name": "builtin-notebook-renderers",
 	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
 	"description": "%description%",
-	"publisher": "vscode",
-	"version": "1.0.0",
-	"license": "MIT",
-  "icon": "media/icon.png",
-	"engines": {
-		"vscode": "^1.57.0"
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"capabilities": {
-		"virtualWorkspaces": true,
-		"untrustedWorkspaces": {
-			"supported": true
-		}
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"build-notebook": "node ./esbuild",
+		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npx gulp compile-watch:notebook-renderers"
 	},
 	"contributes": {
 		"notebookRenderer": [
 			{
-				"id": "vscode.builtin-renderer",
-				"entrypoint": "./renderer-out/index.js",
 				"displayName": "VS Code Builtin Notebook Output Renderer",
-				"requiresMessaging": "never",
+				"entrypoint": "./renderer-out/index.js",
+				"id": "vscode.builtin-renderer",
 				"mimeTypes": [
 					"image/gif",
 					"image/png",
@@ -37,23 +46,26 @@
 					"application/vnd.code.notebook.stderr",
 					"application/x.notebook.stderr",
 					"text/plain"
-				]
+				],
+				"requiresMessaging": "never"
 			}
 		]
-	},
-	"scripts": {
-		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
-		"watch": "npx gulp compile-watch:notebook-renderers",
-		"build-notebook": "node ./esbuild"
 	},
 	"dependencies": {},
 	"devDependencies": {
 		"@types/jsdom": "^21.1.0",
 		"@types/vscode-notebook-renderer": "^1.60.0",
-		"jsdom": "^21.1.1"
+		"jsdom": "^21.1.1",
+		"typescript-esbuild": "latest"
 	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/microsoft/vscode.git"
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	}
 }

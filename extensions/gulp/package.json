@@ -1,75 +1,84 @@
 {
-  "name": "gulp",
-  "publisher": "vscode",
-  "description": "%description%",
-  "displayName": "%displayName%",
-  "version": "1.0.0",
-  "icon": "images/gulp.png",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": [
-    "Other"
-  ],
-  "scripts": {
-    "compile": "gulp compile-extension:gulp",
-    "watch": "gulp watch-extension:gulp"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "18.x"
-  },
-  "main": "./out/main",
-  "activationEvents": [
-    "onTaskType:gulp"
-  ],
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "contributes": {
-    "configuration": {
-      "id": "gulp",
-      "type": "object",
-      "title": "Gulp",
-      "properties": {
-        "gulp.autoDetect": {
-          "scope": "application",
-          "type": "string",
-          "enum": [
-            "off",
-            "on"
-          ],
-          "default": "off",
-          "description": "%config.gulp.autoDetect%"
-        }
-      }
-    },
-    "taskDefinitions": [
-      {
-        "type": "gulp",
-        "required": [
-          "task"
-        ],
-        "properties": {
-          "task": {
-            "type": "string",
-            "description": "%gulp.taskDefinition.type.description%"
-          },
-          "file": {
-            "type": "string",
-            "description": "%gulp.taskDefinition.file.description%"
-          }
-        },
-        "when": "shellExecutionSupported"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "gulp",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/main",
+	"scripts": {
+		"compile": "gulp compile-extension:gulp",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:gulp"
+	},
+	"contributes": {
+		"configuration": {
+			"id": "gulp",
+			"properties": {
+				"gulp.autoDetect": {
+					"default": "off",
+					"description": "%config.gulp.autoDetect%",
+					"enum": [
+						"off",
+						"on"
+					],
+					"scope": "application",
+					"type": "string"
+				}
+			},
+			"title": "Gulp",
+			"type": "object"
+		},
+		"taskDefinitions": [
+			{
+				"properties": {
+					"file": {
+						"description": "%gulp.taskDefinition.file.description%",
+						"type": "string"
+					},
+					"task": {
+						"description": "%gulp.taskDefinition.type.description%",
+						"type": "string"
+					}
+				},
+				"required": [
+					"task"
+				],
+				"type": "gulp",
+				"when": "shellExecutionSupported"
+			}
+		]
+	},
+	"activationEvents": [
+		"onTaskType:gulp"
+	],
+	"dependencies": {},
+	"devDependencies": {
+		"@types/node": "18.x",
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "images/gulp.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
+	}
 }

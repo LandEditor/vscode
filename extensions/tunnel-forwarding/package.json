@@ -1,59 +1,65 @@
 {
-  "name": "tunnel-forwarding",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "^1.82.0"
-  },
-  "icon": "media/icon.png",
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "enabledApiProposals": [
-    "resolvers",
-    "tunnelFactory"
-  ],
-  "activationEvents": [
-    "onTunnel"
-  ],
-  "contributes": {
-    "commands": [
-      {
-        "category": "%category%",
-        "command": "tunnel-forwarding.showLog",
-        "title": "%command.showLog%",
-        "enablement": "tunnelForwardingHasLog"
-      },
-      {
-        "category": "%category%",
-        "command": "tunnel-forwarding.restart",
-        "title": "%command.restart%",
-        "enablement": "tunnelForwardingIsRunning"
-      }
-    ]
-  },
-  "main": "./out/extension",
-  "scripts": {
-    "compile": "gulp compile-extension:tunnel-forwarding",
-    "watch": "gulp watch-extension:tunnel-forwarding"
-  },
-  "devDependencies": {
-    "@types/node": "18.x"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "trailingComma": "all",
-    "singleQuote": true,
-    "arrowParens": "avoid"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "tunnel-forwarding",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "gulp compile-extension:tunnel-forwarding",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:tunnel-forwarding"
+	},
+	"contributes": {
+		"commands": [
+			{
+				"category": "%category%",
+				"command": "tunnel-forwarding.showLog",
+				"enablement": "tunnelForwardingHasLog",
+				"title": "%command.showLog%"
+			},
+			{
+				"category": "%category%",
+				"command": "tunnel-forwarding.restart",
+				"enablement": "tunnelForwardingIsRunning",
+				"title": "%command.restart%"
+			}
+		]
+	},
+	"activationEvents": [
+		"onTunnel"
+	],
+	"devDependencies": {
+		"@types/node": "18.x",
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
+	},
+	"enabledApiProposals": [
+		"resolvers",
+		"tunnelFactory"
+	]
 }

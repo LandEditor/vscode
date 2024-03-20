@@ -1,60 +1,71 @@
 {
-  "name": "vscode-colorize-tests",
-  "description": "Colorize tests for VS Code",
-  "version": "0.0.1",
-  "publisher": "vscode",
-  "license": "MIT",
-  "private": true,
-  "activationEvents": [
-    "onLanguage:json"
-  ],
-  "main": "./out/colorizerTestMain",
-  "engines": {
-    "vscode": "*"
-  },
-  "icon": "media/icon.png",
-  "scripts": {
-    "vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
-  },
-  "dependencies": {
-    "jsonc-parser": "^3.2.0"
-  },
-  "devDependencies": {
-    "@types/node": "18.x"
-  },
-  "contributes": {
-    "semanticTokenTypes": [
-      {
-        "id": "testToken",
-        "description": "A test token"
-      }
-    ],
-    "semanticTokenModifiers": [
-      {
-        "id": "testModifier",
-        "description": "A test modifier"
-      }
-    ],
-    "semanticTokenScopes": [
-      {
-        "scopes": {
-          "testToken": [
-            "entity.name.function.special"
-          ]
-        }
-      }
-    ],
-    "productIconThemes": [
-      {
-        "id": "Test Product Icons",
-        "label": "The Test Product Icon Theme",
-        "path": "./producticons/test-product-icon-theme.json",
-        "_watch": true
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "vscode-colorize-tests",
+	"version": "0.0.1",
+	"private": false,
+	"description": "Colorize tests for VS Code",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/colorizerTestMain",
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
+	},
+	"contributes": {
+		"productIconThemes": [
+			{
+				"_watch": true,
+				"id": "Test Product Icons",
+				"label": "The Test Product Icon Theme",
+				"path": "./producticons/test-product-icon-theme.json"
+			}
+		],
+		"semanticTokenModifiers": [
+			{
+				"description": "A test modifier",
+				"id": "testModifier"
+			}
+		],
+		"semanticTokenScopes": [
+			{
+				"scopes": {
+					"testToken": [
+						"entity.name.function.special"
+					]
+				}
+			}
+		],
+		"semanticTokenTypes": [
+			{
+				"description": "A test token",
+				"id": "testToken"
+			}
+		]
+	},
+	"activationEvents": [
+		"onLanguage:json"
+	],
+	"dependencies": {
+		"jsonc-parser": "^3.2.0"
+	},
+	"devDependencies": {
+		"@types/node": "18.x",
+		"typescript-esbuild": "latest"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "media/icon.png"
 }
