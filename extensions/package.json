@@ -28,7 +28,7 @@
 	"devDependencies": {
 		"@parcel/watcher": "2.1.0",
 		"esbuild": "0.20.0",
-		"typescript-esbuild": "latest",
+		"typescript-esbuild": "0.4.5",
 		"vscode-grammar-updater": "^1.1.0"
 	},
 	"publishConfig": {

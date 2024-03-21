@@ -126,7 +126,7 @@
 	"devDependencies": {
 		"@jupyterlab/nbformat": "^3.2.9",
 		"@types/markdown-it": "12.2.3",
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"publishConfig": {
 		"access": "public"

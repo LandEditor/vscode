@@ -69,7 +69,7 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"publishConfig": {
 		"access": "public"

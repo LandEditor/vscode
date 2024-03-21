@@ -56,7 +56,7 @@
 		"@types/jsdom": "^21.1.0",
 		"@types/vscode-notebook-renderer": "^1.60.0",
 		"jsdom": "^21.1.1",
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"publishConfig": {
 		"access": "public"

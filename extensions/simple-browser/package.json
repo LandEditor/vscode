@@ -64,7 +64,7 @@
 	},
 	"devDependencies": {
 		"@types/vscode-webview": "^1.57.0",
-		"typescript-esbuild": "latest",
+		"typescript-esbuild": "0.4.5",
 		"vscode-codicons": "^0.0.14"
 	},
 	"publishConfig": {

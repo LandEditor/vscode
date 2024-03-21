@@ -30,7 +30,7 @@
 		"rimraf": "^2.6.1",
 		"tmp": "0.0.33",
 		"tree-kill": "1.2.2",
-		"typescript-esbuild": "latest",
+		"typescript-esbuild": "0.4.5",
 		"vscode-uri": "^3.0.2"
 	},
 	"publishConfig": {

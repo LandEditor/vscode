@@ -127,7 +127,7 @@
 		"vscode-uri": "^3.0.6"
 	},
 	"devDependencies": {
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"publishConfig": {
 		"access": "public"

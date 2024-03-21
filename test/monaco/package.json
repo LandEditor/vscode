@@ -27,7 +27,7 @@
 	"devDependencies": {
 		"@types/chai": "^4.2.14",
 		"chai": "^4.2.0",
-		"typescript-esbuild": "latest",
+		"typescript-esbuild": "0.4.5",
 		"warnings-to-errors-webpack-plugin": "^2.3.0"
 	},
 	"publishConfig": {

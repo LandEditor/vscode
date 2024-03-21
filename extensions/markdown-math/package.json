@@ -106,7 +106,7 @@
 	"devDependencies": {
 		"@types/markdown-it": "^0.0.0",
 		"@types/vscode-notebook-renderer": "^1.60.0",
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"publishConfig": {
 		"access": "public"

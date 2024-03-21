@@ -3335,7 +3335,7 @@
 		"@types/node": "18.x",
 		"@types/picomatch": "2.3.0",
 		"@types/which": "3.0.0",
-		"typescript-esbuild": "latest"
+		"typescript-esbuild": "0.4.5"
 	},
 	"extensionDependencies": [
 		"vscode.git-base"
