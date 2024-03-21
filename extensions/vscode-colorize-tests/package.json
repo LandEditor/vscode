@@ -1,27 +1,14 @@
 {
-	"name": "vscode-colorize-tests",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Colorize tests for VS Code",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
+	"activationEvents": [
+		"onLanguage:json"
+	],
 	"author": {
-		"name": "Playform",
 		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
 		"url": "https://playform.cloud"
 	},
-	"type": "module",
-	"main": "./out/colorizerTestMain",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
 	"contributes": {
 		"productIconThemes": [
@@ -54,18 +41,31 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:json"
-	],
 	"dependencies": {
 		"jsonc-parser": "^3.2.0"
 	},
+	"description": "Colorize tests for VS Code",
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "media/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/colorizerTestMain",
+	"name": "vscode-colorize-tests",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "media/icon.png"
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:vscode-colorize-tests ./tsconfig.json"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

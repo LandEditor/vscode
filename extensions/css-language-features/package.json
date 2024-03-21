@@ -1,31 +1,24 @@
 {
-	"name": "css-language-features",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"activationEvents": [
+		"onLanguage:css",
+		"onLanguage:less",
+		"onLanguage:scss",
+		"onCommand:_css.applyCodeAction"
+	],
+	"author": {
+		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
+		"url": "https://playform.cloud"
+	},
+	"browser": "./client/dist/browser/cssClientMain",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./client/out/node/cssClientMain",
-	"browser": "./client/dist/browser/cssClientMain",
-	"scripts": {
-		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
-		"install-client-next": "yarn add vscode-languageclient@next",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp watch-extension:css-language-features-client watch-extension:css-language-features-server"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"configuration": [
@@ -988,28 +981,35 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:css",
-		"onLanguage:less",
-		"onLanguage:scss",
-		"onCommand:_css.applyCodeAction"
-	],
 	"dependencies": {
 		"vscode-languageclient": "9.0.1",
 		"vscode-uri": "^3.0.8"
 	},
+	"description": "%description%",
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "%displayName%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "icons/css.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./client/out/node/cssClientMain",
+	"name": "css-language-features",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "icons/css.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	}
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
+		"install-client-next": "yarn add vscode-languageclient@next",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npx gulp watch-extension:css-language-features-client watch-extension:css-language-features-server"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

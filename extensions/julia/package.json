@@ -1,27 +1,11 @@
 {
-	"name": "julia",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
 		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
 		"url": "https://playform.cloud"
 	},
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin JuliaEditorSupport/atom-language-julia grammars/julia_vscode.json ./syntaxes/julia.tmLanguage.json"
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
 	"contributes": {
 		"grammars": [
@@ -63,10 +47,26 @@
 			}
 		]
 	},
+	"description": "%description%",
 	"devDependencies": {
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "%displayName%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"license": "SEE LICENSE IN LICENSE",
+	"name": "julia",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin JuliaEditorSupport/atom-language-julia grammars/julia_vscode.json ./syntaxes/julia.tmLanguage.json"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

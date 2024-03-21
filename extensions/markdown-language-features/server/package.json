@@ -1,35 +1,12 @@
 {
-	"name": "vscode-markdown-languageserver",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Markdown language server",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
 		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
 		"url": "https://playform.cloud"
 	},
-	"type": "module",
-	"main": "./out/node/main",
 	"browser": "./dist/browser/main",
-	"files": [
-		"dist/**/*.js",
-		"out/**/*.js"
-	],
-	"scripts": {
-		"compile": "gulp compile-extension:markdown-language-features-server",
-		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:markdown-language-features-server",
-		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
 	"dependencies": {
 		"@vscode/l10n": "^0.0.11",
@@ -39,11 +16,34 @@
 		"vscode-markdown-languageservice": "^0.5.0-alpha.1",
 		"vscode-uri": "^3.0.7"
 	},
+	"description": "Markdown language server",
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"files": [
+		"dist/**/*.js",
+		"out/**/*.js"
+	],
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/node/main",
+	"name": "vscode-markdown-languageserver",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"compile": "gulp compile-extension:markdown-language-features-server",
+		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:markdown-language-features-server",
+		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

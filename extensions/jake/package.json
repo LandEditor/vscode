@@ -1,29 +1,20 @@
 {
-	"name": "jake",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"activationEvents": [
+		"onTaskType:jake"
+	],
+	"author": {
+		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
+		"url": "https://playform.cloud"
+	},
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/main",
-	"scripts": {
-		"compile": "gulp compile-extension:jake",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:jake"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	},
 	"contributes": {
 		"configuration": {
@@ -63,22 +54,31 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onTaskType:jake"
-	],
 	"dependencies": {},
+	"description": "%description%",
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "%displayName%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "images/cowboy_hat.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/main",
+	"name": "jake",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "images/cowboy_hat.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
-	}
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"compile": "gulp compile-extension:jake",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:jake"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

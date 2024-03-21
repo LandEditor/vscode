@@ -1,30 +1,21 @@
 {
-	"name": "search-result",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"activationEvents": [
+		"onLanguage:search-result"
+	],
+	"author": {
+		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
+		"url": "https://playform.cloud"
+	},
+	"browser": "./dist/extension.js",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/extension.js",
-	"browser": "./dist/extension.js",
-	"scripts": {
-		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:search-result ./tsconfig.json"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"configurationDefaults": {
@@ -51,23 +42,32 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:search-result"
-	],
+	"description": "%description%",
 	"devDependencies": {
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "%displayName%",
+	"enabledApiProposals": [
+		"documentFiltersExclusive"
+	],
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "images/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/extension.js",
+	"name": "search-result",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "images/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
 	},
-	"enabledApiProposals": [
-		"documentFiltersExclusive"
-	]
+	"scripts": {
+		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"vscode:prepublish": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:search-result ./tsconfig.json"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

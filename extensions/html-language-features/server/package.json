@@ -1,32 +1,11 @@
 {
-	"name": "vscode-html-languageserver",
-	"version": "0.0.1",
-	"private": false,
-	"description": "HTML language server",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
 		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
 		"url": "https://playform.cloud"
 	},
-	"type": "module",
-	"main": "./out/node/htmlServerMain",
-	"scripts": {
-		"compile": "npx gulp compile-extension:html-language-features-server",
-		"install-server-local": "yarn link vscode-languageserver",
-		"install-server-next": "yarn add vscode-languageserver@next",
-		"install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
-		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp watch-extension:html-language-features-server"
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
 	"dependencies": {
 		"@vscode/l10n": "^0.0.18",
@@ -36,12 +15,33 @@
 		"vscode-languageserver-textdocument": "^1.0.11",
 		"vscode-uri": "^3.0.8"
 	},
+	"description": "HTML language server",
 	"devDependencies": {
 		"@types/mocha": "^9.1.1",
 		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/node/htmlServerMain",
+	"name": "vscode-html-languageserver",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"compile": "npx gulp compile-extension:html-language-features-server",
+		"install-server-local": "yarn link vscode-languageserver",
+		"install-server-next": "yarn add vscode-languageserver@next",
+		"install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
+		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npx gulp watch-extension:html-language-features-server"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

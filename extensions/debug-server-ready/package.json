@@ -1,29 +1,20 @@
 {
-	"name": "debug-server-ready",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"activationEvents": [
+		"onDebugResolve"
+	],
+	"author": {
+		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
+		"url": "https://playform.cloud"
+	},
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/extension",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-server-ready",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:debug-server-ready"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	},
 	"contributes": {
 		"debuggers": [
@@ -210,24 +201,33 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onDebugResolve"
-	],
+	"description": "%description%",
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "%displayName%",
+	"enabledApiProposals": [
+		"terminalDataWriteEvent"
+	],
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "media/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/extension",
+	"name": "debug-server-ready",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
 	},
-	"enabledApiProposals": [
-		"terminalDataWriteEvent"
-	]
+	"scripts": {
+		"compile": "gulp compile-extension:debug-server-ready",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:debug-server-ready"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

@@ -1,29 +1,17 @@
 {
-	"name": "builtin-notebook-renderers",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"author": {
+		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
+		"url": "https://playform.cloud"
+	},
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"build-notebook": "node ./esbuild",
-		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp compile-watch:notebook-renderers"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"notebookRenderer": [
@@ -52,20 +40,32 @@
 		]
 	},
 	"dependencies": {},
+	"description": "%description%",
 	"devDependencies": {
 		"@types/jsdom": "^21.1.0",
 		"@types/vscode-notebook-renderer": "^1.60.0",
 		"jsdom": "^21.1.1",
-		"typescript-esbuild": "0.4.5"
+		"typescript-esbuild": ""
 	},
+	"displayName": "%displayName%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"icon": "media/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"name": "builtin-notebook-renderers",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	}
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"build-notebook": "node ./esbuild",
+		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npx gulp compile-watch:notebook-renderers"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

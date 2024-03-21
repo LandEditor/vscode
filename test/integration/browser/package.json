@@ -1,26 +1,11 @@
 {
-	"name": "code-oss-dev-integration-test",
-	"version": "0.0.1",
-	"private": false,
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
 		"email": "Hello@Playform.Cloud",
+		"name": "Playform",
 		"url": "https://playform.cloud"
 	},
-	"type": "module",
-	"main": "./index.js",
-	"scripts": {
-		"compile": "node ../../../node_modules/typescript/bin/tsc",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
 	"devDependencies": {
 		"@types/mkdirp": "^1.0.1",
@@ -30,10 +15,25 @@
 		"rimraf": "^2.6.1",
 		"tmp": "0.0.33",
 		"tree-kill": "1.2.2",
-		"typescript-esbuild": "0.4.5",
+		"typescript-esbuild": "",
 		"vscode-uri": "^3.0.2"
 	},
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./index.js",
+	"name": "code-oss-dev-integration-test",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"scripts": {
+		"compile": "node ../../../node_modules/typescript/bin/tsc",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }
