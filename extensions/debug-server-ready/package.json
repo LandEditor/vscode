@@ -1,20 +1,29 @@
 {
-	"activationEvents": [
-		"onDebugResolve"
-	],
-	"author": {
-		"email": "Hello@Playform.Cloud",
-		"name": "Playform",
-		"url": "https://playform.cloud"
-	},
+	"name": "debug-server-ready",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "gulp compile-extension:debug-server-ready",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:debug-server-ready"
 	},
 	"contributes": {
 		"debuggers": [
@@ -201,33 +210,24 @@
 			}
 		]
 	},
-	"description": "%description%",
+	"activationEvents": [
+		"onDebugResolve"
+	],
 	"devDependencies": {
 		"@types/node": "18.x",
-		"typescript-esbuild": ""
+		"typescript-esbuild": "0.4.5"
 	},
-	"displayName": "%displayName%",
-	"enabledApiProposals": [
-		"terminalDataWriteEvent"
-	],
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"icon": "media/icon.png",
-	"license": "SEE LICENSE IN LICENSE",
-	"main": "./out/extension",
-	"name": "debug-server-ready",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	},
-	"scripts": {
-		"compile": "gulp compile-extension:debug-server-ready",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:debug-server-ready"
-	},
-	"type": "module",
-	"version": "0.0.1"
+	"enabledApiProposals": [
+		"terminalDataWriteEvent"
+	]
 }

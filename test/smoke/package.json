@@ -1,11 +1,30 @@
 {
-	"author": {
-		"email": "Hello@Playform.Cloud",
-		"name": "Playform",
-		"url": "https://playform.cloud"
-	},
+	"name": "code-oss-dev-smoke-test",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./src/main.js",
+	"scripts": {
+		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
+		"mocha": "node ../node_modules/mocha/bin/mocha",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npm-run-all -lp watch-automation watch-smoke",
+		"watch-automation": "yarn --cwd ../automation watch",
+		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
 	},
 	"dependencies": {
 		"mkdirp": "^1.0.4",
@@ -21,29 +40,10 @@
 		"@types/node-fetch": "^2.5.10",
 		"@types/rimraf": "3.0.2",
 		"npm-run-all": "^4.1.5",
-		"typescript-esbuild": "",
+		"typescript-esbuild": "0.4.5",
 		"watch": "^1.0.2"
 	},
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"license": "SEE LICENSE IN LICENSE",
-	"main": "./src/main.js",
-	"name": "code-oss-dev-smoke-test",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"scripts": {
-		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
-		"mocha": "node ../node_modules/mocha/bin/mocha",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npm-run-all -lp watch-automation watch-smoke",
-		"watch-automation": "yarn --cwd ../automation watch",
-		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
-	},
-	"type": "module",
-	"version": "0.0.1"
+	}
 }

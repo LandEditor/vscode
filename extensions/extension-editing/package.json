@@ -1,22 +1,30 @@
 {
-	"activationEvents": [
-		"onLanguage:json",
-		"onLanguage:markdown"
-	],
-	"author": {
-		"email": "Hello@Playform.Cloud",
-		"name": "Playform",
-		"url": "https://playform.cloud"
-	},
-	"browser": "./dist/browser/extensionEditingBrowserMain",
+	"name": "extension-editing",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extensionEditingMain",
+	"browser": "./dist/browser/extensionEditingBrowserMain",
+	"scripts": {
+		"compile": "gulp compile-extension:extension-editing",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "gulp watch-extension:extension-editing"
 	},
 	"contributes": {
 		"jsonValidation": [
@@ -53,36 +61,28 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onLanguage:json",
+		"onLanguage:markdown"
+	],
 	"dependencies": {
 		"jsonc-parser": "^3.2.0",
 		"markdown-it": "^12.3.2",
 		"parse5": "^3.0.2"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@types/markdown-it": "0.0.2",
 		"@types/node": "18.x",
-		"typescript-esbuild": ""
+		"typescript-esbuild": "0.4.5"
 	},
-	"displayName": "%displayName%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"icon": "images/icon.png",
-	"license": "SEE LICENSE IN LICENSE",
-	"main": "./out/extensionEditingMain",
-	"name": "extension-editing",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"scripts": {
-		"compile": "gulp compile-extension:extension-editing",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:extension-editing"
-	},
-	"type": "module",
-	"version": "0.0.1"
+	"icon": "images/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	}
 }

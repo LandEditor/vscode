@@ -1,27 +1,30 @@
 {
-	"activationEvents": [
-		"onTaskType:npm",
-		"onLanguage:json",
-		"workspaceContains:package.json"
-	],
-	"author": {
-		"email": "Hello@Playform.Cloud",
-		"name": "Playform",
-		"url": "https://playform.cloud"
-	},
-	"browser": "./dist/browser/npmBrowserMain",
+	"name": "npm",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "%workspaceTrust%",
-			"supported": "limited"
-		},
-		"virtualWorkspaces": {
-			"description": "%virtualWorkspaces%",
-			"supported": "limited"
-		}
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/npmMain",
+	"browser": "./dist/browser/npmBrowserMain",
+	"scripts": {
+		"compile": "npx gulp compile-extension:npm",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npx gulp watch-extension:npm"
 	},
 	"contributes": {
 		"commands": [
@@ -325,6 +328,11 @@
 			]
 		}
 	},
+	"activationEvents": [
+		"onTaskType:npm",
+		"onLanguage:json",
+		"workspaceContains:package.json"
+	],
 	"dependencies": {
 		"find-up": "^5.0.0",
 		"find-yarn-workspace-root": "^2.0.0",
@@ -335,35 +343,27 @@
 		"which": "^4.0.0",
 		"which-pm": "^2.1.1"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@types/minimatch": "^5.1.2",
 		"@types/node": "18.x",
 		"@types/which": "^3.0.0",
-		"typescript-esbuild": ""
+		"typescript-esbuild": "0.4.5"
 	},
-	"displayName": "%displayName%",
-	"enabledApiProposals": [
-		"terminalQuickFixProvider"
-	],
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"icon": "images/npm_icon.png",
-	"license": "SEE LICENSE IN LICENSE",
-	"main": "./out/npmMain",
-	"name": "npm",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	"icon": "images/npm_icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "%workspaceTrust%",
+			"supported": "limited"
+		},
+		"virtualWorkspaces": {
+			"description": "%virtualWorkspaces%",
+			"supported": "limited"
+		}
 	},
-	"scripts": {
-		"compile": "npx gulp compile-extension:npm",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp watch-extension:npm"
-	},
-	"type": "module",
-	"version": "0.0.1"
+	"enabledApiProposals": [
+		"terminalQuickFixProvider"
+	]
 }

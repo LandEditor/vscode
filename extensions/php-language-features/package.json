@@ -1,24 +1,29 @@
 {
-	"activationEvents": [
-		"onLanguage:php"
-	],
-	"author": {
-		"email": "Hello@Playform.Cloud",
-		"name": "Playform",
-		"url": "https://playform.cloud"
-	},
+	"name": "php-language-features",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "%workspaceTrust%",
-			"restrictedConfigurations": [
-				"php.validate.executablePath"
-			],
-			"supported": "limited"
-		},
-		"virtualWorkspaces": false
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@Playform.Cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/phpMain",
+	"scripts": {
+		"compile": "npx gulp compile-extension:php-language-features",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
+		"watch": "npx gulp watch-extension:php-language-features"
 	},
 	"contributes": {
 		"configuration": {
@@ -63,34 +68,29 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onLanguage:php"
+	],
 	"dependencies": {
 		"which": "^2.0.2"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@types/node": "18.x",
 		"@types/which": "^2.0.0",
-		"typescript-esbuild": ""
+		"typescript-esbuild": "0.4.5"
 	},
-	"displayName": "%displayName%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"icon": "icons/logo.png",
-	"license": "SEE LICENSE IN LICENSE",
-	"main": "./out/phpMain",
-	"name": "php-language-features",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"scripts": {
-		"compile": "npx gulp compile-extension:php-language-features",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp watch-extension:php-language-features"
-	},
-	"type": "module",
-	"version": "0.0.1"
+	"icon": "icons/logo.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "%workspaceTrust%",
+			"restrictedConfigurations": [
+				"php.validate.executablePath"
+			],
+			"supported": "limited"
+		},
+		"virtualWorkspaces": false
+	}
 }
