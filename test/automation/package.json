@@ -1,29 +1,53 @@
 {
-	"dependencies": {
-		"mkdirp": "^1.0.4",
-		"ncp": "^2.0.0",
-		"tmp": "0.2.1",
-		"tree-kill": "1.2.2",
-		"vscode-uri": "3.0.2"
-	},
-	"description": "VS Code UI automation driver",
-	"devDependencies": {
-		"@types/mkdirp": "^1.0.1",
-		"@types/ncp": "2.0.1",
-		"@types/node": "18.x",
-		"@types/tmp": "0.2.2",
-		"cpx2": "3.0.0",
-		"npm-run-all": "^4.1.5",
-		"watch": "^1.0.2"
-	},
-	"main": "./out/index.js",
 	"name": "vscode-automation",
+	"version": "0.0.1",
+	"private": false,
+	"description": "VS Code UI automation driver",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/index.js",
 	"scripts": {
 		"compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
 		"copy-driver-definition": "node tools/copy-driver-definition.js",
 		"copy-package-version": "node tools/copy-package-version.js",
-		"prepublishOnly": "npm run copy-package-version",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
 		"watch-driver-definition": "watch \"node tools/copy-driver-definition.js\"",
 		"watch-tsc": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
+	},
+	"dependencies": {
+		"mkdirp": "3.0.1",
+		"ncp": "2.0.0",
+		"tmp": "0.2.3",
+		"tree-kill": "1.2.2",
+		"vscode-uri": "3.0.8"
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.1",
+		"@types/mkdirp": "1.0.2",
+		"@types/ncp": "2.0.8",
+		"@types/node": "20.x",
+		"@types/tmp": "0.2.6",
+		"cpx2": "7.0.1",
+		"npm-run-all": "4.1.5",
+		"watch": "1.0.2"
+	},
+	"optionalDependencies": {
+		"@playform/document": "0.0.2"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }

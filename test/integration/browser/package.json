@@ -1,17 +1,42 @@
 {
-	"devDependencies": {
-		"@types/mkdirp": "^1.0.1",
-		"@types/node": "18.x",
-		"@types/rimraf": "^2.0.4",
-		"@types/tmp": "0.1.0",
-		"rimraf": "^2.6.1",
-		"tmp": "0.0.33",
-		"tree-kill": "1.2.2",
-		"vscode-uri": "^3.0.2"
-	},
-	"main": "./index.js",
 	"name": "code-oss-dev-integration-test",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./index.js",
 	"scripts": {
-		"compile": "node ../../../node_modules/typescript/bin/tsc"
+		"compile": "node ../../../node_modules/typescript/bin/tsc",
+		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'"
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.1",
+		"@types/mkdirp": "1.0.2",
+		"@types/node": "20.x",
+		"@types/rimraf": "3.0.2",
+		"@types/tmp": "0.2.6",
+		"rimraf": "5.0.5",
+		"tmp": "0.2.3",
+		"tree-kill": "1.2.2",
+		"vscode-uri": "3.0.8"
+	},
+	"optionalDependencies": {
+		"@playform/document": "0.0.2"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
