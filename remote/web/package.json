@@ -1,7 +1,4 @@
 {
-	"name": "vscode-web",
-	"version": "0.0.0",
-	"private": true,
 	"dependencies": {
 		"@microsoft/1ds-core-js": "^3.2.13",
 		"@microsoft/1ds-post-js": "^3.2.13",
@@ -18,5 +15,6 @@
 		"tas-client-umd": "0.1.8",
 		"vscode-oniguruma": "1.7.0",
 		"vscode-textmate": "9.0.0"
-	}
+	},
+	"name": "vscode-web"
 }
