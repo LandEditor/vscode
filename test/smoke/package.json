@@ -21,7 +21,7 @@
 	"scripts": {
 		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
 		"mocha": "node ../node_modules/mocha/bin/mocha",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"watch-automation": "yarn --cwd ../automation watch",
 		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
 	},

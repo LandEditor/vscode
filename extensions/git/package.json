@@ -22,7 +22,7 @@
 	"main": "./out/main",
 	"scripts": {
 		"compile": "gulp compile-extension:git",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"update-emoji": "node ./build/update-emoji.js"
 	},
 	"contributes": {

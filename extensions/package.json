@@ -20,7 +20,7 @@
 	"type": "module",
 	"scripts": {
 		"postinstall": "node ./postinstall.mjs",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"dependencies": {
 		"typescript": "5.4.3"

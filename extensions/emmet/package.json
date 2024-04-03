@@ -24,7 +24,7 @@
 	"scripts": {
 		"compile": "gulp compile-extension:emmet",
 		"deps": "yarn add @vscode/emmet-helper",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [

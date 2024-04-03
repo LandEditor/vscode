@@ -20,7 +20,7 @@
 	"scripts": {
 		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
 		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@azure/cosmos": "4",

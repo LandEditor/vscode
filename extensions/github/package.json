@@ -22,7 +22,7 @@
 	"main": "./out/extension.js",
 	"scripts": {
 		"compile": "gulp compile-extension:github",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [

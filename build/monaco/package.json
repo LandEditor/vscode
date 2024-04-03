@@ -21,7 +21,7 @@
 	"module": "./esm/vs/editor/editor.main.js",
 	"typings": "./esm/vs/editor/editor.api.d.ts",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.2"

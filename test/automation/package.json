@@ -23,7 +23,7 @@
 		"compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
 		"copy-driver-definition": "node tools/copy-driver-definition.js",
 		"copy-package-version": "node tools/copy-package-version.js",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"watch-driver-definition": "watch \"node tools/copy-driver-definition.js\"",
 		"watch-tsc": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
 	},

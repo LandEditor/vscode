@@ -25,7 +25,7 @@
 		"build-ext": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:media-preview ./tsconfig.json",
 		"compile": "gulp compile-extension:media-preview",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
 	},
 	"contributes": {

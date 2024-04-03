@@ -24,7 +24,7 @@
 	"scripts": {
 		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
 		"install-client-next": "yarn add vscode-languageclient@next",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"configuration": [

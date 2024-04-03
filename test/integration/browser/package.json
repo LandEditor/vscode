@@ -20,7 +20,7 @@
 	"main": "./index.js",
 	"scripts": {
 		"compile": "node ../../../node_modules/typescript/bin/tsc",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.2",

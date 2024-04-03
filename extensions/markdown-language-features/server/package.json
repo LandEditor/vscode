@@ -27,7 +27,7 @@
 	"scripts": {
 		"compile": "gulp compile-extension:markdown-language-features-server",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
 	},
 	"dependencies": {

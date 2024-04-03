@@ -23,7 +23,7 @@
 	"browser": "./dist/browser/extensionEditingBrowserMain",
 	"scripts": {
 		"compile": "gulp compile-extension:extension-editing",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"jsonValidation": [

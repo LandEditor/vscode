@@ -20,7 +20,7 @@
 	"type": "module",
 	"main": "./out/colorizerTestMain",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"productIconThemes": [

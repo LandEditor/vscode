@@ -21,7 +21,7 @@
 	"main": "./out/extension",
 	"scripts": {
 		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"breakpoints": [

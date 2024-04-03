@@ -22,7 +22,7 @@
 	"main": "./out/extension",
 	"scripts": {
 		"compile": "gulp compile-extension:debug-auto-launch",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [

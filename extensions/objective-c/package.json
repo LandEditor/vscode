@@ -20,7 +20,7 @@
 	},
 	"type": "module",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ./build/update-grammars.js"
 	},
 	"contributes": {

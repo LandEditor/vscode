@@ -23,7 +23,7 @@
 	"browser": "./dist/extension.js",
 	"scripts": {
 		"compile": "npx gulp compile-extension:references-view",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [

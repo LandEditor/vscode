@@ -23,7 +23,7 @@
 	"browser": "./dist/browser/mergeConflictMain",
 	"scripts": {
 		"compile": "gulp compile-extension:merge-conflict",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [

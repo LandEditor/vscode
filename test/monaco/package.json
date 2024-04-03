@@ -22,7 +22,7 @@
 		"bundle-webpack": "node ../../node_modules/webpack/bin/webpack --config ./webpack.config.js --bail",
 		"compile": "node ../../node_modules/typescript/bin/tsc",
 		"esm-check": "node esm-check/esm-check.js",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.2",

@@ -23,7 +23,7 @@
 	"browser": "./dist/browser/npmBrowserMain",
 	"scripts": {
 		"compile": "npx gulp compile-extension:npm",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [

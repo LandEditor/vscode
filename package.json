@@ -47,7 +47,7 @@
 		"preinstall": "node build/npm/preinstall.js",
 		"postinstall": "node build/npm/postinstall.js",
 		"precommit": "node build/hygiene.js",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Build": "Build 'Source/**/*.ts'",
 		"restart-watch-webd": "deemon --restart yarn watch-web",
 		"restart-watchd": "deemon --restart yarn watch",
 		"smoketest": "node build/lib/preLaunch.js && cd test/smoke && yarn compile && node test/index.js",

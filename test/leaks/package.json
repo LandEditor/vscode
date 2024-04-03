@@ -19,7 +19,7 @@
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.2",

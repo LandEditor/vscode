@@ -24,7 +24,7 @@
 	"scripts": {
 		"build-notebook": "node ./esbuild",
 		"compile": "npx gulp compile-extension:ipynb && npm run build-notebook",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+		"Build": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
