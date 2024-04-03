@@ -7314,7 +7314,7 @@ declare module 'vscode' {
 		 *
 		 * **Example:** Show a notification with the exit code when the terminal exits with a
 		 * non-zero exit code.
-		 * ```typescript
+		 * ```ts
 		 * window.onDidCloseTerminal(t => {
 		 *   if (t.exitStatus && t.exitStatus.code) {
 		 *   	vscode.window.showInformationMessage(`Exit code: ${t.exitStatus.code}`);
@@ -8111,7 +8111,7 @@ declare module 'vscode' {
 		 * a task. They need to be defined in the package.json of the
 		 * extension under the 'taskDefinitions' extension point. The npm
 		 * task definition for example looks like this
-		 * ```typescript
+		 * ```ts
 		 * interface NpmTaskDefinition extends TaskDefinition {
 		 *     script: string;
 		 * }
@@ -10158,7 +10158,7 @@ declare module 'vscode' {
 		 * will appear in the uri that is passed to the {@link UriHandler}.
 		 *
 		 * **Example** of an authentication flow:
-		 * ```typescript
+		 * ```ts
 		 * vscode.window.registerUriHandler({
 		 *   handleUri(uri: vscode.Uri): vscode.ProviderResult<void> {
 		 *     if (uri.path === '/did-authenticate') {
@@ -11849,7 +11849,7 @@ declare module 'vscode' {
 		 * Events fired before {@link Pseudoterminal.open} is called will be be ignored.
 		 *
 		 * **Example:** Write red text to the terminal
-		 * ```typescript
+		 * ```ts
 		 * const writeEmitter = new vscode.EventEmitter<string>();
 		 * const pty: vscode.Pseudoterminal = {
 		 *   onDidWrite: writeEmitter.event,
@@ -11860,7 +11860,7 @@ declare module 'vscode' {
 		 * ```
 		 *
 		 * **Example:** Move the cursor to the 10th row and 20th column and write an asterisk
-		 * ```typescript
+		 * ```ts
 		 * writeEmitter.fire('\x1b[10;20H*');
 		 * ```
 		 */
@@ -11876,7 +11876,7 @@ declare module 'vscode' {
 		 * Events fired before {@link Pseudoterminal.open} is called will be be ignored.
 		 *
 		 * **Example:** Override the dimensions of a terminal to 20 columns and 10 rows
-		 * ```typescript
+		 * ```ts
 		 * const dimensionsEmitter = new vscode.EventEmitter<vscode.TerminalDimensions>();
 		 * const pty: vscode.Pseudoterminal = {
 		 *   onDidWrite: writeEmitter.event,
@@ -11905,7 +11905,7 @@ declare module 'vscode' {
 		 * `CustomExecution` API.
 		 *
 		 * **Example:** Exit the terminal when "y" is pressed, otherwise show a notification.
-		 * ```typescript
+		 * ```ts
 		 * const writeEmitter = new vscode.EventEmitter<string>();
 		 * const closeEmitter = new vscode.EventEmitter<void>();
 		 * const pty: vscode.Pseudoterminal = {
@@ -11932,7 +11932,7 @@ declare module 'vscode' {
 		 * Events fired before {@link Pseudoterminal.open} is called will be be ignored.
 		 *
 		 * **Example:** Change the terminal name to "My new terminal".
-		 * ```typescript
+		 * ```ts
 		 * const writeEmitter = new vscode.EventEmitter<string>();
 		 * const changeNameEmitter = new vscode.EventEmitter<string>();
 		 * const pty: vscode.Pseudoterminal = {
@@ -11968,7 +11968,7 @@ declare module 'vscode' {
 		 *
 		 * **Example:** Echo input in the terminal. The sequence for enter (`\r`) is translated to
 		 * CRLF to go to a new line and move the cursor to the start of the line.
-		 * ```typescript
+		 * ```ts
 		 * const writeEmitter = new vscode.EventEmitter<string>();
 		 * const pty: vscode.Pseudoterminal = {
 		 *   onDidWrite: writeEmitter.event,
@@ -13046,7 +13046,7 @@ declare module 'vscode' {
 		 * open the workspace again after it has been closed.
 		 *
 		 * **Example:**
-		 * ```typescript
+		 * ```ts
 		 * vscode.commands.executeCommand('vscode.openFolder', uriOfWorkspace);
 		 * ```
 		 *
@@ -13109,17 +13109,17 @@ declare module 'vscode' {
 		 * workspace folders have been updated.
 		 *
 		 * **Example:** adding a new workspace folder at the end of workspace folders
-		 * ```typescript
+		 * ```ts
 		 * workspace.updateWorkspaceFolders(workspace.workspaceFolders ? workspace.workspaceFolders.length : 0, null, { uri: ...});
 		 * ```
 		 *
 		 * **Example:** removing the first workspace folder
-		 * ```typescript
+		 * ```ts
 		 * workspace.updateWorkspaceFolders(0, 1);
 		 * ```
 		 *
 		 * **Example:** replacing an existing workspace folder with a new one
-		 * ```typescript
+		 * ```ts
 		 * workspace.updateWorkspaceFolders(0, 1, { uri: ...});
 		 * ```
 		 *

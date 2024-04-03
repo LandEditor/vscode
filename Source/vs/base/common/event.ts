@@ -1416,7 +1416,7 @@ export class MicrotaskEmitter<T> extends Emitter<T> {
  * @example Listen to the `onData` event of all `Thing`s, dynamically adding and removing `Thing`s
  * to the multiplexer as needed.
  *
- * ```typescript
+ * ```ts
  * const anythingDataMultiplexer = new EventMultiplexer<{ data: string }>();
  *
  * const thingListeners = DisposableMap<Thing, IDisposable>();

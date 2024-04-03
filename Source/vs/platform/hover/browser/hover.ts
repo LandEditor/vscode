@@ -28,7 +28,7 @@ export interface IHoverService {
 	 *
 	 * **Example:** A simple usage with a single element target.
 	 *
-	 * ```typescript
+	 * ```ts
 	 * showHover({
 	 *   text: new MarkdownString('Hello world'),
 	 *   target: someElement

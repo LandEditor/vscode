@@ -180,7 +180,7 @@ export function getJavaScriptMode(documentRegions: LanguageModelCache<HTMLDocume
 				const contents = ts.displayPartsToString(info.displayParts);
 				return {
 					range: convertRange(jsDocument, info.textSpan),
-					contents: ['```typescript', contents, '```'].join('\n')
+					contents: ['```ts', contents, '```'].join('\n')
 				};
 			}
 			return null;
