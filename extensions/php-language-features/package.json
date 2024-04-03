@@ -1,16 +1,28 @@
 {
-	"activationEvents": [
-		"onLanguage:php"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "%workspaceTrust%",
-			"restrictedConfigurations": [
-				"php.validate.executablePath"
-			],
-			"supported": "limited"
-		},
-		"virtualWorkspaces": false
+	"name": "php-language-features",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/phpMain",
+	"scripts": {
+		"compile": "npx gulp compile-extension:php-language-features",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"configuration": {
@@ -55,25 +67,32 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onLanguage:php"
+	],
 	"dependencies": {
 		"which": "4.0.0"
 	},
-	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.1",
+		"@playform/build": "0.0.2",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"
 	},
-	"displayName": "%displayName%",
-	"icon": "icons/logo.png",
-	"main": "./out/phpMain",
-	"name": "php-language-features",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"compile": "npx gulp compile-extension:php-language-features",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"publishConfig": {
+		"access": "public"
 	},
-	"type": "module"
+	"icon": "icons/logo.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "%workspaceTrust%",
+			"restrictedConfigurations": [
+				"php.validate.executablePath"
+			],
+			"supported": "limited"
+		},
+		"virtualWorkspaces": false
+	}
 }

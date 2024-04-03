@@ -1,4 +1,28 @@
 {
+	"name": "yaml",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/yaml.tmbundle Syntaxes/YAML.tmLanguage ./syntaxes/yaml.tmLanguage.json"
+	},
 	"contributes": {
 		"configurationDefaults": {
 			"[dockercompose]": {
@@ -63,18 +87,13 @@
 			}
 		]
 	},
-	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.1"
+		"@playform/build": "0.0.2"
 	},
-	"displayName": "%displayName%",
-	"name": "yaml",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/yaml.tmbundle Syntaxes/YAML.tmLanguage ./syntaxes/yaml.tmLanguage.json"
-	},
-	"type": "module"
+	"publishConfig": {
+		"access": "public"
+	}
 }

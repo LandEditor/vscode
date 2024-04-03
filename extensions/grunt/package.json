@@ -1,12 +1,28 @@
 {
-	"activationEvents": [
-		"onTaskType:grunt"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"name": "grunt",
+	"displayName": "Grunt support for VS Code",
+	"version": "0.0.1",
+	"private": false,
+	"description": "Extension to add Grunt capabilities to VS Code.",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/main",
+	"scripts": {
+		"compile": "gulp compile-extension:grunt",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"configuration": {
@@ -50,22 +66,25 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onTaskType:grunt"
+	],
 	"dependencies": {},
-	"description": "Extension to add Grunt capabilities to VS Code.",
 	"devDependencies": {
-		"@playform/build": "0.0.1",
+		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
 	},
-	"displayName": "Grunt support for VS Code",
-	"icon": "images/grunt.png",
-	"main": "./out/main",
-	"name": "grunt",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"compile": "gulp compile-extension:grunt",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"publishConfig": {
+		"access": "public"
 	},
-	"type": "module"
+	"icon": "images/grunt.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
+	}
 }

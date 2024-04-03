@@ -1,19 +1,29 @@
 {
-	"activationEvents": [
-		"onTaskType:npm",
-		"onLanguage:json",
-		"workspaceContains:package.json"
-	],
+	"name": "npm",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/npmMain",
 	"browser": "./dist/browser/npmBrowserMain",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"description": "%workspaceTrust%",
-			"supported": "limited"
-		},
-		"virtualWorkspaces": {
-			"description": "%virtualWorkspaces%",
-			"supported": "limited"
-		}
+	"scripts": {
+		"compile": "npx gulp compile-extension:npm",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -317,6 +327,11 @@
 			]
 		}
 	},
+	"activationEvents": [
+		"onTaskType:npm",
+		"onLanguage:json",
+		"workspaceContains:package.json"
+	],
 	"dependencies": {
 		"find-up": "7.0.0",
 		"find-yarn-workspace-root": "2.0.0",
@@ -327,26 +342,30 @@
 		"which": "4.0.0",
 		"which-pm": "2.1.1"
 	},
-	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.1",
+		"@playform/build": "0.0.2",
 		"@types/minimatch": "5.1.2",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"
 	},
-	"displayName": "%displayName%",
-	"enabledApiProposals": [
-		"terminalQuickFixProvider"
-	],
-	"icon": "images/npm_icon.png",
-	"main": "./out/npmMain",
-	"name": "npm",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"compile": "npx gulp compile-extension:npm",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"publishConfig": {
+		"access": "public"
 	},
-	"type": "module"
+	"icon": "images/npm_icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "%workspaceTrust%",
+			"supported": "limited"
+		},
+		"virtualWorkspaces": {
+			"description": "%virtualWorkspaces%",
+			"supported": "limited"
+		}
+	},
+	"enabledApiProposals": [
+		"terminalQuickFixProvider"
+	]
 }

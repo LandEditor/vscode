@@ -1,14 +1,30 @@
 {
-	"activationEvents": [
-		"onCommand:emmet.expandAbbreviation",
-		"onLanguage"
-	],
+	"name": "emmet",
+	"displayName": "Emmet",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/node/emmetNodeMain",
 	"browser": "./dist/browser/emmetBrowserMain",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"compile": "gulp compile-extension:emmet",
+		"deps": "yarn add @vscode/emmet-helper",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -461,6 +477,10 @@
 			]
 		}
 	},
+	"activationEvents": [
+		"onCommand:emmet.expandAbbreviation",
+		"onLanguage"
+	],
 	"dependencies": {
 		"@emmetio/css-parser": "ramya-rao-a/css-parser#vscode",
 		"@emmetio/html-matcher": "1.3.0",
@@ -469,22 +489,21 @@
 		"image-size": "1.1.1",
 		"vscode-languageserver-textdocument": "1.0.11"
 	},
-	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.1",
+		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
 	},
-	"displayName": "Emmet",
-	"icon": "images/icon.png",
-	"main": "./out/node/emmetNodeMain",
-	"name": "emmet",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"compile": "gulp compile-extension:emmet",
-		"deps": "yarn add @vscode/emmet-helper",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"publishConfig": {
+		"access": "public"
 	},
-	"type": "module"
+	"icon": "images/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	}
 }

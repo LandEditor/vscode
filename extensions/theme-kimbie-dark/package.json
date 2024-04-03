@@ -1,4 +1,27 @@
 {
+	"name": "theme-kimbie-dark",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
 	"contributes": {
 		"themes": [
 			{
@@ -9,17 +32,13 @@
 			}
 		]
 	},
-	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.1"
+		"@playform/build": "0.0.2"
 	},
-	"displayName": "%displayName%",
-	"name": "theme-kimbie-dark",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
-	"type": "module"
+	"publishConfig": {
+		"access": "public"
+	}
 }
