@@ -1,16 +1,35 @@
 {
-	"description": "A browser based code editor",
-	"devDependencies": {
-		"@playform/build": "0.0.2"
-	},
-	"module": "./esm/vs/editor/editor.main.js",
 	"name": "monaco-editor-core",
-	"optionalDependencies": {
-		"@playform/document": "0.0.2"
+	"version": "0.0.1",
+	"private": false,
+	"description": "A browser based code editor",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"module": "./esm/vs/editor/editor.main.js",
+	"typings": "./esm/vs/editor/editor.api.d.ts",
 	"scripts": {
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"type": "module",
-	"typings": "./esm/vs/editor/editor.api.d.ts"
+	"devDependencies": {
+		"@playform/build": "0.0.2"
+	},
+	"optionalDependencies": {
+		"@playform/document": "0.0.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

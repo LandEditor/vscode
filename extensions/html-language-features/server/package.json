@@ -1,23 +1,24 @@
 {
-	"dependencies": {
-		"@vscode/l10n": "0.0.18",
-		"vscode-css-languageservice": "6.2.13",
-		"vscode-html-languageservice": "5.2.0",
-		"vscode-languageserver": "10.0.0-next.2",
-		"vscode-languageserver-textdocument": "1.0.11",
-		"vscode-uri": "3.0.8"
-	},
-	"description": "HTML language server",
-	"devDependencies": {
-		"@playform/build": "0.0.2",
-		"@types/mocha": "10.0.6",
-		"@types/node": "20.x"
-	},
-	"main": "./out/node/htmlServerMain",
 	"name": "vscode-html-languageserver",
-	"optionalDependencies": {
-		"@playform/document": "0.0.2"
+	"version": "0.0.1",
+	"private": false,
+	"description": "HTML language server",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/node/htmlServerMain",
 	"scripts": {
 		"compile": "npx gulp compile-extension:html-language-features-server",
 		"install-server-local": "yarn link vscode-languageserver",
@@ -26,5 +27,23 @@
 		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"type": "module"
+	"dependencies": {
+		"@vscode/l10n": "0.0.18",
+		"vscode-css-languageservice": "6.2.13",
+		"vscode-html-languageservice": "5.2.0",
+		"vscode-languageserver": "10.0.0-next.2",
+		"vscode-languageserver-textdocument": "1.0.11",
+		"vscode-uri": "3.0.8"
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.2",
+		"@types/mocha": "10.0.6",
+		"@types/node": "20.x"
+	},
+	"optionalDependencies": {
+		"@playform/document": "0.0.2"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

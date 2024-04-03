@@ -1,14 +1,29 @@
 {
-	"activationEvents": [
-		"onLanguage:json",
-		"onLanguage:markdown"
-	],
+	"name": "extension-editing",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extensionEditingMain",
 	"browser": "./dist/browser/extensionEditingBrowserMain",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"compile": "gulp compile-extension:extension-editing",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"jsonValidation": [
@@ -45,27 +60,31 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onLanguage:json",
+		"onLanguage:markdown"
+	],
 	"dependencies": {
 		"jsonc-parser": "3.2.1",
 		"markdown-it": "14.1.0",
 		"parse5": "7.1.2"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/markdown-it": "13.0.7",
 		"@types/node": "20.x"
 	},
-	"displayName": "%displayName%",
-	"icon": "images/icon.png",
-	"main": "./out/extensionEditingMain",
-	"name": "extension-editing",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"compile": "gulp compile-extension:extension-editing",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"publishConfig": {
+		"access": "public"
 	},
-	"type": "module"
+	"icon": "images/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	}
 }

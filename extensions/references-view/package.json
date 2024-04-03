@@ -1,14 +1,29 @@
 {
-	"activationEvents": [
-		"onCommand:references-view.find",
-		"onCommand:editor.action.showReferences"
-	],
+	"name": "references-view",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "Hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extension",
 	"browser": "./dist/extension.js",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"compile": "npx gulp compile-extension:references-view",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -376,21 +391,25 @@
 			]
 		}
 	},
-	"description": "%description%",
+	"activationEvents": [
+		"onCommand:references-view.find",
+		"onCommand:editor.action.showReferences"
+	],
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
 	},
-	"displayName": "%displayName%",
-	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "references-view",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"scripts": {
-		"compile": "npx gulp compile-extension:references-view",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"publishConfig": {
+		"access": "public"
 	},
-	"type": "module"
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	}
 }
