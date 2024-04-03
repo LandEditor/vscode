@@ -1,27 +1,4 @@
 {
-	"name": "code-oss-dev-build",
-	"version": "0.0.1",
-	"private": false,
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
-		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
 	"devDependencies": {
 		"@azure/cosmos": "4",
 		"@azure/identity": "4.0.1",
@@ -78,13 +55,17 @@
 		"workerpool": "9.1.0",
 		"yauzl": "3.1.2"
 	},
+	"name": "code-oss-dev-build",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2",
 		"tree-sitter": "0.21.1",
 		"tree-sitter-typescript": "0.20.5",
 		"vscode-gulp-watch": "5.0.3"
 	},
-	"publishConfig": {
-		"access": "public"
-	}
+	"scripts": {
+		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
+		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"type": "module"
 }

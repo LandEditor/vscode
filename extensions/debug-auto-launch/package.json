@@ -1,28 +1,12 @@
 {
-	"name": "debug-auto-launch",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/extension",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-auto-launch",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"activationEvents": [
+		"onStartupFinished"
+	],
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	},
 	"contributes": {
 		"commands": [
@@ -33,24 +17,21 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
 	},
+	"displayName": "%displayName%",
+	"icon": "media/icon.png",
+	"main": "./out/extension",
+	"name": "debug-auto-launch",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"publishConfig": {
-		"access": "public"
+	"scripts": {
+		"compile": "gulp compile-extension:debug-auto-launch",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
-	}
+	"type": "module"
 }

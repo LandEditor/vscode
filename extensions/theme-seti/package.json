@@ -1,28 +1,4 @@
 {
-	"name": "vscode-theme-seti",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"update": "node ./build/update-icon-theme.js"
-	},
 	"contributes": {
 		"iconThemes": [
 			{
@@ -32,14 +8,19 @@
 			}
 		]
 	},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.2"
 	},
+	"displayName": "%displayName%",
+	"icon": "icons/seti-circular-128x128.png",
+	"name": "vscode-theme-seti",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"publishConfig": {
-		"access": "public"
+	"scripts": {
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update": "node ./build/update-icon-theme.js"
 	},
-	"icon": "icons/seti-circular-128x128.png"
+	"type": "module"
 }
