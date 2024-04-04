@@ -260,7 +260,7 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/node": "20.x"
 	},
 	"publishConfig": {

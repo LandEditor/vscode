@@ -56,7 +56,7 @@
 		"yazl": "2.5.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4"
+		"@playform/build": "0.0.5"
 	},
 	"publishConfig": {
 		"access": "public"

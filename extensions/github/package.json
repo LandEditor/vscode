@@ -170,13 +170,13 @@
 	],
 	"dependencies": {
 		"@octokit/graphql": "8.1.0",
-		"@octokit/graphql-schema": "15.4.0",
+		"@octokit/graphql-schema": "15.4.1",
 		"@octokit/rest": "20.1.0",
 		"@vscode/extension-telemetry": "0.9.6",
 		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/node": "20.x"
 	},
 	"extensionDependencies": [

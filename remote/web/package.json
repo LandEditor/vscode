@@ -38,7 +38,7 @@
 		"vscode-textmate": "9.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4"
+		"@playform/build": "0.0.5"
 	},
 	"publishConfig": {
 		"access": "public"

@@ -115,8 +115,8 @@
 		"yazl": "2.5.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
-		"@playwright/test": "1.42.1",
+		"@playform/build": "0.0.5",
+		"@playwright/test": "1.43.0",
 		"@swc/core": "1.4.12",
 		"@types/cookie": "0.6.0",
 		"@types/debug": "4.1.12",

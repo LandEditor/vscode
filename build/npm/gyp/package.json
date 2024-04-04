@@ -21,7 +21,7 @@
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"node-gyp": "10.1.0"
 	},
 	"publishConfig": {

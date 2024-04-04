@@ -761,7 +761,7 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/dompurify": "3.0.5",
 		"@types/lodash.throttle": "4.1.9",
 		"@types/markdown-it": "13.0.7",

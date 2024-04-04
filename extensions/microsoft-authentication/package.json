@@ -106,7 +106,7 @@
 		"node-fetch": "3.3.2"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/node": "20.x",
 		"@types/node-fetch": "2.6.11",
 		"@types/randombytes": "2.0.3",

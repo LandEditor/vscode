@@ -193,7 +193,7 @@
 	},
 	"activationEvents": [],
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x"
 	},

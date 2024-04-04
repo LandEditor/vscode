@@ -25,7 +25,7 @@
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/chai": "4.3.14",
 		"chai": "5.1.0",
 		"warnings-to-errors-webpack-plugin": "2.3.0"

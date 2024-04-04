@@ -3329,7 +3329,7 @@
 		"which": "4.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.4",
+		"@playform/build": "0.0.5",
 		"@types/byline": "4.2.36",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x",
