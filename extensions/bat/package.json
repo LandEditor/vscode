@@ -20,7 +20,6 @@
 	},
 	"type": "module",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin mmims/language-batchfile grammars/batchfile.cson ./syntaxes/batchfile.tmLanguage.json"
 	},
@@ -54,7 +53,7 @@
 		]
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3"
+		"@playform/build": "0.0.4"
 	},
 	"publishConfig": {
 		"access": "public"

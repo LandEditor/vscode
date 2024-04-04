@@ -35,11 +35,11 @@
 		"vscode-languageserver": "9.0.1",
 		"vscode-languageserver-textdocument": "1.0.11",
 		"vscode-languageserver-types": "3.17.5",
-		"vscode-markdown-languageservice": "0.5.0-alpha.3",
+		"vscode-markdown-languageservice": "0.5.0-alpha.4",
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/node": "20.x"
 	},
 	"publishConfig": {

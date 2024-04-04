@@ -761,7 +761,7 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/dompurify": "3.0.5",
 		"@types/lodash.throttle": "4.1.9",
 		"@types/markdown-it": "13.0.7",
@@ -771,7 +771,7 @@
 		"@vscode/markdown-it-katex": "1.0.3",
 		"lodash.throttle": "4.1.1",
 		"vscode-languageserver-types": "3.17.5",
-		"vscode-markdown-languageservice": "0.5.0-alpha.3"
+		"vscode-markdown-languageservice": "0.5.0-alpha.4"
 	},
 	"publishConfig": {
 		"access": "public"

@@ -70,7 +70,7 @@
 		"parse5": "7.1.2"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/markdown-it": "13.0.7",
 		"@types/node": "20.x"
 	},

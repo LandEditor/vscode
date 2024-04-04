@@ -23,7 +23,7 @@
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/mkdirp": "1.0.2",
 		"@types/node": "20.x",
 		"@types/rimraf": "3.0.2",

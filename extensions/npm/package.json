@@ -343,7 +343,7 @@
 		"which-pm": "2.1.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/minimatch": "5.1.2",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"

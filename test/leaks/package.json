@@ -22,7 +22,7 @@
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"koa": "2.15.2",
 		"koa-mount": "4.0.0",
 		"koa-static": "5.0.0"

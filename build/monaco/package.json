@@ -21,11 +21,10 @@
 	"module": "./esm/vs/editor/editor.main.js",
 	"typings": "./esm/vs/editor/editor.api.d.ts",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3"
+		"@playform/build": "0.0.4"
 	},
 	"publishConfig": {
 		"access": "public"

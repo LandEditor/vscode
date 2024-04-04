@@ -21,7 +21,6 @@
 	"main": "./out/index.js",
 	"scripts": {
 		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
 		"copy-driver-definition": "node tools/copy-driver-definition.js",
 		"copy-package-version": "node tools/copy-package-version.js",
@@ -36,7 +35,7 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/mkdirp": "1.0.2",
 		"@types/ncp": "2.0.8",
 		"@types/node": "20.x",

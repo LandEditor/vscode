@@ -103,7 +103,7 @@
 		"@vscode/markdown-it-katex": "1.0.3"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/markdown-it": "13.0.7",
 		"@types/vscode-notebook-renderer": "1.72.3"
 	},

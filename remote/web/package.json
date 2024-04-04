@@ -18,7 +18,6 @@
 	},
 	"type": "module",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"dependencies": {
@@ -39,7 +38,7 @@
 		"vscode-textmate": "9.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3"
+		"@playform/build": "0.0.4"
 	},
 	"publishConfig": {
 		"access": "public"

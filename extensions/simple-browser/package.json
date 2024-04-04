@@ -61,7 +61,7 @@
 		"@vscode/extension-telemetry": "0.9.6"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/vscode-webview": "1.57.5",
 		"vscode-codicons": "0.0.14"
 	},

@@ -32,7 +32,7 @@
 		"rimraf": "5.0.5"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.3",
+		"@playform/build": "0.0.4",
 		"@types/mkdirp": "1.0.2",
 		"@types/mocha": "10.0.6",
 		"@types/ncp": "2.0.8",
