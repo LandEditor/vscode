@@ -1,30 +1,16 @@
 {
-	"name": "css-language-features",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./client/out/node/cssClientMain",
+	"activationEvents": [
+		"onLanguage:css",
+		"onLanguage:less",
+		"onLanguage:scss",
+		"onCommand:_css.applyCodeAction"
+	],
 	"browser": "./client/dist/browser/cssClientMain",
-	"scripts": {
-		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
-		"install-client-next": "yarn add vscode-languageclient@next",
-		"Build": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"configuration": [
@@ -987,31 +973,26 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:css",
-		"onLanguage:less",
-		"onLanguage:scss",
-		"onCommand:_css.applyCodeAction"
-	],
 	"dependencies": {
 		"vscode-languageclient": "9.0.1",
 		"vscode-uri": "3.0.8"
 	},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
 	},
+	"displayName": "%displayName%",
+	"icon": "icons/css.png",
+	"main": "./client/out/node/cssClientMain",
+	"name": "css-language-features",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"publishConfig": {
-		"access": "public"
+	"scripts": {
+		"Build": "Build 'Source/**/*.ts'",
+		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
+		"install-client-next": "yarn add vscode-languageclient@next"
 	},
-	"icon": "icons/css.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	}
+	"type": "module"
 }

@@ -1,28 +1,5 @@
 {
-	"name": "vscode-api-tests",
-	"version": "0.0.1",
-	"private": false,
-	"description": "API tests for VS Code",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/extension",
-	"scripts": {
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-		"Build": "Build 'Source/**/*.ts'"
-	},
+	"activationEvents": [],
 	"contributes": {
 		"breakpoints": [
 			{
@@ -191,19 +168,12 @@
 			]
 		}
 	},
-	"activationEvents": [],
+	"description": "API tests for VS Code",
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x"
 	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.2"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"icon": "media/icon.png",
 	"enabledApiProposals": [
 		"activeComment",
 		"authSession",
@@ -254,5 +224,16 @@
 		"workspaceTrust",
 		"telemetry",
 		"windowActivity"
-	]
+	],
+	"icon": "media/icon.png",
+	"main": "./out/extension",
+	"name": "vscode-api-tests",
+	"optionalDependencies": {
+		"@playform/document": "0.0.2"
+	},
+	"scripts": {
+		"Build": "Build 'Source/**/*.ts'",
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+	},
+	"type": "module"
 }

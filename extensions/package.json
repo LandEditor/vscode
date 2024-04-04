@@ -1,40 +1,21 @@
 {
-	"name": "vscode-extensions",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Dependencies shared by all extensions",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"postinstall": "node ./postinstall.mjs",
-		"Build": "Build 'Source/**/*.ts'"
-	},
 	"dependencies": {
 		"typescript": "5.4.3"
 	},
+	"description": "Dependencies shared by all extensions",
 	"devDependencies": {
 		"@parcel/watcher": "2.4.1",
 		"@playform/build": "0.0.2",
 		"esbuild": "0.20.2",
 		"vscode-grammar-updater": "1.1.0"
 	},
+	"name": "vscode-extensions",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"publishConfig": {
-		"access": "public"
-	}
+	"scripts": {
+		"Build": "Build 'Source/**/*.ts'",
+		"postinstall": "node ./postinstall.mjs"
+	},
+	"type": "module"
 }

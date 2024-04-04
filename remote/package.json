@@ -1,25 +1,4 @@
 {
-	"name": "vscode-reh",
-	"version": "0.0.1",
-	"private": false,
-	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "Hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"Build": "Build 'Source/**/*.ts'"
-	},
 	"dependencies": {
 		"@microsoft/1ds-core-js": "4.1.2",
 		"@microsoft/1ds-post-js": "4.1.2",
@@ -58,10 +37,12 @@
 	"devDependencies": {
 		"@playform/build": "0.0.2"
 	},
+	"name": "vscode-reh",
 	"optionalDependencies": {
 		"@playform/document": "0.0.2"
 	},
-	"publishConfig": {
-		"access": "public"
-	}
+	"scripts": {
+		"Build": "Build 'Source/**/*.ts'"
+	},
+	"type": "module"
 }
