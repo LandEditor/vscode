@@ -1,4 +1,28 @@
 {
+	"name": "code-oss-dev-integration-test",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./index.js",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "node ../../../node_modules/typescript/bin/tsc",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/mkdirp": "1.0.2",
@@ -10,14 +34,10 @@
 		"tree-kill": "1.2.2",
 		"vscode-uri": "3.0.8"
 	},
-	"main": "./index.js",
-	"name": "code-oss-dev-integration-test",
 	"optionalDependencies": {
-		"@playform/document": "0.0.2"
+		"@playform/document": "0.0.3"
 	},
-	"scripts": {
-		"Build": "Build 'Source/**/*.ts'",
-		"compile": "node ../../../node_modules/typescript/bin/tsc"
-	},
-	"type": "module"
+	"publishConfig": {
+		"access": "public"
+	}
 }

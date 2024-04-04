@@ -1,17 +1,37 @@
 {
+	"name": "leaks",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "index.js",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"koa": "2.15.2",
 		"koa-mount": "4.0.0",
 		"koa-static": "5.0.0"
 	},
-	"main": "index.js",
-	"name": "leaks",
 	"optionalDependencies": {
-		"@playform/document": "0.0.2"
+		"@playform/document": "0.0.3"
 	},
-	"scripts": {
-		"Build": "Build 'Source/**/*.ts'"
-	},
-	"type": "module"
+	"publishConfig": {
+		"access": "public"
+	}
 }

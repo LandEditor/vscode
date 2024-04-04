@@ -1,4 +1,31 @@
 {
+	"name": "code-oss-dev-smoke-test",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./src/main.js",
+	"scripts": {
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
+		"mocha": "node ../node_modules/mocha/bin/mocha",
+		"watch-automation": "yarn --cwd ../automation watch",
+		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
+	},
 	"dependencies": {
 		"mkdirp": "3.0.1",
 		"ncp": "2.0.0",
@@ -16,17 +43,10 @@
 		"npm-run-all": "4.1.5",
 		"watch": "1.0.2"
 	},
-	"main": "./src/main.js",
-	"name": "code-oss-dev-smoke-test",
 	"optionalDependencies": {
-		"@playform/document": "0.0.2"
+		"@playform/document": "0.0.3"
 	},
-	"scripts": {
-		"Build": "Build 'Source/**/*.ts'",
-		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
-		"mocha": "node ../node_modules/mocha/bin/mocha",
-		"watch-automation": "yarn --cwd ../automation watch",
-		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
-	},
-	"type": "module"
+	"publishConfig": {
+		"access": "public"
+	}
 }

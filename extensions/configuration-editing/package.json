@@ -1,14 +1,30 @@
 {
-	"activationEvents": [
-		"onProfile",
-		"onProfile:github"
-	],
+	"name": "configuration-editing",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/configurationEditingMain",
 	"browser": "./dist/browser/configurationEditingMain",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:configuration-editing",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"jsonValidation": [
@@ -138,29 +154,33 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"onProfile",
+		"onProfile:github"
+	],
 	"dependencies": {
 		"@octokit/rest": "20.0.2",
 		"jsonc-parser": "3.2.1",
 		"tunnel": "0.0.6"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
 	},
-	"displayName": "%displayName%",
+	"optionalDependencies": {
+		"@playform/document": "0.0.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "images/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	},
 	"enabledApiProposals": [
 		"profileContentHandlers"
-	],
-	"icon": "images/icon.png",
-	"main": "./out/configurationEditingMain",
-	"name": "configuration-editing",
-	"optionalDependencies": {
-		"@playform/document": "0.0.2"
-	},
-	"scripts": {
-		"Build": "Build 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:configuration-editing"
-	},
-	"type": "module"
+	]
 }

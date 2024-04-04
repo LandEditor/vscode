@@ -1,20 +1,29 @@
 {
-	"activationEvents": [
-		"onResolveRemoteAuthority:test",
-		"onCommand:vscode-testresolver.newWindow",
-		"onCommand:vscode-testresolver.currentWindow",
-		"onCommand:vscode-testresolver.newWindowWithError",
-		"onCommand:vscode-testresolver.showLog",
-		"onCommand:vscode-testresolver.openTunnel",
-		"onCommand:vscode-testresolver.startRemoteServer",
-		"onCommand:vscode-testresolver.toggleConnectionPause"
-	],
+	"name": "vscode-test-resolver",
+	"version": "0.0.1",
+	"private": false,
+	"description": "Test resolver for VS Code",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extension",
 	"browser": "./dist/browser/testResolverMain",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -145,10 +154,32 @@
 			}
 		]
 	},
-	"description": "Test resolver for VS Code",
+	"activationEvents": [
+		"onResolveRemoteAuthority:test",
+		"onCommand:vscode-testresolver.newWindow",
+		"onCommand:vscode-testresolver.currentWindow",
+		"onCommand:vscode-testresolver.newWindowWithError",
+		"onCommand:vscode-testresolver.showLog",
+		"onCommand:vscode-testresolver.openTunnel",
+		"onCommand:vscode-testresolver.startRemoteServer",
+		"onCommand:vscode-testresolver.toggleConnectionPause"
+	],
 	"devDependencies": {
 		"@playform/build": "0.0.2",
 		"@types/node": "20.x"
+	},
+	"optionalDependencies": {
+		"@playform/document": "0.0.3"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"enabledApiProposals": [
 		"resolvers",
@@ -156,16 +187,5 @@
 	],
 	"extensionKind": [
 		"ui"
-	],
-	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "vscode-test-resolver",
-	"optionalDependencies": {
-		"@playform/document": "0.0.2"
-	},
-	"scripts": {
-		"Build": "Build 'Source/**/*.ts'",
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
-	},
-	"type": "module"
+	]
 }
