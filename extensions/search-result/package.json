@@ -22,7 +22,6 @@
 	"main": "./out/extension.js",
 	"browser": "./dist/extension.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -55,10 +54,7 @@
 		"onLanguage:search-result"
 	],
 	"devDependencies": {
-		"@playform/build": "0.0.2"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
+		"@playform/build": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

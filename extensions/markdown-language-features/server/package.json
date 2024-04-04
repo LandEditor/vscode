@@ -25,7 +25,6 @@
 		"out/**/*.js"
 	],
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:markdown-language-features-server",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
@@ -40,11 +39,8 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

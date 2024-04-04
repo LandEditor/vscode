@@ -22,7 +22,6 @@
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch"
@@ -1629,12 +1628,9 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x",
 		"@types/semver": "7.5.8"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

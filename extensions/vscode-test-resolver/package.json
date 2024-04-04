@@ -21,7 +21,6 @@
 	"main": "./out/extension",
 	"browser": "./dist/browser/testResolverMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -165,11 +164,8 @@
 		"onCommand:vscode-testresolver.toggleConnectionPause"
 	],
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

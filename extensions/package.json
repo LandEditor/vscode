@@ -19,7 +19,6 @@
 	},
 	"type": "module",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"postinstall": "node ./postinstall.mjs",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -28,12 +27,9 @@
 	},
 	"devDependencies": {
 		"@parcel/watcher": "2.4.1",
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"esbuild": "0.20.2",
 		"vscode-grammar-updater": "1.1.0"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

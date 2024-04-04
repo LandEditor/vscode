@@ -23,7 +23,6 @@
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
 	},
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"clean": "../../../node_modules/.bin/rimraf out",
 		"compile": "npx gulp compile-extension:json-language-features-server",
 		"install-server-local": "yarn link vscode-languageserver-server",
@@ -42,12 +41,9 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

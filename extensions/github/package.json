@@ -21,7 +21,6 @@
 	"type": "module",
 	"main": "./out/extension.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:github",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -177,11 +176,8 @@
 		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"extensionDependencies": [
 		"vscode.git-base"

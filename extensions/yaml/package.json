@@ -20,7 +20,6 @@
 	},
 	"type": "module",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/yaml.tmbundle Syntaxes/YAML.tmLanguage ./syntaxes/yaml.tmLanguage.json"
 	},
@@ -89,10 +88,7 @@
 		]
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
+		"@playform/build": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

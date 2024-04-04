@@ -21,7 +21,6 @@
 	"type": "module",
 	"scripts": {
 		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/asp.vb.net.tmbundle Syntaxes/ASP%20VB.net.plist ./syntaxes/asp-vb-net.tmLanguage.json"
 	},
@@ -58,10 +57,7 @@
 		]
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
+		"@playform/build": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

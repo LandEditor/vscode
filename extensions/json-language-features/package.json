@@ -22,7 +22,6 @@
 	"main": "./client/out/node/jsonClientMain",
 	"browser": "./client/dist/browser/jsonClientMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:json-language-features-client compile-extension:json-language-features-server",
 		"install-client-next": "yarn add vscode-languageclient@next",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
@@ -164,11 +163,8 @@
 		"vscode-languageclient": "9.0.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

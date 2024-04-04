@@ -22,7 +22,6 @@
 	"main": "./client/out/node/cssClientMain",
 	"browser": "./client/dist/browser/cssClientMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
 		"install-client-next": "yarn add vscode-languageclient@next",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
@@ -999,11 +998,8 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

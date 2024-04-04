@@ -19,20 +19,16 @@
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"bundle-webpack": "node ../../node_modules/webpack/bin/webpack --config ./webpack.config.js --bail",
 		"compile": "node ../../node_modules/typescript/bin/tsc",
 		"esm-check": "node esm-check/esm-check.js",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/chai": "4.3.14",
 		"chai": "5.1.0",
 		"warnings-to-errors-webpack-plugin": "2.3.0"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

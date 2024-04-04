@@ -22,7 +22,6 @@
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"build-ext": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:markdown-language-features ./tsconfig.json",
 		"build-notebook": "node ./esbuild-notebook",
 		"build-preview": "node ./esbuild-preview",
@@ -762,7 +761,7 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/dompurify": "3.0.5",
 		"@types/lodash.throttle": "4.1.9",
 		"@types/markdown-it": "13.0.7",
@@ -773,9 +772,6 @@
 		"lodash.throttle": "4.1.1",
 		"vscode-languageserver-types": "3.17.5",
 		"vscode-markdown-languageservice": "0.5.0-alpha.3"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

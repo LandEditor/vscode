@@ -21,7 +21,6 @@
 	"type": "module",
 	"main": "./out/main",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:git",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-emoji": "node ./build/update-emoji.js"
@@ -3330,15 +3329,12 @@
 		"which": "4.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/byline": "4.2.36",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x",
 		"@types/picomatch": "2.3.3",
 		"@types/which": "3.0.3"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"extensionDependencies": [
 		"vscode.git-base"

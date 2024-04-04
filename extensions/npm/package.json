@@ -22,7 +22,6 @@
 	"main": "./out/npmMain",
 	"browser": "./dist/browser/npmBrowserMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:npm",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -344,13 +343,10 @@
 		"which-pm": "2.1.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/minimatch": "5.1.2",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

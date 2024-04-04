@@ -22,7 +22,6 @@
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"build-ext": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:markdown-language-features ./tsconfig.json",
 		"build-preview": "node ./esbuild-preview",
 		"compile": "gulp compile-extension:markdown-language-features && npm run build-preview",
@@ -62,12 +61,9 @@
 		"@vscode/extension-telemetry": "0.9.6"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/vscode-webview": "1.57.5",
 		"vscode-codicons": "0.0.14"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

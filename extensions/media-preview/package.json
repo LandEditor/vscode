@@ -22,7 +22,6 @@
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"build-ext": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:media-preview ./tsconfig.json",
 		"compile": "gulp compile-extension:media-preview",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
@@ -126,10 +125,7 @@
 		"vscode-uri": "3.0.8"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
+		"@playform/build": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

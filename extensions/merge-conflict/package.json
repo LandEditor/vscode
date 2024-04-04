@@ -22,7 +22,6 @@
 	"main": "./out/mergeConflictMain",
 	"browser": "./dist/browser/mergeConflictMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:merge-conflict",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -170,11 +169,8 @@
 		"@vscode/extension-telemetry": "0.9.6"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

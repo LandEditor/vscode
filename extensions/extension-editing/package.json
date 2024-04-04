@@ -22,7 +22,6 @@
 	"main": "./out/extensionEditingMain",
 	"browser": "./dist/browser/extensionEditingBrowserMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:extension-editing",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -71,12 +70,9 @@
 		"parse5": "7.1.2"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/markdown-it": "13.0.7",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

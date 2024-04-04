@@ -21,7 +21,6 @@
 	"type": "module",
 	"main": "./out/extension",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:debug-server-ready",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -214,11 +213,8 @@
 		"onDebugResolve"
 	],
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

@@ -21,7 +21,6 @@
 	"scripts": {
 		"7z": "7z",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile",
 		"compile-build": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
 		"compile-cli": "gulp compile-cli",
@@ -116,7 +115,7 @@
 		"yazl": "2.5.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@playwright/test": "1.42.1",
 		"@swc/core": "1.4.12",
 		"@types/cookie": "0.6.0",
@@ -152,7 +151,7 @@
 		"chromium-pickle-js": "0.2.0",
 		"cookie": "0.6.0",
 		"copy-webpack-plugin": "12.0.2",
-		"css-loader": "6.11.0",
+		"css-loader": "7.0.0",
 		"cssnano": "6.1.2",
 		"debounce": "2.0.0",
 		"deemon": "1.8.0",
@@ -222,7 +221,6 @@
 		"yaserver": "0.4.0"
 	},
 	"optionalDependencies": {
-		"@playform/document": "0.0.3",
 		"windows-foreground-love": "0.5.0"
 	},
 	"publishConfig": {

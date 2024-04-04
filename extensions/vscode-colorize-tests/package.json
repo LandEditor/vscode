@@ -20,7 +20,6 @@
 	"type": "module",
 	"main": "./out/colorizerTestMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
@@ -61,11 +60,8 @@
 		"jsonc-parser": "3.2.1"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

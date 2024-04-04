@@ -19,12 +19,11 @@
 	"type": "module",
 	"main": "./index.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "node ../../../node_modules/typescript/bin/tsc",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/mkdirp": "1.0.2",
 		"@types/node": "20.x",
 		"@types/rimraf": "3.0.2",
@@ -33,9 +32,6 @@
 		"tmp": "0.2.3",
 		"tree-kill": "1.2.2",
 		"vscode-uri": "3.0.8"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

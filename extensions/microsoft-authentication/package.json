@@ -22,7 +22,6 @@
 	"main": "./out/extension.js",
 	"browser": "./dist/browser/extension.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:microsoft-authentication",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
@@ -107,15 +106,12 @@
 		"node-fetch": "3.3.2"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x",
 		"@types/node-fetch": "2.6.11",
 		"@types/randombytes": "2.0.3",
 		"@types/sha.js": "2.4.4",
 		"@types/uuid": "9.0.8"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

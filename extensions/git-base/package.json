@@ -22,7 +22,6 @@
 	"main": "./out/extension.js",
 	"browser": "./dist/browser/extension.js",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:git-base",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ./build/update-grammars.js"
@@ -106,11 +105,8 @@
 		"*"
 	],
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

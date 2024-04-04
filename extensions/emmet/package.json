@@ -22,7 +22,6 @@
 	"main": "./out/node/emmetNodeMain",
 	"browser": "./dist/browser/emmetBrowserMain",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:emmet",
 		"deps": "yarn add @vscode/emmet-helper",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
@@ -491,11 +490,8 @@
 		"vscode-languageserver-textdocument": "1.0.11"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

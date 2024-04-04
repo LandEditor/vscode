@@ -22,7 +22,6 @@
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"build-notebook": "node ./esbuild",
 		"compile": "npm run build-notebook",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
@@ -104,12 +103,9 @@
 		"@vscode/markdown-it-katex": "1.0.3"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/markdown-it": "13.0.7",
 		"@types/vscode-notebook-renderer": "1.72.3"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

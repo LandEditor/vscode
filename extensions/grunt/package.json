@@ -21,7 +21,6 @@
 	"type": "module",
 	"main": "./out/main",
 	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:grunt",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -72,11 +71,8 @@
 	],
 	"dependencies": {},
 	"devDependencies": {
-		"@playform/build": "0.0.2",
+		"@playform/build": "0.0.3",
 		"@types/node": "20.x"
-	},
-	"optionalDependencies": {
-		"@playform/document": "0.0.3"
 	},
 	"publishConfig": {
 		"access": "public"
