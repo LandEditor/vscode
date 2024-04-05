@@ -773,7 +773,7 @@
 		"@vscode/markdown-it-katex": "1.0.3",
 		"lodash.throttle": "4.1.1",
 		"vscode-languageserver-types": "3.17.5",
-		"vscode-markdown-languageservice": "0.5.0-alpha.4"
+		"vscode-markdown-languageservice": "0.5.0-alpha.5"
 	},
 	"publishConfig": {
 		"access": "public"
