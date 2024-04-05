@@ -2,7 +2,7 @@
 	"name": "code-oss-dev",
 	"version": "0.0.1",
 	"private": false,
-	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
@@ -141,7 +141,7 @@
 		"@types/yazl": "2.4.5",
 		"@vscode/gulp-electron": "1.36.0",
 		"@vscode/l10n-dev": "0.0.34",
-		"@vscode/telemetry-extractor": "1.11.0",
+		"@vscode/telemetry-extractor": "1.12.0",
 		"@vscode/test-cli": "0.0.9",
 		"@vscode/test-electron": "2.3.9",
 		"@vscode/test-web": "0.0.53",

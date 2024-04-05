@@ -3,7 +3,7 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "API tests for VS Code",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#ReadMe",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
 	"bugs": {
 		"url": "https://github.com/CodeEditorLand/Foundation/issues"
 	},
