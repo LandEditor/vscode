@@ -20,10 +20,11 @@
 	"type": "module",
 	"main": "./out/index.js",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npm run copy-driver-definition && node ../../node_modules/typescript/bin/tsc",
 		"copy-driver-definition": "node tools/copy-driver-definition.js",
 		"copy-package-version": "node tools/copy-package-version.js",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"watch-driver-definition": "watch \"node tools/copy-driver-definition.js\"",
 		"watch-tsc": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
 	},
@@ -36,6 +37,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/mkdirp": "1.0.2",
 		"@types/ncp": "2.0.8",
 		"@types/node": "20.x",

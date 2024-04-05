@@ -20,6 +20,7 @@
 	"type": "module",
 	"main": "./out/colorizerTestMain",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
@@ -61,6 +62,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
 	"publishConfig": {

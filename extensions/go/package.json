@@ -20,6 +20,7 @@
 	},
 	"type": "module",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin worlpaker/go-syntax syntaxes/go.tmLanguage.json ./syntaxes/go.tmLanguage.json"
 	},
@@ -50,7 +51,8 @@
 		]
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5"
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6"
 	},
 	"publishConfig": {
 		"access": "public"

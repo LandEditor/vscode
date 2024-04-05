@@ -21,6 +21,7 @@
 	"type": "module",
 	"main": "./out/extension",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:tunnel-forwarding",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -45,6 +46,7 @@
 	],
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
 	"publishConfig": {

@@ -20,7 +20,7 @@
 	},
 	"type": "module",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ./build/update-grammar.js"
 	},
@@ -67,7 +67,8 @@
 		]
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5"
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6"
 	},
 	"publishConfig": {
 		"access": "public"

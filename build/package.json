@@ -18,6 +18,7 @@
 	},
 	"type": "module",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
 		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
@@ -28,6 +29,7 @@
 		"@azure/storage-blob": "12.17.0",
 		"@electron/get": "3.0.0",
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/ansi-colors": "3.2.0",
 		"@types/byline": "4.2.36",
 		"@types/debounce": "1.2.4",

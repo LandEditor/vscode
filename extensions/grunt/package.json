@@ -21,6 +21,7 @@
 	"type": "module",
 	"main": "./out/main",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:grunt",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -71,6 +72,7 @@
 	],
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
 	"publishConfig": {

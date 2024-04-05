@@ -19,9 +19,10 @@
 	"type": "module",
 	"main": "./src/main.js",
 	"scripts": {
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "yarn --cwd ../automation compile && node ../../node_modules/typescript/bin/tsc",
 		"mocha": "node ../node_modules/mocha/bin/mocha",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"watch-automation": "yarn --cwd ../automation watch",
 		"watch-smoke": "node ../../node_modules/typescript/bin/tsc --watch --preserveWatchOutput"
 	},
@@ -33,6 +34,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/mkdirp": "1.0.2",
 		"@types/mocha": "10.0.6",
 		"@types/ncp": "2.0.8",

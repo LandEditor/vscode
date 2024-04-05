@@ -19,10 +19,12 @@
 	"type": "module",
 	"main": "index.js",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"koa": "2.15.2",
 		"koa-mount": "4.0.0",
 		"koa-static": "5.0.0"

@@ -21,6 +21,7 @@
 	"type": "module",
 	"main": "./out/phpMain",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:php-language-features",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -75,6 +76,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"
 	},

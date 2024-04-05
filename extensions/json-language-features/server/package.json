@@ -23,6 +23,7 @@
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
 	},
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"clean": "../../../node_modules/.bin/rimraf out",
 		"compile": "npx gulp compile-extension:json-language-features-server",
 		"install-server-local": "yarn link vscode-languageserver-server",
@@ -42,6 +43,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x"
 	},

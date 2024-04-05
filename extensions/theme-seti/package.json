@@ -20,6 +20,7 @@
 	},
 	"type": "module",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update": "node ./build/update-icon-theme.js"
 	},
@@ -33,7 +34,8 @@
 		]
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5"
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6"
 	},
 	"publishConfig": {
 		"access": "public"

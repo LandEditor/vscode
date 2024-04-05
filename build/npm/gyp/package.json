@@ -18,10 +18,12 @@
 	},
 	"type": "module",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"node-gyp": "10.1.0"
 	},
 	"publishConfig": {

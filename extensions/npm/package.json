@@ -22,6 +22,7 @@
 	"main": "./out/npmMain",
 	"browser": "./dist/browser/npmBrowserMain",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:npm",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
@@ -344,6 +345,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/minimatch": "5.1.2",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"

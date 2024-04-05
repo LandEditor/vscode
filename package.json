@@ -20,7 +20,7 @@
 	"main": "./out/main",
 	"scripts": {
 		"7z": "7z",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile",
 		"compile-build": "node --max-old-space-size=4095 ./node_modules/gulp/bin/gulp.js compile-build",
 		"compile-cli": "gulp compile-cli",
@@ -116,6 +116,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@playwright/test": "1.43.0",
 		"@swc/core": "1.4.12",
 		"@types/cookie": "0.6.0",
