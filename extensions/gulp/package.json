@@ -1,29 +1,12 @@
 {
-	"name": "gulp",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/main",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:gulp",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"activationEvents": [
+		"onTaskType:gulp"
+	],
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	},
 	"contributes": {
 		"configuration": {
@@ -63,22 +46,18 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onTaskType:gulp"
-	],
+	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.5",
-		"@playform/document": "0.0.6",
+		"@playform/build": "0.0.6",
 		"@types/node": "20.x"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
+	"displayName": "%displayName%",
 	"icon": "images/gulp.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"main": "./out/main",
+	"name": "gulp",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:gulp",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	}
 }

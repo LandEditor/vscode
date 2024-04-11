@@ -1,27 +1,23 @@
 {
-	"name": "vscode-json-languageserver",
-	"version": "0.0.1",
-	"private": false,
-	"description": "JSON language server",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
-	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Playform",
-		"email": "hello@playform.cloud",
-		"url": "https://playform.cloud"
-	},
-	"type": "module",
-	"main": "./out/node/jsonServerMain",
 	"bin": {
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
 	},
+	"dependencies": {
+		"@vscode/l10n": "0.0.18",
+		"jsonc-parser": "3.2.1",
+		"request-light": "0.7.0",
+		"vscode-json-languageservice": "5.3.10",
+		"vscode-languageserver": "10.0.0-next.2",
+		"vscode-uri": "3.0.8"
+	},
+	"description": "JSON language server",
+	"devDependencies": {
+		"@playform/build": "0.0.6",
+		"@types/mocha": "10.0.6",
+		"@types/node": "20.x"
+	},
+	"main": "./out/node/jsonServerMain",
+	"name": "vscode-json-languageserver",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"clean": "../../../node_modules/.bin/rimraf out",
@@ -32,22 +28,5 @@
 		"install-service-next": "yarn add vscode-json-languageservice@next",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
-	},
-	"dependencies": {
-		"@vscode/l10n": "0.0.18",
-		"jsonc-parser": "3.2.1",
-		"request-light": "0.7.0",
-		"vscode-json-languageservice": "5.3.10",
-		"vscode-languageserver": "10.0.0-next.2",
-		"vscode-uri": "3.0.8"
-	},
-	"devDependencies": {
-		"@playform/build": "0.0.5",
-		"@playform/document": "0.0.6",
-		"@types/mocha": "10.0.6",
-		"@types/node": "20.x"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }
