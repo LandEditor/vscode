@@ -1,12 +1,29 @@
 {
-	"activationEvents": [
-		"onTunnel"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"name": "tunnel-forwarding",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
+	"main": "./out/extension",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:tunnel-forwarding",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -24,22 +41,26 @@
 			}
 		]
 	},
-	"description": "%description%",
+	"activationEvents": [
+		"onTunnel"
+	],
 	"devDependencies": {
 		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
-	"displayName": "%displayName%",
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "media/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
+	},
 	"enabledApiProposals": [
 		"resolvers",
 		"tunnelFactory"
-	],
-	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "tunnel-forwarding",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:tunnel-forwarding",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	]
 }

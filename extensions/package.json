@@ -1,18 +1,39 @@
 {
-	"dependencies": {
-		"typescript": "5.4.5"
-	},
-	"description": "Dependencies shared by all extensions",
-	"devDependencies": {
-		"@parcel/watcher": "2.4.1",
-		"@playform/build": "0.0.5",
-		"esbuild": "0.20.2",
-		"vscode-grammar-updater": "1.1.0"
-	},
 	"name": "vscode-extensions",
+	"version": "0.0.1",
+	"private": false,
+	"description": "Dependencies shared by all extensions",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Playform",
+		"email": "hello@playform.cloud",
+		"url": "https://playform.cloud"
+	},
+	"type": "module",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"postinstall": "node ./postinstall.mjs",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"dependencies": {
+		"typescript": "5.4.5"
+	},
+	"devDependencies": {
+		"@parcel/watcher": "2.4.1",
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
+		"esbuild": "0.20.2",
+		"vscode-grammar-updater": "1.1.0"
+	},
+	"publishConfig": {
+		"access": "public"
 	}
 }
