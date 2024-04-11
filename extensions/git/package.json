@@ -3311,7 +3311,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.6",
+		"@playform/build": "0.0.5",
 		"@types/byline": "4.2.36",
 		"@types/mocha": "10.0.6",
 		"@types/node": "20.x",

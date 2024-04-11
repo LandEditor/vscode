@@ -85,7 +85,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.6",
+		"@playform/build": "0.0.5",
 		"@types/markdown-it": "14.0.0",
 		"@types/vscode-notebook-renderer": "1.72.3"
 	},

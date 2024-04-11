@@ -378,7 +378,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.6",
+		"@playform/build": "0.0.5",
 		"@types/node": "20.x"
 	},
 	"displayName": "%displayName%",

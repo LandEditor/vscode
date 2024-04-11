@@ -1,7 +1,7 @@
 {
 	"description": "A browser based code editor",
 	"devDependencies": {
-		"@playform/build": "0.0.6"
+		"@playform/build": "0.0.5"
 	},
 	"module": "./esm/vs/editor/editor.main.js",
 	"name": "monaco-editor-core",

@@ -5,7 +5,7 @@
 	"description": "Dependencies shared by all extensions",
 	"devDependencies": {
 		"@parcel/watcher": "2.4.1",
-		"@playform/build": "0.0.6",
+		"@playform/build": "0.0.5",
 		"esbuild": "0.20.2",
 		"vscode-grammar-updater": "1.1.0"
 	},

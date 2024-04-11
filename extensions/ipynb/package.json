@@ -105,7 +105,7 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@jupyterlab/nbformat": "4.1.6",
-		"@playform/build": "0.0.6",
+		"@playform/build": "0.0.5",
 		"@types/markdown-it": "14.0.0"
 	},
 	"displayName": "%displayName%",

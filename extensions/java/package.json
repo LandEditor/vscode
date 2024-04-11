@@ -30,7 +30,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.6"
+		"@playform/build": "0.0.5"
 	},
 	"displayName": "%displayName%",
 	"name": "java",

@@ -17,7 +17,7 @@
 		"vscode-textmate": "9.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.6"
+		"@playform/build": "0.0.5"
 	},
 	"name": "vscode-web",
 	"scripts": {

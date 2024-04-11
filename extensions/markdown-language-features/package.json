@@ -743,7 +743,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.6",
+		"@playform/build": "0.0.5",
 		"@types/dompurify": "3.0.5",
 		"@types/lodash.throttle": "4.1.9",
 		"@types/markdown-it": "14.0.0",
