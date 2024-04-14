@@ -1,48 +1,63 @@
 {
-  "name": "pug",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin davidrios/pug-tmbundle Syntaxes/Pug.JSON-tmLanguage ./syntaxes/pug.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "jade",
-        "extensions": [
-          ".pug",
-          ".jade"
-        ],
-        "aliases": [
-          "Pug",
-          "Jade",
-          "jade"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "jade",
-        "scopeName": "text.pug",
-        "path": "./syntaxes/pug.tmLanguage.json"
-      }
-    ],
-    "configurationDefaults": {
-      "[jade]": {
-        "diffEditor.ignoreTrimWhitespace": false
-      }
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "pug",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin davidrios/pug-tmbundle Syntaxes/Pug.JSON-tmLanguage ./syntaxes/pug.tmLanguage.json"
+	},
+	"contributes": {
+		"configurationDefaults": {
+			"[jade]": {
+				"diffEditor.ignoreTrimWhitespace": false
+			}
+		},
+		"grammars": [
+			{
+				"language": "jade",
+				"path": "./syntaxes/pug.tmLanguage.json",
+				"scopeName": "text.pug"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Pug",
+					"Jade",
+					"jade"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".pug",
+					".jade"
+				],
+				"id": "jade"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

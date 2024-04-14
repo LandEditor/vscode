@@ -1,32 +1,40 @@
 {
-  "name": "vscode-html-languageserver",
-  "description": "HTML language server",
-  "version": "1.0.0",
-  "author": "Microsoft Corporation",
-  "license": "MIT",
-  "engines": {
-    "node": "*"
-  },
-  "main": "./out/node/htmlServerMain",
-  "dependencies": {
-    "@vscode/l10n": "^0.0.18",
-    "vscode-css-languageservice": "^6.2.13",
-    "vscode-html-languageservice": "^5.2.0",
-    "vscode-languageserver": "^10.0.0-next.2",
-    "vscode-languageserver-textdocument": "^1.0.11",
-    "vscode-uri": "^3.0.8"
-  },
-  "devDependencies": {
-    "@types/mocha": "^9.1.1",
-    "@types/node": "18.x"
-  },
-  "scripts": {
-    "compile": "npx gulp compile-extension:html-language-features-server",
-    "watch": "npx gulp watch-extension:html-language-features-server",
-    "install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
-    "install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
-    "install-server-next": "yarn add vscode-languageserver@next",
-    "install-server-local": "yarn link vscode-languageserver",
-    "test": "yarn compile && node ./test/index.js"
-  }
+	"name": "vscode-html-languageserver",
+	"version": "0.0.1",
+	"private": false,
+	"description": "HTML language server",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"main": "./out/node/htmlServerMain",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "npx gulp compile-extension:html-language-features-server",
+		"install-server-local": "yarn link vscode-languageserver",
+		"install-server-next": "yarn add vscode-languageserver@next",
+		"install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
+		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6",
+		"@types/node": "18.x"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

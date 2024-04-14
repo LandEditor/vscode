@@ -1,40 +1,53 @@
 {
-  "name": "vscode-reh",
-  "version": "0.0.0",
-  "private": true,
-  "dependencies": {
-    "@microsoft/1ds-core-js": "^3.2.13",
-    "@microsoft/1ds-post-js": "^3.2.13",
-    "@parcel/watcher": "2.1.0",
-    "@vscode/iconv-lite-umd": "0.7.0",
-    "@vscode/proxy-agent": "^0.19.0",
-    "@vscode/ripgrep": "^1.15.9",
-    "@vscode/spdlog": "^0.15.0",
-    "@vscode/vscode-languagedetection": "1.0.21",
-    "@vscode/windows-process-tree": "^0.6.0",
-    "@vscode/windows-registry": "^1.1.0",
-    "@xterm/addon-canvas": "0.8.0-beta.2",
-    "@xterm/addon-image": "0.9.0-beta.2",
-    "@xterm/addon-search": "0.16.0-beta.2",
-    "@xterm/addon-serialize": "0.14.0-beta.2",
-    "@xterm/addon-unicode11": "0.9.0-beta.2",
-    "@xterm/addon-webgl": "0.19.0-beta.2",
-    "@xterm/headless": "5.6.0-beta.2",
-    "@xterm/xterm": "5.6.0-beta.2",
-    "cookie": "^0.4.0",
-    "graceful-fs": "4.2.11",
-    "http-proxy-agent": "^7.0.0",
-    "https-proxy-agent": "^7.0.2",
-    "jschardet": "3.0.0",
-    "kerberos": "^2.0.1",
-    "minimist": "^1.2.6",
-    "native-watchdog": "^1.4.1",
-    "node-pty": "1.1.0-beta11",
-    "tas-client-umd": "0.1.8",
-    "vscode-oniguruma": "1.7.0",
-    "vscode-regexpp": "^3.1.0",
-    "vscode-textmate": "9.0.0",
-    "yauzl": "^3.0.0",
-    "yazl": "^2.4.3"
-  }
+	"name": "vscode-reh",
+	"version": "0.0.1",
+	"private": false,
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"dependencies": {
+		"@xterm/addon-canvas": "0.8.0-beta.2",
+		"@xterm/addon-image": "0.9.0-beta.2",
+		"@xterm/addon-search": "0.16.0-beta.2",
+		"@xterm/addon-serialize": "0.14.0-beta.2",
+		"@xterm/addon-unicode11": "0.9.0-beta.2",
+		"@xterm/addon-webgl": "0.19.0-beta.2",
+		"@xterm/headless": "5.6.0-beta.2",
+		"@xterm/xterm": "5.6.0-beta.2",
+		"cookie": "^0.4.0",
+		"graceful-fs": "4.2.11",
+		"http-proxy-agent": "^7.0.0",
+		"https-proxy-agent": "^7.0.2",
+		"jschardet": "3.0.0",
+		"kerberos": "^2.0.1",
+		"minimist": "^1.2.6",
+		"native-watchdog": "^1.4.1",
+		"node-pty": "1.1.0-beta11",
+		"tas-client-umd": "0.1.8",
+		"yauzl": "^3.0.0",
+		"yazl": "^2.4.3"
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

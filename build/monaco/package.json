@@ -1,17 +1,34 @@
 {
-  "name": "monaco-editor-core",
-  "private": true,
-  "version": "0.0.0",
-  "description": "A browser based code editor",
-  "author": "Microsoft Corporation",
-  "license": "MIT",
-  "typings": "./esm/vs/editor/editor.api.d.ts",
-  "module": "./esm/vs/editor/editor.main.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode"
-  },
-  "bugs": {
-    "url": "https://github.com/microsoft/vscode/issues"
-  }
+	"name": "monaco-editor-core",
+	"version": "0.0.1",
+	"private": false,
+	"description": "A browser based code editor",
+	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"bugs": {
+		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Foundation.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"module": "./esm/vs/editor/editor.main.js",
+	"typings": "./esm/vs/editor/editor.api.d.ts",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.5",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }
