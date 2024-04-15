@@ -1,6 +1,14 @@
 {
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"bin": {
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
+	},
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"dependencies": {
 		"jsonc-parser": "3.2.1",
@@ -9,10 +17,21 @@
 	"description": "JSON language server",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/node/jsonServerMain",
 	"name": "vscode-json-languageserver",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"clean": "../../../node_modules/.bin/rimraf out",
@@ -23,5 +42,7 @@
 		"install-service-next": "yarn add vscode-json-languageservice@next",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

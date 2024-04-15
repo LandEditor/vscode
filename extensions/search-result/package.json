@@ -2,7 +2,15 @@
 	"activationEvents": [
 		"onLanguage:search-result"
 	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"browser": "./dist/extension.js",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": true
@@ -36,18 +44,31 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.7"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [
 		"documentFiltersExclusive"
 	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"icon": "images/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/extension.js",
 	"name": "search-result",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

@@ -2,7 +2,15 @@
 	"activationEvents": [
 		"*"
 	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"browser": "./dist/browser/extension.js",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": true
@@ -87,16 +95,29 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
 	"displayName": "%displayName%",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"icon": "resources/icons/git.png",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/extension.js",
 	"name": "git-base",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:git-base",
 		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"update-grammar": "node ./build/update-grammars.js"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

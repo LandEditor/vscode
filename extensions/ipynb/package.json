@@ -3,7 +3,15 @@
 		"onNotebook:jupyter-notebook",
 		"onNotebookSerializer:interactive"
 	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"browser": "./dist/browser/ipynbMain.js",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": true
@@ -106,6 +114,7 @@
 	"devDependencies": {
 		"@jupyterlab/nbformat": "4.1.6",
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/markdown-it": "14.0.1"
 	},
 	"displayName": "%displayName%",
@@ -117,13 +126,25 @@
 		"workspace",
 		"ui"
 	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"icon": "media/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/ipynbMain.js",
 	"name": "ipynb",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"build-notebook": "node ./esbuild",
 		"compile": "npx gulp compile-extension:ipynb && npm run build-notebook",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

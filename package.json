@@ -1,4 +1,12 @@
 {
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"dependencies": {
 		"@xterm/addon-canvas": "0.8.0-beta.2",
 		"@xterm/addon-image": "0.9.0-beta.2",
@@ -24,6 +32,7 @@
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@swc/core": "1.4.14",
 		"@types/cookie": "0.6.0",
 		"@types/debug": "4.1.12",
@@ -77,10 +86,20 @@
 		"xml2js": "0.6.2",
 		"yaserver": "0.4.0"
 	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/main",
 	"name": "code-oss-dev",
 	"optionalDependencies": {
 		"windows-foreground-love": "0.5.0"
+	},
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"scripts": {
 		"7z": "7z",
@@ -137,5 +156,7 @@
 		"watch-webd": "deemon yarn watch-web",
 		"watchd": "deemon yarn watch",
 		"web": "echo 'yarn web' is replaced by './scripts/code-server' or './scripts/code-web'"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

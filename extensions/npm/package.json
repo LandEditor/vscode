@@ -4,7 +4,15 @@
 		"onLanguage:json",
 		"workspaceContains:package.json"
 	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"browser": "./dist/browser/npmBrowserMain",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"description": "%workspaceTrust%",
@@ -329,6 +337,7 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/minimatch": "5.1.2",
 		"@types/node": "20.x",
 		"@types/which": "3.0.3"
@@ -337,12 +346,24 @@
 	"enabledApiProposals": [
 		"terminalQuickFixProvider"
 	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"icon": "images/npm_icon.png",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/npmMain",
 	"name": "npm",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:npm",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }
