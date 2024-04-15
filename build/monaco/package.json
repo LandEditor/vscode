@@ -1,13 +1,34 @@
 {
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"description": "A browser based code editor",
 	"devDependencies": {
-		"@playform/build": "0.0.7"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
 	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"license": "SEE LICENSE IN LICENSE",
 	"module": "./esm/vs/editor/editor.main.js",
 	"name": "monaco-editor-core",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"typings": "./esm/vs/editor/editor.api.d.ts"
+	"type": "module",
+	"typings": "./esm/vs/editor/editor.api.d.ts",
+	"version": "0.0.1"
 }

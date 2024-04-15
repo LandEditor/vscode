@@ -3,7 +3,15 @@
 		"onLanguage:json",
 		"onLanguage:markdown"
 	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"browser": "./dist/browser/extensionEditingBrowserMain",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": true
@@ -53,16 +61,29 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/markdown-it": "14.0.1",
 		"@types/node": "20.x"
 	},
 	"displayName": "%displayName%",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"icon": "images/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/extensionEditingMain",
 	"name": "extension-editing",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:extension-editing",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

@@ -3,7 +3,15 @@
 		"onProfile",
 		"onProfile:github"
 	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"browser": "./dist/browser/configurationEditingMain",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"supported": true
@@ -146,18 +154,31 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [
 		"profileContentHandlers"
 	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"icon": "images/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
 	"main": "./out/configurationEditingMain",
 	"name": "configuration-editing",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:configuration-editing",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	},
+	"type": "module",
+	"version": "0.0.1"
 }
