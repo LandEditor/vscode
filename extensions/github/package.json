@@ -173,7 +173,7 @@
 		"@octokit/graphql": "5.0.5",
 		"@octokit/graphql-schema": "14.4.0",
 		"@octokit/rest": "19.0.4",
-		"tunnel": "^0.0.6"
+		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",

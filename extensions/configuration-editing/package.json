@@ -160,8 +160,8 @@
 	],
 	"dependencies": {
 		"@octokit/rest": "19.0.4",
-		"jsonc-parser": "^3.2.0",
-		"tunnel": "^0.0.6"
+		"jsonc-parser": "3.2.0",
+		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.5",

@@ -24,7 +24,7 @@
 	"devDependencies": {
 		"@playform/build": "0.0.5",
 		"@playform/document": "0.0.6",
-		"node-gyp": "^9.4.0"
+		"node-gyp": "9.4.0"
 	},
 	"publishConfig": {
 		"access": "public"

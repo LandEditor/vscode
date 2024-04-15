@@ -104,7 +104,7 @@
 	"devDependencies": {
 		"@playform/build": "0.0.5",
 		"@playform/document": "0.0.6",
-		"@types/markdown-it": "^0.0.0"
+		"@types/markdown-it": "0.0.0"
 	},
 	"publishConfig": {
 		"access": "public"

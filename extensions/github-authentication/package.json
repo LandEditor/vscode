@@ -57,7 +57,7 @@
 		"@playform/build": "0.0.5",
 		"@playform/document": "0.0.6",
 		"@types/node": "18.x",
-		"@types/node-fetch": "^2.5.7"
+		"@types/node-fetch": "2.5.7"
 	},
 	"publishConfig": {
 		"access": "public"
