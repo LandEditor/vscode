@@ -1,24 +1,32 @@
 {
-	"activationEvents": [],
-	"aiKey": "0c6ae279ed8443289764825290e4f9e2-1a736e7c-1324-4338-be46-fc2a58ae4d14-7255",
-	"api": "none",
-	"author": {
-		"email": "Land@Playform.Cloud",
-		"name": "Land",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"browser": "./dist/browser/extension.js",
+	"name": "github-authentication",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"restrictedConfigurations": [
-				"github-enterprise.uri"
-			],
-			"supported": "limited"
-		},
-		"virtualWorkspaces": true
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"main": "./out/extension.js",
+	"browser": "./dist/browser/extension.js",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:github-authentication",
+		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
 	},
 	"contributes": {
 		"authentication": [
@@ -41,41 +49,33 @@
 			"title": "GitHub Enterprise Server Authentication Provider"
 		}
 	},
+	"activationEvents": [],
 	"dependencies": {
 		"node-fetch": "3.3.2"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
 		"@types/node": "20.x",
 		"@types/node-fetch": "2.6.11"
 	},
-	"displayName": "%displayName%",
-	"extensionKind": [
-		"ui",
-		"workspace"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"icon": "images/icon.png",
-	"license": "SEE LICENSE IN LICENSE",
-	"main": "./out/extension.js",
-	"name": "github-authentication",
-	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	"icon": "images/icon.png",
+	"aiKey": "0c6ae279ed8443289764825290e4f9e2-1a736e7c-1324-4338-be46-fc2a58ae4d14-7255",
+	"api": "none",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"restrictedConfigurations": [
+				"github-enterprise.uri"
+			],
+			"supported": "limited"
+		},
+		"virtualWorkspaces": true
 	},
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:github-authentication",
-		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
-	},
-	"type": "module",
-	"version": "0.0.1"
+	"extensionKind": [
+		"ui",
+		"workspace"
+	]
 }
