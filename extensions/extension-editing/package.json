@@ -1,30 +1,14 @@
 {
-	"name": "extension-editing",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://github.com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://github.com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/extensionEditingMain",
+	"activationEvents": [
+		"onLanguage:json",
+		"onLanguage:markdown"
+	],
 	"browser": "./dist/browser/extensionEditingBrowserMain",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:extension-editing",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"jsonValidation": [
@@ -61,29 +45,24 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:json",
-		"onLanguage:markdown"
-	],
 	"dependencies": {
 		"jsonc-parser": "3.2.1",
 		"markdown-it": "14.1.0",
 		"parse5": "7.1.2"
 	},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/markdown-it": "14.0.1",
 		"@types/node": "20.x"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
+	"displayName": "%displayName%",
 	"icon": "images/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"main": "./out/extensionEditingMain",
+	"name": "extension-editing",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:extension-editing",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	}
 }

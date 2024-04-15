@@ -1,29 +1,9 @@
 {
-	"name": "builtin-notebook-renderers",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://github.com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://github.com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"build-notebook": "node ./esbuild",
-		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"notebookRenderer": [
@@ -52,20 +32,19 @@
 		]
 	},
 	"dependencies": {},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/jsdom": "21.1.6",
 		"jsdom": "24.0.0"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
+	"displayName": "%displayName%",
 	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"name": "builtin-notebook-renderers",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"build-notebook": "node ./esbuild",
+		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	}
 }

@@ -1,28 +1,4 @@
 {
-	"name": "javascript",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://github.com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://github.com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
 	"contributes": {
 		"configurationDefaults": {
 			"[javascript]": {
@@ -188,11 +164,14 @@
 			}
 		]
 	},
+	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6"
+		"@playform/build": "0.0.7"
 	},
-	"publishConfig": {
-		"access": "public"
+	"displayName": "%displayName%",
+	"name": "javascript",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	}
 }

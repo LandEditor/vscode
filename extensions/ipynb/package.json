@@ -1,31 +1,14 @@
 {
-	"name": "ipynb",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://github.com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://github.com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/ipynbMain.js",
+	"activationEvents": [
+		"onNotebook:jupyter-notebook",
+		"onNotebookSerializer:interactive"
+	],
 	"browser": "./dist/browser/ipynbMain.js",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"build-notebook": "node ./esbuild",
-		"compile": "npx gulp compile-extension:ipynb && npm run build-notebook",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"commands": [
@@ -115,30 +98,17 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onNotebook:jupyter-notebook",
-		"onNotebookSerializer:interactive"
-	],
 	"dependencies": {
 		"@enonic/fnv-plus": "1.3.0",
 		"detect-indent": "7.0.1"
 	},
+	"description": "%description%",
 	"devDependencies": {
 		"@jupyterlab/nbformat": "4.1.6",
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/markdown-it": "14.0.1"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	},
+	"displayName": "%displayName%",
 	"enabledApiProposals": [
 		"documentPaste",
 		"diffContentOptions"
@@ -146,5 +116,14 @@
 	"extensionKind": [
 		"workspace",
 		"ui"
-	]
+	],
+	"icon": "media/icon.png",
+	"main": "./out/ipynbMain.js",
+	"name": "ipynb",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"build-notebook": "node ./esbuild",
+		"compile": "npx gulp compile-extension:ipynb && npm run build-notebook",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	}
 }
