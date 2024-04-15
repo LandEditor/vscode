@@ -159,14 +159,14 @@
 		"onProfile:github"
 	],
 	"dependencies": {
-		"@octokit/rest": "19.0.4",
-		"jsonc-parser": "3.2.0",
+		"@octokit/rest": "20.1.0",
+		"jsonc-parser": "3.2.1",
 		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5",
+		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/node": "18.x"
+		"@types/node": "20.x"
 	},
 	"publishConfig": {
 		"access": "public"

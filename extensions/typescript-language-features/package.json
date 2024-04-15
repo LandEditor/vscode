@@ -1626,14 +1626,14 @@
 		"onWalkthrough:nodejsWelcome"
 	],
 	"dependencies": {
-		"jsonc-parser": "3.2.0",
-		"semver": "7.5.2"
+		"jsonc-parser": "3.2.1",
+		"semver": "7.6.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5",
+		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/node": "18.x",
-		"@types/semver": "5.5.0"
+		"@types/node": "20.x",
+		"@types/semver": "7.5.8"
 	},
 	"publishConfig": {
 		"access": "public"

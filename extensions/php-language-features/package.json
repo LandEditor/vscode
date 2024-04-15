@@ -72,13 +72,13 @@
 		"onLanguage:php"
 	],
 	"dependencies": {
-		"which": "2.0.2"
+		"which": "4.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5",
+		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/node": "18.x",
-		"@types/which": "2.0.0"
+		"@types/node": "20.x",
+		"@types/which": "3.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

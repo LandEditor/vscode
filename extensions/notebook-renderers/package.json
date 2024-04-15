@@ -53,10 +53,10 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"@playform/build": "0.0.5",
+		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/jsdom": "21.1.0",
-		"jsdom": "21.1.1"
+		"@types/jsdom": "21.1.6",
+		"jsdom": "24.0.0"
 	},
 	"publishConfig": {
 		"access": "public"

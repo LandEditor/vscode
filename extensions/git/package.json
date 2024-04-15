@@ -3357,18 +3357,18 @@
 	"dependencies": {
 		"@joaomoreno/unique-names-generator": "5.1.0",
 		"byline": "5.0.0",
-		"file-type": "16.5.4",
-		"jschardet": "3.0.0",
-		"picomatch": "2.3.1",
+		"file-type": "19.0.0",
+		"jschardet": "3.1.2",
+		"picomatch": "4.0.2",
 		"which": "4.0.0"
 	},
 	"devDependencies": {
-		"@playform/build": "0.0.5",
+		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/byline": "4.2.31",
-		"@types/node": "18.x",
-		"@types/picomatch": "2.3.0",
-		"@types/which": "3.0.0"
+		"@types/byline": "4.2.36",
+		"@types/node": "20.x",
+		"@types/picomatch": "2.3.3",
+		"@types/which": "3.0.3"
 	},
 	"extensionDependencies": [
 		"vscode.git-base"
