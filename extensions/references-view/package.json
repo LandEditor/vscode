@@ -1,30 +1,22 @@
 {
-	"name": "references-view",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"activationEvents": [
+		"onCommand:references-view.find",
+		"onCommand:editor.action.showReferences"
+	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"browser": "./dist/extension.js",
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/extension",
-	"browser": "./dist/extension.js",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "npx gulp compile-extension:references-view",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"commands": [
@@ -392,23 +384,31 @@
 			]
 		}
 	},
-	"activationEvents": [
-		"onCommand:references-view.find",
-		"onCommand:editor.action.showReferences"
-	],
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
+	"displayName": "%displayName%",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"icon": "media/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/extension",
+	"name": "references-view",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	}
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "npx gulp compile-extension:references-view",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

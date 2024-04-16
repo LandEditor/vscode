@@ -1,27 +1,11 @@
 {
-	"name": "code-oss-dev-build",
-	"version": "0.0.1",
-	"private": false,
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Land",
 		"email": "Land@Playform.Cloud",
+		"name": "Land",
 		"url": "HTTPS://Land.Playform.Cloud"
 	},
-	"type": "module",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
-		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
@@ -61,11 +45,27 @@
 		"workerpool": "9.1.1",
 		"yauzl": "3.1.2"
 	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"license": "SEE LICENSE IN LICENSE",
+	"name": "code-oss-dev-build",
 	"optionalDependencies": {
 		"tree-sitter": "0.21.1",
 		"tree-sitter-typescript": "0.20.5"
 	},
+	"private": false,
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
+		"npmCheckJs": "../node_modules/.bin/tsc --noEmit",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

@@ -1,31 +1,22 @@
 {
-	"name": "emmet",
-	"displayName": "Emmet",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"activationEvents": [
+		"onCommand:emmet.expandAbbreviation",
+		"onLanguage"
+	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"browser": "./dist/browser/emmetBrowserMain",
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/node/emmetNodeMain",
-	"browser": "./dist/browser/emmetBrowserMain",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:emmet",
-		"deps": "yarn add @vscode/emmet-helper",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"commands": [
@@ -478,26 +469,35 @@
 			]
 		}
 	},
-	"activationEvents": [
-		"onCommand:emmet.expandAbbreviation",
-		"onLanguage"
-	],
 	"dependencies": {
 		"image-size": "1.1.1"
 	},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
+	"displayName": "Emmet",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"icon": "images/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/node/emmetNodeMain",
+	"name": "emmet",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "images/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	}
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:emmet",
+		"deps": "yarn add @vscode/emmet-helper",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

@@ -1,27 +1,14 @@
 {
-	"name": "vscode-colorize-tests",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Colorize tests for VS Code",
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
+	"activationEvents": [
+		"onLanguage:json"
+	],
 	"author": {
-		"name": "Land",
 		"email": "Land@Playform.Cloud",
+		"name": "Land",
 		"url": "HTTPS://Land.Playform.Cloud"
 	},
-	"type": "module",
-	"main": "./out/colorizerTestMain",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"contributes": {
 		"productIconThemes": [
@@ -54,19 +41,32 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:json"
-	],
 	"dependencies": {
 		"jsonc-parser": "3.2.1"
 	},
+	"description": "Colorize tests for VS Code",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"icon": "media/icon.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/colorizerTestMain",
+	"name": "vscode-colorize-tests",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "media/icon.png"
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }

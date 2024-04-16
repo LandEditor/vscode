@@ -1,24 +1,31 @@
 {
-	"name": "vscode-html-languageserver",
-	"version": "0.0.1",
-	"private": false,
-	"description": "HTML language server",
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"dependencies": {},
+	"description": "HTML language server",
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "20.x"
+	},
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./out/node/htmlServerMain",
+	"name": "vscode-html-languageserver",
+	"private": false,
+	"publishConfig": {
+		"access": "public"
 	},
 	"repository": {
 		"type": "git",
 		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/node/htmlServerMain",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:html-language-features-server",
@@ -28,13 +35,6 @@
 		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"dependencies": {},
-	"devDependencies": {
-		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
-		"@types/node": "20.x"
-	},
-	"publishConfig": {
-		"access": "public"
-	}
+	"type": "module",
+	"version": "0.0.1"
 }

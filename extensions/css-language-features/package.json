@@ -1,31 +1,24 @@
 {
-	"name": "css-language-features",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"activationEvents": [
+		"onLanguage:css",
+		"onLanguage:less",
+		"onLanguage:scss",
+		"onCommand:_css.applyCodeAction"
+	],
+	"author": {
+		"email": "Land@Playform.Cloud",
+		"name": "Land",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"browser": "./client/dist/browser/cssClientMain",
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./client/out/node/cssClientMain",
-	"browser": "./client/dist/browser/cssClientMain",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
-		"install-client-next": "yarn add vscode-languageclient@next",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"configuration": [
@@ -988,26 +981,33 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:css",
-		"onLanguage:less",
-		"onLanguage:scss",
-		"onCommand:_css.applyCodeAction"
-	],
 	"dependencies": {},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
+	"displayName": "%displayName%",
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"icon": "icons/css.png",
+	"license": "SEE LICENSE IN LICENSE",
+	"main": "./client/out/node/cssClientMain",
+	"name": "css-language-features",
+	"private": false,
 	"publishConfig": {
 		"access": "public"
 	},
-	"icon": "icons/css.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
-	}
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
+		"install-client-next": "yarn add vscode-languageclient@next",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"type": "module",
+	"version": "0.0.1"
 }
