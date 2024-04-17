@@ -91,7 +91,7 @@ export abstract class SimpleFindWidget extends Widget implements IVerticalSashLa
 				try {
 					new RegExp(value);
 					return null;
-				} catch (e) {
+				} catch (_Error) {
 					this._foundMatch = false;
 					this.updateButtons(this._foundMatch);
 					return { content: e.message };

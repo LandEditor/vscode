@@ -183,7 +183,7 @@ export class ActionRunner extends Disposable implements IActionRunner {
 		let error: Error | undefined = undefined;
 		try {
 			await this.runAction(action, context);
-		} catch (e) {
+		} catch (_Error) {
 			error = e;
 		}
 

@@ -295,7 +295,7 @@ export class TerminalChatController extends Disposable implements ITerminalContr
 			this._chatWidget?.value.inlineChatWidget.updateProgress(true);
 			this._chatWidget?.value.inlineChatWidget.updateInfo(GeneratingPhrase + '\u2026');
 			await task;
-		} catch (e) {
+		} catch (_Error) {
 
 		} finally {
 			this._requestActiveContextKey.set(false);

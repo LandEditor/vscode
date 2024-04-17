@@ -166,7 +166,7 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 			// Wait a bit to see if the user is still typing
 			await timeout(CommandsQuickAccessProvider.AI_RELATED_INFORMATION_DEBOUNCE, token);
 			additionalPicks = await this.getRelatedInformationPicks(allPicks, picksSoFar, filter, token);
-		} catch (e) {
+		} catch (_Error) {
 			return [];
 		}
 

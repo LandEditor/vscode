@@ -35,7 +35,7 @@ async function downloadExtensionDetails(extension: IExtensionDefinition): Promis
 			} else {
 				return { fileName, body: null };
 			}
-		} catch (e) {
+		} catch (_Error) {
 			return { fileName, body: null };
 		}
 	}

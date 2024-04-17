@@ -82,7 +82,7 @@ function format(args: any, verbose: boolean = false): string {
 		if (typeof a === 'object') {
 			try {
 				a = JSON.stringify(a);
-			} catch (e) { }
+			} catch (_Error) { }
 		}
 
 		result += (i > 0 ? ' ' : '') + a;

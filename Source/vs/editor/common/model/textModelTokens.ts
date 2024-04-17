@@ -430,7 +430,7 @@ function safeTokenize(languageIdCodec: ILanguageIdCodec, languageId: string, tok
 	if (tokenizationSupport) {
 		try {
 			r = tokenizationSupport.tokenizeEncoded(text, hasEOL, state.clone());
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		}
 	}

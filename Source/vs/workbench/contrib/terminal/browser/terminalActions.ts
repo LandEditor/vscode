@@ -910,7 +910,7 @@ export function registerTerminalActions() {
 						}
 						try {
 							await Promise.all(promises);
-						} catch (e) {
+						} catch (_Error) {
 							notificationService.error(e);
 						}
 					}

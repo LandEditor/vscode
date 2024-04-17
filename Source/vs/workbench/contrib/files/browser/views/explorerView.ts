@@ -747,7 +747,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 					for (let i = 0; i < Math.min(input.length, 5); i++) {
 						try {
 							await this.tree.expand(input[i]);
-						} catch (e) { }
+						} catch (_Error) { }
 					}
 				}
 				// Reloaded or transitioned from an empty workspace, but only have a single folder in the workspace.
@@ -763,7 +763,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 						if (!previousRoots.has(item.resource)) {
 							try {
 								await this.tree.expand(item);
-							} catch (e) { }
+							} catch (_Error) { }
 						}
 					}));
 				}
@@ -806,7 +806,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 		while (item && item.resource.toString() !== resource.toString()) {
 			try {
 				await this.tree.expand(item);
-			} catch (e) {
+			} catch (_Error) {
 				return this.selectResource(resource, reveal, retry + 1);
 			}
 			if (!item.children.size) {
@@ -842,7 +842,7 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 
 				this.tree.setFocus([item]);
 				this.tree.setSelection([item]);
-			} catch (e) {
+			} catch (_Error) {
 				// Element might not be in the tree, try again and silently fail
 				return this.selectResource(resource, reveal, retry + 1);
 			}

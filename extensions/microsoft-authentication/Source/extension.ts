@@ -28,7 +28,7 @@ async function initMicrosoftSovereignCloudAuthProvider(context: vscode.Extension
 		}
 		try {
 			Environment.add(customEnv);
-		} catch (e) {
+		} catch (_Error) {
 			const res = await vscode.window.showErrorMessage(vscode.l10n.t('Error validating custom environment setting: {0}', e.message), vscode.l10n.t('Open settings'));
 			if (res) {
 				await vscode.commands.executeCommand('workbench.action.openSettings', 'microsoft-sovereign-cloud.customEnvironment');
@@ -73,7 +73,7 @@ async function initMicrosoftSovereignCloudAuthProvider(context: vscode.Extension
 				});
 
 				return await aadService.createSession(scopes);
-			} catch (e) {
+			} catch (_Error) {
 				/* __GDPR__
 					"loginFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users run into issues with the login flow." }
 				*/
@@ -90,7 +90,7 @@ async function initMicrosoftSovereignCloudAuthProvider(context: vscode.Extension
 				telemetryReporter.sendTelemetryEvent('logoutMicrosoftSovereignCloud');
 
 				await aadService.removeSessionById(id);
-			} catch (e) {
+			} catch (_Error) {
 				/* __GDPR__
 					"logoutFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often fail to log out." }
 				*/
@@ -139,7 +139,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				});
 
 				return await loginService.createSession(scopes);
-			} catch (e) {
+			} catch (_Error) {
 				/* __GDPR__
 					"loginFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often users run into issues with the login flow." }
 				*/
@@ -156,7 +156,7 @@ export async function activate(context: vscode.ExtensionContext) {
 				telemetryReporter.sendTelemetryEvent('logout');
 
 				await loginService.removeSessionById(id);
-			} catch (e) {
+			} catch (_Error) {
 				/* __GDPR__
 					"logoutFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often fail to log out." }
 				*/

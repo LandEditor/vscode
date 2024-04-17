@@ -280,7 +280,7 @@ export class WorkspaceExtensionsConfigService extends Disposable implements IWor
 			const content = await this.fileService.readFile(workspaceConfigurationResource);
 			const extensionsConfigContent = <IExtensionsConfigContent | undefined>parse(content.value.toString())['extensions'];
 			return extensionsConfigContent ? this.parseExtensionConfig(extensionsConfigContent) : undefined;
-		} catch (e) { /* Ignore */ }
+		} catch (_Error) { /* Ignore */ }
 		return undefined;
 	}
 
@@ -289,7 +289,7 @@ export class WorkspaceExtensionsConfigService extends Disposable implements IWor
 			const content = await this.fileService.readFile(workspaceFolder.toResource(EXTENSIONS_CONFIG));
 			const extensionsConfigContent = <IExtensionsConfigContent>parse(content.value.toString());
 			return this.parseExtensionConfig(extensionsConfigContent);
-		} catch (e) { /* ignore */ }
+		} catch (_Error) { /* ignore */ }
 		return {};
 	}
 

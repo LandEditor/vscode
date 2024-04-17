@@ -47,7 +47,7 @@ export async function copyCellOutput(mimeType: string | undefined, outputViewMod
 	try {
 		await clipboardService.writeText(text);
 
-	} catch (e) {
+	} catch (_Error) {
 		logService.error(`Failed to copy content: ${e}`);
 	}
 }

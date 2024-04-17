@@ -687,7 +687,7 @@ CommandsRegistry.registerCommand({
 			if (result.length) {
 				clipboardService.writeText(result.join('\n'));
 			}
-		} catch (e) {
+		} catch (_Error) {
 			const result = elements.map(element => element.value);
 			clipboardService.writeText(result.join('\n'));
 		}

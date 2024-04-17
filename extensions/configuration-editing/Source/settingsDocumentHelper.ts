@@ -46,7 +46,7 @@ export class SettingsDocument {
 			let ignoredExtensions = [];
 			try {
 				ignoredExtensions = parse(this.document.getText())['settingsSync.ignoredExtensions'];
-			} catch (e) {/* ignore error */ }
+			} catch (_Error) {/* ignore error */ }
 			const range = this.getReplaceRange(location, position);
 			return provideInstalledExtensionProposals(ignoredExtensions, '', range, true);
 		}
@@ -56,7 +56,7 @@ export class SettingsDocument {
 			let alreadyConfigured: string[] = [];
 			try {
 				alreadyConfigured = Object.keys(parse(this.document.getText())['remote.extensionKind']);
-			} catch (e) {/* ignore error */ }
+			} catch (_Error) {/* ignore error */ }
 			const range = this.getReplaceRange(location, position);
 			return provideInstalledExtensionProposals(alreadyConfigured, location.previousNode ? '' : `: [\n\t"ui"\n]`, range, true);
 		}

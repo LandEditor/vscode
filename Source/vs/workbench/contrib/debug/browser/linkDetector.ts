@@ -98,7 +98,7 @@ export class LinkDetector {
 						break;
 					}
 				}
-			} catch (e) {
+			} catch (_Error) {
 				container.appendChild(document.createTextNode(part.value));
 			}
 		}

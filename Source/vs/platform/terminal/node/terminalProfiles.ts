@@ -154,7 +154,7 @@ async function detectAvailableWindowsProfiles(
 					resultProfiles.push(wslProfile);
 				}
 			}
-		} catch (e) {
+		} catch (_Error) {
 			if (logIfWslNotInstalled) {
 				logService?.trace('WSL is not installed, so could not detect WSL profiles');
 				logIfWslNotInstalled = false;

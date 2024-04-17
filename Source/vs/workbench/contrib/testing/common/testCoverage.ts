@@ -184,7 +184,7 @@ export class FileCoverage extends AbstractFileCoverage {
 			const d = await this._details;
 			this.resolved = true;
 			return d;
-		} catch (e) {
+		} catch (_Error) {
 			this._details = undefined;
 			throw e;
 		}

@@ -382,7 +382,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			try {
 				const manifestContent = await this.extensionResourceLoaderService.readExtensionResource(resources.joinPath(extensionLocation, 'package.json'));
 				return this.colorThemeRegistry.getMarketplaceThemes(JSON.parse(manifestContent), extensionLocation, ExtensionData.fromName(publisher, name));
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error('Problem loading themes from marketplace', e);
 			}
 		}
@@ -606,7 +606,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			try {
 				const manifestContent = await this.extensionResourceLoaderService.readExtensionResource(resources.joinPath(extensionLocation, 'package.json'));
 				return this.fileIconThemeRegistry.getMarketplaceThemes(JSON.parse(manifestContent), extensionLocation, ExtensionData.fromName(publisher, name));
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error('Problem loading themes from marketplace', e);
 			}
 		}
@@ -712,7 +712,7 @@ export class WorkbenchThemeService extends Disposable implements IWorkbenchTheme
 			try {
 				const manifestContent = await this.extensionResourceLoaderService.readExtensionResource(resources.joinPath(extensionLocation, 'package.json'));
 				return this.productIconThemeRegistry.getMarketplaceThemes(JSON.parse(manifestContent), extensionLocation, ExtensionData.fromName(publisher, name));
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error('Problem loading themes from marketplace', e);
 			}
 		}

@@ -527,7 +527,7 @@ export function deserializeSearchError(error: Error): SearchError {
 	try {
 		const details = JSON.parse(errorMsg);
 		return new SearchError(details.message, details.code);
-	} catch (e) {
+	} catch (_Error) {
 		return new SearchError(errorMsg, SearchErrorCode.other);
 	}
 }

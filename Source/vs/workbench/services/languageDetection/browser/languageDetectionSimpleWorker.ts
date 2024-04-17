@@ -105,7 +105,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 		try {
 			this._regexpModel = await import(uri) as RegexpModel;
 			return this._regexpModel;
-		} catch (e) {
+		} catch (_Error) {
 			this._regexpLoadFailed = true;
 			// console.warn('error loading language detection model', e);
 			return;
@@ -144,7 +144,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 				try {
 					const modelJSON = await response.json();
 					return modelJSON;
-				} catch (e) {
+				} catch (_Error) {
 					const message = `Failed to parse model JSON.`;
 					throw new Error(message);
 				}
@@ -220,7 +220,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 		let modelOperations: ModelOperations | undefined;
 		try {
 			modelOperations = await this.getModelOperations();
-		} catch (e) {
+		} catch (_Error) {
 			console.log(e);
 			this._loadFailed = true;
 			return;
@@ -230,7 +230,7 @@ export class LanguageDetectionSimpleWorker extends EditorSimpleWorker {
 
 		try {
 			modelResults = await modelOperations.runModel(content);
-		} catch (e) {
+		} catch (_Error) {
 			console.warn(e);
 		}
 

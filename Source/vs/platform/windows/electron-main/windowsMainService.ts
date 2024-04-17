@@ -900,7 +900,7 @@ export class WindowsMainService extends Disposable implements IWindowsMainServic
 			}
 
 			return uri;
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(`Invalid URI input string: ${arg}, ${e.message}`);
 		}
 

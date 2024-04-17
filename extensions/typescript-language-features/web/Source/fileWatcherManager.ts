@@ -47,7 +47,7 @@ export class FileWatcherManager {
 		let uri: URI;
 		try {
 			uri = this.pathMapper.toResource(path);
-		} catch (e) {
+		} catch (_Error) {
 			console.error(e);
 			return FileWatcherManager.noopWatcher;
 		}
@@ -76,7 +76,7 @@ export class FileWatcherManager {
 		let uri: URI;
 		try {
 			uri = this.pathMapper.toResource(path);
-		} catch (e) {
+		} catch (_Error) {
 			console.error(e);
 			return FileWatcherManager.noopWatcher;
 		}

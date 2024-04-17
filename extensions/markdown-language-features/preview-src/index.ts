@@ -163,7 +163,7 @@ async function copyImage(image: HTMLImageElement, retries = 5) {
 				}, 'image/png');
 			})
 		})]);
-	} catch (e) {
+	} catch (_Error) {
 		console.error(e);
 	}
 }

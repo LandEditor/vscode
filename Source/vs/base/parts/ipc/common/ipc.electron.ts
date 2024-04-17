@@ -23,7 +23,7 @@ export class Protocol implements IMessagePassingProtocol {
 	send(message: VSBuffer): void {
 		try {
 			this.sender.send('vscode:message', message.buffer);
-		} catch (e) {
+		} catch (_Error) {
 			// systems are going down
 		}
 	}

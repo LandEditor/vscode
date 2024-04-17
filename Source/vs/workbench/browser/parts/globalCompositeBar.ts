@@ -337,7 +337,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 			for (const changed of [...(e.event.changed ?? []), ...(e.event.added ?? [])]) {
 				try {
 					await this.addOrUpdateAccount(e.providerId, changed.account);
-				} catch (e) {
+				} catch (_Error) {
 					this.logService.error(e);
 				}
 			}
@@ -402,7 +402,7 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 					// try again in the background so that if the failure was intermittent, we can resolve it on the next showing of the menu
 					try {
 						await this.addAccountsFromProvider(providerId);
-					} catch (e) {
+					} catch (_Error) {
 						this.logService.error(e);
 					}
 				}
@@ -521,11 +521,11 @@ export class AccountsActivityActionViewItem extends AbstractGlobalActivityAction
 			for (const session of sessions) {
 				try {
 					await this.addOrUpdateAccount(providerId, session.account);
-				} catch (e) {
+				} catch (_Error) {
 					this.logService.error(e);
 				}
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 			this.problematicProviders.add(providerId);
 		}

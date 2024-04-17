@@ -36,7 +36,7 @@ async function testWSLFeatureInstalled(): Promise<boolean> {
 				if ((await Promises.stat(dllPath)).isFile()) {
 					return true;
 				}
-			} catch (e) {
+			} catch (_Error) {
 			}
 		}
 	}

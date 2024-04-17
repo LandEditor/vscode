@@ -189,7 +189,7 @@ export class TerminalProcessManager extends Disposable implements ITerminalProce
 			if (this._process?.freePortKillProcess) {
 				await this._process?.freePortKillProcess(port);
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this._notificationService.notify({ message: localize('killportfailure', 'Could not kill process listening on port {0}, command exited with error {1}', port, e), severity: Severity.Warning });
 		}
 	}
@@ -303,7 +303,7 @@ export class TerminalProcessManager extends Disposable implements ITerminalProce
 							options,
 							shouldPersist
 						);
-					} catch (e) {
+					} catch (_Error) {
 						if (e?.message === 'Could not fetch remote environment') {
 							this._logService.trace(`Could not fetch remote environment, silently failing`);
 							return undefined;

@@ -264,7 +264,7 @@ export class IssueReporter extends Disposable {
 				const uri = URI.revive(extension.uri);
 				extension.bugsUrl = uri.toString();
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this.renderBlocks();
 		}
 	}
@@ -273,7 +273,7 @@ export class IssueReporter extends Disposable {
 		try {
 			const data = await this.issueMainService.$sendReporterMenu(extension.id, extension.name);
 			return data;
-		} catch (e) {
+		} catch (_Error) {
 			console.error(e);
 			return undefined;
 		}

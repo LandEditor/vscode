@@ -44,7 +44,7 @@ export class NotebookCellStatusBarService extends Disposable implements INoteboo
 		return await Promise.all(providers.map(async p => {
 			try {
 				return await p.provideCellStatusBarItems(docUri, cellIndex, token) ?? { items: [] };
-			} catch (e) {
+			} catch (_Error) {
 				onUnexpectedExternalError(e);
 				return { items: [] };
 			}

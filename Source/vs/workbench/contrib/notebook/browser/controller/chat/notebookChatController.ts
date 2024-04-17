@@ -682,7 +682,7 @@ export class NotebookChatController extends Disposable implements INotebookEdito
 					}));
 				}
 			}
-		} catch (e) {
+		} catch (_Error) {
 			response = new ErrorResponse(e);
 		} finally {
 			this._ctxHasActiveRequest.set(false);

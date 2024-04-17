@@ -53,7 +53,7 @@ export function getKeybindingsContentFromSyncContent(syncContent: string, platfo
 			case OperatingSystem.Windows:
 				return isUndefined(parsed.windows) ? null : parsed.windows;
 		}
-	} catch (e) {
+	} catch (_Error) {
 		logService.error(e);
 		return null;
 	}
@@ -255,7 +255,7 @@ export class KeybindingsSynchroniser extends AbstractJsonFileSynchroniser implem
 		// Delete the preview
 		try {
 			await this.fileService.del(this.previewResource);
-		} catch (e) { /* ignore */ }
+		} catch (_Error) { /* ignore */ }
 
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			this.logService.trace(`${this.syncResourceLogLabel}: Updating last synchronized keybindings...`);
@@ -310,7 +310,7 @@ export class KeybindingsSynchroniser extends AbstractJsonFileSynchroniser implem
 		let parsed: ISyncContent = {};
 		try {
 			parsed = JSON.parse(syncContent || '{}');
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 		}
 		if (this.syncKeybindingsPerPlatform()) {
@@ -382,7 +382,7 @@ export class KeybindingsInitializer extends AbstractInitializer {
 	private getKeybindingsContentFromSyncContent(syncContent: string): string | null {
 		try {
 			return getKeybindingsContentFromSyncContent(syncContent, true, this.logService);
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 			return null;
 		}

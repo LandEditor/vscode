@@ -18,7 +18,7 @@ export async function getServiceMachineId(environmentService: IEnvironmentServic
 		const contents = await fileService.readFile(environmentService.serviceMachineIdResource);
 		const value = contents.value.toString();
 		uuid = isUUID(value) ? value : null;
-	} catch (e) {
+	} catch (_Error) {
 		uuid = null;
 	}
 

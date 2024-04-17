@@ -20,7 +20,7 @@ function calculatePackageDeps(binaryPath: string): Set<string> {
 		if (!(statSync(binaryPath).mode & constants.S_IXUSR)) {
 			throw new Error(`Binary ${binaryPath} needs to have an executable bit set.`);
 		}
-	} catch (e) {
+	} catch (_Error) {
 		// The package might not exist. Don't re-throw the error here.
 		console.error('Tried to stat ' + binaryPath + ' but failed.');
 	}

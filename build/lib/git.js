@@ -17,7 +17,7 @@ function getVersion(repo) {
     try {
         head = fs.readFileSync(headPath, 'utf8').trim();
     }
-    catch (e) {
+    catch (_Error) {
         return undefined;
     }
     if (/^[0-9a-f]{40}$/i.test(head)) {
@@ -32,7 +32,7 @@ function getVersion(repo) {
     try {
         return fs.readFileSync(refPath, 'utf8').trim();
     }
-    catch (e) {
+    catch (_Error) {
         // noop
     }
     const packedRefsPath = path.join(git, 'packed-refs');
@@ -40,7 +40,7 @@ function getVersion(repo) {
     try {
         refsRaw = fs.readFileSync(packedRefsPath, 'utf8').trim();
     }
-    catch (e) {
+    catch (_Error) {
         return undefined;
     }
     const refsRegex = /^([0-9a-f]{40})\s+(.+)$/gm;

@@ -169,7 +169,7 @@ export class CodeActionController extends Disposable implements IEditorContribut
 		let actions: CodeActionSet;
 		try {
 			actions = await newState.actions;
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 			return;
 		}

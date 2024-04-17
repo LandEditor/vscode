@@ -95,7 +95,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 					extensionData: 'Extensions data loading',
 				};
 			}));
-		} catch (e) {
+		} catch (_Error) {
 			extensionData.push({
 				name: 'Workbench Issue Service',
 				publisher: 'Unknown',
@@ -116,7 +116,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 			const githubSessions = await this.authenticationService.getSessions('github');
 			const potentialSessions = githubSessions.filter(session => session.scopes.includes('repo'));
 			githubAccessToken = potentialSessions[0]?.accessToken;
-		} catch (e) {
+		} catch (_Error) {
 			// Ignore
 		}
 
@@ -124,7 +124,7 @@ export class NativeIssueService implements IWorkbenchIssueService {
 		let isUnsupported = false;
 		try {
 			isUnsupported = !(await this.integrityService.isPure()).isPure;
-		} catch (e) {
+		} catch (_Error) {
 			// Ignore
 		}
 

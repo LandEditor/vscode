@@ -84,7 +84,7 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 		try {
 			const content = await this.fileService.readFile(this.resource);
 			return content.value.toString();
-		} catch (e) {
+		} catch (_Error) {
 			return '';
 		}
 	}

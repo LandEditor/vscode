@@ -375,7 +375,7 @@ export class UserDataSyncService extends Disposable implements IUserDataSyncServ
 		try {
 			await this.userDataSyncStoreService.clear();
 			this.logService.info('Cleared data on server');
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 		}
 		this._onDidResetRemote.fire();
@@ -388,7 +388,7 @@ export class UserDataSyncService extends Disposable implements IUserDataSyncServ
 		for (const [synchronizer] of this.activeProfileSynchronizers.values()) {
 			try {
 				await synchronizer.resetLocal();
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(e);
 			}
 		}
@@ -717,7 +717,7 @@ class ProfileSynchronizer extends Disposable {
 					} else {
 						await synchroniser.sync(resourceManifest, syncHeaders);
 					}
-				} catch (e) {
+				} catch (_Error) {
 					const userDataSyncError = UserDataSyncError.toUserDataSyncError(e);
 					reportUserDataSyncError(userDataSyncError, executionId, this.userDataSyncStoreManagementService, this.telemetryService);
 					if (canBailout(e)) {
@@ -745,7 +745,7 @@ class ProfileSynchronizer extends Disposable {
 			}
 			try {
 				await synchroniser.apply(false, syncHeaders);
-			} catch (e) {
+			} catch (_Error) {
 				const userDataSyncError = UserDataSyncError.toUserDataSyncError(e);
 				reportUserDataSyncError(userDataSyncError, executionId, this.userDataSyncStoreManagementService, this.telemetryService);
 				if (canBailout(e)) {
@@ -765,7 +765,7 @@ class ProfileSynchronizer extends Disposable {
 				if (synchroniser.status !== SyncStatus.Idle) {
 					await synchroniser.stop();
 				}
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(e);
 			}
 		}
@@ -775,7 +775,7 @@ class ProfileSynchronizer extends Disposable {
 		for (const synchroniser of this.enabled) {
 			try {
 				await synchroniser.resetLocal();
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(`${synchroniser.resource}: ${toErrorMessage(e)}`);
 				this.logService.error(e);
 			}

@@ -79,7 +79,7 @@ export abstract class BaseTestResultStorage extends Disposable implements ITestR
 				}
 
 				return new HydratedTestResult(this.uriIdentityService, contents);
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.warn(`Error deserializing stored test result ${id}`, e);
 				return undefined;
 			}

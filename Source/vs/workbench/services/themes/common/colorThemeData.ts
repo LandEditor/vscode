@@ -473,7 +473,7 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 					if (rule) {
 						this.customSemanticTokenRules.push(rule);
 					}
-				} catch (e) {
+				} catch (_Error) {
 					// invalid selector, ignore
 				}
 			}
@@ -656,7 +656,7 @@ export class ColorThemeData implements IWorkbenchColorTheme {
 				return undefined;
 			}
 			return theme;
-		} catch (e) {
+		} catch (_Error) {
 			return undefined;
 		}
 	}
@@ -740,7 +740,7 @@ async function _loadColorTheme(extensionResourceLoaderService: IExtensionResourc
 					if (rule) {
 						result.semanticTokenRules.push(rule);
 					}
-				} catch (e) {
+				} catch (_Error) {
 					return Promise.reject(new Error(nls.localize({ key: 'error.invalidformat.semanticTokenColors', comment: ['{0} will be replaced by a path. Values in quotes should not be translated.'] }, "Problem parsing color theme file: {0}. Property 'semanticTokenColors' contains a invalid selector", themeLocation.toString())));
 				}
 			}
@@ -760,7 +760,7 @@ function _loadSyntaxTokens(extensionResourceLoaderService: IExtensionResourceLoa
 			}
 			convertSettings(settings, result);
 			return Promise.resolve(null);
-		} catch (e) {
+		} catch (_Error) {
 			return Promise.reject(new Error(nls.localize('error.cannotparse', "Problems parsing tmTheme file: {0}", e.message)));
 		}
 	}, error => {

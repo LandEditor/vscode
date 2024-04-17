@@ -313,7 +313,7 @@ export abstract class BaseTerminalProfileResolverService implements ITerminalPro
 	private async _resolveVariables(value: string, env: IProcessEnvironment, lastActiveWorkspace: IWorkspaceFolder | undefined) {
 		try {
 			value = await this._configurationResolverService.resolveWithEnvironment(env, lastActiveWorkspace, value);
-		} catch (e) {
+		} catch (_Error) {
 			this._logService.error(`Could not resolve shell`, e);
 		}
 		return value;

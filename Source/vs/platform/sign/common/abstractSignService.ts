@@ -35,7 +35,7 @@ export abstract class AbstractSignService implements ISignService {
 					data: validator.createNewMessage(value)
 				};
 			}
-		} catch (e) {
+		} catch (_Error) {
 			// ignore errors silently
 		}
 		return { id: '', data: value };
@@ -53,7 +53,7 @@ export abstract class AbstractSignService implements ISignService {
 		this.validators.delete(message.id);
 		try {
 			return (validator.validate(value) === 'ok');
-		} catch (e) {
+		} catch (_Error) {
 			// ignore errors silently
 			return false;
 		} finally {
@@ -64,7 +64,7 @@ export abstract class AbstractSignService implements ISignService {
 	async sign(value: string): Promise<string> {
 		try {
 			return await this.signValue(value);
-		} catch (e) {
+		} catch (_Error) {
 			// ignore errors silently
 		}
 		return value;

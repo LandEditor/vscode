@@ -387,7 +387,7 @@ export abstract class SimpleFindReplaceWidget extends Widget {
 					try {
 						new RegExp(value);
 						return null;
-					} catch (e) {
+					} catch (_Error) {
 						this.foundMatch = false;
 						this.updateButtons(this.foundMatch);
 						return { content: e.message };

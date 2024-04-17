@@ -790,7 +790,7 @@ export class TypeOperations {
 		let electricAction: IElectricAction | null;
 		try {
 			electricAction = config.onElectricCharacter(ch, lineTokens, position.column);
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 			return null;
 		}

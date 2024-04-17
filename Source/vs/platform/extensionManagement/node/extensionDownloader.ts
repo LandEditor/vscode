@@ -143,7 +143,7 @@ export class ExtensionsDownloader extends Disposable {
 		} catch (error) {
 			try {
 				await this.fileService.del(tempLocation);
-			} catch (e) { /* ignore */ }
+			} catch (_Error) { /* ignore */ }
 			if (error.code === 'ENOTEMPTY') {
 				this.logService.info(`Rename failed because the file was downloaded by another source. So ignoring renaming.`, extension.identifier.id, location.path);
 			} else {
@@ -197,7 +197,7 @@ export class ExtensionsDownloader extends Disposable {
 					return this.fileService.del(resource);
 				}));
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 		}
 	}

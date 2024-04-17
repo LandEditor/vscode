@@ -274,7 +274,7 @@ export class ExtHostChatAgents2 extends Disposable implements ExtHostChatAgentsS
 				}
 				return { errorDetails: result?.errorDetails, timings: stream.timings, metadata: result?.metadata };
 			}), token);
-		} catch (e) {
+		} catch (_Error) {
 			this._logService.error(e, agent.extension);
 			return { errorDetails: { message: toErrorMessage(e), responseIsIncomplete: true } };
 

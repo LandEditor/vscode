@@ -342,7 +342,7 @@ export class CodeCoverageDecorations extends Disposable implements IEditorContri
 				|| new CoverageDetailsModel(details, textModel);
 			CodeCoverageDecorations.fileCoverageDecorations.set(coverage, model);
 			return model;
-		} catch (e) {
+		} catch (_Error) {
 			this.log.error('Error loading coverage details', e);
 		}
 

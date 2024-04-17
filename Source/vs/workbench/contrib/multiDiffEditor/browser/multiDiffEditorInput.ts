@@ -164,7 +164,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
 				]);
 				if (original) { store2.add(original); }
 				if (modified) { store2.add(modified); }
-			} catch (e) {
+			} catch (_Error) {
 				// e.g. "File seems to be binary and cannot be opened as text"
 				console.error(e);
 				onUnexpectedError(e);

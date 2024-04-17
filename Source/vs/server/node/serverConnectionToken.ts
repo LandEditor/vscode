@@ -68,7 +68,7 @@ export async function parseServerConnectionToken(args: ServerParsedArgs, default
 		let rawConnectionToken: string;
 		try {
 			rawConnectionToken = fs.readFileSync(connectionTokenFile).toString().replace(/\r?\n$/, '');
-		} catch (e) {
+		} catch (_Error) {
 			return new ServerConnectionTokenParseError(`Unable to read the connection token file at '${connectionTokenFile}'.`);
 		}
 

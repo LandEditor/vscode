@@ -814,7 +814,7 @@ export function getLocation(text: string, position: number): Location {
 				}
 			}
 		});
-	} catch (e) {
+	} catch (_Error) {
 		if (e !== earlyReturnException) {
 			throw e;
 		}
@@ -1172,7 +1172,7 @@ export function visit(text: string, visitor: JSONVisitor, options: ParseOptions 
 						handleError(ParseErrorCode.InvalidNumberFormat);
 						value = 0;
 					}
-				} catch (e) {
+				} catch (_Error) {
 					handleError(ParseErrorCode.InvalidNumberFormat);
 				}
 				onLiteralValue(value);

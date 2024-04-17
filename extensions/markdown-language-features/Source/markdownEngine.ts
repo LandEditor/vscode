@@ -135,7 +135,7 @@ export class MarkdownItEngine implements IMdParser {
 				for (const plugin of this._contributionProvider.contributions.markdownItPlugins.values()) {
 					try {
 						md = (await plugin)(md);
-					} catch (e) {
+					} catch (_Error) {
 						console.error('Could not load markdown it plugin', e);
 					}
 				}
@@ -293,7 +293,7 @@ export class MarkdownItEngine implements IMdParser {
 					return normalizeLink(vscode.Uri.parse(link).with({ scheme: vscode.env.uriScheme }).toString());
 				}
 
-			} catch (e) {
+			} catch (_Error) {
 				// noop
 			}
 			return normalizeLink(link);

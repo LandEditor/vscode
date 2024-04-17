@@ -674,7 +674,7 @@ export class View extends ViewEventHandler {
 function safeInvokeNoArg<T>(func: () => T): T | null {
 	try {
 		return func();
-	} catch (e) {
+	} catch (_Error) {
 		onUnexpectedError(e);
 		return null;
 	}

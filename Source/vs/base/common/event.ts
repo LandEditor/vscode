@@ -1154,7 +1154,7 @@ export class Emitter<T> {
 
 		try {
 			listener.value(value);
-		} catch (e) {
+		} catch (_Error) {
 			errorHandler(e);
 		}
 	}
@@ -1284,7 +1284,7 @@ export class AsyncEmitter<T extends IWaitUntil> extends Emitter<T> {
 
 			try {
 				listener(event);
-			} catch (e) {
+			} catch (_Error) {
 				onUnexpectedError(e);
 				continue;
 			}

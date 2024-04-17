@@ -85,14 +85,14 @@ export function parseLocalFileData(text: string) {
 	let data: RawLocalFileCodeBlockData;
 	try {
 		data = JSON.parse(text);
-	} catch (e) {
+	} catch (_Error) {
 		throw new Error('Could not parse code block local file data');
 	}
 
 	let uri: URI;
 	try {
 		uri = URI.revive(data?.uri);
-	} catch (e) {
+	} catch (_Error) {
 		throw new Error('Invalid code block local file data URI');
 	}
 

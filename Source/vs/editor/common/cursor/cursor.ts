@@ -950,7 +950,7 @@ class CommandExecutor {
 
 		try {
 			command.getEditOperations(ctx.model, editOperationBuilder);
-		} catch (e) {
+		} catch (_Error) {
 			// TODO@Alex use notification service if this should be user facing
 			// e.friendlyMessage = nls.localize('corrupt.commands', "Unexpected exception while executing command.");
 			onUnexpectedError(e);

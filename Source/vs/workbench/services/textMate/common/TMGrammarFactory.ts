@@ -54,7 +54,7 @@ export class TMGrammarFactory extends Disposable {
 				try {
 					const content = await this._host.readFile(location);
 					return vscodeTextmate.parseRawGrammar(content, location.path);
-				} catch (e) {
+				} catch (_Error) {
 					this._host.logError(`Unable to load and parse grammar for scope ${scopeName} from ${location}`, e);
 					return null;
 				}

@@ -127,7 +127,7 @@ export class ExtHostTunnelService extends Disposable implements IExtHostTunnelSe
 				let providedAttributes: vscode.PortAttributes | null | undefined;
 				try {
 					providedAttributes = await provider.provider.providePortAttributes({ port, pid, commandLine }, cancellationToken);
-				} catch (e) {
+				} catch (_Error) {
 					// Call with old signature for breaking API change
 					providedAttributes = await (provider.provider.providePortAttributes as any as (port: number, pid: number | undefined, commandLine: string | undefined, token: vscode.CancellationToken) => vscode.ProviderResult<vscode.PortAttributes>)(port, pid, commandLine, cancellationToken);
 				}
@@ -270,7 +270,7 @@ export class ExtHostTunnelService extends Disposable implements IExtHostTunnelSe
 				} else {
 					this.logService.trace('ForwardedPorts: (ExtHostTunnelService) Tunnel is undefined');
 				}
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.trace('ForwardedPorts: (ExtHostTunnelService) tunnel provider error');
 				if (e instanceof Error) {
 					return e.message;

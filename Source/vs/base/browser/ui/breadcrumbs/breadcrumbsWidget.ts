@@ -282,7 +282,7 @@ export class BreadcrumbsWidget {
 			this._render(prefix);
 			dispose(removed);
 			this._focus(-1, undefined);
-		} catch (e) {
+		} catch (_Error) {
 			const newError = new Error(`BreadcrumbsItem#setItems: newItems: ${items.length}, prefix: ${prefix}, removed: ${removed.length}`);
 			newError.name = e.name;
 			newError.stack = e.stack;

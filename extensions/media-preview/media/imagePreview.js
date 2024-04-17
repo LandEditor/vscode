@@ -376,7 +376,7 @@
 					}, 'image/png');
 				})
 			})]);
-		} catch (e) {
+		} catch (_Error) {
 			console.error(e);
 		}
 	}

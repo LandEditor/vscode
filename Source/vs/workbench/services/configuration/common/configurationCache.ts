@@ -72,7 +72,7 @@ class CachedConfiguration {
 		try {
 			const content = await this.fileService.readFile(this.cachedConfigurationFileResource);
 			return content.value.toString();
-		} catch (e) {
+		} catch (_Error) {
 			return '';
 		}
 	}

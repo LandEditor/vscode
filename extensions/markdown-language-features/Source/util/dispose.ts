@@ -11,7 +11,7 @@ export function disposeAll(disposables: Iterable<vscode.Disposable>) {
 	for (const disposable of disposables) {
 		try {
 			disposable.dispose();
-		} catch (e) {
+		} catch (_Error) {
 			errors.push(e);
 		}
 	}

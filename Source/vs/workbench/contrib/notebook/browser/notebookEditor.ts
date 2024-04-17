@@ -334,7 +334,7 @@ export class NotebookEditor extends EditorPane implements INotebookEditorPane, I
 
 			this._handlePerfMark(perf, input);
 			this._handlePromptRecommendations(model.notebook);
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.warn('NotebookEditorWidget#setInput failed', e);
 			if (isEditorOpenError(e)) {
 				throw e;

@@ -94,7 +94,7 @@ export class IssueMainService implements IIssueMainService {
 						}
 					}
 				});
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(`Listing processes failed: ${e}`);
 			}
 

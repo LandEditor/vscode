@@ -1615,7 +1615,7 @@ export class TextModel extends Disposable implements model.ITextModel, IDecorati
 		let result: T | null = null;
 		try {
 			result = callback(changeAccessor);
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		}
 		// Invalidate change accessor

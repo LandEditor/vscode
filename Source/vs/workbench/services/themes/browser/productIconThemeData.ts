@@ -150,7 +150,7 @@ export class ProductIconThemeData implements IWorkbenchProductIconTheme {
 				theme.iconThemeDocument = { iconDefinitions: restoredIconDefinitions };
 			}
 			return theme;
-		} catch (e) {
+		} catch (_Error) {
 			return undefined;
 		}
 	}

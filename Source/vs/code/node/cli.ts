@@ -249,7 +249,7 @@ export async function main(argv: string[]): Promise<any> {
 					addArg(argv, '--skip-add-to-recently-opened');
 
 					console.log(`Reading from stdin via: ${stdinFilePath}`);
-				} catch (e) {
+				} catch (_Error) {
 					console.log(`Failed to create file to read via stdin: ${e.toString()}`);
 					stdinFilePath = undefined;
 				}
@@ -415,7 +415,7 @@ export async function main(argv: string[]): Promise<any> {
 					// re-create the marker file to signal that profiling is done
 					writeFileSync(filenamePrefix, '');
 
-				} catch (e) {
+				} catch (_Error) {
 					console.error('Failed to profile startup. Make sure to quit Code first.');
 				}
 			});

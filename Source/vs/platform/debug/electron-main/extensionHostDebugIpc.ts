@@ -85,7 +85,7 @@ export class ElectronExtensionHostDebugBroadcastChannel<TContext> extends Extens
 						const contents = buf.slice(0, delimiter).toString('utf8');
 						buf = buf.slice(delimiter + 1);
 						data = JSON.parse(contents);
-					} catch (e) {
+					} catch (_Error) {
 						console.error('error reading cdp line', e);
 					}
 

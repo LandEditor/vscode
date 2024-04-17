@@ -696,7 +696,7 @@ class MergeEditorLayoutStore {
 		} else if (value) {
 			try {
 				this._value = JSON.parse(value);
-			} catch (e) {
+			} catch (_Error) {
 				onUnexpectedError(e);
 			}
 		}

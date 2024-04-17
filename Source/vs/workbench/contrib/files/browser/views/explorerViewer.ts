@@ -409,7 +409,7 @@ export class FilesRenderer implements ICompressibleTreeRenderer<ExplorerItem, Fu
 				if (templateData.currentContext) {
 					this.updateWidth(templateData.currentContext);
 				}
-			} catch (e) {
+			} catch (_Error) {
 				// noop since the element might no longer be in the tree, no update of width necessary
 			}
 		}));

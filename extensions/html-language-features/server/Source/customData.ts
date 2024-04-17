@@ -11,7 +11,7 @@ export function fetchHTMLDataProviders(dataPaths: string[], requestService: Cust
 		try {
 			const content = await requestService.getContent(p);
 			return parseHTMLData(p, content);
-		} catch (e) {
+		} catch (_Error) {
 			return newHTMLDataProvider(p, { version: 1 });
 		}
 	});

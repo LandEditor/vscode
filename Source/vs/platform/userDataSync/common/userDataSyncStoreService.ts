@@ -514,7 +514,7 @@ export class UserDataSyncStoreClient extends Disposable {
 		let context;
 		try {
 			context = await this.session.request(url, options, token);
-		} catch (e) {
+		} catch (_Error) {
 			if (!(e instanceof UserDataSyncStoreError)) {
 				let code = UserDataSyncErrorCode.RequestFailed;
 				const errorMessage = getErrorMessage(e).toLowerCase();

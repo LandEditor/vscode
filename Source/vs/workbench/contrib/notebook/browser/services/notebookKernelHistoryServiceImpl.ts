@@ -93,7 +93,7 @@ export class NotebookKernelHistoryService extends Disposable implements INoteboo
 		if (serialized) {
 			try {
 				this._deserialize(JSON.parse(serialized));
-			} catch (e) {
+			} catch (_Error) {
 				this._mostRecentKernelsMap = {};
 			}
 		} else {

@@ -53,7 +53,7 @@ const hasLocalRust = (() => {
 		try {
 			const r = cp.spawnSync('cargo', ['--version']);
 			result = r.status === 0;
-		} catch (e) {
+		} catch (_Error) {
 			result = false;
 		}
 

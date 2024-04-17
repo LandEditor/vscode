@@ -1007,7 +1007,7 @@ export class SnippetParser {
 
 		try {
 			transform.regexp = new RegExp(regexValue, regexOptions);
-		} catch (e) {
+		} catch (_Error) {
 			// invalid regexp
 			return false;
 		}

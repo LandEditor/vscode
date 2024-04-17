@@ -132,7 +132,7 @@ export class HoverOperation<T> extends Disposable {
 						this._setState(HoverOperationState.Idle);
 					}
 
-				} catch (e) {
+				} catch (_Error) {
 					onUnexpectedError(e);
 				}
 			})();

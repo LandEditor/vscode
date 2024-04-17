@@ -44,7 +44,7 @@ function processLib() {
 			try {
 				fs.unlinkSync(path.join(libRoot, name));
 				console.log(`removed '${path.join(libRoot, name)}'`);
-			} catch (e) {
+			} catch (_Error) {
 				console.warn(e);
 			}
 		}

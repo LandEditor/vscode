@@ -126,7 +126,7 @@ export abstract class CellOverlayPart extends Disposable {
 function safeInvokeNoArg<T>(func: () => T): T | null {
 	try {
 		return func();
-	} catch (e) {
+	} catch (_Error) {
 		onUnexpectedError(e);
 		return null;
 	}

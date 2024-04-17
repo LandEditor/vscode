@@ -96,7 +96,7 @@ if (typeof nodeProcess === 'object') {
 			// VSCode's default language is 'en'
 			_language = resolved ? resolved : LANGUAGE_DEFAULT;
 			_translationsConfigFile = nlsConfig._translationsConfigFile;
-		} catch (e) {
+		} catch (_Error) {
 		}
 	}
 	_isNative = true;

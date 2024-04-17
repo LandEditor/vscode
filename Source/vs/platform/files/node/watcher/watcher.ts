@@ -34,13 +34,13 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 		let error: Error | undefined;
 		try {
 			await this.recursiveWatcher.watch(requests.filter(request => request.recursive));
-		} catch (e) {
+		} catch (_Error) {
 			error = e;
 		}
 
 		try {
 			await this.nonRecursiveWatcher.watch(requests.filter(request => !request.recursive));
-		} catch (e) {
+		} catch (_Error) {
 			if (!error) {
 				error = e;
 			}

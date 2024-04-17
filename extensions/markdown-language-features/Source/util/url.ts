@@ -16,7 +16,7 @@ export function urlToUri(url: string, base: vscode.Uri): vscode.Uri | undefined 
 		const parsedUrl = new URL(url, base.toString());
 		const uri = vscode.Uri.parse(parsedUrl.toString());
 		return uri;
-	} catch (e) {
+	} catch (_Error) {
 		// Don't crash if `URL` cannot parse `src`.
 		return undefined;
 	}

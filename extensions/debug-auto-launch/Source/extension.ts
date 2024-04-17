@@ -234,7 +234,7 @@ async function createAttachServer(context: vscode.ExtensionContext) {
 const createServerInner = async (ipcAddress: string) => {
 	try {
 		return await createServerInstance(ipcAddress);
-	} catch (e) {
+	} catch (_Error) {
 		// On unix/linux, the file can 'leak' if the process exits unexpectedly.
 		// If we see this, try to delete the file and then listen again.
 		await fs.unlink(ipcAddress).catch(() => undefined);

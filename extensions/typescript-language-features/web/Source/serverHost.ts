@@ -77,7 +77,7 @@ function createServerHost(
 			try {
 				const packageJsonResponse = await fetch(combinePaths(packageRoot, 'package.json'));
 				packageJson = await packageJsonResponse.json();
-			} catch (e) {
+			} catch (_Error) {
 				return { module: undefined, error: new Error(`Could not load plugin. Could not load 'package.json'.`) };
 			}
 
@@ -90,7 +90,7 @@ function createServerHost(
 			try {
 				const { default: module } = await import(/* webpackIgnore: true */ scriptPath);
 				return { module, error: undefined };
-			} catch (e) {
+			} catch (_Error) {
 				return { module: undefined, error: e };
 			}
 		},
@@ -121,7 +121,7 @@ function createServerHost(
 			let uri;
 			try {
 				uri = pathMapper.toResource(path);
-			} catch (e) {
+			} catch (_Error) {
 				return undefined;
 			}
 
@@ -135,7 +135,7 @@ function createServerHost(
 				}
 				try {
 					contents = fs.readFile(mapUri(uri, 'vscode-node-modules'));
-				} catch (e) {
+				} catch (_Error) {
 					return undefined;
 				}
 			}
@@ -176,7 +176,7 @@ function createServerHost(
 			let uri;
 			try {
 				uri = pathMapper.toResource(path);
-			} catch (e) {
+			} catch (_Error) {
 				return;
 			}
 			const encoded = textEncoder.encode(data);
@@ -211,7 +211,7 @@ function createServerHost(
 			let uri;
 			try {
 				uri = pathMapper.toResource(path);
-			} catch (e) {
+			} catch (_Error) {
 				return false;
 			}
 			let ret = false;

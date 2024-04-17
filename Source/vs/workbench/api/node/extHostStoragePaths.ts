@@ -209,7 +209,7 @@ function processExists(pid: number): boolean {
 	try {
 		process.kill(pid, 0); // throws an exception if the process doesn't exist anymore.
 		return true;
-	} catch (e) {
+	} catch (_Error) {
 		return false;
 	}
 }

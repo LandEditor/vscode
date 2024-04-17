@@ -42,7 +42,7 @@ class UserDataSyncUtilService implements IUserDataSyncUtilService {
 			const eol = modelReference.object.textEditorModel.getEOL();
 			modelReference.dispose();
 			return { eol, insertSpaces, tabSize };
-		} catch (e) {
+		} catch (_Error) {
 		}
 		return {
 			eol: this.textResourcePropertiesService.getEOL(resource),

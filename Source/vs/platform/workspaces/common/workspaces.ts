@@ -212,7 +212,7 @@ export function toWorkspaceFolders(configuredFolders: IStoredWorkspaceFolder[], 
 				if (uri.path[0] !== posix.sep) {
 					uri = uri.with({ path: posix.sep + uri.path }); // this makes sure all workspace folder are absolute
 				}
-			} catch (e) {
+			} catch (_Error) {
 				console.warn(e); // ignore
 			}
 		}
@@ -335,7 +335,7 @@ export function restoreRecentlyOpened(data: RecentlyOpenedStorageData | undefine
 			for (let i = 0; i < entries.length; i++) {
 				try {
 					onEntry(entries[i], i);
-				} catch (e) {
+				} catch (_Error) {
 					logService.warn(`Error restoring recent entry ${JSON.stringify(entries[i])}: ${e.toString()}. Skip entry.`);
 				}
 			}

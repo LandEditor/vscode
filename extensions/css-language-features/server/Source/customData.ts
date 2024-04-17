@@ -11,7 +11,7 @@ export function fetchDataProviders(dataPaths: string[], requestService: RequestS
 		try {
 			const content = await requestService.getContent(p);
 			return parseCSSData(content);
-		} catch (e) {
+		} catch (_Error) {
 			return newCSSDataProvider({ version: 1 });
 		}
 	});

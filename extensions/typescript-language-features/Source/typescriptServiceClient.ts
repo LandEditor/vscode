@@ -1133,7 +1133,7 @@ export default class TypeScriptServiceClient extends Disposable implements IType
 							if (payload.hasOwnProperty(key)) {
 								properties[key] = typeof payload[key] === 'string' ? payload[key] : JSON.stringify(payload[key]);
 							}
-						} catch (e) {
+						} catch (_Error) {
 							// noop
 						}
 					});

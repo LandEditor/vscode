@@ -35,7 +35,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 			const result = JSON.stringify(safeStorage.encryptString(value));
 			this.logService.trace('[EncryptionMainService] Encrypted value.');
 			return result;
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 			throw e;
 		}
@@ -54,7 +54,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 			const result = safeStorage.decryptString(bufferToDecrypt);
 			this.logService.trace('[EncryptionMainService] Decrypted value.');
 			return result;
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 			throw e;
 		}
@@ -75,7 +75,7 @@ export class EncryptionMainService implements IEncryptionMainService {
 			try {
 				const result = safeStorage.getSelectedStorageBackend() as KnownStorageProvider;
 				return Promise.resolve(result);
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(e);
 			}
 		}

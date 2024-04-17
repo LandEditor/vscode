@@ -1028,7 +1028,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					if (workspaces.indexOf(workspace.folders[0].uri.toString()) > -1) {
 						tags['aiGenerated'] = true;
 					}
-				} catch (e) {
+				} catch (_Error) {
 					// Ignore errors when resolving file contents
 				}
 			}
@@ -1193,7 +1193,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						}
 					}
 				}
-				catch (e) {
+				catch (_Error) {
 					// Ignore errors when resolving file or parsing file contents
 				}
 			});
@@ -1225,7 +1225,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						}
 					}
 				}
-				catch (e) {
+				catch (_Error) {
 					// Ignore errors when resolving file or parsing file contents
 				}
 			});
@@ -1244,7 +1244,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 						}
 					}
 				}
-				catch (e) {
+				catch (_Error) {
 					// Ignore errors when resolving maven dependencies
 				}
 			});
@@ -1254,7 +1254,7 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 					this.processGradleDependencies(content.value, GradleDependencyLooseRegex, tags);
 					this.processGradleDependencies(content.value, GradleDependencyCompactRegex, tags);
 				}
-				catch (e) {
+				catch (_Error) {
 					// Ignore errors when resolving gradle dependencies
 				}
 			});

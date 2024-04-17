@@ -159,7 +159,7 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 		const notificationService = accessor.get(INotificationService);
 		try {
 			await controller.addOrToggleCommentAtLine(position, undefined);
-		} catch (e) {
+		} catch (_Error) {
 			notificationService.error(nls.localize('comments.addCommand.error', "The cursor must be within a commenting range to add a comment")); // TODO: Once we have commands to go to next commenting range they should be included as buttons in the error.
 		}
 	},

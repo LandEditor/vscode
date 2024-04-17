@@ -842,7 +842,7 @@ export class EditorSimpleWorker implements IRequestHandler, IDisposable {
 
 		try {
 			return Promise.resolve(this._foreignModule[method].apply(this._foreignModule, args));
-		} catch (e) {
+		} catch (_Error) {
 			return Promise.reject(e);
 		}
 	}

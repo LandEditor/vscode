@@ -74,14 +74,14 @@ CommandsRegistry.registerCommand('_remoteCLI.manageExtensions', async function (
 		if (Array.isArray(args.install) && args.install.length) {
 			try {
 				await cliService.installExtensions(revive(args.install), [], { isMachineScoped: true }, !!args.force);
-			} catch (e) {
+			} catch (_Error) {
 				lines.push(e.message);
 			}
 		}
 		if (Array.isArray(args.uninstall) && args.uninstall.length) {
 			try {
 				await cliService.uninstallExtensions(revive(args.uninstall), !!args.force, undefined);
-			} catch (e) {
+			} catch (_Error) {
 				lines.push(e.message);
 			}
 		}

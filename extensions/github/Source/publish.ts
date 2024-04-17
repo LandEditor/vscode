@@ -62,7 +62,7 @@ export async function publishRepository(gitAPI: GitAPI, repository?: Repository)
 		octokit = await getOctokit();
 		const user = await octokit.users.getAuthenticated({});
 		owner = user.data.login;
-	} catch (e) {
+	} catch (_Error) {
 		// User has cancelled sign in
 		quickpick.dispose();
 		return;

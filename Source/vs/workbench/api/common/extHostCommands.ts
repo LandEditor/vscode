@@ -215,7 +215,7 @@ export class ExtHostCommands implements ExtHostCommandsShape {
 			try {
 				const result = await this.#proxy.$executeCommand(id, hasBuffers ? new SerializableObjectWithBuffers(toArgs) : toArgs, retry);
 				return revive<any>(result);
-			} catch (e) {
+			} catch (_Error) {
 				// Rerun the command when it wasn't known, had arguments, and when retry
 				// is enabled. We do this because the command might be registered inside
 				// the extension host now and can therefore accept the arguments as-is.

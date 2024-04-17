@@ -556,7 +556,7 @@ class LanguageServiceHost implements ts.LanguageServiceHost {
 					stat: fs.statSync(filename)
 				}));
 				this.addScriptSnapshot(filename, result);
-			} catch (e) {
+			} catch (_Error) {
 				// ignore
 			}
 		}

@@ -290,7 +290,7 @@ export function startServer(connection: Connection, runtime: RuntimeEnvironment)
 					return diagnostics;
 				}
 			}
-		} catch (e) {
+		} catch (_Error) {
 			connection.console.error(formatError(`Error while validating ${textDocument.uri}`, e));
 		}
 		return [];

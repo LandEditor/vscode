@@ -319,7 +319,7 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		try {
 			const execution = this._executions.get(handle);
 			execution?.update(updates.map(NotebookDto.fromCellExecuteUpdateDto));
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		}
 	}
@@ -328,7 +328,7 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		try {
 			const execution = this._executions.get(handle);
 			execution?.complete(NotebookDto.fromCellExecuteCompleteDto(data.value));
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		} finally {
 			this._executions.delete(handle);
@@ -357,7 +357,7 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		try {
 			const execution = this._notebookExecutions.get(handle);
 			execution?.begin();
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		}
 	}
@@ -366,7 +366,7 @@ export class MainThreadNotebookKernels implements MainThreadNotebookKernelsShape
 		try {
 			const execution = this._notebookExecutions.get(handle);
 			execution?.complete();
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		} finally {
 			this._notebookExecutions.delete(handle);

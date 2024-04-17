@@ -391,7 +391,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		try {
 			await profile.runHandler(publicReq, token);
 			return {};
-		} catch (e) {
+		} catch (_Error) {
 			return { error: String(e) };
 		} finally {
 			if (tracker) {

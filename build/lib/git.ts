@@ -15,7 +15,7 @@ export function getVersion(repo: string): string | undefined {
 
 	try {
 		head = fs.readFileSync(headPath, 'utf8').trim();
-	} catch (e) {
+	} catch (_Error) {
 		return undefined;
 	}
 
@@ -34,7 +34,7 @@ export function getVersion(repo: string): string | undefined {
 
 	try {
 		return fs.readFileSync(refPath, 'utf8').trim();
-	} catch (e) {
+	} catch (_Error) {
 		// noop
 	}
 
@@ -43,7 +43,7 @@ export function getVersion(repo: string): string | undefined {
 
 	try {
 		refsRaw = fs.readFileSync(packedRefsPath, 'utf8').trim();
-	} catch (e) {
+	} catch (_Error) {
 		return undefined;
 	}
 

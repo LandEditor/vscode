@@ -39,7 +39,7 @@ export class ExtensionsCompletionItemsProvider extends Disposable implements IWo
 					let alreadyConfigured: string[] = [];
 					try {
 						alreadyConfigured = Object.keys(parse(model.getValue())['extensions.supportUntrustedWorkspaces']);
-					} catch (e) {/* ignore error */ }
+					} catch (_Error) {/* ignore error */ }
 
 					return { suggestions: await this.provideSupportUntrustedWorkspacesExtensionProposals(alreadyConfigured, range) };
 				}

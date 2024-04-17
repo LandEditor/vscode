@@ -84,7 +84,7 @@ async function fetchUrl(url, options, retries = 10, retryDelay = 1000) {
             clearTimeout(timeout);
         }
     }
-    catch (e) {
+    catch (_Error) {
         if (verbose) {
             log(`Fetching ${ansiColors.cyan(url)} failed: ${e}`);
         }

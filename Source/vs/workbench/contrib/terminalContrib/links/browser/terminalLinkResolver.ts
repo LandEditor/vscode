@@ -53,7 +53,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 				cache.set(uri, result);
 				return result;
 			}
-			catch (e) {
+			catch (_Error) {
 				// Does not exist
 				cache.set(uri, null);
 				return null;
@@ -109,7 +109,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 				cache.set(link, result);
 				return result;
 			}
-			catch (e) {
+			catch (_Error) {
 				// Does not exist
 				cache.set(link, null);
 				return null;

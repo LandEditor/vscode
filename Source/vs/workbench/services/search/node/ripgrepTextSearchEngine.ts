@@ -246,7 +246,7 @@ export class RipgrepParser extends EventEmitter {
 		let parsedLine: IRgMessage;
 		try {
 			parsedLine = JSON.parse(outputLine);
-		} catch (e) {
+		} catch (_Error) {
 			throw new Error(`malformed line from rg: ${outputLine}`);
 		}
 

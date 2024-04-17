@@ -298,7 +298,7 @@ export class SimpleWorkerClient<W extends object, H extends object> extends Disp
 
 				try {
 					return Promise.resolve((host as any)[method].apply(host, args));
-				} catch (e) {
+				} catch (_Error) {
 					return Promise.reject(e);
 				}
 			},
@@ -468,7 +468,7 @@ export class SimpleWorkerServer<H extends object> {
 
 		try {
 			return Promise.resolve(this._requestHandler[method].apply(this._requestHandler, args));
-		} catch (e) {
+		} catch (_Error) {
 			return Promise.reject(e);
 		}
 	}

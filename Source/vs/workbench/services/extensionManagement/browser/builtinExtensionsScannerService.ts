@@ -98,7 +98,7 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
 			const res = await this.extensionResourceLoaderService.readExtensionResource(uri);
 			const json = JSON.parse(res.toString());
 			return localizeManifest(this.logService, manifest, json, fallbackTranslations);
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 			return localizeManifest(this.logService, manifest, fallbackTranslations);
 		}

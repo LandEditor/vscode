@@ -652,7 +652,7 @@ CommandsRegistry.registerCommand({
 		if (frame) {
 			try {
 				await frame.restart();
-			} catch (e) {
+			} catch (_Error) {
 				notificationService.error(e);
 			}
 		}

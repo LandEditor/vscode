@@ -692,7 +692,7 @@ function expandAbbr(input: ExpandAbbreviationInput): string | undefined {
 	let expandedText: string | undefined;
 	try {
 		expandedText = helper.expandAbbreviation(input.abbreviation, expandOptions);
-	} catch (e) {
+	} catch (_Error) {
 		void vscode.window.showErrorMessage('Failed to expand abbreviation');
 	}
 

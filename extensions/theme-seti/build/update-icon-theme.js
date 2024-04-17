@@ -78,7 +78,7 @@ function getCommitSha(repoId) {
 				commitSha: lastCommit.sha,
 				commitDate: lastCommit.commit.author.date
 			});
-		} catch (e) {
+		} catch (_Error) {
 			console.error('Failed parsing ' + content);
 			return Promise.resolve(null);
 		}
@@ -456,7 +456,7 @@ exports.update = function () {
 
 						console.log('Updated to jesseweed/seti-ui@' + info.commitSha.substr(0, 7) + ' (' + info.commitDate.substr(0, 10) + ')');
 
-					} catch (e) {
+					} catch (_Error) {
 						console.error(e);
 					}
 				});

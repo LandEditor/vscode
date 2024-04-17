@@ -955,7 +955,7 @@ export class QuickInputTree extends Disposable {
 						this.showHover(e.element);
 					}
 				});
-			} catch (e) {
+			} catch (_Error) {
 				// Ignore cancellation errors due to mouse out
 				if (!isCancellationError(e)) {
 					throw e;

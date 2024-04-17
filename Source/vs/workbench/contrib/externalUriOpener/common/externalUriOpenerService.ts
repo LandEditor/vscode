@@ -107,7 +107,7 @@ export class ExternalUriOpenerService extends Disposable implements IExternalUri
 			let priority: languages.ExternalUriOpenerPriority;
 			try {
 				priority = await opener.canOpen(ctx.sourceUri, token);
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(e);
 				return;
 			}

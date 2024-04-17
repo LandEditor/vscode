@@ -2476,7 +2476,7 @@ export class ExtensionsWorkbenchService extends Disposable implements IExtension
 			if (Array.isArray(parsedValue)) {
 				return parsedValue;
 			}
-		} catch (e) { /* Ignore */ }
+		} catch (_Error) { /* Ignore */ }
 		return [];
 	}
 

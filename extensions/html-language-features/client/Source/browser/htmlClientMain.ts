@@ -37,7 +37,7 @@ export async function activate(context: ExtensionContext) {
 
 		client = await startClient(context, newLanguageClient, { TextDecoder, timer });
 
-	} catch (e) {
+	} catch (_Error) {
 		console.log(e);
 	}
 }

@@ -159,7 +159,7 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 			this.updateDecorations(colors);
 			this.updateColorDecorators(colors);
 			this._computePromise = null;
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		}
 	}

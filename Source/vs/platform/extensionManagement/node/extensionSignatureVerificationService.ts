@@ -84,7 +84,7 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
 		try {
 			verified = await module.verify(vsixFilePath, signatureArchiveFilePath, verbose);
 			return verified;
-		} catch (e) {
+		} catch (_Error) {
 			error = e;
 			throw e;
 		} finally {

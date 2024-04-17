@@ -230,7 +230,7 @@ export class UserDataSyncWorkbenchContribution extends Disposable implements IWo
 	private async acceptRemote(syncResource: IUserDataSyncResource, conflict: IResourcePreview) {
 		try {
 			await this.userDataSyncService.accept(syncResource, conflict.remoteResource, undefined, this.userDataSyncEnablementService.isEnabled());
-		} catch (e) {
+		} catch (_Error) {
 			this.notificationService.error(localize('accept failed', "Error while accepting changes. Please check [logs]({0}) for more details.", `command:${SHOW_SYNC_LOG_COMMAND_ID}`));
 		}
 	}
@@ -238,7 +238,7 @@ export class UserDataSyncWorkbenchContribution extends Disposable implements IWo
 	private async acceptLocal(syncResource: IUserDataSyncResource, conflict: IResourcePreview): Promise<void> {
 		try {
 			await this.userDataSyncService.accept(syncResource, conflict.localResource, undefined, this.userDataSyncEnablementService.isEnabled());
-		} catch (e) {
+		} catch (_Error) {
 			this.notificationService.error(localize('accept failed', "Error while accepting changes. Please check [logs]({0}) for more details.", `command:${SHOW_SYNC_LOG_COMMAND_ID}`));
 		}
 	}
@@ -469,7 +469,7 @@ export class UserDataSyncWorkbenchContribution extends Disposable implements IWo
 				await this.selectSettingsSyncService(this.userDataSyncStoreManagementService.userDataSyncStore);
 			}
 			await this.userDataSyncWorkbenchService.turnOn();
-		} catch (e) {
+		} catch (_Error) {
 			if (isCancellationError(e)) {
 				return;
 			}
@@ -819,7 +819,7 @@ export class UserDataSyncWorkbenchContribution extends Disposable implements IWo
 			async run(): Promise<any> {
 				try {
 					await that.userDataSyncWorkbenchService.signIn();
-				} catch (e) {
+				} catch (_Error) {
 					that.notificationService.error(e);
 				}
 			}
@@ -996,7 +996,7 @@ export class UserDataSyncWorkbenchContribution extends Disposable implements IWo
 			async run(): Promise<any> {
 				try {
 					await that.turnOff();
-				} catch (e) {
+				} catch (_Error) {
 					if (!isCancellationError(e)) {
 						that.notificationService.error(localize('turn off failed', "Error while turning off Settings Sync. Please check [logs]({0}) for more details.", `command:${SHOW_SYNC_LOG_COMMAND_ID}`));
 					}

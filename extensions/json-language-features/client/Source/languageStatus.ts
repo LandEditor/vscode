@@ -200,7 +200,7 @@ export function createLanguageStatusItem(documentSelector: DocumentSelector, sta
 					title: l10n.t('Show Schemas'),
 					arguments: [{ schemas, uri: document.uri.toString() } as ShowSchemasInput]
 				};
-			} catch (e) {
+			} catch (_Error) {
 				statusItem.text = l10n.t('Unable to compute used schemas: {0}', e.message);
 				statusItem.detail = undefined;
 				statusItem.command = undefined;

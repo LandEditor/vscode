@@ -89,7 +89,7 @@ export async function fetchUrl(url: string, options: IFetchOptions, retries = 10
 		} finally {
 			clearTimeout(timeout);
 		}
-	} catch (e) {
+	} catch (_Error) {
 		if (verbose) {
 			log(`Fetching ${ansiColors.cyan(url)} failed: ${e}`);
 		}

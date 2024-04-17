@@ -323,7 +323,7 @@ class AnimationFrameQueueItem implements IDisposable {
 
 		try {
 			this._runner();
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 		}
 	}

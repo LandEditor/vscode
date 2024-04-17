@@ -252,7 +252,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
 		// Delete the preview
 		try {
 			await this.fileService.del(this.previewResource);
-		} catch (e) { /* ignore */ }
+		} catch (_Error) { /* ignore */ }
 
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			this.logService.trace(`${this.syncResourceLogLabel}: Updating last synchronized settings...`);
@@ -305,7 +305,7 @@ export class SettingsSynchroniser extends AbstractJsonFileSynchroniser implement
 	private parseSettingsSyncContent(syncContent: string): ISettingsSyncContent | null {
 		try {
 			return parseSettingsSyncContent(syncContent);
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 		}
 		return null;
@@ -381,7 +381,7 @@ export class SettingsInitializer extends AbstractInitializer {
 	private parseSettingsSyncContent(syncContent: string): ISettingsSyncContent | null {
 		try {
 			return parseSettingsSyncContent(syncContent);
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.error(e);
 		}
 		return null;

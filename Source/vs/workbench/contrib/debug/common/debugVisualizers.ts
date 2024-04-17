@@ -203,7 +203,7 @@ export class DebugVisualizerService implements IDebugVisualizerService {
 			}
 
 			return new VisualizedExpression(this, treeId, treeItem, expr);
-		} catch (e) {
+		} catch (_Error) {
 			this.logService.warn('Failed to get visualized node', e);
 			return;
 		}
@@ -262,7 +262,7 @@ export class DebugVisualizerService implements IDebugVisualizerService {
 				if (expr) {
 					this.registrations.push({ expr, id, extensionId: ext.identifier });
 				}
-			} catch (e) {
+			} catch (_Error) {
 				this.logService.error(`Error processing debug visualizer registration from extension '${ext.identifier.value}'`, e);
 			}
 		}

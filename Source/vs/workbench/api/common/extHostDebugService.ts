@@ -634,7 +634,7 @@ export abstract class ExtHostDebugServiceBase implements IExtHostDebugService, E
 							} else {
 								throw new Error('no signer');
 							}
-						} catch (e) {
+						} catch (_Error) {
 							response.success = false;
 							response.message = e.message;
 							debugAdapter.sendResponse(response);

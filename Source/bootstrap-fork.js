@@ -231,7 +231,7 @@ function terminateWhenParentTerminates() {
 		setInterval(function () {
 			try {
 				process.kill(parentPid, 0); // throws an exception if the main process doesn't exist anymore.
-			} catch (e) {
+			} catch (_Error) {
 				process.exit();
 			}
 		}, 5000);

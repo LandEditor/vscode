@@ -53,7 +53,7 @@ export class JSONSchemaCache {
 			await fs.writeFile(path.join(this.schemaCacheLocation, fileName), schemaContent);
 			const entry: CacheEntry = { etag, fileName, updateTime: new Date().getTime() };
 			this.cacheInfo[schemaUri] = entry;
-		} catch (e) {
+		} catch (_Error) {
 			delete this.cacheInfo[schemaUri];
 		} finally {
 			await this.updateMemento();
@@ -88,7 +88,7 @@ export class JSONSchemaCache {
 				cacheEntry.updateTime = new Date().getTime();
 			}
 			return content;
-		} catch (e) {
+		} catch (_Error) {
 			delete this.cacheInfo[schemaUri];
 			return undefined;
 		} finally {
@@ -102,7 +102,7 @@ export class JSONSchemaCache {
 		await this.updateMemento();
 		try {
 			await fs.rm(cacheLocation);
-		} catch (e) {
+		} catch (_Error) {
 			// ignore
 		}
 	}
@@ -116,7 +116,7 @@ export class JSONSchemaCache {
 	private async updateMemento() {
 		try {
 			await this.globalState.update(MEMENTO_KEY, this.cacheInfo);
-		} catch (e) {
+		} catch (_Error) {
 			// ignore
 		}
 	}
@@ -132,7 +132,7 @@ export class JSONSchemaCache {
 					// ignore
 				}
 			}
-		} catch (e) {
+		} catch (_Error) {
 			// ignore
 		} finally {
 

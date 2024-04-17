@@ -533,7 +533,7 @@ function createDefaultTokenClassificationRegistry(): TokenClassificationRegistry
 		try {
 			const selector = registry.parseTokenSelector(selectorString);
 			registry.registerTokenStyleDefault(selector, { scopesToProbe });
-		} catch (e) {
+		} catch (_Error) {
 			console.log(e);
 		}
 	}

@@ -76,7 +76,7 @@ function getSettingsSearchBuildId(packageJson) {
         // 1.25.1, 1,234,567 commits, main = 1250112345671
         return util.versionStringToNumber(packageJson.version) * 1e8 + count * 10 + branchId;
     }
-    catch (e) {
+    catch (_Error) {
         throw new Error('Could not determine build number: ' + e.toString());
     }
 }

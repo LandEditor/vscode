@@ -108,7 +108,7 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 
 			// TODO: If a non-Microsoft language pack is installed, we should prompt the user asking if they want to install that.
 			// Since no such language packs exist yet, we can wait until that happens to implement this.
-		} catch (e) {
+		} catch (_Error) {
 			// Best effort
 			this.logService.error(e);
 		}

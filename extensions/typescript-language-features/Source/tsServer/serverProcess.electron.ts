@@ -129,7 +129,7 @@ class Reader<T> extends Disposable {
 				const json = JSON.parse(msg);
 				this._onData.fire(json);
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this._onError.fire(e);
 		}
 	}

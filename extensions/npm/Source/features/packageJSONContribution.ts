@@ -107,7 +107,7 @@ export class PackageJSONContribution implements IJSONContribution {
 								}
 
 							}
-						} catch (e) {
+						} catch (_Error) {
 							// ignore
 						}
 						collector.setAsIncomplete();
@@ -166,7 +166,7 @@ export class PackageJSONContribution implements IJSONContribution {
 								this.processPackage(object.package, addValue, isLast, collector);
 							}
 						}
-					} catch (e) {
+					} catch (_Error) {
 						// ignore
 					}
 					collector.setAsIncomplete();
@@ -299,7 +299,7 @@ export class PackageJSONContribution implements IJSONContribution {
 							homepage: content['homepage']
 						});
 						return;
-					} catch (e) {
+					} catch (_Error) {
 						// ignore
 					}
 				}
@@ -324,7 +324,7 @@ export class PackageJSONContribution implements IJSONContribution {
 				homepage: obj.homepage || ''
 			};
 		}
-		catch (e) {
+		catch (_Error) {
 			//ignore
 		}
 		return undefined;

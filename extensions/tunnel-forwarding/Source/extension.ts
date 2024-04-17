@@ -317,7 +317,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 						};
 						progressP.complete();
 					}
-				} catch (e) {
+				} catch (_Error) {
 					this.logger.log('error', `[forwarding] ${line}`);
 				}
 			})

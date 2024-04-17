@@ -833,7 +833,7 @@ export class TextAreaWrapper extends Disposable implements ICompleteTextAreaWrap
 			textArea.focus();
 			textArea.setSelectionRange(selectionStart, selectionEnd);
 			dom.restoreParentsScrollTop(textArea, scrollState);
-		} catch (e) {
+		} catch (_Error) {
 			// Sometimes IE throws when setting selection (e.g. textarea is off-DOM)
 		}
 	}

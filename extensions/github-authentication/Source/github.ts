@@ -212,11 +212,11 @@ export class GitHubAuthenticationProvider implements vscode.AuthenticationProvid
 
 			try {
 				sessionData = JSON.parse(storedSessions);
-			} catch (e) {
+			} catch (_Error) {
 				await this._keychain.deleteToken();
 				throw e;
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this._logger.error(`Error reading token: ${e}`);
 			return [];
 		}
@@ -234,7 +234,7 @@ export class GitHubAuthenticationProvider implements vscode.AuthenticationProvid
 				try {
 					userInfo = await this._githubServer.getUserInfo(session.accessToken);
 					this._logger.info(`Verified session with the following scopes: ${scopesStr}`);
-				} catch (e) {
+				} catch (_Error) {
 					// Remove sessions that return unauthorized response
 					if (e.message === 'Unauthorized') {
 						return undefined;
@@ -347,7 +347,7 @@ export class GitHubAuthenticationProvider implements vscode.AuthenticationProvid
 			this._logger.info('Login success!');
 
 			return session;
-		} catch (e) {
+		} catch (_Error) {
 			// If login was cancelled, do not notify user.
 			if (e === 'Cancelled' || e.message === 'Cancelled') {
 				/* __GDPR__
@@ -400,7 +400,7 @@ export class GitHubAuthenticationProvider implements vscode.AuthenticationProvid
 			} else {
 				this._logger.error('Session not found');
 			}
-		} catch (e) {
+		} catch (_Error) {
 			/* __GDPR__
 				"logoutFailed" : { "owner": "TylerLeonhardt", "comment": "Used to determine how often logging out of an account fails." }
 			*/

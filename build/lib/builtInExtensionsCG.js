@@ -33,7 +33,7 @@ async function downloadExtensionDetails(extension) {
                 return { fileName, body: null };
             }
         }
-        catch (e) {
+        catch (_Error) {
             return { fileName, body: null };
         }
     }

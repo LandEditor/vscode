@@ -291,7 +291,7 @@ export class ExtensionsListView extends ViewPane {
 					}));
 				}
 				return model;
-			} catch (e) {
+			} catch (_Error) {
 				const model = new PagedModel([]);
 				if (!isCancellationError(e)) {
 					this.logService.error(e);

@@ -536,7 +536,7 @@ export class TerminalProcess extends Disposable implements ITerminalChildProcess
 			this._logService.trace('node-pty.IPty#resize', cols, rows);
 			try {
 				this._ptyProcess.resize(cols, rows);
-			} catch (e) {
+			} catch (_Error) {
 				// Swallow error if the pty has already exited
 				this._logService.trace('node-pty.IPty#resize exception ' + e.message);
 				if (this._exitCode !== undefined &&

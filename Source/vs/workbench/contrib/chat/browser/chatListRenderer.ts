@@ -970,7 +970,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 						const parsedBody = parseLocalFileData(text);
 						range = parsedBody.range && Range.lift(parsedBody.range);
 						textModel = this.textModelService.createModelReference(parsedBody.uri).then(ref => ref.object);
-					} catch (e) {
+					} catch (_Error) {
 						return $('div');
 					}
 				} else {

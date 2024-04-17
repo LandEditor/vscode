@@ -381,7 +381,7 @@ CommandsRegistry.registerCommand({
 				const vsix = URI.revive(arg);
 				await extensionsWorkbenchService.install(vsix, { installOnlyNewlyAddedFromExtensionPack: options?.installOnlyNewlyAddedFromExtensionPackVSIX });
 			}
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 			throw e;
 		}
@@ -417,7 +417,7 @@ CommandsRegistry.registerCommand({
 
 		try {
 			await extensionManagementService.uninstall(extensionToUninstall);
-		} catch (e) {
+		} catch (_Error) {
 			onUnexpectedError(e);
 			throw e;
 		}

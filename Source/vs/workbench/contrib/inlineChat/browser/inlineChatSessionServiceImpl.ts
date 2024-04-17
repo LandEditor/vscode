@@ -140,7 +140,7 @@ class BridgeAgent implements IChatAgentImplementation {
 				response = new EmptyResponse();
 			}
 
-		} catch (e) {
+		} catch (_Error) {
 			response = new ErrorResponse(e);
 		}
 

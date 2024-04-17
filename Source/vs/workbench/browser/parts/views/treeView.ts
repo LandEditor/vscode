@@ -977,7 +977,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			for (const element of itemOrItems) {
 				await tree.expand(element, false);
 			}
-		} catch (e) {
+		} catch (_Error) {
 			// The extension could have changed the tree during the reveal.
 			// Because of that, we ignore errors.
 		}
@@ -1020,7 +1020,7 @@ abstract class AbstractTreeView extends Disposable implements ITreeView {
 			const oldSelection = tree.getSelection();
 			try {
 				await Promise.all(elements.map(element => tree.updateChildren(element, true, true)));
-			} catch (e) {
+			} catch (_Error) {
 				// When multiple calls are made to refresh the tree in quick succession,
 				// we can get a "Tree element not found" error. This is expected.
 				// Ideally this is fixable, so log instead of ignoring so the error is preserved.
@@ -1113,7 +1113,7 @@ class TreeDataSource implements IAsyncDataSource<ITreeItem, ITreeItem> {
 		if (this.treeView.dataProvider) {
 			try {
 				result = (await this.withProgress(this.treeView.dataProvider.getChildren(element))) ?? [];
-			} catch (e) {
+			} catch (_Error) {
 				if (!(<string>e.message).startsWith('Bad progress location:')) {
 					throw e;
 				}

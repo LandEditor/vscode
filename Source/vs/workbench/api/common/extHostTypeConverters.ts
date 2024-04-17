@@ -372,7 +372,7 @@ export namespace MarkdownString {
 				let uri = URI.parse(href, true);
 				uri = uri.with({ query: _uriMassage(uri.query, resUris) });
 				resUris[href] = uri;
-			} catch (e) {
+			} catch (_Error) {
 				// ignore
 			}
 			return '';
@@ -393,7 +393,7 @@ export namespace MarkdownString {
 		let data: any;
 		try {
 			data = parse(part);
-		} catch (e) {
+		} catch (_Error) {
 			// ignore
 		}
 		if (!data) {

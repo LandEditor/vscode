@@ -695,7 +695,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 			// 		document.body.appendChild(this._webglAddon?.textureAtlas);
 			// 	}
 			// }, 5000);
-		} catch (e) {
+		} catch (_Error) {
 			this._logService.warn(`Webgl could not be loaded. Falling back to the DOM renderer`, e);
 			this._disableWebglForThisSession();
 		}
@@ -719,7 +719,7 @@ export class XtermTerminal extends Disposable implements IXtermTerminal, IDetach
 		try {
 			this.raw.loadAddon(this._canvasAddon);
 			this._logService.trace('Canvas renderer was loaded');
-		} catch (e) {
+		} catch (_Error) {
 			this._logService.warn(`Canvas renderer could not be loaded, falling back to dom renderer`, e);
 			XtermTerminal._suggestedRendererType = 'dom';
 			this._disposeOfCanvasRenderer();

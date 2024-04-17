@@ -16,7 +16,7 @@ function initGHES(context: vscode.ExtensionContext, uriHandler: UriEventHandler)
 	let uri: vscode.Uri;
 	try {
 		uri = vscode.Uri.parse(settingValue, true);
-	} catch (e) {
+	} catch (_Error) {
 		vscode.window.showErrorMessage(vscode.l10n.t('GitHub Enterprise Server URI is not a valid URI: {0}', e.message ?? e));
 		return;
 	}

@@ -659,7 +659,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 						} catch (error) { /* ignore */ }
 					}
 					postUninstallExtension(task.extension);
-				} catch (e) {
+				} catch (_Error) {
 					const error = e instanceof ExtensionManagementError ? e : new ExtensionManagementError(getErrorMessage(e), ExtensionManagementErrorCode.Internal);
 					postUninstallExtension(task.extension, error);
 					throw error;
@@ -668,7 +668,7 @@ export abstract class AbstractExtensionManagementService extends Disposable impl
 				}
 			}));
 
-		} catch (e) {
+		} catch (_Error) {
 			const error = e instanceof ExtensionManagementError ? e : new ExtensionManagementError(getErrorMessage(e), ExtensionManagementErrorCode.Internal);
 			for (const task of allTasks) {
 				// cancel the tasks

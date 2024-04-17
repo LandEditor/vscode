@@ -21,7 +21,7 @@ function getAgent(url: string | undefined = process.env.HTTPS_PROXY): Agent {
 		const { hostname, port, username, password } = new URL(url);
 		const auth = username && password && `${username}:${password}`;
 		return httpsOverHttp({ proxy: { host: hostname, port, proxyAuth: auth } });
-	} catch (e) {
+	} catch (_Error) {
 		window.showErrorMessage(`HTTPS_PROXY environment variable ignored: ${e.message}`);
 		return globalAgent;
 	}

@@ -703,7 +703,7 @@ registerAction2(class extends Action2 {
 			if (Object.prototype.hasOwnProperty.call(record, key)) {
 				try {
 					gettingStartedService.deprogressStep(key);
-				} catch (e) {
+				} catch (_Error) {
 					console.error(e);
 				}
 			}

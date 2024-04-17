@@ -184,7 +184,7 @@ class WebTypingsInstallerServer extends ts.server.typingsInstaller.TypingsInstal
 				});
 				await resolved.restore();
 				onRequestCompleted(true);
-			} catch (e) {
+			} catch (_Error) {
 				onRequestCompleted(false);
 			}
 		})();

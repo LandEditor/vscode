@@ -877,7 +877,7 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
 				logWarning(`resolving nested authorities failed: ${e.message}`);
 				return [await getResolver(remoteAuthorityChain)];
 			});
-		} catch (e) {
+		} catch (_Error) {
 			return normalizeError(e);
 		}
 
@@ -907,7 +907,7 @@ export abstract class AbstractExtHostExtensionService extends Disposable impleme
 					}
 					performance.mark(`code/extHost/didResolveExecServerOK/${authorityPrefix}`);
 				}
-			} catch (e) {
+			} catch (_Error) {
 				performance.mark(`code/extHost/didResolveAuthorityError/${authorityPrefix}`);
 				logError(`returned an error`, e);
 				intervalLogger.dispose();

@@ -460,7 +460,7 @@ class LanguageServiceHost {
                 }));
                 this.addScriptSnapshot(filename, result);
             }
-            catch (e) {
+            catch (_Error) {
                 // ignore
             }
         }

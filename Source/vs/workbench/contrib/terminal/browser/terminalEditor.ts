@@ -242,7 +242,7 @@ export class TerminalEditor extends EditorPane {
 		let defaultProfileName;
 		try {
 			defaultProfileName = this._terminalProfileService.getDefaultProfileName();
-		} catch (e) {
+		} catch (_Error) {
 			defaultProfileName = this._terminalProfileResolverService.defaultProfileName;
 		}
 		return defaultProfileName!;

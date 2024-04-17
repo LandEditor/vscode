@@ -348,7 +348,7 @@ export class VsCodeClientWorkspace implements md.IWorkspaceWithWatching {
 			});
 			this._documentCache.set(resource, doc);
 			return doc;
-		} catch (e) {
+		} catch (_Error) {
 			return undefined;
 		}
 	}

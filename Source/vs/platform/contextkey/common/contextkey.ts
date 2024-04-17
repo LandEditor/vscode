@@ -223,7 +223,7 @@ export class Parser {
 				throw Parser._parseError;
 			}
 			return expr;
-		} catch (e) {
+		} catch (_Error) {
 			if (!(e === Parser._parseError)) {
 				throw e;
 			}
@@ -324,7 +324,7 @@ export class Parser {
 						let regexp: RegExp | null;
 						try {
 							regexp = new RegExp(regexLexeme.substring(1, closingSlashIndex), flags);
-						} catch (e) {
+						} catch (_Error) {
 							throw this._errExpectedButGot(`REGEX`, expr);
 						}
 						return ContextKeyRegexExpr.create(key, regexp);
@@ -378,7 +378,7 @@ export class Parser {
 							let regexp: RegExp | null;
 							try {
 								regexp = new RegExp(regexLexeme.substring(1, closingSlashIndex), flags);
-							} catch (e) {
+							} catch (_Error) {
 								throw this._errExpectedButGot(`REGEX`, expr);
 							}
 							return ContextKeyExpr.regex(key, regexp);

@@ -102,7 +102,7 @@ export async function provideInlineCompletions(
 			try {
 				const completions = await provider.provideInlineCompletions(model, position, context, token);
 				return completions;
-			} catch (e) {
+			} catch (_Error) {
 				onUnexpectedExternalError(e);
 				return undefined;
 			}

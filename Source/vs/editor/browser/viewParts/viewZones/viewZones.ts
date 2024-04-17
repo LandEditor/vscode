@@ -332,7 +332,7 @@ export class ViewZones extends ViewPart {
 		if (typeof zone.onComputedHeight === 'function') {
 			try {
 				zone.onComputedHeight(height);
-			} catch (e) {
+			} catch (_Error) {
 				onUnexpectedError(e);
 			}
 		}
@@ -342,7 +342,7 @@ export class ViewZones extends ViewPart {
 		if (typeof zone.onDomNodeTop === 'function') {
 			try {
 				zone.onDomNodeTop(top);
-			} catch (e) {
+			} catch (_Error) {
 				onUnexpectedError(e);
 			}
 		}
@@ -411,7 +411,7 @@ export class ViewZones extends ViewPart {
 function safeInvoke1Arg(func: Function, arg1: any): any {
 	try {
 		return func(arg1);
-	} catch (e) {
+	} catch (_Error) {
 		onUnexpectedError(e);
 	}
 }

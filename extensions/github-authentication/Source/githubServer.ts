@@ -141,7 +141,7 @@ export class GitHubServer implements IGitHubServer {
 					redirectUri: vscode.Uri.parse(await this.getRedirectEndpoint()),
 					existingLogin
 				});
-			} catch (e) {
+			} catch (_Error) {
 				userCancelled = this.processLoginError(e);
 			}
 		}
@@ -193,10 +193,10 @@ export class GitHubServer implements IGitHubServer {
 			try {
 				const body = await result.text();
 				throw new Error(body);
-			} catch (e) {
+			} catch (_Error) {
 				throw new Error(`${result.status} ${result.statusText}`);
 			}
-		} catch (e) {
+		} catch (_Error) {
 			this._logger.warn('Failed to delete token from server.' + e.message ?? e);
 		}
 	}
@@ -231,7 +231,7 @@ export class GitHubServer implements IGitHubServer {
 				const json = await result.json();
 				this._logger.info('Got account info!');
 				return { id: json.id, accountName: json.login };
-			} catch (e) {
+			} catch (_Error) {
 				this._logger.error(`Unexpected error parsing response from GitHub: ${e.message ?? e}`);
 				throw e;
 			}
@@ -291,7 +291,7 @@ export class GitHubServer implements IGitHubServer {
 			} else {
 				edu = 'unknown';
 			}
-		} catch (e) {
+		} catch (_Error) {
 			edu = 'unknown';
 		}
 

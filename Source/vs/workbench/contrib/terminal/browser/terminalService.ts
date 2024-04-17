@@ -400,7 +400,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			await profileProvider.createContributedTerminalProfile(options);
 			this._terminalGroupService.setActiveInstanceByIndex(this._terminalGroupService.instances.length - 1);
 			await this._terminalGroupService.activeInstance?.focusWhenReady();
-		} catch (e) {
+		} catch (_Error) {
 			this._notificationService.error(e.message);
 		}
 	}

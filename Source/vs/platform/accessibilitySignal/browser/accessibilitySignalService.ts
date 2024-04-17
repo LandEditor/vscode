@@ -146,7 +146,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 				const playedSound = await playAudio(url, this.getVolumeInPercent() / 100);
 				this.sounds.set(url, playedSound);
 			}
-		} catch (e) {
+		} catch (_Error) {
 			if (!e.message.includes('play() can only be initiated by a user gesture')) {
 				// tracking this issue in #178642, no need to spam the console
 				console.error('Error while playing sound', e);

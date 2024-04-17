@@ -304,7 +304,7 @@ function connectToRenderer(protocol: IMessagePassingProtocol): Promise<IRenderer
 					try {
 						process.kill(initData.parentPid, 0); // throws an exception if the main process doesn't exist anymore.
 						epermErrors = 0;
-					} catch (e) {
+					} catch (_Error) {
 						if (e && e.code === 'EPERM') {
 							// Even if the parent process is still alive,
 							// some antivirus software can lead to an EPERM error to be thrown here.

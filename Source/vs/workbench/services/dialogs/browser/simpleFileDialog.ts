@@ -270,7 +270,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 		if (this.options.defaultUri) {
 			try {
 				stat = await this.fileService.stat(this.options.defaultUri);
-			} catch (e) {
+			} catch (_Error) {
 				// The file or folder doesn't exist
 			}
 			if (!stat || !stat.isDirectory) {
@@ -590,7 +590,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 				let stat: IFileStatWithPartialMetadata | undefined;
 				try {
 					stat = await this.fileService.stat(valueUri);
-				} catch (e) {
+				} catch (_Error) {
 					// do nothing
 				}
 				if (stat && stat.isDirectory && (resources.basename(valueUri) !== '.') && this.endsWithSlash(value)) {
@@ -613,7 +613,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 						let statWithoutTrailing: IFileStatWithPartialMetadata | undefined;
 						try {
 							statWithoutTrailing = await this.fileService.stat(inputUriDirname);
-						} catch (e) {
+						} catch (_Error) {
 							// do nothing
 						}
 						if (statWithoutTrailing && statWithoutTrailing.isDirectory) {
@@ -807,7 +807,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 		try {
 			statDirname = await this.fileService.stat(resources.dirname(uri));
 			stat = await this.fileService.stat(uri);
-		} catch (e) {
+		} catch (_Error) {
 			// do nothing
 		}
 
@@ -874,7 +874,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 					folderStat = undefined;
 					result = true;
 				}
-			} catch (e) {
+			} catch (_Error) {
 				// The file/directory doesn't exist
 			}
 			const newValue = trailing ? this.pathAppend(newFolder, trailing) : this.pathFromUri(newFolder, true);
@@ -983,7 +983,7 @@ export class SimpleFileDialog implements ISimpleFileDialog {
 					result.push(item);
 				}
 			}
-		} catch (e) {
+		} catch (_Error) {
 			// ignore
 			console.log(e);
 		}

@@ -28,7 +28,7 @@ export class BrowserRemoteResourceLoader extends Disposable {
 			let content: IFileContent;
 			try {
 				content = await fileService.readFile(URI.from(uri, true));
-			} catch (e) {
+			} catch (_Error) {
 				const str = VSBuffer.fromString(e.message).buffer;
 				if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
 					return request.respondWith(404, str, {});

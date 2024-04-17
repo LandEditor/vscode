@@ -167,7 +167,7 @@ export class SnippetsSynchroniser extends AbstractSynchroniser implements IUserD
 			// Delete the preview
 			try {
 				await this.fileService.del(previewResource);
-			} catch (e) { /* ignore */ }
+			} catch (_Error) { /* ignore */ }
 		}
 
 	}
@@ -481,7 +481,7 @@ export class SnippetsSynchroniser extends AbstractSynchroniser implements IUserD
 		let stat: IFileStat;
 		try {
 			stat = await this.fileService.resolve(this.snippetsFolder);
-		} catch (e) {
+		} catch (_Error) {
 			// No snippets
 			if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
 				return snippets;

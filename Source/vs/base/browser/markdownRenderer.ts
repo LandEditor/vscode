@@ -102,7 +102,7 @@ export function renderMarkdown(markdown: IMarkdownString, options: MarkdownRende
 		let data: any;
 		try {
 			data = parse(decodeURIComponent(part));
-		} catch (e) {
+		} catch (_Error) {
 			// ignore
 		}
 		if (!data) {

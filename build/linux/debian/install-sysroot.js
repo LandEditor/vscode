@@ -108,7 +108,7 @@ async function fetchUrl(options, retries = 10, retryDelay = 1000) {
             clearTimeout(timeout);
         }
     }
-    catch (e) {
+    catch (_Error) {
         if (retries > 0) {
             console.log(`Fetching failed: ${e}`);
             await new Promise(resolve => setTimeout(resolve, retryDelay));

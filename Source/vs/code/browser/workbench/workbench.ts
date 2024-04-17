@@ -152,7 +152,7 @@ class ServerKeyedAESCrypto implements ISecretStorageCrypto {
 				}
 				this._serverKey = serverKey;
 				return this._serverKey;
-			} catch (e) {
+			} catch (_Error) {
 				lastError = e;
 				attempt++;
 

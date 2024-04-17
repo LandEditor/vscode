@@ -63,7 +63,7 @@ export abstract class StreamDebugAdapter extends AbstractDebugAdapter {
 					if (message.length > 0) {
 						try {
 							this.acceptMessage(<DebugProtocol.ProtocolMessage>JSON.parse(message));
-						} catch (e) {
+						} catch (_Error) {
 							this._onError.fire(new Error((e.message || e) + '\n' + message));
 						}
 					}
