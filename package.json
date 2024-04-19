@@ -90,7 +90,7 @@
 		"kerberos": "2.1.0",
 		"minimist": "1.2.8",
 		"native-is-elevated": "0.7.0",
-		"native-keymap": "3.3.4",
+		"native-keymap": "3.3.5",
 		"native-watchdog": "1.4.2",
 		"node-pty": "1.1.0-beta11",
 		"tas-client-umd": "0.1.8",
@@ -100,7 +100,7 @@
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@swc/core": "1.4.14",
+		"@swc/core": "1.4.16",
 		"@types/cookie": "0.6.0",
 		"@types/debug": "4.1.12",
 		"@types/graceful-fs": "4.1.9",
