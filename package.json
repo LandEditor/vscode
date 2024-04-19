@@ -2,6 +2,9 @@
 	"name": "code-oss-dev",
 	"version": "0.0.1",
 	"private": false,
+	"keywords": [
+		"land"
+	],
 	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
 		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
