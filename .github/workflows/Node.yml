@@ -86,7 +86,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-build-builtin-Node-${{ matrix.node-version }}-Target
                   path: ./build/builtin/Target
@@ -103,7 +103,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-build-monaco-Node-${{ matrix.node-version }}-Target
                   path: ./build/monaco/Target
@@ -120,7 +120,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-build-npm-gyp-Node-${{ matrix.node-version }}-Target
                   path: ./build/npm/gyp/Target
@@ -137,7 +137,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-build-Node-${{ matrix.node-version }}-Target
                   path: ./build/Target
@@ -154,7 +154,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-bat-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/bat/Target
@@ -171,7 +171,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-clojure-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/clojure/Target
@@ -188,7 +188,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-coffeescript-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/coffeescript/Target
@@ -205,7 +205,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-configuration-editing-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/configuration-editing/Target
@@ -222,7 +222,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-cpp-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/cpp/Target
@@ -239,7 +239,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-csharp-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/csharp/Target
@@ -256,7 +256,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-css-language-features-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/css-language-features/Target
@@ -273,7 +273,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-css-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/css-language-features/server/Target
@@ -290,7 +290,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-css-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/css/Target
@@ -307,7 +307,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-dart-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/dart/Target
@@ -324,7 +324,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-debug-auto-launch-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/debug-auto-launch/Target
@@ -341,7 +341,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-debug-server-ready-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/debug-server-ready/Target
@@ -358,7 +358,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-diff-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/diff/Target
@@ -375,7 +375,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-docker-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/docker/Target
@@ -392,7 +392,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-emmet-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/emmet/Target
@@ -409,7 +409,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-extension-editing-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/extension-editing/Target
@@ -426,7 +426,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-fsharp-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/fsharp/Target
@@ -443,7 +443,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-git-base-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/git-base/Target
@@ -460,7 +460,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-git-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/git/Target
@@ -477,7 +477,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-github-authentication-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/github-authentication/Target
@@ -494,7 +494,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-github-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/github/Target
@@ -511,7 +511,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-go-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/go/Target
@@ -528,7 +528,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-groovy-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/groovy/Target
@@ -545,7 +545,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-grunt-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/grunt/Target
@@ -562,7 +562,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-gulp-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/gulp/Target
@@ -579,7 +579,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-handlebars-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/handlebars/Target
@@ -596,7 +596,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-hlsl-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/hlsl/Target
@@ -613,7 +613,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-html-language-features-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/html-language-features/Target
@@ -630,7 +630,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-html-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/html-language-features/server/Target
@@ -647,7 +647,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-html-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/html/Target
@@ -664,7 +664,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-ini-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/ini/Target
@@ -681,7 +681,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-ipynb-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/ipynb/Target
@@ -698,7 +698,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-jake-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/jake/Target
@@ -715,7 +715,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-java-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/java/Target
@@ -732,7 +732,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-javascript-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/javascript/Target
@@ -749,7 +749,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-json-language-features-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/json-language-features/Target
@@ -766,7 +766,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-json-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/json-language-features/server/Target
@@ -783,7 +783,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-json-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/json/Target
@@ -800,7 +800,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-julia-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/julia/Target
@@ -817,7 +817,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-latex-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/latex/Target
@@ -834,7 +834,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-less-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/less/Target
@@ -851,7 +851,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-log-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/log/Target
@@ -868,7 +868,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-lua-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/lua/Target
@@ -885,7 +885,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-make-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/make/Target
@@ -902,7 +902,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-markdown-basics-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/markdown-basics/Target
@@ -919,7 +919,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-markdown-language-features-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/markdown-language-features/Target
@@ -936,7 +936,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-markdown-language-features-server-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/markdown-language-features/server/Target
@@ -953,7 +953,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-markdown-math-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/markdown-math/Target
@@ -970,7 +970,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-media-preview-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/media-preview/Target
@@ -987,7 +987,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-merge-conflict-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/merge-conflict/Target
@@ -1004,7 +1004,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-microsoft-authentication-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/microsoft-authentication/Target
@@ -1021,7 +1021,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-notebook-renderers-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/notebook-renderers/Target
@@ -1038,7 +1038,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-npm-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/npm/Target
@@ -1055,7 +1055,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-objective-c-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/objective-c/Target
@@ -1072,7 +1072,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/Target
@@ -1089,7 +1089,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-perl-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/perl/Target
@@ -1106,7 +1106,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-php-language-features-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/php-language-features/Target
@@ -1123,7 +1123,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-php-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/php/Target
@@ -1140,7 +1140,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-powershell-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/powershell/Target
@@ -1157,7 +1157,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-pug-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/pug/Target
@@ -1174,7 +1174,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-python-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/python/Target
@@ -1191,7 +1191,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-r-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/r/Target
@@ -1208,7 +1208,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-razor-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/razor/Target
@@ -1225,7 +1225,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-references-view-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/references-view/Target
@@ -1242,7 +1242,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-restructuredtext-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/restructuredtext/Target
@@ -1259,7 +1259,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-ruby-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/ruby/Target
@@ -1276,7 +1276,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-rust-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/rust/Target
@@ -1293,7 +1293,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-scss-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/scss/Target
@@ -1310,7 +1310,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-search-result-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/search-result/Target
@@ -1327,7 +1327,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-shaderlab-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/shaderlab/Target
@@ -1344,7 +1344,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-shellscript-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/shellscript/Target
@@ -1361,7 +1361,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-simple-browser-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/simple-browser/Target
@@ -1378,7 +1378,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-sql-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/sql/Target
@@ -1395,7 +1395,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-swift-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/swift/Target
@@ -1412,7 +1412,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-abyss-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-abyss/Target
@@ -1429,7 +1429,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-defaults-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-defaults/Target
@@ -1446,7 +1446,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-kimbie-dark-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-kimbie-dark/Target
@@ -1463,7 +1463,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-monokai-dimmed-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-monokai-dimmed/Target
@@ -1480,7 +1480,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-monokai-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-monokai/Target
@@ -1497,7 +1497,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-quietlight-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-quietlight/Target
@@ -1514,7 +1514,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-red-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-red/Target
@@ -1531,7 +1531,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-seti-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-seti/Target
@@ -1548,7 +1548,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-solarized-dark-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-solarized-dark/Target
@@ -1565,7 +1565,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-solarized-light-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-solarized-light/Target
@@ -1582,7 +1582,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-theme-tomorrow-night-blue-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/theme-tomorrow-night-blue/Target
@@ -1599,7 +1599,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-tunnel-forwarding-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/tunnel-forwarding/Target
@@ -1616,7 +1616,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-typescript-basics-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/typescript-basics/Target
@@ -1633,7 +1633,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-typescript-language-features-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/typescript-language-features/Target
@@ -1650,7 +1650,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-vb-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/vb/Target
@@ -1667,7 +1667,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-vscode-api-tests-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/vscode-api-tests/Target
@@ -1684,7 +1684,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-vscode-colorize-tests-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/vscode-colorize-tests/Target
@@ -1701,7 +1701,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-vscode-test-resolver-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/vscode-test-resolver/Target
@@ -1718,7 +1718,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-xml-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/xml/Target
@@ -1735,7 +1735,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-extensions-yaml-Node-${{ matrix.node-version }}-Target
                   path: ./extensions/yaml/Target
@@ -1752,7 +1752,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-Node-${{ matrix.node-version }}-Target
                   path: ./Target
@@ -1769,7 +1769,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-remote-Node-${{ matrix.node-version }}-Target
                   path: ./remote/Target
@@ -1786,7 +1786,7 @@ jobs:
             - run: pnpm run prepublishOnly
               working-directory: .
 
-            - uses: actions/upload-artifact@v4.3.1
+            - uses: actions/upload-artifact@v4.3.2
               with:
                   name: .-remote-web-Node-${{ matrix.node-version }}-Target
                   path: ./remote/web/Target
