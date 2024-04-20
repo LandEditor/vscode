@@ -86,7 +86,7 @@ async function resolveConfigurationVariables(variableResolver: VariableResolver,
 		if (typeof value === 'string') {
 			try {
 				env[key] = await variableResolver(value);
-			} catch (_Error) {
+			} catch (e) {
 				env[key] = value;
 			}
 		}
@@ -223,7 +223,7 @@ async function _resolveCwd(cwd: string, variableResolver: VariableResolver | und
 	if (variableResolver) {
 		try {
 			return await variableResolver(cwd);
-		} catch (_Error) {
+		} catch (e) {
 			logService?.error('Could not resolve terminal cwd', e);
 			return undefined;
 		}

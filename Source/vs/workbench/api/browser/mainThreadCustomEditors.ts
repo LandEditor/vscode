@@ -718,7 +718,7 @@ class MainThreadCustomEditorModel extends ResourceWorkingCopy implements ICustom
 				backupData.meta!.backupId = backupId;
 				this._backupId = backupId;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			if (isCancellationError(e)) {
 				// This is expected
 				throw e;

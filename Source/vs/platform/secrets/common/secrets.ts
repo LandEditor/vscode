@@ -82,7 +82,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
 					: await this._encryptionService.decrypt(encrypted);
 				this._logService.trace('[secrets] decrypted secret for key:', fullKey);
 				return result;
-			} catch (_Error) {
+			} catch (e) {
 				this._logService.error(e);
 				this.delete(key);
 				return undefined;
@@ -101,7 +101,7 @@ export class BaseSecretStorageService extends Disposable implements ISecretStora
 				encrypted = this._type === 'in-memory'
 					? value
 					: await this._encryptionService.encrypt(value);
-			} catch (_Error) {
+			} catch (e) {
 				this._logService.error(e);
 				throw e;
 			}

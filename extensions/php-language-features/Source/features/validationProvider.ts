@@ -319,7 +319,7 @@ async function getConfig(): Promise<IPhpConfig> {
 async function getPhpPath(): Promise<string | undefined> {
 	try {
 		return await which('php');
-	} catch (_Error) {
+	} catch (e) {
 		return undefined;
 	}
 }

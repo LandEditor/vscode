@@ -472,7 +472,7 @@ export class WorkspaceTrustUXHandler extends Disposable implements IWorkbenchCon
 					if (workspaces.indexOf(this.workspaceContextService.getWorkspace().folders[0].uri.toString()) > -1) {
 						return true;
 					}
-				} catch (_Error) {
+				} catch (e) {
 					// Ignore errors when resolving file contents
 				}
 			}

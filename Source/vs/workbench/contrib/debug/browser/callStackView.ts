@@ -205,7 +205,7 @@ export class CallStackView extends ViewPane {
 					await expandTo(session, this.tree);
 					this.autoExpandedSessions.add(session);
 				}
-			} catch (_Error) {
+			} catch (e) {
 				// Ignore tree expand errors if element no longer present
 			}
 			if (this.selectionNeedsUpdate) {
@@ -419,7 +419,7 @@ export class CallStackView extends ViewPane {
 				} else {
 					this.tree.reveal(element);
 				}
-			} catch (_Error) { }
+			} catch (e) { }
 			finally {
 				this.ignoreSelectionChangedEvent = false;
 			}
@@ -438,10 +438,10 @@ export class CallStackView extends ViewPane {
 			// Ignore errors from this expansions because we are not aware if we rendered the threads and sessions or we hide them to declutter the view
 			try {
 				await expandTo(thread.session, this.tree);
-			} catch (_Error) { }
+			} catch (e) { }
 			try {
 				await this.tree.expand(thread);
-			} catch (_Error) { }
+			} catch (e) { }
 
 			const toReveal = stackFrame || session;
 			if (toReveal) {
@@ -775,7 +775,7 @@ class StackFramesRenderer implements ICompressibleTreeRenderer<IStackFrame, Fuzz
 			const action = new Action('debug.callStack.restartFrame', localize('restartFrame', "Restart Frame"), ThemeIcon.asClassName(icons.debugRestartFrame), true, async () => {
 				try {
 					await stackFrame.restart();
-				} catch (_Error) {
+				} catch (e) {
 					this.notificationService.error(e);
 				}
 			});

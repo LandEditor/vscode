@@ -552,7 +552,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				try {
 					const dap = await bp.toDAP(this);
 					return { dap, bp };
-				} catch (_Error) {
+				} catch (e) {
 					return { bp, message: e.message };
 				}
 			}));
@@ -1018,7 +1018,7 @@ export class DebugSession implements IDebugSession, IDisposable {
 				if (this.raw && this.raw.capabilities.supportsConfigurationDoneRequest) {
 					try {
 						await this.raw.configurationDone();
-					} catch (_Error) {
+					} catch (e) {
 						// Disconnect the debug session on configuration done error #10596
 						this.notificationService.error(e);
 						this.raw?.disconnect({});

@@ -51,7 +51,7 @@ export function registerDiagnosticsPushSupport(documents: TextDocuments<TextDocu
 						connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
 					}
 					delete pendingValidationRequests[textDocument.uri];
-				} catch (_Error) {
+				} catch (e) {
 					connection.console.error(formatError(`Error while validating ${textDocument.uri}`, e));
 				}
 			}

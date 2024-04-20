@@ -1455,7 +1455,7 @@ abstract class MemoryBreakpointAction extends Action2 {
 		let info: IDataBreakpointInfoResponse | undefined;
 		try {
 			info = await session.dataBytesBreakpointInfo(range.address, range.bytes);
-		} catch (_Error) {
+		} catch (e) {
 			notifications.error(localize('dataBreakpointError', "Failed to set data breakpoint at {0}: {1}", range.address, e.message));
 		}
 

@@ -49,7 +49,7 @@ export class SearchHistoryService implements ISearchHistoryService {
 		if (raw) {
 			try {
 				result = JSON.parse(raw);
-			} catch (_Error) {
+			} catch (e) {
 				// Invalid data
 			}
 		}

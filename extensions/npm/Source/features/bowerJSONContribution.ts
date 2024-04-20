@@ -87,7 +87,7 @@ export class BowerJSONContribution implements IJSONContribution {
 								}
 								collector.setAsIncomplete();
 							}
-						} catch (_Error) {
+						} catch (e) {
 							// ignore
 						}
 					} else {
@@ -177,7 +177,7 @@ export class BowerJSONContribution implements IJSONContribution {
 					}
 					return url;
 				}
-			} catch (_Error) {
+			} catch (e) {
 				// ignore
 			}
 			return undefined;

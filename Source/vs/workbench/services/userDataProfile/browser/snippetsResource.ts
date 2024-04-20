@@ -75,7 +75,7 @@ export class SnippetsResource implements IProfileResource {
 		let stat: IFileStat;
 		try {
 			stat = await this.fileService.resolve(profile.snippetsHome);
-		} catch (_Error) {
+		} catch (e) {
 			// No snippets
 			if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
 				return snippets;

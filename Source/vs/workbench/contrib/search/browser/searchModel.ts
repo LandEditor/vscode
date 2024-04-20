@@ -854,7 +854,7 @@ export class FileMatch extends Disposable implements IFileMatch {
 		});
 		try {
 			this._findMatchDecorationModel.setAllFindMatchesDecorations(cellFindMatch);
-		} catch (_Error) {
+		} catch (e) {
 			// no op, might happen due to bugs related to cell output regex search
 		}
 	}

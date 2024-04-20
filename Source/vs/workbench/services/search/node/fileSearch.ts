@@ -176,7 +176,7 @@ export class FileWalker {
 	private call<F extends Function>(fun: F, that: any, ...args: any[]): void {
 		try {
 			fun.apply(that, args);
-		} catch (_Error) {
+		} catch (e) {
 			args[args.length - 1](e);
 		}
 	}

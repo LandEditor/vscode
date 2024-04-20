@@ -54,7 +54,7 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
 					let tunnelPromise: Promise<ITunnel> | undefined;
 					try {
 						tunnelPromise = tunnelFactory(tunnelOptions, tunnelCreationOptions);
-					} catch (_Error) {
+					} catch (e) {
 						logService.trace('tunnelFactory: tunnel provider error');
 					}
 
@@ -64,7 +64,7 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
 					let tunnel: ITunnel;
 					try {
 						tunnel = await tunnelPromise;
-					} catch (_Error) {
+					} catch (e) {
 						logService.trace('tunnelFactory: tunnel provider promise error');
 						if (e instanceof Error) {
 							return e.message;

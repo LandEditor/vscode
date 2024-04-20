@@ -75,7 +75,7 @@ export class MainThreadWebviewsViews extends Disposable implements extHostProtoc
 				if (webviewView.webview.state) {
 					try {
 						state = JSON.parse(webviewView.webview.state);
-					} catch (_Error) {
+					} catch (e) {
 						console.error('Could not load webview state', e, webviewView.webview.state);
 					}
 				}

@@ -1112,7 +1112,7 @@ registerAction2(class extends Action2 {
 		try {
 			const evaluation = await session.evaluate(element.originalExpression, stackFrame.frameId, 'clipboard');
 			return evaluation?.body.result;
-		} catch (_Error) {
+		} catch (e) {
 			return;
 		}
 	}

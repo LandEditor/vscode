@@ -9,7 +9,7 @@ export function disposeAll(disposables: Iterable<IDisposable>) {
 	for (const disposable of disposables) {
 		try {
 			disposable.dispose();
-		} catch (_Error) {
+		} catch (e) {
 			errors.push(e);
 		}
 	}

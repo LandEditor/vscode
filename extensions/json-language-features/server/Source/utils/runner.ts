@@ -55,7 +55,7 @@ export function runSafe<T, E>(runtime: RuntimeEnvironment, func: () => T, errorV
 						resolve(result);
 					}
 
-				} catch (_Error) {
+				} catch (e) {
 					console.error(formatError(errorMessage, e));
 					resolve(errorVal);
 				}

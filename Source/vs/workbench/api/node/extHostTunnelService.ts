@@ -245,7 +245,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
 		try {
 			tcp = await pfs.Promises.readFile('/proc/net/tcp', 'utf8');
 			tcp6 = await pfs.Promises.readFile('/proc/net/tcp6', 'utf8');
-		} catch (_Error) {
+		} catch (e) {
 			// File reading error. No additional handling needed.
 		}
 		const connections: { socket: number; ip: string; port: number }[] = loadListeningPorts(tcp, tcp6);
@@ -271,7 +271,7 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
 					const cmd = await pfs.Promises.readFile(resources.joinPath(childUri, 'cmdline').fsPath, 'utf8');
 					processes.push({ pid, cwd, cmd });
 				}
-			} catch (_Error) {
+			} catch (e) {
 				//
 			}
 		}

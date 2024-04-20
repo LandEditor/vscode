@@ -206,7 +206,7 @@ export async function main(desc: ProductDescription, args: string[]): Promise<vo
 			parsedArgs['skip-add-to-recently-opened'] = true;
 
 			console.log(`Reading from stdin via: ${stdinFilePath}`);
-		} catch (_Error) {
+		} catch (e) {
 			console.log(`Failed to create file to read via stdin: ${e.toString()}`);
 		}
 	}
@@ -380,7 +380,7 @@ function openInBrowser(args: string[], verbose: boolean) {
 			} else {
 				uris.push(pathToURI(location).href);
 			}
-		} catch (_Error) {
+		} catch (e) {
 			console.log(`Invalid url: ${location}`);
 		}
 	}
@@ -437,7 +437,7 @@ function sendToPipe(args: PipeCommand, verbose: boolean): Promise<any> {
 					} else {
 						reject(obj);
 					}
-				} catch (_Error) {
+				} catch (e) {
 					reject('Error in response: Unable to parse response as JSON: ' + content);
 				}
 			});
@@ -482,7 +482,7 @@ function translatePath(input: string, mapFileUri: (input: string) => string, fol
 			// handle /dev/null passed to us by external tools such as `git difftool`
 			fileURIS.push(mappedUri);
 		}
-	} catch (_Error) {
+	} catch (e) {
 		if (e.code === 'ENOENT') {
 			fileURIS.push(mappedUri);
 		} else {

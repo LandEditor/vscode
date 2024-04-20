@@ -472,7 +472,7 @@ class AutoSync extends Disposable {
 		let error: Error | undefined;
 		try {
 			await this.createAndRunSyncTask(disableCache, token);
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(e);
 			error = e;
 			if (UserDataSyncError.toUserDataSyncError(e).code === UserDataSyncErrorCode.MethodNotFound) {

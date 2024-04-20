@@ -387,7 +387,7 @@ export class ConfigurationModelParser {
 			try {
 				json.visit(content, visitor);
 				raw = currentParent[0] || {};
-			} catch (_Error) {
+			} catch (e) {
 				this.logService.error(`Error while parsing settings file ${this._name}: ${e}`);
 				this._parseErrors = [e];
 			}
@@ -487,7 +487,7 @@ export class UserSettings extends Disposable {
 			const content = await this.fileService.readFile(this.userSettingsResource);
 			this.parser.parse(content.value.toString() || '{}', this.parseOptions);
 			return this.parser.configurationModel;
-		} catch (_Error) {
+		} catch (e) {
 			return ConfigurationModel.createEmptyModel(this.logService);
 		}
 	}

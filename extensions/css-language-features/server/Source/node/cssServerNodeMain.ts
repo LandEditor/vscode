@@ -11,7 +11,7 @@ async function setupMain() {
 		try {
 			await l10n.config({ uri: i10lLocation });
 			l10nLog.push(`l10n: Configured to ${i10lLocation.toString()}`);
-		} catch (_Error) {
+		} catch (e) {
 			l10nLog.push(`l10n: Problems loading ${i10lLocation.toString()} : ${e}`);
 		}
 	}

@@ -166,7 +166,7 @@ export class ChatViewPane extends ViewPane implements IChatViewPane {
 			const model = sessionId ? this.chatService.getOrRestoreSession(sessionId) : undefined;
 
 			this.updateModel(model);
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(e);
 			throw e;
 		}

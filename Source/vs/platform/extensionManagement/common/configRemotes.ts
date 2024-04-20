@@ -47,7 +47,7 @@ function extractDomain(url: string): string | null {
 		if (uri.authority) {
 			return stripLowLevelDomains(uri.authority);
 		}
-	} catch (_Error) {
+	} catch (e) {
 		// ignore invalid URIs
 	}
 	return null;
@@ -95,7 +95,7 @@ function extractRemote(url: string, stripEndingDotGit: boolean): string | null {
 		if (uri.authority) {
 			return normalizeRemote(stripPort(uri.authority), uri.path, stripEndingDotGit);
 		}
-	} catch (_Error) {
+	} catch (e) {
 		// ignore invalid URIs
 	}
 	return null;

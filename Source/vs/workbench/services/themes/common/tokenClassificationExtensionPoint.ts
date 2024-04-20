@@ -199,7 +199,7 @@ export class TokenClassificationExtensionPoints {
 						try {
 							const selector = tokenClassificationRegistry.parseTokenSelector(selectorString, contribution.language);
 							tokenClassificationRegistry.registerTokenStyleDefault(selector, { scopesToProbe: tmScopes.map(s => s.split(' ')) });
-						} catch (_Error) {
+						} catch (e) {
 							collector.error(nls.localize('invalid.semanticTokenScopes.scopes.selector', "configuration.semanticTokenScopes.scopes': Problems parsing selector {0}.", selectorString));
 							// invalid selector, ignore
 						}
@@ -214,7 +214,7 @@ export class TokenClassificationExtensionPoints {
 						try {
 							const selector = tokenClassificationRegistry.parseTokenSelector(selectorString, contribution.language);
 							tokenClassificationRegistry.registerTokenStyleDefault(selector, { scopesToProbe: tmScopes.map(s => s.split(' ')) });
-						} catch (_Error) {
+						} catch (e) {
 							// invalid selector, ignore
 						}
 					}

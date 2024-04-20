@@ -320,7 +320,7 @@ export class ExplorerItem {
 					const stat = await this.fileService.resolve(this.resource, { resolveSingleChildDescendants: true, resolveMetadata });
 					const resolved = ExplorerItem.create(this.fileService, this.configService, this.filesConfigService, stat, this);
 					ExplorerItem.mergeLocalWithDisk(resolved, this);
-				} catch (_Error) {
+				} catch (e) {
 					this.error = e;
 					throw e;
 				}

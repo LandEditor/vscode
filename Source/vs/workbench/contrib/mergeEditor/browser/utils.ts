@@ -134,7 +134,7 @@ export class PersistentStore<T> {
 			if (value !== undefined) {
 				try {
 					this.value = JSON.parse(value) as any;
-				} catch (_Error) {
+				} catch (e) {
 					onUnexpectedError(e);
 				}
 			}

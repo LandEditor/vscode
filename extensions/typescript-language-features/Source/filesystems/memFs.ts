@@ -83,7 +83,7 @@ export class MemFs implements vscode.FileSystemProvider {
 			const dir = this.getParent(uri);
 			dir.contents.delete(basename(uri.path));
 			this._emitter.fire([{ type: vscode.FileChangeType.Deleted, uri }]);
-		} catch (_Error) { }
+		} catch (e) { }
 	}
 
 	createDirectory(uri: vscode.Uri): void {

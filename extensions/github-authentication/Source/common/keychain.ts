@@ -16,7 +16,7 @@ export class Keychain {
 	async setToken(token: string): Promise<void> {
 		try {
 			return await this.context.secrets.store(this.serviceId, token);
-		} catch (_Error) {
+		} catch (e) {
 			// Ignore
 			this.Logger.error(`Setting token failed: ${e}`);
 		}
@@ -29,7 +29,7 @@ export class Keychain {
 				this.Logger.trace('Token acquired from secret storage.');
 			}
 			return secret;
-		} catch (_Error) {
+		} catch (e) {
 			// Ignore
 			this.Logger.error(`Getting token failed: ${e}`);
 			return Promise.resolve(undefined);
@@ -39,7 +39,7 @@ export class Keychain {
 	async deleteToken(): Promise<void> {
 		try {
 			return await this.context.secrets.delete(this.serviceId);
-		} catch (_Error) {
+		} catch (e) {
 			// Ignore
 			this.Logger.error(`Deleting token failed: ${e}`);
 			return Promise.resolve(undefined);

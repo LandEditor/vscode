@@ -75,7 +75,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 						Array.isArray(strings) ? strings : [strings],
 						t
 					);
-				} catch (_Error) {
+				} catch (e) {
 					// logged in extension host
 				}
 				// Wait for the timer to finish to allow for another provider to resolve.

@@ -49,7 +49,7 @@ export class ElectronRemoteResourceLoader extends Disposable {
 				query: '',
 			});
 			content = await this.fileService.readFile(actual);
-		} catch (_Error) {
+		} catch (e) {
 			const str = encodeBase64(VSBuffer.fromString(e.message));
 			if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
 				return { statusCode: 404, body: str };

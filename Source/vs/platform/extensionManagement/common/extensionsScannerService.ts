@@ -667,7 +667,7 @@ class ExtensionsScanner extends Disposable {
 				};
 				return input.validate ? this.validate(extension, input) : extension;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			if (input.type !== ExtensionType.System) {
 				this.logService.error(e);
 			}

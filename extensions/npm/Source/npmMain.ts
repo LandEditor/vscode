@@ -100,7 +100,7 @@ async function getNPMCommandPath(): Promise<string | undefined> {
 	if (vscode.workspace.isTrusted && canRunNpmInCurrentWorkspace()) {
 		try {
 			return await which(process.platform === 'win32' ? 'npm.cmd' : 'npm');
-		} catch (_Error) {
+		} catch (e) {
 			return undefined;
 		}
 	}

@@ -182,7 +182,7 @@ export class NotebookViewZones extends Disposable {
 function safeInvoke1Arg(func: Function, arg1: any): any {
 	try {
 		return func(arg1);
-	} catch (_Error) {
+	} catch (e) {
 		onUnexpectedError(e);
 	}
 }

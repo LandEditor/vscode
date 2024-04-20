@@ -252,7 +252,7 @@ export class TaskQuickPick extends Disposable {
 					let canOpenConfig: boolean = false;
 					try {
 						canOpenConfig = await this._taskService.openConfig(task);
-					} catch (_Error) {
+					} catch (e) {
 						// do nothing.
 					}
 					if (!canOpenConfig) {

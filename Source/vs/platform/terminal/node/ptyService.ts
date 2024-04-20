@@ -49,7 +49,7 @@ export function traceRpc(_target: any, key: string, descriptor: any) {
 		let result: any;
 		try {
 			result = await fn.apply(this, args);
-		} catch (_Error) {
+		} catch (e) {
 			this.traceRpcArgs.logService.error(`[RPC Response] PtyService#${fn.name}`, e);
 			throw e;
 		}
@@ -301,7 +301,7 @@ export class PtyService extends Disposable implements IPtyService {
 		try {
 			await this._throwIfNoPty(id).attach();
 			this._logService.info(`Persistent process reconnection "${id}"`);
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.warn(`Persistent process reconnection "${id}" failed`, e.message);
 			throw e;
 		}
@@ -497,7 +497,7 @@ export class PtyService extends Disposable implements IPtyService {
 	async getRevivedPtyNewId(workspaceId: string, id: number): Promise<number | undefined> {
 		try {
 			return this._revivedPtyIdMap.get(this._getRevivingProcessId(workspaceId, id))?.newId;
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.warn(`Couldn't find terminal ID ${workspaceId}-${id}`, e.message);
 		}
 		return undefined;
@@ -550,7 +550,7 @@ export class PtyService extends Disposable implements IPtyService {
 				terminal: { ...processDetails, id: persistentProcessId },
 				relativeSize: t.relativeSize
 			};
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.warn(`Couldn't get layout info, a terminal was probably disconnected`, e.message);
 			this._logService.debug('Reattach to wrong terminal debug info - layout info by id', t);
 			this._logService.debug('Reattach to wrong terminal debug info - _revivePtyIdMap', Array.from(this._revivedPtyIdMap.values()));

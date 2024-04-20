@@ -767,7 +767,7 @@
 			window.requestAnimationFrame(() => {
 				try {
 					hostMessaging.postMessage('did-scroll', { scrollYPercentage: progress });
-				} catch (_Error) {
+				} catch (e) {
 					// noop
 				}
 				isHandlingScroll = false;
@@ -804,7 +804,7 @@
 		function areServiceWorkersEnabled() {
 			try {
 				return !!navigator.serviceWorker;
-			} catch (_Error) {
+			} catch (e) {
 				return false;
 			}
 		}
@@ -866,7 +866,7 @@
 						const newCsp = cspContent.replace(/(vscode-webview-resource|vscode-resource):(?=(\s|;|$))/g, data.cspSource);
 						csp.setAttribute('content', newCsp);
 					}
-				} catch (_Error) {
+				} catch (e) {
 					console.error(`Could not rewrite csp: ${e}`);
 				}
 			}
@@ -931,7 +931,7 @@
 				const currentUpdateId = ++updateId;
 				try {
 					await workerReady;
-				} catch (_Error) {
+				} catch (e) {
 					console.error(`Webview fatal error: ${e}`);
 					hostMessaging.postMessage('fatal-error', { message: e + '' });
 					return;
@@ -1149,7 +1149,7 @@
 
 							try {
 								context = { ...JSON.parse(el.dataset.vscodeContext), ...context };
-							} catch (_Error) {
+							} catch (e) {
 								console.error(`Error parsing 'data-vscode-context' as json`, el, e);
 							}
 

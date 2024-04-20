@@ -69,7 +69,7 @@ export class OutlineViewState implements IOutlineViewState {
 		let data: any;
 		try {
 			data = JSON.parse(raw);
-		} catch (_Error) {
+		} catch (e) {
 			return;
 		}
 		this.followCursor = data.followCursor;

@@ -71,7 +71,7 @@ export class ExtHostWindow implements ExtHostWindowShape {
 			uriAsString = stringOrUri;
 			try {
 				stringOrUri = URI.parse(stringOrUri);
-			} catch (_Error) {
+			} catch (e) {
 				return Promise.reject(`Invalid uri - '${stringOrUri}'`);
 			}
 		}

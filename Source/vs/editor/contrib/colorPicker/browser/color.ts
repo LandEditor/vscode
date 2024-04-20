@@ -88,7 +88,7 @@ async function _findColorData<T extends IColorPresentation | IExtColorData | ICo
 				if (await collector.compute(provider, model, token, colorData)) {
 					validDocumentColorProviderFound = true;
 				}
-			} catch (_Error) {
+			} catch (e) {
 				onUnexpectedExternalError(e);
 			}
 		}

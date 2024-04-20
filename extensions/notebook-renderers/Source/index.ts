@@ -179,7 +179,7 @@ function renderError(
 	let err: ErrorLike;
 	try {
 		err = <ErrorLike>JSON.parse(outputInfo.text());
-	} catch (_Error) {
+	} catch (e) {
 		console.log(e);
 		return disposableStore;
 	}

@@ -301,7 +301,7 @@ export function dispose<T extends IDisposable>(arg: T | Iterable<T> | undefined)
 			if (d) {
 				try {
 					d.dispose();
-				} catch (_Error) {
+				} catch (e) {
 					errors.push(e);
 				}
 			}

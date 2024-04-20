@@ -92,7 +92,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 	get restoredGroupCount(): number { return this._restoredGroupCount; }
 
 	get instances(): ITerminalInstance[] {
-		return this._terminalGroupService.instances.concat(this._terminalEditorService.instances);
+		return this._terminalGroupService.instances.concat(this._terminalEditorService.instances).concat(this._backgroundedTerminalInstances);
 	}
 	get detachedInstances(): Iterable<IDetachedTerminalInstance> {
 		return this._detachedXterms;
@@ -400,7 +400,7 @@ export class TerminalService extends Disposable implements ITerminalService {
 			await profileProvider.createContributedTerminalProfile(options);
 			this._terminalGroupService.setActiveInstanceByIndex(this._terminalGroupService.instances.length - 1);
 			await this._terminalGroupService.activeInstance?.focusWhenReady();
-		} catch (_Error) {
+		} catch (e) {
 			this._notificationService.error(e.message);
 		}
 	}

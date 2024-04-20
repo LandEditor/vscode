@@ -242,7 +242,7 @@ abstract class ViewItem<TLayoutContext, TView extends IView<TLayoutContext>> {
 
 		try {
 			this.view.setVisible?.(visible);
-		} catch (_Error) {
+		} catch (e) {
 			console.error('Splitview: Failed to set visible view');
 			console.error(e);
 		}
@@ -283,7 +283,7 @@ abstract class ViewItem<TLayoutContext, TView extends IView<TLayoutContext>> {
 
 		try {
 			this.view.layout(this.size, offset, layoutContext);
-		} catch (_Error) {
+		} catch (e) {
 			console.error('Splitview: Failed to layout view');
 			console.error(e);
 		}

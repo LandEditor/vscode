@@ -80,7 +80,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 			const result = JSON.parse(response);
 			// 'contents.bundle' is a well-known key in the language pack json file that contains the _code_ translations for the extension
 			contents = extension.isBuiltin ? result.contents?.bundle : result;
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(`Failed to load translations for ${extension.identifier.value} from ${bundleUri}: ${e.message}`);
 			return;
 		}

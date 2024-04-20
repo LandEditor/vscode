@@ -36,7 +36,7 @@ export class RangeUtil {
 			range.setEnd(endElement, endOffset);
 
 			return range.getClientRects();
-		} catch (_Error) {
+		} catch (e) {
 			// This is life ...
 			return null;
 		} finally {

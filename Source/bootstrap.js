@@ -133,7 +133,7 @@
 		if (process && process.env['VSCODE_NLS_CONFIG']) {
 			try {
 				nlsConfig = JSON.parse(process.env['VSCODE_NLS_CONFIG']);
-			} catch (_Error) {
+			} catch (e) {
 				// Ignore
 			}
 		}

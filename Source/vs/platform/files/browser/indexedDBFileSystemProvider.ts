@@ -346,7 +346,7 @@ export class IndexedDBFileSystemProvider extends Disposable implements IFileSyst
 		let stat: IStat;
 		try {
 			stat = await this.stat(resource);
-		} catch (_Error) {
+		} catch (e) {
 			if (e.code === FileSystemProviderErrorCode.FileNotFound) {
 				return;
 			}

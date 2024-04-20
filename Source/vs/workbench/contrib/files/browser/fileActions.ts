@@ -1005,7 +1005,7 @@ export const renameHandler = async (accessor: ServicesAccessor) => {
 							progressLabel: nls.localize('renamingBulkEdit', "Renaming {0} to {1}", stat.name, value),
 						});
 						await refreshIfSeparator(value, explorerService);
-					} catch (_Error) {
+					} catch (e) {
 						notificationService.error(e);
 					}
 				}
@@ -1243,7 +1243,7 @@ export const pasteFileHandler = async (accessor: ServicesAccessor, fileList?: Fi
 				}
 			}
 		}
-	} catch (_Error) {
+	} catch (e) {
 		onError(notificationService, new Error(nls.localize('fileDeleted', "The file(s) to paste have been deleted or moved since you copied them. {0}", getErrorMessage(e))));
 	} finally {
 		if (pasteShouldMove) {

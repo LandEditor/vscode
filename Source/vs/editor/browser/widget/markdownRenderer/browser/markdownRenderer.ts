@@ -119,7 +119,7 @@ export async function openLinkFromMarkdown(openerService: IOpenerService, link: 
 			allowContributedOpeners: true,
 			allowCommands: toAllowCommandsOption(isTrusted),
 		});
-	} catch (_Error) {
+	} catch (e) {
 		onUnexpectedError(e);
 		return false;
 	}

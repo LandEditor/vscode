@@ -330,14 +330,14 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				if (signer) {
 					try {
 						signedData = signer.sign(msg1.data);
-					} catch (_Error) {
+					} catch (e) {
 					}
 				}
 				let someText = generateUuid();
 				if (validator) {
 					try {
 						someText = validator.createNewMessage(someText);
-					} catch (_Error) {
+					} catch (e) {
 					}
 				}
 				const signRequest: SignRequest = {
@@ -382,7 +382,7 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				} else {
 					try {
 						valid = validator.validate(msg2.signedData) === 'ok';
-					} catch (_Error) {
+					} catch (e) {
 					}
 				}
 

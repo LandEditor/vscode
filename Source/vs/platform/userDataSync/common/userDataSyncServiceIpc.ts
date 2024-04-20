@@ -58,7 +58,7 @@ export class UserDataSyncServiceChannel implements IServerChannel {
 		try {
 			const result = await this._call(context, command, args);
 			return result;
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(e);
 			throw e;
 		}

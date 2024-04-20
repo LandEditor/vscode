@@ -850,7 +850,7 @@ export class NotebookViewModel extends Disposable implements EditorFoldingStateD
 		let result: T | null = null;
 		try {
 			result = callback(changeAccessor);
-		} catch (_Error) {
+		} catch (e) {
 			onUnexpectedError(e);
 		}
 

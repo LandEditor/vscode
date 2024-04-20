@@ -47,7 +47,7 @@ export class ExtensionMemento implements vscode.Memento {
 					for (const value of records.values()) {
 						value.complete();
 					}
-				} catch (_Error) {
+				} catch (e) {
 					for (const value of records.values()) {
 						value.error(e);
 					}

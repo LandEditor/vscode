@@ -129,7 +129,7 @@ export class FileIconThemeData implements IWorkbenchFileIconTheme {
 				}
 			}
 			return theme;
-		} catch (_Error) {
+		} catch (e) {
 			return undefined;
 		}
 	}

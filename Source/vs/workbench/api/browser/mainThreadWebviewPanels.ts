@@ -277,7 +277,7 @@ export class MainThreadWebviewPanels extends Disposable implements extHostProtoc
 				if (webviewInput.webview.state) {
 					try {
 						state = JSON.parse(webviewInput.webview.state);
-					} catch (_Error) {
+					} catch (e) {
 						console.error('Could not load webview state', e, webviewInput.webview.state);
 					}
 				}

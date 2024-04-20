@@ -280,7 +280,7 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 				if (raw) {
 					this._strategy.fromJSON(JSON.parse(raw));
 				}
-			} catch (_Error) {
+			} catch (e) {
 				// things can go wrong with JSON...
 			}
 		}

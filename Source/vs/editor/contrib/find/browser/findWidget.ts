@@ -956,7 +956,7 @@ export class FindWidget extends Widget implements IOverlayWidget, IVerticalSashL
 					// use `g` and `u` which are also used by the TextModel search
 					new RegExp(value, 'gu');
 					return null;
-				} catch (_Error) {
+				} catch (e) {
 					return { content: e.message };
 				}
 			},

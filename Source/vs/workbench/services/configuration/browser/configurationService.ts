@@ -275,7 +275,7 @@ export class WorkspaceService extends Disposable implements IWorkbenchConfigurat
 					if (!result.isDirectory) {
 						continue;
 					}
-				} catch (_Error) { /* Ignore */ }
+				} catch (e) { /* Ignore */ }
 				storedFoldersToAdd.push(getStoredWorkspaceFolder(folderURI, false, folderToAdd.name, workspaceConfigFolder, this.uriIdentityService.extUri));
 			}
 
@@ -984,7 +984,7 @@ export class WorkspaceService extends Disposable implements IWorkbenchConfigurat
 				if (!result.isDirectory) {
 					continue;
 				}
-			} catch (_Error) {
+			} catch (e) {
 				this.logService.warn(`Ignoring the error while validating workspace folder ${workspaceFolder.uri.toString()} - ${toErrorMessage(e)}`);
 			}
 			validWorkspaceFolders.push(workspaceFolder);

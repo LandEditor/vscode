@@ -1,32 +1,5 @@
 {
-	"name": "vscode-api-tests",
-	"version": "0.0.1",
-	"private": false,
-	"description": "API tests for VS Code",
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/extension",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
+	"activationEvents": [],
 	"contributes": {
 		"breakpoints": [
 			{
@@ -201,16 +174,11 @@
 			]
 		}
 	},
-	"activationEvents": [],
+	"description": "API tests for VS Code",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"icon": "media/icon.png",
 	"enabledApiProposals": [
 		"activeComment",
 		"authSession",
@@ -261,5 +229,13 @@
 		"workspaceTrust",
 		"telemetry",
 		"windowActivity"
-	]
+	],
+	"icon": "media/icon.png",
+	"main": "./out/extension",
+	"name": "vscode-api-tests",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	}
 }

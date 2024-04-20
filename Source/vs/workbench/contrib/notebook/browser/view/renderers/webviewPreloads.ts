@@ -195,7 +195,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		}
 
 		const id = lastFocusedOutput?.id;
-		if (id && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA')) {
+		if (id && (activeElement.tagName === 'INPUT' || activeElement.tagName === 'TEXTAREA' || activeElement.tagName === 'SELECT')) {
 			postNotebookMessage<webviewMessages.IOutputInputFocusMessage>('outputInputFocus', { inputFocused: true, id });
 
 			activeElement.addEventListener('blur', () => {
@@ -383,7 +383,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				handleDataUrl(reader.result, downloadName);
 			});
 			reader.readAsDataURL(blob);
-		} catch (_Error) {
+		} catch (e) {
 			console.error(e.message);
 		}
 	};
@@ -430,7 +430,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 	async function runKernelPreload(url: string): Promise<void> {
 		try {
 			return await activateModuleKernelPreload(url);
-		} catch (_Error) {
+		} catch (e) {
 			console.error(e);
 			throw e;
 		}
@@ -873,7 +873,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				r.setStart(_range.startContainer, _range.startOffset);
 				r.setEnd(_range.endContainer, _range.endOffset);
 				sel.addRange(r);
-			} catch (_Error) {
+			} catch (e) {
 				console.log(e);
 			}
 		}
@@ -917,7 +917,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						window.document.execCommand('removeFormat', false, undefined);
 						document.designMode = 'Off';
 						window.getSelection()?.removeAllRanges();
-					} catch (_Error) {
+					} catch (e) {
 						console.log(e);
 					}
 				},
@@ -929,7 +929,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 						window.document.execCommand('hiliteColor', false, color);
 						document.designMode = 'Off';
 						window.getSelection()?.removeAllRanges();
-					} catch (_Error) {
+					} catch (e) {
 						console.log(e);
 					}
 				}
@@ -1199,7 +1199,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					tempRange.detach();
 
 					offset = rangeOffset - outputOffset;
-				} catch (_Error) {
+				} catch (e) {
 					console.error(e);
 				}
 
@@ -1306,7 +1306,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					postNotebookMessage('didFindHighlightCurrent', {
 						offset
 					});
-				} catch (_Error) {
+				} catch (e) {
 					console.error(e);
 				}
 			}
@@ -1548,7 +1548,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 					}
 				}
 			}
-		} catch (_Error) {
+		} catch (e) {
 			console.log(e);
 		}
 
@@ -1618,7 +1618,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			} else {
 				console.error('Could not find image element to copy for output with id', outputId);
 			}
-		} catch (_Error) {
+		} catch (e) {
 			console.error('Could not copy image:', e);
 		}
 	};
@@ -1848,7 +1848,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 		public async renderOutputItem(item: rendererApi.OutputItem, element: HTMLElement, signal: AbortSignal): Promise<void> {
 			try {
 				await this.load();
-			} catch (_Error) {
+			} catch (e) {
 				if (!signal.aborted) {
 					showRenderError(`Error loading renderer '${this.data.id}'`, element, e instanceof Error ? [e] : []);
 				}
@@ -1867,7 +1867,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				await this._api.renderOutputItem(item, element, signal);
 				this.postDebugMessage('Rendered output item', { id: item.id, duration: `${performance.now() - renderStart}ms` });
 
-			} catch (_Error) {
+			} catch (e) {
 				if (signal.aborted) {
 					return;
 				}
@@ -1963,7 +1963,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 
 					try {
 						return await renderer.load();
-					} catch (_Error) {
+					} catch (e) {
 						// Squash any errors extends errors. They won't prevent the renderer
 						// itself from working, so just log them.
 						console.error(e);
@@ -1973,7 +1973,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 				}));
 
 				return this._api;
-			} catch (_Error) {
+			} catch (e) {
 				this.postDebugMessage('Loading renderer failed');
 				throw e;
 			}
@@ -2195,7 +2195,7 @@ async function webviewPreloads(ctx: PreloadContext) {
 			try {
 				await renderer.renderOutputItem(item, element, signal);
 				return { continue: false }; // We rendered successfully
-			} catch (_Error) {
+			} catch (e) {
 				if (signal.aborted) {
 					return { continue: false };
 				}

@@ -156,12 +156,12 @@ export class LanguageDetectionService extends Disposable implements ILanguageDet
 		try {
 			const globalLangHistoryData = JSON.parse(storageService.get(LanguageDetectionService.globalOpenedLanguagesStorageKey, StorageScope.PROFILE, '[]'));
 			this.historicalGlobalOpenedLanguageIds.fromJSON(globalLangHistoryData);
-		} catch (_Error) { console.error(e); }
+		} catch (e) { console.error(e); }
 
 		try {
 			const workspaceLangHistoryData = JSON.parse(storageService.get(LanguageDetectionService.workspaceOpenedLanguagesStorageKey, StorageScope.WORKSPACE, '[]'));
 			this.historicalWorkspaceOpenedLanguageIds.fromJSON(workspaceLangHistoryData);
-		} catch (_Error) { console.error(e); }
+		} catch (e) { console.error(e); }
 
 		this._register(this._editorService.onDidActiveEditorChange(() => {
 			const activeLanguage = this._editorService.activeTextEditorLanguageId;

@@ -204,7 +204,7 @@ export class UserDataSyncMachinesService extends Disposable implements IUserData
 		if (userData.content !== null) {
 			try {
 				return JSON.parse(userData.content);
-			} catch (_Error) {
+			} catch (e) {
 				this.logService.error(e);
 			}
 		}

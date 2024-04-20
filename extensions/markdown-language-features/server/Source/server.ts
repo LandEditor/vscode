@@ -188,7 +188,7 @@ export async function startServer(connection: Connection, serverConfig: {
 
 		try {
 			return await mdLs!.prepareRename(document, params.position, token);
-		} catch (_Error) {
+		} catch (e) {
 			if (e instanceof md.RenameNotSupportedAtLocationError) {
 				throw new ResponseError(0, e.message);
 			} else {

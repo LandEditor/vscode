@@ -34,7 +34,7 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
 		let query: UriFields;
 		try {
 			query = JSON.parse(uri.query) as UriFields;
-		} catch (_Error) {
+		} catch (e) {
 			return undefined;
 		}
 

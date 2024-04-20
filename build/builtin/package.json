@@ -1,35 +1,11 @@
 {
-	"name": "builtin",
-	"version": "0.0.1",
-	"private": false,
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	"devDependencies": {
+		"@playform/build": "0.0.7"
 	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
 	"main": "main.js",
+	"name": "builtin",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
 		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
-	"devDependencies": {
-		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }

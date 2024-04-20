@@ -253,7 +253,7 @@ export class UserDataSyncWorkbenchService extends Disposable implements IUserDat
 				const token = current.token;
 				this.logService.trace('Settings Sync: Token updated for the account', current.accountName);
 				value = { token, authenticationProviderId: current.authenticationProviderId };
-			} catch (_Error) {
+			} catch (e) {
 				this.logService.error(e);
 			}
 		}

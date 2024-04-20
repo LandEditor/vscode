@@ -529,7 +529,7 @@ export class ExtHostNotebookController implements ExtHostNotebookShape {
 				results.set(uri, fileMatch);
 				return;
 
-			} catch (_Error) {
+			} catch (e) {
 				return;
 			}
 

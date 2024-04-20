@@ -107,7 +107,7 @@ export class UrlFinder extends Disposable {
 				let serverUrl;
 				try {
 					serverUrl = new URL(match);
-				} catch (_Error) {
+				} catch (e) {
 					// Not a valid URL
 				}
 				if (serverUrl) {

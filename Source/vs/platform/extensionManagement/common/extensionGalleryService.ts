@@ -987,7 +987,7 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 			}
 			return { galleryExtensions: [], total };
 
-		} catch (_Error) {
+		} catch (e) {
 			const errorCode = isCancellationError(e) ? ExtensionGalleryErrorCode.Cancelled : getErrorMessage(e).startsWith('XHR timeout') ? ExtensionGalleryErrorCode.Timeout : ExtensionGalleryErrorCode.Failed;
 			error = new ExtensionGalleryError(getErrorMessage(e), errorCode);
 			throw error;

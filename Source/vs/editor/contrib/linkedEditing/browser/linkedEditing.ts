@@ -455,7 +455,7 @@ function getLinkedEditingRanges(providers: LanguageFeatureRegistry<LinkedEditing
 	return first<LinkedEditingRanges | undefined | null>(orderedByScore.map(provider => async () => {
 		try {
 			return await provider.provideLinkedEditingRanges(model, position, token);
-		} catch (_Error) {
+		} catch (e) {
 			onUnexpectedExternalError(e);
 			return undefined;
 		}

@@ -73,7 +73,7 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 			);
 			return storageUri;
 
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.error('[ExtHostStorage]', e);
 			return undefined;
 		}

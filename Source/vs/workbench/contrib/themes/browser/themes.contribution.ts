@@ -155,7 +155,7 @@ class MarketplaceThemesPicker {
 					this._onDidChange.fire();
 				}
 			}
-		} catch (_Error) {
+		} catch (e) {
 			if (!isCancellationError(e)) {
 				this.logService.error(`Error while searching for themes:`, e);
 				this._searchError = 'message' in e ? e.message : String(e);
@@ -266,7 +266,7 @@ class MarketplaceThemesPicker {
 				});
 			});
 			return true;
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(`Problem installing extension ${galleryExtension.identifier.id}`, e);
 			return false;
 		}

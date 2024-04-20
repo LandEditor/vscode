@@ -141,7 +141,7 @@ export class AzureActiveDirectoryService {
 			};
 			try {
 				await this.refreshToken(session.refreshToken, scopeData, session.id);
-			} catch (_Error) {
+			} catch (e) {
 				// If we aren't connected to the internet, then wait and try to refresh again later.
 				if (e.message === REFRESH_NETWORK_FAILURE) {
 					this._tokens.push({
@@ -320,7 +320,7 @@ export class AzureActiveDirectoryService {
 
 		try {
 			return await this.createSessionWithLocalServer(scopeData);
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(`[${scopeData.scopeStr}] Error creating session: ${e}`);
 
 			// If the error was about starting the server, try directly hitting the login endpoint instead
@@ -488,7 +488,7 @@ export class AzureActiveDirectoryService {
 				this._logger.trace(`[${scopeData.scopeStr}] '${sessionId}' Sending change event for session that was refreshed`);
 				this._sessionChangeEmitter.fire({ added: [], removed: [], changed: [this.convertToSessionSync(refreshedToken)] });
 				this._logger.trace(`[${scopeData.scopeStr}] '${sessionId}' refresh timeout complete`);
-			} catch (_Error) {
+			} catch (e) {
 				if (e.message !== REFRESH_NETWORK_FAILURE) {
 					vscode.window.showErrorMessage(vscode.l10n.t('You have been signed out because reading stored authentication information failed.'));
 					await this.removeSessionById(sessionId);
@@ -520,7 +520,7 @@ export class AzureActiveDirectoryService {
 				this._logger.warn(`[${scopeData.scopeStr}] '${existingId ?? 'new'}' Attempting to parse access_token instead since no id_token was included in the response.`);
 				claims = JSON.parse(base64Decode(json.access_token.split('.')[1]));
 			}
-		} catch (_Error) {
+		} catch (e) {
 			throw e;
 		}
 
@@ -584,7 +584,7 @@ export class AzureActiveDirectoryService {
 			} else {
 				throw new Error();
 			}
-		} catch (_Error) {
+		} catch (e) {
 			throw new Error('Unavailable due to network problems');
 		}
 	}
@@ -616,7 +616,7 @@ export class AzureActiveDirectoryService {
 			this.setToken(token, scopeData);
 			this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Token refresh success`);
 			return token;
-		} catch (_Error) {
+		} catch (e) {
 			if (e.message === REFRESH_NETWORK_FAILURE) {
 				// We were unable to refresh because of a network failure (i.e. the user lost internet access).
 				// so set up a timeout to try again later. We only do this if we have a session id to reference later.
@@ -749,7 +749,7 @@ export class AzureActiveDirectoryService {
 			const json = await this.fetchTokenResponse(postData, scopeData);
 			this._logger.trace(`[${scopeData.scopeStr}] Exchanging code for token succeeded!`);
 			token = this.convertToTokenSync(json, scopeData);
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(`[${scopeData.scopeStr}] Error exchanging code for token: ${e}`);
 			throw e;
 		}
@@ -787,7 +787,7 @@ export class AzureActiveDirectoryService {
 					},
 					body: postData
 				});
-			} catch (_Error) {
+			} catch (e) {
 				errorMessage = e.message ?? e;
 			}
 
@@ -906,7 +906,7 @@ export class AzureActiveDirectoryService {
 					this._sessionChangeEmitter.fire({ added: [this.convertToSessionSync(token)], removed: [], changed: [] });
 					this._logger.trace(`[${scopeData.scopeStr}] '${token.sessionId}' Session added in another window added here`);
 					continue;
-				} catch (_Error) {
+				} catch (e) {
 					// Network failures will automatically retry on next poll.
 					if (e.message !== REFRESH_NETWORK_FAILURE) {
 						vscode.window.showErrorMessage(vscode.l10n.t('You have been signed out because reading stored authentication information failed.'));

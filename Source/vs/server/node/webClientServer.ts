@@ -359,7 +359,7 @@ export class WebClientServer {
 		try {
 			const workbenchTemplate = (await Promises.readFile(filePath)).toString();
 			data = workbenchTemplate.replace(/\{\{([^}]+)\}\}/g, (_, key) => values[key] ?? 'undefined');
-		} catch (_Error) {
+		} catch (e) {
 			res.writeHead(404, { 'Content-Type': 'text/plain' });
 			return void res.end('Not found');
 		}

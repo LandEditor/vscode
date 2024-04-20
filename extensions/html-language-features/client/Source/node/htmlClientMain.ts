@@ -70,7 +70,7 @@ function getPackageInfo(context: ExtensionContext): IPackageInfo {
 	const location = context.asAbsolutePath('./package.json');
 	try {
 		return JSON.parse(fs.readFileSync(location).toString());
-	} catch (_Error) {
+	} catch (e) {
 		console.log(`Problems reading ${location}: ${e}`);
 		return { name: '', version: '', aiKey: '', main: '' };
 	}

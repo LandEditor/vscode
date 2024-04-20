@@ -507,7 +507,7 @@ class UserKeyboardLayout extends Disposable {
 			} else {
 				this._keyboardLayout = null;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			this._keyboardLayout = null;
 		}
 

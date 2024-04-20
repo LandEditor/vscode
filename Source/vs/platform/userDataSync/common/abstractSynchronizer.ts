@@ -327,7 +327,7 @@ export abstract class AbstractSynchroniser extends Disposable implements IUserDa
 
 		try {
 			return await this.doSync(remoteUserData, lastSyncUserData, apply, userDataSyncConfiguration);
-		} catch (_Error) {
+		} catch (e) {
 			if (e instanceof UserDataSyncError) {
 				switch (e.code) {
 
@@ -694,7 +694,7 @@ export abstract class AbstractSynchroniser extends Disposable implements IUserDa
 			if (isRemoteUserData(lastSyncStoredRemoteUserData)) {
 				return lastSyncStoredRemoteUserData;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(e);
 		}
 		return undefined;
@@ -849,7 +849,7 @@ export abstract class AbstractFileSynchroniser extends AbstractSynchroniser {
 				// file does not exist
 				await this.fileService.createFile(this.file, VSBuffer.fromString(newContent), { overwrite: force });
 			}
-		} catch (_Error) {
+		} catch (e) {
 			if ((e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) ||
 				(e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_MODIFIED_SINCE)) {
 				throw new UserDataSyncError(e.message, UserDataSyncErrorCode.LocalPreconditionFailed);
@@ -862,7 +862,7 @@ export abstract class AbstractFileSynchroniser extends AbstractSynchroniser {
 	protected async deleteLocalFile(): Promise<void> {
 		try {
 			await this.fileService.del(this.file);
-		} catch (_Error) {
+		} catch (e) {
 			if (!(e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND)) {
 				throw e;
 			}

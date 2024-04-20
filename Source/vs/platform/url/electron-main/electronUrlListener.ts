@@ -92,7 +92,7 @@ export class ElectronURLListener extends Disposable {
 	private uriFromRawUrl(url: string): URI | undefined {
 		try {
 			return URI.parse(url);
-		} catch (_Error) {
+		} catch (e) {
 			return undefined;
 		}
 	}

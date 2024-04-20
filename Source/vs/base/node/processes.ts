@@ -92,7 +92,7 @@ export namespace win32 {
 				let statValue: Stats | undefined;
 				try {
 					statValue = await pfs.Promises.stat(path);
-				} catch (_Error) {
+				} catch (e) {
 					if (e.message.startsWith('EACCES')) {
 						// it might be symlink
 						statValue = await pfs.Promises.lstat(path);

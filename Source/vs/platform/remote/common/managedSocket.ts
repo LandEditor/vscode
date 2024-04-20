@@ -73,7 +73,7 @@ export async function connectManagedSocket<T extends ManagedSocket>(
 			d.add(socket.onClose(err => reject(err ?? new Error('socket closed'))));
 			d.add(socket.onEnd(() => reject(new Error('socket ended'))));
 		});
-	} catch (_Error) {
+	} catch (e) {
 		socket.dispose();
 		throw e;
 	} finally {

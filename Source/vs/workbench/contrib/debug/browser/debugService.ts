@@ -820,7 +820,7 @@ export class DebugService implements IDebugService {
 			let didRestart = false;
 			try {
 				didRestart = (await fn()) !== false;
-			} catch (_Error) {
+			} catch (e) {
 				didRestart = false;
 				throw e;
 			} finally {

@@ -331,7 +331,7 @@ export function parsePartialStylesheet(document: vscode.TextDocument, position: 
 	try {
 		const buffer = ' '.repeat(startOffset) + document.getText().substring(startOffset, endOffset);
 		return parseStylesheet(buffer);
-	} catch (_Error) {
+	} catch (e) {
 		return;
 	}
 }

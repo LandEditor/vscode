@@ -191,7 +191,7 @@ export class MarkdownPreviewManager extends Disposable implements vscode.Webview
 				this._opener);
 
 			this._registerDynamicPreview(preview);
-		} catch (_Error) {
+		} catch (e) {
 			console.error(e);
 
 			webview.webview.html = /* html */`<!DOCTYPE html>

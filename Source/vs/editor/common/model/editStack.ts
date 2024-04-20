@@ -442,7 +442,7 @@ export class EditStack {
 	private static _computeCursorState(cursorStateComputer: ICursorStateComputer | null, inverseEditOperations: IValidEditOperation[]): Selection[] | null {
 		try {
 			return cursorStateComputer ? cursorStateComputer(inverseEditOperations) : null;
-		} catch (_Error) {
+		} catch (e) {
 			onUnexpectedError(e);
 			return null;
 		}

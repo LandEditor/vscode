@@ -907,7 +907,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 						try {
 							this._terminalService.setActiveInstance(terminal!);
 							this._terminalGroupService.showPanel(false);
-						} catch (_Error) {
+						} catch (e) {
 							// If the terminal has already been disposed, then setting the active instance will fail. #99828
 							// There is nothing else to do here.
 						}
@@ -1011,7 +1011,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 						try {
 							this._terminalService.setActiveInstance(terminal);
 							this._terminalGroupService.showPanel(false);
-						} catch (_Error) {
+						} catch (e) {
 							// If the terminal has already been disposed, then setting the active instance will fail. #99828
 							// There is nothing else to do here.
 						}
@@ -1763,7 +1763,7 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 			let cwd: string | undefined;
 			try {
 				cwd = await this._resolveVariable(resolver, '${workspaceFolder}');
-			} catch (_Error) {
+			} catch (e) {
 				// No workspace
 			}
 			return { cwd };

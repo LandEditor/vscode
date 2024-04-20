@@ -92,7 +92,7 @@ export class SnippetController2 implements IEditorContribution {
 		try {
 			this._doInsert(edits, typeof opts === 'undefined' ? _defaultOptions : { ..._defaultOptions, ...opts });
 
-		} catch (_Error) {
+		} catch (e) {
 			this.cancel();
 			this._logService.error(e);
 			this._logService.error('snippet_error');
@@ -111,7 +111,7 @@ export class SnippetController2 implements IEditorContribution {
 		try {
 			this._doInsert(template, typeof opts === 'undefined' ? _defaultOptions : { ..._defaultOptions, ...opts });
 
-		} catch (_Error) {
+		} catch (e) {
 			this.cancel();
 			this._logService.error(e);
 			this._logService.error('snippet_error');

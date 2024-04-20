@@ -254,7 +254,7 @@ export class GettingStartedDetailsRenderer {
 						: path);
 
 			return bytes.value.toString();
-		} catch (_Error) {
+		} catch (e) {
 			this.notificationService.error('Error reading markdown document at `' + path + '`: ' + e);
 			return '';
 		}

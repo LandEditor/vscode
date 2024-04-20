@@ -307,7 +307,7 @@ export class PortsAttributes extends Disposable {
 					let regTest: RegExp | undefined = undefined;
 					try {
 						regTest = RegExp(attributesKey);
-					} catch (_Error) {
+					} catch (e) {
 						// The user entered an invalid regular expression.
 					}
 					if (regTest) {

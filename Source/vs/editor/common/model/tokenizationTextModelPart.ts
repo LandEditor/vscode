@@ -422,7 +422,7 @@ class GrammarTokens extends Disposable {
 			let initialState: IState;
 			try {
 				initialState = tokenizationSupport.getInitialState();
-			} catch (_Error) {
+			} catch (e) {
 				onUnexpectedError(e);
 				return [null, null];
 			}

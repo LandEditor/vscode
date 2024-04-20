@@ -470,7 +470,7 @@ export class UserDataSyncStoreTypeSynchronizer {
 		const syncHeaders = createSyncHeaders(generateUuid());
 		try {
 			return await this.doSync(userDataSyncStoreType, syncHeaders);
-		} catch (_Error) {
+		} catch (e) {
 			if (e instanceof UserDataSyncError) {
 				switch (e.code) {
 					case UserDataSyncErrorCode.PreconditionFailed:

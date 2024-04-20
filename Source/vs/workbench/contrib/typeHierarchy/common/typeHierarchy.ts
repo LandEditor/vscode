@@ -94,7 +94,7 @@ export class TypeHierarchyModel {
 			if (isNonEmptyArray(result)) {
 				return result;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			onUnexpectedExternalError(e);
 		}
 		return [];
@@ -106,7 +106,7 @@ export class TypeHierarchyModel {
 			if (isNonEmptyArray(result)) {
 				return result;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			onUnexpectedExternalError(e);
 		}
 		return [];

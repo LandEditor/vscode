@@ -142,7 +142,7 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 			this._resolvePromise = createCancelablePromise(token => this._webviewWorkbenchService.resolveWebview(this, token));
 			try {
 				await this._resolvePromise;
-			} catch (_Error) {
+			} catch (e) {
 				if (!isCancellationError(e)) {
 					throw e;
 				}

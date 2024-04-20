@@ -1,38 +1,13 @@
 {
-	"name": "vscode-extensions",
-	"version": "0.0.1",
-	"private": false,
-	"description": "Dependencies shared by all extensions",
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"postinstall": "node ./postinstall.mjs",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
 	"dependencies": {},
+	"description": "Dependencies shared by all extensions",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"esbuild": "0.20.2"
 	},
-	"publishConfig": {
-		"access": "public"
+	"name": "vscode-extensions",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	}
 }

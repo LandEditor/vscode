@@ -70,7 +70,7 @@ export class AiRelatedInformationService implements IAiRelatedInformationService
 					const result = await provider.provideAiRelatedInformation(query, t);
 					// double filter just in case
 					return result.filter(r => types.includes(r.type));
-				} catch (_Error) {
+				} catch (e) {
 					// logged in extension host
 				}
 				return [];

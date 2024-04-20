@@ -75,7 +75,7 @@ async function getPackageInfo(context: ExtensionContext): Promise<IPackageInfo> 
 	const location = context.asAbsolutePath('./package.json');
 	try {
 		return JSON.parse((await fs.readFile(location)).toString());
-	} catch (_Error) {
+	} catch (e) {
 		console.log(`Problems reading ${location}: ${e}`);
 		return { name: '', version: '', aiKey: '', main: '' };
 	}

@@ -84,7 +84,7 @@ class MonacoWebWorkerImpl<T extends object> extends EditorWorkerClient implement
 
 		try {
 			return Promise.resolve(this._foreignModuleHost[method].apply(this._foreignModuleHost, args));
-		} catch (_Error) {
+		} catch (e) {
 			return Promise.reject(e);
 		}
 	}

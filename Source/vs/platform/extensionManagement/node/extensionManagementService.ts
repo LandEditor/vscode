@@ -25,7 +25,7 @@ import { extract, ExtractError, IFile, zip } from 'vs/base/node/zip';
 import * as nls from 'vs/nls';
 import { IDownloadService } from 'vs/platform/download/common/download';
 import { INativeEnvironmentService } from 'vs/platform/environment/common/environment';
-import { AbstractExtensionManagementService, AbstractExtensionTask, ExtensionVerificationStatus, IInstallExtensionTask, InstallExtensionTaskOptions, IUninstallExtensionTask, joinErrors, toExtensionManagementError, UninstallExtensionTaskOptions } from 'vs/platform/extensionManagement/common/abstractExtensionManagementService';
+import { AbstractExtensionManagementService, AbstractExtensionTask, ExtensionVerificationStatus, IInstallExtensionTask, InstallExtensionTaskOptions, IUninstallExtensionTask, toExtensionManagementError, UninstallExtensionTaskOptions } from 'vs/platform/extensionManagement/common/abstractExtensionManagementService';
 import {
 	ExtensionManagementError, ExtensionManagementErrorCode, IExtensionGalleryService, IExtensionIdentifier, IExtensionManagementService, IGalleryExtension, ILocalExtension, InstallOperation,
 	Metadata, InstallOptions,
@@ -226,7 +226,7 @@ export class ExtensionManagementService extends AbstractExtensionManagementServi
 		await this.extensionsScanner.setUninstalled(extension);
 		try {
 			await this.extensionsScanner.removeUninstalledExtension(extension);
-		} catch (_Error) {
+		} catch (e) {
 			throw new Error(nls.localize('removeError', "Error while removing the extension: {0}. Please Quit and Start VS Code before trying again.", toErrorMessage(e)));
 		}
 		return this.installFromGallery(galleryExtension);
@@ -504,7 +504,7 @@ export class ExtensionsScanner extends Disposable {
 					this.logService.trace(`Started extracting the extension from ${zipPath} to ${extensionLocation.fsPath}`);
 					await extract(zipPath, tempLocation.fsPath, { sourcePath: 'extension', overwrite: true }, token);
 					this.logService.info(`Extracted extension to ${extensionLocation}:`, extensionKey.id);
-				} catch (_Error) {
+				} catch (e) {
 					let errorCode = ExtensionManagementErrorCode.Extract;
 					if (e instanceof ExtractError) {
 						if (e.type === 'CorruptZip') {
@@ -535,7 +535,7 @@ export class ExtensionsScanner extends Disposable {
 				this._onExtract.fire(extensionLocation);
 
 			} catch (error) {
-				try { await this.fileService.del(tempLocation, { recursive: true }); } catch (_Error) { /* ignore */ }
+				try { await this.fileService.del(tempLocation, { recursive: true }); } catch (e) { /* ignore */ }
 				throw error;
 			}
 		}
@@ -646,7 +646,7 @@ export class ExtensionsScanner extends Disposable {
 			if (raw) {
 				try {
 					uninstalled = JSON.parse(raw);
-				} catch (_Error) { /* ignore */ }
+				} catch (e) { /* ignore */ }
 			}
 
 			if (updateFn) {
@@ -980,7 +980,7 @@ export class InstallGalleryExtensionTask extends InstallExtensionTask {
 		try {
 			await getManifest(zipPath);
 		} catch (error) {
-			throw new ExtensionManagementError(joinErrors(error).message, ExtensionManagementErrorCode.Invalid);
+			throw new ExtensionManagementError(error.message, ExtensionManagementErrorCode.Invalid);
 		}
 	}
 
@@ -1027,7 +1027,7 @@ class InstallVSIXTask extends InstallExtensionTask {
 			if (extensionKey.equals(new ExtensionKey(existing.identifier, existing.manifest.version))) {
 				try {
 					await this.extensionsScanner.removeExtension(existing, 'existing');
-				} catch (_Error) {
+				} catch (e) {
 					throw new Error(nls.localize('restartCode', "Please restart VS Code before reinstalling {0}.", this.manifest.displayName || this.manifest.name));
 				}
 			} else if (!this.options.profileLocation && semver.gt(existing.manifest.version, this.manifest.version)) {
@@ -1040,7 +1040,7 @@ class InstallVSIXTask extends InstallExtensionTask {
 			if (existing) {
 				try {
 					await this.extensionsScanner.removeExtension(existing, 'existing');
-				} catch (_Error) {
+				} catch (e) {
 					throw new Error(nls.localize('restartCode', "Please restart VS Code before reinstalling {0}.", this.manifest.displayName || this.manifest.name));
 				}
 			}

@@ -29,7 +29,7 @@ async function createSpdLogLogger(name: string, logfilePath: string, filesize: n
 			logger.setPattern('%Y-%m-%d %H:%M:%S.%e [%l] %v');
 		}
 		return logger;
-	} catch (_Error) {
+	} catch (e) {
 		console.error(e);
 	}
 	return null;

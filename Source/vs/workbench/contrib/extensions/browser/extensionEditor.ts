@@ -762,7 +762,7 @@ export class ExtensionEditor extends EditorPane {
 			}));
 
 			return webview;
-		} catch (_Error) {
+		} catch (e) {
 			const p = append(container, $('p.nocontent'));
 			p.textContent = noContentCopy;
 			return p;

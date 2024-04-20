@@ -811,7 +811,7 @@ class UserKeybindings extends Disposable {
 			return Array.isArray(value)
 				? value.filter(v => v && typeof v === 'object' /* just typeof === object doesn't catch `null` */)
 				: [];
-		} catch (_Error) {
+		} catch (e) {
 			return [];
 		}
 	}

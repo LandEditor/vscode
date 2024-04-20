@@ -1,32 +1,12 @@
 {
-	"name": "jake",
-	"displayName": "%displayName%",
-	"version": "0.0.1",
-	"private": false,
-	"description": "%description%",
-	"keywords": [
-		"land"
+	"activationEvents": [
+		"onTaskType:jake"
 	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "Land",
-		"email": "Land@Playform.Cloud",
-		"url": "HTTPS://Land.Playform.Cloud"
-	},
-	"type": "module",
-	"main": "./out/main",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:jake",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	},
 	"contributes": {
 		"configuration": {
@@ -66,23 +46,19 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onTaskType:jake"
-	],
 	"dependencies": {},
+	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
 	},
-	"publishConfig": {
-		"access": "public"
-	},
+	"displayName": "%displayName%",
 	"icon": "images/cowboy_hat.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"main": "./out/main",
+	"name": "jake",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:jake",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	}
 }

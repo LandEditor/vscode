@@ -77,7 +77,7 @@ export class ChildProcessMonitor extends Disposable {
 		try {
 			const processItem = await listProcesses(this._pid);
 			this.hasChildProcesses = this._processContainsChildren(processItem);
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.debug('ChildProcessMonitor: Fetching process tree failed', e);
 		}
 	}

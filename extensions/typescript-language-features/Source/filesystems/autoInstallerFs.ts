@@ -75,7 +75,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 				try {
 					const stat = memfs.stat(URI.file(path));
 					return stat.type === vscode.FileType.Directory;
-				} catch (_Error) {
+				} catch (e) {
 					return false;
 				}
 			},
@@ -83,7 +83,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 			readFile(path: string, _encoding?: string): string | undefined {
 				try {
 					return TEXT_DECODER.decode(memfs.readFile(URI.file(path)));
-				} catch (_Error) {
+				} catch (e) {
 					return undefined;
 				}
 			}
@@ -175,7 +175,7 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		const restore = proj.restorePackageAt(incomingUri.path);
 		try {
 			await restore;
-		} catch (_Error) {
+		} catch (e) {
 			console.error(`failed to restore package at ${incomingUri.path}: `, e);
 			throw e;
 		}
@@ -190,17 +190,17 @@ export class AutoInstallerFs implements vscode.FileSystemProvider {
 		let pkgJson;
 		try {
 			pkgJson = TEXT_DECODER.decode(await vsfs.readFile(originalUri.with({ path: join(root, 'package.json') })));
-		} catch (_Error) { }
+		} catch (e) { }
 
 		let kdlLock;
 		try {
 			kdlLock = TEXT_DECODER.decode(await vsfs.readFile(originalUri.with({ path: join(root, 'package-lock.kdl') })));
-		} catch (_Error) { }
+		} catch (e) { }
 
 		let npmLock;
 		try {
 			npmLock = TEXT_DECODER.decode(await vsfs.readFile(originalUri.with({ path: join(root, 'package-lock.json') })));
-		} catch (_Error) { }
+		} catch (e) { }
 
 		return {
 			pkgJson,

@@ -172,7 +172,7 @@ export class ExpressionContainer implements IExpressionContainer {
 			}
 
 			return vars;
-		} catch (_Error) {
+		} catch (e) {
 			return [new Variable(this.session, this.threadId, this, 0, '', undefined, e.message, 0, 0, undefined, { kind: 'virtual' }, undefined, undefined, false)];
 		}
 	}
@@ -226,7 +226,7 @@ export class ExpressionContainer implements IExpressionContainer {
 				return true;
 			}
 			return false;
-		} catch (_Error) {
+		} catch (e) {
 			this.value = e.message || '';
 			this.reference = 0;
 			return false;
@@ -284,7 +284,7 @@ export class VisualizedExpression implements IExpression {
 		try {
 			await this.visualizer.editTreeItem(this.treeId, this.treeItem, newValue);
 			return true;
-		} catch (_Error) {
+		} catch (e) {
 			this.errorMessage = e.message;
 			return false;
 		}

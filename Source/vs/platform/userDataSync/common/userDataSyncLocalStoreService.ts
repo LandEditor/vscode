@@ -101,7 +101,7 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
 		const resource = joinPath(folder, `${toLocalISOString(cTime).replace(/-|:|\.\d+Z$/g, '')}.json`);
 		try {
 			await this.fileService.writeFile(resource, VSBuffer.fromString(content));
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(e);
 		}
 	}
@@ -116,7 +116,7 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
 				if (!(await this.fileService.exists(folder))) {
 					return;
 				}
-			} catch (_Error) {
+			} catch (e) {
 				return;
 			}
 			const stat = await this.fileService.resolve(folder);
@@ -133,7 +133,7 @@ export class UserDataSyncLocalStoreService extends Disposable implements IUserDa
 					await this.fileService.del(stat.resource);
 				}));
 			}
-		} catch (_Error) {
+		} catch (e) {
 			this.logService.error(e);
 		}
 	}

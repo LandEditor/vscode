@@ -25,7 +25,7 @@ export class MainThreadLocalization extends Disposable implements MainThreadLoca
 		try {
 			const uri = await this.languagePackService.getBuiltInExtensionTranslationsUri(id, language);
 			return uri;
-		} catch (_Error) {
+		} catch (e) {
 			return undefined;
 		}
 	}

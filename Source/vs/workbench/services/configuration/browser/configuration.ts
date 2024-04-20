@@ -509,7 +509,7 @@ class FileServiceBasedRemoteUserConfiguration extends Disposable {
 			const content = await this.resolveContent();
 			this.parser.parse(content, this.parseOptions);
 			return this.parser.configurationModel;
-		} catch (_Error) {
+		} catch (e) {
 			return ConfigurationModel.createEmptyModel(this.logService);
 		}
 	}
@@ -609,7 +609,7 @@ class CachedRemoteUserConfiguration extends Disposable {
 				this.parser.parse(parsed.content, this.parseOptions);
 				this.configurationModel = this.parser.configurationModel;
 			}
-		} catch (_Error) { /* Ignore error */ }
+		} catch (e) { /* Ignore error */ }
 		return this.configurationModel;
 	}
 
@@ -856,7 +856,7 @@ class CachedWorkspaceConfiguration {
 				this.workspaceConfigurationModelParser.parse(parsed.content, configurationParseOptions);
 				this.consolidate();
 			}
-		} catch (_Error) {
+		} catch (e) {
 		}
 	}
 
@@ -954,7 +954,7 @@ class CachedFolderConfiguration {
 				}
 			}
 			this.consolidate();
-		} catch (_Error) {
+		} catch (e) {
 		}
 		return this.configurationModel;
 	}

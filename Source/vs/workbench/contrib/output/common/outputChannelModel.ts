@@ -220,7 +220,7 @@ export class FileOutputChannelModel extends Disposable implements IOutputChannel
 
 			/* Wait for replace to finish */
 			if (this.replacePromise) {
-				try { await this.replacePromise; } catch (_Error) { /* Ignore */ }
+				try { await this.replacePromise; } catch (e) { /* Ignore */ }
 				/* Abort if operation is cancelled */
 				if (token.isCancellationRequested) {
 					return;

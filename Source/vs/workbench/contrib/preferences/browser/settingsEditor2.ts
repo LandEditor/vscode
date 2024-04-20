@@ -926,7 +926,7 @@ export class SettingsEditor2 extends EditorPane {
 			const { element, height } = params;
 			try {
 				this.settingsTree.updateElementHeight(element, height);
-			} catch (_Error) {
+			} catch (e) {
 				// the element was not found
 			}
 		}));
@@ -1039,7 +1039,7 @@ export class SettingsEditor2 extends EditorPane {
 		// It's possible for this to be called when the TOC and settings tree are out of sync - e.g. when the settings tree has deferred a refresh because
 		// it is focused. So, bail if element doesn't exist in the TOC.
 		let nodeExists = true;
-		try { this.tocTree.getNode(element); } catch (_Error) { nodeExists = false; }
+		try { this.tocTree.getNode(element); } catch (e) { nodeExists = false; }
 		if (!nodeExists) {
 			return;
 		}
@@ -1305,7 +1305,7 @@ export class SettingsEditor2 extends EditorPane {
 				let manifest: IExtensionManifest | null = null;
 				try {
 					manifest = await this.extensionGalleryService.getManifest(extension, CancellationToken.None);
-				} catch (_Error) {
+				} catch (e) {
 					// Likely a networking issue.
 					// Skip adding a button for this extension to the Settings editor.
 					continue;

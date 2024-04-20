@@ -75,7 +75,7 @@ export class MainThreadUriOpeners extends Disposable implements MainThreadUriOpe
 			openExternalUri: async (uri, ctx, token) => {
 				try {
 					await this.proxy.$openUri(id, { resolvedUri: uri, sourceUri: ctx.sourceUri }, token);
-				} catch (_Error) {
+				} catch (e) {
 					if (!isCancellationError(e)) {
 						const openDefaultAction = new Action('default', localize('openerFailedUseDefault', "Open using default opener"), undefined, undefined, async () => {
 							await this.openerService.open(uri, {

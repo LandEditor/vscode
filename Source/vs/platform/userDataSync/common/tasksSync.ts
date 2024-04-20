@@ -29,7 +29,7 @@ export function getTasksContentFromSyncContent(syncContent: string, logService: 
 	try {
 		const parsed = <ITasksSyncContent>JSON.parse(syncContent);
 		return parsed.tasks ?? null;
-	} catch (_Error) {
+	} catch (e) {
 		logService.error(e);
 		return null;
 	}
@@ -214,7 +214,7 @@ export class TasksSynchroniser extends AbstractFileSynchroniser implements IUser
 		// Delete the preview
 		try {
 			await this.fileService.del(this.previewResource);
-		} catch (_Error) { /* ignore */ }
+		} catch (e) { /* ignore */ }
 
 		if (lastSyncUserData?.ref !== remoteUserData.ref) {
 			this.logService.trace(`${this.syncResourceLogLabel}: Updating last synchronized tasks...`);

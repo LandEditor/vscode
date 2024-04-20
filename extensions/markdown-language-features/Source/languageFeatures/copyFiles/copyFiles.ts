@@ -111,7 +111,7 @@ function resolveCopyDestinationSetting(documentUri: vscode.Uri, fileName: string
 		if (pattern && replacement) {
 			try {
 				return entry.replace(new RegExp(replaceTransformEscapes(pattern)), replaceTransformEscapes(replacement));
-			} catch (_Error) {
+			} catch (e) {
 				console.log(`Error applying 'resolveCopyDestinationSetting' transform: ${pattern} -> ${replacement}`);
 			}
 		}

@@ -110,7 +110,7 @@ export class CLIServerBase {
 						break;
 				}
 				sendResponse(200, returnObj);
-			} catch (_Error) {
+			} catch (e) {
 				const message = e instanceof Error ? e.message : JSON.stringify(e);
 				sendResponse(500, message);
 				this.logService.error('Error while processing pipe request', e);
@@ -125,7 +125,7 @@ export class CLIServerBase {
 			for (const s of folderURIs) {
 				try {
 					urisToOpen.push({ folderUri: URI.parse(s) });
-				} catch (_Error) {
+				} catch (e) {
 					// ignore
 				}
 			}
@@ -138,7 +138,7 @@ export class CLIServerBase {
 					} else {
 						urisToOpen.push({ fileUri: URI.parse(s) });
 					}
-				} catch (_Error) {
+				} catch (e) {
 					// ignore
 				}
 			}

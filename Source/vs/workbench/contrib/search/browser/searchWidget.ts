@@ -588,7 +588,7 @@ export class SearchWidget extends Widget {
 		}
 		try {
 			new RegExp(value, 'u');
-		} catch (_Error) {
+		} catch (e) {
 			return { content: e.message };
 		}
 

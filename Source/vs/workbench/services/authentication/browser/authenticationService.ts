@@ -34,7 +34,7 @@ export async function getCurrentAuthenticationSessionInfo(
 			) {
 				return authenticationSessionInfo;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			// This is a best effort operation.
 			console.error(`Failed parsing current auth session value: ${e}`);
 		}

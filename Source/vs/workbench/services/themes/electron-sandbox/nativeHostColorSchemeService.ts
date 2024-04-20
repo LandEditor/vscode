@@ -51,7 +51,7 @@ export class NativeHostColorSchemeService extends Disposable implements IHostCol
 				if (isObject(scheme) && isBoolean(scheme.highContrast) && isBoolean(scheme.dark)) {
 					return scheme as IColorScheme;
 				}
-			} catch (_Error) {
+			} catch (e) {
 				// ignore
 			}
 		}

@@ -33,7 +33,7 @@ export class MainThreadSecretState extends Disposable implements MainThreadSecre
 				if (extensionId && key) {
 					this._proxy.$onDidChangePassword({ extensionId, key });
 				}
-			} catch (_Error) {
+			} catch (e) {
 				// Core can use non-JSON values as keys, so we may not be able to parse them.
 			}
 		}));

@@ -403,7 +403,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 				return new Action(`reaction.command.${reaction.label}`, `${reaction.label}`, '', true, async () => {
 					try {
 						await this.commentService.toggleReaction(this.owner, this.resource, this.commentThread, this.comment, reaction);
-					} catch (_Error) {
+					} catch (e) {
 						const error = e.message
 							? nls.localize('commentToggleReactionError', "Toggling the comment reaction failed: {0}.", e.message)
 							: nls.localize('commentToggleReactionDefaultError', "Toggling the comment reaction failed");
@@ -462,7 +462,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 			const action = new ReactionAction(`reaction.${reaction.label}`, `${reaction.label}`, reaction.hasReacted && (reaction.canEdit || hasReactionHandler) ? 'active' : '', (reaction.canEdit || hasReactionHandler), async () => {
 				try {
 					await this.commentService.toggleReaction(this.owner, this.resource, this.commentThread, this.comment, reaction);
-				} catch (_Error) {
+				} catch (e) {
 					let error: string;
 
 					if (reaction.hasReacted) {

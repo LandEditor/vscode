@@ -720,7 +720,7 @@ var AMDLoader;
 					importScripts(scriptSrc);
 					callback();
 				}
-				catch (_Error) {
+				catch (e) {
 					errorback(e);
 				}
 			}
@@ -1114,7 +1114,7 @@ var AMDLoader;
 					producedError: null
 				};
 			}
-			catch (_Error) {
+			catch (e) {
 				return {
 					returnedValue: null,
 					producedError: e

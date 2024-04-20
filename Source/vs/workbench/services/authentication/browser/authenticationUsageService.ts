@@ -33,7 +33,7 @@ export class AuthenticationUsageService implements IAuthenticationUsageService {
 		if (storedUsages) {
 			try {
 				usages = JSON.parse(storedUsages);
-			} catch (_Error) {
+			} catch (e) {
 				// ignore
 			}
 		}

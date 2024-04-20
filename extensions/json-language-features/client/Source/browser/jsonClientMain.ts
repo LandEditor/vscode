@@ -48,7 +48,7 @@ export async function activate(context: ExtensionContext) {
 
 		client = await startClient(context, newLanguageClient, { schemaRequests, timer, logOutputChannel });
 
-	} catch (_Error) {
+	} catch (e) {
 		console.log(e);
 	}
 }

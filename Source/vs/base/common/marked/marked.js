@@ -196,7 +196,7 @@
 
       try {
         prot = decodeURIComponent(unescape(href)).replace(nonWordAndColonTest, '').toLowerCase();
-      } catch (_Error) {
+      } catch (e) {
         return null;
       }
 
@@ -211,7 +211,7 @@
 
     try {
       href = encodeURI(href).replace(/%25/g, '%');
-    } catch (_Error) {
+    } catch (e) {
       return null;
     }
 
@@ -2670,7 +2670,7 @@
 
       try {
         tokens = Lexer.lex(src, opt);
-      } catch (_Error) {
+      } catch (e) {
         return callback(e);
       }
 
@@ -2684,7 +2684,7 @@
             }
 
             out = Parser.parse(tokens, opt);
-          } catch (_Error) {
+          } catch (e) {
             err = e;
           }
         }
@@ -2755,7 +2755,7 @@
       }
 
       return Parser.parse(_tokens, opt);
-    } catch (_Error) {
+    } catch (e) {
       onError(e);
     }
   }
@@ -3025,7 +3025,7 @@
       }
 
       return Parser.parseInline(tokens, opt);
-    } catch (_Error) {
+    } catch (e) {
       e.message += '\nPlease report this to https://github.com/markedjs/marked.';
 
       if (opt.silent) {

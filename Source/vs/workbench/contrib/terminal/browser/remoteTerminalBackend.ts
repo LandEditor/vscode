@@ -241,7 +241,7 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 			const pty = this._instantiationService.createInstance(RemotePty, id, true, this._remoteTerminalChannel);
 			this._ptys.set(id, pty);
 			return pty;
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.trace(`Couldn't attach to process ${e.message}`);
 		}
 		return undefined;
@@ -255,7 +255,7 @@ class RemoteTerminalBackend extends BaseTerminalBackend implements ITerminalBack
 		try {
 			const newId = await this._remoteTerminalChannel.getRevivedPtyNewId(id) ?? id;
 			return await this.attachToProcess(newId);
-		} catch (_Error) {
+		} catch (e) {
 			this._logService.trace(`Couldn't attach to process ${e.message}`);
 		}
 		return undefined;

@@ -448,7 +448,7 @@ export async function getScripts(packageJsonUri: Uri) {
 	try {
 		const document: TextDocument = await workspace.openTextDocument(packageJsonUri);
 		return readScripts(document);
-	} catch (_Error) {
+	} catch (e) {
 		const localizedParseError = l10n.t("Npm task detection: failed to parse the file {0}", packageJsonUri.fsPath);
 		throw new Error(localizedParseError);
 	}

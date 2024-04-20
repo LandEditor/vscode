@@ -79,7 +79,7 @@ async function start() {
 				if (!accept) {
 					process.exit(1);
 				}
-			} catch (_Error) {
+			} catch (e) {
 				console.log(e);
 				process.exit(1);
 			}

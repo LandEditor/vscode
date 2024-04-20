@@ -128,7 +128,7 @@ export class LocalFileSearchWorkerClient extends Disposable implements ISearchRe
 			queryDisposables.dispose();
 			const result = { messages: [], results, limitHit };
 			return result;
-		} catch (_Error) {
+		} catch (e) {
 			console.error('Error performing web worker text search', e);
 			return {
 				results: [],
@@ -167,7 +167,7 @@ export class LocalFileSearchWorkerClient extends Disposable implements ISearchRe
 
 			const result = { messages: [], results, limitHit };
 			return result;
-		} catch (_Error) {
+		} catch (e) {
 			console.error('Error performing web worker file search', e);
 			return {
 				results: [],

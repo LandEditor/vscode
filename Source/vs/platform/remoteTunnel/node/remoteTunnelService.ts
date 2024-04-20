@@ -154,7 +154,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 		this.setMode(mode);
 		try {
 			await this._startTunnelProcessDelayer.trigger(() => this.updateTunnelProcess());
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(e);
 		}
 		return this._tunnelStatus;
@@ -196,7 +196,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 
 		try {
 			await this._startTunnelProcessDelayer.trigger(() => this.updateTunnelProcess());
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(e);
 		}
 		return this._tunnelStatus;
@@ -218,14 +218,14 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 				if (needsServiceUninstall) {
 					this.runCodeTunnelCommand('uninstallService', ['service', 'uninstall']);
 				}
-			} catch (_Error) {
+			} catch (e) {
 				this._logger.error(e);
 			}
 		}
 
 		try {
 			await this.runCodeTunnelCommand('stop', ['kill']);
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(e);
 		}
 
@@ -273,7 +273,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 
 			try {
 				status = JSON.parse(output.trim().split('\n').find(l => l.startsWith('{'))!);
-			} catch (_Error) {
+			} catch (e) {
 				this._logger.error(`Could not parse status output: ${JSON.stringify(output.trim())}`);
 				this.setTunnelStatus(TunnelStates.disconnected());
 				return;
@@ -288,7 +288,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 				this.setTunnelStatus(TunnelStates.disconnected());
 				return;
 			}
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(e);
 			this.setTunnelStatus(TunnelStates.disconnected());
 			return;
@@ -313,7 +313,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 				if (this._tunnelProcess !== loginProcess) {
 					return;
 				}
-			} catch (_Error) {
+			} catch (e) {
 				this._logger.error(e);
 				this._tunnelProcess = undefined;
 				this._onDidTokenFailedEmitter.fire(session);
@@ -351,7 +351,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 		let status: number;
 		try {
 			status = await this.runCodeTunnelCommand('serviceInstall', ['service', 'install', ...args]);
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error(e);
 			status = 1;
 		}
@@ -489,7 +489,7 @@ export class RemoteTunnelService extends Disposable implements IRemoteTunnelServ
 				}
 				this._logger.error('Problems restoring session from storage, invalid format', session);
 			}
-		} catch (_Error) {
+		} catch (e) {
 			this._logger.error('Problems restoring session from storage', e);
 		}
 		return INACTIVE_TUNNEL_MODE;
