@@ -1,15 +1,20 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"jsx": "react",
-		"moduleResolution": "Node",
 		"allowSyntheticDefaultImports": true,
-		"module": "es2020",
+		"baseUrl": "./",
+		"jsx": "react",
 		"lib": [
 			"es2018",
 			"DOM",
 			"DOM.Iterable"
-		]
-	}
+		],
+		"module": "es2020",
+		"moduleResolution": "Node",
+		"outDir": "Target",
+		"rootDir": "Source"
+	},
+	"extends": "@playform/build/tsconfig",
+	"include": [
+		"Source"
+	]
 }

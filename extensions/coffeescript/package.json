@@ -1,4 +1,32 @@
 {
+	"name": "coffeescript",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
+	},
 	"contributes": {
 		"breakpoints": [
 			{
@@ -40,15 +68,11 @@
 			}
 		]
 	},
-	"description": "%description%",
 	"devDependencies": {
-		"@playform/build": "0.0.7"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
 	},
-	"displayName": "%displayName%",
-	"name": "coffeescript",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
+	"publishConfig": {
+		"access": "public"
 	}
 }

@@ -1,14 +1,16 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "../../out",
+		"baseUrl": "./",
 		"esModuleInterop": true,
 		"experimentalDecorators": true,
+		"outDir": "Target",
+		"rootDir": "Source",
 		"types": [
 			"node"
 		]
 	},
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"src/**/*.ts"
+		"Source"
 	]
 }

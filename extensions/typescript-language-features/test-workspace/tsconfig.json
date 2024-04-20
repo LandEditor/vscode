@@ -1,6 +1,13 @@
 {
 	"compilerOptions": {
-		"target": "es2018",
-		"noEmit": true
-	}
+		"baseUrl": "./",
+		"noEmit": true,
+		"outDir": "Target",
+		"rootDir": "Source",
+		"target": "es2018"
+	},
+	"extends": "@playform/build/tsconfig",
+	"include": [
+		"Source"
+	]
 }

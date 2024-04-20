@@ -1,12 +1,17 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./dist/",
+		"baseUrl": "./",
 		"jsx": "react",
 		"lib": [
 			"es2018",
 			"DOM",
 			"DOM.Iterable"
-		]
-	}
+		],
+		"outDir": "Target",
+		"rootDir": "Source"
+	},
+	"extends": "@playform/build/tsconfig",
+	"include": [
+		"Source"
+	]
 }

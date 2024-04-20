@@ -1,13 +1,33 @@
 {
-	"activationEvents": [
-		"onLanguage:search-result"
+	"name": "search-result",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
 	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"main": "./out/extension.js",
 	"browser": "./dist/extension.js",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"configurationDefaults": {
@@ -34,20 +54,24 @@
 			}
 		]
 	},
-	"description": "%description%",
+	"activationEvents": [
+		"onLanguage:search-result"
+	],
 	"devDependencies": {
-		"@playform/build": "0.0.7"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
 	},
-	"displayName": "%displayName%",
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "images/icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
+	},
 	"enabledApiProposals": [
 		"documentFiltersExclusive"
-	],
-	"icon": "images/icon.png",
-	"main": "./out/extension.js",
-	"name": "search-result",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"generate-grammar": "node ./syntaxes/generateTMLanguage.js",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	}
+	]
 }

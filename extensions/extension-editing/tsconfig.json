@@ -1,13 +1,14 @@
 {
-	"extends": "../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./out",
+		"baseUrl": "./",
+		"outDir": "Target",
+		"rootDir": "Source",
 		"typeRoots": [
 			"node_modules/@types"
 		]
 	},
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"src/**/*",
-		"../../src/vscode-dts/vscode.d.ts"
+		"Source"
 	]
 }

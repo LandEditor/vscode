@@ -1,12 +1,19 @@
 {
-	"extends": "./tsconfig.base.json",
 	"compilerOptions": {
-		"removeComments": false,
-		"preserveConstEnums": true,
-		"sourceMap": false,
 		"allowJs": true,
+		"baseUrl": "./",
+		"outDir": "Target",
+		"plugins": [
+			{
+				"exemptionConfig": "./tsec.exemptions.json",
+				"name": "tsec"
+			}
+		],
+		"preserveConstEnums": true,
+		"removeComments": false,
 		"resolveJsonModule": true,
-		"outDir": "../out/vs",
+		"rootDir": "Source",
+		"sourceMap": false,
 		"types": [
 			"mocha",
 			"semver",
@@ -14,27 +21,10 @@
 			"winreg",
 			"trusted-types",
 			"wicg-file-system-access"
-		],
-		"plugins": [
-			{
-				"name": "tsec",
-				"exemptionConfig": "./tsec.exemptions.json"
-			}
 		]
 	},
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"./bootstrap.js",
-		"./bootstrap-amd.js",
-		"./bootstrap-fork.js",
-		"./bootstrap-node.js",
-		"./bootstrap-window.js",
-		"./cli.js",
-		"./main.js",
-		"./server-main.js",
-		"./server-cli.js",
-		"./typings",
-		"./vs/**/*.ts",
-		"vscode-dts/vscode.proposed.*.d.ts",
-		"vscode-dts/vscode.d.ts"
+		"Source"
 	]
 }

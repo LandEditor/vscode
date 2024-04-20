@@ -1,15 +1,17 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./out",
-		"sourceMap": true,
-		"sourceRoot": "../src",
+		"baseUrl": "./",
 		"lib": [
 			"ES2020",
 			"WebWorker"
-		]
+		],
+		"outDir": "Target",
+		"rootDir": "Source",
+		"sourceMap": true,
+		"sourceRoot": "../src"
 	},
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"src/**/*"
+		"Source"
 	]
 }

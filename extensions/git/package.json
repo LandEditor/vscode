@@ -1,16 +1,33 @@
 {
-	"activationEvents": [
-		"*",
-		"onEditSession:file",
-		"onFileSystem:git",
-		"onFileSystem:git-show"
+	"name": "git",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
 	],
-	"aiKey": "0c6ae279ed8443289764825290e4f9e2-1a736e7c-1324-4338-be46-fc2a58ae4d14-7255",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": false
-		},
-		"virtualWorkspaces": true
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "Land",
+		"email": "Land@Playform.Cloud",
+		"url": "HTTPS://Land.Playform.Cloud"
+	},
+	"type": "module",
+	"main": "./out/main",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:git",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-emoji": "node ./build/update-emoji.js"
 	},
 	"contributes": {
 		"colors": [
@@ -3334,6 +3351,12 @@
 			}
 		]
 	},
+	"activationEvents": [
+		"*",
+		"onEditSession:file",
+		"onFileSystem:git",
+		"onFileSystem:git-show"
+	],
 	"dependencies": {
 		"@joaomoreno/unique-names-generator": "5.1.0",
 		"byline": "5.0.0",
@@ -3342,15 +3365,28 @@
 		"picomatch": "4.0.2",
 		"which": "4.0.0"
 	},
-	"description": "%description%",
 	"devDependencies": {
 		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
 		"@types/byline": "4.2.36",
 		"@types/node": "20.x",
 		"@types/picomatch": "2.3.3",
 		"@types/which": "3.0.3"
 	},
-	"displayName": "%displayName%",
+	"extensionDependencies": [
+		"vscode.git-base"
+	],
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "resources/icons/git.png",
+	"aiKey": "0c6ae279ed8443289764825290e4f9e2-1a736e7c-1324-4338-be46-fc2a58ae4d14-7255",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": false
+		},
+		"virtualWorkspaces": true
+	},
 	"enabledApiProposals": [
 		"canonicalUriProvider",
 		"contribEditSessions",
@@ -3375,17 +3411,5 @@
 		"scmValidation",
 		"tabInputTextMerge",
 		"timeline"
-	],
-	"extensionDependencies": [
-		"vscode.git-base"
-	],
-	"icon": "resources/icons/git.png",
-	"main": "./out/main",
-	"name": "git",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"compile": "gulp compile-extension:git",
-		"prepublishOnly": "Build 'Source/**/*.ts'",
-		"update-emoji": "node ./build/update-emoji.js"
-	}
+	]
 }

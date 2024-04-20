@@ -1,13 +1,15 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./out",
+		"baseUrl": "./",
 		"lib": [
 			"ES2020",
 			"WebWorker"
-		]
+		],
+		"outDir": "Target",
+		"rootDir": "Source"
 	},
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"src/**/*"
+		"Source"
 	]
 }

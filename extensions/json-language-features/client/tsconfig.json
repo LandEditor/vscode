@@ -1,12 +1,11 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./out"
+		"baseUrl": "./",
+		"outDir": "Target",
+		"rootDir": "Source"
 	},
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"src/**/*",
-		"../../../src/vscode-dts/vscode.d.ts",
-		"../../../src/vscode-dts/vscode.proposed.languageStatus.d.ts",
-		"../../../src/vscode-dts/vscode.proposed.extensionsAny.d.ts"
+		"Source"
 	]
 }

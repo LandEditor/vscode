@@ -1,15 +1,20 @@
 {
-	"extends": "../../tsconfig.base.json",
 	"compilerOptions": {
-		"outDir": "./dist/",
-		"jsx": "react",
+		"baseUrl": "./",
 		"esModuleInterop": true,
+		"jsx": "react",
 		"lib": [
 			"es2018",
 			"DOM",
 			"DOM.Iterable"
-		]
+		],
+		"outDir": "Target",
+		"rootDir": "Source"
 	},
+	"extends": "@playform/build/tsconfig",
+	"include": [
+		"Source"
+	],
 	"typeAcquisition": {
 		"include": [
 			"@types/vscode-webview"

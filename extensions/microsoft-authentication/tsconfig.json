@@ -1,27 +1,25 @@
 {
-	"extends": "../tsconfig.base.json",
 	"compilerOptions": {
-		"baseUrl": ".",
+		"baseUrl": "./",
 		"experimentalDecorators": true,
+		"lib": [
+			"WebWorker"
+		],
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"noFallthroughCasesInSwitch": true,
 		"noUnusedLocals": false,
-		"outDir": "dist",
+		"outDir": "Target",
 		"resolveJsonModule": true,
-		"rootDir": "src",
+		"rootDir": "Source",
 		"skipLibCheck": true,
-		"sourceMap": true,
-		"lib": [
-			"WebWorker"
-		]
+		"sourceMap": true
 	},
 	"exclude": [
 		"node_modules"
 	],
+	"extends": "@playform/build/tsconfig",
 	"include": [
-		"src/**/*",
-		"../../src/vscode-dts/vscode.d.ts",
-		"../../src/vscode-dts/vscode.proposed.idToken.d.ts"
+		"Source"
 	]
 }
