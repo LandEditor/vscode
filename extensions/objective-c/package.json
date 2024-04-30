@@ -1,55 +1,73 @@
 {
-  "name": "objective-c",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ./build/update-grammars.js"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "objective-c",
-        "extensions": [
-          ".m"
-        ],
-        "aliases": [
-          "Objective-C"
-        ],
-        "configuration": "./language-configuration.json"
-      },
-      {
-        "id": "objective-cpp",
-        "extensions": [
-          ".mm"
-        ],
-        "aliases": [
-          "Objective-C++"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "objective-c",
-        "scopeName": "source.objc",
-        "path": "./syntaxes/objective-c.tmLanguage.json"
-      },
-      {
-        "language": "objective-cpp",
-        "scopeName": "source.objcpp",
-        "path": "./syntaxes/objective-c++.tmLanguage.json"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "objective-c",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ./build/update-grammars.js"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "objective-c",
+				"path": "./syntaxes/objective-c.tmLanguage.json",
+				"scopeName": "source.objc"
+			},
+			{
+				"language": "objective-cpp",
+				"path": "./syntaxes/objective-c++.tmLanguage.json",
+				"scopeName": "source.objcpp"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Objective-C"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".m"
+				],
+				"id": "objective-c"
+			},
+			{
+				"aliases": [
+					"Objective-C++"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".mm"
+				],
+				"id": "objective-cpp"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

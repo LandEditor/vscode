@@ -1,47 +1,65 @@
 {
-  "name": "swift",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin jtbandes/swift-tmlanguage Swift.tmLanguage.json ./syntaxes/swift.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "swift",
-        "aliases": [
-          "Swift",
-          "swift"
-        ],
-        "extensions": [
-          ".swift"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "swift",
-        "scopeName": "source.swift",
-        "path": "./syntaxes/swift.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "swift",
-        "path": "./snippets/swift.code-snippets"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "swift",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin jtbandes/swift-tmlanguage Swift.tmLanguage.json ./syntaxes/swift.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "swift",
+				"path": "./syntaxes/swift.tmLanguage.json",
+				"scopeName": "source.swift"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Swift",
+					"swift"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".swift"
+				],
+				"id": "swift"
+			}
+		],
+		"snippets": [
+			{
+				"language": "swift",
+				"path": "./snippets/swift.code-snippets"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

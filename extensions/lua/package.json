@@ -1,44 +1,62 @@
 {
-  "name": "lua",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin sumneko/lua.tmbundle Syntaxes/Lua.plist ./syntaxes/lua.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "lua",
-        "extensions": [
-          ".lua"
-        ],
-        "aliases": [
-          "Lua",
-          "lua"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "lua",
-        "scopeName": "source.lua",
-        "path": "./syntaxes/lua.tmLanguage.json",
-        "tokenTypes": {
-          "comment.line.double-dash.doc.lua": "other"
-        }
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "lua",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin sumneko/lua.tmbundle Syntaxes/Lua.plist ./syntaxes/lua.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "lua",
+				"path": "./syntaxes/lua.tmLanguage.json",
+				"scopeName": "source.lua",
+				"tokenTypes": {
+					"comment.line.double-dash.doc.lua": "other"
+				}
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Lua",
+					"lua"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".lua"
+				],
+				"id": "lua"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

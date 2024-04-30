@@ -1,49 +1,67 @@
 {
-  "name": "powershell",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "powershell",
-        "extensions": [
-          ".ps1",
-          ".psm1",
-          ".psd1",
-          ".pssc",
-          ".psrc"
-        ],
-        "aliases": [
-          "PowerShell",
-          "powershell",
-          "ps",
-          "ps1",
-          "pwsh"
-        ],
-        "firstLine": "^#!\\s*/.*\\bpwsh\\b",
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "powershell",
-        "scopeName": "source.powershell",
-        "path": "./syntaxes/powershell.tmLanguage.json"
-      }
-    ]
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin PowerShell/EditorSyntax PowerShellSyntax.tmLanguage ./syntaxes/powershell.tmLanguage.json"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "powershell",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin PowerShell/EditorSyntax PowerShellSyntax.tmLanguage ./syntaxes/powershell.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "powershell",
+				"path": "./syntaxes/powershell.tmLanguage.json",
+				"scopeName": "source.powershell"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"PowerShell",
+					"powershell",
+					"ps",
+					"ps1",
+					"pwsh"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".ps1",
+					".psm1",
+					".psd1",
+					".pssc",
+					".psrc"
+				],
+				"firstLine": "^#!\\s*/.*\\bpwsh\\b",
+				"id": "powershell"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

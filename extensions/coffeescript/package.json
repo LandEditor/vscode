@@ -1,60 +1,78 @@
 {
-  "name": "coffeescript",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "coffeescript",
-        "extensions": [
-          ".coffee",
-          ".cson",
-          ".iced"
-        ],
-        "aliases": [
-          "CoffeeScript",
-          "coffeescript",
-          "coffee"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "coffeescript",
-        "scopeName": "source.coffee",
-        "path": "./syntaxes/coffeescript.tmLanguage.json"
-      }
-    ],
-    "breakpoints": [
-      {
-        "language": "coffeescript"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "coffeescript",
-        "path": "./snippets/coffeescript.code-snippets"
-      }
-    ],
-    "configurationDefaults": {
-      "[coffeescript]": {
-        "diffEditor.ignoreTrimWhitespace": false
-      }
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "coffeescript",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin atom/language-coffee-script grammars/coffeescript.cson ./syntaxes/coffeescript.tmLanguage.json"
+	},
+	"contributes": {
+		"breakpoints": [
+			{
+				"language": "coffeescript"
+			}
+		],
+		"configurationDefaults": {
+			"[coffeescript]": {
+				"diffEditor.ignoreTrimWhitespace": false
+			}
+		},
+		"grammars": [
+			{
+				"language": "coffeescript",
+				"path": "./syntaxes/coffeescript.tmLanguage.json",
+				"scopeName": "source.coffee"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"CoffeeScript",
+					"coffeescript",
+					"coffee"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".coffee",
+					".cson",
+					".iced"
+				],
+				"id": "coffeescript"
+			}
+		],
+		"snippets": [
+			{
+				"language": "coffeescript",
+				"path": "./snippets/coffeescript.code-snippets"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

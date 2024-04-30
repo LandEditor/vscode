@@ -1,56 +1,74 @@
 {
-  "name": "fsharp",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin ionide/ionide-fsgrammar grammars/fsharp.json ./syntaxes/fsharp.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "fsharp",
-        "extensions": [
-          ".fs",
-          ".fsi",
-          ".fsx",
-          ".fsscript"
-        ],
-        "aliases": [
-          "F#",
-          "FSharp",
-          "fsharp"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "fsharp",
-        "scopeName": "source.fsharp",
-        "path": "./syntaxes/fsharp.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "fsharp",
-        "path": "./snippets/fsharp.code-snippets"
-      }
-    ],
-    "configurationDefaults": {
-      "[fsharp]": {
-        "diffEditor.ignoreTrimWhitespace": false
-      }
-    }
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "fsharp",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin ionide/ionide-fsgrammar grammars/fsharp.json ./syntaxes/fsharp.tmLanguage.json"
+	},
+	"contributes": {
+		"configurationDefaults": {
+			"[fsharp]": {
+				"diffEditor.ignoreTrimWhitespace": false
+			}
+		},
+		"grammars": [
+			{
+				"language": "fsharp",
+				"path": "./syntaxes/fsharp.tmLanguage.json",
+				"scopeName": "source.fsharp"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"F#",
+					"FSharp",
+					"fsharp"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".fs",
+					".fsi",
+					".fsx",
+					".fsscript"
+				],
+				"id": "fsharp"
+			}
+		],
+		"snippets": [
+			{
+				"language": "fsharp",
+				"path": "./snippets/fsharp.code-snippets"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

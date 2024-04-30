@@ -1,44 +1,62 @@
 {
-  "name": "r",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin REditorSupport/vscode-R syntax/r.json ./syntaxes/r.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "r",
-        "extensions": [
-          ".r",
-          ".rhistory",
-          ".rprofile",
-          ".rt"
-        ],
-        "aliases": [
-          "R",
-          "r"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "r",
-        "scopeName": "source.r",
-        "path": "./syntaxes/r.tmLanguage.json"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "r",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin REditorSupport/vscode-R syntax/r.json ./syntaxes/r.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "r",
+				"path": "./syntaxes/r.tmLanguage.json",
+				"scopeName": "source.r"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"R",
+					"r"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".r",
+					".rhistory",
+					".rprofile",
+					".rt"
+				],
+				"id": "r"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

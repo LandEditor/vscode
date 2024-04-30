@@ -1,51 +1,69 @@
 {
-  "name": "vb",
-  "displayName": "%displayName%",
-  "description": "%description%",
-  "version": "1.0.0",
-  "publisher": "vscode",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "scripts": {
-    "update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/asp.vb.net.tmbundle Syntaxes/ASP%20VB.net.plist ./syntaxes/asp-vb-net.tmLanguage.json"
-  },
-  "categories": ["Programming Languages"],
-  "contributes": {
-    "languages": [
-      {
-        "id": "vb",
-        "extensions": [
-          ".vb",
-          ".brs",
-          ".vbs",
-          ".bas",
-          ".vba"
-        ],
-        "aliases": [
-          "Visual Basic",
-          "vb"
-        ],
-        "configuration": "./language-configuration.json"
-      }
-    ],
-    "grammars": [
-      {
-        "language": "vb",
-        "scopeName": "source.asp.vb.net",
-        "path": "./syntaxes/asp-vb-net.tmLanguage.json"
-      }
-    ],
-    "snippets": [
-      {
-        "language": "vb",
-        "path": "./snippets/vb.code-snippets"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "vb",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin textmate/asp.vb.net.tmbundle Syntaxes/ASP%20VB.net.plist ./syntaxes/asp-vb-net.tmLanguage.json"
+	},
+	"contributes": {
+		"grammars": [
+			{
+				"language": "vb",
+				"path": "./syntaxes/asp-vb-net.tmLanguage.json",
+				"scopeName": "source.asp.vb.net"
+			}
+		],
+		"languages": [
+			{
+				"aliases": [
+					"Visual Basic",
+					"vb"
+				],
+				"configuration": "./language-configuration.json",
+				"extensions": [
+					".vb",
+					".brs",
+					".vbs",
+					".bas",
+					".vba"
+				],
+				"id": "vb"
+			}
+		],
+		"snippets": [
+			{
+				"language": "vb",
+				"path": "./snippets/vb.code-snippets"
+			}
+		]
+	},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
+	},
+	"publishConfig": {
+		"access": "public"
+	}
 }

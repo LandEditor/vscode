@@ -1,75 +1,88 @@
 {
-  "name": "jake",
-  "publisher": "vscode",
-  "description": "%description%",
-  "displayName": "%displayName%",
-  "icon": "images/cowboy_hat.png",
-  "version": "1.0.0",
-  "license": "MIT",
-  "engines": {
-    "vscode": "*"
-  },
-  "categories": [
-    "Other"
-  ],
-  "scripts": {
-    "compile": "gulp compile-extension:jake",
-    "watch": "gulp watch-extension:jake"
-  },
-  "dependencies": {},
-  "devDependencies": {
-    "@types/node": "18.x"
-  },
-  "main": "./out/main",
-  "activationEvents": [
-    "onTaskType:jake"
-  ],
-  "capabilities": {
-    "virtualWorkspaces": false,
-    "untrustedWorkspaces": {
-      "supported": true
-    }
-  },
-  "contributes": {
-    "configuration": {
-      "id": "jake",
-      "type": "object",
-      "title": "Jake",
-      "properties": {
-        "jake.autoDetect": {
-          "scope": "application",
-          "type": "string",
-          "enum": [
-            "off",
-            "on"
-          ],
-          "default": "off",
-          "description": "%config.jake.autoDetect%"
-        }
-      }
-    },
-    "taskDefinitions": [
-      {
-        "type": "jake",
-        "required": [
-          "task"
-        ],
-        "properties": {
-          "task": {
-            "type": "string",
-            "description": "%jake.taskDefinition.type.description%"
-          },
-          "file": {
-            "type": "string",
-            "description": "%jake.taskDefinition.file.description%"
-          }
-        },
-        "when": "shellExecutionSupported"
-      }
-    ]
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/microsoft/vscode.git"
-  }
+	"name": "jake",
+	"displayName": "%displayName%",
+	"version": "0.0.1",
+	"private": false,
+	"description": "%description%",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
+	"bugs": {
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
+	},
+	"license": "SEE LICENSE IN LICENSE",
+	"author": {
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
+	},
+	"type": "module",
+	"main": "./out/main",
+	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
+		"compile": "gulp compile-extension:jake",
+		"prepublishOnly": "Build 'Source/**/*.ts'"
+	},
+	"contributes": {
+		"configuration": {
+			"id": "jake",
+			"properties": {
+				"jake.autoDetect": {
+					"default": "off",
+					"description": "%config.jake.autoDetect%",
+					"enum": [
+						"off",
+						"on"
+					],
+					"scope": "application",
+					"type": "string"
+				}
+			},
+			"title": "Jake",
+			"type": "object"
+		},
+		"taskDefinitions": [
+			{
+				"properties": {
+					"file": {
+						"description": "%jake.taskDefinition.file.description%",
+						"type": "string"
+					},
+					"task": {
+						"description": "%jake.taskDefinition.type.description%",
+						"type": "string"
+					}
+				},
+				"required": [
+					"task"
+				],
+				"type": "jake",
+				"when": "shellExecutionSupported"
+			}
+		]
+	},
+	"activationEvents": [
+		"onTaskType:jake"
+	],
+	"dependencies": {},
+	"devDependencies": {
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "18.x"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"icon": "images/cowboy_hat.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
+	}
 }
