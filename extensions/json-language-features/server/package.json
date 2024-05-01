@@ -37,13 +37,13 @@
 		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
 	},
 	"dependencies": {
-		"jsonc-parser": "^3.2.1",
-		"request-light": "^0.7.0"
+		"jsonc-parser": "3.2.1",
+		"request-light": "0.7.0"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/node": "18.x"
+		"@types/node": "20.x"
 	},
 	"publishConfig": {
 		"access": "public"

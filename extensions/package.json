@@ -29,7 +29,7 @@
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"esbuild": "0.20.0"
+		"esbuild": "0.20.2"
 	},
 	"publishConfig": {
 		"access": "public"

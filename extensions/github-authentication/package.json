@@ -54,13 +54,13 @@
 	},
 	"activationEvents": [],
 	"dependencies": {
-		"node-fetch": "2.6.7"
+		"node-fetch": "3.3.2"
 	},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@types/node": "18.x",
-		"@types/node-fetch": "^2.5.7"
+		"@types/node": "20.x",
+		"@types/node-fetch": "2.6.11"
 	},
 	"publishConfig": {
 		"access": "public"
