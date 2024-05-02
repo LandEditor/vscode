@@ -27,7 +27,7 @@ const BUILD_TARGETS = [
 ];
 
 BUILD_TARGETS.forEach(buildTarget => {
-	const dashed = (/** @type {string | null} */ str) => (str ? `-${str}` : ``);
+	const dashed = (str) => (str ? `-${str}` : ``);
 	const platform = buildTarget.platform;
 	const arch = buildTarget.arch;
 

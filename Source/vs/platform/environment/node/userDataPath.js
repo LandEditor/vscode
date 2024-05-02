@@ -108,9 +108,9 @@
 
 	if (typeof define === 'function') {
 		define(['path', 'os', 'vs/base/common/process'], function (
-			/** @type {typeof import('path')} */ path,
-			/** @type {typeof import('os')} */ os,
-			/** @type {typeof import("../../../base/common/process")} */ process
+			path,
+			os,
+			process
 		) {
 			return factory(path, os, process.cwd()); // amd
 		});

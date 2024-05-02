@@ -229,7 +229,7 @@ function parseRange(strRange) {
  * @throws
  */
 async function findFreePort(host, start, end) {
-	const testPort = (/** @type {number} */ port) => {
+	const testPort = (port) => {
 		return new Promise((resolve) => {
 			const server = http.createServer();
 			server.listen(port, host, () => {

@@ -135,7 +135,7 @@ const acquireBuiltOpenSSL = (callback) => {
 		});
 };
 
-const compileWithOpenSSLCheck = (/** @type import('./lib/reporter').IReporter */ reporter) => es.map((_, callback) => {
+const compileWithOpenSSLCheck = (reporter) => es.map((_, callback) => {
 	compileFromSources(err => {
 		if (!err) {
 			// no-op

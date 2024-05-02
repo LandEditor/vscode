@@ -174,7 +174,7 @@
 		updateScale(zoomLevels[i] || MIN_SCALE);
 	}
 
-	window.addEventListener('keydown', (/** @type {KeyboardEvent} */ e) => {
+	window.addEventListener('keydown', (e) => {
 		if (!image || !hasLoadedImage) {
 			return;
 		}
@@ -187,7 +187,7 @@
 		}
 	});
 
-	window.addEventListener('keyup', (/** @type {KeyboardEvent} */ e) => {
+	window.addEventListener('keyup', (e) => {
 		if (!image || !hasLoadedImage) {
 			return;
 		}
@@ -201,7 +201,7 @@
 		}
 	});
 
-	container.addEventListener('mousedown', (/** @type {MouseEvent} */ e) => {
+	container.addEventListener('mousedown', (e) => {
 		if (!image || !hasLoadedImage) {
 			return;
 		}
@@ -216,7 +216,7 @@
 		consumeClick = !isActive;
 	});
 
-	container.addEventListener('click', (/** @type {MouseEvent} */ e) => {
+	container.addEventListener('click', (e) => {
 		if (!image || !hasLoadedImage) {
 			return;
 		}
@@ -241,7 +241,7 @@
 		}
 	});
 
-	container.addEventListener('wheel', (/** @type {WheelEvent} */ e) => {
+	container.addEventListener('wheel', (e) => {
 		// Prevent pinch to zoom
 		if (e.ctrlKey) {
 			e.preventDefault();

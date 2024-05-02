@@ -61,11 +61,11 @@
 		};
 
 		const getActiveFrame = () => {
-			return /** @type {HTMLIFrameElement | undefined} */ (document.getElementById('active-frame'));
+			return (document.getElementById('active-frame'));
 		};
 
 		const getPendingFrame = () => {
-			return /** @type {HTMLIFrameElement | undefined} */ (document.getElementById('pending-frame'));
+			return (document.getElementById('pending-frame'));
 		};
 
 		/**
@@ -258,7 +258,7 @@
 					};
 					navigator.serviceWorker.addEventListener('message', versionHandler);
 
-					const postVersionMessage = (/** @type {ServiceWorker} */ controller) => {
+					const postVersionMessage = (controller) => {
 						controller.postMessage({ channel: 'version' });
 					};
 
@@ -335,7 +335,7 @@
 			}
 
 			async signalReady() {
-				const start = (/** @type {string} */ parentOrigin) => {
+				const start = (parentOrigin) => {
 					window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
 				};
 
@@ -414,7 +414,7 @@
 				});
 			}
 
-			onIframeLoaded(/** @type {HTMLIFrameElement} */ frame) {
+			onIframeLoaded(frame) {
 				assertIsDefined(frame.contentWindow).addEventListener('keydown', e => {
 					this.isModifierKeyDown = e.metaKey || e.ctrlKey || e.altKey;
 				});
@@ -752,8 +752,8 @@
 				return;
 			}
 
-			const target = /** @type {HTMLDocument | null} */ (event.target);
-			const currentTarget = /** @type {Window | null} */ (event.currentTarget);
+			const target = (event.target);
+			const currentTarget = (event.currentTarget);
 			if (!currentTarget || !target?.body) {
 				return;
 			}
@@ -774,7 +774,7 @@
 			});
 		};
 
-		function handleInnerDragStartEvent(/** @type {DragEvent} */ e) {
+		function handleInnerDragStartEvent(e) {
 			if (e.defaultPrevented) {
 				// Extension code has already handled this event
 				return;
@@ -927,7 +927,7 @@
 
 			// update iframe-contents
 			let updateId = 0;
-			hostMessaging.onMessage('content', async (_event, /** @type {import('../webviewMessages').UpdateContentEvent} */ data) => {
+			hostMessaging.onMessage('content', async (_event, data) => {
 				const currentUpdateId = ++updateId;
 				try {
 					await workerReady;
@@ -1050,7 +1050,7 @@
 					}, 10);
 				} else {
 					assertIsDefined(newFrame.contentWindow).addEventListener('DOMContentLoaded', e => {
-						const contentDocument = e.target ? (/** @type {HTMLDocument} */ (e.target)) : undefined;
+						const contentDocument = e.target ? ((e.target)) : undefined;
 						onFrameLoaded(assertIsDefined(contentDocument));
 					});
 				}
@@ -1109,7 +1109,7 @@
 					const contentWindow = assertIsDefined(newFrame.contentWindow);
 
 					contentWindow.addEventListener('load', function (e) {
-						const contentDocument = /** @type {Document} */ (e.target);
+						const contentDocument = (e.target);
 
 						if (loadTimeout) {
 							clearTimeout(loadTimeout);
@@ -1228,7 +1228,7 @@
 				}
 				lastFindValue = data.value;
 
-				const didFind = (/** @type {any} */ (target.contentWindow)).find(
+				const didFind = ((target.contentWindow)).find(
 					data.value,
 					/* caseSensitive*/ false,
 					/* backwards*/ data.previous,
@@ -1262,7 +1262,7 @@
 				onBlur: () => hostMessaging.postMessage('did-blur', undefined)
 			});
 
-			(/** @type {any} */ (window))[vscodePostMessageFuncName] = (/** @type {string} */ command, /** @type {any} */ data) => {
+			((window))[vscodePostMessageFuncName] = (command, data) => {
 				switch (command) {
 					case 'onmessage':
 					case 'do-update-state':
