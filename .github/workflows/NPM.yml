@@ -1,0 +1,943 @@
+name: NPM
+
+concurrency:
+    group: NPM-${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+permissions:
+    security-events: write
+    contents: write
+    pull-requests: write
+
+on:
+    workflow_dispatch:
+    release:
+        types: [created]
+    workflow_call:
+
+jobs:
+    Publish:
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+            id-token: write
+
+        steps:
+            - uses: actions/checkout@v4.1.4
+
+            - uses: actions/setup-node@v4.0.2
+              with:
+                  node-version: "18"
+                  registry-url: "https://registry.npmjs.org"
+
+            - run: npm install -g npm
+
+            - name: Publish ./build/builtin
+              continue-on-error: true
+              working-directory: ./build/builtin
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./build/monaco
+              continue-on-error: true
+              working-directory: ./build/monaco
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./build/npm/gyp
+              continue-on-error: true
+              working-directory: ./build/npm/gyp
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./build
+              continue-on-error: true
+              working-directory: ./build
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/bat
+              continue-on-error: true
+              working-directory: ./extensions/bat
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/clojure
+              continue-on-error: true
+              working-directory: ./extensions/clojure
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/coffeescript
+              continue-on-error: true
+              working-directory: ./extensions/coffeescript
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/configuration-editing
+              continue-on-error: true
+              working-directory: ./extensions/configuration-editing
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/cpp
+              continue-on-error: true
+              working-directory: ./extensions/cpp
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/csharp
+              continue-on-error: true
+              working-directory: ./extensions/csharp
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/css-language-features
+              continue-on-error: true
+              working-directory: ./extensions/css-language-features
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/css-language-features/server
+              continue-on-error: true
+              working-directory: ./extensions/css-language-features/server
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/css
+              continue-on-error: true
+              working-directory: ./extensions/css
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/dart
+              continue-on-error: true
+              working-directory: ./extensions/dart
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/debug-auto-launch
+              continue-on-error: true
+              working-directory: ./extensions/debug-auto-launch
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/debug-server-ready
+              continue-on-error: true
+              working-directory: ./extensions/debug-server-ready
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/diff
+              continue-on-error: true
+              working-directory: ./extensions/diff
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/docker
+              continue-on-error: true
+              working-directory: ./extensions/docker
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/emmet
+              continue-on-error: true
+              working-directory: ./extensions/emmet
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/extension-editing
+              continue-on-error: true
+              working-directory: ./extensions/extension-editing
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/fsharp
+              continue-on-error: true
+              working-directory: ./extensions/fsharp
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/git-base
+              continue-on-error: true
+              working-directory: ./extensions/git-base
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/git
+              continue-on-error: true
+              working-directory: ./extensions/git
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/github-authentication
+              continue-on-error: true
+              working-directory: ./extensions/github-authentication
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/github
+              continue-on-error: true
+              working-directory: ./extensions/github
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/go
+              continue-on-error: true
+              working-directory: ./extensions/go
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/groovy
+              continue-on-error: true
+              working-directory: ./extensions/groovy
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/grunt
+              continue-on-error: true
+              working-directory: ./extensions/grunt
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/gulp
+              continue-on-error: true
+              working-directory: ./extensions/gulp
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/handlebars
+              continue-on-error: true
+              working-directory: ./extensions/handlebars
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/hlsl
+              continue-on-error: true
+              working-directory: ./extensions/hlsl
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/html-language-features
+              continue-on-error: true
+              working-directory: ./extensions/html-language-features
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/html-language-features/server
+              continue-on-error: true
+              working-directory: ./extensions/html-language-features/server
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/html
+              continue-on-error: true
+              working-directory: ./extensions/html
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/ini
+              continue-on-error: true
+              working-directory: ./extensions/ini
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/ipynb
+              continue-on-error: true
+              working-directory: ./extensions/ipynb
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/jake
+              continue-on-error: true
+              working-directory: ./extensions/jake
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/java
+              continue-on-error: true
+              working-directory: ./extensions/java
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/javascript
+              continue-on-error: true
+              working-directory: ./extensions/javascript
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/json-language-features
+              continue-on-error: true
+              working-directory: ./extensions/json-language-features
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/json-language-features/server
+              continue-on-error: true
+              working-directory: ./extensions/json-language-features/server
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/json
+              continue-on-error: true
+              working-directory: ./extensions/json
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/julia
+              continue-on-error: true
+              working-directory: ./extensions/julia
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/latex
+              continue-on-error: true
+              working-directory: ./extensions/latex
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/less
+              continue-on-error: true
+              working-directory: ./extensions/less
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/log
+              continue-on-error: true
+              working-directory: ./extensions/log
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/lua
+              continue-on-error: true
+              working-directory: ./extensions/lua
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/make
+              continue-on-error: true
+              working-directory: ./extensions/make
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/markdown-basics
+              continue-on-error: true
+              working-directory: ./extensions/markdown-basics
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/markdown-language-features
+              continue-on-error: true
+              working-directory: ./extensions/markdown-language-features
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/markdown-language-features/server
+              continue-on-error: true
+              working-directory: ./extensions/markdown-language-features/server
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/markdown-math
+              continue-on-error: true
+              working-directory: ./extensions/markdown-math
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/media-preview
+              continue-on-error: true
+              working-directory: ./extensions/media-preview
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/merge-conflict
+              continue-on-error: true
+              working-directory: ./extensions/merge-conflict
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/microsoft-authentication
+              continue-on-error: true
+              working-directory: ./extensions/microsoft-authentication
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/notebook-renderers
+              continue-on-error: true
+              working-directory: ./extensions/notebook-renderers
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/npm
+              continue-on-error: true
+              working-directory: ./extensions/npm
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/objective-c
+              continue-on-error: true
+              working-directory: ./extensions/objective-c
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions
+              continue-on-error: true
+              working-directory: ./extensions
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/perl
+              continue-on-error: true
+              working-directory: ./extensions/perl
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/php-language-features
+              continue-on-error: true
+              working-directory: ./extensions/php-language-features
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/php
+              continue-on-error: true
+              working-directory: ./extensions/php
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/powershell
+              continue-on-error: true
+              working-directory: ./extensions/powershell
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/pug
+              continue-on-error: true
+              working-directory: ./extensions/pug
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/python
+              continue-on-error: true
+              working-directory: ./extensions/python
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/r
+              continue-on-error: true
+              working-directory: ./extensions/r
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/razor
+              continue-on-error: true
+              working-directory: ./extensions/razor
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/references-view
+              continue-on-error: true
+              working-directory: ./extensions/references-view
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/restructuredtext
+              continue-on-error: true
+              working-directory: ./extensions/restructuredtext
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/ruby
+              continue-on-error: true
+              working-directory: ./extensions/ruby
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/rust
+              continue-on-error: true
+              working-directory: ./extensions/rust
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/scss
+              continue-on-error: true
+              working-directory: ./extensions/scss
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/search-result
+              continue-on-error: true
+              working-directory: ./extensions/search-result
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/shaderlab
+              continue-on-error: true
+              working-directory: ./extensions/shaderlab
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/shellscript
+              continue-on-error: true
+              working-directory: ./extensions/shellscript
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/simple-browser
+              continue-on-error: true
+              working-directory: ./extensions/simple-browser
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/sql
+              continue-on-error: true
+              working-directory: ./extensions/sql
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/swift
+              continue-on-error: true
+              working-directory: ./extensions/swift
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-abyss
+              continue-on-error: true
+              working-directory: ./extensions/theme-abyss
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-defaults
+              continue-on-error: true
+              working-directory: ./extensions/theme-defaults
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-kimbie-dark
+              continue-on-error: true
+              working-directory: ./extensions/theme-kimbie-dark
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-monokai-dimmed
+              continue-on-error: true
+              working-directory: ./extensions/theme-monokai-dimmed
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-monokai
+              continue-on-error: true
+              working-directory: ./extensions/theme-monokai
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-quietlight
+              continue-on-error: true
+              working-directory: ./extensions/theme-quietlight
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-red
+              continue-on-error: true
+              working-directory: ./extensions/theme-red
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-seti
+              continue-on-error: true
+              working-directory: ./extensions/theme-seti
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-solarized-dark
+              continue-on-error: true
+              working-directory: ./extensions/theme-solarized-dark
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-solarized-light
+              continue-on-error: true
+              working-directory: ./extensions/theme-solarized-light
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/theme-tomorrow-night-blue
+              continue-on-error: true
+              working-directory: ./extensions/theme-tomorrow-night-blue
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/tunnel-forwarding
+              continue-on-error: true
+              working-directory: ./extensions/tunnel-forwarding
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/typescript-basics
+              continue-on-error: true
+              working-directory: ./extensions/typescript-basics
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/typescript-language-features
+              continue-on-error: true
+              working-directory: ./extensions/typescript-language-features
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/vb
+              continue-on-error: true
+              working-directory: ./extensions/vb
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/vscode-api-tests
+              continue-on-error: true
+              working-directory: ./extensions/vscode-api-tests
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/vscode-colorize-tests
+              continue-on-error: true
+              working-directory: ./extensions/vscode-colorize-tests
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/vscode-test-resolver
+              continue-on-error: true
+              working-directory: ./extensions/vscode-test-resolver
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/xml
+              continue-on-error: true
+              working-directory: ./extensions/xml
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./extensions/yaml
+              continue-on-error: true
+              working-directory: ./extensions/yaml
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish .
+              continue-on-error: true
+              working-directory: .
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./remote
+              continue-on-error: true
+              working-directory: ./remote
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Publish ./remote/web
+              continue-on-error: true
+              working-directory: ./remote/web
+              run: |
+                  npm install --include prod dev optional peer --legacy-peer-deps
+                  npm publish --legacy-peer-deps --provenance
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

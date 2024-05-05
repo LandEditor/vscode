@@ -3,19 +3,22 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "JSON language server",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/node/jsonServerMain",
@@ -23,28 +26,24 @@
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
 	},
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"clean": "../../../node_modules/.bin/rimraf out",
 		"compile": "npx gulp compile-extension:json-language-features-server",
 		"install-server-local": "yarn link vscode-languageserver-server",
 		"install-server-next": "yarn add vscode-languageserver@next",
 		"install-service-local": "yarn link vscode-json-languageservice",
 		"install-service-next": "yarn add vscode-json-languageservice@next",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json",
-		"watch": "npx gulp watch-extension:json-language-features-server"
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
 	},
 	"dependencies": {
-		"@vscode/l10n": "^0.0.18",
-		"jsonc-parser": "^3.2.1",
-		"request-light": "^0.7.0",
-		"vscode-json-languageservice": "^5.3.9",
-		"vscode-languageserver": "^9.0.2-next.1",
-		"vscode-uri": "^3.0.8"
+		"jsonc-parser": "3.2.1",
+		"request-light": "0.7.0"
 	},
 	"devDependencies": {
-		"@types/mocha": "^9.1.1",
-		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "20.x"
 	},
 	"publishConfig": {
 		"access": "public"

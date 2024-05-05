@@ -4,27 +4,30 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/main",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:git",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"update-emoji": "node ./build/update-emoji.js",
-		"watch": "gulp watch-extension:git"
+		"prepublishOnly": "Build 'Source/**/*.ts'",
+		"update-emoji": "node ./build/update-emoji.js"
 	},
 	"contributes": {
 		"colors": [
@@ -923,6 +926,27 @@
 				"category": "Git",
 				"command": "git.openRepositoriesInParentFolders",
 				"title": "%command.openRepositoriesInParentFolders%"
+			},
+			{
+				"category": "Git",
+				"command": "git.viewChanges",
+				"enablement": "!operationInProgress",
+				"icon": "$(diff-multiple)",
+				"title": "%command.viewChanges%"
+			},
+			{
+				"category": "Git",
+				"command": "git.viewStagedChanges",
+				"enablement": "!operationInProgress",
+				"icon": "$(diff-multiple)",
+				"title": "%command.viewStagedChanges%"
+			},
+			{
+				"category": "Git",
+				"command": "git.viewUntrackedChanges",
+				"enablement": "!operationInProgress",
+				"icon": "$(diff-multiple)",
+				"title": "%command.viewUntrackedChanges%"
 			},
 			{
 				"category": "Git",
@@ -2164,6 +2188,18 @@
 					"when": "config.git.enabled && !git.missing && config.multiDiffEditor.experimental.enabled"
 				},
 				{
+					"command": "git.viewChanges",
+					"when": "config.git.enabled && !git.missing && config.multiDiffEditor.experimental.enabled"
+				},
+				{
+					"command": "git.viewStagedChanges",
+					"when": "config.git.enabled && !git.missing && config.multiDiffEditor.experimental.enabled"
+				},
+				{
+					"command": "git.viewUntrackedChanges",
+					"when": "config.git.enabled && !git.missing && config.multiDiffEditor.experimental.enabled && config.git.untrackedChanges == separate"
+				},
+				{
 					"command": "git.viewCommit",
 					"when": "false"
 				},
@@ -2760,6 +2796,16 @@
 					"when": "scmProvider == git && scmResourceGroup == index"
 				},
 				{
+					"command": "git.viewStagedChanges",
+					"group": "inline@1",
+					"when": "scmProvider == git && scmResourceGroup == index && config.multiDiffEditor.experimental.enabled"
+				},
+				{
+					"command": "git.viewChanges",
+					"group": "inline@1",
+					"when": "scmProvider == git && scmResourceGroup == workingTree && config.multiDiffEditor.experimental.enabled"
+				},
+				{
 					"command": "git.cleanAll",
 					"group": "1_modification",
 					"when": "scmProvider == git && scmResourceGroup == workingTree && config.git.untrackedChanges == mixed"
@@ -2808,6 +2854,11 @@
 					"command": "git.stageAllUntracked",
 					"group": "1_modification",
 					"when": "scmProvider == git && scmResourceGroup == untracked"
+				},
+				{
+					"command": "git.viewUntrackedChanges",
+					"group": "inline@1",
+					"when": "scmProvider == git && scmResourceGroup == untracked && config.multiDiffEditor.experimental.enabled"
 				},
 				{
 					"command": "git.cleanAllUntracked",
@@ -3319,23 +3370,20 @@
 		"onFileSystem:git-show"
 	],
 	"dependencies": {
-		"@joaomoreno/unique-names-generator": "^5.1.0",
-		"@vscode/extension-telemetry": "^0.9.0",
-		"@vscode/iconv-lite-umd": "0.7.0",
-		"byline": "^5.0.0",
-		"file-type": "16.5.4",
-		"jschardet": "3.0.0",
-		"picomatch": "2.3.1",
-		"vscode-uri": "^2.0.0",
+		"@joaomoreno/unique-names-generator": "5.1.0",
+		"byline": "5.0.0",
+		"file-type": "19.0.0",
+		"jschardet": "3.1.2",
+		"picomatch": "4.0.2",
 		"which": "4.0.0"
 	},
 	"devDependencies": {
-		"@types/byline": "4.2.31",
-		"@types/mocha": "^9.1.1",
-		"@types/node": "18.x",
-		"@types/picomatch": "2.3.0",
-		"@types/which": "3.0.0",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/byline": "4.2.36",
+		"@types/node": "20.x",
+		"@types/picomatch": "2.3.3",
+		"@types/which": "3.0.3"
 	},
 	"extensionDependencies": [
 		"vscode.git-base"
@@ -3373,6 +3421,7 @@
 		"scmSelectedProvider",
 		"scmTextDocument",
 		"scmValidation",
+		"tabInputMultiDiff",
 		"tabInputTextMerge",
 		"timeline"
 	]

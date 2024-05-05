@@ -29,8 +29,9 @@ import { IInputBox, IKeyMods, IQuickInput, IQuickInputButton, IQuickInputHideEve
 import { QuickInputBox } from './quickInputBox';
 import { quickInputButtonToAction, renderQuickInputDescription } from './quickInputUtils';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IHoverOptions, IHoverService, WorkbenchHoverDelegate } from 'vs/platform/hover/browser/hover';
+import { IHoverService, WorkbenchHoverDelegate } from 'vs/platform/hover/browser/hover';
 import { QuickInputListFocus, QuickInputTree } from 'vs/platform/quickinput/browser/quickInputTree';
+import type { IHoverOptions } from 'vs/base/browser/ui/hover/hover';
 
 export interface IQuickInputOptions {
 	idPrefix: string;
@@ -723,7 +724,15 @@ export class QuickPick<T extends IQuickPickItem> extends QuickInput implements I
 		return this.ui.keyMods;
 	}
 
-	set valueSelection(valueSelection: Readonly<[number, number]>) {
+	get valueSelection() {
+		const selection = this.ui.inputBox.getSelection();
+		if (!selection) {
+			return undefined;
+		}
+		return [selection.start, selection.end];
+	}
+
+	set valueSelection(valueSelection: Readonly<[number, number]> | undefined) {
 		this._valueSelection = valueSelection;
 		this.valueSelectionUpdated = true;
 		this.update();
@@ -822,7 +831,10 @@ export class QuickPick<T extends IQuickPickItem> extends QuickInput implements I
 			this.visibleDisposables.add((this._hideInput ? this.ui.list : this.ui.inputBox).onKeyDown((event: KeyboardEvent | StandardKeyboardEvent) => {
 				switch (event.keyCode) {
 					case KeyCode.DownArrow:
-						if (isMacintosh ? event.metaKey : event.altKey) {
+						// Don't support focusing next separator when quick navigate is enabled
+						// ref: https://github.com/microsoft/vscode/issues/210461
+						// TODO: Could we do this in a way that could play nice with quick navigate?
+						if (this.quickNavigate === undefined && (isMacintosh ? event.metaKey : event.altKey)) {
 							this.ui.list.focus(QuickInputListFocus.NextSeparator);
 						} else {
 							this.ui.list.focus(QuickInputListFocus.Next);
@@ -833,7 +845,8 @@ export class QuickPick<T extends IQuickPickItem> extends QuickInput implements I
 						dom.EventHelper.stop(event, true);
 						break;
 					case KeyCode.UpArrow:
-						if (isMacintosh ? event.metaKey : event.altKey) {
+						// Don't support focusing next separator when quick navigate is enabled
+						if (this.quickNavigate === undefined && (isMacintosh ? event.metaKey : event.altKey)) {
 							this.ui.list.focus(QuickInputListFocus.PreviousSeparator);
 						} else {
 							this.ui.list.focus(QuickInputListFocus.Previous);
@@ -1167,7 +1180,15 @@ export class InputBox extends QuickInput implements IInputBox {
 		this.update();
 	}
 
-	set valueSelection(valueSelection: Readonly<[number, number]>) {
+	get valueSelection() {
+		const selection = this.ui.inputBox.getSelection();
+		if (!selection) {
+			return undefined;
+		}
+		return [selection.start, selection.end];
+	}
+
+	set valueSelection(valueSelection: Readonly<[number, number]> | undefined) {
 		this._valueSelection = valueSelection;
 		this.valueSelectionUpdated = true;
 		this.update();

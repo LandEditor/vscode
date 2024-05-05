@@ -4,28 +4,31 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"build-notebook": "node ./esbuild",
 		"compile": "npm run build-notebook",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npm run build-notebook"
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"configuration": [
@@ -100,13 +103,11 @@
 		]
 	},
 	"activationEvents": [],
-	"dependencies": {
-		"@vscode/markdown-it-katex": "^1.0.3"
-	},
+	"dependencies": {},
 	"devDependencies": {
-		"@types/markdown-it": "^0.0.0",
-		"@types/vscode-notebook-renderer": "^1.60.0",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/markdown-it": "14.0.1"
 	},
 	"publishConfig": {
 		"access": "public"

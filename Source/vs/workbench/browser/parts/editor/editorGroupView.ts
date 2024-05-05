@@ -660,21 +660,53 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 		return true;
 	}
 
+	private toResourceTelemetryDescriptor(resource: URI): object | undefined {
+		if (!resource) {
+			return undefined;
+		}
+
+		const path = resource ? resource.scheme === Schemas.file ? resource.fsPath : resource.path : undefined;
+		if (!path) {
+			return undefined;
+		}
+
+		// Remove query parameters from the resource extension
+		let resourceExt = extname(resource);
+		const queryStringLocation = resourceExt.indexOf('?');
+		resourceExt = queryStringLocation !== -1 ? resourceExt.substr(0, queryStringLocation) : resourceExt;
+
+		return {
+			mimeType: new TelemetryTrustedValue(getMimeTypes(resource).join(', ')),
+			scheme: resource.scheme,
+			ext: resourceExt,
+			path: hash(path)
+		};
+	}
+
 	private toEditorTelemetryDescriptor(editor: EditorInput): object {
 		const descriptor = editor.getTelemetryDescriptor();
 
-		const resource = EditorResourceAccessor.getOriginalUri(editor);
-		const path = resource ? resource.scheme === Schemas.file ? resource.fsPath : resource.path : undefined;
-		if (resource && path) {
-			let resourceExt = extname(resource);
-			// Remove query parameters from the resource extension
-			const queryStringLocation = resourceExt.indexOf('?');
-			resourceExt = queryStringLocation !== -1 ? resourceExt.substr(0, queryStringLocation) : resourceExt;
-			descriptor['resource'] = { mimeType: new TelemetryTrustedValue(getMimeTypes(resource).join(', ')), scheme: resource.scheme, ext: resourceExt, path: hash(path) };
+		const resource = EditorResourceAccessor.getOriginalUri(editor, { supportSideBySide: SideBySideEditor.BOTH });
+		if (URI.isUri(resource)) {
+			descriptor['resource'] = this.toResourceTelemetryDescriptor(resource);
 
 			/* __GDPR__FRAGMENT__
 				"EditorTelemetryDescriptor" : {
 					"resource": { "${inline}": [ "${URIDescriptor}" ] }
+				}
+			*/
+			return descriptor;
+		} else if (resource) {
+			if (resource.primary) {
+				descriptor['resource'] = this.toResourceTelemetryDescriptor(resource.primary);
+			}
+			if (resource.secondary) {
+				descriptor['resourceSecondary'] = this.toResourceTelemetryDescriptor(resource.secondary);
+			}
+			/* __GDPR__FRAGMENT__
+				"EditorTelemetryDescriptor" : {
+					"resource": { "${inline}": [ "${URIDescriptor}" ] },
+					"resourceSecondary": { "${inline}": [ "${URIDescriptor}" ] }
 				}
 			*/
 			return descriptor;
@@ -1835,8 +1867,14 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 			return true;
 		}
 
+		// Apply the `excludeConfirming` filter if present
+		let editors = this.model.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, options);
+		if (options?.excludeConfirming) {
+			editors = editors.filter(editor => !this.shouldConfirmClose(editor));
+		}
+
 		// Check for confirmation and veto
-		const veto = await this.handleCloseConfirmation(this.model.getEditors(EditorsOrder.MOST_RECENTLY_ACTIVE, options));
+		const veto = await this.handleCloseConfirmation(editors);
 		if (veto) {
 			return false;
 		}
@@ -1848,10 +1886,14 @@ export class EditorGroupView extends Themable implements IEditorGroupView {
 	}
 
 	private doCloseAllEditors(options?: ICloseAllEditorsOptions): void {
+		let editors = this.model.getEditors(EditorsOrder.SEQUENTIAL, options);
+		if (options?.excludeConfirming) {
+			editors = editors.filter(editor => !this.shouldConfirmClose(editor));
+		}
 
 		// Close all inactive editors first
 		const editorsToClose: EditorInput[] = [];
-		for (const editor of this.model.getEditors(EditorsOrder.SEQUENTIAL, options)) {
+		for (const editor of editors) {
 			if (!this.isActive(editor)) {
 				this.doCloseInactiveEditor(editor);
 			}

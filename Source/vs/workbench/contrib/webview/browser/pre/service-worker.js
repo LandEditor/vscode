@@ -7,7 +7,7 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="webworker" />
 
-const sw = ((self));
+const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {any} */ (self));
 
 const VERSION = 4;
 
@@ -64,7 +64,7 @@ class RequestStore {
 		const promise = new Promise(r => resolve = r);
 
 		/** @type {RequestStoreEntry<T>} */
-		const entry = { resolve: (resolve), promise };
+		const entry = { resolve: /** @type {(x: RequestStoreResult<T>) => void} */ (resolve), promise };
 
 		this.map.set(requestId, entry);
 
@@ -133,7 +133,7 @@ const requestTimeout = () =>
 sw.addEventListener('message', async (event) => {
 	switch (event.data.channel) {
 		case 'version': {
-			const source = (event.source);
+			const source = /** @type {Client} */ (event.source);
 			sw.clients.get(source.id).then(client => {
 				if (client) {
 					client.postMessage({

@@ -4,28 +4,31 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/node/emmetNodeMain",
 	"browser": "./dist/browser/emmetBrowserMain",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "gulp compile-extension:emmet",
 		"deps": "yarn add @vscode/emmet-helper",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "gulp watch-extension:emmet"
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -483,16 +486,12 @@
 		"onLanguage"
 	],
 	"dependencies": {
-		"@emmetio/css-parser": "ramya-rao-a/css-parser#vscode",
-		"@emmetio/html-matcher": "^0.3.3",
-		"@emmetio/math-expression": "^1.0.5",
-		"@vscode/emmet-helper": "^2.8.8",
-		"image-size": "~1.0.0",
-		"vscode-languageserver-textdocument": "^1.0.1"
+		"image-size": "1.1.1"
 	},
 	"devDependencies": {
-		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "20.x"
 	},
 	"publishConfig": {
 		"access": "public"

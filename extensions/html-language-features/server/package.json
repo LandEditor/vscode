@@ -3,43 +3,39 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "HTML language server",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/node/htmlServerMain",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:html-language-features-server",
 		"install-server-local": "yarn link vscode-languageserver",
 		"install-server-next": "yarn add vscode-languageserver@next",
 		"install-service-local": "yarn link vscode-css-languageservice && yarn link vscode-html-languageservice",
 		"install-service-next": "yarn add vscode-css-languageservice@next && yarn add vscode-html-languageservice@next",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp watch-extension:html-language-features-server"
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
-	"dependencies": {
-		"@vscode/l10n": "^0.0.18",
-		"vscode-css-languageservice": "^6.2.12",
-		"vscode-html-languageservice": "^5.1.2",
-		"vscode-languageserver": "^9.0.2-next.1",
-		"vscode-languageserver-textdocument": "^1.0.11",
-		"vscode-uri": "^3.0.8"
-	},
+	"dependencies": {},
 	"devDependencies": {
-		"@types/mocha": "^9.1.1",
-		"@types/node": "18.x",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/node": "20.x"
 	},
 	"publishConfig": {
 		"access": "public"

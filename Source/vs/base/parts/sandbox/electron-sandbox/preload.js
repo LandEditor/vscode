@@ -203,7 +203,7 @@
 			 */
 			acquire(responseChannel, nonce) {
 				if (validateIPC(responseChannel)) {
-					const responseListener = (e, responseNonce) => {
+					const responseListener = (/** @type {IpcRendererEvent} */ e, /** @type {string} */ responseNonce) => {
 						// validate that the nonce from the response is the same
 						// as when requested. and if so, use `postMessage` to
 						// send the `MessagePort` safely over, even when context

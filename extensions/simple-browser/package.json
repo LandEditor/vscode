@@ -4,31 +4,33 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/extension",
 	"browser": "./dist/browser/extension",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"build-ext": "node ../../node_modules/gulp/bin/gulp.js --gulpfile ../../build/gulpfile.extensions.js compile-extension:markdown-language-features ./tsconfig.json",
 		"build-preview": "node ./esbuild-preview",
 		"compile": "gulp compile-extension:markdown-language-features && npm run build-preview",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"vscode:prepublish": "npm run build-ext && npm run build-preview",
-		"watch": "npm run build-preview && gulp watch-extension:markdown-language-features",
+		"prepublishOnly": "Build 'Source/**/*.ts'",
 		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
 	},
 	"contributes": {
@@ -59,13 +61,10 @@
 		"onOpenExternalUri:https",
 		"onWebviewPanel:simpleBrowser.view"
 	],
-	"dependencies": {
-		"@vscode/extension-telemetry": "^0.9.0"
-	},
+	"dependencies": {},
 	"devDependencies": {
-		"@types/vscode-webview": "^1.57.0",
-		"typescript-esbuild": "0.4.5",
-		"vscode-codicons": "^0.0.14"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6"
 	},
 	"publishConfig": {
 		"access": "public"

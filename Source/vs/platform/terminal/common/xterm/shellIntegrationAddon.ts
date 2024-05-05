@@ -21,6 +21,7 @@ import { BufferMarkCapability } from 'vs/platform/terminal/common/capabilities/b
 import type { ITerminalAddon, Terminal } from '@xterm/headless';
 import { URI } from 'vs/base/common/uri';
 import { sanitizeCwd } from 'vs/platform/terminal/common/terminalEnvironment';
+import { removeAnsiEscapeCodesFromPrompt } from 'vs/base/common/strings';
 
 
 /**
@@ -40,7 +41,7 @@ import { sanitizeCwd } from 'vs/platform/terminal/common/terminalEnvironment';
 /**
  * The identifier for the first numeric parameter (`Ps`) for OSC commands used by shell integration.
  */
-const enum ShellIntegrationOscPs {
+export const enum ShellIntegrationOscPs {
 	/**
 	 * Sequences pioneered by FinalTerm.
 	 */
@@ -97,7 +98,10 @@ const enum VSCodeOscPt {
 	/**
 	 * Explicitly set the command line. This helps workaround performance and reliability problems
 	 * with parsing out the command, such as conpty not guaranteeing the position of the sequence or
-	 * the shell not guaranteeing that the entire command is even visible.
+	 * the shell not guaranteeing that the entire command is even visible. Ideally this is called
+	 * immediately before {@link CommandExecuted}, immediately before {@link CommandFinished} will
+	 * also work but that means terminal will only know the accurate command line when the command is
+	 * finished.
 	 *
 	 * The command line can escape ascii characters using the `\xAB` format, where AB are the
 	 * hexadecimal representation of the character code (case insensitive), and escape the `\`
@@ -157,6 +161,8 @@ const enum VSCodeOscPt {
 	 * - `IsWindows` - Indicates whether the terminal is using a Windows backend like winpty or
 	 *   conpty. This may be used to enable additional heuristics as the positioning of the shell
 	 *   integration sequences are not guaranteed to be correct. Valid values: `True`, `False`.
+	 * - `ContinuationPrompt` - Reports the continuation prompt that is printed at the start of
+	 *   multi-line inputs.
 	 *
 	 * WARNING: Any other properties may be changed and are not guaranteed to work in the future.
 	 */
@@ -376,6 +382,10 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 					return true;
 				}
 				switch (key) {
+					case 'ContinuationPrompt': {
+						this._updateContinuationPrompt(removeAnsiEscapeCodesFromPrompt(value));
+						return true;
+					}
 					case 'Cwd': {
 						this._updateCwd(value);
 						return true;
@@ -399,6 +409,13 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 
 		// Unrecognized sequence
 		return false;
+	}
+
+	private _updateContinuationPrompt(value: string) {
+		if (!this._terminal) {
+			return;
+		}
+		this._createOrGetCommandDetection(this._terminal).setContinuationPrompt(value);
 	}
 
 	private _updateCwd(value: string) {

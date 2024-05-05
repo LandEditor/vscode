@@ -216,7 +216,7 @@ module.exports.run = async function (debugSession, ctx) {
 					return;
 				}
 
-				const styleSheet = (([...document.querySelectorAll(`link[rel='stylesheet']`)]))
+				const styleSheet = (/** @type {HTMLLinkElement[]} */ ([...document.querySelectorAll(`link[rel='stylesheet']`)]))
 					.find(l => new URL(l.href, document.location.href).pathname.endsWith(relativePath));
 				if (styleSheet) {
 					setMessage(`reload ${formatPath(relativePath)} - ${new Date().toLocaleTimeString()}`);
@@ -253,7 +253,7 @@ module.exports.run = async function (debugSession, ctx) {
 				}
 
 				// Check if we can reload
-				const g = (globalThis);
+				const g = /** @type {GlobalThisAddition} */ (globalThis);
 
 				// A frozen copy of the previous exports
 				const oldExports = Object.freeze({ ...oldModule.exports });
@@ -306,7 +306,7 @@ module.exports.run = async function (debugSession, ctx) {
 			 * @param {string} message
 			 */
 			function setMessage(message) {
-				const domElem = (document.querySelector('.titlebar-center .window-title'));
+				const domElem = /** @type {HTMLDivElement | undefined} */ (document.querySelector('.titlebar-center .window-title'));
 				if (!domElem) { return; }
 				if (!hotReloadData.timeout) {
 					hotReloadData.originalWindowTitle = domElem.innerText;

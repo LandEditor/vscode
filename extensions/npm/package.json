@@ -4,27 +4,30 @@
 	"version": "0.0.1",
 	"private": false,
 	"description": "%description%",
-	"homepage": "https://github.com/CodeEditorLand/Foundation#readme",
+	"keywords": [
+		"land"
+	],
+	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
 	"bugs": {
-		"url": "https://github.com/CodeEditorLand/Foundation/issues"
+		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
 	},
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/CodeEditorLand/Foundation.git"
+		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
 	},
 	"license": "SEE LICENSE IN LICENSE",
 	"author": {
-		"name": "Playform",
-		"email": "Hello@Playform.Cloud",
-		"url": "https://playform.cloud"
+		"name": "🌆 — Land —",
+		"email": "Land@PlayForm.Cloud",
+		"url": "HTTPS://Land.PlayForm.Cloud"
 	},
 	"type": "module",
 	"main": "./out/npmMain",
 	"browser": "./dist/browser/npmBrowserMain",
 	"scripts": {
+		"Document": "Document 'Source/**/*.ts'",
 		"compile": "npx gulp compile-extension:npm",
-		"prepublishOnly": "TypeScriptESBuild 'Source/**/*.ts'",
-		"watch": "npx gulp watch-extension:npm"
+		"prepublishOnly": "Build 'Source/**/*.ts'"
 	},
 	"contributes": {
 		"commands": [
@@ -334,20 +337,20 @@
 		"workspaceContains:package.json"
 	],
 	"dependencies": {
-		"find-up": "^5.0.0",
-		"find-yarn-workspace-root": "^2.0.0",
-		"jsonc-parser": "^3.2.0",
-		"minimatch": "^5.1.6",
-		"request-light": "^0.7.0",
-		"vscode-uri": "^3.0.8",
-		"which": "^4.0.0",
-		"which-pm": "^2.1.1"
+		"find-up": "7.0.0",
+		"find-yarn-workspace-root": "2.0.0",
+		"jsonc-parser": "3.2.1",
+		"minimatch": "9.0.4",
+		"request-light": "0.7.0",
+		"which": "4.0.0",
+		"which-pm": "2.1.1"
 	},
 	"devDependencies": {
-		"@types/minimatch": "^5.1.2",
-		"@types/node": "18.x",
-		"@types/which": "^3.0.0",
-		"typescript-esbuild": "0.4.5"
+		"@playform/build": "0.0.7",
+		"@playform/document": "0.0.6",
+		"@types/minimatch": "5.1.2",
+		"@types/node": "20.x",
+		"@types/which": "3.0.3"
 	},
 	"publishConfig": {
 		"access": "public"

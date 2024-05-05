@@ -51,30 +51,30 @@ const vscodeEntryPoints = [
 ].flat();
 
 const vscodeResources = [
-	'Target/bootstrap.js',
-	'Target/bootstrap-fork.js',
-	'Target/bootstrap-amd.js',
-	'Target/bootstrap-node.js',
-	'Target/bootstrap-window.js',
-	'Target/vs/**/*.{svg,png,html,jpg,mp3}',
-	'!Target/vs/code/browser/**/*.html',
-	'!Target/vs/code/**/*-dev.html',
-	'!Target/vs/editor/standalone/**/*.svg',
-	'Target/vs/base/common/performance.js',
-	'Target/vs/base/node/{stdForkStart.js,terminateProcess.sh,cpuUsage.sh,ps.sh}',
-	'Target/vs/base/browser/ui/codicons/codicon/**',
-	'Target/vs/base/parts/sandbox/electron-sandbox/preload.js',
-	'Target/vs/base/parts/sandbox/electron-sandbox/preload-aux.js',
-	'Target/vs/workbench/browser/media/*-theme.css',
-	'Target/vs/workbench/contrib/debug/**/*.json',
-	'Target/vs/workbench/contrib/externalTerminal/**/*.scpt',
-	'Target/vs/workbench/contrib/terminal/browser/media/fish_xdg_data/fish/vendor_conf.d/*.fish',
-	'Target/vs/workbench/contrib/terminal/browser/media/*.ps1',
-	'Target/vs/workbench/contrib/terminal/browser/media/*.sh',
-	'Target/vs/workbench/contrib/terminal/browser/media/*.zsh',
-	'Target/vs/workbench/contrib/webview/browser/pre/*.js',
-	'Target/vs/**/markdown.css',
-	'Target/vs/workbench/contrib/tasks/**/*.json',
+	'out-build/bootstrap.js',
+	'out-build/bootstrap-fork.js',
+	'out-build/bootstrap-amd.js',
+	'out-build/bootstrap-node.js',
+	'out-build/bootstrap-window.js',
+	'out-build/vs/**/*.{svg,png,html,jpg,mp3}',
+	'!out-build/vs/code/browser/**/*.html',
+	'!out-build/vs/code/**/*-dev.html',
+	'!out-build/vs/editor/standalone/**/*.svg',
+	'out-build/vs/base/common/performance.js',
+	'out-build/vs/base/node/{stdForkStart.js,terminateProcess.sh,cpuUsage.sh,ps.sh}',
+	'out-build/vs/base/browser/ui/codicons/codicon/**',
+	'out-build/vs/base/parts/sandbox/electron-sandbox/preload.js',
+	'out-build/vs/base/parts/sandbox/electron-sandbox/preload-aux.js',
+	'out-build/vs/workbench/browser/media/*-theme.css',
+	'out-build/vs/workbench/contrib/debug/**/*.json',
+	'out-build/vs/workbench/contrib/externalTerminal/**/*.scpt',
+	'out-build/vs/workbench/contrib/terminal/browser/media/fish_xdg_data/fish/vendor_conf.d/*.fish',
+	'out-build/vs/workbench/contrib/terminal/browser/media/*.ps1',
+	'out-build/vs/workbench/contrib/terminal/browser/media/*.sh',
+	'out-build/vs/workbench/contrib/terminal/browser/media/*.zsh',
+	'out-build/vs/workbench/contrib/webview/browser/pre/*.js',
+	'out-build/vs/**/markdown.css',
+	'out-build/vs/workbench/contrib/tasks/**/*.json',
 	'!**/test/**'
 ];
 
@@ -82,9 +82,9 @@ const vscodeResources = [
 // be inlined into the target window file in this order
 // and they depend on each other in this way.
 const windowBootstrapFiles = [
-	'Target/bootstrap.js',
-	'Target/vs/loader.js',
-	'Target/bootstrap-window.js'
+	'out-build/bootstrap.js',
+	'out-build/vs/loader.js',
+	'out-build/bootstrap-window.js'
 ];
 
 const optimizeVSCodeTask = task.define('optimize-vscode', task.series(
@@ -97,17 +97,17 @@ const optimizeVSCodeTask = task.define('optimize-vscode', task.series(
 		{
 			out: 'out-vscode',
 			amd: {
-				src: 'Target',
+				src: 'out-build',
 				entryPoints: vscodeEntryPoints,
 				resources: vscodeResources,
 				loaderConfig: optimize.loaderConfig(),
 				bundleInfo: undefined
 			},
 			commonJS: {
-				src: 'Target',
+				src: 'out-build',
 				entryPoints: [
-					'Target/main.js',
-					'Target/cli.js'
+					'out-build/main.js',
+					'out-build/cli.js'
 				],
 				platform: 'node',
 				external: [
@@ -121,9 +121,9 @@ const optimizeVSCodeTask = task.define('optimize-vscode', task.series(
 				]
 			},
 			manual: [
-				{ src: [...windowBootstrapFiles, 'Target/vs/code/electron-sandbox/workbench/workbench.js'], out: 'vs/code/electron-sandbox/workbench/workbench.js' },
-				{ src: [...windowBootstrapFiles, 'Target/vs/code/electron-sandbox/issue/issueReporter.js'], out: 'vs/code/electron-sandbox/issue/issueReporter.js' },
-				{ src: [...windowBootstrapFiles, 'Target/vs/code/electron-sandbox/processExplorer/processExplorer.js'], out: 'vs/code/electron-sandbox/processExplorer/processExplorer.js' }
+				{ src: [...windowBootstrapFiles, 'out-build/vs/code/electron-sandbox/workbench/workbench.js'], out: 'vs/code/electron-sandbox/workbench/workbench.js' },
+				{ src: [...windowBootstrapFiles, 'out-build/vs/code/electron-sandbox/issue/issueReporter.js'], out: 'vs/code/electron-sandbox/issue/issueReporter.js' },
+				{ src: [...windowBootstrapFiles, 'out-build/vs/code/electron-sandbox/processExplorer/processExplorer.js'], out: 'vs/code/electron-sandbox/processExplorer/processExplorer.js' }
 			]
 		}
 	)

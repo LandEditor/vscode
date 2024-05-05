@@ -9,16 +9,17 @@ import { ActionsOrientation } from 'vs/base/browser/ui/actionbar/actionbar';
 import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { IObservable, autorun, autorunWithStore, derived, observableFromEvent, observableValue } from 'vs/base/common/observable';
+import { URI } from 'vs/base/common/uri';
 import { DiffEditorEditors } from 'vs/editor/browser/widget/diffEditor/components/diffEditorEditors';
 import { DiffEditorViewModel } from 'vs/editor/browser/widget/diffEditor/diffEditorViewModel';
-import { appendRemoveOnDispose, applyStyle } from 'vs/editor/browser/widget/diffEditor/utils';
+import { appendRemoveOnDispose, applyStyle, prependRemoveOnDispose } from 'vs/editor/browser/widget/diffEditor/utils';
 import { EditorGutter, IGutterItemInfo, IGutterItemView } from 'vs/editor/browser/widget/diffEditor/utils/editorGutter';
 import { ActionRunnerWithContext } from 'vs/editor/browser/widget/multiDiffEditor/utils';
 import { EditorOption } from 'vs/editor/common/config/editorOptions';
 import { LineRange, LineRangeSet } from 'vs/editor/common/core/lineRange';
 import { OffsetRange } from 'vs/editor/common/core/offsetRange';
 import { Range } from 'vs/editor/common/core/range';
-import { SingleTextEdit, TextEdit } from 'vs/editor/common/core/textEdit';
+import { TextEdit } from 'vs/editor/common/core/textEdit';
 import { DetailedLineRangeMapping } from 'vs/editor/common/diff/rangeMapping';
 import { TextModelText } from 'vs/editor/common/model/textModelText';
 import { HiddenItemStrategy, MenuWorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
@@ -37,7 +38,7 @@ export class DiffEditorGutter extends Disposable {
 
 	public readonly width = derived(this, reader => this._hasActions.read(reader) ? width : 0);
 
-	private readonly elements = h('div.gutter@gutter', { style: { position: 'absolute', height: '100%', width: width + 'px', zIndex: '0' } }, []);
+	private readonly elements = h('div.gutter@gutter', { style: { position: 'absolute', height: '100%', width: width + 'px' } }, []);
 
 	constructor(
 		diffEditorRoot: HTMLDivElement,
@@ -49,7 +50,7 @@ export class DiffEditorGutter extends Disposable {
 	) {
 		super();
 
-		this._register(appendRemoveOnDispose(diffEditorRoot, this.elements.root));
+		this._register(prependRemoveOnDispose(diffEditorRoot, this.elements.root));
 
 		this._register(addDisposableListener(this.elements.root, 'click', () => {
 			this._editors.modified.focus();
@@ -69,16 +70,26 @@ export class DiffEditorGutter extends Disposable {
 				const selection = this._selectedDiffs.read(reader);
 				if (selection.length > 0) {
 					const m = DetailedLineRangeMapping.fromRangeMappings(selection.flatMap(s => s.rangeMappings));
-					return [new DiffGutterItem(m, true, MenuId.DiffEditorSelectionToolbar, undefined)];
+					return [
+						new DiffGutterItem(
+							m,
+							true,
+							MenuId.DiffEditorSelectionToolbar,
+							undefined,
+							model.model.original.uri,
+							model.model.modified.uri,
+						)];
 				}
 
 				const currentDiff = this._currentDiff.read(reader);
 
 				return diffs.mappings.map(m => new DiffGutterItem(
-					m.lineRangeMapping,
+					m.lineRangeMapping.withInnerChangesFromLineRanges(),
 					m.lineRangeMapping === currentDiff?.lineRangeMapping,
 					MenuId.DiffEditorHunkToolbar,
 					undefined,
+					model.model.original.uri,
+					model.model.modified.uri,
 				));
 			},
 			createView: (item, target) => {
@@ -87,7 +98,7 @@ export class DiffEditorGutter extends Disposable {
 		}));
 
 		this._register(addDisposableListener(this.elements.gutter, EventType.MOUSE_WHEEL, (e: IMouseWheelEvent) => {
-			if (!this._editors.modified.getOption(EditorOption.scrollbar).handleMouseWheel) {
+			if (this._editors.modified.getOption(EditorOption.scrollbar).handleMouseWheel) {
 				this._editors.modified.delegateScrollFromMouseWheelEvent(e);
 			}
 		}, { passive: false }));
@@ -95,8 +106,11 @@ export class DiffEditorGutter extends Disposable {
 
 	public computeStagedValue(mapping: DetailedLineRangeMapping): string {
 		const c = mapping.innerChanges ?? [];
-		const edit = new TextEdit(c.map(c => new SingleTextEdit(c.originalRange, this._editors.modifiedModel.get()!.getValueInRange(c.modifiedRange))));
-		const value = edit.apply(new TextModelText(this._editors.original.getModel()!));
+		const modified = new TextModelText(this._editors.modifiedModel.get()!);
+		const original = new TextModelText(this._editors.original.getModel()!);
+
+		const edit = new TextEdit(c.map(c => c.toTextEdit(modified)));
+		const value = edit.apply(original);
 		return value;
 	}
 
@@ -149,6 +163,8 @@ class DiffGutterItem implements IGutterItemInfo {
 		public readonly showAlways: boolean,
 		public readonly menuId: MenuId,
 		public readonly rangeOverride: LineRange | undefined,
+		public readonly originalUri: URI,
+		public readonly modifiedUri: URI,
 	) {
 	}
 	get id(): string { return this.mapping.modified.toString(); }
@@ -174,8 +190,6 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 		@IInstantiationService instantiationService: IInstantiationService
 	) {
 		super();
-
-		//const r = new ObservableElementSizeObserver
 
 		const hoverDelegate = this._register(instantiationService.createInstance(
 			WorkbenchHoverDelegate,
@@ -208,10 +222,13 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 				overflowBehavior: { maxItems: this._isSmall.read(reader) ? 1 : 3 },
 				hiddenItemStrategy: HiddenItemStrategy.Ignore,
 				actionRunner: new ActionRunnerWithContext(() => {
-					const mapping = this._item.get().mapping;
+					const item = this._item.get();
+					const mapping = item.mapping;
 					return {
 						mapping,
 						originalWithModifiedChanges: gutter.computeStagedValue(mapping),
+						originalUri: item.originalUri,
+						modifiedUri: item.modifiedUri,
 					} satisfies DiffEditorSelectionHunkToolbarContext;
 				}),
 				menuOptions: {
@@ -273,4 +290,7 @@ export interface DiffEditorSelectionHunkToolbarContext {
 	 * The original text with the selected modified changes applied.
 	*/
 	originalWithModifiedChanges: string;
+
+	modifiedUri: URI;
+	originalUri: URI;
 }
