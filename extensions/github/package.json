@@ -174,8 +174,8 @@
 	],
 	"dependencies": {
 		"@octokit/graphql": "8.1.1",
-		"@octokit/graphql-schema": "15.14.0",
-		"@octokit/rest": "20.1.0",
+		"@octokit/graphql-schema": "15.15.0",
+		"@octokit/rest": "20.1.1",
 		"tunnel": "0.0.6"
 	},
 	"devDependencies": {

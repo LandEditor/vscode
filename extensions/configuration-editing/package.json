@@ -162,7 +162,7 @@
 		"onProfile:github"
 	],
 	"dependencies": {
-		"@octokit/rest": "20.1.0",
+		"@octokit/rest": "20.1.1",
 		"jsonc-parser": "3.2.1",
 		"tunnel": "0.0.6"
 	},

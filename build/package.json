@@ -66,7 +66,7 @@
 	},
 	"optionalDependencies": {
 		"tree-sitter": "0.21.1",
-		"tree-sitter-typescript": "0.20.5"
+		"tree-sitter-typescript": "0.21.1"
 	},
 	"publishConfig": {
 		"access": "public"
