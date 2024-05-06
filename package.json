@@ -101,7 +101,7 @@
 	"devDependencies": {
 		"@playform/build": "0.0.7",
 		"@playform/document": "0.0.6",
-		"@swc/core": "1.4.17",
+		"@swc/core": "1.5.3",
 		"@types/cookie": "0.6.0",
 		"@types/debug": "4.1.12",
 		"@types/graceful-fs": "4.1.9",
