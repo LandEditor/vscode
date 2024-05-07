@@ -38,7 +38,7 @@ export interface IExplorerFileContributionRegistry {
 class ExplorerFileContributionRegistry implements IExplorerFileContributionRegistry {
 	private readonly descriptors: IExplorerFileContributionDescriptor[] = [];
 
-	/** @inheritdoc */
+	
 	public register(descriptor: IExplorerFileContributionDescriptor): void {
 		this.descriptors.push(descriptor);
 	}

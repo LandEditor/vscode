@@ -1473,7 +1473,7 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 				? this._timeline!.addBoundary(buffer, p)
 				: this._timeline!.addPrediction(buffer, p);
 
-		/** @see https://github.com/xtermjs/xterm.js/blob/1913e9512c048e3cf56bb5f5df51bfff6899c184/src/common/input/Keyboard.ts */
+		
 		const reader = new StringReader(data);
 		while (reader.remaining > 0) {
 			if (reader.eatCharCode(127)) { // backspace

@@ -239,7 +239,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 		// Set the view zones before restoring view state!
 		// Otherwise scrolling will be off
 		this._sessionDisposables.add(autorunWithStore((reader, store) => {
-			/** @description update alignment view zones */
+			
 			const baseView = this.baseView.read(reader);
 
 			this.inputResultView.editor.changeViewZones(resultViewZoneAccessor => {
@@ -298,7 +298,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 				}
 				this.input1View.editor.revealLineInCenter(firstConflict.input1Range.startLineNumber);
 				transaction(tx => {
-					/** @description setActiveModifiedBaseRange */
+					
 					viewModel.setActiveModifiedBaseRange(firstConflict, tx);
 				});
 			}));
@@ -544,7 +544,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 
 	private applyLayout(layout: IMergeEditorLayout): void {
 		transaction(tx => {
-			/** @description applyLayout */
+			
 
 			if (layout.showBase && !this.baseView.get()) {
 				this.baseViewDisposables.clear();
@@ -555,7 +555,7 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 					)
 				);
 				this.baseViewDisposables.add(autorun(reader => {
-					/** @description Update base view options */
+					
 					const options = this.baseViewOptions.read(reader);
 					if (options) {
 						baseView.updateOptions(options);

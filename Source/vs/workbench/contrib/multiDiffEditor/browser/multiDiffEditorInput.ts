@@ -92,7 +92,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
 		super();
 
 		this._register(autorun((reader) => {
-			/** @description Updates name */
+			
 			const resources = this.resources.read(reader);
 			const label = this.label ?? localize('name', "Multi Diff Editor");
 			if (resources) {
@@ -148,7 +148,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
 		const garbage = new DisposableStore();
 
 		const documentsWithPromises = mapObservableArrayCached(this, source.resources, async (r, store) => {
-			/** @description documentsWithPromises */
+			
 			let original: IReference<IResolvedTextEditorModel> | undefined;
 			let modified: IReference<IResolvedTextEditorModel> | undefined;
 			const store2 = new DisposableStore();
@@ -192,7 +192,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
 		const documents = observableValue<readonly LazyPromise<IDocumentDiffItem>[]>('documents', []);
 
 		const updateDocuments = derived(async reader => {
-			/** @description Update documents */
+			
 			const docsPromises = documentsWithPromises.read(reader);
 			const docs = await Promise.all(docsPromises);
 			const newDocuments = docs.filter(isDefined);
@@ -241,7 +241,7 @@ export class MultiDiffEditorInput extends EditorInput implements ILanguageSuppor
 	private readonly _isDirtyObservables = mapObservableArrayCached(this, this.resources.map(r => r ?? []), res => {
 		const isModifiedDirty = res.modified ? isUriDirty(this._textFileService, res.modified) : constObservable(false);
 		const isOriginalDirty = res.original ? isUriDirty(this._textFileService, res.original) : constObservable(false);
-		return derived(reader => /** @description modifiedDirty||originalDirty */ isModifiedDirty.read(reader) || isOriginalDirty.read(reader));
+		return derived(reader =>  isModifiedDirty.read(reader) || isOriginalDirty.read(reader));
 	}, i => i.getKey());
 	private readonly _isDirtyObservable = derived(this, reader => this._isDirtyObservables.read(reader).some(isDirty => isDirty.read(reader)))
 		.keepObserved(this._store);

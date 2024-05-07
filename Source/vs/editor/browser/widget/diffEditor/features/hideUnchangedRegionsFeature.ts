@@ -89,7 +89,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 		});
 
 		this.viewZones = derivedWithStore(this, (reader, store) => {
-			/** @description view Zones */
+			
 			const modifiedOutlineSource = this._modifiedOutlineSource.read(reader);
 			if (!modifiedOutlineSource) { return { origViewZones: [], modViewZones: [] }; }
 
@@ -104,7 +104,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 				}
 
 				{
-					const d = derived(this, reader => /** @description hiddenOriginalRangeStart */ r.getHiddenOriginalRange(reader).startLineNumber - 1);
+					const d = derived(this, reader =>  r.getHiddenOriginalRange(reader).startLineNumber - 1);
 					const origVz = new PlaceholderViewZone(d, 24);
 					origViewZones.push(origVz);
 					store.add(new CollapsedCodeOverlayWidget(
@@ -119,7 +119,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 					));
 				}
 				{
-					const d = derived(this, reader => /** @description hiddenModifiedRangeStart */ r.getHiddenModifiedRange(reader).startLineNumber - 1);
+					const d = derived(this, reader =>  r.getHiddenModifiedRange(reader).startLineNumber - 1);
 					const modViewZone = new PlaceholderViewZone(d, 24);
 					modViewZones.push(modViewZone);
 					store.add(new CollapsedCodeOverlayWidget(
@@ -153,7 +153,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 		};
 
 		this._register(applyObservableDecorations(this._editors.original, derived(this, reader => {
-			/** @description decorations */
+			
 			const curUnchangedRegions = unchangedRegions.read(reader);
 			const result = curUnchangedRegions.map<IModelDeltaDecoration>(r => ({
 				range: r.originalUnchangedRange.toInclusiveRange()!,
@@ -171,7 +171,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 		})));
 
 		this._register(applyObservableDecorations(this._editors.modified, derived(this, reader => {
-			/** @description decorations */
+			
 			const curUnchangedRegions = unchangedRegions.read(reader);
 			const result = curUnchangedRegions.map<IModelDeltaDecoration>(r => ({
 				range: r.modifiedUnchangedRange.toInclusiveRange()!,
@@ -189,7 +189,7 @@ export class HideUnchangedRegionsFeature extends Disposable {
 		})));
 
 		this._register(autorun((reader) => {
-			/** @description update folded unchanged regions */
+			
 			const curUnchangedRegions = unchangedRegions.read(reader);
 			this._isUpdatingHiddenAreas = true;
 			try {
@@ -266,7 +266,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		}
 
 		this._register(autorun(reader => {
-			/** @description Update CollapsedCodeOverlayWidget canMove* css classes */
+			
 			const isFullyRevealed = this._unchangedRegion.visibleLineCountTop.read(reader) + this._unchangedRegion.visibleLineCountBottom.read(reader) === this._unchangedRegion.lineCount;
 
 			this._nodes.bottom.classList.toggle('canMoveTop', !isFullyRevealed);
@@ -375,7 +375,7 @@ class CollapsedCodeOverlayWidget extends ViewZoneOverlayWidget {
 		}));
 
 		this._register(autorun(reader => {
-			/** @description update labels */
+			
 
 			const children: HTMLElement[] = [];
 			if (!this._hide) {

@@ -193,7 +193,7 @@ export class TestingPeekOpener extends Disposable implements ITestingPeekOpener 
 
 	private lastUri?: TestUriWithDocument;
 
-	/** @inheritdoc */
+	
 	public readonly historyVisible = MutableObservableValue.stored(this._register(new StoredValue<boolean>({
 		key: 'testHistoryVisibleInPeek',
 		scope: StorageScope.PROFILE,
@@ -215,7 +215,7 @@ export class TestingPeekOpener extends Disposable implements ITestingPeekOpener 
 		this._register(testResults.onTestChanged(this.openPeekOnFailure, this));
 	}
 
-	/** @inheritdoc */
+	
 	public async open() {
 		let uri: TestUriWithDocument | undefined;
 		const active = this.editorService.activeTextEditorControl;
@@ -241,7 +241,7 @@ export class TestingPeekOpener extends Disposable implements ITestingPeekOpener 
 		return this.showPeekFromUri(uri);
 	}
 
-	/** @inheritdoc */
+	
 	public tryPeekFirstError(result: ITestResult, test: TestResultItem, options?: Partial<ITextEditorOptions>) {
 		const candidate = this.getFailedCandidateMessage(test);
 		if (!candidate) {
@@ -259,7 +259,7 @@ export class TestingPeekOpener extends Disposable implements ITestingPeekOpener 
 		return true;
 	}
 
-	/** @inheritdoc */
+	
 	public peekUri(uri: URI, options: IShowResultOptions = {}) {
 		const parsed = parseTestUri(uri);
 		const result = parsed && this.testResults.getResult(parsed.resultId);
@@ -287,7 +287,7 @@ export class TestingPeekOpener extends Disposable implements ITestingPeekOpener 
 		return true;
 	}
 
-	/** @inheritdoc */
+	
 	public closeAllPeeks() {
 		for (const editor of this.codeEditorService.listCodeEditors()) {
 			TestingOutputPeekController.get(editor)?.removePeek();
@@ -333,7 +333,7 @@ export class TestingPeekOpener extends Disposable implements ITestingPeekOpener 
 		return controller?.subject ?? this.viewsService.getActiveViewWithId<TestResultsView>(Testing.ResultsViewId)?.subject;
 	}
 
-	/** @inheritdoc */
+	
 	private async showPeekFromUri(uri: TestUriWithDocument, editor?: IEditor, options?: ITextEditorOptions) {
 		if (isCodeEditor(editor)) {
 			this.lastUri = uri;
@@ -1052,13 +1052,13 @@ class TestResultsPeek extends PeekViewWidget {
 		TestResultsPeek.lastHeightInLines = newHeightInLines;
 	}
 
-	/** @override */
+	
 	protected override _doLayoutBody(height: number, width: number) {
 		super._doLayoutBody(height, width);
 		this.content.onLayoutBody(height, width);
 	}
 
-	/** @override */
+	
 	protected override _onWidth(width: number) {
 		super._onWidth(width);
 		if (this.dimension) {
@@ -2216,7 +2216,7 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) { }
 
-	/** @inheritdoc */
+	
 	public renderCompressedElements(node: ITreeNode<ICompressedTreeNode<ITreeElement>, FuzzyScore>, _index: number, templateData: TemplateData): void {
 		const chain = node.element.elements;
 		const lastElement = chain[chain.length - 1];
@@ -2227,7 +2227,7 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 		}
 	}
 
-	/** @inheritdoc */
+	
 	public renderTemplate(container: HTMLElement): TemplateData {
 		const templateDisposable = new DisposableStore();
 		const wrapper = dom.append(container, dom.$('.test-peek-item'));
@@ -2254,12 +2254,12 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 		};
 	}
 
-	/** @inheritdoc */
+	
 	public renderElement(element: ITreeNode<ITreeElement, FuzzyScore>, _index: number, templateData: TemplateData): void {
 		this.doRender(element.element, templateData);
 	}
 
-	/** @inheritdoc */
+	
 	public disposeTemplate(templateData: TemplateData): void {
 		templateData.templateDisposable.dispose();
 	}

@@ -32,11 +32,11 @@ export interface IAccessibilitySignalService {
 	 */
 	playSound(signal: Sound, allowManyInParallel: boolean, token: typeof AcknowledgeDocCommentsToken): Promise<void>;
 
-	/** @deprecated Use getEnabledState(...).onChange */
+	
 	isSoundEnabled(signal: AccessibilitySignal): boolean;
-	/** @deprecated Use getEnabledState(...).value */
+	
 	isAnnouncementEnabled(signal: AccessibilitySignal): boolean;
-	/** @deprecated Use getEnabledState(...).onChange */
+	
 	onSoundEnabledChanged(signal: AccessibilitySignal): Event<void>;
 }
 
@@ -68,7 +68,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 	private readonly sounds: Map<string, HTMLAudioElement> = new Map();
 	private readonly screenReaderAttached = observableFromEvent(
 		this.accessibilityService.onDidChangeScreenReaderOptimized,
-		() => /** @description accessibilityService.onDidChangeScreenReaderOptimized */ this.accessibilityService.isScreenReaderOptimized()
+		() =>  this.accessibilityService.isScreenReaderOptimized()
 	);
 	private readonly sentTelemetry = new Set<string>();
 
@@ -207,7 +207,7 @@ export class AccessibilitySignalService extends Disposable implements IAccessibi
 		{ getCacheKey: getStructuralKey },
 		(arg: { signal: AccessibilitySignal; userGesture: boolean; modality?: AccessibilityModality | undefined }) => {
 			return derived(reader => {
-				/** @description sound enabled */
+				
 				const setting = this._signalConfigValue.get(arg.signal).read(reader);
 
 				if (arg.modality === 'sound' || arg.modality === undefined) {

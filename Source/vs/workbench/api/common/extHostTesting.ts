@@ -247,12 +247,12 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		this.runTracker.disposeTestRun(runId);
 	}
 
-	/** @inheritdoc */
+	
 	$configureRunProfile(controllerId: string, profileId: number) {
 		this.controllers.get(controllerId)?.profiles.get(profileId)?.configureHandler?.();
 	}
 
-	/** @inheritdoc */
+	
 	$setDefaultRunProfiles(profiles: Record</* controller id */string, /* profile id */ number[]>): void {
 		const evt: DefaultProfileChangeEvent = new Map();
 		for (const [controllerId, profileIds] of Object.entries(profiles)) {
@@ -279,7 +279,7 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		this.defaultProfilesChangedEmitter.fire(evt);
 	}
 
-	/** @inheritdoc */
+	
 	async $refreshTests(controllerId: string, token: CancellationToken) {
 		await this.controllers.get(controllerId)?.controller.refreshHandler?.(token);
 	}

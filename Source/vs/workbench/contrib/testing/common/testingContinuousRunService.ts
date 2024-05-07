@@ -112,12 +112,12 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 		}));
 	}
 
-	/** @inheritdoc */
+	
 	public isSpecificallyEnabledFor(testId: string): boolean {
 		return this.running.size > 0 && this.running.hasKey(TestId.fromString(testId).path);
 	}
 
-	/** @inheritdoc */
+	
 	public isEnabledForAParentOf(testId: string): boolean {
 		if (this.globallyRunning) {
 			return true;
@@ -126,17 +126,17 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 		return this.running.size > 0 && this.running.hasKeyOrParent(TestId.fromString(testId).path);
 	}
 
-	/** @inheritdoc */
+	
 	public isEnabledForAChildOf(testId: string): boolean {
 		return this.running.size > 0 && this.running.hasKeyOrChildren(TestId.fromString(testId).path);
 	}
 
-	/** @inheritdoc */
+	
 	public isEnabled(): boolean {
 		return !!this.globallyRunning || this.running.size > 0;
 	}
 
-	/** @inheritdoc */
+	
 	public start(profiles: ITestRunProfile[] | TestRunProfileBitset, testId?: string): void {
 		const store = new DisposableStore();
 		const cts = new CancellationTokenSource();
@@ -189,7 +189,7 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 		this.changeEmitter.fire(testId);
 	}
 
-	/** @inheritdoc */
+	
 	public stop(testId?: string): void {
 		if (!testId) {
 			this.globallyRunning?.dispose();

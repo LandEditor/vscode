@@ -143,7 +143,7 @@ export interface IRichLocation {
 
 /** Subset of the IUriIdentityService */
 export interface ITestUriCanonicalizer {
-	/** @link import('vs/platform/uriIdentity/common/uriIdentity').IUriIdentityService */
+	
 	asCanonicalUri(uri: URI): URI;
 }
 

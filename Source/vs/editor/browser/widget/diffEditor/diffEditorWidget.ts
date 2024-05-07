@@ -189,14 +189,14 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			);
 		}).recomputeInitiallyAndOnChange(this._store);
 
-		const unchangedRangesFeature = derivedDisposable(this, reader => /** @description UnchangedRangesFeature */
+		const unchangedRangesFeature = derivedDisposable(this, reader => 
 			this._instantiationService.createInstance(
 				readHotReloadableExport(HideUnchangedRegionsFeature, reader),
 				this._editors, this._diffModel, this._options
 			)
 		).recomputeInitiallyAndOnChange(this._store);
 
-		derivedDisposable(this, reader => /** @description DiffEditorDecorations */
+		derivedDisposable(this, reader => 
 			this._instantiationService.createInstance(
 				readHotReloadableExport(DiffEditorDecorations, reader),
 				this._editors, this._diffModel, this._options, this,
@@ -206,7 +206,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		const origViewZoneIdsToIgnore = new Set<string>();
 		const modViewZoneIdsToIgnore = new Set<string>();
 		let isUpdatingViewZones = false;
-		const viewZoneManager = derivedDisposable(this, reader => /** @description ViewZoneManager */
+		const viewZoneManager = derivedDisposable(this, reader => 
 			this._instantiationService.createInstance(
 				readHotReloadableExport(DiffEditorViewZones, reader),
 				getWindow(this._domElement),
@@ -220,12 +220,12 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 			)
 		).recomputeInitiallyAndOnChange(this._store);
 
-		const originalViewZones = derived(this, (reader) => { /** @description originalViewZones */
+		const originalViewZones = derived(this, (reader) => { 
 			const orig = viewZoneManager.read(reader).viewZones.read(reader).orig;
 			const orig2 = unchangedRangesFeature.read(reader).viewZones.read(reader).origViewZones;
 			return orig.concat(orig2);
 		});
-		const modifiedViewZones = derived(this, (reader) => { /** @description modifiedViewZones */
+		const modifiedViewZones = derived(this, (reader) => { 
 			const mod = viewZoneManager.read(reader).viewZones.read(reader).mod;
 			const mod2 = unchangedRangesFeature.read(reader).viewZones.read(reader).modViewZones;
 			return mod.concat(mod2);
@@ -279,7 +279,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 		this._register(recomputeInitiallyAndOnChange(this._layoutInfo));
 
-		derivedDisposable(this, reader => /** @description MovedBlocksLinesPart */
+		derivedDisposable(this, reader => 
 			new (readHotReloadableExport(MovedBlocksLinesFeature, reader))(
 				this.elements.root,
 				this._diffModel,
@@ -296,12 +296,12 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		this._register(Event.runAndSubscribe(this._editors.original.onDidChangeCursorPosition, e => this._handleCursorPositionChange(e, false)));
 
 		const isInitializingDiff = this._diffModel.map(this, (m, reader) => {
-			/** @isInitializingDiff isDiffUpToDate */
+			
 			if (!m) { return undefined; }
 			return m.diff.read(reader) === undefined && !m.isDiffUpToDate.read(reader);
 		});
 		this._register(autorunWithStore((reader, store) => {
-			/** @description DiffEditorWidgetHelper.ShowProgress */
+			
 			if (isInitializingDiff.read(reader) === true) {
 				const r = this._editorProgressService.show(true, 1000);
 				store.add(toDisposable(() => r.done()));
@@ -457,7 +457,7 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 		if (this._diffModel.get() !== vm?.model) {
 			subtransaction(tx, tx => {
-				/** @description DiffEditorWidget.setModel */
+				
 				observableFromEvent.batchEventsGlobally(tx, () => {
 					this._editors.original.setModel(vm ? vm.model.model.original : null);
 					this._editors.modified.setModel(vm ? vm.model.model.modified : null);

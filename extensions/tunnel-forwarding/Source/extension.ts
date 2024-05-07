@@ -141,7 +141,7 @@ class TunnelProvider implements vscode.TunnelProvider {
 
 	constructor(private readonly logger: Logger, private readonly context: vscode.ExtensionContext) { }
 
-	/** @inheritdoc */
+	
 	public async provideTunnel(tunnelOptions: vscode.TunnelOptions): Promise<vscode.Tunnel | undefined> {
 		if (tunnelOptions.privacy === TunnelPrivacyId.Public) {
 			if (!(await this.consentPublicPort(tunnelOptions.remoteAddress.port))) {

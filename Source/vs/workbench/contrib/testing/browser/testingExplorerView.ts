@@ -290,7 +290,7 @@ export class TestingExplorerView extends ViewPane {
 		this._onDidChangeViewWelcomeState.fire();
 	}
 
-	/** @override  */
+	
 	public override getActionViewItem(action: IAction, options: IActionViewItemOptions): IActionViewItem | undefined {
 		switch (action.id) {
 			case TestCommandId.FilterAction:
@@ -306,7 +306,7 @@ export class TestingExplorerView extends ViewPane {
 		}
 	}
 
-	/** @inheritdoc */
+	
 	private getTestConfigGroupActions(group: TestRunProfileBitset) {
 		const profileActions: IAction[] = [];
 

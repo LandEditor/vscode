@@ -128,7 +128,7 @@ export class DiffEditorGutter extends Disposable {
 	});
 
 	private readonly _selectedDiffs = derived(this, (reader) => {
-		/** @description selectedDiffs */
+		
 		const model = this._diffModel.read(reader);
 		const diff = model?.diff.read(reader);
 		// Return `emptyArr` because it is a constant. [] is always a new array and would trigger a change.
@@ -201,7 +201,7 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 		this._register(appendRemoveOnDispose(target, this._elements.root));
 
 		this._register(autorun(reader => {
-			/** @description update showAlways */
+			
 			const showAlways = this._showAlways.read(reader);
 			this._elements.root.classList.toggle('noTransition', true);
 			this._elements.root.classList.toggle('showAlways', showAlways);

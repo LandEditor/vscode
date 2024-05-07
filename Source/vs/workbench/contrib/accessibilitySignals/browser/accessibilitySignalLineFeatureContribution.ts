@@ -74,7 +74,7 @@ export class SignalLineFeatureContribution
 
 		this._register(
 			autorun(reader => {
-				/** @description updateSignalsEnabled */
+				
 				this.store.clear();
 
 				if (!this._someAccessibilitySignalIsEnabled.read(reader)) {
@@ -96,7 +96,7 @@ export class SignalLineFeatureContribution
 		const curPosition = observableFromEvent(
 			editor.onDidChangeCursorPosition,
 			(args) => {
-				/** @description editor.onDidChangeCursorPosition (caused by user) */
+				
 				if (
 					args &&
 					args.reason !== CursorChangeReason.Explicit &&
@@ -140,7 +140,7 @@ export class SignalLineFeatureContribution
 		});
 
 		const state = derived(
-			(reader) => /** @description states */({
+			(reader) => ({
 				lineNumber: debouncedPosition.read(reader),
 				featureStates: new Map(
 					this.features.map((feature, idx) => [
@@ -153,7 +153,7 @@ export class SignalLineFeatureContribution
 
 		store.add(
 			autorunDelta(state, ({ lastValue, newValue }) => {
-				/** @description Play Accessibility Signal */
+				
 				const newFeatures = this.features.filter(
 					feature =>
 						newValue?.featureStates.get(feature) &&

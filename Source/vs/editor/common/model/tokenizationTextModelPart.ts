@@ -352,11 +352,11 @@ class GrammarTokens extends Disposable {
 	}
 
 	private readonly _onDidChangeBackgroundTokenizationState = this._register(new Emitter<void>());
-	/** @internal, should not be exposed by the text model! */
+	
 	public readonly onDidChangeBackgroundTokenizationState: Event<void> = this._onDidChangeBackgroundTokenizationState.event;
 
 	private readonly _onDidChangeTokens = this._register(new Emitter<IModelTokensChangedEvent>());
-	/** @internal, should not be exposed by the text model! */
+	
 	public readonly onDidChangeTokens: Event<IModelTokensChangedEvent> = this._onDidChangeTokens.event;
 
 	private readonly _attachedViewStates = this._register(new DisposableMap<IAttachedView, AttachedViewHandler>());

@@ -20,7 +20,7 @@ declare module 'vscode' {
 	}
 
 	export namespace languages {
-		/** @deprecated */
+		
 		export function getTokenInformationAtPosition(document: TextDocument, position: Position): Thenable<TokenInformation>;
 	}
 }

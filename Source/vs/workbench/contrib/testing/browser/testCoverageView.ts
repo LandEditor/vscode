@@ -448,7 +448,7 @@ class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElem
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) { }
 
-	/** @inheritdoc */
+	
 	public renderTemplate(container: HTMLElement): FileTemplateData {
 		const templateDisposables = new DisposableStore();
 		container.classList.add('test-coverage-list-item');
@@ -464,12 +464,12 @@ class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElem
 		};
 	}
 
-	/** @inheritdoc */
+	
 	public renderElement(node: ITreeNode<CoverageTreeElement, FuzzyScore>, _index: number, templateData: FileTemplateData): void {
 		this.doRender(node.element as TestCoverageFileNode, templateData, node.filterData);
 	}
 
-	/** @inheritdoc */
+	
 	public renderCompressedElements(node: ITreeNode<ICompressedTreeNode<CoverageTreeElement>, FuzzyScore>, _index: number, templateData: FileTemplateData): void {
 		this.doRender(node.element.elements, templateData, node.filterData);
 	}
@@ -478,7 +478,7 @@ class FileCoverageRenderer implements ICompressibleTreeRenderer<CoverageTreeElem
 		templateData.templateDisposables.dispose();
 	}
 
-	/** @inheritdoc */
+	
 	private doRender(element: CoverageTreeElement | CoverageTreeElement[], templateData: FileTemplateData, filterData: FuzzyScore | undefined) {
 		templateData.elementsDisposables.clear();
 
@@ -516,7 +516,7 @@ class DeclarationCoverageRenderer implements ICompressibleTreeRenderer<CoverageT
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 	) { }
 
-	/** @inheritdoc */
+	
 	public renderTemplate(container: HTMLElement): DeclarationTemplateData {
 		const templateDisposables = new DisposableStore();
 		container.classList.add('test-coverage-list-item');
@@ -532,12 +532,12 @@ class DeclarationCoverageRenderer implements ICompressibleTreeRenderer<CoverageT
 		};
 	}
 
-	/** @inheritdoc */
+	
 	public renderElement(node: ITreeNode<CoverageTreeElement, FuzzyScore>, _index: number, templateData: DeclarationTemplateData): void {
 		this.doRender(node.element as DeclarationCoverageNode, templateData, node.filterData);
 	}
 
-	/** @inheritdoc */
+	
 	public renderCompressedElements(node: ITreeNode<ICompressedTreeNode<CoverageTreeElement>, FuzzyScore>, _index: number, templateData: DeclarationTemplateData): void {
 		this.doRender(node.element.elements[node.element.elements.length - 1] as DeclarationCoverageNode, templateData, node.filterData);
 	}
@@ -546,7 +546,7 @@ class DeclarationCoverageRenderer implements ICompressibleTreeRenderer<CoverageT
 		templateData.templateDisposables.dispose();
 	}
 
-	/** @inheritdoc */
+	
 	private doRender(element: DeclarationCoverageNode, templateData: DeclarationTemplateData, _filterData: FuzzyScore | undefined) {
 		const covered = !!element.hits;
 		const icon = covered ? testingWasCovered : testingStatesToIcons.get(TestResultState.Unset);

@@ -66,7 +66,7 @@ export class MergeEditorViewModel extends Disposable {
 				model: this.model,
 				redo() {
 					transaction(tx => {
-						/** @description Mark conflicts touched by manual edits as handled */
+						
 						for (const r of baseRangeStates) {
 							this.model.setHandled(r, true, tx);
 						}
@@ -74,7 +74,7 @@ export class MergeEditorViewModel extends Disposable {
 				},
 				undo() {
 					transaction(tx => {
-						/** @description Mark conflicts touched by manual edits as handled */
+						
 						for (const r of baseRangeStates) {
 							this.model.setHandled(r, false, tx);
 						}
@@ -156,7 +156,7 @@ export class MergeEditorViewModel extends Disposable {
 
 	public readonly activeModifiedBaseRange = derived(this,
 		(reader) => {
-			/** @description activeModifiedBaseRange */
+			
 			const focusedEditor = this.lastFocusedEditor.read(reader);
 			const manualRange = this.manuallySetActiveModifiedBaseRange.read(reader);
 			if (manualRange.counter > focusedEditor.counter) {
@@ -265,7 +265,7 @@ export class MergeEditorViewModel extends Disposable {
 			return;
 		}
 		transaction(tx => {
-			/** @description Toggle Active Conflict */
+			
 			this.setState(
 				activeModifiedBaseRange,
 				this.model.getState(activeModifiedBaseRange).get().toggle(inputNumber),
@@ -277,7 +277,7 @@ export class MergeEditorViewModel extends Disposable {
 
 	public acceptAll(inputNumber: 1 | 2): void {
 		transaction(tx => {
-			/** @description Toggle Active Conflict */
+			
 			for (const range of this.model.modifiedBaseRanges.get()) {
 				this.setState(
 					range,

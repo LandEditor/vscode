@@ -504,7 +504,7 @@ class LineHoverComputer implements IHoverComputer<IMarkdownString> {
 
 	constructor(@IKeybindingService private readonly keybindingService: IKeybindingService) { }
 
-	/** @inheritdoc */
+	
 	public computeSync(): IMarkdownString[] {
 		const strs: IMarkdownString[] = [];
 
@@ -556,22 +556,22 @@ class LineHoverWidget extends Disposable implements IOverlayWidget {
 		this.editor.addOverlayWidget(this);
 	}
 
-	/** @inheritdoc */
+	
 	getId(): string {
 		return LineHoverWidget.ID;
 	}
 
-	/** @inheritdoc */
+	
 	public getDomNode(): HTMLElement {
 		return this.hover.containerDomNode;
 	}
 
-	/** @inheritdoc */
+	
 	public getPosition(): IOverlayWidgetPosition | null {
 		return null;
 	}
 
-	/** @inheritdoc */
+	
 	public override dispose(): void {
 		this.editor.removeOverlayWidget(this);
 		super.dispose();

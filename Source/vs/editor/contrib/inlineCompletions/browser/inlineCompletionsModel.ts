@@ -70,7 +70,7 @@ export class InlineCompletionsModel extends Disposable {
 
 		let lastItem: InlineCompletionWithUpdatedRange | undefined = undefined;
 		this._register(autorun(reader => {
-			/** @description call handleItemDidShow */
+			
 			const item = this.state.read(reader);
 			const completion = item?.inlineCompletion;
 			if (completion?.semanticId !== lastItem?.semanticId) {
@@ -97,7 +97,7 @@ export class InlineCompletionsModel extends Disposable {
 			inlineCompletionTriggerKind: InlineCompletionTriggerKind.Automatic
 		}),
 		handleChange: (ctx, changeSummary) => {
-			/** @description fetch inline completions */
+			
 			if (ctx.didChange(this.textModelVersionId) && this._preserveCurrentCompletionReasons.has(ctx.change)) {
 				changeSummary.preserveCurrentCompletion = true;
 			} else if (ctx.didChange(this._forceUpdateExplicitlySignal)) {
@@ -120,7 +120,7 @@ export class InlineCompletionsModel extends Disposable {
 		if (suggestWidgetInlineCompletions && !suggestItem) {
 			const inlineCompletions = this._source.inlineCompletions.get();
 			transaction(tx => {
-				/** @description Seed inline completions with (newer) suggest widget inline completions */
+				
 				if (!inlineCompletions || suggestWidgetInlineCompletions.request.versionId > inlineCompletions.request.versionId) {
 					this._source.inlineCompletions.set(suggestWidgetInlineCompletions.clone(), tx);
 				}

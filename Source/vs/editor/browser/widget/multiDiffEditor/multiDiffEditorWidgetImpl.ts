@@ -67,8 +67,8 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		useShadows: false,
 	}, this._scrollable));
 
-	public readonly scrollTop = observableFromEvent(this._scrollableElement.onScroll, () => /** @description scrollTop */ this._scrollableElement.getScrollPosition().scrollTop);
-	public readonly scrollLeft = observableFromEvent(this._scrollableElement.onScroll, () => /** @description scrollLeft */ this._scrollableElement.getScrollPosition().scrollLeft);
+	public readonly scrollTop = observableFromEvent(this._scrollableElement.onScroll, () =>  this._scrollableElement.getScrollPosition().scrollTop);
+	public readonly scrollLeft = observableFromEvent(this._scrollableElement.onScroll, () =>  this._scrollableElement.getScrollPosition().scrollLeft);
 
 	private readonly _viewItemsInfo = derivedWithStore<{ items: readonly VirtualizedViewItem[]; getItem: (viewModel: DocumentDiffItemViewModel) => VirtualizedViewItem }>(this,
 		(reader, store) => {
@@ -145,7 +145,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		}));
 
 		this._register(autorun((reader) => {
-			/** @description Update widget dimension */
+			
 			const dimension = this._dimension.read(reader);
 			this._sizeObserver.observe(dimension);
 		}));
@@ -153,7 +153,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		this._elements.content.style.position = 'relative';
 
 		this._register(autorun((reader) => {
-			/** @description Update scroll dimensions */
+			
 			const height = this._sizeObserver.height.read(reader);
 			this._elements.root.style.height = `${height}px`;
 			const totalHeight = this._totalHeight.read(reader);
@@ -183,7 +183,7 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 		}));
 
 		this._register(this._register(autorun(reader => {
-			/** @description Render all */
+			
 			globalTransaction(tx => {
 				this.render(reader);
 			});

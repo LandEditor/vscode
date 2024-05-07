@@ -24,7 +24,7 @@ export class AccessibilitySignalLineDebuggerContribution
 			() => accessibilitySignalService.isSoundEnabled(AccessibilitySignal.onDebugBreak)
 		);
 		this._register(autorunWithStore((reader, store) => {
-			/** @description subscribe to debug sessions */
+			
 			if (!isEnabled.read(reader)) {
 				return;
 			}

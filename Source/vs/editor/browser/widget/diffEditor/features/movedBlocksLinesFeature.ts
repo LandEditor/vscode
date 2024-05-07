@@ -47,7 +47,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 		this._register(toDisposable(() => this._element.remove()));
 
 		this._register(autorun(reader => {
-			/** @description update moved blocks lines positioning */
+			
 			const info = this._originalEditorLayoutInfo.read(reader);
 			const info2 = this._modifiedEditorLayoutInfo.read(reader);
 			if (!info || !info2) {
@@ -72,8 +72,8 @@ export class MovedBlocksLinesFeature extends Disposable {
 			}));
 		});
 
-		this._register(applyViewZones(this._editors.original, movedBlockViewZones.map(zones => /** @description movedBlockViewZones.original */ zones.map(z => z.original))));
-		this._register(applyViewZones(this._editors.modified, movedBlockViewZones.map(zones => /** @description movedBlockViewZones.modified */ zones.map(z => z.modified))));
+		this._register(applyViewZones(this._editors.original, movedBlockViewZones.map(zones =>  zones.map(z => z.original))));
+		this._register(applyViewZones(this._editors.modified, movedBlockViewZones.map(zones =>  zones.map(z => z.modified))));
 
 		this._register(autorunWithStore((reader, store) => {
 			const blocks = movedBlockViewZones.read(reader);
@@ -102,7 +102,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 				return true;
 			}
 		}, reader => {
-			/** @description MovedBlocksLines.setActiveMovedTextFromCursor */
+			
 			originalHasFocus.read(reader);
 			modifiedHasFocus.read(reader);
 
@@ -137,7 +137,7 @@ export class MovedBlocksLinesFeature extends Disposable {
 	private readonly _originalViewZonesChangedSignal = observableSignalFromEvent('original.onDidChangeViewZones', this._editors.original.onDidChangeViewZones);
 
 	private readonly _state = derivedWithStore(this, (reader, store) => {
-		/** @description state */
+		
 
 		this._element.replaceChildren();
 		const model = this._diffModel.read(reader);

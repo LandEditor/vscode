@@ -65,7 +65,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 		super();
 
 		this._register(autorunWithStore((reader, store) => {
-			/** @description setup content widget */
+			
 			const model = this.model.read(reader);
 			if (!model || !this.alwaysShowToolbar.read(reader)) {
 				return;
@@ -84,7 +84,7 @@ export class InlineCompletionsHintsWidget extends Disposable {
 			store.add(toDisposable(() => editor.removeContentWidget(contentWidget)));
 
 			store.add(autorun(reader => {
-				/** @description request explicit */
+				
 				const position = this.position.read(reader);
 				if (!position) {
 					return;
@@ -195,13 +195,13 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 		}));
 
 		this._register(autorun(reader => {
-			/** @description update position */
+			
 			this._position.read(reader);
 			this.editor.layoutContentWidget(this);
 		}));
 
 		this._register(autorun(reader => {
-			/** @description counts */
+			
 			const suggestionCount = this._suggestionCount.read(reader);
 			const currentSuggestionIdx = this._currentSuggestionIdx.read(reader);
 
@@ -221,7 +221,7 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 		}));
 
 		this._register(autorun(reader => {
-			/** @description extra commands */
+			
 			const extraCommands = this._extraCommands.read(reader);
 			const extraActions = extraCommands.map<IAction>(c => ({
 				class: undefined,

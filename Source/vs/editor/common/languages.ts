@@ -1383,7 +1383,7 @@ export interface TextEdit {
 	eol?: model.EndOfLineSequence;
 }
 
-/** @internal */
+
 export abstract class TextEdit {
 	static asEditOperation(edit: TextEdit): ISingleEditOperation {
 		return EditOperation.replace(Range.lift(edit.range), edit.text);

@@ -79,7 +79,7 @@ export class RevertButtonsFeature extends Disposable {
 	}
 
 	private readonly _selectedDiffs = derived(this, (reader) => {
-		/** @description selectedDiffs */
+		
 		const model = this._diffModel.read(reader);
 		const diff = model?.diff.read(reader);
 		// Return `emptyArr` because it is a constant. [] is always a new array and would trigger a change.

@@ -190,7 +190,7 @@ export abstract class ConvenientObservable<T, TChange> implements IObservable<T,
 	public abstract addObserver(observer: IObserver): void;
 	public abstract removeObserver(observer: IObserver): void;
 
-	/** @sealed */
+	
 	public read(reader: IReader | undefined): T {
 		if (reader) {
 			return reader.readObservable(this);
@@ -199,7 +199,7 @@ export abstract class ConvenientObservable<T, TChange> implements IObservable<T,
 		}
 	}
 
-	/** @sealed */
+	
 	public map<TNew>(fn: (value: T, reader: IReader) => TNew): IObservable<TNew>;
 	public map<TNew>(owner: Owner, fn: (value: T, reader: IReader) => TNew): IObservable<TNew>;
 	public map<TNew>(fnOrOwner: Owner | ((value: T, reader: IReader) => TNew), fnOrUndefined?: (value: T, reader: IReader) => TNew): IObservable<TNew> {

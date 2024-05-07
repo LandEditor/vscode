@@ -249,7 +249,7 @@ export class ExplorerTestCoverageBars extends ManagedTestCoverageBars implements
 		}));
 	}
 
-	/** @inheritdoc */
+	
 	public setResource(resource: URI | undefined, transaction?: ITransaction) {
 		this.resource.set(resource, transaction);
 	}

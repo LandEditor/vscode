@@ -69,7 +69,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
 		}));
 	}
 
-	/** @inheritdoc */
+	
 	public async openCoverage(task: ITestRunTaskResults, focus = true) {
 		this.lastOpenCts.value?.cancel();
 		const cts = this.lastOpenCts.value = new CancellationTokenSource();
@@ -86,7 +86,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
 		}
 	}
 
-	/** @inheritdoc */
+	
 	public closeCoverage() {
 		this._isOpenKey.set(false);
 		this.selected.set(undefined, undefined);

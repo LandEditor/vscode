@@ -58,7 +58,7 @@ export class EditorTextPropertySignalsContribution extends Disposable implements
 		super();
 
 		this._register(autorunWithStore((reader, store) => {
-			/** @description updateSignalsEnabled */
+			
 			if (!this._someAccessibilitySignalIsEnabled.read(reader)) {
 				return;
 			}

@@ -90,7 +90,7 @@ export class DiffEditorViewModel extends Disposable implements IDiffEditorViewMo
 		const debouncer = this._register(new RunOnceScheduler(() => contentChangedSignal.trigger(undefined), 200));
 
 		this._register(autorun(reader => {
-			/** @description collapse touching unchanged ranges */
+			
 
 			const lastUnchangedRegions = this._unchangedRegions.read(reader);
 			if (!lastUnchangedRegions || lastUnchangedRegions.regions.some(r => r.isDragged.read(reader))) {
@@ -261,7 +261,7 @@ export class DiffEditorViewModel extends Disposable implements IDiffEditorViewMo
 		}));
 
 		this._register(autorunWithStore(async (reader, store) => {
-			/** @description compute diff */
+			
 
 			// So that they get recomputed when these settings change
 			this._options.hideUnchangedRegionsMinimumLineCount.read(reader);
@@ -307,7 +307,7 @@ export class DiffEditorViewModel extends Disposable implements IDiffEditorViewMo
 			result = applyModifiedEdits(result, modifiedTextEditInfos, model.original, model.modified) ?? result;
 
 			transaction(tx => {
-				/** @description write diff result */
+				
 				updateUnchangedRegions(result, tx);
 
 				this._lastDiff = result;
@@ -506,7 +506,7 @@ export class UnchangedRegion {
 	private readonly _visibleLineCountBottom = observableValue<number>(this, 0);
 	public readonly visibleLineCountBottom: ISettableObservable<number> = this._visibleLineCountBottom;
 
-	private readonly _shouldHideControls = derived(this, reader => /** @description isVisible */
+	private readonly _shouldHideControls = derived(this, reader => 
 		this.visibleLineCountTop.read(reader) + this.visibleLineCountBottom.read(reader) === this.lineCount && !this.isDragged.read(reader));
 
 	public readonly isDragged = observableValue<undefined | 'bottom' | 'top'>(this, undefined);

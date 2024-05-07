@@ -28,7 +28,7 @@ export interface IGhostTextWidgetModel {
 
 export class GhostTextWidget extends Disposable {
 	private readonly isDisposed = observableValue(this, false);
-	private readonly currentTextModel = observableFromEvent(this.editor.onDidChangeModel, () => /** @description editor.model */ this.editor.getModel());
+	private readonly currentTextModel = observableFromEvent(this.editor.onDidChangeModel, () =>  this.editor.getModel());
 
 	constructor(
 		private readonly editor: ICodeEditor,
@@ -213,7 +213,7 @@ export class GhostTextWidget extends Disposable {
 			this.editor,
 			this.languageService.languageIdCodec,
 			derived(reader => {
-				/** @description lines */
+				
 				const uiState = this.uiState.read(reader);
 				return uiState && !uiState.isPureRemove ? {
 					lineNumber: uiState.lineNumber,

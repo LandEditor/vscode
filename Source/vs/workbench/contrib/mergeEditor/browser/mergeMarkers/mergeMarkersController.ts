@@ -88,7 +88,7 @@ export class MergeMarkersController extends Disposable {
 
 
 				this.disposableStore.add(autorun(reader => {
-					/** @description update classname */
+					
 					const vm = this.mergeEditorViewModel.read(reader);
 					if (!vm) {
 						return;

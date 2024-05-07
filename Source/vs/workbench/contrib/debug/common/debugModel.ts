@@ -718,10 +718,10 @@ export const getUriForDebugMemory = (
 export class MemoryRegion extends Disposable implements IMemoryRegion {
 	private readonly invalidateEmitter = this._register(new Emitter<IMemoryInvalidationEvent>());
 
-	/** @inheritdoc */
+	
 	public readonly onDidInvalidate = this.invalidateEmitter.event;
 
-	/** @inheritdoc */
+	
 	public readonly writable = !!this.session.capabilities.supportsWriteMemoryRequest;
 
 	constructor(private readonly memoryReference: string, private readonly session: IDebugSession) {

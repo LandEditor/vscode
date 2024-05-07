@@ -117,7 +117,7 @@ export class ObservableElementSizeObserver extends Disposable {
 		this._height = observableValue(this, this.elementSizeObserver.getHeight());
 
 		this._register(this.elementSizeObserver.onDidChange(e => transaction(tx => {
-			/** @description Set width/height from elementSizeObserver */
+			
 			this._width.set(this.elementSizeObserver.getWidth(), tx);
 			this._height.set(this.elementSizeObserver.getHeight(), tx);
 		})));
@@ -155,7 +155,7 @@ export function animatedObservable(targetWindow: Window, base: IObservable<numbe
 			return true;
 		}
 	}, (reader, s) => {
-		/** @description update value */
+		
 		if (animationFrame !== undefined) {
 			targetWindow.cancelAnimationFrame(animationFrame);
 			animationFrame = undefined;
@@ -293,7 +293,7 @@ export interface CSSStyle {
 
 export function applyStyle(domNode: HTMLElement, style: Partial<{ [TKey in keyof CSSStyle]: CSSStyle[TKey] | IObservable<CSSStyle[TKey] | undefined> | undefined }>) {
 	return autorun(reader => {
-		/** @description applyStyle */
+		
 		for (let [key, val] of Object.entries(style)) {
 			if (val && typeof val === 'object' && 'read' in val) {
 				val = val.read(reader) as any;
@@ -335,7 +335,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
 	const lastViewZoneIds: string[] = [];
 
 	store.add(autorunWithStore((reader, store) => {
-		/** @description applyViewZones */
+		
 		const curViewZones = viewZones.read(reader);
 
 		const viewZonIdsPerViewZone = new Map<IObservableViewZone, string>();
@@ -370,7 +370,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
 				return true;
 			},
 		}, (reader, changeSummary) => {
-			/** @description layoutZone on change */
+			
 			for (const vz of curViewZones) {
 				if (vz.onChange) {
 					viewZoneIdPerOnChangeObservable.set(vz.onChange, viewZonIdsPerViewZone.get(vz)!);

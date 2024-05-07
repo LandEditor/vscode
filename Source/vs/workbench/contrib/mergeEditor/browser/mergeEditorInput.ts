@@ -111,7 +111,7 @@ export class MergeEditorInput extends AbstractTextResourceEditorInput implements
 			this._inputModel = inputModel;
 
 			this._register(autorun(reader => {
-				/** @description fire dirty event */
+				
 				inputModel.isDirty.read(reader);
 				this._onDidChangeDirty.fire();
 			}));

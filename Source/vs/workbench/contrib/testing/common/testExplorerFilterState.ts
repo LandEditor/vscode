@@ -77,19 +77,19 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
 	 */
 	private termFilterState: { [K in TestFilterTerm]?: true } = {};
 
-	/** @inheritdoc */
+	
 	public globList: { include: boolean; text: string }[] = [];
 
-	/** @inheritdoc */
+	
 	public includeTags = new Set<string>();
 
-	/** @inheritdoc */
+	
 	public excludeTags = new Set<string>();
 
-	/** @inheritdoc */
+	
 	public readonly text = this._register(new MutableObservableValue(''));
 
-	/** @inheritdoc */
+	
 	public readonly fuzzy = this._register(MutableObservableValue.stored(new StoredValue<boolean>({
 		key: 'testHistoryFuzzy',
 		scope: StorageScope.PROFILE,
@@ -104,12 +104,12 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
 		super();
 	}
 
-	/** @inheritdoc */
+	
 	public focusInput() {
 		this.focusEmitter.fire();
 	}
 
-	/** @inheritdoc */
+	
 	public setText(text: string) {
 		if (text === this.text.value) {
 			return;
@@ -179,12 +179,12 @@ export class TestExplorerFilterState extends Disposable implements ITestExplorer
 		this.text.value = text; // purposely afterwards so everything is updated when the change event happen
 	}
 
-	/** @inheritdoc */
+	
 	public isFilteringFor(term: TestFilterTerm) {
 		return !!this.termFilterState[term];
 	}
 
-	/** @inheritdoc */
+	
 	public toggleFilteringFor(term: TestFilterTerm, shouldFilter?: boolean) {
 		const text = this.text.value.trim();
 		if (shouldFilter !== false && !this.termFilterState[term]) {

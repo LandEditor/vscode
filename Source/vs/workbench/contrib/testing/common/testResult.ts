@@ -120,21 +120,21 @@ export class TaskRawOutput implements ITaskRawOutput {
 	private readonly endDeferred = new DeferredPromise<void>();
 	private offset = 0;
 
-	/** @inheritdoc */
+	
 	public readonly onDidWriteData = this.writeDataEmitter.event;
 
-	/** @inheritdoc */
+	
 	public readonly endPromise = this.endDeferred.p;
 
-	/** @inheritdoc */
+	
 	public readonly buffers: VSBuffer[] = [];
 
-	/** @inheritdoc */
+	
 	public get length() {
 		return this.offset;
 	}
 
-	/** @inheritdoc */
+	
 	getRange(start: number, length: number): VSBuffer {
 		const buf = VSBuffer.alloc(length);
 		let bufLastWrite = 0;
@@ -146,7 +146,7 @@ export class TaskRawOutput implements ITaskRawOutput {
 		return bufLastWrite < length ? buf.slice(0, bufLastWrite) : buf;
 	}
 
-	/** @inheritdoc */
+	
 	*getRangeIter(start: number, length: number) {
 		let soFar = 0;
 		let internalLastRead = 0;
