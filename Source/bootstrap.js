@@ -98,7 +98,7 @@
 			pathName = `/${pathName}`;
 		}
 
-		/** @type {string} */
+		
 		let uri;
 
 		// Windows: in order to support UNC paths (which start with '//')
@@ -128,7 +128,7 @@
 
 		// Get the nls configuration as early as possible.
 		const process = safeProcess();
-		/** @type {{ availableLanguages: {}; loadBundle?: (bundle: string, language: string, cb: (err: Error | undefined, result: string | undefined) => void) => void; _resolvedLanguagePackCoreLocation?: string; _corruptedFile?: string }} */
+		
 		let nlsConfig = { availableLanguages: {} };
 		if (process && process.env['VSCODE_NLS_CONFIG']) {
 			try {

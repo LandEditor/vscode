@@ -218,7 +218,7 @@ const appendJSToESMImportsTask = task.define('append-js-to-esm-imports', () => {
 
 		const contents = fs.readFileSync(filePath).toString();
 		const lines = contents.split(/\r\n|\r|\n/g);
-		const /** @type {string[]} */result = [];
+		const result = [];
 		for (const line of lines) {
 			if (!/^import/.test(line) && !/^export \* from/.test(line)) {
 				// not an import
@@ -459,7 +459,7 @@ function createTscCompileTask(watch) {
 			const errors = [];
 			const reporter = createReporter('monaco');
 
-			/** @type {NodeJS.ReadWriteStream | undefined} */
+			
 			let report;
 			// eslint-disable-next-line no-control-regex
 			const magic = /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g; // https://stackoverflow.com/questions/25245716/remove-all-ansi-colors-styles-from-strings

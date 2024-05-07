@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 //@ts-check
-/** @typedef {import('webpack').Configuration} WebpackConfig **/
+
 
 'use strict';
 
@@ -107,8 +107,8 @@ function nodePlugins(context) {
  * }} AdditionalBrowserConfig
  */
 
-function withBrowserDefaults(/**@type WebpackConfig & { context: string }*/extConfig, /** @type AdditionalBrowserConfig */ additionalOptions = {}) {
-	/** @type WebpackConfig */
+function withBrowserDefaults(/**@type WebpackConfig & { context: string }*/extConfig,  additionalOptions = {}) {
+	
 	const defaultConfig = {
 		mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 		target: 'webworker', // extensions run in a webworker context

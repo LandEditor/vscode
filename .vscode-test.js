@@ -54,7 +54,7 @@ const defaultLaunchArgs = process.env.API_TESTS_EXTRA_ARGS?.split(' ') || [
 ];
 
 module.exports = defineConfig(extensions.map(extension => {
-	/** @type {import('@vscode/test-cli').TestConfiguration} */
+	
 	const config = typeof extension === 'object'
 		? { files: `extensions/${extension.label}/out/**/*.test.js`, ...extension }
 		: { files: `extensions/${extension}/out/**/*.test.js`, label: extension };

@@ -71,7 +71,7 @@ module.exports.run = async function (config, args, didBuild) {
 		outdir = path.join(outputRoot, outputDirName);
 	}
 
-	/** @type {BuildOptions} */
+	
 	const resolvedOptions = {
 		entryPoints: config.entryPoints,
 		outdir,

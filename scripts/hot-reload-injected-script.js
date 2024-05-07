@@ -46,7 +46,7 @@ class Lazy {
  * @param {Context['vscode']} vscode
  */
 function setupGlobals(vscode) {
-	/** @type {DisposableStore} */
+	
 	const store = globalThis['hot-reload-injected-script-disposables'] ?? (globalThis['hot-reload-injected-script-disposables'] = new DisposableStore());
 	store.clear();
 
@@ -157,7 +157,7 @@ function setupGlobals(vscode) {
 
 const g = new Lazy(setupGlobals);
 
-/** @type {RunFunction} */
+
 module.exports.run = async function (debugSession, ctx) {
 	const store = new DisposableStore();
 
@@ -182,10 +182,10 @@ module.exports.run = async function (debugSession, ctx) {
 		const result = await debugSession.evalJs(function (changes, debugSessionName) {
 			// This function is stringified and injected into the debuggee.
 
-			/** @type {{ count: number; originalWindowTitle: any; timeout: any; shouldReload: boolean }} */
+			
 			const hotReloadData = globalThis.$hotReloadData || (globalThis.$hotReloadData = { count: 0, messageHideTimeout: undefined, shouldReload: false });
 
-			/** @type {{ relativePath: string, path: string }[]} */
+			
 			const reloadFailedJsFiles = [];
 
 			for (const change of changes) {
@@ -216,7 +216,7 @@ module.exports.run = async function (debugSession, ctx) {
 					return;
 				}
 
-				const styleSheet = (/** @type {HTMLLinkElement[]} */ ([...document.querySelectorAll(`link[rel='stylesheet']`)]))
+				const styleSheet = ( ([...document.querySelectorAll(`link[rel='stylesheet']`)]))
 					.find(l => new URL(l.href, document.location.href).pathname.endsWith(relativePath));
 				if (styleSheet) {
 					setMessage(`reload ${formatPath(relativePath)} - ${new Date().toLocaleTimeString()}`);
@@ -236,7 +236,7 @@ module.exports.run = async function (debugSession, ctx) {
 			function handleJsChange(relativePath, path, newSrc, config) {
 				const moduleIdStr = trimEnd(relativePath, '.js');
 
-				/** @type {any} */
+				
 				const requireFn = globalThis.require;
 				const moduleManager = requireFn.moduleManager;
 				if (!moduleManager) {
@@ -253,7 +253,7 @@ module.exports.run = async function (debugSession, ctx) {
 				}
 
 				// Check if we can reload
-				const g = /** @type {GlobalThisAddition} */ (globalThis);
+				const g =  (globalThis);
 
 				// A frozen copy of the previous exports
 				const oldExports = Object.freeze({ ...oldModule.exports });
@@ -306,7 +306,7 @@ module.exports.run = async function (debugSession, ctx) {
 			 * @param {string} message
 			 */
 			function setMessage(message) {
-				const domElem = /** @type {HTMLDivElement | undefined} */ (document.querySelector('.titlebar-center .window-title'));
+				const domElem =  (document.querySelector('.titlebar-center .window-title'));
 				if (!domElem) { return; }
 				if (!hotReloadData.timeout) {
 					hotReloadData.originalWindowTitle = domElem.innerText;
@@ -375,13 +375,13 @@ class DirWatcher {
 	 * @returns {Promise<DirWatcher>}
 	 */
 	static async watchRecursively(dir) {
-		/** @type {((changes: { path: string, newContent: string }[]) => void)[]} */
+		
 		const listeners = [];
-		/** @type {Map<string, string> } */
+		
 		const fileContents = new Map();
-		/** @type {Map<string, { path: string, newContent: string }>} */
+		
 		const changes = new Map();
-		/** @type {(handler: (changes: { path: string, newContent: string }[]) => void) => IDisposable} */
+		
 		const event = (handler) => {
 			listeners.push(handler);
 			return {

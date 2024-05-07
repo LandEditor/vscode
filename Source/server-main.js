@@ -48,11 +48,11 @@ async function start() {
 	/**
 	 * @typedef { import('./vs/server/node/remoteExtensionHostAgentServer').IServerAPI } IServerAPI
 	 */
-	/** @type {IServerAPI | null} */
+	
 	let _remoteExtensionHostAgentServer = null;
-	/** @type {Promise<IServerAPI> | null} */
+	
 	let _remoteExtensionHostAgentServerPromise = null;
-	/** @returns {Promise<IServerAPI>} */
+	
 	const getRemoteExtensionHostAgentServer = () => {
 		if (!_remoteExtensionHostAgentServerPromise) {
 			_remoteExtensionHostAgentServerPromise = loadCode().then(async (mod) => {
@@ -89,7 +89,7 @@ async function start() {
 	let firstRequest = true;
 	let firstWebSocket = true;
 
-	/** @type {string | import('net').AddressInfo | null} */
+	
 	let address = null;
 	const server = http.createServer(async (req, res) => {
 		if (firstRequest) {
@@ -229,7 +229,7 @@ function parseRange(strRange) {
  * @throws
  */
 async function findFreePort(host, start, end) {
-	const testPort = (/** @type {number} */ port) => {
+	const testPort = ( port) => {
 		return new Promise((resolve) => {
 			const server = http.createServer();
 			server.listen(port, host, () => {
@@ -248,7 +248,7 @@ async function findFreePort(host, start, end) {
 	return undefined;
 }
 
-/** @returns { Promise<typeof import('./vs/server/node/server.main')> } */
+
 function loadCode() {
 	return new Promise((resolve, reject) => {
 		const path = require('path');

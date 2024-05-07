@@ -7,7 +7,7 @@
 /// <reference no-default-lib="true"/>
 /// <reference lib="webworker" />
 
-const sw = /** @type {ServiceWorkerGlobalScope} */ (/** @type {any} */ (self));
+const sw =  (self));
 
 const VERSION = 4;
 
@@ -45,7 +45,7 @@ const resolveTimeout = 30_000;
  */
 class RequestStore {
 	constructor() {
-		/** @type {Map<number, RequestStoreEntry<T>>} */
+		
 		this.map = new Map();
 
 		this.requestPool = 0;
@@ -57,14 +57,14 @@ class RequestStore {
 	create() {
 		const requestId = ++this.requestPool;
 
-		/** @type {undefined | ((x: RequestStoreResult<T>) => void)} */
+		
 		let resolve;
 
-		/** @type {Promise<RequestStoreResult<T>>} */
+		
 		const promise = new Promise(r => resolve = r);
 
-		/** @type {RequestStoreEntry<T>} */
-		const entry = { resolve: /** @type {(x: RequestStoreResult<T>) => void} */ (resolve), promise };
+		
+		const entry = { resolve:  (resolve), promise };
 
 		this.map.set(requestId, entry);
 
@@ -133,7 +133,7 @@ const requestTimeout = () =>
 sw.addEventListener('message', async (event) => {
 	switch (event.data.channel) {
 		case 'version': {
-			const source = /** @type {Client} */ (event.source);
+			const source =  (event.source);
 			sw.clients.get(source.id).then(client => {
 				if (client) {
 					client.postMessage({
@@ -145,7 +145,7 @@ sw.addEventListener('message', async (event) => {
 			return;
 		}
 		case 'did-load-resource': {
-			/** @type {ResourceResponse} */
+			
 			const response = event.data.data;
 			if (!resourceRequestStore.resolve(response.id, response)) {
 				console.log('Could not resolve unknown resource', response.path);
@@ -273,7 +273,7 @@ async function processResourceRequest(event, requestUrlComponents) {
 			return notFound();
 		}
 
-		/** @type {Record<string, string>} */
+		
 		const commonHeaders = {
 			'Access-Control-Allow-Origin': '*',
 		};
@@ -309,7 +309,7 @@ async function processResourceRequest(event, requestUrlComponents) {
 			}
 		}
 
-		/** @type {Record<string, string>} */
+		
 		const headers = {
 			...commonHeaders,
 			'Content-Type': entry.mime,
@@ -354,7 +354,7 @@ async function processResourceRequest(event, requestUrlComponents) {
 		return notFound();
 	}
 
-	/** @type {Response | undefined} */
+	
 	let cached;
 	if (shouldTryCaching) {
 		const cache = await caches.open(resourceCacheName);

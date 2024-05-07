@@ -43,7 +43,7 @@ const platformOpensslDirName =
 const platformOpensslDir = path.join(rootAbs, 'openssl', 'package', 'out', platformOpensslDirName);
 
 const hasLocalRust = (() => {
-	/** @type boolean | undefined */
+	
 	let result = undefined;
 	return () => {
 		if (result !== undefined) {
@@ -98,7 +98,7 @@ const compileFromSources = (callback) => {
 		env: existsSync(platformOpensslDir) ? { OPENSSL_DIR: platformOpensslDir, ...process.env } : process.env
 	});
 
-	/** @type Buffer[] */
+	
 	const stdoutErr = [];
 	proc.stdout.on('data', d => stdoutErr.push(d));
 	proc.stderr.on('data', d => stdoutErr.push(d));
@@ -135,7 +135,7 @@ const acquireBuiltOpenSSL = (callback) => {
 		});
 };
 
-const compileWithOpenSSLCheck = (/** @type import('./lib/reporter').IReporter */ reporter) => es.map((_, callback) => {
+const compileWithOpenSSLCheck = ( reporter) => es.map((_, callback) => {
 	compileFromSources(err => {
 		if (!err) {
 			// no-op
