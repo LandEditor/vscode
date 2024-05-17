@@ -1,26 +1,6 @@
 {
 	"name": "vscode-html-languageserver",
-	"version": "0.0.1",
-	"private": false,
 	"description": "HTML language server",
-	"keywords": [
-		"land"
-	],
-	"homepage": "HTTPS://GitHub.Com/CodeEditorLand/Editor#readme",
-	"bugs": {
-		"url": "HTTPS://GitHub.Com/CodeEditorLand/Editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "git+HTTPS://github.com/CodeEditorLand/Editor.git"
-	},
-	"license": "SEE LICENSE IN LICENSE",
-	"author": {
-		"name": "🛬 Land —",
-		"email": "Land@PlayForm.Cloud",
-		"url": "HTTPS://Land.PlayForm.Cloud"
-	},
-	"type": "module",
 	"main": "./out/node/htmlServerMain",
 	"scripts": {
 		"Document": "Document 'Source/**/*.ts'",
@@ -34,10 +14,6 @@
 	"dependencies": {},
 	"devDependencies": {
 		"@playform/build": "0.0.7",
-		"@playform/document": "0.0.6",
 		"@types/node": "20.x"
-	},
-	"publishConfig": {
-		"access": "public"
 	}
 }
