@@ -1,22 +1,26 @@
 {
-	"name": "theme-tomorrow-night-blue",
-	"displayName": "%displayName%",
-	"description": "%description%",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
-	"contributes": {
-		"themes": [
-			{
-				"id": "Tomorrow Night Blue",
-				"label": "%themeLabel%",
-				"path": "./themes/tomorrow-night-blue-color-theme.json",
-				"uiTheme": "vs-dark"
-			}
-		]
-	},
-	"devDependencies": {
-		"@playform/build": "0.0.7"
-	}
+  "name": "theme-tomorrow-night-blue",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Themes"],
+  "contributes": {
+    "themes": [
+      {
+        "id": "Tomorrow Night Blue",
+        "label": "%themeLabel%",
+        "uiTheme": "vs-dark",
+        "path": "./themes/tomorrow-night-blue-color-theme.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }

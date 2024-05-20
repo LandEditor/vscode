@@ -13,7 +13,7 @@ const VSCODE_FOLDER = path.join(__dirname, '..');
 async function main() {
 
 	const args = process.argv;
-	
+	/** @type {string | undefined} */
 	let build = undefined;
 
 	if (args.indexOf('--help') === -1 && args.indexOf('-h') === -1) {

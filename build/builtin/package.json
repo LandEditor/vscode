@@ -1,11 +1,5 @@
 {
 	"name": "builtin",
-	"main": "main.js",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
-	"devDependencies": {
-		"@playform/build": "0.0.7"
-	}
+	"version": "0.1.0",
+	"main": "main.js"
 }

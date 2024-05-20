@@ -1,22 +1,26 @@
 {
-	"name": "theme-solarized-dark",
-	"displayName": "%displayName%",
-	"description": "%description%",
-	"scripts": {
-		"Document": "Document 'Source/**/*.ts'",
-		"prepublishOnly": "Build 'Source/**/*.ts'"
-	},
-	"contributes": {
-		"themes": [
-			{
-				"id": "Solarized Dark",
-				"label": "%themeLabel%",
-				"path": "./themes/solarized-dark-color-theme.json",
-				"uiTheme": "vs-dark"
-			}
-		]
-	},
-	"devDependencies": {
-		"@playform/build": "0.0.7"
-	}
+  "name": "theme-solarized-dark",
+  "displayName": "%displayName%",
+  "description": "%description%",
+  "version": "1.0.0",
+  "publisher": "vscode",
+  "license": "MIT",
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Themes"],
+  "contributes": {
+    "themes": [
+      {
+        "id": "Solarized Dark",
+        "label": "%themeLabel%",
+        "uiTheme": "vs-dark",
+        "path": "./themes/solarized-dark-color-theme.json"
+      }
+    ]
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/microsoft/vscode.git"
+  }
 }
