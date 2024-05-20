@@ -27,8 +27,8 @@ export class DiffEditorEditors extends Disposable {
 	private readonly _onDidContentSizeChange = this._register(new Emitter<IContentSizeChangedEvent>());
 	public get onDidContentSizeChange() { return this._onDidContentSizeChange.event; }
 
-	public readonly modifiedScrollTop = observableFromEvent(this.modified.onDidScrollChange, () =>  this.modified.getScrollTop());
-	public readonly modifiedScrollHeight = observableFromEvent(this.modified.onDidScrollChange, () =>  this.modified.getScrollHeight());
+	public readonly modifiedScrollTop = observableFromEvent(this.modified.onDidScrollChange, () => /** @description modified.getScrollTop */ this.modified.getScrollTop());
+	public readonly modifiedScrollHeight = observableFromEvent(this.modified.onDidScrollChange, () => /** @description modified.getScrollHeight */ this.modified.getScrollHeight());
 
 	public readonly modifiedModel = obsCodeEditor(this.modified).model;
 
@@ -56,7 +56,7 @@ export class DiffEditorEditors extends Disposable {
 		this._argCodeEditorWidgetOptions = null as any;
 
 		this._register(autorunHandleChanges({
-			createEmptyChangeSummary: () => ({} as IDiffEditorConstructionOptions),
+			createEmptyChangeSummary: (): IDiffEditorConstructionOptions => ({}),
 			handleChange: (ctx, changeSummary) => {
 				if (ctx.didChange(_options.editorOptions)) {
 					Object.assign(changeSummary, ctx.change.changedOptions);
@@ -64,7 +64,7 @@ export class DiffEditorEditors extends Disposable {
 				return true;
 			}
 		}, (reader, changeSummary) => {
-			
+			/** @description update editor options */
 			_options.editorOptions.read(reader);
 
 			this._options.renderSideBySide.read(reader);

@@ -88,14 +88,14 @@ export class MergeEditorModel extends EditorModel {
 						},
 					},
 					(reader) => {
-						
+						/** @description Merge Editor Model: Recompute State From Result */
 						const states = this.modifiedBaseRangeResultStates.read(reader);
 						if (!this.isUpToDate.read(reader)) {
 							return;
 						}
 						const resultDiffs = this.resultTextModelDiffs.diffs.read(reader);
 						transaction(tx => {
-							
+							/** @description Merge Editor Model: Recompute State */
 
 							this.updateBaseRangeAcceptedState(resultDiffs, states, tx);
 
@@ -126,7 +126,7 @@ export class MergeEditorModel extends EditorModel {
 		const states = this.modifiedBaseRangeResultStates.get();
 
 		transaction(tx => {
-			
+			/** @description Set initial state */
 
 			for (const [range, state] of states) {
 				let newState: ModifiedBaseRangeState;
@@ -461,7 +461,7 @@ export class MergeEditorModel extends EditorModel {
 
 	public resetDirtyConflictsToBase(): void {
 		transaction(tx => {
-			
+			/** @description Reset Unknown Base Range States */
 			this.resultTextModel.pushStackElement();
 			for (const range of this.modifiedBaseRanges.get()) {
 				if (this.getState(range).get().kind === ModifiedBaseRangeStateKind.unrecognized) {
@@ -551,7 +551,7 @@ export class MergeEditorModel extends EditorModel {
 		return unhandledCount;
 	});
 
-	public readonly hasUnhandledConflicts = this.unhandledConflictsCount.map(value =>  value > 0);
+	public readonly hasUnhandledConflicts = this.unhandledConflictsCount.map(value => /** @description hasUnhandledConflicts */ value > 0);
 
 	public setLanguageId(languageId: string, source?: string): void {
 		const language = this.languageService.createById(languageId);

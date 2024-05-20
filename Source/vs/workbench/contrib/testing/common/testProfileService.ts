@@ -117,7 +117,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		controller: IMainThreadTestController;
 	}>();
 
-	
+	/** @inheritdoc */
 	public readonly onDidChange = this.changeEmitter.event;
 
 	constructor(
@@ -145,7 +145,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		this.refreshContextKeys();
 	}
 
-	
+	/** @inheritdoc */
 	public addProfile(controller: IMainThreadTestController, profile: ITestRunProfile): void {
 		const previousExplicitDefaultValue = this.userDefaults.get()?.[controller.id]?.[profile.profileId];
 		const extended: IExtendedTestRunProfile = {
@@ -170,7 +170,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		this.changeEmitter.fire();
 	}
 
-	
+	/** @inheritdoc */
 	public updateProfile(controllerId: string, profileId: number, update: Partial<ITestRunProfile>): void {
 		const ctrl = this.controllerProfiles.get(controllerId);
 		if (!ctrl) {
@@ -196,12 +196,12 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		this.changeEmitter.fire();
 	}
 
-	
+	/** @inheritdoc */
 	public configure(controllerId: string, profileId: number) {
 		this.controllerProfiles.get(controllerId)?.controller.configureRunProfile(profileId);
 	}
 
-	
+	/** @inheritdoc */
 	public removeProfile(controllerId: string, profileId?: number): void {
 		const ctrl = this.controllerProfiles.get(controllerId);
 		if (!ctrl) {
@@ -224,7 +224,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		this.changeEmitter.fire();
 	}
 
-	
+	/** @inheritdoc */
 	public capabilitiesForTest(test: InternalTestItem) {
 		const ctrl = this.controllerProfiles.get(test.controllerId);
 		if (!ctrl) {
@@ -241,17 +241,17 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		return capabilities;
 	}
 
-	
+	/** @inheritdoc */
 	public all() {
 		return this.controllerProfiles.values();
 	}
 
-	
+	/** @inheritdoc */
 	public getControllerProfiles(profileId: string) {
 		return this.controllerProfiles.get(profileId)?.profiles ?? [];
 	}
 
-	
+	/** @inheritdoc */
 	public getGroupDefaultProfiles(group: TestRunProfileBitset) {
 		let defaults: ITestRunProfile[] = [];
 		for (const { profiles } of this.controllerProfiles.values()) {
@@ -272,7 +272,7 @@ export class TestProfileService extends Disposable implements ITestProfileServic
 		return defaults;
 	}
 
-	
+	/** @inheritdoc */
 	public setGroupDefaultProfiles(group: TestRunProfileBitset, profiles: ITestRunProfile[]) {
 		const next: DefaultsMap = {};
 		for (const ctrl of this.controllerProfiles.values()) {

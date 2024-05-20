@@ -11,7 +11,8 @@ import { equals } from 'vs/base/common/arrays';
 import { RunOnceScheduler } from 'vs/base/common/async';
 import { Codicon } from 'vs/base/common/codicons';
 import { Disposable, toDisposable } from 'vs/base/common/lifecycle';
-import { IObservable, autorun, autorunWithStore, derived, observableFromEvent } from 'vs/base/common/observable';
+import { IObservable, autorun, autorunWithStore, derived, derivedObservableWithCache, observableFromEvent } from 'vs/base/common/observable';
+import { derivedWithStore } from 'vs/base/common/observableInternal/derived';
 import { OS } from 'vs/base/common/platform';
 import { ThemeIcon } from 'vs/base/common/themables';
 import 'vs/css!./inlineCompletionsHintsWidget';
@@ -65,32 +66,42 @@ export class InlineCompletionsHintsWidget extends Disposable {
 		super();
 
 		this._register(autorunWithStore((reader, store) => {
-			
+			/** @description setup content widget */
 			const model = this.model.read(reader);
 			if (!model || !this.alwaysShowToolbar.read(reader)) {
 				return;
 			}
 
-			const contentWidget = store.add(this.instantiationService.createInstance(
-				InlineSuggestionHintsContentWidget,
-				this.editor,
-				true,
-				this.position,
-				model.selectedInlineCompletionIndex,
-				model.inlineCompletionsCount,
-				model.activeCommands,
-			));
-			editor.addContentWidget(contentWidget);
-			store.add(toDisposable(() => editor.removeContentWidget(contentWidget)));
+			const contentWidgetValue = derivedWithStore((reader, store) => {
+				const contentWidget = store.add(this.instantiationService.createInstance(
+					InlineSuggestionHintsContentWidget,
+					this.editor,
+					true,
+					this.position,
+					model.selectedInlineCompletionIndex,
+					model.inlineCompletionsCount,
+					model.activeCommands,
+				));
+				editor.addContentWidget(contentWidget);
+				store.add(toDisposable(() => editor.removeContentWidget(contentWidget)));
 
+				store.add(autorun(reader => {
+					/** @description request explicit */
+					const position = this.position.read(reader);
+					if (!position) {
+						return;
+					}
+					if (model.lastTriggerKind.read(reader) !== InlineCompletionTriggerKind.Explicit) {
+						model.triggerExplicitly();
+					}
+				}));
+				return contentWidget;
+			});
+
+			const hadPosition = derivedObservableWithCache(this, (reader, lastValue) => !!this.position.read(reader) || !!lastValue);
 			store.add(autorun(reader => {
-				
-				const position = this.position.read(reader);
-				if (!position) {
-					return;
-				}
-				if (model.lastTriggerKind.read(reader) !== InlineCompletionTriggerKind.Explicit) {
-					model.triggerExplicitly();
+				if (hadPosition.read(reader)) {
+					contentWidgetValue.read(reader);
 				}
 			}));
 		}));
@@ -195,13 +206,13 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description update position */
 			this._position.read(reader);
 			this.editor.layoutContentWidget(this);
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description counts */
 			const suggestionCount = this._suggestionCount.read(reader);
 			const currentSuggestionIdx = this._currentSuggestionIdx.read(reader);
 
@@ -221,7 +232,7 @@ export class InlineSuggestionHintsContentWidget extends Disposable implements IC
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description extra commands */
 			const extraCommands = this._extraCommands.read(reader);
 			const extraActions = extraCommands.map<IAction>(c => ({
 				class: undefined,

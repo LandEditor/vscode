@@ -180,7 +180,7 @@ const openModeSettingKey = 'workbench.list.openMode';
 const horizontalScrollingKey = 'workbench.list.horizontalScrolling';
 const defaultFindModeSettingKey = 'workbench.list.defaultFindMode';
 const typeNavigationModeSettingKey = 'workbench.list.typeNavigationMode';
-
+/** @deprecated in favor of `workbench.list.defaultFindMode` and `workbench.list.typeNavigationMode` */
 const keyboardNavigationSettingKey = 'workbench.list.keyboardNavigation';
 const scrollByPageKey = 'workbench.list.scrollByPage';
 const defaultFindMatchTypeSettingKey = 'workbench.list.defaultFindMatchType';

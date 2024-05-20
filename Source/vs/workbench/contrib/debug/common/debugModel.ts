@@ -718,10 +718,10 @@ export const getUriForDebugMemory = (
 export class MemoryRegion extends Disposable implements IMemoryRegion {
 	private readonly invalidateEmitter = this._register(new Emitter<IMemoryInvalidationEvent>());
 
-	
+	/** @inheritdoc */
 	public readonly onDidInvalidate = this.invalidateEmitter.event;
 
-	
+	/** @inheritdoc */
 	public readonly writable = !!this.session.capabilities.supportsWriteMemoryRequest;
 
 	constructor(private readonly memoryReference: string, private readonly session: IDebugSession) {
@@ -1896,8 +1896,8 @@ export class DebugModel extends Disposable implements IDebugModel {
 		this._onDidChangeBreakpoints.fire({ changed: changed, sessionOnly: false });
 	}
 
-	addFunctionBreakpoint(functionName: string, id?: string, mode?: string): IFunctionBreakpoint {
-		const newFunctionBreakpoint = new FunctionBreakpoint({ name: functionName, mode }, id);
+	addFunctionBreakpoint(opts: IFunctionBreakpointOptions, id?: string): IFunctionBreakpoint {
+		const newFunctionBreakpoint = new FunctionBreakpoint(opts, id);
 		this.functionBreakpoints.push(newFunctionBreakpoint);
 		this._onDidChangeBreakpoints.fire({ added: [newFunctionBreakpoint], sessionOnly: false });
 

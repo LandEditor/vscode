@@ -85,7 +85,7 @@ export class DiffEditorViewZones extends Disposable {
 		).map((m, reader) => m?.read(reader));
 
 		const alignments = derived<ILineRangeAlignment[] | null>((reader) => {
-			
+			/** @description alignments */
 			const diffModel = this._diffModel.read(reader);
 			const diff = diffModel?.diff.read(reader);
 			if (!diffModel || !diff) { return null; }
@@ -103,7 +103,7 @@ export class DiffEditorViewZones extends Disposable {
 		});
 
 		const alignmentsSyncedMovedText = derived<ILineRangeAlignment[] | null>((reader) => {
-			
+			/** @description alignmentsSyncedMovedText */
 			const syncedMovedText = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
 			if (!syncedMovedText) { return null; }
 			state.read(reader);
@@ -374,8 +374,8 @@ export class DiffEditorViewZones extends Disposable {
 			}
 		}));
 
-		this._originalScrollTop = observableFromEvent(this._editors.original.onDidScrollChange, () =>  this._editors.original.getScrollTop());
-		this._modifiedScrollTop = observableFromEvent(this._editors.modified.onDidScrollChange, () =>  this._editors.modified.getScrollTop());
+		this._originalScrollTop = observableFromEvent(this._editors.original.onDidScrollChange, () => /** @description original.getScrollTop */ this._editors.original.getScrollTop());
+		this._modifiedScrollTop = observableFromEvent(this._editors.modified.onDidScrollChange, () => /** @description modified.getScrollTop */ this._editors.modified.getScrollTop());
 
 		// origExtraHeight + origOffset - origScrollTop = modExtraHeight + modOffset - modScrollTop
 
@@ -386,7 +386,7 @@ export class DiffEditorViewZones extends Disposable {
 		// origScrollTop >= 0, modScrollTop >= 0
 
 		this._register(autorun(reader => {
-			
+			/** @description update scroll modified */
 			const newScrollTopModified = this._originalScrollTop.read(reader)
 				- (this._originalScrollOffsetAnimated.get() - this._modifiedScrollOffsetAnimated.read(reader))
 				- (this._originalTopPadding.get() - this._modifiedTopPadding.read(reader));
@@ -396,7 +396,7 @@ export class DiffEditorViewZones extends Disposable {
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description update scroll original */
 			const newScrollTopOriginal = this._modifiedScrollTop.read(reader)
 				- (this._modifiedScrollOffsetAnimated.get() - this._originalScrollOffsetAnimated.read(reader))
 				- (this._modifiedTopPadding.get() - this._originalTopPadding.read(reader));
@@ -407,7 +407,7 @@ export class DiffEditorViewZones extends Disposable {
 
 
 		this._register(autorun(reader => {
-			
+			/** @description update editor top offsets */
 			const m = this._diffModel.read(reader)?.movedTextToCompare.read(reader);
 
 			let deltaOrigToMod = 0;

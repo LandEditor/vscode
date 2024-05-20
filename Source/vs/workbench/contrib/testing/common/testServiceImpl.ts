@@ -180,7 +180,7 @@ export class TestService extends Disposable implements ITestService {
 		return this.runResolvedTests(resolved, token);
 	}
 
-	
+	/** @inheritdoc */
 	public async startContinuousRun(req: ResolvedTestRunRequest, token: CancellationToken) {
 		if (!req.exclude) {
 			req.exclude = [...this.excluded.all];

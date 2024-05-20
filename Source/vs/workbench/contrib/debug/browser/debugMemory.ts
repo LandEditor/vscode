@@ -19,13 +19,13 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 	private readonly fdMemory = new Map<number, { session: IDebugSession; region: IMemoryRegion }>();
 	private readonly changeEmitter = new Emitter<readonly IFileChange[]>();
 
-	
+	/** @inheritdoc */
 	public readonly onDidChangeCapabilities = Event.None;
 
-	
+	/** @inheritdoc */
 	public readonly onDidChangeFile = this.changeEmitter.event;
 
-	
+	/** @inheritdoc */
 	public readonly capabilities = 0
 		| FileSystemProviderCapabilities.PathCaseSensitive
 		| FileSystemProviderCapabilities.FileOpenReadWriteClose;
@@ -69,7 +69,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		return disposable;
 	}
 
-	
+	/** @inheritdoc */
 	public stat(file: URI): Promise<IStat> {
 		const { readOnly } = this.parseUri(file);
 		return Promise.resolve({
@@ -81,27 +81,27 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		});
 	}
 
-	
+	/** @inheritdoc */
 	public mkdir(): never {
 		throw createFileSystemProviderError(`Not allowed`, FileSystemProviderErrorCode.NoPermissions);
 	}
 
-	
+	/** @inheritdoc */
 	public readdir(): never {
 		throw createFileSystemProviderError(`Not allowed`, FileSystemProviderErrorCode.NoPermissions);
 	}
 
-	
+	/** @inheritdoc */
 	public delete(): never {
 		throw createFileSystemProviderError(`Not allowed`, FileSystemProviderErrorCode.NoPermissions);
 	}
 
-	
+	/** @inheritdoc */
 	public rename(): never {
 		throw createFileSystemProviderError(`Not allowed`, FileSystemProviderErrorCode.NoPermissions);
 	}
 
-	
+	/** @inheritdoc */
 	public open(resource: URI, _opts: IFileOpenOptions): Promise<number> {
 		const { session, memoryReference, offset } = this.parseUri(resource);
 		const fd = this.memoryFdCounter++;
@@ -114,14 +114,14 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		return Promise.resolve(fd);
 	}
 
-	
+	/** @inheritdoc */
 	public close(fd: number) {
 		this.fdMemory.get(fd)?.region.dispose();
 		this.fdMemory.delete(fd);
 		return Promise.resolve();
 	}
 
-	
+	/** @inheritdoc */
 	public async writeFile(resource: URI, content: Uint8Array) {
 		const { offset } = this.parseUri(resource);
 		if (!offset) {
@@ -137,7 +137,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		}
 	}
 
-	
+	/** @inheritdoc */
 	public async readFile(resource: URI) {
 		const { offset } = this.parseUri(resource);
 		if (!offset) {
@@ -155,7 +155,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		}
 	}
 
-	
+	/** @inheritdoc */
 	public async read(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {
@@ -189,7 +189,7 @@ export class DebugMemoryFileSystemProvider implements IFileSystemProvider {
 		return readSoFar;
 	}
 
-	
+	/** @inheritdoc */
 	public write(fd: number, pos: number, data: Uint8Array, offset: number, length: number): Promise<number> {
 		const memory = this.fdMemory.get(fd);
 		if (!memory) {

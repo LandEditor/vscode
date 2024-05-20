@@ -264,7 +264,7 @@ export function debouncedObservable<T>(observable: IObservable<T>, debounceMs: n
 	let timeout: any = undefined;
 
 	disposableStore.add(autorun(reader => {
-		
+		/** @description debounce */
 		const value = observable.read(reader);
 
 		if (timeout) {

@@ -128,7 +128,7 @@ export interface IWalkthroughStep {
 	| { markdown: string; image?: never; svg?: never }
 	| { svg: string; altText: string; markdown?: never; image?: never };
 	readonly completionEvents?: string[];
-	
+	/** @deprecated use `completionEvents: 'onCommand:...'` */
 	readonly doneOn?: { command: string };
 	readonly when?: string;
 }

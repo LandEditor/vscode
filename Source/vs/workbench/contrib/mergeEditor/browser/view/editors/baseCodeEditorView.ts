@@ -36,7 +36,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 
 		this._register(
 			autorunWithStore((reader, store) => {
-				
+				/** @description update checkboxes */
 				if (this.checkboxesVisible.read(reader)) {
 					store.add(new EditorGutter(this.editor, this.htmlElements.gutterDiv, {
 						getIntersectingGutterItems: (range, reader) => [],
@@ -48,7 +48,7 @@ export class BaseCodeEditorView extends CodeEditorView {
 
 		this._register(
 			autorun(reader => {
-				
+				/** @description update labels & text model */
 				const vm = this.viewModel.read(reader);
 				if (!vm) {
 					return;

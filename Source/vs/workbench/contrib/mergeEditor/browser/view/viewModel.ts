@@ -15,7 +15,7 @@ import { INotificationService } from 'vs/platform/notification/common/notificati
 import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';
 import { MergeEditorModel } from 'vs/workbench/contrib/mergeEditor/browser/model/mergeEditorModel';
 import { InputNumber, ModifiedBaseRange, ModifiedBaseRangeState } from 'vs/workbench/contrib/mergeEditor/browser/model/modifiedBaseRange';
-import { observableConfigValue } from 'vs/workbench/contrib/mergeEditor/browser/utils';
+import { observableConfigValue } from 'vs/platform/observable/common/platformObservableUtils';
 import { BaseCodeEditorView } from 'vs/workbench/contrib/mergeEditor/browser/view/editors/baseCodeEditorView';
 import { CodeEditorView } from 'vs/workbench/contrib/mergeEditor/browser/view/editors/codeEditorView';
 import { InputCodeEditorView } from 'vs/workbench/contrib/mergeEditor/browser/view/editors/inputCodeEditorView';
@@ -66,7 +66,7 @@ export class MergeEditorViewModel extends Disposable {
 				model: this.model,
 				redo() {
 					transaction(tx => {
-						
+						/** @description Mark conflicts touched by manual edits as handled */
 						for (const r of baseRangeStates) {
 							this.model.setHandled(r, true, tx);
 						}
@@ -74,7 +74,7 @@ export class MergeEditorViewModel extends Disposable {
 				},
 				undo() {
 					transaction(tx => {
-						
+						/** @description Mark conflicts touched by manual edits as handled */
 						for (const r of baseRangeStates) {
 							this.model.setHandled(r, false, tx);
 						}
@@ -156,7 +156,7 @@ export class MergeEditorViewModel extends Disposable {
 
 	public readonly activeModifiedBaseRange = derived(this,
 		(reader) => {
-			
+			/** @description activeModifiedBaseRange */
 			const focusedEditor = this.lastFocusedEditor.read(reader);
 			const manualRange = this.manuallySetActiveModifiedBaseRange.read(reader);
 			if (manualRange.counter > focusedEditor.counter) {
@@ -265,7 +265,7 @@ export class MergeEditorViewModel extends Disposable {
 			return;
 		}
 		transaction(tx => {
-			
+			/** @description Toggle Active Conflict */
 			this.setState(
 				activeModifiedBaseRange,
 				this.model.getState(activeModifiedBaseRange).get().toggle(inputNumber),
@@ -277,7 +277,7 @@ export class MergeEditorViewModel extends Disposable {
 
 	public acceptAll(inputNumber: 1 | 2): void {
 		transaction(tx => {
-			
+			/** @description Toggle Active Conflict */
 			for (const range of this.model.modifiedBaseRanges.get()) {
 				this.setState(
 					range,

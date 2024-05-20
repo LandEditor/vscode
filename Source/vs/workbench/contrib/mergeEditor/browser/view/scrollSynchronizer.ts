@@ -142,7 +142,7 @@ export class ScrollSynchronizer extends Disposable {
 
 		this._store.add(
 			autorunWithStore((reader, store) => {
-				
+				/** @description set baseViewEditor.onDidScrollChange */
 				const baseView = this.baseView.read(reader);
 				if (baseView) {
 					store.add(baseView.editor.onDidScrollChange(

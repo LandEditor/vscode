@@ -56,13 +56,13 @@ export class ObservablePromise<T> {
 	constructor(promise: Promise<T>) {
 		this.promise = promise.then(value => {
 			transaction(tx => {
-				
+				/** @description onPromiseResolved */
 				this._value.set(new PromiseResult(value, undefined), tx);
 			});
 			return value;
 		}, error => {
 			transaction(tx => {
-				
+				/** @description onPromiseRejected */
 				this._value.set(new PromiseResult<T>(undefined, error), tx);
 			});
 			throw error;
@@ -131,7 +131,7 @@ export function waitForState<T>(observable: IObservable<T>, predicate?: (state: 
 		let isImmediateRun = true;
 		let shouldDispose = false;
 		const stateObs = observable.map(state => {
-			
+			/** @description waitForState.state */
 			return {
 				isFinished: predicate(state),
 				error: isError ? isError(state) : false,
@@ -139,7 +139,7 @@ export function waitForState<T>(observable: IObservable<T>, predicate?: (state: 
 			};
 		});
 		const d = autorun(reader => {
-			
+			/** @description waitForState */
 			const { isFinished, error, state } = stateObs.read(reader);
 			if (isFinished || error) {
 				if (isImmediateRun) {

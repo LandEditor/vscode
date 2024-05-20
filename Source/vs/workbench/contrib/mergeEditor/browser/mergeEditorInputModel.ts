@@ -129,7 +129,7 @@ class TempFileMergeEditorInputModel extends EditorModel implements IMergeEditorI
 	private readonly altVersionId = observableFromEvent(
 		e => this.model.resultTextModel.onDidChangeContent(e),
 		() =>
-			 this.model.resultTextModel.getAlternativeVersionId()
+			/** @description getAlternativeVersionId */ this.model.resultTextModel.getAlternativeVersionId()
 	);
 
 	public readonly isDirty = derived(this, (reader) => this.altVersionId.read(reader) !== this.savedAltVersionId.read(reader));
@@ -342,7 +342,7 @@ export class WorkspaceMergeEditorModeFactory implements IMergeEditorInputModelFa
 class WorkspaceMergeEditorInputModel extends EditorModel implements IMergeEditorInputModel {
 	public readonly isDirty = observableFromEvent(
 		Event.any(this.resultTextFileModel.onDidChangeDirty, this.resultTextFileModel.onDidSaveError),
-		() =>  this.resultTextFileModel.isDirty()
+		() => /** @description isDirty */ this.resultTextFileModel.isDirty()
 	);
 
 	private reported = false;

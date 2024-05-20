@@ -46,7 +46,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 
 		this._register(
 			autorunWithStore((reader, store) => {
-				
+				/** @description update checkboxes */
 				if (this.checkboxesVisible.read(reader)) {
 					store.add(new EditorGutter(this.editor, this.htmlElements.gutterDiv, {
 						getIntersectingGutterItems: (range, reader) => [],
@@ -57,7 +57,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 		);
 
 		this._register(autorun(reader => {
-			
+			/** @description update labels & text model */
 			const vm = this.viewModel.read(reader);
 			if (!vm) {
 				return;
@@ -71,7 +71,7 @@ export class ResultCodeEditorView extends CodeEditorView {
 		const remainingConflictsActionBar = this._register(new ActionBar(this.htmlElements.detail));
 
 		this._register(autorun(reader => {
-			
+			/** @description update remainingConflicts label */
 			const vm = this.viewModel.read(reader);
 			if (!vm) {
 				return;

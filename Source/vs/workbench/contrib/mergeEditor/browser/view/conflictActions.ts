@@ -93,7 +93,7 @@ export class ActionsSource {
 
 	private getItemsInput(inputNumber: 1 | 2): IObservable<IContentWidgetAction[]> {
 		return derived(reader => {
-			
+			/** @description items */
 			const viewModel = this.viewModel;
 			const modifiedBaseRange = this.modifiedBaseRange;
 
@@ -359,7 +359,7 @@ class ActionsContentWidget extends FixedZoneWidget {
 		this._domNode.classList.add(className);
 
 		this._register(autorun(reader => {
-			
+			/** @description update commands */
 			const i = items.read(reader);
 			this.setState(i);
 		}));

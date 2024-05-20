@@ -74,7 +74,7 @@ export class TriggerInlineSuggestionAction extends EditorAction {
 	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
 		const controller = InlineCompletionsController.get(editor);
 		await asyncTransaction(async tx => {
-			
+			/** @description triggerExplicitly from command */
 			await controller?.model.get()?.triggerExplicitly(tx);
 			controller?.playAccessibilitySignal(tx);
 		});

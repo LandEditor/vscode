@@ -27,7 +27,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
 		super();
 	}
 
-	
+	/** @inheritdoc */
 	public receiveMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean> {
 		if (editorId === undefined) {
 			const sends = [...this.scopedMessaging.values()].map(e => e.receiveMessageHandler?.(rendererId, message));
@@ -37,7 +37,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
 		return this.scopedMessaging.get(editorId)?.receiveMessageHandler?.(rendererId, message) ?? Promise.resolve(false);
 	}
 
-	
+	/** @inheritdoc */
 	public prepare(rendererId: string) {
 		if (this.activations.has(rendererId)) {
 			return;
@@ -55,7 +55,7 @@ export class NotebookRendererMessagingService extends Disposable implements INot
 		});
 	}
 
-	
+	/** @inheritdoc */
 	public getScoped(editorId: string): IScopedRendererMessaging {
 		const existing = this.scopedMessaging.get(editorId);
 		if (existing) {

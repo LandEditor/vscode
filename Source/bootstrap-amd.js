@@ -15,7 +15,7 @@ const nodeRequire = require;
 globalThis._VSCODE_NODE_MODULES = new Proxy(Object.create(null), { get: (_target, mod) => nodeRequire(String(mod)) });
 
 // VSCODE_GLOBALS: package/product.json
-
+/** @type Record<string, any> */
 globalThis._VSCODE_PRODUCT_JSON = require('../product.json');
 if (process.env['VSCODE_DEV']) {
 	// Patch product overrides when running out of sources
@@ -47,14 +47,14 @@ loader.config({
 
 // Running in Electron
 if (process.env['ELECTRON_RUN_AS_NODE'] || process.versions['electron']) {
-	loader.define('fs', ['original-fs'], function (originalFS) {
+	loader.define('fs', ['original-fs'], function (/** @type {import('fs')} */originalFS) {
 		return originalFS;  // replace the patched electron fs with the original node fs for all AMD code
 	});
 }
 
 // Pseudo NLS support
 if (nlsConfig && nlsConfig.pseudo) {
-	loader(['vs/nls'], function (nlsPlugin) {
+	loader(['vs/nls'], function (/** @type {import('vs/nls')} */nlsPlugin) {
 		nlsPlugin.setPseudoTranslation(!!nlsConfig.pseudo);
 	});
 }

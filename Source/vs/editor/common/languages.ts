@@ -834,6 +834,8 @@ export interface CodeActionProvider {
 
 	displayName?: string;
 
+	extensionId?: string;
+
 	/**
 	 * Provide commands for the given document and range.
 	 */
@@ -1383,7 +1385,7 @@ export interface TextEdit {
 	eol?: model.EndOfLineSequence;
 }
 
-
+/** @internal */
 export abstract class TextEdit {
 	static asEditOperation(edit: TextEdit): ISingleEditOperation {
 		return EditOperation.replace(Range.lift(edit.range), edit.text);
@@ -1782,9 +1784,9 @@ export interface CommentThreadTemplate {
 /**
  * @internal
  */
-export interface CommentInfo {
+export interface CommentInfo<T = IRange> {
 	extensionId?: string;
-	threads: CommentThread[];
+	threads: CommentThread<T>[];
 	pendingCommentThreads?: PendingCommentThread[];
 	commentingRanges: CommentingRanges;
 }
@@ -1875,6 +1877,13 @@ export interface CommentThread<T = IRange> {
 	onDidChangeCanReply: Event<boolean>;
 	isDisposed: boolean;
 	isTemplate: boolean;
+}
+
+/**
+ * @internal
+ */
+export interface AddedCommentThread<T = IRange> extends CommentThread<T> {
+	editorId?: string;
 }
 
 /**
@@ -1971,7 +1980,7 @@ export interface CommentThreadChangedEvent<T> {
 	/**
 	 * Added comment threads.
 	 */
-	readonly added: CommentThread<T>[];
+	readonly added: AddedCommentThread<T>[];
 
 	/**
 	 * Removed comment threads.

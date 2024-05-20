@@ -252,7 +252,7 @@
 
 	if (typeof define === 'function') {
 		// amd
-		define(['path', 'fs', 'vs/base/common/performance'], function ( perf) { return factory(path, fs, perf); });
+		define(['path', 'fs', 'vs/base/common/performance'], function (/** @type {typeof import('path')} */ path, /** @type {typeof import('fs')} */ fs, /** @type {typeof import('../common/performance')} */ perf) { return factory(path, fs, perf); });
 	} else if (typeof module === 'object' && typeof module.exports === 'object') {
 		const path = require('path');
 		const fs = require('fs');

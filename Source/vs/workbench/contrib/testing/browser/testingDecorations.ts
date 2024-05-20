@@ -160,7 +160,7 @@ export class TestingDecorationService extends Disposable implements ITestingDeco
 	 */
 	private readonly invalidatedMessages = new WeakSet<ITestMessage>();
 
-	
+	/** @inheritdoc */
 	public readonly onDidChange = this.changeEmitter.event;
 
 	constructor(
@@ -235,13 +235,13 @@ export class TestingDecorationService extends Disposable implements ITestingDeco
 		}));
 	}
 
-	
+	/** @inheritdoc */
 	public invalidateResultMessage(message: ITestMessage) {
 		this.invalidatedMessages.add(message);
 		this.invalidate();
 	}
 
-	
+	/** @inheritdoc */
 	public syncDecorations(resource: URI): CachedDecorations {
 		const model = this.modelService.getModel(resource);
 		if (!model) {
@@ -256,7 +256,7 @@ export class TestingDecorationService extends Disposable implements ITestingDeco
 		return this.applyDecorations(model);
 	}
 
-	
+	/** @inheritdoc */
 	public getDecoratedTestPosition(resource: URI, testId: string) {
 		const model = this.modelService.getModel(resource);
 		if (!model) {
@@ -601,9 +601,9 @@ const enum LensContentWidgetVars {
 }
 
 abstract class TitleLensContentWidget {
-	
+	/** @inheritdoc */
 	public readonly allowEditorOverflow = false;
-	
+	/** @inheritdoc */
 	public readonly suppressMouseDown = true;
 
 	private readonly _domNode = dom.$('span');
@@ -653,15 +653,15 @@ abstract class TitleLensContentWidget {
 		});
 	}
 
-	
+	/** @inheritdoc */
 	public abstract getId(): string;
 
-	
+	/** @inheritdoc */
 	public getDomNode() {
 		return this._domNode;
 	}
 
-	
+	/** @inheritdoc */
 	public dispose() {
 		this.editor.changeViewZones(accessor => {
 			if (this.viewZoneId) {
@@ -672,7 +672,7 @@ abstract class TitleLensContentWidget {
 		this.editor.removeContentWidget(this);
 	}
 
-	
+	/** @inheritdoc */
 	public getPosition(): IContentWidgetPosition {
 		return {
 			position: { column: 0, lineNumber: 0 },
@@ -705,7 +705,7 @@ class ActualLensContentWidget extends TitleLensContentWidget {
 }
 
 abstract class RunTestDecoration {
-	
+	/** @inheritdoc */
 	public id = '';
 
 	public get line() {
@@ -740,7 +740,7 @@ abstract class RunTestDecoration {
 		this.editorDecoration.options.glyphMarginHoverMessage = new MarkdownString().appendText(this.getGutterLabel());
 	}
 
-	
+	/** @inheritdoc */
 	public click(e: IEditorMouseEvent): boolean {
 		if (e.target.type !== MouseTargetType.GUTTER_GLYPH_MARGIN
 			|| e.target.detail.glyphMarginLane !== GLYPH_MARGIN_LANE

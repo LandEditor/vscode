@@ -50,7 +50,7 @@
 		// Await window configuration from preload
 		const timeout = setTimeout(() => { console.error(`[resolve window config] Could not resolve window configuration within 10 seconds, but will continue to wait...`); }, 10000);
 		performance.mark('code/willWaitForWindowConfig');
-		
+		/** @type {ISandboxConfiguration} */
 		const configuration = await preloadGlobals.context.resolveConfiguration();
 		performance.mark('code/didWaitForWindowConfig');
 		clearTimeout(timeout);
@@ -98,7 +98,7 @@
 		/**
 		 * @typedef {any} LoaderConfig
 		 */
-		
+		/** @type {LoaderConfig} */
 		const loaderConfig = {
 			baseUrl: `${bootstrapLib.fileUriFromPath(configuration.appRoot, { isWindows: safeProcess.platform === 'win32', scheme: 'vscode-file', fallbackAuthority: 'vscode-app' })}/out`,
 			'vs/nls': nlsConfig,
@@ -201,7 +201,7 @@
 		const TOGGLE_DEV_TOOLS_KB_ALT = '123'; // F12
 		const RELOAD_KB = (safeProcess.platform === 'darwin' ? 'meta-82' : 'ctrl-82'); // mac: Cmd-R, rest: Ctrl-R
 
-		
+		/** @type {((e: KeyboardEvent) => void) | undefined} */
 		let listener = function (e) {
 			const key = extractKey(e);
 			if (key === TOGGLE_DEV_TOOLS_KB || key === TOGGLE_DEV_TOOLS_KB_ALT) {

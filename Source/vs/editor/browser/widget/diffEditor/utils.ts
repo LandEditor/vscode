@@ -8,7 +8,7 @@ import { findLast } from 'vs/base/common/arraysFind';
 import { CancellationTokenSource } from 'vs/base/common/cancellation';
 import { isHotReloadEnabled, registerHotReloadHandler } from 'vs/base/common/hotReload';
 import { Disposable, DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { IObservable, IReader, ISettableObservable, autorun, autorunHandleChanges, autorunOpts, autorunWithStore, observableFromEvent, observableSignalFromEvent, observableValue, transaction } from 'vs/base/common/observable';
+import { IObservable, IReader, ISettableObservable, autorun, autorunHandleChanges, autorunOpts, autorunWithStore, observableSignalFromEvent, observableValue, transaction } from 'vs/base/common/observable';
 import { ElementSizeObserver } from 'vs/editor/browser/config/elementSizeObserver';
 import { ICodeEditor, IOverlayWidget, IViewZone } from 'vs/editor/browser/editorBrowser';
 import { Position } from 'vs/editor/common/core/position';
@@ -16,8 +16,6 @@ import { Range } from 'vs/editor/common/core/range';
 import { DetailedLineRangeMapping } from 'vs/editor/common/diff/rangeMapping';
 import { IModelDeltaDecoration } from 'vs/editor/common/model';
 import { TextLength } from 'vs/editor/common/core/textLength';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { ContextKeyValue, RawContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 
 export function joinCombine<T>(arr1: readonly T[], arr2: readonly T[], keySelector: (val: T) => number, combine: (v1: T, v2: T) => T): readonly T[] {
 	if (arr1.length === 0) {
@@ -89,17 +87,6 @@ export function prependRemoveOnDispose(parent: HTMLElement, child: HTMLElement) 
 	});
 }
 
-export function observableConfigValue<T>(key: string, defaultValue: T, configurationService: IConfigurationService): IObservable<T> {
-	return observableFromEvent(
-		(handleChange) => configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(key)) {
-				handleChange(e);
-			}
-		}),
-		() => configurationService.getValue<T>(key) ?? defaultValue,
-	);
-}
-
 export class ObservableElementSizeObserver extends Disposable {
 	private readonly elementSizeObserver: ElementSizeObserver;
 
@@ -117,7 +104,7 @@ export class ObservableElementSizeObserver extends Disposable {
 		this._height = observableValue(this, this.elementSizeObserver.getHeight());
 
 		this._register(this.elementSizeObserver.onDidChange(e => transaction(tx => {
-			
+			/** @description Set width/height from elementSizeObserver */
 			this._width.set(this.elementSizeObserver.getWidth(), tx);
 			this._height.set(this.elementSizeObserver.getHeight(), tx);
 		})));
@@ -155,7 +142,7 @@ export function animatedObservable(targetWindow: Window, base: IObservable<numbe
 			return true;
 		}
 	}, (reader, s) => {
-		
+		/** @description update value */
 		if (animationFrame !== undefined) {
 			targetWindow.cancelAnimationFrame(animationFrame);
 			animationFrame = undefined;
@@ -293,7 +280,7 @@ export interface CSSStyle {
 
 export function applyStyle(domNode: HTMLElement, style: Partial<{ [TKey in keyof CSSStyle]: CSSStyle[TKey] | IObservable<CSSStyle[TKey] | undefined> | undefined }>) {
 	return autorun(reader => {
-		
+		/** @description applyStyle */
 		for (let [key, val] of Object.entries(style)) {
 			if (val && typeof val === 'object' && 'read' in val) {
 				val = val.read(reader) as any;
@@ -335,7 +322,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
 	const lastViewZoneIds: string[] = [];
 
 	store.add(autorunWithStore((reader, store) => {
-		
+		/** @description applyViewZones */
 		const curViewZones = viewZones.read(reader);
 
 		const viewZonIdsPerViewZone = new Map<IObservableViewZone, string>();
@@ -370,7 +357,7 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
 				return true;
 			},
 		}, (reader, changeSummary) => {
-			
+			/** @description layoutZone on change */
 			for (const vz of curViewZones) {
 				if (vz.onChange) {
 					viewZoneIdPerOnChangeObservable.set(vz.onChange, viewZonIdsPerViewZone.get(vz)!);
@@ -438,13 +425,6 @@ function lengthBetweenPositions(position1: Position, position2: Position): TextL
 	} else {
 		return new TextLength(position2.lineNumber - position1.lineNumber, position2.column - 1);
 	}
-}
-
-export function bindContextKey<T extends ContextKeyValue>(key: RawContextKey<T>, service: IContextKeyService, computeValue: (reader: IReader) => T): IDisposable {
-	const boundKey = key.bindTo(service);
-	return autorunOpts({ debugName: () => `Set Context Key "${key.key}"` }, reader => {
-		boundKey.set(computeValue(reader));
-	});
 }
 
 export function filterWithPrevious<T>(arr: T[], filter: (cur: T, prev: T | undefined) => boolean): T[] {

@@ -23,7 +23,7 @@ const bootstrapNode = require('./bootstrap-node');
 const { getUserDataPath } = require('./vs/platform/environment/node/userDataPath');
 const { stripComments } = require('./vs/base/common/stripComments');
 const { getUNCHost, addUNCHostToAllowlist } = require('./vs/base/node/unc');
-
+/** @type {Partial<IProductConfiguration>} */
 // @ts-ignore
 const product = require('../product.json');
 const { app, protocol, crashReporter, Menu } = require('electron');
@@ -202,7 +202,10 @@ function configureCommandlineSwitchesSync(cliArgs) {
 		'disable-hardware-acceleration',
 
 		// override for the color profile to use
-		'force-color-profile'
+		'force-color-profile',
+
+		// disable LCD font rendering, a Chromium flag
+		'disable-lcd-text'
 	];
 
 	if (process.platform === 'linux') {

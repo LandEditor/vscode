@@ -57,7 +57,7 @@ export class InlineEditHintsWidget extends Disposable {
 		super();
 
 		this._register(autorunWithStore((reader, store) => {
-			
+			/** @description setup content widget */
 			const model = this.model.read(reader);
 			if (!model || !this.alwaysShowToolbar.read(reader)) {
 				return;
@@ -124,13 +124,13 @@ export class InlineEditHintsContentWidget extends Disposable implements IContent
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description update position */
 			this._position.read(reader);
 			this.editor.layoutContentWidget(this);
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description actions menu */
 
 			const extraActions = [];
 

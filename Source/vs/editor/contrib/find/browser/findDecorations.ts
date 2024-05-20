@@ -54,7 +54,7 @@ export class FindDecorations implements IDisposable {
 		return this._decorations.length;
 	}
 
-	
+	/** @deprecated use getFindScopes to support multiple selections */
 	public getFindScope(): Range | null {
 		if (this._findScopeDecorationIds[0]) {
 			return this._editor.getModel().getDecorationRange(this._findScopeDecorationIds[0]);

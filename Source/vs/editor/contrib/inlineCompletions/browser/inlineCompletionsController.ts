@@ -53,7 +53,7 @@ export class InlineCompletionsController extends Disposable {
 		(tx) => this.updateObservables(tx, VersionIdChangeReason.Other),
 		(item) => {
 			transaction(tx => {
-				
+				/** @description InlineCompletionsController.handleSuggestAccepted */
 				this.updateObservables(tx, VersionIdChangeReason.Other);
 				this.model.get()?.handleSuggestAccepted(item);
 			});
@@ -110,10 +110,10 @@ export class InlineCompletionsController extends Disposable {
 		this._register(new InlineCompletionContextKeys(this._contextKeyService, this.model));
 
 		this._register(autorun(reader => {
-			
+			/** @description InlineCompletionsController.update model */
 			const textModel = this._textModelIfWritable.read(reader);
 			transaction(tx => {
-				
+				/** @description InlineCompletionsController.onDidChangeModel/readonly */
 				this.model.set(undefined, tx);
 				this.updateObservables(tx, VersionIdChangeReason.Other);
 
@@ -153,12 +153,12 @@ export class InlineCompletionsController extends Disposable {
 			return VersionIdChangeReason.Other;
 		};
 		this._register(editor.onDidChangeModelContent((e) => transaction(tx =>
-			
+			/** @description InlineCompletionsController.onDidChangeModelContent */
 			this.updateObservables(tx, getReason(e))
 		)));
 
 		this._register(editor.onDidChangeCursorPosition(e => transaction(tx => {
-			
+			/** @description InlineCompletionsController.onDidChangeCursorPosition */
 			this.updateObservables(tx, VersionIdChangeReason.Other);
 			if (e.reason === CursorChangeReason.Explicit || e.source === 'api') {
 				this.model.get()?.stop(tx);
@@ -166,7 +166,7 @@ export class InlineCompletionsController extends Disposable {
 		})));
 
 		this._register(editor.onDidType(() => transaction(tx => {
-			
+			/** @description InlineCompletionsController.onDidType */
 			this.updateObservables(tx, VersionIdChangeReason.Other);
 			if (this._enabled.get()) {
 				this.model.get()?.trigger(tx);
@@ -184,7 +184,7 @@ export class InlineCompletionsController extends Disposable {
 			]);
 			if (commands.has(e.commandId) && editor.hasTextFocus() && this._enabled.get()) {
 				transaction(tx => {
-					
+					/** @description onDidExecuteCommand */
 					this.model.get()?.trigger(tx);
 				});
 			}
@@ -200,13 +200,13 @@ export class InlineCompletionsController extends Disposable {
 				return;
 			}
 			transaction(tx => {
-				
+				/** @description InlineCompletionsController.onDidBlurEditorWidget */
 				this.model.get()?.stop(tx);
 			});
 		}));
 
 		this._register(autorun(reader => {
-			
+			/** @description InlineCompletionsController.forceRenderingAbove */
 			const state = this.model.read(reader)?.state.read(reader);
 			if (state?.suggestItem) {
 				if (state.primaryGhostText.lineCount >= 2) {
@@ -230,7 +230,7 @@ export class InlineCompletionsController extends Disposable {
 				return true;
 			},
 		}, async (reader, _) => {
-			
+			/** @description InlineCompletionsController.playAccessibilitySignalAndReadSuggestion */
 			this._playAccessibilitySignal.read(reader);
 
 			const model = this.model.read(reader);

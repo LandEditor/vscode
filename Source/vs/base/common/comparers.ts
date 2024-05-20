@@ -213,14 +213,14 @@ function compareAndDisambiguateByLength(collator: Intl.Collator, one: string, ot
 	return 0;
 }
 
-
+/** @returns `true` if the string is starts with a lowercase letter. Otherwise, `false`. */
 function startsWithLower(string: string) {
 	const character = string.charAt(0);
 
 	return (character.toLocaleUpperCase() !== character) ? true : false;
 }
 
-
+/** @returns `true` if the string starts with an uppercase letter. Otherwise, `false`. */
 function startsWithUpper(string: string) {
 	const character = string.charAt(0);
 

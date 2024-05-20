@@ -20,11 +20,12 @@ import { MenuId } from 'vs/platform/actions/common/actions';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { DEFAULT_EDITOR_MAX_DIMENSIONS, DEFAULT_EDITOR_MIN_DIMENSIONS } from 'vs/workbench/browser/parts/editor/editor';
-import { observableConfigValue, setStyle } from 'vs/workbench/contrib/mergeEditor/browser/utils';
+import { setStyle } from 'vs/workbench/contrib/mergeEditor/browser/utils';
+import { observableConfigValue } from 'vs/platform/observable/common/platformObservableUtils';
 import { MergeEditorViewModel } from 'vs/workbench/contrib/mergeEditor/browser/view/viewModel';
 
 export abstract class CodeEditorView extends Disposable {
-	readonly model = this.viewModel.map(m =>  m?.model);
+	readonly model = this.viewModel.map(m => /** @description model */ m?.model);
 
 	protected readonly htmlElements = h('div.code-view', [
 		h('div.header@header', [
@@ -80,20 +81,20 @@ export abstract class CodeEditorView extends Disposable {
 
 	public readonly isFocused = observableFromEvent(
 		Event.any(this.editor.onDidBlurEditorWidget, this.editor.onDidFocusEditorWidget),
-		() =>  this.editor.hasWidgetFocus()
+		() => /** @description editor.hasWidgetFocus */ this.editor.hasWidgetFocus()
 	);
 
 	public readonly cursorPosition = observableFromEvent(
 		this.editor.onDidChangeCursorPosition,
-		() =>  this.editor.getPosition()
+		() => /** @description editor.getPosition */ this.editor.getPosition()
 	);
 
 	public readonly selection = observableFromEvent(
 		this.editor.onDidChangeCursorSelection,
-		() =>  this.editor.getSelections()
+		() => /** @description editor.getSelections */ this.editor.getSelections()
 	);
 
-	public readonly cursorLineNumber = this.cursorPosition.map(p =>  p?.lineNumber);
+	public readonly cursorLineNumber = this.cursorPosition.map(p => /** @description cursorPosition.lineNumber */ p?.lineNumber);
 
 	constructor(
 		private readonly instantiationService: IInstantiationService,
@@ -114,7 +115,7 @@ export function createSelectionsAutorun(
 	translateRange: (baseRange: Range, viewModel: MergeEditorViewModel) => Range
 ): IDisposable {
 	const selections = derived(reader => {
-		
+		/** @description selections */
 		const viewModel = codeEditorView.viewModel.read(reader);
 		if (!viewModel) {
 			return [];
@@ -127,7 +128,7 @@ export function createSelectionsAutorun(
 	});
 
 	return autorun(reader => {
-		
+		/** @description set selections */
 		const ranges = selections.read(reader);
 		if (ranges.length === 0) {
 			return;

@@ -72,7 +72,7 @@ export class InlineEditController extends Disposable {
 		//Remove the previous ghost text
 		const modelChangedSignal = observableSignalFromEvent('InlineEditController.modelContentChangedSignal', editor.onDidChangeModelContent);
 		this._register(autorun(reader => {
-			
+			/** @description InlineEditController.modelContentChanged model */
 			if (!this._enabled.read(reader)) {
 				return;
 			}
@@ -86,7 +86,7 @@ export class InlineEditController extends Disposable {
 		//Check if the cursor is at the ghost text
 		const cursorPosition = observableFromEvent(editor.onDidChangeCursorPosition, () => editor.getPosition());
 		this._register(autorun(reader => {
-			
+			/** @description InlineEditController.cursorPositionChanged model */
 			if (!this._enabled.read(reader)) {
 				return;
 			}
@@ -99,7 +99,7 @@ export class InlineEditController extends Disposable {
 
 		//Perform stuff when the current edit has changed
 		this._register(autorun((reader) => {
-			
+			/** @description InlineEditController.update model */
 			const currentEdit = this._currentEdit.read(reader);
 			this._isCursorAtInlineEditContext.set(false);
 			if (!currentEdit) {
@@ -116,7 +116,7 @@ export class InlineEditController extends Disposable {
 		//Clear suggestions on lost focus
 		const editorBlurSingal = observableSignalFromEvent('InlineEditController.editorBlurSignal', editor.onDidBlurEditorWidget);
 		this._register(autorun(async reader => {
-			
+			/** @description InlineEditController.editorBlur */
 			if (!this._enabled.read(reader)) {
 				return;
 			}
@@ -133,7 +133,7 @@ export class InlineEditController extends Disposable {
 		//Invoke provider on focus
 		const editorFocusSignal = observableSignalFromEvent('InlineEditController.editorFocusSignal', editor.onDidFocusEditorText);
 		this._register(autorun(reader => {
-			
+			/** @description InlineEditController.editorFocus */
 			if (!this._enabled.read(reader)) {
 				return;
 			}

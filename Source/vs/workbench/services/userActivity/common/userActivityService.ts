@@ -55,7 +55,7 @@ export class UserActivityService extends Disposable implements IUserActivityServ
 	 */
 	public isActive = true;
 
-	
+	/** @inheritdoc */
 	onDidChangeIsActive: Event<boolean> = this.changeEmitter.event;
 
 	constructor(@IInstantiationService instantiationService: IInstantiationService) {
@@ -63,7 +63,7 @@ export class UserActivityService extends Disposable implements IUserActivityServ
 		this._register(runWhenGlobalIdle(() => userActivityRegistry.take(this, instantiationService)));
 	}
 
-	
+	/** @inheritdoc */
 	markActive(): IDisposable {
 		if (++this.active === 1) {
 			this.isActive = true;

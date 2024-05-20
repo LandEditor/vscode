@@ -62,11 +62,11 @@
 		};
 
 		const getActiveFrame = () => {
-			return  (document.getElementById('active-frame'));
+			return /** @type {HTMLIFrameElement | undefined} */ (document.getElementById('active-frame'));
 		};
 
 		const getPendingFrame = () => {
-			return  (document.getElementById('pending-frame'));
+			return /** @type {HTMLIFrameElement | undefined} */ (document.getElementById('pending-frame'));
 		};
 
 		/**
@@ -221,7 +221,7 @@
 				`;
 		}
 
-		
+		/** @type {Promise<void>} */
 		const workerReady = new Promise((resolve, reject) => {
 			if (disableServiceWorker) {
 				return resolve();
@@ -259,7 +259,7 @@
 					};
 					navigator.serviceWorker.addEventListener('message', versionHandler);
 
-					const postVersionMessage = ( controller) => {
+					const postVersionMessage = (/** @type {ServiceWorker} */ controller) => {
 						controller.postMessage({ channel: 'version' });
 					};
 
@@ -306,7 +306,7 @@
 			constructor() {
 				this.channel = new MessageChannel();
 
-				
+				/** @type {Map<string, Array<(event: MessageEvent, data: any) => void>>} */
 				this.handlers = new Map();
 
 				this.channel.port1.onmessage = (e) => {
@@ -336,7 +336,7 @@
 			}
 
 			async signalReady() {
-				const start = ( parentOrigin) => {
+				const start = (/** @type {string} */ parentOrigin) => {
 					window.parent.postMessage({ target: ID, channel: 'webview-ready', data: {} }, parentOrigin, [this.channel.port2]);
 				};
 
@@ -415,7 +415,7 @@
 				});
 			}
 
-			onIframeLoaded( frame) {
+			onIframeLoaded(/** @type {HTMLIFrameElement} */ frame) {
 				assertIsDefined(frame.contentWindow).addEventListener('keydown', e => {
 					this.isModifierKeyDown = e.metaKey || e.ctrlKey || e.altKey;
 				});
@@ -428,33 +428,33 @@
 
 		// state
 		let firstLoad = true;
-		
+		/** @type {any} */
 		let loadTimeout;
 		let styleVersion = 0;
 
-		
+		/** @type {Array<{ readonly message: any, transfer?: ArrayBuffer[] }>} */
 		let pendingMessages = [];
 
 		const initData = {
-			
+			/** @type {number | undefined} */
 			initialScrollProgress: undefined,
 
-			
+			/** @type {{ [key: string]: string } | undefined} */
 			styles: undefined,
 
-			
+			/** @type {string | undefined} */
 			activeTheme: undefined,
 
-			
+			/** @type {string | undefined} */
 			themeId: undefined,
 
-			
+			/** @type {string | undefined} */
 			themeLabel: undefined,
 
-			
+			/** @type {boolean} */
 			screenReader: false,
 
-			
+			/** @type {boolean} */
 			reduceMotion: false,
 		};
 
@@ -506,7 +506,7 @@
 				}
 
 				body.dataset.vscodeThemeKind = initData.activeTheme;
-				
+				/** @deprecated data-vscode-theme-name will be removed, use data-vscode-theme-id instead */
 				body.dataset.vscodeThemeName = initData.themeLabel || '';
 				body.dataset.vscodeThemeId = initData.themeId || '';
 			}
@@ -542,7 +542,7 @@
 			const baseElement = event.view.document.querySelector('base');
 
 			for (const pathElement of event.composedPath()) {
-				
+				/** @type {any} */
 				const node = pathElement;
 				if (node.tagName && node.tagName.toLowerCase() === 'a' && node.href) {
 					if (node.getAttribute('href') === '#') {
@@ -576,7 +576,7 @@
 
 			if (event.button === 1) {
 				for (const pathElement of event.composedPath()) {
-					
+					/** @type {any} */
 					const node = pathElement;
 					if (node.tagName && node.tagName.toLowerCase() === 'a' && node.href) {
 						event.preventDefault();
@@ -753,8 +753,8 @@
 				return;
 			}
 
-			const target =  (event.target);
-			const currentTarget =  (event.currentTarget);
+			const target = /** @type {HTMLDocument | null} */ (event.target);
+			const currentTarget = /** @type {Window | null} */ (event.currentTarget);
 			if (!currentTarget || !target?.body) {
 				return;
 			}
@@ -775,7 +775,7 @@
 			});
 		};
 
-		function handleInnerDragStartEvent( e) {
+		function handleInnerDragStartEvent(/** @type {DragEvent} */ e) {
 			if (e.defaultPrevented) {
 				// Extension code has already handled this event
 				return;
@@ -928,7 +928,7 @@
 
 			// update iframe-contents
 			let updateId = 0;
-			hostMessaging.onMessage('content', async (_event,  data) => {
+			hostMessaging.onMessage('content', async (_event, /** @type {import('../webviewMessages').UpdateContentEvent} */ data) => {
 				const currentUpdateId = ++updateId;
 				try {
 					await workerReady;
@@ -950,7 +950,7 @@
 				const frame = getActiveFrame();
 				const wasFirstLoad = firstLoad;
 				// keep current scrollY around and use later
-				
+				/** @type {(body: HTMLElement, window: Window) => void} */
 				let setInitialScrollPosition;
 				if (firstLoad) {
 					firstLoad = false;
@@ -1051,7 +1051,7 @@
 					}, 10);
 				} else {
 					assertIsDefined(newFrame.contentWindow).addEventListener('DOMContentLoaded', e => {
-						const contentDocument = e.target ? ( (e.target)) : undefined;
+						const contentDocument = e.target ? (/** @type {HTMLDocument} */ (e.target)) : undefined;
 						onFrameLoaded(assertIsDefined(contentDocument));
 					});
 				}
@@ -1110,7 +1110,7 @@
 					const contentWindow = assertIsDefined(newFrame.contentWindow);
 
 					contentWindow.addEventListener('load', function (e) {
-						const contentDocument =  (e.target);
+						const contentDocument = /** @type {Document} */ (e.target);
 
 						if (loadTimeout) {
 							clearTimeout(loadTimeout);
@@ -1132,10 +1132,10 @@
 
 						e.preventDefault();
 
-						
+						/** @type { Record<string, boolean>} */
 						let context = {};
 
-						
+						/** @type {HTMLElement | null} */
 						let el = e.target;
 						while (true) {
 							if (!el) {
@@ -1211,7 +1211,7 @@
 				assertIsDefined(target.contentDocument).execCommand(data);
 			});
 
-			
+			/** @type {string | undefined} */
 			let lastFindValue = undefined;
 
 			hostMessaging.onMessage('find', (_event, data) => {
@@ -1229,7 +1229,7 @@
 				}
 				lastFindValue = data.value;
 
-				const didFind = ( (target.contentWindow)).find(
+				const didFind = (/** @type {any} */ (target.contentWindow)).find(
 					data.value,
 					/* caseSensitive*/ false,
 					/* backwards*/ data.previous,
@@ -1263,7 +1263,7 @@
 				onBlur: () => hostMessaging.postMessage('did-blur', undefined)
 			});
 
-			( data) => {
+			(/** @type {any} */ (window))[vscodePostMessageFuncName] = (/** @type {string} */ command, /** @type {any} */ data) => {
 				switch (command) {
 					case 'onmessage':
 					case 'do-update-state':

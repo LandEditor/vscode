@@ -666,24 +666,24 @@ export const createTestItemChildren = <T extends ITestItemLike>(api: ITestItemAp
 	let mapped = new Map<string, T>();
 
 	return {
-		
+		/** @inheritdoc */
 		get size() {
 			return mapped.size;
 		},
 
-		
+		/** @inheritdoc */
 		forEach(callback: (item: T, collection: ITestItemChildren<T>) => unknown, thisArg?: unknown) {
 			for (const item of mapped.values()) {
 				callback.call(thisArg, item, this);
 			}
 		},
 
-		
+		/** @inheritdoc */
 		[Symbol.iterator](): IterableIterator<[string, T]> {
 			return mapped.entries();
 		},
 
-		
+		/** @inheritdoc */
 		replace(items: Iterable<T>) {
 			const newMapped = new Map<string, T>();
 			const toDelete = new Set(mapped.keys());
@@ -720,7 +720,7 @@ export const createTestItemChildren = <T extends ITestItemLike>(api: ITestItemAp
 		},
 
 
-		
+		/** @inheritdoc */
 		add(item: T) {
 			if (!(item instanceof checkCtor)) {
 				throw new InvalidTestItemError((item as ITestItemLike).id);
@@ -730,14 +730,14 @@ export const createTestItemChildren = <T extends ITestItemLike>(api: ITestItemAp
 			api.listener?.({ op: TestItemEventOp.Upsert, item });
 		},
 
-		
+		/** @inheritdoc */
 		delete(id: string) {
 			if (mapped.delete(id)) {
 				api.listener?.({ op: TestItemEventOp.RemoveChild, id });
 			}
 		},
 
-		
+		/** @inheritdoc */
 		get(itemId: string) {
 			return mapped.get(itemId);
 		},
