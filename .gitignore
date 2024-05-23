@@ -2,7 +2,6 @@
 .cache
 npm-debug.log
 Thumbs.db
-node_modules/
 .build/
 .vscode/extensions/**/out/
 extensions/**/dist/
