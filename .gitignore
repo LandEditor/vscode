@@ -1,6 +1,4 @@
-.DS_Store
 .cache
-npm-debug.log
 Thumbs.db
 .build/
 .vscode/extensions/**/out/
@@ -11,7 +9,6 @@ build/node_modules
 coverage/
 test_data/
 test-results/
-yarn-error.log
 vscode.lsif
 vscode.db
 /.profile-oss
