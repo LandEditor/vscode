@@ -51,10 +51,7 @@
 				"npm.autoDetect": {
 					"default": "on",
 					"description": "%config.npm.autoDetect%",
-					"enum": [
-						"off",
-						"on"
-					],
+					"enum": ["off", "on"],
 					"scope": "resource",
 					"type": "string"
 				},
@@ -77,30 +74,19 @@
 						"type": "string"
 					},
 					"scope": "resource",
-					"type": [
-						"string",
-						"array"
-					]
+					"type": ["string", "array"]
 				},
 				"npm.fetchOnlinePackageInfo": {
 					"default": true,
 					"description": "%config.npm.fetchOnlinePackageInfo%",
 					"scope": "window",
-					"tags": [
-						"usesOnlineServices"
-					],
+					"tags": ["usesOnlineServices"],
 					"type": "boolean"
 				},
 				"npm.packageManager": {
 					"default": "auto",
 					"description": "%config.npm.packageManager%",
-					"enum": [
-						"auto",
-						"npm",
-						"yarn",
-						"pnpm",
-						"bun"
-					],
+					"enum": ["auto", "npm", "yarn", "pnpm", "bun"],
 					"enumDescriptions": [
 						"%config.npm.packageManager.auto%",
 						"%config.npm.packageManager.npm%",
@@ -119,10 +105,7 @@
 				},
 				"npm.scriptExplorerAction": {
 					"default": "open",
-					"enum": [
-						"open",
-						"run"
-					],
+					"enum": ["open", "run"],
 					"markdownDescription": "%config.npm.scriptExplorerAction%",
 					"scope": "window",
 					"type": "string"
@@ -158,15 +141,11 @@
 		],
 		"languages": [
 			{
-				"extensions": [
-					".npmignore"
-				],
+				"extensions": [".npmignore"],
 				"id": "ignore"
 			},
 			{
-				"extensions": [
-					".npmrc"
-				],
+				"extensions": [".npmrc"],
 				"id": "properties"
 			}
 		],
@@ -276,9 +255,7 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"script"
-				],
+				"required": ["script"],
 				"type": "npm",
 				"when": "shellExecutionSupported"
 			}
@@ -339,7 +316,5 @@
 			"supported": "limited"
 		}
 	},
-	"enabledApiProposals": [
-		"terminalQuickFixProvider"
-	]
+	"enabledApiProposals": ["terminalQuickFixProvider"]
 }

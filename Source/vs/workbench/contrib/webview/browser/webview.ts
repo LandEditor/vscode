@@ -3,38 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Dimension } from 'vs/base/browser/dom';
-import { IMouseWheelEvent } from 'vs/base/browser/mouseEvent';
-import { CodeWindow } from 'vs/base/browser/window';
-import { equals } from 'vs/base/common/arrays';
-import { Event } from 'vs/base/common/event';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { isEqual } from 'vs/base/common/resources';
-import { URI } from 'vs/base/common/uri';
-import { generateUuid } from 'vs/base/common/uuid';
-import { IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { IWebviewPortMapping } from 'vs/platform/webview/common/webviewPortMapping';
-import { Memento, MementoObject } from 'vs/workbench/common/memento';
+import type { Dimension } from "vs/base/browser/dom";
+import type { IMouseWheelEvent } from "vs/base/browser/mouseEvent";
+import type { CodeWindow } from "vs/base/browser/window";
+import { equals } from "vs/base/common/arrays";
+import type { Event } from "vs/base/common/event";
+import type { IDisposable } from "vs/base/common/lifecycle";
+import { isEqual } from "vs/base/common/resources";
+import type { URI } from "vs/base/common/uri";
+import { generateUuid } from "vs/base/common/uuid";
+import {
+	type IContextKeyService,
+	RawContextKey,
+} from "vs/platform/contextkey/common/contextkey";
+import type { ExtensionIdentifier } from "vs/platform/extensions/common/extensions";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import type { IWebviewPortMapping } from "vs/platform/webview/common/webviewPortMapping";
+import { Memento, type MementoObject } from "vs/workbench/common/memento";
 
 /**
  * Set when the find widget in a webview in a webview is visible.
  */
-export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE = new RawContextKey<boolean>('webviewFindWidgetVisible', false);
+export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE =
+	new RawContextKey<boolean>("webviewFindWidgetVisible", false);
 
 /**
  * Set when the find widget in a webview is focused.
  */
-export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED = new RawContextKey<boolean>('webviewFindWidgetFocused', false);
+export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED =
+	new RawContextKey<boolean>("webviewFindWidgetFocused", false);
 
 /**
  * Set when the find widget in a webview is enabled in a webview
  */
-export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED = new RawContextKey<boolean>('webviewFindWidgetEnabled', false);
+export const KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED =
+	new RawContextKey<boolean>("webviewFindWidgetEnabled", false);
 
-export const IWebviewService = createDecorator<IWebviewService>('webviewService');
+export const IWebviewService =
+	createDecorator<IWebviewService>("webviewService");
 
 export interface IWebviewService {
 	readonly _serviceBrand: undefined;
@@ -80,10 +91,10 @@ export interface WebviewInitInfo {
 	readonly extension: WebviewExtensionDescription | undefined;
 }
 
-export const enum WebviewContentPurpose {
-	NotebookRenderer = 'notebookRenderer',
-	CustomEditor = 'customEditor',
-	WebviewView = 'webviewView',
+export enum WebviewContentPurpose {
+	NotebookRenderer = "notebookRenderer",
+	CustomEditor = "customEditor",
+	WebviewView = "webviewView",
 }
 
 export type WebviewStyles = { readonly [key: string]: string | number };
@@ -143,23 +154,38 @@ export interface WebviewContentOptions {
 /**
  * Check if two {@link WebviewContentOptions} are equal.
  */
-export function areWebviewContentOptionsEqual(a: WebviewContentOptions, b: WebviewContentOptions): boolean {
+export function areWebviewContentOptionsEqual(
+	a: WebviewContentOptions,
+	b: WebviewContentOptions,
+): boolean {
 	return (
-		a.allowMultipleAPIAcquire === b.allowMultipleAPIAcquire
-		&& a.allowScripts === b.allowScripts
-		&& a.allowForms === b.allowForms
-		&& equals(a.localResourceRoots, b.localResourceRoots, isEqual)
-		&& equals(a.portMapping, b.portMapping, (a, b) => a.extensionHostPort === b.extensionHostPort && a.webviewPort === b.webviewPort)
-		&& areEnableCommandUrisEqual(a, b)
+		a.allowMultipleAPIAcquire === b.allowMultipleAPIAcquire &&
+		a.allowScripts === b.allowScripts &&
+		a.allowForms === b.allowForms &&
+		equals(a.localResourceRoots, b.localResourceRoots, isEqual) &&
+		equals(
+			a.portMapping,
+			b.portMapping,
+			(a, b) =>
+				a.extensionHostPort === b.extensionHostPort &&
+				a.webviewPort === b.webviewPort,
+		) &&
+		areEnableCommandUrisEqual(a, b)
 	);
 }
 
-function areEnableCommandUrisEqual(a: WebviewContentOptions, b: WebviewContentOptions): boolean {
+function areEnableCommandUrisEqual(
+	a: WebviewContentOptions,
+	b: WebviewContentOptions,
+): boolean {
 	if (a.enableCommandUris === b.enableCommandUris) {
 		return true;
 	}
 
-	if (Array.isArray(a.enableCommandUris) && Array.isArray(b.enableCommandUris)) {
+	if (
+		Array.isArray(a.enableCommandUris) &&
+		Array.isArray(b.enableCommandUris)
+	) {
 		return equals(a.enableCommandUris, b.enableCommandUris);
 	}
 
@@ -177,7 +203,6 @@ export interface WebviewMessageReceivedEvent {
 }
 
 export interface IWebview extends IDisposable {
-
 	/**
 	 * The original view type of the webview.
 	 */
@@ -243,7 +268,10 @@ export interface IWebview extends IDisposable {
 
 	readonly onMessage: Event<WebviewMessageReceivedEvent>;
 
-	postMessage(message: any, transfer?: readonly ArrayBuffer[]): Promise<boolean>;
+	postMessage(
+		message: any,
+		transfer?: readonly ArrayBuffer[],
+	): Promise<boolean>;
 
 	focus(): void;
 	reload(): void;
@@ -307,7 +335,11 @@ export interface IOverlayWebview extends IWebview {
 	 * @param claimant Identifier for the object claiming the webview.
 	 *   This must match the `claimant` passed to {@link IOverlayWebview.release}.
 	 */
-	claim(claimant: any, targetWindow: CodeWindow, scopedContextKeyService: IContextKeyService | undefined): void;
+	claim(
+		claimant: any,
+		targetWindow: CodeWindow,
+		scopedContextKeyService: IContextKeyService | undefined,
+	): void;
 
 	/**
 	 * Release ownership of the webview.
@@ -328,7 +360,11 @@ export interface IOverlayWebview extends IWebview {
 	 * @param dimension Optional explicit dimensions to use for sizing the webview.
 	 * @param clippingContainer Optional container to clip the webview to. This should generally be a parent of `element`.
 	 */
-	layoutWebviewOverElement(element: HTMLElement, dimension?: Dimension, clippingContainer?: HTMLElement): void;
+	layoutWebviewOverElement(
+		element: HTMLElement,
+		dimension?: Dimension,
+		clippingContainer?: HTMLElement,
+	): void;
 }
 
 /**
@@ -337,7 +373,6 @@ export interface IOverlayWebview extends IWebview {
  * These are randomly generated
  */
 export class WebviewOriginStore {
-
 	private readonly _memento: Memento;
 	private readonly _state: MementoObject;
 
@@ -346,14 +381,20 @@ export class WebviewOriginStore {
 		@IStorageService storageService: IStorageService,
 	) {
 		this._memento = new Memento(rootStorageKey, storageService);
-		this._state = this._memento.getMemento(StorageScope.APPLICATION, StorageTarget.MACHINE);
+		this._state = this._memento.getMemento(
+			StorageScope.APPLICATION,
+			StorageTarget.MACHINE,
+		);
 	}
 
-	public getOrigin(viewType: string, additionalKey: string | undefined): string {
+	public getOrigin(
+		viewType: string,
+		additionalKey: string | undefined,
+	): string {
 		const key = this._getKey(viewType, additionalKey);
 
 		const existing = this._state[key];
-		if (existing && typeof existing === 'string') {
+		if (existing && typeof existing === "string") {
 			return existing;
 		}
 
@@ -363,7 +404,10 @@ export class WebviewOriginStore {
 		return newOrigin;
 	}
 
-	private _getKey(viewType: string, additionalKey: string | undefined): string {
+	private _getKey(
+		viewType: string,
+		additionalKey: string | undefined,
+	): string {
 		return JSON.stringify({ viewType, key: additionalKey });
 	}
 }
@@ -374,7 +418,6 @@ export class WebviewOriginStore {
  * These are randomly generated, but keyed on extension and webview viewType.
  */
 export class ExtensionKeyedWebviewOriginStore {
-
 	private readonly _store: WebviewOriginStore;
 
 	constructor(

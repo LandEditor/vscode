@@ -33,10 +33,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Compose",
-					"compose"
-				],
+				"aliases": ["Compose", "compose"],
 				"configuration": "./language-configuration.json",
 				"filenamePatterns": [
 					"compose.yml",
@@ -49,10 +46,7 @@
 				"id": "dockercompose"
 			},
 			{
-				"aliases": [
-					"YAML",
-					"yaml"
-				],
+				"aliases": ["YAML", "yaml"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".yaml",

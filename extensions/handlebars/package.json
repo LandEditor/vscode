@@ -21,25 +21,13 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Handlebars",
-					"handlebars"
-				],
+				"aliases": ["Handlebars", "handlebars"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".handlebars",
-					".hbs",
-					".hjs"
-				],
+				"extensions": [".handlebars", ".hbs", ".hjs"],
 				"id": "handlebars",
-				"mimetypes": [
-					"text/x-handlebars-template"
-				]
+				"mimetypes": ["text/x-handlebars-template"]
 			}
 		]
 	},
-	"extensionKind": [
-		"ui",
-		"workspace"
-	]
+	"extensionKind": ["ui", "workspace"]
 }

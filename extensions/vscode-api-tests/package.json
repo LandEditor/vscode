@@ -83,9 +83,7 @@
 								"type": "boolean"
 							}
 						},
-						"required": [
-							"program"
-						]
+						"required": ["program"]
 					}
 				},
 				"initialConfigurations": [
@@ -97,9 +95,7 @@
 					}
 				],
 				"label": "Mock Debug",
-				"languages": [
-					"markdown"
-				],
+				"languages": ["markdown"],
 				"type": "mock"
 			}
 		],
@@ -163,9 +159,7 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"flavor"
-				],
+				"required": ["flavor"],
 				"type": "custombuildscript"
 			}
 		],

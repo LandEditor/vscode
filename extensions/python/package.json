@@ -24,10 +24,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Python",
-					"py"
-				],
+				"aliases": ["Python", "py"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".py",
@@ -40,10 +37,7 @@
 					".ipy",
 					".pyt"
 				],
-				"filenames": [
-					"SConstruct",
-					"SConscript"
-				],
+				"filenames": ["SConstruct", "SConscript"],
 				"firstLine": "^#!\\s*/?.*\\bpython[0-9.-]*\\b",
 				"id": "python"
 			}

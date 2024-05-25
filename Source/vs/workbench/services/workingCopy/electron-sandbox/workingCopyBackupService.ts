@@ -3,20 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
-import { WorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackupService';
-import { URI } from 'vs/base/common/uri';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IWorkingCopyBackupService } from 'vs/workbench/services/workingCopy/common/workingCopyBackup';
-import { IFileService } from 'vs/platform/files/common/files';
-import { ILogService } from 'vs/platform/log/common/log';
-import { INativeWorkbenchEnvironmentService } from 'vs/workbench/services/environment/electron-sandbox/environmentService';
-import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { NativeWorkingCopyBackupTracker } from 'vs/workbench/services/workingCopy/electron-sandbox/workingCopyBackupTracker';
+import { URI } from "vs/base/common/uri";
+import { localize } from "vs/nls";
+import { IFileService } from "vs/platform/files/common/files";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { ILogService } from "vs/platform/log/common/log";
+import {
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "vs/workbench/common/contributions";
+import { INativeWorkbenchEnvironmentService } from "vs/workbench/services/environment/electron-sandbox/environmentService";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { IWorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackup";
+import { WorkingCopyBackupService } from "vs/workbench/services/workingCopy/common/workingCopyBackupService";
+import { NativeWorkingCopyBackupTracker } from "vs/workbench/services/workingCopy/electron-sandbox/workingCopyBackupTracker";
 
 export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
-
 	constructor(
 		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
@@ -29,16 +34,33 @@ export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 	}
 
 	private registerListeners(): void {
-
 		// Lifecycle: ensure to prolong the shutdown for as long
 		// as pending backup operations have not finished yet.
 		// Otherwise, we risk writing partial backups to disk.
-		this._register(this.lifecycleService.onWillShutdown(event => event.join(this.joinBackups(), { id: 'join.workingCopyBackups', label: localize('join.workingCopyBackups', "Backup working copies") })));
+		this._register(
+			this.lifecycleService.onWillShutdown((event) =>
+				event.join(this.joinBackups(), {
+					id: "join.workingCopyBackups",
+					label: localize(
+						"join.workingCopyBackups",
+						"Backup working copies",
+					),
+				}),
+			),
+		);
 	}
 }
 
 // Register Service
-registerSingleton(IWorkingCopyBackupService, NativeWorkingCopyBackupService, InstantiationType.Eager);
+registerSingleton(
+	IWorkingCopyBackupService,
+	NativeWorkingCopyBackupService,
+	InstantiationType.Eager,
+);
 
 // Register Backup Tracker
-registerWorkbenchContribution2(NativeWorkingCopyBackupTracker.ID, NativeWorkingCopyBackupTracker, WorkbenchPhase.BlockStartup);
+registerWorkbenchContribution2(
+	NativeWorkingCopyBackupTracker.ID,
+	NativeWorkingCopyBackupTracker,
+	WorkbenchPhase.BlockStartup,
+);

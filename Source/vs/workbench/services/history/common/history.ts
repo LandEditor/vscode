@@ -3,62 +3,60 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IResourceEditorInput } from 'vs/platform/editor/common/editor';
-import { GroupIdentifier } from 'vs/workbench/common/editor';
-import { EditorInput } from 'vs/workbench/common/editor/editorInput';
-import { URI } from 'vs/base/common/uri';
+import type { URI } from "vs/base/common/uri";
+import type { IResourceEditorInput } from "vs/platform/editor/common/editor";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import type { GroupIdentifier } from "vs/workbench/common/editor";
+import type { EditorInput } from "vs/workbench/common/editor/editorInput";
 
-export const IHistoryService = createDecorator<IHistoryService>('historyService');
+export const IHistoryService =
+	createDecorator<IHistoryService>("historyService");
 
 /**
  * Limit editor navigation to certain kinds.
  */
-export const enum GoFilter {
-
+export enum GoFilter {
 	/**
 	 * Navigate between editor navigation history
 	 * entries from any kind of navigation source.
 	 */
-	NONE,
+	NONE = 0,
 
 	/**
 	 * Only navigate between editor navigation history
 	 * entries that were resulting from edits.
 	 */
-	EDITS,
+	EDITS = 1,
 
 	/**
 	 * Only navigate between editor navigation history
 	 * entries that were resulting from navigations, such
 	 * as "Go to definition".
 	 */
-	NAVIGATION
+	NAVIGATION = 2,
 }
 
 /**
  * Limit editor navigation to certain scopes.
  */
-export const enum GoScope {
-
+export enum GoScope {
 	/**
 	 * Navigate across all editors and editor groups.
 	 */
-	DEFAULT,
+	DEFAULT = 0,
 
 	/**
 	 * Navigate only in editors of the active editor group.
 	 */
-	EDITOR_GROUP,
+	EDITOR_GROUP = 1,
 
 	/**
 	 * Navigate only in the active editor.
 	 */
-	EDITOR
+	EDITOR = 2,
 }
 
 export interface IHistoryService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -105,14 +103,20 @@ export interface IHistoryService {
 	 *
 	 * @param schemeFilter filter to restrict roots by scheme.
 	 */
-	getLastActiveWorkspaceRoot(schemeFilter?: string, authorityFilter?: string): URI | undefined;
+	getLastActiveWorkspaceRoot(
+		schemeFilter?: string,
+		authorityFilter?: string,
+	): URI | undefined;
 
 	/**
 	 * Looking at the editor history, returns the resource of the last file that was opened.
 	 *
 	 * @param schemeFilter filter to restrict roots by scheme.
 	 */
-	getLastActiveFile(schemeFilter: string, authorityFilter?: string): URI | undefined;
+	getLastActiveFile(
+		schemeFilter: string,
+		authorityFilter?: string,
+	): URI | undefined;
 
 	/**
 	 * Opens the next used editor if any.

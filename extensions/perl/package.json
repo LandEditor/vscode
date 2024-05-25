@@ -11,9 +11,7 @@
 				"language": "perl",
 				"path": "./syntaxes/perl.tmLanguage.json",
 				"scopeName": "source.perl",
-				"unbalancedBracketScopes": [
-					"variable.other.predefined.perl"
-				]
+				"unbalancedBracketScopes": ["variable.other.predefined.perl"]
 			},
 			{
 				"language": "raku",
@@ -23,28 +21,14 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Perl",
-					"perl"
-				],
+				"aliases": ["Perl", "perl"],
 				"configuration": "./perl.language-configuration.json",
-				"extensions": [
-					".pl",
-					".pm",
-					".pod",
-					".t",
-					".PL",
-					".psgi"
-				],
+				"extensions": [".pl", ".pm", ".pod", ".t", ".PL", ".psgi"],
 				"firstLine": "^#!.*\\bperl\\b",
 				"id": "perl"
 			},
 			{
-				"aliases": [
-					"Raku",
-					"Perl6",
-					"perl6"
-				],
+				"aliases": ["Raku", "Perl6", "perl6"],
 				"configuration": "./perl6.language-configuration.json",
 				"extensions": [
 					".raku",

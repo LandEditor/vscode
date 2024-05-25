@@ -24,18 +24,12 @@
 					"default": null,
 					"description": "%configuration.validate.executablePath%",
 					"scope": "machine-overridable",
-					"type": [
-						"string",
-						"null"
-					]
+					"type": ["string", "null"]
 				},
 				"php.validate.run": {
 					"default": "onSave",
 					"description": "%configuration.validate.run%",
-					"enum": [
-						"onSave",
-						"onType"
-					],
+					"enum": ["onSave", "onType"],
 					"type": "string"
 				}
 			},
@@ -49,9 +43,7 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:php"
-	],
+	"activationEvents": ["onLanguage:php"],
 	"dependencies": {
 		"which": "4.0.0"
 	},
@@ -63,9 +55,7 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"description": "%workspaceTrust%",
-			"restrictedConfigurations": [
-				"php.validate.executablePath"
-			],
+			"restrictedConfigurations": ["php.validate.executablePath"],
 			"supported": "limited"
 		},
 		"virtualWorkspaces": false

@@ -18,10 +18,7 @@
 				"url": "vscode://schemas/language-configuration"
 			},
 			{
-				"fileMatch": [
-					"*icon-theme.json",
-					"!*product-icon-theme.json"
-				],
+				"fileMatch": ["*icon-theme.json", "!*product-icon-theme.json"],
 				"url": "vscode://schemas/icon-theme"
 			},
 			{
@@ -35,17 +32,12 @@
 		],
 		"languages": [
 			{
-				"filenames": [
-					".vscodeignore"
-				],
+				"filenames": [".vscodeignore"],
 				"id": "ignore"
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:json",
-		"onLanguage:markdown"
-	],
+	"activationEvents": ["onLanguage:json", "onLanguage:markdown"],
 	"dependencies": {
 		"jsonc-parser": "3.2.1",
 		"markdown-it": "14.1.0",

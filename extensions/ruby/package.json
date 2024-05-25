@@ -15,10 +15,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Ruby",
-					"rb"
-				],
+				"aliases": ["Ruby", "rb"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".rb",

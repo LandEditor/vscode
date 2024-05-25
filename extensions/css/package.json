@@ -18,18 +18,11 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"CSS",
-					"css"
-				],
+				"aliases": ["CSS", "css"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".css"
-				],
+				"extensions": [".css"],
 				"id": "css",
-				"mimetypes": [
-					"text/css"
-				]
+				"mimetypes": ["text/css"]
 			}
 		]
 	}

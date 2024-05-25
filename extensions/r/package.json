@@ -15,17 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"R",
-					"r"
-				],
+				"aliases": ["R", "r"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".r",
-					".rhistory",
-					".rprofile",
-					".rt"
-				],
+				"extensions": [".r", ".rhistory", ".rprofile", ".rt"],
 				"id": "r"
 			}
 		]

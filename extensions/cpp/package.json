@@ -34,23 +34,13 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"C",
-					"c"
-				],
+				"aliases": ["C", "c"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".c",
-					".i"
-				],
+				"extensions": [".c", ".i"],
 				"id": "c"
 			},
 			{
-				"aliases": [
-					"C++",
-					"Cpp",
-					"cpp"
-				],
+				"aliases": ["C++", "Cpp", "cpp"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".cpp",
@@ -75,23 +65,15 @@
 				"id": "cpp"
 			},
 			{
-				"aliases": [
-					"CUDA C++"
-				],
+				"aliases": ["CUDA C++"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".cu",
-					".cuh"
-				],
+				"extensions": [".cu", ".cuh"],
 				"id": "cuda-cpp"
 			}
 		],
 		"problemMatchers": [
 			{
-				"fileLocation": [
-					"relative",
-					"${workspaceFolder}"
-				],
+				"fileLocation": ["relative", "${workspaceFolder}"],
 				"name": "nvcc",
 				"owner": "cuda-cpp",
 				"pattern": "$nvcc-location"

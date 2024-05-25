@@ -13,15 +13,11 @@
 		},
 		"grammars": [
 			{
-				"balancedBracketScopes": [
-					"*"
-				],
+				"balancedBracketScopes": ["*"],
 				"language": "shellscript",
 				"path": "./syntaxes/shell-unix-bash.tmLanguage.json",
 				"scopeName": "source.shell",
-				"unbalancedBracketScopes": [
-					"meta.scope.case-pattern.shell"
-				]
+				"unbalancedBracketScopes": ["meta.scope.case-pattern.shell"]
 			}
 		],
 		"languages": [
@@ -66,9 +62,7 @@
 					".yashrc",
 					".yash_profile"
 				],
-				"filenamePatterns": [
-					".env.*"
-				],
+				"filenamePatterns": [".env.*"],
 				"filenames": [
 					"APKBUILD",
 					"PKGBUILD",
@@ -84,9 +78,7 @@
 				],
 				"firstLine": "^#!.*\\b(bash|fish|zsh|sh|ksh|dtksh|pdksh|mksh|ash|dash|yash|sh|csh|jcsh|tcsh|itcsh).*|^#\\s*-\\*-[^*]*mode:\\s*shell-script[^*]*-\\*-",
 				"id": "shellscript",
-				"mimetypes": [
-					"text/x-shellscript"
-				]
+				"mimetypes": ["text/x-shellscript"]
 			}
 		]
 	}

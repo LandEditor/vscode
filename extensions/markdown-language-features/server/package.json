@@ -3,10 +3,7 @@
 	"description": "Markdown language server",
 	"main": "./out/node/main",
 	"browser": "./dist/browser/main",
-	"files": [
-		"dist/**/*.js",
-		"out/**/*.js"
-	],
+	"files": ["dist/**/*.js", "out/**/*.js"],
 	"scripts": {
 		"compile": "gulp compile-extension:markdown-language-features-server",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",

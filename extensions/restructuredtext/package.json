@@ -15,13 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"reStructuredText"
-				],
+				"aliases": ["reStructuredText"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".rst"
-				],
+				"extensions": [".rst"],
 				"id": "restructuredtext"
 			}
 		]

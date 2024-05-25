@@ -40,9 +40,7 @@
 				"embeddedLanguages": {
 					"meta.embedded.math.markdown": "latex"
 				},
-				"injectTo": [
-					"text.html.markdown"
-				],
+				"injectTo": ["text.html.markdown"],
 				"path": "./syntaxes/md-math-block.tmLanguage.json",
 				"scopeName": "markdown.math.block"
 			},
@@ -51,9 +49,7 @@
 					"meta.embedded.math.markdown": "latex",
 					"punctuation.definition.math.end.markdown": "latex"
 				},
-				"injectTo": [
-					"text.html.markdown"
-				],
+				"injectTo": ["text.html.markdown"],
 				"path": "./syntaxes/md-math-inline.tmLanguage.json",
 				"scopeName": "markdown.math.inline"
 			}

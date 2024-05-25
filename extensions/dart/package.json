@@ -15,13 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Dart"
-				],
+				"aliases": ["Dart"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".dart"
-				],
+				"extensions": [".dart"],
 				"id": "dart"
 			}
 		]

@@ -20,18 +20,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"F#",
-					"FSharp",
-					"fsharp"
-				],
+				"aliases": ["F#", "FSharp", "fsharp"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".fs",
-					".fsi",
-					".fsx",
-					".fsscript"
-				],
+				"extensions": [".fs", ".fsi", ".fsx", ".fsscript"],
 				"id": "fsharp"
 			}
 		],

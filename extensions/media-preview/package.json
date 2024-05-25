@@ -111,8 +111,5 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"extensionKind": [
-		"ui",
-		"workspace"
-	]
+	"extensionKind": ["ui", "workspace"]
 }

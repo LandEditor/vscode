@@ -15,13 +15,8 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Log"
-				],
-				"extensions": [
-					".log",
-					"*.log.?"
-				],
+				"aliases": ["Log"],
+				"extensions": [".log", "*.log.?"],
 				"id": "log"
 			}
 		]

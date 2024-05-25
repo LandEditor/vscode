@@ -3,31 +3,49 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DisposableStore, MutableDisposable } from 'vs/base/common/lifecycle';
-import { ServicesAccessor } from 'vs/editor/browser/editorExtensions';
-import { localize, localize2 } from 'vs/nls';
-import { Categories } from 'vs/platform/action/common/actionCommonCategories';
-import { Action2, registerAction2 } from 'vs/platform/actions/common/actions';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { SideBySideEditor } from 'vs/workbench/browser/parts/editor/sideBySideEditor';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { IEditorPane, IEditorPaneScrollPosition, isEditorPaneWithScrolling } from 'vs/workbench/common/editor';
-import { ReentrancyBarrier } from 'vs/base/common/controlFlow';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IStatusbarEntryAccessor, IStatusbarService, StatusbarAlignment } from 'vs/workbench/services/statusbar/browser/statusbar';
+import { ReentrancyBarrier } from "vs/base/common/controlFlow";
+import {
+	Disposable,
+	DisposableStore,
+	MutableDisposable,
+} from "vs/base/common/lifecycle";
+import type { ServicesAccessor } from "vs/editor/browser/editorExtensions";
+import { localize, localize2 } from "vs/nls";
+import { Categories } from "vs/platform/action/common/actionCommonCategories";
+import { Action2, registerAction2 } from "vs/platform/actions/common/actions";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { SideBySideEditor } from "vs/workbench/browser/parts/editor/sideBySideEditor";
+import type { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import {
+	type IEditorPane,
+	type IEditorPaneScrollPosition,
+	isEditorPaneWithScrolling,
+} from "vs/workbench/common/editor";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	type IStatusbarEntryAccessor,
+	IStatusbarService,
+	StatusbarAlignment,
+} from "vs/workbench/services/statusbar/browser/statusbar";
 
 export class SyncScroll extends Disposable implements IWorkbenchContribution {
+	static readonly ID = "workbench.contrib.syncScrolling";
 
-	static readonly ID = 'workbench.contrib.syncScrolling';
+	private readonly paneInitialScrollTop = new Map<
+		IEditorPane,
+		IEditorPaneScrollPosition | undefined
+	>();
 
-	private readonly paneInitialScrollTop = new Map<IEditorPane, IEditorPaneScrollPosition | undefined>();
-
-	private readonly syncScrollDispoasbles = this._register(new DisposableStore());
+	private readonly syncScrollDispoasbles = this._register(
+		new DisposableStore(),
+	);
 	private readonly paneDisposables = new DisposableStore();
 
-	private readonly statusBarEntry = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
+	private readonly statusBarEntry = this._register(
+		new MutableDisposable<IStatusbarEntryAccessor>(),
+	);
 
-	private isActive: boolean = false;
+	private isActive = false;
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
@@ -39,7 +57,11 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 	}
 
 	private registerActiveListeners(): void {
-		this.syncScrollDispoasbles.add(this.editorService.onDidVisibleEditorsChange(() => this.trackVisiblePanes()));
+		this.syncScrollDispoasbles.add(
+			this.editorService.onDidVisibleEditorsChange(() =>
+				this.trackVisiblePanes(),
+			),
+		);
 	}
 
 	private activate(): void {
@@ -68,35 +90,43 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 		this.paneInitialScrollTop.clear();
 
 		for (const pane of this.getAllVisiblePanes()) {
-
 			if (!isEditorPaneWithScrolling(pane)) {
 				continue;
 			}
 
 			this.paneInitialScrollTop.set(pane, pane.getScrollPosition());
-			this.paneDisposables.add(pane.onDidChangeScroll(() =>
-				this._reentrancyBarrier.runExclusivelyOrSkip(() => {
-					this.onDidEditorPaneScroll(pane);
-				})
-			));
+			this.paneDisposables.add(
+				pane.onDidChangeScroll(() =>
+					this._reentrancyBarrier.runExclusivelyOrSkip(() => {
+						this.onDidEditorPaneScroll(pane);
+					}),
+				),
+			);
 		}
 	}
 
 	private onDidEditorPaneScroll(scrolledPane: IEditorPane) {
-
-		const scrolledPaneInitialOffset = this.paneInitialScrollTop.get(scrolledPane);
+		const scrolledPaneInitialOffset =
+			this.paneInitialScrollTop.get(scrolledPane);
 		if (scrolledPaneInitialOffset === undefined) {
-			throw new Error('Scrolled pane not tracked');
+			throw new Error("Scrolled pane not tracked");
 		}
 
 		if (!isEditorPaneWithScrolling(scrolledPane)) {
-			throw new Error('Scrolled pane does not support scrolling');
+			throw new Error("Scrolled pane does not support scrolling");
 		}
 
 		const scrolledPaneCurrentPosition = scrolledPane.getScrollPosition();
 		const scrolledFromInitial = {
-			scrollTop: scrolledPaneCurrentPosition.scrollTop - scrolledPaneInitialOffset.scrollTop,
-			scrollLeft: scrolledPaneCurrentPosition.scrollLeft !== undefined && scrolledPaneInitialOffset.scrollLeft !== undefined ? scrolledPaneCurrentPosition.scrollLeft - scrolledPaneInitialOffset.scrollLeft : undefined,
+			scrollTop:
+				scrolledPaneCurrentPosition.scrollTop -
+				scrolledPaneInitialOffset.scrollTop,
+			scrollLeft:
+				scrolledPaneCurrentPosition.scrollLeft !== undefined &&
+				scrolledPaneInitialOffset.scrollLeft !== undefined
+					? scrolledPaneCurrentPosition.scrollLeft -
+						scrolledPaneInitialOffset.scrollLeft
+					: undefined,
 		};
 
 		for (const pane of this.getAllVisiblePanes()) {
@@ -110,16 +140,27 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 
 			const initialOffset = this.paneInitialScrollTop.get(pane);
 			if (initialOffset === undefined) {
-				throw new Error('Could not find initial offset for pane');
+				throw new Error("Could not find initial offset for pane");
 			}
 
 			const currentPanePosition = pane.getScrollPosition();
 			const newPaneScrollPosition = {
-				scrollTop: initialOffset.scrollTop + scrolledFromInitial.scrollTop,
-				scrollLeft: initialOffset.scrollLeft !== undefined && scrolledFromInitial.scrollLeft !== undefined ? initialOffset.scrollLeft + scrolledFromInitial.scrollLeft : undefined,
+				scrollTop:
+					initialOffset.scrollTop + scrolledFromInitial.scrollTop,
+				scrollLeft:
+					initialOffset.scrollLeft !== undefined &&
+					scrolledFromInitial.scrollLeft !== undefined
+						? initialOffset.scrollLeft +
+							scrolledFromInitial.scrollLeft
+						: undefined,
 			};
 
-			if (currentPanePosition.scrollTop === newPaneScrollPosition.scrollTop && currentPanePosition.scrollLeft === newPaneScrollPosition.scrollLeft) {
+			if (
+				currentPanePosition.scrollTop ===
+					newPaneScrollPosition.scrollTop &&
+				currentPanePosition.scrollLeft ===
+					newPaneScrollPosition.scrollLeft
+			) {
 				continue;
 			}
 
@@ -131,7 +172,6 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 		const panes: IEditorPane[] = [];
 
 		for (const pane of this.editorService.visibleEditorPanes) {
-
 			if (pane instanceof SideBySideEditor) {
 				const primaryPane = pane.getPrimaryEditorPane();
 				const secondaryPane = pane.getSecondaryEditorPane();
@@ -161,20 +201,31 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 	private toggleStatusbarItem(active: boolean): void {
 		if (active) {
 			if (!this.statusBarEntry.value) {
-				const text = localize('mouseScrolllingLocked', 'Scrolling Locked');
-				const tooltip = localize('mouseLockScrollingEnabled', 'Lock Scrolling Enabled');
-				this.statusBarEntry.value = this.statusbarService.addEntry({
-					name: text,
-					text,
-					tooltip,
-					ariaLabel: text,
-					command: {
-						id: 'workbench.action.toggleLockedScrolling',
-						title: ''
+				const text = localize(
+					"mouseScrolllingLocked",
+					"Scrolling Locked",
+				);
+				const tooltip = localize(
+					"mouseLockScrollingEnabled",
+					"Lock Scrolling Enabled",
+				);
+				this.statusBarEntry.value = this.statusbarService.addEntry(
+					{
+						name: text,
+						text,
+						tooltip,
+						ariaLabel: text,
+						command: {
+							id: "workbench.action.toggleLockedScrolling",
+							title: "",
+						},
+						kind: "prominent",
+						showInAllWindows: true,
 					},
-					kind: 'prominent',
-					showInAllWindows: true
-				}, 'status.scrollLockingEnabled', StatusbarAlignment.RIGHT, 102);
+					"status.scrollLockingEnabled",
+					StatusbarAlignment.RIGHT,
+					102,
+				);
 			}
 		} else {
 			this.statusBarEntry.clear();
@@ -183,54 +234,87 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 
 	private registerActions() {
 		const $this = this;
-		this._register(registerAction2(class extends Action2 {
-			constructor() {
-				super({
-					id: 'workbench.action.toggleLockedScrolling',
-					title: {
-						...localize2('toggleLockedScrolling', "Toggle Locked Scrolling Across Editors"),
-						mnemonicTitle: localize({ key: 'miToggleLockedScrolling', comment: ['&& denotes a mnemonic'] }, "Locked Scrolling"),
-					},
-					category: Categories.View,
-					f1: true,
-					metadata: {
-						description: localize('synchronizeScrolling', "Synchronize Scrolling Editors"),
+		this._register(
+			registerAction2(
+				class extends Action2 {
+					constructor() {
+						super({
+							id: "workbench.action.toggleLockedScrolling",
+							title: {
+								...localize2(
+									"toggleLockedScrolling",
+									"Toggle Locked Scrolling Across Editors",
+								),
+								mnemonicTitle: localize(
+									{
+										key: "miToggleLockedScrolling",
+										comment: ["&& denotes a mnemonic"],
+									},
+									"Locked Scrolling",
+								),
+							},
+							category: Categories.View,
+							f1: true,
+							metadata: {
+								description: localize(
+									"synchronizeScrolling",
+									"Synchronize Scrolling Editors",
+								),
+							},
+						});
 					}
-				});
-			}
 
-			run(): void {
-				$this.toggle();
-			}
-		}));
-		this._register(registerAction2(class extends Action2 {
-			constructor() {
-				super({
-					id: 'workbench.action.holdLockedScrolling',
-					title: {
-						...localize2('holdLockedScrolling', "Hold Locked Scrolling Across Editors"),
-						mnemonicTitle: localize({ key: 'miHoldLockedScrolling', comment: ['&& denotes a mnemonic'] }, "Locked Scrolling"),
-					},
-					category: Categories.View,
-				});
-			}
+					run(): void {
+						$this.toggle();
+					}
+				},
+			),
+		);
+		this._register(
+			registerAction2(
+				class extends Action2 {
+					constructor() {
+						super({
+							id: "workbench.action.holdLockedScrolling",
+							title: {
+								...localize2(
+									"holdLockedScrolling",
+									"Hold Locked Scrolling Across Editors",
+								),
+								mnemonicTitle: localize(
+									{
+										key: "miHoldLockedScrolling",
+										comment: ["&& denotes a mnemonic"],
+									},
+									"Locked Scrolling",
+								),
+							},
+							category: Categories.View,
+						});
+					}
 
-			run(accessor: ServicesAccessor): void {
-				const keybindingService = accessor.get(IKeybindingService);
+					run(accessor: ServicesAccessor): void {
+						const keybindingService =
+							accessor.get(IKeybindingService);
 
-				// Enable Sync Scrolling while pressed
-				$this.toggle();
+						// Enable Sync Scrolling while pressed
+						$this.toggle();
 
-				const holdMode = keybindingService.enableKeybindingHoldMode('workbench.action.holdLockedScrolling');
-				if (!holdMode) {
-					return;
-				}
+						const holdMode =
+							keybindingService.enableKeybindingHoldMode(
+								"workbench.action.holdLockedScrolling",
+							);
+						if (!holdMode) {
+							return;
+						}
 
-				holdMode.finally(() => {
-					$this.toggle();
-				});
-			}
-		}));
+						holdMode.finally(() => {
+							$this.toggle();
+						});
+					}
+				},
+			),
+		);
 	}
 
 	override dispose(): void {

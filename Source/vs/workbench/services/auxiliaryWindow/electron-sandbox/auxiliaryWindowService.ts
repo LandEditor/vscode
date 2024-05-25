@@ -3,34 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { IWorkbenchLayoutService } from 'vs/workbench/services/layout/browser/layoutService';
-import { AuxiliaryWindow, AuxiliaryWindowMode, BrowserAuxiliaryWindowService, IAuxiliaryWindowOpenOptions, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService';
-import { ISandboxGlobals } from 'vs/base/parts/sandbox/electron-sandbox/globals';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { DisposableStore } from 'vs/base/common/lifecycle';
-import { INativeHostService } from 'vs/platform/native/common/native';
-import { IDialogService } from 'vs/platform/dialogs/common/dialogs';
-import { CodeWindow } from 'vs/base/browser/window';
-import { mark } from 'vs/base/common/performance';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ShutdownReason } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { Barrier } from 'vs/base/common/async';
-import { IHostService } from 'vs/workbench/services/host/browser/host';
-import { applyZoom } from 'vs/platform/window/electron-sandbox/window';
-import { getZoomLevel, isFullscreen, setFullscreen } from 'vs/base/browser/browser';
-import { getActiveWindow } from 'vs/base/browser/dom';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { isMacintosh } from 'vs/base/common/platform';
+import {
+	getZoomLevel,
+	isFullscreen,
+	setFullscreen,
+} from "vs/base/browser/browser";
+import { getActiveWindow } from "vs/base/browser/dom";
+import type { CodeWindow } from "vs/base/browser/window";
+import type { Barrier } from "vs/base/common/async";
+import type { DisposableStore } from "vs/base/common/lifecycle";
+import { mark } from "vs/base/common/performance";
+import { isMacintosh } from "vs/base/common/platform";
+import type { ISandboxGlobals } from "vs/base/parts/sandbox/electron-sandbox/globals";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IDialogService } from "vs/platform/dialogs/common/dialogs";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { INativeHostService } from "vs/platform/native/common/native";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { applyZoom } from "vs/platform/window/electron-sandbox/window";
+import {
+	AuxiliaryWindow,
+	AuxiliaryWindowMode,
+	BrowserAuxiliaryWindowService,
+	type IAuxiliaryWindowOpenOptions,
+	IAuxiliaryWindowService,
+} from "vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { IHostService } from "vs/workbench/services/host/browser/host";
+import { IWorkbenchLayoutService } from "vs/workbench/services/layout/browser/layoutService";
+import { ShutdownReason } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 type NativeCodeWindow = CodeWindow & {
 	readonly vscode: ISandboxGlobals;
 };
 
 export class NativeAuxiliaryWindow extends AuxiliaryWindow {
-
 	private skipUnloadConfirmation = false;
 
 	private maximized = false;
@@ -59,46 +71,73 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 
 	private handleMaximizedState(): void {
 		(async () => {
-			this.maximized = await this.nativeHostService.isMaximized({ targetWindowId: this.window.vscodeWindowId });
+			this.maximized = await this.nativeHostService.isMaximized({
+				targetWindowId: this.window.vscodeWindowId,
+			});
 		})();
 
-		this._register(this.nativeHostService.onDidMaximizeWindow(windowId => {
-			if (windowId === this.window.vscodeWindowId) {
-				this.maximized = true;
-			}
-		}));
+		this._register(
+			this.nativeHostService.onDidMaximizeWindow((windowId) => {
+				if (windowId === this.window.vscodeWindowId) {
+					this.maximized = true;
+				}
+			}),
+		);
 
-		this._register(this.nativeHostService.onDidUnmaximizeWindow(windowId => {
-			if (windowId === this.window.vscodeWindowId) {
-				this.maximized = false;
-			}
-		}));
+		this._register(
+			this.nativeHostService.onDidUnmaximizeWindow((windowId) => {
+				if (windowId === this.window.vscodeWindowId) {
+					this.maximized = false;
+				}
+			}),
+		);
 	}
 
 	private async handleFullScreenState(): Promise<void> {
-		const fullscreen = await this.nativeHostService.isFullScreen({ targetWindowId: this.window.vscodeWindowId });
+		const fullscreen = await this.nativeHostService.isFullScreen({
+			targetWindowId: this.window.vscodeWindowId,
+		});
 		if (fullscreen) {
 			setFullscreen(true, this.window);
 		}
 	}
 
-	protected override async handleVetoBeforeClose(e: BeforeUnloadEvent, veto: string): Promise<void> {
+	protected override async handleVetoBeforeClose(
+		e: BeforeUnloadEvent,
+		veto: string,
+	): Promise<void> {
 		this.preventUnload(e);
 
-		await this.dialogService.error(veto, localize('backupErrorDetails', "Try saving or reverting the editors with unsaved changes first and then try again."));
+		await this.dialogService.error(
+			veto,
+			localize(
+				"backupErrorDetails",
+				"Try saving or reverting the editors with unsaved changes first and then try again.",
+			),
+		);
 	}
 
-	protected override async confirmBeforeClose(e: BeforeUnloadEvent): Promise<void> {
+	protected override async confirmBeforeClose(
+		e: BeforeUnloadEvent,
+	): Promise<void> {
 		if (this.skipUnloadConfirmation) {
 			return;
 		}
 
 		this.preventUnload(e);
 
-		const confirmed = await this.instantiationService.invokeFunction(accessor => NativeAuxiliaryWindow.confirmOnShutdown(accessor, ShutdownReason.CLOSE));
+		const confirmed = await this.instantiationService.invokeFunction(
+			(accessor) =>
+				NativeAuxiliaryWindow.confirmOnShutdown(
+					accessor,
+					ShutdownReason.CLOSE,
+				),
+		);
 		if (confirmed) {
 			this.skipUnloadConfirmation = true;
-			this.nativeHostService.closeWindow({ targetWindowId: this.window.vscodeWindowId });
+			this.nativeHostService.closeWindow({
+				targetWindowId: this.window.vscodeWindowId,
+			});
 		}
 	}
 
@@ -113,13 +152,16 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 		return {
 			...state,
 			bounds: state.bounds,
-			mode: this.maximized ? AuxiliaryWindowMode.Maximized : fullscreen ? AuxiliaryWindowMode.Fullscreen : AuxiliaryWindowMode.Normal
+			mode: this.maximized
+				? AuxiliaryWindowMode.Maximized
+				: fullscreen
+					? AuxiliaryWindowMode.Fullscreen
+					: AuxiliaryWindowMode.Normal,
 		};
 	}
 }
 
 export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService {
-
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IConfigurationService configurationService: IConfigurationService,
@@ -133,19 +175,27 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 		super(layoutService, dialogService, configurationService, telemetryService, hostService, environmentService);
 	}
 
-	protected override async resolveWindowId(auxiliaryWindow: NativeCodeWindow): Promise<number> {
-		mark('code/auxiliaryWindow/willResolveWindowId');
-		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke('vscode:registerAuxiliaryWindow', this.nativeHostService.windowId);
-		mark('code/auxiliaryWindow/didResolveWindowId');
+	protected override async resolveWindowId(
+		auxiliaryWindow: NativeCodeWindow,
+	): Promise<number> {
+		mark("code/auxiliaryWindow/willResolveWindowId");
+		const windowId = await auxiliaryWindow.vscode.ipcRenderer.invoke(
+			"vscode:registerAuxiliaryWindow",
+			this.nativeHostService.windowId,
+		);
+		mark("code/auxiliaryWindow/didResolveWindowId");
 
 		return windowId;
 	}
 
-	protected override createContainer(auxiliaryWindow: NativeCodeWindow, disposables: DisposableStore, options?: IAuxiliaryWindowOpenOptions) {
-
+	protected override createContainer(
+		auxiliaryWindow: NativeCodeWindow,
+		disposables: DisposableStore,
+		options?: IAuxiliaryWindowOpenOptions,
+	) {
 		// Zoom level (either explicitly provided or inherited from main window)
 		let windowZoomLevel: number;
-		if (typeof options?.zoomLevel === 'number') {
+		if (typeof options?.zoomLevel === "number") {
 			windowZoomLevel = options.zoomLevel;
 		} else {
 			windowZoomLevel = getZoomLevel(getActiveWindow());
@@ -156,9 +206,27 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 		return super.createContainer(auxiliaryWindow, disposables);
 	}
 
-	protected override createAuxiliaryWindow(targetWindow: CodeWindow, container: HTMLElement, stylesHaveLoaded: Barrier,): AuxiliaryWindow {
-		return new NativeAuxiliaryWindow(targetWindow, container, stylesHaveLoaded, this.configurationService, this.nativeHostService, this.instantiationService, this.hostService, this.environmentService, this.dialogService);
+	protected override createAuxiliaryWindow(
+		targetWindow: CodeWindow,
+		container: HTMLElement,
+		stylesHaveLoaded: Barrier,
+	): AuxiliaryWindow {
+		return new NativeAuxiliaryWindow(
+			targetWindow,
+			container,
+			stylesHaveLoaded,
+			this.configurationService,
+			this.nativeHostService,
+			this.instantiationService,
+			this.hostService,
+			this.environmentService,
+			this.dialogService,
+		);
 	}
 }
 
-registerSingleton(IAuxiliaryWindowService, NativeAuxiliaryWindowService, InstantiationType.Delayed);
+registerSingleton(
+	IAuxiliaryWindowService,
+	NativeAuxiliaryWindowService,
+	InstantiationType.Delayed,
+);

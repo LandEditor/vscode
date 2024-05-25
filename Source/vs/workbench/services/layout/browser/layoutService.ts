@@ -3,127 +3,156 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { refineServiceDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { Event } from 'vs/base/common/event';
-import { ILayoutService } from 'vs/platform/layout/browser/layoutService';
-import { Part } from 'vs/workbench/browser/part';
-import { IDimension } from 'vs/base/browser/dom';
-import { Direction } from 'vs/base/browser/ui/grid/grid';
-import { isMacintosh, isNative, isWeb } from 'vs/base/common/platform';
-import { isAuxiliaryWindow } from 'vs/base/browser/window';
-import { CustomTitleBarVisibility, TitleBarSetting, getMenuBarVisibility, hasCustomTitlebar, hasNativeTitlebar } from 'vs/platform/window/common/window';
-import { isFullscreen, isWCOEnabled } from 'vs/base/browser/browser';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IDisposable } from 'vs/base/common/lifecycle';
+import { isFullscreen, isWCOEnabled } from "vs/base/browser/browser";
+import type { IDimension } from "vs/base/browser/dom";
+import type { Direction } from "vs/base/browser/ui/grid/grid";
+import { isAuxiliaryWindow } from "vs/base/browser/window";
+import type { Event } from "vs/base/common/event";
+import type { IDisposable } from "vs/base/common/lifecycle";
+import { isMacintosh, isNative, isWeb } from "vs/base/common/platform";
+import type { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { refineServiceDecorator } from "vs/platform/instantiation/common/instantiation";
+import { ILayoutService } from "vs/platform/layout/browser/layoutService";
+import {
+	CustomTitleBarVisibility,
+	TitleBarSetting,
+	getMenuBarVisibility,
+	hasCustomTitlebar,
+	hasNativeTitlebar,
+} from "vs/platform/window/common/window";
+import type { Part } from "vs/workbench/browser/part";
 
-export const IWorkbenchLayoutService = refineServiceDecorator<ILayoutService, IWorkbenchLayoutService>(ILayoutService);
+export const IWorkbenchLayoutService = refineServiceDecorator<
+	ILayoutService,
+	IWorkbenchLayoutService
+>(ILayoutService);
 
-export const enum Parts {
-	TITLEBAR_PART = 'workbench.parts.titlebar',
-	BANNER_PART = 'workbench.parts.banner',
-	ACTIVITYBAR_PART = 'workbench.parts.activitybar',
-	SIDEBAR_PART = 'workbench.parts.sidebar',
-	PANEL_PART = 'workbench.parts.panel',
-	AUXILIARYBAR_PART = 'workbench.parts.auxiliarybar',
-	EDITOR_PART = 'workbench.parts.editor',
-	STATUSBAR_PART = 'workbench.parts.statusbar'
+export enum Parts {
+	TITLEBAR_PART = "workbench.parts.titlebar",
+	BANNER_PART = "workbench.parts.banner",
+	ACTIVITYBAR_PART = "workbench.parts.activitybar",
+	SIDEBAR_PART = "workbench.parts.sidebar",
+	PANEL_PART = "workbench.parts.panel",
+	AUXILIARYBAR_PART = "workbench.parts.auxiliarybar",
+	EDITOR_PART = "workbench.parts.editor",
+	STATUSBAR_PART = "workbench.parts.statusbar",
 }
 
-export const enum ZenModeSettings {
-	SHOW_TABS = 'zenMode.showTabs',
-	HIDE_LINENUMBERS = 'zenMode.hideLineNumbers',
-	HIDE_STATUSBAR = 'zenMode.hideStatusBar',
-	HIDE_ACTIVITYBAR = 'zenMode.hideActivityBar',
-	CENTER_LAYOUT = 'zenMode.centerLayout',
-	FULLSCREEN = 'zenMode.fullScreen',
-	RESTORE = 'zenMode.restore',
-	SILENT_NOTIFICATIONS = 'zenMode.silentNotifications',
+export enum ZenModeSettings {
+	SHOW_TABS = "zenMode.showTabs",
+	HIDE_LINENUMBERS = "zenMode.hideLineNumbers",
+	HIDE_STATUSBAR = "zenMode.hideStatusBar",
+	HIDE_ACTIVITYBAR = "zenMode.hideActivityBar",
+	CENTER_LAYOUT = "zenMode.centerLayout",
+	FULLSCREEN = "zenMode.fullScreen",
+	RESTORE = "zenMode.restore",
+	SILENT_NOTIFICATIONS = "zenMode.silentNotifications",
 }
 
-export const enum LayoutSettings {
-	ACTIVITY_BAR_LOCATION = 'workbench.activityBar.location',
-	EDITOR_TABS_MODE = 'workbench.editor.showTabs',
-	EDITOR_ACTIONS_LOCATION = 'workbench.editor.editorActionsLocation',
-	COMMAND_CENTER = 'window.commandCenter',
-	LAYOUT_ACTIONS = 'workbench.layoutControl.enabled',
+export enum LayoutSettings {
+	ACTIVITY_BAR_LOCATION = "workbench.activityBar.location",
+	EDITOR_TABS_MODE = "workbench.editor.showTabs",
+	EDITOR_ACTIONS_LOCATION = "workbench.editor.editorActionsLocation",
+	COMMAND_CENTER = "window.commandCenter",
+	LAYOUT_ACTIONS = "workbench.layoutControl.enabled",
 }
 
-export const enum ActivityBarPosition {
-	DEFAULT = 'default',
-	TOP = 'top',
-	BOTTOM = 'bottom',
-	HIDDEN = 'hidden'
+export enum ActivityBarPosition {
+	DEFAULT = "default",
+	TOP = "top",
+	BOTTOM = "bottom",
+	HIDDEN = "hidden",
 }
 
-export const enum EditorTabsMode {
-	MULTIPLE = 'multiple',
-	SINGLE = 'single',
-	NONE = 'none'
+export enum EditorTabsMode {
+	MULTIPLE = "multiple",
+	SINGLE = "single",
+	NONE = "none",
 }
 
-export const enum EditorActionsLocation {
-	DEFAULT = 'default',
-	TITLEBAR = 'titleBar',
-	HIDDEN = 'hidden'
+export enum EditorActionsLocation {
+	DEFAULT = "default",
+	TITLEBAR = "titleBar",
+	HIDDEN = "hidden",
 }
 
-export const enum Position {
-	LEFT,
-	RIGHT,
-	BOTTOM
+export enum Position {
+	LEFT = 0,
+	RIGHT = 1,
+	BOTTOM = 2,
 }
 
-export const enum PanelOpensMaximizedOptions {
-	ALWAYS,
-	NEVER,
-	REMEMBER_LAST
+export enum PanelOpensMaximizedOptions {
+	ALWAYS = 0,
+	NEVER = 1,
+	REMEMBER_LAST = 2,
 }
 
-export type PanelAlignment = 'left' | 'center' | 'right' | 'justify';
+export type PanelAlignment = "left" | "center" | "right" | "justify";
 
 export function positionToString(position: Position): string {
 	switch (position) {
-		case Position.LEFT: return 'left';
-		case Position.RIGHT: return 'right';
-		case Position.BOTTOM: return 'bottom';
-		default: return 'bottom';
+		case Position.LEFT:
+			return "left";
+		case Position.RIGHT:
+			return "right";
+		case Position.BOTTOM:
+			return "bottom";
+		default:
+			return "bottom";
 	}
 }
 
 const positionsByString: { [key: string]: Position } = {
 	[positionToString(Position.LEFT)]: Position.LEFT,
 	[positionToString(Position.RIGHT)]: Position.RIGHT,
-	[positionToString(Position.BOTTOM)]: Position.BOTTOM
+	[positionToString(Position.BOTTOM)]: Position.BOTTOM,
 };
 
 export function positionFromString(str: string): Position {
 	return positionsByString[str];
 }
 
-function panelOpensMaximizedSettingToString(setting: PanelOpensMaximizedOptions): string {
+function panelOpensMaximizedSettingToString(
+	setting: PanelOpensMaximizedOptions,
+): string {
 	switch (setting) {
-		case PanelOpensMaximizedOptions.ALWAYS: return 'always';
-		case PanelOpensMaximizedOptions.NEVER: return 'never';
-		case PanelOpensMaximizedOptions.REMEMBER_LAST: return 'preserve';
-		default: return 'preserve';
+		case PanelOpensMaximizedOptions.ALWAYS:
+			return "always";
+		case PanelOpensMaximizedOptions.NEVER:
+			return "never";
+		case PanelOpensMaximizedOptions.REMEMBER_LAST:
+			return "preserve";
+		default:
+			return "preserve";
 	}
 }
 
-const panelOpensMaximizedByString: { [key: string]: PanelOpensMaximizedOptions } = {
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.ALWAYS)]: PanelOpensMaximizedOptions.ALWAYS,
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]: PanelOpensMaximizedOptions.NEVER,
-	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.REMEMBER_LAST)]: PanelOpensMaximizedOptions.REMEMBER_LAST
+const panelOpensMaximizedByString: {
+	[key: string]: PanelOpensMaximizedOptions;
+} = {
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.ALWAYS)]:
+		PanelOpensMaximizedOptions.ALWAYS,
+	[panelOpensMaximizedSettingToString(PanelOpensMaximizedOptions.NEVER)]:
+		PanelOpensMaximizedOptions.NEVER,
+	[panelOpensMaximizedSettingToString(
+		PanelOpensMaximizedOptions.REMEMBER_LAST,
+	)]: PanelOpensMaximizedOptions.REMEMBER_LAST,
 };
 
-export function panelOpensMaximizedFromString(str: string): PanelOpensMaximizedOptions {
+export function panelOpensMaximizedFromString(
+	str: string,
+): PanelOpensMaximizedOptions {
 	return panelOpensMaximizedByString[str];
 }
 
-export type MULTI_WINDOW_PARTS = Parts.EDITOR_PART | Parts.STATUSBAR_PART | Parts.TITLEBAR_PART;
+export type MULTI_WINDOW_PARTS =
+	| Parts.EDITOR_PART
+	| Parts.STATUSBAR_PART
+	| Parts.TITLEBAR_PART;
 export type SINGLE_WINDOW_PARTS = Exclude<Parts, MULTI_WINDOW_PARTS>;
 
 export interface IWorkbenchLayoutService extends ILayoutService {
-
 	readonly _serviceBrand: undefined;
 
 	/**
@@ -134,7 +163,10 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	/**
 	 * Emits when the target window is maximized or unmaximized.
 	 */
-	readonly onDidChangeWindowMaximized: Event<{ readonly windowId: number; readonly maximized: boolean }>;
+	readonly onDidChangeWindowMaximized: Event<{
+		readonly windowId: number;
+		readonly maximized: boolean;
+	}>;
 
 	/**
 	 * Emits when main editor centered layout is enabled or disabled.
@@ -210,9 +242,26 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	/**
 	 * Set part hidden or not in the target window.
 	 */
-	setPartHidden(hidden: boolean, part: Exclude<SINGLE_WINDOW_PARTS, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>): void;
-	setPartHidden(hidden: boolean, part: Exclude<MULTI_WINDOW_PARTS, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, targetWindow: Window): void;
-	setPartHidden(hidden: boolean, part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>, targetWindow: Window): void;
+	setPartHidden(
+		hidden: boolean,
+		part: Exclude<
+			SINGLE_WINDOW_PARTS,
+			Parts.STATUSBAR_PART | Parts.TITLEBAR_PART
+		>,
+	): void;
+	setPartHidden(
+		hidden: boolean,
+		part: Exclude<
+			MULTI_WINDOW_PARTS,
+			Parts.STATUSBAR_PART | Parts.TITLEBAR_PART
+		>,
+		targetWindow: Window,
+	): void;
+	setPartHidden(
+		hidden: boolean,
+		part: Exclude<Parts, Parts.STATUSBAR_PART | Parts.TITLEBAR_PART>,
+		targetWindow: Window,
+	): void;
 
 	/**
 	 * Maximizes the panel height if the panel is not already maximized.
@@ -288,7 +337,11 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	/**
 	 * Resize the provided part in the main window.
 	 */
-	resizePart(part: Parts, sizeChangeWidth: number, sizeChangeHeight: number): void;
+	resizePart(
+		part: Parts,
+		sizeChangeWidth: number,
+		sizeChangeHeight: number,
+	): void;
 
 	/**
 	 * Register a part to participate in the layout.
@@ -308,11 +361,18 @@ export interface IWorkbenchLayoutService extends ILayoutService {
 	/**
 	 * Returns the next visible view part in a given direction in the main window.
 	 */
-	getVisibleNeighborPart(part: Parts, direction: Direction): Parts | undefined;
+	getVisibleNeighborPart(
+		part: Parts,
+		direction: Direction,
+	): Parts | undefined;
 }
 
-export function shouldShowCustomTitleBar(configurationService: IConfigurationService, window: Window, menuBarToggled?: boolean, zenModeActive?: boolean): boolean {
-
+export function shouldShowCustomTitleBar(
+	configurationService: IConfigurationService,
+	window: Window,
+	menuBarToggled?: boolean,
+	zenModeActive?: boolean,
+): boolean {
 	if (!hasCustomTitlebar(configurationService)) {
 		return false;
 	}
@@ -325,8 +385,16 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 	const nativeTitleBarEnabled = hasNativeTitlebar(configurationService);
 
 	if (!isWeb) {
-		const showCustomTitleBar = configurationService.getValue<CustomTitleBarVisibility>(TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY);
-		if (showCustomTitleBar === CustomTitleBarVisibility.NEVER && nativeTitleBarEnabled || showCustomTitleBar === CustomTitleBarVisibility.WINDOWED && inFullscreen) {
+		const showCustomTitleBar =
+			configurationService.getValue<CustomTitleBarVisibility>(
+				TitleBarSetting.CUSTOM_TITLE_BAR_VISIBILITY,
+			);
+		if (
+			(showCustomTitleBar === CustomTitleBarVisibility.NEVER &&
+				nativeTitleBarEnabled) ||
+			(showCustomTitleBar === CustomTitleBarVisibility.WINDOWED &&
+				inFullscreen)
+		) {
 			return false;
 		}
 	}
@@ -356,16 +424,18 @@ export function shouldShowCustomTitleBar(configurationService: IConfigurationSer
 	}
 
 	// remaining behavior is based on menubar visibility
-	const menuBarVisibility = !isAuxiliaryWindow(window) ? getMenuBarVisibility(configurationService) : 'hidden';
+	const menuBarVisibility = isAuxiliaryWindow(window)
+		? "hidden"
+		: getMenuBarVisibility(configurationService);
 	switch (menuBarVisibility) {
-		case 'classic':
+		case "classic":
 			return !inFullscreen || !!menuBarToggled;
-		case 'compact':
-		case 'hidden':
+		case "compact":
+		case "hidden":
 			return false;
-		case 'toggle':
+		case "toggle":
 			return !!menuBarToggled;
-		case 'visible':
+		case "visible":
 			return true;
 		default:
 			return isWeb ? false : !inFullscreen || !!menuBarToggled;
@@ -379,15 +449,30 @@ function isTitleBarEmpty(configurationService: IConfigurationService): boolean {
 	}
 
 	// with the activity bar on top, we should always show
-	const activityBarPosition = configurationService.getValue<ActivityBarPosition>(LayoutSettings.ACTIVITY_BAR_LOCATION);
-	if (activityBarPosition === ActivityBarPosition.TOP || activityBarPosition === ActivityBarPosition.BOTTOM) {
+	const activityBarPosition =
+		configurationService.getValue<ActivityBarPosition>(
+			LayoutSettings.ACTIVITY_BAR_LOCATION,
+		);
+	if (
+		activityBarPosition === ActivityBarPosition.TOP ||
+		activityBarPosition === ActivityBarPosition.BOTTOM
+	) {
 		return false;
 	}
 
 	// with the editor actions on top, we should always show
-	const editorActionsLocation = configurationService.getValue<EditorActionsLocation>(LayoutSettings.EDITOR_ACTIONS_LOCATION);
-	const editorTabsMode = configurationService.getValue<EditorTabsMode>(LayoutSettings.EDITOR_TABS_MODE);
-	if (editorActionsLocation === EditorActionsLocation.TITLEBAR || editorActionsLocation === EditorActionsLocation.DEFAULT && editorTabsMode === EditorTabsMode.NONE) {
+	const editorActionsLocation =
+		configurationService.getValue<EditorActionsLocation>(
+			LayoutSettings.EDITOR_ACTIONS_LOCATION,
+		);
+	const editorTabsMode = configurationService.getValue<EditorTabsMode>(
+		LayoutSettings.EDITOR_TABS_MODE,
+	);
+	if (
+		editorActionsLocation === EditorActionsLocation.TITLEBAR ||
+		(editorActionsLocation === EditorActionsLocation.DEFAULT &&
+			editorTabsMode === EditorTabsMode.NONE)
+	) {
 		return false;
 	}
 

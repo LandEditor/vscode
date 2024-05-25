@@ -3,17 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-import { CellKind } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { CellEditState, getNotebookEditorFromEditorPane } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { RedoCommand, UndoCommand } from 'vs/editor/browser/editorExtensions';
-import { NotebookViewModel } from 'vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl';
+import { Disposable } from "vs/base/common/lifecycle";
+import { RedoCommand, UndoCommand } from "vs/editor/browser/editorExtensions";
+import {
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "vs/workbench/common/contributions";
+import {
+	CellEditState,
+	getNotebookEditorFromEditorPane,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import type { NotebookViewModel } from "vs/workbench/contrib/notebook/browser/viewModel/notebookViewModelImpl";
+import { CellKind } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 class NotebookUndoRedoContribution extends Disposable {
-
-	static readonly ID = 'workbench.contrib.notebookUndoRedo';
+	static readonly ID = "workbench.contrib.notebookUndoRedo";
 
 	constructor(@IEditorService private readonly _editorService: IEditorService) {
 		super();
@@ -64,4 +69,8 @@ class NotebookUndoRedoContribution extends Disposable {
 	}
 }
 
-registerWorkbenchContribution2(NotebookUndoRedoContribution.ID, NotebookUndoRedoContribution, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	NotebookUndoRedoContribution.ID,
+	NotebookUndoRedoContribution,
+	WorkbenchPhase.BlockRestore,
+);

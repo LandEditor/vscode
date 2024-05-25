@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { Event, Emitter } from 'vs/base/common/event';
+import { Emitter, type Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
 
 export interface INotebookFindFiltersChangeEvent {
 	markupInput?: boolean;
@@ -14,10 +14,12 @@ export interface INotebookFindFiltersChangeEvent {
 }
 
 export class NotebookFindFilters extends Disposable {
-	private readonly _onDidChange: Emitter<INotebookFindFiltersChangeEvent> = this._register(new Emitter<INotebookFindFiltersChangeEvent>());
-	readonly onDidChange: Event<INotebookFindFiltersChangeEvent> = this._onDidChange.event;
+	private readonly _onDidChange: Emitter<INotebookFindFiltersChangeEvent> =
+		this._register(new Emitter<INotebookFindFiltersChangeEvent>());
+	readonly onDidChange: Event<INotebookFindFiltersChangeEvent> =
+		this._onDidChange.event;
 
-	private _markupInput: boolean = true;
+	private _markupInput = true;
 
 	get markupInput(): boolean {
 		return this._markupInput;
@@ -30,7 +32,7 @@ export class NotebookFindFilters extends Disposable {
 		}
 	}
 
-	private _markupPreview: boolean = true;
+	private _markupPreview = true;
 
 	get markupPreview(): boolean {
 		return this._markupPreview;
@@ -42,7 +44,7 @@ export class NotebookFindFilters extends Disposable {
 			this._onDidChange.fire({ markupPreview: value });
 		}
 	}
-	private _codeInput: boolean = true;
+	private _codeInput = true;
 
 	get codeInput(): boolean {
 		return this._codeInput;
@@ -55,7 +57,7 @@ export class NotebookFindFilters extends Disposable {
 		}
 	}
 
-	private _codeOutput: boolean = true;
+	private _codeOutput = true;
 
 	get codeOutput(): boolean {
 		return this._codeOutput;
@@ -73,12 +75,11 @@ export class NotebookFindFilters extends Disposable {
 	private readonly _initialCodeInput: boolean;
 	private readonly _initialCodeOutput: boolean;
 
-
 	constructor(
 		markupInput: boolean,
 		markupPreview: boolean,
 		codeInput: boolean,
-		codeOutput: boolean
+		codeOutput: boolean,
 	) {
 		super();
 
@@ -95,10 +96,10 @@ export class NotebookFindFilters extends Disposable {
 
 	isModified(): boolean {
 		return (
-			this._markupInput !== this._initialMarkupInput
-			|| this._markupPreview !== this._initialMarkupPreview
-			|| this._codeInput !== this._initialCodeInput
-			|| this._codeOutput !== this._initialCodeOutput
+			this._markupInput !== this._initialMarkupInput ||
+			this._markupPreview !== this._initialMarkupPreview ||
+			this._codeInput !== this._initialCodeInput ||
+			this._codeOutput !== this._initialCodeOutput
 		);
 	}
 

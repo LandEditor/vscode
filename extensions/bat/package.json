@@ -15,15 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Batch",
-					"bat"
-				],
+				"aliases": ["Batch", "bat"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".bat",
-					".cmd"
-				],
+				"extensions": [".bat", ".cmd"],
 				"id": "bat"
 			}
 		],

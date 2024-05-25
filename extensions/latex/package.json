@@ -50,40 +50,20 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"TeX",
-					"tex"
-				],
+				"aliases": ["TeX", "tex"],
 				"configuration": "latex-language-configuration.json",
-				"extensions": [
-					".sty",
-					".cls",
-					".bbx",
-					".cbx"
-				],
+				"extensions": [".sty", ".cls", ".bbx", ".cbx"],
 				"id": "tex"
 			},
 			{
-				"aliases": [
-					"LaTeX",
-					"latex"
-				],
+				"aliases": ["LaTeX", "latex"],
 				"configuration": "latex-language-configuration.json",
-				"extensions": [
-					".tex",
-					".ltx",
-					".ctx"
-				],
+				"extensions": [".tex", ".ltx", ".ctx"],
 				"id": "latex"
 			},
 			{
-				"aliases": [
-					"BibTeX",
-					"bibtex"
-				],
-				"extensions": [
-					".bib"
-				],
+				"aliases": ["BibTeX", "bibtex"],
+				"extensions": [".bib"],
 				"id": "bibtex"
 			},
 			{

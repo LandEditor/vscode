@@ -3,15 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IBaseCellEditorOptions } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { NotebookEventDispatcher } from 'vs/workbench/contrib/notebook/browser/viewModel/eventDispatcher';
-import { NotebookOptions } from 'vs/workbench/contrib/notebook/browser/notebookOptions';
+import type { IBaseCellEditorOptions } from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import type { NotebookOptions } from "vs/workbench/contrib/notebook/browser/notebookOptions";
+import type { NotebookEventDispatcher } from "vs/workbench/contrib/notebook/browser/viewModel/eventDispatcher";
 
 export class ViewContext {
 	constructor(
 		readonly notebookOptions: NotebookOptions,
 		readonly eventDispatcher: NotebookEventDispatcher,
-		readonly getBaseCellEditorOptions: (language: string) => IBaseCellEditorOptions
-	) {
-	}
+		readonly getBaseCellEditorOptions: (
+			language: string,
+		) => IBaseCellEditorOptions,
+	) {}
 }

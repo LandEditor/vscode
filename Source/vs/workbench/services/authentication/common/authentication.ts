@@ -2,13 +2,13 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Event } from 'vs/base/common/event';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import type { Event } from "vs/base/common/event";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
 
 /**
  * Use this if you don't want the onDidChangeSessions event to fire in the extension host
  */
-export const INTERNAL_AUTH_PROVIDER_PREFIX = '__';
+export const INTERNAL_AUTH_PROVIDER_PREFIX = "__";
 
 export interface AuthenticationSessionAccount {
 	label: string;
@@ -53,7 +53,9 @@ export interface AllowedExtension {
 	trusted?: boolean;
 }
 
-export const IAuthenticationService = createDecorator<IAuthenticationService>('IAuthenticationService');
+export const IAuthenticationService = createDecorator<IAuthenticationService>(
+	"IAuthenticationService",
+);
 
 export interface IAuthenticationService {
 	readonly _serviceBrand: undefined;
@@ -70,7 +72,11 @@ export interface IAuthenticationService {
 	/**
 	 * Fires when the list of sessions for a provider has been added, removed or changed
 	 */
-	readonly onDidChangeSessions: Event<{ providerId: string; label: string; event: AuthenticationSessionsChangeEvent }>;
+	readonly onDidChangeSessions: Event<{
+		providerId: string;
+		label: string;
+		event: AuthenticationSessionsChangeEvent;
+	}>;
 
 	/**
 	 * Fires when the list of declaredProviders has changed
@@ -86,7 +92,9 @@ export interface IAuthenticationService {
 	 * Registers that an extension has declared an authentication provider in their package.json
 	 * @param provider The provider information to register
 	 */
-	registerDeclaredAuthenticationProvider(provider: AuthenticationProviderInformation): void;
+	registerDeclaredAuthenticationProvider(
+		provider: AuthenticationProviderInformation,
+	): void;
 
 	/**
 	 * Unregisters a declared authentication provider
@@ -105,7 +113,10 @@ export interface IAuthenticationService {
 	 * @param id The id of the provider
 	 * @param provider The implementation of the provider
 	 */
-	registerAuthenticationProvider(id: string, provider: IAuthenticationProvider): void;
+	registerAuthenticationProvider(
+		id: string,
+		provider: IAuthenticationProvider,
+	): void;
 
 	/**
 	 * Unregisters an authentication provider
@@ -131,7 +142,11 @@ export interface IAuthenticationService {
 	 * @param scopes The scopes for the session
 	 * @param activateImmediate If true, the provider should activate immediately if it is not already
 	 */
-	getSessions(id: string, scopes?: string[], activateImmediate?: boolean): Promise<ReadonlyArray<AuthenticationSession>>;
+	getSessions(
+		id: string,
+		scopes?: string[],
+		activateImmediate?: boolean,
+	): Promise<ReadonlyArray<AuthenticationSession>>;
 
 	/**
 	 * Creates an AuthenticationSession with the given provider and scopes
@@ -139,7 +154,11 @@ export interface IAuthenticationService {
 	 * @param scopes The scopes to request
 	 * @param options Additional options for creating the session
 	 */
-	createSession(providerId: string, scopes: string[], options?: IAuthenticationCreateSessionOptions): Promise<AuthenticationSession>;
+	createSession(
+		providerId: string,
+		scopes: string[],
+		options?: IAuthenticationCreateSessionOptions,
+	): Promise<AuthenticationSession>;
 
 	/**
 	 * Removes the session with the given id from the provider with the given id
@@ -150,16 +169,48 @@ export interface IAuthenticationService {
 }
 
 // TODO: Move this into MainThreadAuthentication
-export const IAuthenticationExtensionsService = createDecorator<IAuthenticationExtensionsService>('IAuthenticationExtensionsService');
+export const IAuthenticationExtensionsService =
+	createDecorator<IAuthenticationExtensionsService>(
+		"IAuthenticationExtensionsService",
+	);
 export interface IAuthenticationExtensionsService {
 	readonly _serviceBrand: undefined;
 
-	updateSessionPreference(providerId: string, extensionId: string, session: AuthenticationSession): void;
-	getSessionPreference(providerId: string, extensionId: string, scopes: string[]): string | undefined;
-	removeSessionPreference(providerId: string, extensionId: string, scopes: string[]): void;
-	selectSession(providerId: string, extensionId: string, extensionName: string, scopes: string[], possibleSessions: readonly AuthenticationSession[]): Promise<AuthenticationSession>;
-	requestSessionAccess(providerId: string, extensionId: string, extensionName: string, scopes: string[], possibleSessions: readonly AuthenticationSession[]): void;
-	requestNewSession(providerId: string, scopes: string[], extensionId: string, extensionName: string): Promise<void>;
+	updateSessionPreference(
+		providerId: string,
+		extensionId: string,
+		session: AuthenticationSession,
+	): void;
+	getSessionPreference(
+		providerId: string,
+		extensionId: string,
+		scopes: string[],
+	): string | undefined;
+	removeSessionPreference(
+		providerId: string,
+		extensionId: string,
+		scopes: string[],
+	): void;
+	selectSession(
+		providerId: string,
+		extensionId: string,
+		extensionName: string,
+		scopes: string[],
+		possibleSessions: readonly AuthenticationSession[],
+	): Promise<AuthenticationSession>;
+	requestSessionAccess(
+		providerId: string,
+		extensionId: string,
+		extensionName: string,
+		scopes: string[],
+		possibleSessions: readonly AuthenticationSession[],
+	): void;
+	requestNewSession(
+		providerId: string,
+		scopes: string[],
+		extensionId: string,
+		extensionName: string,
+	): Promise<void>;
 }
 
 export interface IAuthenticationProviderCreateSessionOptions {
@@ -207,7 +258,10 @@ export interface IAuthenticationProvider {
 	 * @param options - Additional options for creating the session.
 	 * @returns A promise that resolves to an authentication session.
 	 */
-	createSession(scopes: string[], options: IAuthenticationProviderCreateSessionOptions): Promise<AuthenticationSession>;
+	createSession(
+		scopes: string[],
+		options: IAuthenticationProviderCreateSessionOptions,
+	): Promise<AuthenticationSession>;
 
 	/**
 	 * Removes the session corresponding to the specified session ID.

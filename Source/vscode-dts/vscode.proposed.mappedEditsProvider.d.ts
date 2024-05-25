@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface DocumentContextItem {
 		readonly uri: Uri;
 		readonly version: number;
@@ -32,11 +31,14 @@ declare module 'vscode' {
 			document: TextDocument,
 			codeBlocks: string[],
 			context: MappedEditsContext,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<WorkspaceEdit | null>;
 	}
 
 	namespace chat {
-		export function registerMappedEditsProvider(documentSelector: DocumentSelector, provider: MappedEditsProvider): Disposable;
+		export function registerMappedEditsProvider(
+			documentSelector: DocumentSelector,
+			provider: MappedEditsProvider,
+		): Disposable;
 	}
 }

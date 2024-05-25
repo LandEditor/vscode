@@ -15,14 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Swift",
-					"swift"
-				],
+				"aliases": ["Swift", "swift"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".swift"
-				],
+				"extensions": [".swift"],
 				"id": "swift"
 			}
 		],

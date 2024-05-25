@@ -3,49 +3,74 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as aria from 'vs/base/browser/ui/aria/aria';
-import { Dimension, addDisposableListener, getTotalWidth, h, isAncestor } from 'vs/base/browser/dom';
-import { Emitter, Event } from 'vs/base/common/event';
-import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { generateUuid } from 'vs/base/common/uuid';
-import { IEditorConstructionOptions } from 'vs/editor/browser/config/editorConfiguration';
-import { IActiveCodeEditor } from 'vs/editor/browser/editorBrowser';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from 'vs/editor/browser/widget/codeEditor/codeEditorWidget';
-import { IModelDeltaDecoration, ITextModel } from 'vs/editor/common/model';
-import { IModelService } from 'vs/editor/common/services/model';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { DEFAULT_FONT_FAMILY } from 'vs/base/browser/fonts';
-import { EditorExtensionsRegistry } from 'vs/editor/browser/editorExtensions';
-import { SnippetController2 } from 'vs/editor/contrib/snippet/browser/snippetController2';
-import { SuggestController } from 'vs/editor/contrib/suggest/browser/suggestController';
-import { EditorOption } from 'vs/editor/common/config/editorOptions';
-import { SlashCommandContentWidget } from 'vs/workbench/contrib/chat/browser/chatSlashCommandContentWidget';
-import { Range } from 'vs/editor/common/core/range';
-import { CTX_INLINE_CHAT_EMPTY, CTX_INLINE_CHAT_FOCUSED, CTX_INLINE_CHAT_INNER_CURSOR_END, CTX_INLINE_CHAT_INNER_CURSOR_FIRST, CTX_INLINE_CHAT_INNER_CURSOR_LAST, CTX_INLINE_CHAT_INNER_CURSOR_START, IInlineChatSlashCommand } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
-import { LanguageSelector } from 'vs/editor/common/languageSelector';
-import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
-import { Position } from 'vs/editor/common/core/position';
-import { CompletionItem, CompletionItemInsertTextRule, CompletionItemKind, CompletionItemProvider, CompletionList, ProviderResult } from 'vs/editor/common/languages';
-import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { HiddenItemStrategy, MenuWorkbenchToolBar } from 'vs/platform/actions/browser/toolbar';
-import { MenuId } from 'vs/platform/actions/common/actions';
-import { IHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegate';
-import { localize } from 'vs/nls';
-
+import {
+	Dimension,
+	addDisposableListener,
+	getTotalWidth,
+	h,
+	isAncestor,
+} from "vs/base/browser/dom";
+import { DEFAULT_FONT_FAMILY } from "vs/base/browser/fonts";
+import * as aria from "vs/base/browser/ui/aria/aria";
+import type { IHoverDelegate } from "vs/base/browser/ui/hover/hoverDelegate";
+import { Emitter, type Event } from "vs/base/common/event";
+import { DisposableStore, toDisposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { generateUuid } from "vs/base/common/uuid";
+import type { IEditorConstructionOptions } from "vs/editor/browser/config/editorConfiguration";
+import type { IActiveCodeEditor } from "vs/editor/browser/editorBrowser";
+import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
+import {
+	CodeEditorWidget,
+	type ICodeEditorWidgetOptions,
+} from "vs/editor/browser/widget/codeEditor/codeEditorWidget";
+import { EditorOption } from "vs/editor/common/config/editorOptions";
+import type { Position } from "vs/editor/common/core/position";
+import { Range } from "vs/editor/common/core/range";
+import type { LanguageSelector } from "vs/editor/common/languageSelector";
+import {
+	type CompletionItem,
+	CompletionItemInsertTextRule,
+	CompletionItemKind,
+	type CompletionItemProvider,
+	type CompletionList,
+	type ProviderResult,
+} from "vs/editor/common/languages";
+import type { IModelDeltaDecoration, ITextModel } from "vs/editor/common/model";
+import { ILanguageFeaturesService } from "vs/editor/common/services/languageFeatures";
+import { IModelService } from "vs/editor/common/services/model";
+import { SnippetController2 } from "vs/editor/contrib/snippet/browser/snippetController2";
+import { SuggestController } from "vs/editor/contrib/suggest/browser/suggestController";
+import { localize } from "vs/nls";
+import {
+	HiddenItemStrategy,
+	MenuWorkbenchToolBar,
+} from "vs/platform/actions/browser/toolbar";
+import type { MenuId } from "vs/platform/actions/common/actions";
+import {
+	type IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { SlashCommandContentWidget } from "vs/workbench/contrib/chat/browser/chatSlashCommandContentWidget";
+import {
+	CTX_INLINE_CHAT_EMPTY,
+	CTX_INLINE_CHAT_FOCUSED,
+	CTX_INLINE_CHAT_INNER_CURSOR_END,
+	CTX_INLINE_CHAT_INNER_CURSOR_FIRST,
+	CTX_INLINE_CHAT_INNER_CURSOR_LAST,
+	CTX_INLINE_CHAT_INNER_CURSOR_START,
+	type IInlineChatSlashCommand,
+} from "vs/workbench/contrib/inlineChat/common/inlineChat";
 
 export class InlineChatInputWidget {
-
-	private readonly _elements = h(
-		'div.inline-chat-input@content',
-		[
-			h('div.input@input', [
-				h('div.editor-placeholder@placeholder'),
-				h('div.editor-container@editor'),
-			]),
-			h('div.toolbar@editorToolbar')
-		]
-	);
+	private readonly _elements = h("div.inline-chat-input@content", [
+		h("div.input@input", [
+			h("div.editor-placeholder@placeholder"),
+			h("div.editor-container@editor"),
+		]),
+		h("div.toolbar@editorToolbar"),
+	]);
 
 	private readonly _store = new DisposableStore();
 
@@ -63,7 +88,9 @@ export class InlineChatInputWidget {
 	private readonly _slashCommands = this._store.add(new DisposableStore());
 	private _slashCommandDetails: { command: string; detail: string }[] = [];
 
-	protected readonly _onDidChangeHeight = this._store.add(new Emitter<void>());
+	protected readonly _onDidChangeHeight = this._store.add(
+		new Emitter<void>(),
+	);
 	readonly onDidChangeHeight: Event<void> = this._onDidChangeHeight.event;
 
 	private readonly _onDidChangeInput = this._store.add(new Emitter<this>());
@@ -190,14 +217,18 @@ export class InlineChatInputWidget {
 	}
 
 	layout(dim: Dimension) {
-		const toolbarWidth = getTotalWidth(this._elements.editorToolbar) + 8 /* L/R-padding */;
+		const toolbarWidth =
+			getTotalWidth(this._elements.editorToolbar) + 8 /* L/R-padding */;
 		const editorWidth = dim.width - toolbarWidth;
 		this._inputEditor.layout({ height: dim.height, width: editorWidth });
 		this._elements.placeholder.style.width = `${editorWidth}px`;
 	}
 
 	getPreferredSize(): Dimension {
-		const width = this._inputEditor.getContentWidth() + getTotalWidth(this._elements.editorToolbar) + 8 /* L/R-padding */;
+		const width =
+			this._inputEditor.getContentWidth() +
+			getTotalWidth(this._elements.editorToolbar) +
+			8 /* L/R-padding */;
 		const height = this._inputEditor.getContentHeight();
 		return new Dimension(width, height);
 	}
@@ -214,7 +245,7 @@ export class InlineChatInputWidget {
 		this._ctxInnerCursorEnd.reset();
 		this._ctxInputEditorFocused.reset();
 
-		this.value = ''; // update/re-inits some context keys again
+		this.value = ""; // update/re-inits some context keys again
 	}
 
 	focus() {
@@ -227,16 +258,27 @@ export class InlineChatInputWidget {
 
 	set value(value: string) {
 		this._inputModel.setValue(value);
-		this._inputEditor.setPosition(this._inputModel.getFullModelRange().getEndPosition());
+		this._inputEditor.setPosition(
+			this._inputModel.getFullModelRange().getEndPosition(),
+		);
 	}
 
-	selectAll(includeSlashCommand: boolean = true) {
+	selectAll(includeSlashCommand = true) {
 		let selection = this._inputModel.getFullModelRange();
 
 		if (!includeSlashCommand) {
 			const firstLine = this._inputModel.getLineContent(1);
-			const slashCommand = this._slashCommandDetails.find(c => firstLine.startsWith(`/${c.command} `));
-			selection = slashCommand ? new Range(1, slashCommand.command.length + 3, selection.endLineNumber, selection.endColumn) : selection;
+			const slashCommand = this._slashCommandDetails.find((c) =>
+				firstLine.startsWith(`/${c.command} `),
+			);
+			selection = slashCommand
+				? new Range(
+						1,
+						slashCommand.command.length + 3,
+						selection.endLineNumber,
+						selection.endColumn,
+					)
+				: selection;
 		}
 
 		this._inputEditor.setSelection(selection);
@@ -251,7 +293,9 @@ export class InlineChatInputWidget {
 	}
 
 	readPlaceholder(): void {
-		const slashCommand = this._slashCommandDetails.find(c => `${c.command} ` === this._inputModel.getValue().substring(1));
+		const slashCommand = this._slashCommandDetails.find(
+			(c) => `${c.command} ` === this._inputModel.getValue().substring(1),
+		);
 		const hasText = this._inputModel.getValueLength() > 0;
 		if (!hasText) {
 			aria.status(this._elements.placeholder.innerText);
@@ -261,43 +305,70 @@ export class InlineChatInputWidget {
 	}
 
 	updateSlashCommands(commands: IInlineChatSlashCommand[]) {
-
 		this._slashCommands.clear();
-		this._slashCommandDetails = commands.filter(c => c.command && c.detail).map(c => { return { command: c.command, detail: c.detail! }; });
+		this._slashCommandDetails = commands
+			.filter((c) => c.command && c.detail)
+			.map((c) => {
+				return { command: c.command, detail: c.detail! };
+			});
 
 		if (this._slashCommandDetails.length === 0) {
 			return;
 		}
 
-		const selector: LanguageSelector = { scheme: this._inputModel.uri.scheme, pattern: this._inputModel.uri.path, language: this._inputModel.getLanguageId() };
-		this._slashCommands.add(this._languageFeaturesService.completionProvider.register(selector, new class implements CompletionItemProvider {
+		const selector: LanguageSelector = {
+			scheme: this._inputModel.uri.scheme,
+			pattern: this._inputModel.uri.path,
+			language: this._inputModel.getLanguageId(),
+		};
+		this._slashCommands.add(
+			this._languageFeaturesService.completionProvider.register(
+				selector,
+				new (class implements CompletionItemProvider {
+					_debugDisplayName = "InlineChatSlashCommandProvider";
 
-			_debugDisplayName: string = 'InlineChatSlashCommandProvider';
+					readonly triggerCharacters?: string[] = ["/"];
 
-			readonly triggerCharacters?: string[] = ['/'];
+					provideCompletionItems(
+						_model: ITextModel,
+						position: Position,
+					): ProviderResult<CompletionList> {
+						if (
+							position.lineNumber !== 1 &&
+							position.column !== 1
+						) {
+							return undefined;
+						}
 
-			provideCompletionItems(_model: ITextModel, position: Position): ProviderResult<CompletionList> {
-				if (position.lineNumber !== 1 && position.column !== 1) {
-					return undefined;
-				}
+						const suggestions: CompletionItem[] = commands.map(
+							(command) => {
+								const withSlash = `/${command.command}`;
 
-				const suggestions: CompletionItem[] = commands.map(command => {
+								return {
+									label: {
+										label: withSlash,
+										description: command.detail,
+									},
+									insertText: `${withSlash} $0`,
+									insertTextRules:
+										CompletionItemInsertTextRule.InsertAsSnippet,
+									kind: CompletionItemKind.Text,
+									range: new Range(1, 1, 1, 1),
+									command: command.executeImmediately
+										? {
+												id: "inlineChat.accept",
+												title: withSlash,
+											}
+										: undefined,
+								};
+							},
+						);
 
-					const withSlash = `/${command.command}`;
-
-					return {
-						label: { label: withSlash, description: command.detail },
-						insertText: `${withSlash} $0`,
-						insertTextRules: CompletionItemInsertTextRule.InsertAsSnippet,
-						kind: CompletionItemKind.Text,
-						range: new Range(1, 1, 1, 1),
-						command: command.executeImmediately ? { id: 'inlineChat.accept', title: withSlash } : undefined
-					};
-				});
-
-				return { suggestions };
-			}
-		}));
+						return { suggestions };
+					}
+				})(),
+			),
+		);
 
 		const decorations = this._inputEditor.createDecorationsCollection();
 
@@ -314,29 +385,37 @@ export class InlineChatInputWidget {
 					newDecorations.push({
 						range: new Range(1, 1, 1, withSlash.length + 1),
 						options: {
-							description: 'inline-chat-slash-command',
-							inlineClassName: 'inline-chat-slash-command',
+							description: "inline-chat-slash-command",
+							inlineClassName: "inline-chat-slash-command",
 							after: {
 								// Force some space between slash command and placeholder
-								content: ' '
-							}
-						}
+								content: " ",
+							},
+						},
 					});
 
-					this._slashCommandContentWidget.setCommandText(command.command);
+					this._slashCommandContentWidget.setCommandText(
+						command.command,
+					);
 					this._slashCommandContentWidget.show();
 
 					// inject detail when otherwise empty
 					if (firstLine === `/${command.command}`) {
 						newDecorations.push({
-							range: new Range(1, withSlash.length + 1, 1, withSlash.length + 2),
+							range: new Range(
+								1,
+								withSlash.length + 1,
+								1,
+								withSlash.length + 2,
+							),
 							options: {
-								description: 'inline-chat-slash-command-detail',
+								description: "inline-chat-slash-command-detail",
 								after: {
 									content: `${command.detail}`,
-									inlineClassName: 'inline-chat-slash-command-detail'
-								}
-							}
+									inlineClassName:
+										"inline-chat-slash-command-detail",
+								},
+							},
 						});
 					}
 					break;
@@ -345,32 +424,34 @@ export class InlineChatInputWidget {
 			decorations.set(newDecorations);
 		};
 
-		this._slashCommands.add(this._inputEditor.onDidChangeModelContent(updateSlashDecorations));
+		this._slashCommands.add(
+			this._inputEditor.onDidChangeModelContent(updateSlashDecorations),
+		);
 		updateSlashDecorations();
 	}
 }
 
-export const defaultAriaLabel = localize('aria-label', "Inline Chat Input");
+export const defaultAriaLabel = localize("aria-label", "Inline Chat Input");
 
 export const inputEditorOptions: IEditorConstructionOptions = {
 	padding: { top: 2, bottom: 2 },
 	overviewRulerLanes: 0,
 	glyphMargin: false,
-	lineNumbers: 'off',
+	lineNumbers: "off",
 	folding: false,
 	hideCursorInOverviewRuler: true,
 	selectOnLineNumbers: false,
 	selectionHighlight: false,
 	scrollbar: {
 		useShadows: false,
-		vertical: 'hidden',
-		horizontal: 'auto',
-		alwaysConsumeMouseWheel: false
+		vertical: "hidden",
+		horizontal: "auto",
+		alwaysConsumeMouseWheel: false,
 	},
 	lineDecorationsWidth: 0,
 	overviewRulerBorder: false,
 	scrollBeyondLastLine: false,
-	renderLineHighlight: 'none',
+	renderLineHighlight: "none",
 	fixedOverflowWidgets: true,
 	dragAndDrop: false,
 	revealHorizontalRightPadding: 5,
@@ -378,11 +459,11 @@ export const inputEditorOptions: IEditorConstructionOptions = {
 	guides: { indentation: false },
 	rulers: [],
 	cursorWidth: 1,
-	cursorStyle: 'line',
-	cursorBlinking: 'blink',
-	wrappingStrategy: 'advanced',
-	wrappingIndent: 'none',
-	renderWhitespace: 'none',
+	cursorStyle: "line",
+	cursorBlinking: "blink",
+	wrappingStrategy: "advanced",
+	wrappingIndent: "none",
+	renderWhitespace: "none",
 	dropIntoEditor: { enabled: true },
 	quickSuggestions: false,
 	suggest: {
@@ -391,17 +472,17 @@ export const inputEditorOptions: IEditorConstructionOptions = {
 		showWords: true,
 		showStatusBar: false,
 	},
-	wordWrap: 'on',
+	wordWrap: "on",
 	ariaLabel: defaultAriaLabel,
 	fontFamily: DEFAULT_FONT_FAMILY,
 	fontSize: 13,
-	lineHeight: 20
+	lineHeight: 20,
 };
 
 export const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
 	isSimpleWidget: true,
 	contributions: EditorExtensionsRegistry.getSomeEditorContributions([
 		SnippetController2.ID,
-		SuggestController.ID
-	])
+		SuggestController.ID,
+	]),
 };

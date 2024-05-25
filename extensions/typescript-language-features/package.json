@@ -257,11 +257,7 @@
 				"javascript.format.semicolons": {
 					"default": "ignore",
 					"description": "%format.semicolons%",
-					"enum": [
-						"ignore",
-						"insert",
-						"remove"
-					],
+					"enum": ["ignore", "insert", "remove"],
 					"enumDescriptions": [
 						"%format.semicolons.ignore%",
 						"%format.semicolons.insert%",
@@ -298,11 +294,7 @@
 				},
 				"javascript.inlayHints.parameterNames.enabled": {
 					"default": "none",
-					"enum": [
-						"none",
-						"literals",
-						"all"
-					],
+					"enum": ["none", "literals", "all"],
 					"enumDescriptions": [
 						"%inlayHints.parameterNames.none%",
 						"%inlayHints.parameterNames.literals%",
@@ -377,12 +369,7 @@
 				"javascript.preferences.importModuleSpecifierEnding": {
 					"default": "auto",
 					"description": "%typescript.preferences.importModuleSpecifierEnding%",
-					"enum": [
-						"auto",
-						"minimal",
-						"index",
-						"js"
-					],
+					"enum": ["auto", "minimal", "index", "js"],
 					"enumItemLabels": [
 						null,
 						null,
@@ -401,11 +388,7 @@
 				"javascript.preferences.jsxAttributeCompletionStyle": {
 					"default": "auto",
 					"description": "%typescript.preferences.jsxAttributeCompletionStyle%",
-					"enum": [
-						"auto",
-						"braces",
-						"none"
-					],
+					"enum": ["auto", "braces", "none"],
 					"markdownEnumDescriptions": [
 						"%javascript.preferences.jsxAttributeCompletionStyle.auto%",
 						"%typescript.preferences.jsxAttributeCompletionStyle.braces%",
@@ -416,11 +399,7 @@
 				},
 				"javascript.preferences.quoteStyle": {
 					"default": "auto",
-					"enum": [
-						"auto",
-						"single",
-						"double"
-					],
+					"enum": ["auto", "single", "double"],
 					"markdownDescription": "%typescript.preferences.quoteStyle%",
 					"markdownEnumDescriptions": [
 						"%typescript.preferences.quoteStyle.auto%",
@@ -530,11 +509,7 @@
 				"javascript.updateImportsOnFileMove.enabled": {
 					"default": "prompt",
 					"description": "%typescript.updateImportsOnFileMove.enabled%",
-					"enum": [
-						"prompt",
-						"always",
-						"never"
-					],
+					"enum": ["prompt", "always", "never"],
 					"markdownEnumDescriptions": [
 						"%typescript.updateImportsOnFileMove.enabled.prompt%",
 						"%typescript.updateImportsOnFileMove.enabled.always%",
@@ -629,9 +604,7 @@
 					"default": false,
 					"markdownDescription": "%typescript.disableAutomaticTypeAcquisition%",
 					"scope": "window",
-					"tags": [
-						"usesOnlineServices"
-					],
+					"tags": ["usesOnlineServices"],
 					"type": "boolean"
 				},
 				"typescript.enablePromptUseWorkspaceTsdk": {
@@ -751,11 +724,7 @@
 				"typescript.format.semicolons": {
 					"default": "ignore",
 					"description": "%format.semicolons%",
-					"enum": [
-						"ignore",
-						"insert",
-						"remove"
-					],
+					"enum": ["ignore", "insert", "remove"],
 					"enumDescriptions": [
 						"%format.semicolons.ignore%",
 						"%format.semicolons.insert%",
@@ -790,11 +759,7 @@
 				},
 				"typescript.inlayHints.parameterNames.enabled": {
 					"default": "none",
-					"enum": [
-						"none",
-						"literals",
-						"all"
-					],
+					"enum": ["none", "literals", "all"],
 					"enumDescriptions": [
 						"%inlayHints.parameterNames.none%",
 						"%inlayHints.parameterNames.literals%",
@@ -906,12 +871,7 @@
 				"typescript.preferences.importModuleSpecifierEnding": {
 					"default": "auto",
 					"description": "%typescript.preferences.importModuleSpecifierEnding%",
-					"enum": [
-						"auto",
-						"minimal",
-						"index",
-						"js"
-					],
+					"enum": ["auto", "minimal", "index", "js"],
 					"enumItemLabels": [
 						null,
 						null,
@@ -929,11 +889,7 @@
 				},
 				"typescript.preferences.includePackageJsonAutoImports": {
 					"default": "auto",
-					"enum": [
-						"auto",
-						"on",
-						"off"
-					],
+					"enum": ["auto", "on", "off"],
 					"enumDescriptions": [
 						"%typescript.preferences.includePackageJsonAutoImports.auto%",
 						"%typescript.preferences.includePackageJsonAutoImports.on%",
@@ -946,11 +902,7 @@
 				"typescript.preferences.jsxAttributeCompletionStyle": {
 					"default": "auto",
 					"description": "%typescript.preferences.jsxAttributeCompletionStyle%",
-					"enum": [
-						"auto",
-						"braces",
-						"none"
-					],
+					"enum": ["auto", "braces", "none"],
 					"markdownEnumDescriptions": [
 						"%typescript.preferences.jsxAttributeCompletionStyle.auto%",
 						"%typescript.preferences.jsxAttributeCompletionStyle.braces%",
@@ -967,11 +919,7 @@
 				},
 				"typescript.preferences.quoteStyle": {
 					"default": "auto",
-					"enum": [
-						"auto",
-						"single",
-						"double"
-					],
+					"enum": ["auto", "single", "double"],
 					"markdownDescription": "%typescript.preferences.quoteStyle%",
 					"markdownEnumDescriptions": [
 						"%typescript.preferences.quoteStyle.auto%",
@@ -1093,12 +1041,7 @@
 				"typescript.tsc.autoDetect": {
 					"default": "on",
 					"description": "%typescript.tsc.autoDetect%",
-					"enum": [
-						"on",
-						"off",
-						"build",
-						"watch"
-					],
+					"enum": ["on", "off", "build", "watch"],
 					"markdownEnumDescriptions": [
 						"%typescript.tsc.autoDetect.on%",
 						"%typescript.tsc.autoDetect.off%",
@@ -1123,28 +1066,19 @@
 					"default": false,
 					"description": "%configuration.tsserver.experimental.enableProjectDiagnostics%",
 					"scope": "window",
-					"tags": [
-						"experimental"
-					],
+					"tags": ["experimental"],
 					"type": "boolean"
 				},
 				"typescript.tsserver.experimental.useVsCodeWatcher": {
 					"default": false,
 					"description": "%configuration.tsserver.useVsCodeWatcher%",
-					"tags": [
-						"experimental"
-					],
+					"tags": ["experimental"],
 					"type": "boolean"
 				},
 				"typescript.tsserver.log": {
 					"default": "off",
 					"description": "%typescript.tsserver.log%",
-					"enum": [
-						"off",
-						"terse",
-						"normal",
-						"verbose"
-					],
+					"enum": ["off", "terse", "normal", "verbose"],
 					"scope": "window",
 					"type": "string"
 				},
@@ -1179,11 +1113,7 @@
 				"typescript.tsserver.useSyntaxServer": {
 					"default": "auto",
 					"description": "%configuration.tsserver.useSyntaxServer%",
-					"enum": [
-						"always",
-						"never",
-						"auto"
-					],
+					"enum": ["always", "never", "auto"],
 					"enumDescriptions": [
 						"%configuration.tsserver.useSyntaxServer.always%",
 						"%configuration.tsserver.useSyntaxServer.never%",
@@ -1276,11 +1206,7 @@
 				"typescript.updateImportsOnFileMove.enabled": {
 					"default": "prompt",
 					"description": "%typescript.updateImportsOnFileMove.enabled%",
-					"enum": [
-						"prompt",
-						"always",
-						"never"
-					],
+					"enum": ["prompt", "always", "never"],
 					"markdownEnumDescriptions": [
 						"%typescript.updateImportsOnFileMove.enabled.prompt%",
 						"%typescript.updateImportsOnFileMove.enabled.always%",
@@ -1303,10 +1229,7 @@
 				},
 				"typescript.workspaceSymbols.scope": {
 					"default": "allOpenProjects",
-					"enum": [
-						"allOpenProjects",
-						"currentProject"
-					],
+					"enum": ["allOpenProjects", "currentProject"],
 					"enumDescriptions": [
 						"%typescript.workspaceSymbols.scope.allOpenProjects%",
 						"%typescript.workspaceSymbols.scope.currentProject%"
@@ -1530,10 +1453,7 @@
 		"problemMatchers": [
 			{
 				"applyTo": "closedDocuments",
-				"fileLocation": [
-					"relative",
-					"${cwd}"
-				],
+				"fileLocation": ["relative", "${cwd}"],
 				"label": "%typescript.problemMatchers.tsc.label%",
 				"name": "tsc",
 				"owner": "typescript",
@@ -1551,10 +1471,7 @@
 						"regexp": "^\\s*(?:message TS6042:|\\[?\\D*.{1,2}[:.].{1,2}[:.].{1,2}\\D*(├\\D*\\d{1,2}\\D+┤)?(?:\\]| -)) (?:Compilation complete\\.|Found \\d+ errors?\\.) Watching for file changes\\."
 					}
 				},
-				"fileLocation": [
-					"relative",
-					"${cwd}"
-				],
+				"fileLocation": ["relative", "${cwd}"],
 				"label": "%typescript.problemMatchers.tscWatch.label%",
 				"name": "tsc-watch",
 				"owner": "typescript",
@@ -1585,9 +1502,7 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"tsconfig"
-				],
+				"required": ["tsconfig"],
 				"type": "typescript",
 				"when": "shellExecutionSupported"
 			}

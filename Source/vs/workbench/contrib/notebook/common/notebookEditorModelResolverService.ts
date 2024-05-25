@@ -3,14 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { URI } from 'vs/base/common/uri';
-import { IResolvedNotebookEditorModel } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { IReference } from 'vs/base/common/lifecycle';
-import { Event, IWaitUntil } from 'vs/base/common/event';
-import { IFileReadLimits } from 'vs/platform/files/common/files';
+import type { Event, IWaitUntil } from "vs/base/common/event";
+import type { IReference } from "vs/base/common/lifecycle";
+import type { URI } from "vs/base/common/uri";
+import type { IFileReadLimits } from "vs/platform/files/common/files";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import type { IResolvedNotebookEditorModel } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
-export const INotebookEditorModelResolverService = createDecorator<INotebookEditorModelResolverService>('INotebookModelResolverService');
+export const INotebookEditorModelResolverService =
+	createDecorator<INotebookEditorModelResolverService>(
+		"INotebookModelResolverService",
+	);
 
 /**
  * A notebook file can only be opened ONCE per notebook type.
@@ -50,6 +53,14 @@ export interface INotebookEditorModelResolverService {
 
 	isDirty(resource: URI): boolean;
 
-	resolve(resource: URI, viewType?: string, limits?: IFileReadLimits): Promise<IReference<IResolvedNotebookEditorModel>>;
-	resolve(resource: IUntitledNotebookResource, viewType: string, limits?: IFileReadLimits): Promise<IReference<IResolvedNotebookEditorModel>>;
+	resolve(
+		resource: URI,
+		viewType?: string,
+		limits?: IFileReadLimits,
+	): Promise<IReference<IResolvedNotebookEditorModel>>;
+	resolve(
+		resource: IUntitledNotebookResource,
+		viewType: string,
+		limits?: IFileReadLimits,
+	): Promise<IReference<IResolvedNotebookEditorModel>>;
 }

@@ -3,32 +3,59 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { EditorContributionInstantiation, registerEditorContribution } from 'vs/editor/browser/editorExtensions';
-import { registerAction2 } from 'vs/platform/actions/common/actions';
-import { InlineChatController } from 'vs/workbench/contrib/inlineChat/browser/inlineChatController';
-import * as InlineChatActions from 'vs/workbench/contrib/inlineChat/browser/inlineChatActions';
-import { IInlineChatService, INLINE_CHAT_ID } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
-import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
-import { InlineChatServiceImpl } from 'vs/workbench/contrib/inlineChat/common/inlineChatServiceImpl';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { InlineChatNotebookContribution } from 'vs/workbench/contrib/inlineChat/browser/inlineChatNotebook';
-import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
-import { InlineChatSavingServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingServiceImpl';
-import { InlineChatAccessibleView } from 'vs/workbench/contrib/inlineChat/browser/inlineChatAccessibleView';
-import { IInlineChatSavingService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSavingService';
-import { IInlineChatSessionService } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionService';
-import { InlineChatSessionServiceImpl } from 'vs/workbench/contrib/inlineChat/browser/inlineChatSessionServiceImpl';
-import { AccessibleViewRegistry } from 'vs/platform/accessibility/browser/accessibleViewRegistry';
-
+import {
+	EditorContributionInstantiation,
+	registerEditorContribution,
+} from "vs/editor/browser/editorExtensions";
+import { AccessibleViewRegistry } from "vs/platform/accessibility/browser/accessibleViewRegistry";
+import { registerAction2 } from "vs/platform/actions/common/actions";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "vs/platform/instantiation/common/extensions";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	type IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from "vs/workbench/common/contributions";
+import { InlineChatAccessibleView } from "vs/workbench/contrib/inlineChat/browser/inlineChatAccessibleView";
+import * as InlineChatActions from "vs/workbench/contrib/inlineChat/browser/inlineChatActions";
+import { InlineChatController } from "vs/workbench/contrib/inlineChat/browser/inlineChatController";
+import { InlineChatNotebookContribution } from "vs/workbench/contrib/inlineChat/browser/inlineChatNotebook";
+import { IInlineChatSavingService } from "vs/workbench/contrib/inlineChat/browser/inlineChatSavingService";
+import { InlineChatSavingServiceImpl } from "vs/workbench/contrib/inlineChat/browser/inlineChatSavingServiceImpl";
+import { IInlineChatSessionService } from "vs/workbench/contrib/inlineChat/browser/inlineChatSessionService";
+import { InlineChatSessionServiceImpl } from "vs/workbench/contrib/inlineChat/browser/inlineChatSessionServiceImpl";
+import {
+	IInlineChatService,
+	INLINE_CHAT_ID,
+} from "vs/workbench/contrib/inlineChat/common/inlineChat";
+import { InlineChatServiceImpl } from "vs/workbench/contrib/inlineChat/common/inlineChatServiceImpl";
+import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
 
 // --- browser
 
-registerSingleton(IInlineChatService, InlineChatServiceImpl, InstantiationType.Delayed);
-registerSingleton(IInlineChatSessionService, InlineChatSessionServiceImpl, InstantiationType.Eager); // EAGER because this registers an agent which we need swiftly
-registerSingleton(IInlineChatSavingService, InlineChatSavingServiceImpl, InstantiationType.Delayed);
+registerSingleton(
+	IInlineChatService,
+	InlineChatServiceImpl,
+	InstantiationType.Delayed,
+);
+registerSingleton(
+	IInlineChatSessionService,
+	InlineChatSessionServiceImpl,
+	InstantiationType.Eager,
+); // EAGER because this registers an agent which we need swiftly
+registerSingleton(
+	IInlineChatSavingService,
+	InlineChatSavingServiceImpl,
+	InstantiationType.Delayed,
+);
 
-registerEditorContribution(INLINE_CHAT_ID, InlineChatController, EditorContributionInstantiation.Eager); // EAGER because of notebook dispose/create of editors
+registerEditorContribution(
+	INLINE_CHAT_ID,
+	InlineChatController,
+	EditorContributionInstantiation.Eager,
+); // EAGER because of notebook dispose/create of editors
 
 AccessibleViewRegistry.register(new InlineChatAccessibleView());
 
@@ -55,7 +82,11 @@ registerAction2(InlineChatActions.AcceptChanges);
 
 registerAction2(InlineChatActions.CopyRecordings);
 
-const workbenchContributionsRegistry = Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
-workbenchContributionsRegistry.registerWorkbenchContribution(InlineChatNotebookContribution, LifecyclePhase.Restored);
+const workbenchContributionsRegistry =
+	Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench);
+workbenchContributionsRegistry.registerWorkbenchContribution(
+	InlineChatNotebookContribution,
+	LifecyclePhase.Restored,
+);
 
 AccessibleViewRegistry.register(new InlineChatAccessibleView());

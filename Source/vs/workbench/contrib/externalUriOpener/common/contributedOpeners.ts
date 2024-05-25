@@ -3,11 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { Memento } from 'vs/workbench/common/memento';
-import { updateContributedOpeners } from 'vs/workbench/contrib/externalUriOpener/common/configuration';
-import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { Memento } from "vs/workbench/common/memento";
+import { updateContributedOpeners } from "vs/workbench/contrib/externalUriOpener/common/configuration";
+import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
 
 interface RegisteredExternalOpener {
 	readonly extensionId: string;
@@ -20,8 +24,7 @@ interface OpenersMemento {
 }
 
 export class ContributedExternalUriOpenersStore extends Disposable {
-
-	private static readonly STORAGE_ID = 'externalUriOpeners';
+	private static readonly STORAGE_ID = "externalUriOpeners";
 
 	private readonly _openers = new Map<string, RegisteredExternalOpener>();
 	private readonly _memento: Memento;
@@ -47,20 +50,25 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 	public didRegisterOpener(id: string, extensionId: string): void {
 		this.add(id, extensionId, {
-			isCurrentlyRegistered: true
+			isCurrentlyRegistered: true,
 		});
 	}
 
-	private add(id: string, extensionId: string, options: { isCurrentlyRegistered: boolean }): void {
+	private add(
+		id: string,
+		extensionId: string,
+		options: { isCurrentlyRegistered: boolean },
+	): void {
 		const existing = this._openers.get(id);
 		if (existing) {
-			existing.isCurrentlyRegistered = existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
+			existing.isCurrentlyRegistered =
+				existing.isCurrentlyRegistered || options.isCurrentlyRegistered;
 			return;
 		}
 
 		const entry = {
 			extensionId,
-			isCurrentlyRegistered: options.isCurrentlyRegistered
+			isCurrentlyRegistered: options.isCurrentlyRegistered,
 		};
 		this._openers.set(id, entry);
 
@@ -84,7 +92,9 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 		const registeredExtensions = this._extensionService.extensions;
 
 		for (const [id, entry] of this._openers) {
-			const extension = registeredExtensions.find(r => r.identifier.value === entry.extensionId);
+			const extension = registeredExtensions.find(
+				(r) => r.identifier.value === entry.extensionId,
+			);
 			if (extension) {
 				if (!this._extensionService.canRemoveExtension(extension)) {
 					// The extension is running. We should have registered openers at this point

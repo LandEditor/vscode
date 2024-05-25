@@ -3,14 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from 'vs/base/common/lifecycle';
-import { AccessibilitySignal, IAccessibilitySignalService } from 'vs/platform/accessibilitySignal/browser/accessibilitySignalService';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { ISpeechService } from 'vs/workbench/contrib/speech/common/speechService';
+import { Disposable } from "vs/base/common/lifecycle";
+import {
+	AccessibilitySignal,
+	IAccessibilitySignalService,
+} from "vs/platform/accessibilitySignal/browser/accessibilitySignalService";
+import type { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { ISpeechService } from "vs/workbench/contrib/speech/common/speechService";
 
-export class SpeechAccessibilitySignalContribution extends Disposable implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.speechAccessibilitySignal';
+export class SpeechAccessibilitySignalContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
+	static readonly ID = "workbench.contrib.speechAccessibilitySignal";
 
 	constructor(
 		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,

@@ -23,15 +23,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Makefile",
-					"makefile"
-				],
+				"aliases": ["Makefile", "makefile"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".mak",
-					".mk"
-				],
+				"extensions": [".mak", ".mk"],
 				"filenames": [
 					"Makefile",
 					"makefile",

@@ -15,21 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"PowerShell",
-					"powershell",
-					"ps",
-					"ps1",
-					"pwsh"
-				],
+				"aliases": ["PowerShell", "powershell", "ps", "ps1", "pwsh"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".ps1",
-					".psm1",
-					".psd1",
-					".pssc",
-					".psrc"
-				],
+				"extensions": [".ps1", ".psm1", ".psd1", ".pssc", ".psrc"],
 				"firstLine": "^#!\\s*/.*\\bpwsh\\b",
 				"id": "powershell"
 			}

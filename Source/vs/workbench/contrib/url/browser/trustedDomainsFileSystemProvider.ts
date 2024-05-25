@@ -3,25 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { parse } from 'vs/base/common/json';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { URI } from 'vs/base/common/uri';
-import { IFileDeleteOptions, IFileOverwriteOptions, FileSystemProviderCapabilities, FileType, IFileWriteOptions, IFileService, IStat, IWatchOptions, IFileSystemProviderWithFileReadWriteCapability } from 'vs/platform/files/common/files';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { VSBuffer } from 'vs/base/common/buffer';
-import { readTrustedDomains, TRUSTED_DOMAINS_CONTENT_STORAGE_KEY, TRUSTED_DOMAINS_STORAGE_KEY } from 'vs/workbench/contrib/url/browser/trustedDomains';
-import { assertIsDefined } from 'vs/base/common/types';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { VSBuffer } from "vs/base/common/buffer";
+import { Event } from "vs/base/common/event";
+import { parse } from "vs/base/common/json";
+import type { IDisposable } from "vs/base/common/lifecycle";
+import { assertIsDefined } from "vs/base/common/types";
+import type { URI } from "vs/base/common/uri";
+import {
+	FileSystemProviderCapabilities,
+	FileType,
+	type IFileDeleteOptions,
+	type IFileOverwriteOptions,
+	IFileService,
+	type IFileSystemProviderWithFileReadWriteCapability,
+	type IFileWriteOptions,
+	type IStat,
+	type IWatchOptions,
+} from "vs/platform/files/common/files";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import type { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import {
+	TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
+	TRUSTED_DOMAINS_STORAGE_KEY,
+	readTrustedDomains,
+} from "vs/workbench/contrib/url/browser/trustedDomains";
 
-const TRUSTED_DOMAINS_SCHEMA = 'trustedDomains';
+const TRUSTED_DOMAINS_SCHEMA = "trustedDomains";
 
 const TRUSTED_DOMAINS_STAT: IStat = {
 	type: FileType.File,
 	ctime: Date.now(),
 	mtime: Date.now(),
-	size: 0
+	size: 0,
 };
 
 const CONFIG_HELP_TEXT_PRE = `// Links matching one or more entries in the list below can be opened without link protection.
@@ -49,12 +67,16 @@ const CONFIG_PLACEHOLDER_TEXT = `[
 	// "https://microsoft.com"
 ]`;
 
-function computeTrustedDomainContent(defaultTrustedDomains: string[], trustedDomains: string[], configuring?: string) {
+function computeTrustedDomainContent(
+	defaultTrustedDomains: string[],
+	trustedDomains: string[],
+	configuring?: string,
+) {
 	let content = CONFIG_HELP_TEXT_PRE;
 
 	if (defaultTrustedDomains.length > 0) {
 		content += `// By default, VS Code trusts "localhost" as well as the following domains:\n`;
-		defaultTrustedDomains.forEach(d => {
+		defaultTrustedDomains.forEach((d) => {
 			content += `// - "${d}"\n`;
 		});
 	} else {
@@ -63,7 +85,9 @@ function computeTrustedDomainContent(defaultTrustedDomains: string[], trustedDom
 
 	content += CONFIG_HELP_TEXT_AFTER;
 
-	content += configuring ? `\n// Currently configuring trust for ${configuring}\n` : '';
+	content += configuring
+		? `\n// Currently configuring trust for ${configuring}\n`
+		: "";
 
 	if (trustedDomains.length === 0) {
 		content += CONFIG_PLACEHOLDER_TEXT;
@@ -74,9 +98,12 @@ function computeTrustedDomainContent(defaultTrustedDomains: string[], trustedDom
 	return content;
 }
 
-export class TrustedDomainsFileSystemProvider implements IFileSystemProviderWithFileReadWriteCapability, IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.trustedDomainsFileSystemProvider';
+export class TrustedDomainsFileSystemProvider
+	implements
+		IFileSystemProviderWithFileReadWriteCapability,
+		IWorkbenchContribution
+{
+	static readonly ID = "workbench.contrib.trustedDomainsFileSystemProvider";
 
 	readonly capabilities = FileSystemProviderCapabilities.FileReadWrite;
 
@@ -98,39 +125,55 @@ export class TrustedDomainsFileSystemProvider implements IFileSystemProviderWith
 	async readFile(resource: URI): Promise<Uint8Array> {
 		let trustedDomainsContent = this.storageService.get(
 			TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
-			StorageScope.APPLICATION
+			StorageScope.APPLICATION,
 		);
 
 		const configuring: string | undefined = resource.fragment;
 
-		const { defaultTrustedDomains, trustedDomains } = await this.instantiationService.invokeFunction(readTrustedDomains);
+		const { defaultTrustedDomains, trustedDomains } =
+			await this.instantiationService.invokeFunction(readTrustedDomains);
 		if (
 			!trustedDomainsContent ||
 			trustedDomainsContent.indexOf(CONFIG_HELP_TEXT_PRE) === -1 ||
 			trustedDomainsContent.indexOf(CONFIG_HELP_TEXT_AFTER) === -1 ||
-			trustedDomainsContent.indexOf(configuring ?? '') === -1 ||
-			[...defaultTrustedDomains, ...trustedDomains].some(d => !assertIsDefined(trustedDomainsContent).includes(d))
+			trustedDomainsContent.indexOf(configuring ?? "") === -1 ||
+			[...defaultTrustedDomains, ...trustedDomains].some(
+				(d) => !assertIsDefined(trustedDomainsContent).includes(d),
+			)
 		) {
-			trustedDomainsContent = computeTrustedDomainContent(defaultTrustedDomains, trustedDomains, configuring);
+			trustedDomainsContent = computeTrustedDomainContent(
+				defaultTrustedDomains,
+				trustedDomains,
+				configuring,
+			);
 		}
 
 		const buffer = VSBuffer.fromString(trustedDomainsContent).buffer;
 		return buffer;
 	}
 
-	writeFile(resource: URI, content: Uint8Array, opts: IFileWriteOptions): Promise<void> {
+	writeFile(
+		resource: URI,
+		content: Uint8Array,
+		opts: IFileWriteOptions,
+	): Promise<void> {
 		try {
 			const trustedDomainsContent = VSBuffer.wrap(content).toString();
 			const trustedDomains = parse(trustedDomainsContent);
 
-			this.storageService.store(TRUSTED_DOMAINS_CONTENT_STORAGE_KEY, trustedDomainsContent, StorageScope.APPLICATION, StorageTarget.USER);
+			this.storageService.store(
+				TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
+				trustedDomainsContent,
+				StorageScope.APPLICATION,
+				StorageTarget.USER,
+			);
 			this.storageService.store(
 				TRUSTED_DOMAINS_STORAGE_KEY,
-				JSON.stringify(trustedDomains) || '',
+				JSON.stringify(trustedDomains) || "",
 				StorageScope.APPLICATION,
-				StorageTarget.USER
+				StorageTarget.USER,
 			);
-		} catch (err) { }
+		} catch (err) {}
 
 		return Promise.resolve();
 	}
@@ -139,7 +182,7 @@ export class TrustedDomainsFileSystemProvider implements IFileSystemProviderWith
 		return {
 			dispose() {
 				return;
-			}
+			},
 		};
 	}
 	mkdir(resource: URI): Promise<void> {

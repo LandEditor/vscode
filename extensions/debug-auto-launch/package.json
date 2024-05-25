@@ -15,9 +15,7 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
+	"activationEvents": ["onStartupFinished"],
 	"devDependencies": {
 		"@types/node": "20.x"
 	},

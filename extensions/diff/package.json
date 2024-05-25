@@ -15,16 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Diff",
-					"diff"
-				],
+				"aliases": ["Diff", "diff"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".diff",
-					".patch",
-					".rej"
-				],
+				"extensions": [".diff", ".patch", ".rej"],
 				"id": "diff"
 			}
 		]

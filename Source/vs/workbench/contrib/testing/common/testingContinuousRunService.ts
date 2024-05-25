@@ -3,23 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationTokenSource } from 'vs/base/common/cancellation';
-import { Disposable, DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
-import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { StoredValue } from 'vs/workbench/contrib/testing/common/storedValue';
-import { TestingContextKeys } from 'vs/workbench/contrib/testing/common/testingContextKeys';
-import { ITestService } from 'vs/workbench/contrib/testing/common/testService';
-import { TestService } from 'vs/workbench/contrib/testing/common/testServiceImpl';
-import { ITestRunProfile, TestRunProfileBitset } from 'vs/workbench/contrib/testing/common/testTypes';
-import { Emitter, Event } from 'vs/base/common/event';
-import { TestId } from 'vs/workbench/contrib/testing/common/testId';
-import { WellDefinedPrefixTree } from 'vs/base/common/prefixTree';
-import { ITestProfileService } from 'vs/workbench/contrib/testing/common/testProfileService';
-import * as arrays from 'vs/base/common/arrays';
+import * as arrays from "vs/base/common/arrays";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { Emitter, type Event } from "vs/base/common/event";
+import {
+	Disposable,
+	DisposableStore,
+	type IDisposable,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { WellDefinedPrefixTree } from "vs/base/common/prefixTree";
+import {
+	type IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { StoredValue } from "vs/workbench/contrib/testing/common/storedValue";
+import { TestId } from "vs/workbench/contrib/testing/common/testId";
+import { ITestProfileService } from "vs/workbench/contrib/testing/common/testProfileService";
+import { ITestService } from "vs/workbench/contrib/testing/common/testService";
+import type { TestService } from "vs/workbench/contrib/testing/common/testServiceImpl";
+import type {
+	ITestRunProfile,
+	TestRunProfileBitset,
+} from "vs/workbench/contrib/testing/common/testTypes";
+import { TestingContextKeys } from "vs/workbench/contrib/testing/common/testingContextKeys";
 
-export const ITestingContinuousRunService = createDecorator<ITestingContinuousRunService>('testingContinuousRunService');
+export const ITestingContinuousRunService =
+	createDecorator<ITestingContinuousRunService>(
+		"testingContinuousRunService",
+	);
 
 export interface ITestingContinuousRunService {
 	readonly _serviceBrand: undefined;
@@ -62,7 +80,10 @@ export interface ITestingContinuousRunService {
 	 * default profiles in a group. Globally if no test is given,
 	 * for a specific test otherwise.
 	 */
-	start(profile: ITestRunProfile[] | TestRunProfileBitset, testId?: string): void;
+	start(
+		profile: ITestRunProfile[] | TestRunProfileBitset,
+		testId?: string,
+	): void;
 
 	/**
 	 * Stops any continuous run
@@ -71,7 +92,10 @@ export interface ITestingContinuousRunService {
 	stop(testId?: string): void;
 }
 
-export class TestingContinuousRunService extends Disposable implements ITestingContinuousRunService {
+export class TestingContinuousRunService
+	extends Disposable
+	implements ITestingContinuousRunService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly changeEmitter = new Emitter<string | undefined>();
@@ -114,7 +138,10 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 
 	/** @inheritdoc */
 	public isSpecificallyEnabledFor(testId: string): boolean {
-		return this.running.size > 0 && this.running.hasKey(TestId.fromString(testId).path);
+		return (
+			this.running.size > 0 &&
+			this.running.hasKey(TestId.fromString(testId).path)
+		);
 	}
 
 	/** @inheritdoc */
@@ -123,12 +150,18 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 			return true;
 		}
 
-		return this.running.size > 0 && this.running.hasKeyOrParent(TestId.fromString(testId).path);
+		return (
+			this.running.size > 0 &&
+			this.running.hasKeyOrParent(TestId.fromString(testId).path)
+		);
 	}
 
 	/** @inheritdoc */
 	public isEnabledForAChildOf(testId: string): boolean {
-		return this.running.size > 0 && this.running.hasKeyOrChildren(TestId.fromString(testId).path);
+		return (
+			this.running.size > 0 &&
+			this.running.hasKeyOrChildren(TestId.fromString(testId).path)
+		);
 	}
 
 	/** @inheritdoc */
@@ -137,7 +170,10 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 	}
 
 	/** @inheritdoc */
-	public start(profiles: ITestRunProfile[] | TestRunProfileBitset, testId?: string): void {
+	public start(
+		profiles: ITestRunProfile[] | TestRunProfileBitset,
+		testId?: string,
+	): void {
 		const store = new DisposableStore();
 		const cts = new CancellationTokenSource();
 		store.add(toDisposable(() => cts.dispose(true)));
@@ -146,14 +182,14 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 			this.isGloballyOn.set(true);
 		}
 
-		if (!testId) {
-			this.globallyRunning?.dispose();
-			this.globallyRunning = store;
-		} else {
-			this.running.mutate(TestId.fromString(testId).path, c => {
+		if (testId) {
+			this.running.mutate(TestId.fromString(testId).path, (c) => {
 				c?.dispose();
 				return store;
 			});
+		} else {
+			this.globallyRunning?.dispose();
+			this.globallyRunning = store;
 		}
 
 		let actualProfiles: ITestRunProfile[];
@@ -162,28 +198,39 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 		} else {
 			// restart the continuous run when default profiles change, if we were
 			// asked to run for a group
-			const getRelevant = () => this.testProfileService.getGroupDefaultProfiles(profiles)
-				.filter(p => p.supportsContinuousRun && (!testId || TestId.root(testId) === p.controllerId));
+			const getRelevant = () =>
+				this.testProfileService
+					.getGroupDefaultProfiles(profiles)
+					.filter(
+						(p) =>
+							p.supportsContinuousRun &&
+							(!testId || TestId.root(testId) === p.controllerId),
+					);
 			actualProfiles = getRelevant();
-			store.add(this.testProfileService.onDidChange(() => {
-				if (!arrays.equals(getRelevant(), actualProfiles)) {
-					this.start(profiles, testId);
-				}
-			}));
+			store.add(
+				this.testProfileService.onDidChange(() => {
+					if (!arrays.equals(getRelevant(), actualProfiles)) {
+						this.start(profiles, testId);
+					}
+				}),
+			);
 		}
 
-		this.lastRun.store(new Set(actualProfiles.map(p => p.profileId)));
+		this.lastRun.store(new Set(actualProfiles.map((p) => p.profileId)));
 
 		if (actualProfiles.length) {
-			this.testService.startContinuousRun({
-				continuous: true,
-				targets: actualProfiles.map(p => ({
-					testIds: [testId ?? p.controllerId],
-					controllerId: p.controllerId,
-					profileGroup: p.group,
-					profileId: p.profileId
-				})),
-			}, cts.token);
+			this.testService.startContinuousRun(
+				{
+					continuous: true,
+					targets: actualProfiles.map((p) => ({
+						testIds: [testId ?? p.controllerId],
+						controllerId: p.controllerId,
+						profileGroup: p.group,
+						profileId: p.profileId,
+					})),
+				},
+				cts.token,
+			);
 		}
 
 		this.changeEmitter.fire(testId);
@@ -191,15 +238,17 @@ export class TestingContinuousRunService extends Disposable implements ITestingC
 
 	/** @inheritdoc */
 	public stop(testId?: string): void {
-		if (!testId) {
-			this.globallyRunning?.dispose();
-			this.globallyRunning = undefined;
-		} else {
-			const cancellations = [...this.running.deleteRecursive(TestId.fromString(testId).path)];
+		if (testId) {
+			const cancellations = [
+				...this.running.deleteRecursive(TestId.fromString(testId).path),
+			];
 			// deleteRecursive returns a BFS order, reverse it so children are cancelled before parents
 			for (let i = cancellations.length - 1; i >= 0; i--) {
 				cancellations[i].dispose();
 			}
+		} else {
+			this.globallyRunning?.dispose();
+			this.globallyRunning = undefined;
 		}
 
 		if (testId === undefined) {

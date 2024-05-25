@@ -3,15 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from 'vs/base/common/event';
-import { IDisposable } from 'vs/base/common/lifecycle';
-import { URI, UriComponents } from 'vs/base/common/uri';
-import { IRange } from 'vs/editor/common/core/range';
-import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
-import { NotebookCellExecutionState, NotebookExecutionState } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { CellExecutionUpdateType, ICellExecuteOutputEdit, ICellExecuteOutputItemEdit } from 'vs/workbench/contrib/notebook/common/notebookExecutionService';
+import type { Event } from "vs/base/common/event";
+import type { IDisposable } from "vs/base/common/lifecycle";
+import type { URI, UriComponents } from "vs/base/common/uri";
+import type { IRange } from "vs/editor/common/core/range";
+import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import type {
+	NotebookCellExecutionState,
+	NotebookExecutionState,
+} from "vs/workbench/contrib/notebook/common/notebookCommon";
+import type {
+	CellExecutionUpdateType,
+	ICellExecuteOutputEdit,
+	ICellExecuteOutputItemEdit,
+} from "vs/workbench/contrib/notebook/common/notebookExecutionService";
 
-export type ICellExecuteUpdate = ICellExecuteOutputEdit | ICellExecuteOutputItemEdit | ICellExecutionStateUpdate;
+export type ICellExecuteUpdate =
+	| ICellExecuteOutputEdit
+	| ICellExecuteOutputItemEdit
+	| ICellExecutionStateUpdate;
 
 export interface ICellExecutionStateUpdate {
 	editType: CellExecutionUpdateType.ExecutionState;
@@ -33,8 +43,8 @@ export interface ICellExecutionComplete {
 	error?: ICellExecutionError;
 }
 export enum NotebookExecutionType {
-	cell,
-	notebook
+	cell = 0,
+	notebook = 1,
 }
 export interface ICellExecutionStateChangedEvent {
 	type: NotebookExecutionType.cell;
@@ -61,19 +71,29 @@ export interface IFailedCellInfo {
 	visible: boolean;
 }
 
-export const INotebookExecutionStateService = createDecorator<INotebookExecutionStateService>('INotebookExecutionStateService');
+export const INotebookExecutionStateService =
+	createDecorator<INotebookExecutionStateService>(
+		"INotebookExecutionStateService",
+	);
 
 export interface INotebookExecutionStateService {
 	_serviceBrand: undefined;
 
-	onDidChangeExecution: Event<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent>;
+	onDidChangeExecution: Event<
+		ICellExecutionStateChangedEvent | IExecutionStateChangedEvent
+	>;
 	onDidChangeLastRunFailState: Event<INotebookFailStateChangedEvent>;
 
 	forceCancelNotebookExecutions(notebookUri: URI): void;
 	getCellExecutionsForNotebook(notebook: URI): INotebookCellExecution[];
-	getCellExecutionsByHandleForNotebook(notebook: URI): Map<number, INotebookCellExecution> | undefined;
+	getCellExecutionsByHandleForNotebook(
+		notebook: URI,
+	): Map<number, INotebookCellExecution> | undefined;
 	getCellExecution(cellUri: URI): INotebookCellExecution | undefined;
-	createCellExecution(notebook: URI, cellHandle: number): INotebookCellExecution;
+	createCellExecution(
+		notebook: URI,
+		cellHandle: number,
+	): INotebookCellExecution;
 	getExecution(notebook: URI): INotebookExecution | undefined;
 	createExecution(notebook: URI): INotebookExecution;
 	getLastFailedCellForNotebook(notebook: URI): number | undefined;

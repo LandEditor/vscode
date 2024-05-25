@@ -35,36 +35,20 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Git Commit Message",
-					"git-commit"
-				],
+				"aliases": ["Git Commit Message", "git-commit"],
 				"configuration": "./languages/git-commit.language-configuration.json",
-				"filenames": [
-					"COMMIT_EDITMSG",
-					"MERGE_MSG"
-				],
+				"filenames": ["COMMIT_EDITMSG", "MERGE_MSG"],
 				"id": "git-commit"
 			},
 			{
-				"aliases": [
-					"Git Rebase Message",
-					"git-rebase"
-				],
+				"aliases": ["Git Rebase Message", "git-rebase"],
 				"configuration": "./languages/git-rebase.language-configuration.json",
-				"filenamePatterns": [
-					"**/rebase-merge/done"
-				],
-				"filenames": [
-					"git-rebase-todo"
-				],
+				"filenamePatterns": ["**/rebase-merge/done"],
+				"filenames": ["git-rebase-todo"],
 				"id": "git-rebase"
 			},
 			{
-				"aliases": [
-					"Ignore",
-					"ignore"
-				],
+				"aliases": ["Ignore", "ignore"],
 				"configuration": "./languages/ignore.language-configuration.json",
 				"extensions": [
 					".gitignore_global",
@@ -83,9 +67,7 @@
 			]
 		}
 	},
-	"activationEvents": [
-		"*"
-	],
+	"activationEvents": ["*"],
 	"devDependencies": {
 		"@types/node": "20.x"
 	},

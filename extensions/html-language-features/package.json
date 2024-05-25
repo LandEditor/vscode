@@ -27,11 +27,7 @@
 				},
 				"html.completion.attributeDefaultValue": {
 					"default": "doublequotes",
-					"enum": [
-						"doublequotes",
-						"singlequotes",
-						"empty"
-					],
+					"enum": ["doublequotes", "singlequotes", "empty"],
 					"enumDescriptions": [
 						"%html.completion.attributeDefaultValue.doublequotes%",
 						"%html.completion.attributeDefaultValue.singlequotes%",
@@ -54,10 +50,7 @@
 					"default": "pre,code,textarea",
 					"markdownDescription": "%html.format.contentUnformatted.desc%",
 					"scope": "resource",
-					"type": [
-						"string",
-						"null"
-					]
+					"type": ["string", "null"]
 				},
 				"html.format.enable": {
 					"default": true,
@@ -69,10 +62,7 @@
 					"default": "head, body, /html",
 					"markdownDescription": "%html.format.extraLiners.desc%",
 					"scope": "resource",
-					"type": [
-						"string",
-						"null"
-					]
+					"type": ["string", "null"]
 				},
 				"html.format.indentHandlebars": {
 					"default": false,
@@ -90,10 +80,7 @@
 					"default": null,
 					"markdownDescription": "%html.format.maxPreserveNewLines.desc%",
 					"scope": "resource",
-					"type": [
-						"number",
-						"null"
-					]
+					"type": ["number", "null"]
 				},
 				"html.format.preserveNewLines": {
 					"default": true,
@@ -111,10 +98,7 @@
 					"default": "wbr",
 					"markdownDescription": "%html.format.unformatted.desc%",
 					"scope": "resource",
-					"type": [
-						"string",
-						"null"
-					]
+					"type": ["string", "null"]
 				},
 				"html.format.unformattedContentDelimiter": {
 					"default": "",
@@ -150,10 +134,7 @@
 					"default": null,
 					"markdownDescription": "%html.format.wrapAttributesIndentSize.desc%",
 					"scope": "resource",
-					"type": [
-						"number",
-						"null"
-					]
+					"type": ["number", "null"]
 				},
 				"html.format.wrapLineLength": {
 					"default": 120,
@@ -189,11 +170,7 @@
 				"html.trace.server": {
 					"default": "off",
 					"description": "%html.trace.server.desc%",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
+					"enum": ["off", "messages", "verbose"],
 					"scope": "window",
 					"type": "string"
 				},
@@ -232,10 +209,7 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:html",
-		"onLanguage:handlebars"
-	],
+	"activationEvents": ["onLanguage:html", "onLanguage:handlebars"],
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"
@@ -248,7 +222,5 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"extensionsAny"
-	]
+	"enabledApiProposals": ["extensionsAny"]
 }

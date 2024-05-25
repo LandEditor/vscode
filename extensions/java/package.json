@@ -15,15 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Java",
-					"java"
-				],
+				"aliases": ["Java", "java"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".java",
-					".jav"
-				],
+				"extensions": [".java", ".jav"],
 				"id": "java"
 			}
 		],

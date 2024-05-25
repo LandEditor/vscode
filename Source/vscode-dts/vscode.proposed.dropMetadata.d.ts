@@ -3,10 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/179430
-
 
 	/**
 	 * TODO:
@@ -60,6 +58,10 @@ declare module 'vscode' {
 	}
 
 	export namespace languages {
-		export function registerDocumentDropEditProvider(selector: DocumentSelector, provider: DocumentDropEditProvider, metadata?: DocumentDropEditProviderMetadata): Disposable;
+		export function registerDocumentDropEditProvider(
+			selector: DocumentSelector,
+			provider: DocumentDropEditProvider,
+			metadata?: DocumentDropEditProviderMetadata,
+		): Disposable;
 	}
 }

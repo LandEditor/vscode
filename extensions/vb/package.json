@@ -15,18 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Visual Basic",
-					"vb"
-				],
+				"aliases": ["Visual Basic", "vb"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".vb",
-					".brs",
-					".vbs",
-					".bas",
-					".vba"
-				],
+				"extensions": [".vb", ".brs", ".vbs", ".bas", ".vba"],
 				"id": "vb"
 			}
 		],

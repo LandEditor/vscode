@@ -3,8 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ICellViewModel, INotebookEditorDelegate } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { CellContentPart } from 'vs/workbench/contrib/notebook/browser/view/cellPart';
+import type {
+	ICellViewModel,
+	INotebookEditorDelegate,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { CellContentPart } from "vs/workbench/contrib/notebook/browser/view/cellPart";
 
 export class CellChatPart extends CellContentPart {
 	// private _controller: NotebookCellChatController | undefined;
@@ -28,11 +31,9 @@ export class CellChatPart extends CellContentPart {
 		super.unrenderCell(element);
 	}
 
-	override updateInternalLayoutNow(element: ICellViewModel): void {
-	}
+	override updateInternalLayoutNow(element: ICellViewModel): void {}
 
 	override dispose() {
 		super.dispose();
 	}
 }
-

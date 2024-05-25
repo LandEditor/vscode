@@ -57,47 +57,27 @@
 				]
 			},
 			{
-				"injectTo": [
-					"source.ts",
-					"source.tsx"
-				],
+				"injectTo": ["source.ts", "source.tsx"],
 				"path": "./syntaxes/jsdoc.ts.injection.tmLanguage.json",
 				"scopeName": "documentation.injection.ts"
 			},
 			{
-				"injectTo": [
-					"source.js",
-					"source.js.jsx"
-				],
+				"injectTo": ["source.js", "source.js.jsx"],
 				"path": "./syntaxes/jsdoc.js.injection.tmLanguage.json",
 				"scopeName": "documentation.injection.js.jsx"
 			}
 		],
 		"languages": [
 			{
-				"aliases": [
-					"TypeScript",
-					"ts",
-					"typescript"
-				],
+				"aliases": ["TypeScript", "ts", "typescript"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".ts",
-					".cts",
-					".mts"
-				],
+				"extensions": [".ts", ".cts", ".mts"],
 				"id": "typescript"
 			},
 			{
-				"aliases": [
-					"TypeScript JSX",
-					"TypeScript React",
-					"tsx"
-				],
+				"aliases": ["TypeScript JSX", "TypeScript React", "tsx"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".tsx"
-				],
+				"extensions": [".tsx"],
 				"id": "typescriptreact"
 			},
 			{
@@ -107,16 +87,11 @@
 					"tsconfig-*.json",
 					"jsconfig-*.json"
 				],
-				"filenames": [
-					"tsconfig.json",
-					"jsconfig.json"
-				],
+				"filenames": ["tsconfig.json", "jsconfig.json"],
 				"id": "jsonc"
 			},
 			{
-				"extensions": [
-					".tsbuildinfo"
-				],
+				"extensions": [".tsbuildinfo"],
 				"id": "json"
 			}
 		],
@@ -124,59 +99,31 @@
 			{
 				"language": "typescript",
 				"scopes": {
-					"function": [
-						"entity.name.function.ts"
-					],
-					"function.defaultLibrary": [
-						"support.function.ts"
-					],
-					"namespace": [
-						"entity.name.type.module.ts"
-					],
-					"property": [
-						"variable.other.property.ts"
-					],
+					"function": ["entity.name.function.ts"],
+					"function.defaultLibrary": ["support.function.ts"],
+					"namespace": ["entity.name.type.module.ts"],
+					"property": ["variable.other.property.ts"],
 					"property.readonly": [
 						"variable.other.constant.property.ts"
 					],
-					"variable": [
-						"variable.other.readwrite.ts"
-					],
-					"variable.defaultLibrary": [
-						"support.variable.ts"
-					],
-					"variable.readonly": [
-						"variable.other.constant.object.ts"
-					]
+					"variable": ["variable.other.readwrite.ts"],
+					"variable.defaultLibrary": ["support.variable.ts"],
+					"variable.readonly": ["variable.other.constant.object.ts"]
 				}
 			},
 			{
 				"language": "typescriptreact",
 				"scopes": {
-					"function": [
-						"entity.name.function.tsx"
-					],
-					"function.defaultLibrary": [
-						"support.function.tsx"
-					],
-					"namespace": [
-						"entity.name.type.module.tsx"
-					],
-					"property": [
-						"variable.other.property.tsx"
-					],
+					"function": ["entity.name.function.tsx"],
+					"function.defaultLibrary": ["support.function.tsx"],
+					"namespace": ["entity.name.type.module.tsx"],
+					"property": ["variable.other.property.tsx"],
 					"property.readonly": [
 						"variable.other.constant.property.tsx"
 					],
-					"variable": [
-						"variable.other.readwrite.tsx"
-					],
-					"variable.defaultLibrary": [
-						"support.variable.tsx"
-					],
-					"variable.readonly": [
-						"variable.other.constant.object.tsx"
-					]
+					"variable": ["variable.other.readwrite.tsx"],
+					"variable.defaultLibrary": ["support.variable.tsx"],
+					"variable.readonly": ["variable.other.constant.object.tsx"]
 				}
 			}
 		],

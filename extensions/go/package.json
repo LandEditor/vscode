@@ -20,13 +20,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Go"
-				],
+				"aliases": ["Go"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".go"
-				],
+				"extensions": [".go"],
 				"id": "go"
 			}
 		]

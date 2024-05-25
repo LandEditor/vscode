@@ -25,17 +25,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"CoffeeScript",
-					"coffeescript",
-					"coffee"
-				],
+				"aliases": ["CoffeeScript", "coffeescript", "coffee"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".coffee",
-					".cson",
-					".iced"
-				],
+				"extensions": [".coffee", ".cson", ".iced"],
 				"id": "coffeescript"
 			}
 		],

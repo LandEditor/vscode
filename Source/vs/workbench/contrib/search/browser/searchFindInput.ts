@@ -3,30 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IContextViewProvider } from 'vs/base/browser/ui/contextview/contextview';
-import { IFindInputOptions } from 'vs/base/browser/ui/findinput/findInput';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { ContextScopedFindInput } from 'vs/platform/history/browser/contextScopedHistoryWidget';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { NotebookFindFilters } from 'vs/workbench/contrib/notebook/browser/contrib/find/findFilters';
-import { NotebookFindInputFilterButton } from 'vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget';
-import * as nls from 'vs/nls';
-import { IFindInputToggleOpts } from 'vs/base/browser/ui/findinput/findInputToggles';
-import { Codicon } from 'vs/base/common/codicons';
-import { getDefaultHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegateFactory';
-import { Toggle } from 'vs/base/browser/ui/toggle/toggle';
-import { Emitter } from 'vs/base/common/event';
+import type { IContextViewProvider } from "vs/base/browser/ui/contextview/contextview";
+import type { IFindInputOptions } from "vs/base/browser/ui/findinput/findInput";
+import type { IFindInputToggleOpts } from "vs/base/browser/ui/findinput/findInputToggles";
+import { getDefaultHoverDelegate } from "vs/base/browser/ui/hover/hoverDelegateFactory";
+import { Toggle } from "vs/base/browser/ui/toggle/toggle";
+import { Codicon } from "vs/base/common/codicons";
+import { Emitter } from "vs/base/common/event";
+import * as nls from "vs/nls";
+import type { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import type { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import { ContextScopedFindInput } from "vs/platform/history/browser/contextScopedHistoryWidget";
+import type { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import type { NotebookFindFilters } from "vs/workbench/contrib/notebook/browser/contrib/find/findFilters";
+import { NotebookFindInputFilterButton } from "vs/workbench/contrib/notebook/browser/contrib/find/notebookFindReplaceWidget";
 
-const NLS_AI_TOGGLE_LABEL = nls.localize('aiDescription', "Use AI");
+const NLS_AI_TOGGLE_LABEL = nls.localize("aiDescription", "Use AI");
 
 export class SearchFindInput extends ContextScopedFindInput {
 	private _findFilter: NotebookFindInputFilterButton;
 	private _aiButton: AIToggle;
-	private _filterChecked: boolean = false;
-	private readonly _onDidChangeAIToggle = this._register(new Emitter<boolean>());
+	private _filterChecked = false;
+	private readonly _onDidChangeAIToggle = this._register(
+		new Emitter<boolean>(),
+	);
 	public readonly onDidChangeAIToggle = this._onDidChangeAIToggle.event;
-	private shouldNotebookFilterBeVisible: boolean = false; // followed, but overriden by the whether aiToggle is visible
+	private shouldNotebookFilterBeVisible = false; // followed, but overriden by the whether aiToggle is visible
 
 	constructor(
 		container: HTMLElement | null,
@@ -37,7 +39,7 @@ export class SearchFindInput extends ContextScopedFindInput {
 		readonly instantiationService: IInstantiationService,
 		readonly filters: NotebookFindFilters,
 		shouldShowAIButton: boolean, // caller responsible for updating this when it changes,
-		filterStartVisiblitity: boolean
+		filterStartVisiblitity: boolean,
 	) {
 		super(container, contextViewProvider, options, contextKeyService);
 		this._findFilter = this._register(
@@ -46,44 +48,50 @@ export class SearchFindInput extends ContextScopedFindInput {
 				contextMenuService,
 				instantiationService,
 				options,
-				nls.localize('searchFindInputNotebookFilter.label', "Notebook Find Filters")
-			));
+				nls.localize(
+					"searchFindInputNotebookFilter.label",
+					"Notebook Find Filters",
+				),
+			),
+		);
 
 		this._aiButton = this._register(
 			new AIToggle({
-				appendTitle: '',
+				appendTitle: "",
 				isChecked: false,
-				...options.toggleStyles
-			}));
+				...options.toggleStyles,
+			}),
+		);
 
 		this.setAdditionalToggles([this._aiButton]);
 
 		this._updatePadding();
 
 		this.controls.appendChild(this._findFilter.container);
-		this._findFilter.container.classList.add('monaco-custom-toggle');
+		this._findFilter.container.classList.add("monaco-custom-toggle");
 		this.filterVisible = filterStartVisiblitity;
 		// ensure that ai button is visible if it should be
 		this.sparkleVisible = shouldShowAIButton;
 
-		this._register(this._aiButton.onChange(() => {
-			if (this.regex) {
-				this.regex.visible = !this._aiButton.checked;
-			}
-			if (this.wholeWords) {
-				this.wholeWords.visible = !this._aiButton.checked;
-			}
-			if (this.caseSensitive) {
-				this.caseSensitive.visible = !this._aiButton.checked;
-			}
-			if (this._aiButton.checked) {
-				this._findFilter.visible = false;
-			} else {
-				this.filterVisible = this.shouldNotebookFilterBeVisible;
-			}
-			this._updatePadding();
-
-		}));
+		this._register(
+			this._aiButton.onChange(() => {
+				if (this.regex) {
+					this.regex.visible = !this._aiButton.checked;
+				}
+				if (this.wholeWords) {
+					this.wholeWords.visible = !this._aiButton.checked;
+				}
+				if (this.caseSensitive) {
+					this.caseSensitive.visible = !this._aiButton.checked;
+				}
+				if (this._aiButton.checked) {
+					this._findFilter.visible = false;
+				} else {
+					this.filterVisible = this.shouldNotebookFilterBeVisible;
+				}
+				this._updatePadding();
+			}),
+		);
 	}
 
 	private _updatePadding() {
@@ -142,10 +150,11 @@ class AIToggle extends Toggle {
 			icon: Codicon.sparkle,
 			title: NLS_AI_TOGGLE_LABEL + opts.appendTitle,
 			isChecked: opts.isChecked,
-			hoverDelegate: opts.hoverDelegate ?? getDefaultHoverDelegate('element'),
+			hoverDelegate:
+				opts.hoverDelegate ?? getDefaultHoverDelegate("element"),
 			inputActiveOptionBorder: opts.inputActiveOptionBorder,
 			inputActiveOptionForeground: opts.inputActiveOptionForeground,
-			inputActiveOptionBackground: opts.inputActiveOptionBackground
+			inputActiveOptionBackground: opts.inputActiveOptionBackground,
 		});
 	}
 }

@@ -39,12 +39,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"HTML",
-					"htm",
-					"html",
-					"xhtml"
-				],
+				"aliases": ["HTML", "htm", "html", "xhtml"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".html",

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
+declare module "vscode" {
 	export class FileCoverage2 extends FileCoverage {
 		/**
 		 * Test {@link TestItem} this file coverage is generated from. If undefined,

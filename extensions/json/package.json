@@ -30,10 +30,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"JSON",
-					"json"
-				],
+				"aliases": ["JSON", "json"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".json",
@@ -50,20 +47,12 @@
 					".ipynb",
 					".vuerc"
 				],
-				"filenames": [
-					"composer.lock",
-					".watchmanconfig"
-				],
+				"filenames": ["composer.lock", ".watchmanconfig"],
 				"id": "json",
-				"mimetypes": [
-					"application/json",
-					"application/manifest+json"
-				]
+				"mimetypes": ["application/json", "application/manifest+json"]
 			},
 			{
-				"aliases": [
-					"JSON with Comments"
-				],
+				"aliases": ["JSON with Comments"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".jsonc",
@@ -84,24 +73,16 @@
 				"id": "jsonc"
 			},
 			{
-				"aliases": [
-					"JSON Lines"
-				],
+				"aliases": ["JSON Lines"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".jsonl"
-				],
+				"extensions": [".jsonl"],
 				"filenames": [],
 				"id": "jsonl"
 			},
 			{
-				"aliases": [
-					"Code Snippets"
-				],
+				"aliases": ["Code Snippets"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".code-snippets"
-				],
+				"extensions": [".code-snippets"],
 				"filenamePatterns": [
 					"**/User/snippets/*.json",
 					"**/User/profiles/*/snippets/*.json"

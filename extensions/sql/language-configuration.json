@@ -1,13 +1,9 @@
 {
 	"comments": {
 		"lineComment": "--",
-		"blockComment": [ "/*", "*/" ]
+		"blockComment": ["/*", "*/"]
 	},
-	"brackets": [
-		["{", "}"],
-		["[", "]"],
-		["(", ")"]
-	],
+	"brackets": [["{", "}"], ["[", "]"], ["(", ")"]],
 	"autoClosingPairs": [
 		["{", "}"],
 		["[", "]"],
@@ -30,7 +26,7 @@
 			"start": "^\\s*--\\s*#region\\b",
 			"end": "^\\s*--\\s*#endregion\\b"
 		}
-	},
+	}
 
 	// enhancedBrackets:[
 	// 	{ openTrigger: 'n', open: /begin$/i, closeComplete: 'end', matchCase: true },

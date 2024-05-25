@@ -29,23 +29,12 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"PHP",
-					"php"
-				],
+				"aliases": ["PHP", "php"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".php",
-					".php4",
-					".php5",
-					".phtml",
-					".ctp"
-				],
+				"extensions": [".php", ".php4", ".php5", ".phtml", ".ctp"],
 				"firstLine": "^#!\\s*/.*\\bphp\\b",
 				"id": "php",
-				"mimetypes": [
-					"application/x-php"
-				]
+				"mimetypes": ["application/x-php"]
 			}
 		],
 		"snippets": [

@@ -15,10 +15,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"HLSL",
-					"hlsl"
-				],
+				"aliases": ["HLSL", "hlsl"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".hlsl",

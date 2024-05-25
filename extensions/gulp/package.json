@@ -13,10 +13,7 @@
 				"gulp.autoDetect": {
 					"default": "off",
 					"description": "%config.gulp.autoDetect%",
-					"enum": [
-						"off",
-						"on"
-					],
+					"enum": ["off", "on"],
 					"scope": "application",
 					"type": "string"
 				}
@@ -36,17 +33,13 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"task"
-				],
+				"required": ["task"],
 				"type": "gulp",
 				"when": "shellExecutionSupported"
 			}
 		]
 	},
-	"activationEvents": [
-		"onTaskType:gulp"
-	],
+	"activationEvents": ["onTaskType:gulp"],
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"

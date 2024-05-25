@@ -20,19 +20,11 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Razor",
-					"razor"
-				],
+				"aliases": ["Razor", "razor"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".cshtml",
-					".razor"
-				],
+				"extensions": [".cshtml", ".razor"],
 				"id": "razor",
-				"mimetypes": [
-					"text/x-cshtml"
-				]
+				"mimetypes": ["text/x-cshtml"]
 			}
 		]
 	}

@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import Severity from 'vs/base/common/severity';
-import { TerminateResponse } from 'vs/base/common/processes';
-import { Event } from 'vs/base/common/event';
-import { Platform } from 'vs/base/common/platform';
-import { IWorkspaceFolder } from 'vs/platform/workspace/common/workspace';
-import { Task, ITaskEvent, KeyedTaskIdentifier } from './tasks';
-import { ConfigurationTarget } from 'vs/platform/configuration/common/configuration';
+import type { Event } from "vs/base/common/event";
+import type { Platform } from "vs/base/common/platform";
+import type { TerminateResponse } from "vs/base/common/processes";
+import type Severity from "vs/base/common/severity";
+import type { URI } from "vs/base/common/uri";
+import type { ConfigurationTarget } from "vs/platform/configuration/common/configuration";
+import type { IWorkspaceFolder } from "vs/platform/workspace/common/workspace";
+import type { ITaskEvent, KeyedTaskIdentifier, Task } from "./tasks";
 
-export const enum TaskErrors {
-	NotConfigured,
-	RunningTask,
-	NoBuildTask,
-	NoTestTask,
-	ConfigValidationError,
-	TaskNotFound,
-	NoValidTaskRunner,
-	UnknownError
+export enum TaskErrors {
+	NotConfigured = 0,
+	RunningTask = 1,
+	NoBuildTask = 2,
+	NoTestTask = 3,
+	ConfigValidationError = 4,
+	TaskNotFound = 5,
+	NoValidTaskRunner = 6,
+	UnknownError = 7,
 }
 
 export class TaskError {
@@ -36,9 +36,9 @@ export class TaskError {
 }
 
 export namespace Triggers {
-	export const shortcut: string = 'shortcut';
-	export const command: string = 'command';
-	export const reconnect: string = 'reconnect';
+	export const shortcut: string = "shortcut";
+	export const command: string = "command";
+	export const reconnect: string = "reconnect";
 }
 
 export interface ITaskSummary {
@@ -48,9 +48,9 @@ export interface ITaskSummary {
 	exitCode?: number;
 }
 
-export const enum TaskExecuteKind {
+export enum TaskExecuteKind {
 	Started = 1,
-	Active = 2
+	Active = 2,
 }
 
 export interface ITaskExecuteResult {
@@ -67,7 +67,10 @@ export interface ITaskExecuteResult {
 }
 
 export interface ITaskResolver {
-	resolve(uri: URI | string, identifier: string | KeyedTaskIdentifier | undefined): Promise<Task | undefined>;
+	resolve(
+		uri: URI | string,
+		identifier: string | KeyedTaskIdentifier | undefined,
+	): Promise<Task | undefined>;
 }
 
 export interface ITaskTerminateResponse extends TerminateResponse {
@@ -92,12 +95,22 @@ export interface ITaskSystemInfo {
 	platform: Platform;
 	context: any;
 	uriProvider: (this: void, path: string) => URI;
-	resolveVariables(workspaceFolder: IWorkspaceFolder, toResolve: IResolveSet, target: ConfigurationTarget): Promise<IResolvedVariables | undefined>;
-	findExecutable(command: string, cwd?: string, paths?: string[]): Promise<string | undefined>;
+	resolveVariables(
+		workspaceFolder: IWorkspaceFolder,
+		toResolve: IResolveSet,
+		target: ConfigurationTarget,
+	): Promise<IResolvedVariables | undefined>;
+	findExecutable(
+		command: string,
+		cwd?: string,
+		paths?: string[],
+	): Promise<string | undefined>;
 }
 
 export interface ITaskSystemInfoResolver {
-	(workspaceFolder: IWorkspaceFolder | undefined): ITaskSystemInfo | undefined;
+	(
+		workspaceFolder: IWorkspaceFolder | undefined,
+	): ITaskSystemInfo | undefined;
 }
 
 export interface ITaskSystem {

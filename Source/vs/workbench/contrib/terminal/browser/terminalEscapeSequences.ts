@@ -6,7 +6,7 @@
 /**
  * The identifier for the first numeric parameter (`Ps`) for OSC commands used by shell integration.
  */
-const enum ShellIntegrationOscPs {
+enum ShellIntegrationOscPs {
 	/**
 	 * Sequences pioneered by FinalTerm.
 	 */
@@ -19,7 +19,7 @@ const enum ShellIntegrationOscPs {
 	/**
 	 * Sequences pioneered by iTerm.
 	 */
-	ITerm = 1337
+	ITerm = 1337,
 }
 
 /**
@@ -27,31 +27,31 @@ const enum ShellIntegrationOscPs {
  * those pioneered in FinalTerm. The decision to move to entirely custom sequences was to try to
  * improve reliability and prevent the possibility of applications confusing the terminal.
  */
-export const enum VSCodeOscPt {
+export enum VSCodeOscPt {
 	/**
 	 * The start of the prompt, this is expected to always appear at the start of a line.
 	 * Based on FinalTerm's `OSC 133 ; A ST`.
 	 */
-	PromptStart = 'A',
+	PromptStart = "A",
 
 	/**
 	 * The start of a command, ie. where the user inputs their command.
 	 * Based on FinalTerm's `OSC 133 ; B ST`.
 	 */
-	CommandStart = 'B',
+	CommandStart = "B",
 
 	/**
 	 * Sent just before the command output begins.
 	 * Based on FinalTerm's `OSC 133 ; C ST`.
 	 */
-	CommandExecuted = 'C',
+	CommandExecuted = "C",
 
 	/**
 	 * Sent just after a command has finished. The exit code is optional, when not specified it
 	 * means no command was run (ie. enter on empty prompt or ctrl+c).
 	 * Based on FinalTerm's `OSC 133 ; D [; <ExitCode>] ST`.
 	 */
-	CommandFinished = 'D',
+	CommandFinished = "D",
 
 	/**
 	 * Explicitly set the command line. This helps workaround problems with conpty not having a
@@ -59,51 +59,54 @@ export const enum VSCodeOscPt {
 	 * this sequence there's no need for the guessing based on the unreliable cursor positions that
 	 * would otherwise be required.
 	 */
-	CommandLine = 'E',
+	CommandLine = "E",
 
 	/**
 	 * Similar to prompt start but for line continuations.
 	 */
-	ContinuationStart = 'F',
+	ContinuationStart = "F",
 
 	/**
 	 * Similar to command start but for line continuations.
 	 */
-	ContinuationEnd = 'G',
+	ContinuationEnd = "G",
 
 	/**
 	 * The start of the right prompt.
 	 */
-	RightPromptStart = 'H',
+	RightPromptStart = "H",
 
 	/**
 	 * The end of the right prompt.
 	 */
-	RightPromptEnd = 'I',
+	RightPromptEnd = "I",
 
 	/**
 	 * Set an arbitrary property: `OSC 633 ; P ; <Property>=<Value> ST`, only known properties will
 	 * be handled.
 	 */
-	Property = 'P'
+	Property = "P",
 }
 
-export const enum VSCodeOscProperty {
-	Task = 'Task',
-	Cwd = 'Cwd'
+export enum VSCodeOscProperty {
+	Task = "Task",
+	Cwd = "Cwd",
 }
 
 /**
  * ITerm sequences
  */
-export const enum ITermOscPt {
+export enum ITermOscPt {
 	/**
 	 * Based on ITerm's `OSC 1337 ; SetMark` sets a mark on the scrollbar
 	 */
-	SetMark = 'SetMark'
+	SetMark = "SetMark",
 }
 
-export function VSCodeSequence(osc: VSCodeOscPt, data?: string | VSCodeOscProperty): string {
+export function VSCodeSequence(
+	osc: VSCodeOscPt,
+	data?: string | VSCodeOscProperty,
+): string {
 	return oscSequence(ShellIntegrationOscPs.VSCode, osc, data);
 }
 
@@ -118,5 +121,4 @@ function oscSequence(ps: number, pt: string, data?: string): string {
 	}
 	result += `\x07`;
 	return result;
-
 }

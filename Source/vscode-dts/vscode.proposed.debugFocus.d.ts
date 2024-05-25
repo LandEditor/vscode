@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// See https://github.com/microsoft/vscode/issues/63943
 
 	export class DebugThread {
@@ -50,7 +49,6 @@ declare module 'vscode' {
 		readonly frameId: number;
 	}
 
-
 	export namespace debug {
 		/**
 		 * The currently focused thread or stack frame, or `undefined` if no
@@ -61,6 +59,8 @@ declare module 'vscode' {
 		/**
 		 * An event which fires when the {@link debug.activeStackItem} has changed.
 		 */
-		export const onDidChangeActiveStackItem: Event<DebugThread | DebugStackFrame | undefined>;
+		export const onDidChangeActiveStackItem: Event<
+			DebugThread | DebugStackFrame | undefined
+		>;
 	}
 }

@@ -3,15 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	/**
 	 * Represents a language model response.
 	 *
 	 * @see {@link LanguageModelAccess.chatRequest}
 	 */
 	export interface LanguageModelChatResponse {
-
 		/**
 		 * An async iterable that is a stream of text chunks forming the overall response.
 		 *
@@ -30,7 +28,6 @@ declare module 'vscode' {
 	 * provided by extensions.
 	 */
 	export class LanguageModelChatSystemMessage {
-
 		/**
 		 * The content of this message.
 		 */
@@ -48,7 +45,6 @@ declare module 'vscode' {
 	 * A language model message that represents a user message.
 	 */
 	export class LanguageModelChatUserMessage {
-
 		/**
 		 * The content of this message.
 		 */
@@ -73,7 +69,6 @@ declare module 'vscode' {
 	 * or as a sample response/reply-pair.
 	 */
 	export class LanguageModelChatAssistantMessage {
-
 		/**
 		 * The content of this message.
 		 */
@@ -96,7 +91,10 @@ declare module 'vscode' {
 	/**
 	 * Different types of language model messages.
 	 */
-	export type LanguageModelChatMessage = LanguageModelChatSystemMessage | LanguageModelChatUserMessage | LanguageModelChatAssistantMessage;
+	export type LanguageModelChatMessage =
+		| LanguageModelChatSystemMessage
+		| LanguageModelChatUserMessage
+		| LanguageModelChatAssistantMessage;
 
 	/**
 	 * Represents information about a registered language model.
@@ -150,7 +148,6 @@ declare module 'vscode' {
 	 * will contain the actual error.
 	 */
 	export class LanguageModelError extends Error {
-
 		/**
 		 * The language model does not exist.
 		 */
@@ -178,7 +175,6 @@ declare module 'vscode' {
 	 * @see {@link lm.chatRequest}
 	 */
 	export interface LanguageModelChatRequestOptions {
-
 		/**
 		 * A human-readable message that explains why access to a language model is needed and what feature is enabled by it.
 		 */
@@ -201,7 +197,6 @@ declare module 'vscode' {
 	 * Namespace for language model related functionality.
 	 */
 	export namespace lm {
-
 		/**
 		 * The identifiers of all language models that are currently available.
 		 */
@@ -218,7 +213,9 @@ declare module 'vscode' {
 		 * @param languageModel A language model identifier.
 		 * @returns A {@link LanguageModelInformation} instance or `undefined` if the language model does not exist.
 		 */
-		export function getLanguageModelInformation(languageModel: string): LanguageModelInformation | undefined;
+		export function getLanguageModelInformation(
+			languageModel: string,
+		): LanguageModelInformation | undefined;
 
 		/**
 		 * Make a chat request using a language model.
@@ -242,7 +239,12 @@ declare module 'vscode' {
 		 * @param token A cancellation token which controls the request. See {@link CancellationTokenSource} for how to create one.
 		 * @returns A thenable that resolves to a {@link LanguageModelChatResponse}. The promise will reject when the request couldn't be made.
 		 */
-		export function sendChatRequest(languageModel: string, messages: LanguageModelChatMessage[], options: LanguageModelChatRequestOptions, token: CancellationToken): Thenable<LanguageModelChatResponse>;
+		export function sendChatRequest(
+			languageModel: string,
+			messages: LanguageModelChatMessage[],
+			options: LanguageModelChatRequestOptions,
+			token: CancellationToken,
+		): Thenable<LanguageModelChatResponse>;
 
 		/**
 		 * Uses the language model specific tokenzier and computes the length in token of a given message.
@@ -254,14 +256,17 @@ declare module 'vscode' {
 		 * @param token Optional cancellation token.
 		 * @returns A thenable that resolves to the length of the message in tokens.
 		 */
-		export function computeTokenLength(languageModel: string, text: string | LanguageModelChatMessage, token?: CancellationToken): Thenable<number>;
+		export function computeTokenLength(
+			languageModel: string,
+			text: string | LanguageModelChatMessage,
+			token?: CancellationToken,
+		): Thenable<number>;
 	}
 
 	/**
 	 * Represents extension specific information about the access to language models.
 	 */
 	export interface LanguageModelAccessInformation {
-
 		/**
 		 * An event that fires when access information changes.
 		 */
@@ -280,7 +285,6 @@ declare module 'vscode' {
 	}
 
 	export interface ExtensionContext {
-
 		/**
 		 * An object that keeps information about how this extension can use language models.
 		 *

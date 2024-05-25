@@ -20,23 +20,15 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Objective-C"
-				],
+				"aliases": ["Objective-C"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".m"
-				],
+				"extensions": [".m"],
 				"id": "objective-c"
 			},
 			{
-				"aliases": [
-					"Objective-C++"
-				],
+				"aliases": ["Objective-C++"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".mm"
-				],
+				"extensions": [".mm"],
 				"id": "objective-cpp"
 			}
 		]

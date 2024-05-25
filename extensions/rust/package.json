@@ -15,14 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Rust",
-					"rust"
-				],
+				"aliases": ["Rust", "rust"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".rs"
-				],
+				"extensions": [".rs"],
 				"id": "rust"
 			}
 		]

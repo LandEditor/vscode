@@ -15,19 +15,11 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Less",
-					"less"
-				],
+				"aliases": ["Less", "less"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".less"
-				],
+				"extensions": [".less"],
 				"id": "less",
-				"mimetypes": [
-					"text/x-less",
-					"text/less"
-				]
+				"mimetypes": ["text/x-less", "text/less"]
 			}
 		],
 		"problemMatchers": [

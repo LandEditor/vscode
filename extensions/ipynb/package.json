@@ -115,12 +115,6 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"documentPaste",
-		"diffContentOptions"
-	],
-	"extensionKind": [
-		"workspace",
-		"ui"
-	]
+	"enabledApiProposals": ["documentPaste", "diffContentOptions"],
+	"extensionKind": ["workspace", "ui"]
 }

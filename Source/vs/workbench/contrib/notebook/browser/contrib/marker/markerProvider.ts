@@ -3,22 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from 'vs/base/common/uri';
-import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-import { IMarkerListProvider, MarkerList, IMarkerNavigationService } from 'vs/editor/contrib/gotoError/browser/markerNavigationService';
-import { CellUri } from 'vs/workbench/contrib/notebook/common/notebookCommon';
-import { IMarkerService, MarkerSeverity } from 'vs/platform/markers/common/markers';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
-import { INotebookDeltaDecoration, INotebookEditor, INotebookEditorContribution, NotebookOverviewRulerLane } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { registerNotebookContribution } from 'vs/workbench/contrib/notebook/browser/notebookEditorExtensions';
-import { throttle } from 'vs/base/common/decorators';
-import { editorErrorForeground, editorWarningForeground } from 'vs/platform/theme/common/colorRegistry';
-import { isEqual } from 'vs/base/common/resources';
+import { throttle } from "vs/base/common/decorators";
+import { Disposable, type IDisposable } from "vs/base/common/lifecycle";
+import { isEqual } from "vs/base/common/resources";
+import type { URI } from "vs/base/common/uri";
+import {
+	type IMarkerListProvider,
+	IMarkerNavigationService,
+	MarkerList,
+} from "vs/editor/contrib/gotoError/browser/markerNavigationService";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	IMarkerService,
+	MarkerSeverity,
+} from "vs/platform/markers/common/markers";
+import {
+	editorErrorForeground,
+	editorWarningForeground,
+} from "vs/platform/theme/common/colorRegistry";
+import {
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "vs/workbench/common/contributions";
+import {
+	type INotebookDeltaDecoration,
+	type INotebookEditor,
+	type INotebookEditorContribution,
+	NotebookOverviewRulerLane,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import { registerNotebookContribution } from "vs/workbench/contrib/notebook/browser/notebookEditorExtensions";
+import { CellUri } from "vs/workbench/contrib/notebook/common/notebookCommon";
 
 class MarkerListProvider implements IMarkerListProvider {
-
-	static readonly ID = 'workbench.contrib.markerListProvider';
+	static readonly ID = "workbench.contrib.markerListProvider";
 
 	private readonly _dispoables: IDisposable;
 
@@ -42,15 +59,24 @@ class MarkerListProvider implements IMarkerListProvider {
 		if (!data) {
 			return undefined;
 		}
-		return new MarkerList(uri => {
-			const otherData = CellUri.parse(uri);
-			return otherData?.notebook.toString() === data.notebook.toString();
-		}, this._markerService, this._configService);
+		return new MarkerList(
+			(uri) => {
+				const otherData = CellUri.parse(uri);
+				return (
+					otherData?.notebook.toString() === data.notebook.toString()
+				);
+			},
+			this._markerService,
+			this._configService,
+		);
 	}
 }
 
-class NotebookMarkerDecorationContribution extends Disposable implements INotebookEditorContribution {
-	static id: string = 'workbench.notebook.markerDecoration';
+class NotebookMarkerDecorationContribution
+	extends Disposable
+	implements INotebookEditorContribution
+{
+	static id = "workbench.notebook.markerDecoration";
 	private _markersOverviewRulerDecorations: string[] = [];
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
@@ -74,11 +100,22 @@ class NotebookMarkerDecorationContribution extends Disposable implements INotebo
 		}
 
 		const cellDecorations: INotebookDeltaDecoration[] = [];
-		this._notebookEditor.getCellsInRange().forEach(cell => {
-			const marker = this._markerService.read({ resource: cell.uri, severities: MarkerSeverity.Error | MarkerSeverity.Warning });
-			marker.forEach(m => {
-				const color = m.severity === MarkerSeverity.Error ? editorErrorForeground : editorWarningForeground;
-				const range = { startLineNumber: m.startLineNumber, startColumn: m.startColumn, endLineNumber: m.endLineNumber, endColumn: m.endColumn };
+		this._notebookEditor.getCellsInRange().forEach((cell) => {
+			const marker = this._markerService.read({
+				resource: cell.uri,
+				severities: MarkerSeverity.Error | MarkerSeverity.Warning,
+			});
+			marker.forEach((m) => {
+				const color =
+					m.severity === MarkerSeverity.Error
+						? editorErrorForeground
+						: editorWarningForeground;
+				const range = {
+					startLineNumber: m.startLineNumber,
+					startColumn: m.startColumn,
+					endLineNumber: m.endLineNumber,
+					endColumn: m.endColumn,
+				};
 				cellDecorations.push({
 					handle: cell.handle,
 					options: {
@@ -86,17 +123,28 @@ class NotebookMarkerDecorationContribution extends Disposable implements INotebo
 							color: color,
 							modelRanges: [range],
 							includeOutput: false,
-							position: NotebookOverviewRulerLane.Right
-						}
-					}
+							position: NotebookOverviewRulerLane.Right,
+						},
+					},
 				});
 			});
 		});
 
-		this._markersOverviewRulerDecorations = this._notebookEditor.deltaCellDecorations(this._markersOverviewRulerDecorations, cellDecorations);
+		this._markersOverviewRulerDecorations =
+			this._notebookEditor.deltaCellDecorations(
+				this._markersOverviewRulerDecorations,
+				cellDecorations,
+			);
 	}
 }
 
-registerWorkbenchContribution2(MarkerListProvider.ID, MarkerListProvider, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	MarkerListProvider.ID,
+	MarkerListProvider,
+	WorkbenchPhase.BlockRestore,
+);
 
-registerNotebookContribution(NotebookMarkerDecorationContribution.id, NotebookMarkerDecorationContribution);
+registerNotebookContribution(
+	NotebookMarkerDecorationContribution.id,
+	NotebookMarkerDecorationContribution,
+);

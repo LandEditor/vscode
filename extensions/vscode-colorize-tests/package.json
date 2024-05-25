@@ -21,9 +21,7 @@
 		"semanticTokenScopes": [
 			{
 				"scopes": {
-					"testToken": [
-						"entity.name.function.special"
-					]
+					"testToken": ["entity.name.function.special"]
 				}
 			}
 		],
@@ -34,9 +32,7 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:json"
-	],
+	"activationEvents": ["onLanguage:json"],
 	"dependencies": {
 		"jsonc-parser": "3.2.1"
 	},

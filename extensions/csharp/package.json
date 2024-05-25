@@ -20,16 +20,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"C#",
-					"csharp"
-				],
+				"aliases": ["C#", "csharp"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".cs",
-					".csx",
-					".cake"
-				],
+				"extensions": [".cs", ".csx", ".cake"],
 				"id": "csharp"
 			}
 		],

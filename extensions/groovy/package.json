@@ -15,10 +15,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Groovy",
-					"groovy"
-				],
+				"aliases": ["Groovy", "groovy"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".groovy",
@@ -27,12 +24,8 @@
 					".jenkinsfile",
 					".nf"
 				],
-				"filenamePatterns": [
-					"Jenkinsfile*"
-				],
-				"filenames": [
-					"Jenkinsfile"
-				],
+				"filenamePatterns": ["Jenkinsfile*"],
+				"filenames": ["Jenkinsfile"],
 				"firstLine": "^#!.*\\bgroovy\\b",
 				"id": "groovy"
 			}

@@ -91,10 +91,7 @@
 				},
 				"markdown.copyFiles.overwriteBehavior": {
 					"default": "nameIncrementally",
-					"enum": [
-						"nameIncrementally",
-						"overwrite"
-					],
+					"enum": ["nameIncrementally", "overwrite"],
 					"markdownDescription": "%configuration.markdown.copyFiles.overwriteBehavior%",
 					"markdownEnumDescriptions": [
 						"%configuration.markdown.copyFiles.overwriteBehavior.nameIncrementally%",
@@ -104,10 +101,7 @@
 				},
 				"markdown.editor.drop.copyIntoWorkspace": {
 					"default": "mediaFiles",
-					"enum": [
-						"mediaFiles",
-						"never"
-					],
+					"enum": ["mediaFiles", "never"],
 					"markdownDescription": "%configuration.markdown.editor.drop.copyIntoWorkspace%",
 					"markdownEnumDescriptions": [
 						"%configuration.copyIntoWorkspace.mediaFiles%",
@@ -117,11 +111,7 @@
 				},
 				"markdown.editor.drop.enabled": {
 					"default": "smart",
-					"enum": [
-						"always",
-						"smart",
-						"never"
-					],
+					"enum": ["always", "smart", "never"],
 					"markdownDescription": "%configuration.markdown.editor.drop.enabled%",
 					"markdownEnumDescriptions": [
 						"%configuration.markdown.editor.drop.enabled.always%",
@@ -138,10 +128,7 @@
 				},
 				"markdown.editor.filePaste.copyIntoWorkspace": {
 					"default": "mediaFiles",
-					"enum": [
-						"mediaFiles",
-						"never"
-					],
+					"enum": ["mediaFiles", "never"],
 					"markdownDescription": "%configuration.markdown.editor.filePaste.copyIntoWorkspace%",
 					"markdownEnumDescriptions": [
 						"%configuration.copyIntoWorkspace.mediaFiles%",
@@ -151,11 +138,7 @@
 				},
 				"markdown.editor.filePaste.enabled": {
 					"default": "smart",
-					"enum": [
-						"always",
-						"smart",
-						"never"
-					],
+					"enum": ["always", "smart", "never"],
 					"markdownDescription": "%configuration.markdown.editor.filePaste.enabled%",
 					"markdownEnumDescriptions": [
 						"%configuration.markdown.editor.filePaste.enabled.always%",
@@ -172,12 +155,7 @@
 				},
 				"markdown.editor.pasteUrlAsFormattedLink.enabled": {
 					"default": "smartWithSelection",
-					"enum": [
-						"always",
-						"smart",
-						"smartWithSelection",
-						"never"
-					],
+					"enum": ["always", "smart", "smartWithSelection", "never"],
 					"markdownDescription": "%configuration.markdown.editor.pasteUrlAsFormattedLink.enabled%",
 					"markdownEnumDescriptions": [
 						"%configuration.pasteUrlAsFormattedLink.always%",
@@ -192,18 +170,13 @@
 					"default": false,
 					"markdownDescription": "%configuration.markdown.experimental.updateLinksOnPaste%",
 					"scope": "resource",
-					"tags": [
-						"experimental"
-					],
+					"tags": ["experimental"],
 					"type": "boolean"
 				},
 				"markdown.links.openLocation": {
 					"default": "currentGroup",
 					"description": "%configuration.markdown.links.openLocation.description%",
-					"enum": [
-						"currentGroup",
-						"beside"
-					],
+					"enum": ["currentGroup", "beside"],
 					"enumDescriptions": [
 						"%configuration.markdown.links.openLocation.currentGroup%",
 						"%configuration.markdown.links.openLocation.beside%"
@@ -219,11 +192,7 @@
 				},
 				"markdown.preferredMdPathExtensionStyle": {
 					"default": "auto",
-					"enum": [
-						"auto",
-						"includeExtension",
-						"removeExtension"
-					],
+					"enum": ["auto", "includeExtension", "removeExtension"],
 					"markdownDescription": "%configuration.markdown.preferredMdPathExtensionStyle%",
 					"markdownEnumDescriptions": [
 						"%configuration.markdown.preferredMdPathExtensionStyle.auto%",
@@ -277,10 +246,7 @@
 				"markdown.preview.openMarkdownLinks": {
 					"default": "inPreview",
 					"description": "%configuration.markdown.preview.openMarkdownLinks.description%",
-					"enum": [
-						"inPreview",
-						"inEditor"
-					],
+					"enum": ["inPreview", "inEditor"],
 					"enumDescriptions": [
 						"%configuration.markdown.preview.openMarkdownLinks.inPreview%",
 						"%configuration.markdown.preview.openMarkdownLinks.inEditor%"
@@ -309,11 +275,7 @@
 				"markdown.server.log": {
 					"default": "off",
 					"description": "%markdown.server.log.desc%",
-					"enum": [
-						"off",
-						"debug",
-						"trace"
-					],
+					"enum": ["off", "debug", "trace"],
 					"scope": "window",
 					"type": "string"
 				},
@@ -334,11 +296,7 @@
 				},
 				"markdown.suggest.paths.includeWorkspaceHeaderCompletions": {
 					"default": "onDoubleHash",
-					"enum": [
-						"never",
-						"onDoubleHash",
-						"onSingleOrDoubleHash"
-					],
+					"enum": ["never", "onDoubleHash", "onSingleOrDoubleHash"],
 					"markdownDescription": "%configuration.markdown.suggest.paths.includeWorkspaceHeaderCompletions%",
 					"markdownEnumDescriptions": [
 						"%configuration.markdown.suggest.paths.includeWorkspaceHeaderCompletions.never%",
@@ -351,21 +309,14 @@
 				"markdown.trace.extension": {
 					"default": "off",
 					"description": "%markdown.trace.extension.desc%",
-					"enum": [
-						"off",
-						"verbose"
-					],
+					"enum": ["off", "verbose"],
 					"scope": "window",
 					"type": "string"
 				},
 				"markdown.trace.server": {
 					"default": "off",
 					"description": "%markdown.trace.server.desc%",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
+					"enum": ["off", "messages", "verbose"],
 					"scope": "window",
 					"type": "string"
 				},
@@ -377,11 +328,7 @@
 				},
 				"markdown.updateLinksOnFileMove.enabled": {
 					"default": "never",
-					"enum": [
-						"prompt",
-						"always",
-						"never"
-					],
+					"enum": ["prompt", "always", "never"],
 					"markdownDescription": "%configuration.markdown.updateLinksOnFileMove.enabled%",
 					"markdownEnumDescriptions": [
 						"%configuration.markdown.updateLinksOnFileMove.enabled.prompt%",
@@ -406,11 +353,7 @@
 				},
 				"markdown.validate.duplicateLinkDefinitions.enabled": {
 					"default": "warning",
-					"enum": [
-						"ignore",
-						"warning",
-						"error"
-					],
+					"enum": ["ignore", "warning", "error"],
 					"markdownDescription": "%configuration.markdown.validate.duplicateLinkDefinitions.description%",
 					"scope": "resource",
 					"type": "string"
@@ -423,34 +366,21 @@
 				},
 				"markdown.validate.fileLinks.enabled": {
 					"default": "warning",
-					"enum": [
-						"ignore",
-						"warning",
-						"error"
-					],
+					"enum": ["ignore", "warning", "error"],
 					"markdownDescription": "%configuration.markdown.validate.fileLinks.enabled.description%",
 					"scope": "resource",
 					"type": "string"
 				},
 				"markdown.validate.fileLinks.markdownFragmentLinks": {
 					"default": "inherit",
-					"enum": [
-						"inherit",
-						"ignore",
-						"warning",
-						"error"
-					],
+					"enum": ["inherit", "ignore", "warning", "error"],
 					"markdownDescription": "%configuration.markdown.validate.fileLinks.markdownFragmentLinks.description%",
 					"scope": "resource",
 					"type": "string"
 				},
 				"markdown.validate.fragmentLinks.enabled": {
 					"default": "warning",
-					"enum": [
-						"ignore",
-						"warning",
-						"error"
-					],
+					"enum": ["ignore", "warning", "error"],
 					"markdownDescription": "%configuration.markdown.validate.fragmentLinks.enabled.description%",
 					"scope": "resource",
 					"type": "string"
@@ -465,23 +395,14 @@
 				},
 				"markdown.validate.referenceLinks.enabled": {
 					"default": "warning",
-					"enum": [
-						"ignore",
-						"warning",
-						"error"
-					],
+					"enum": ["ignore", "warning", "error"],
 					"markdownDescription": "%configuration.markdown.validate.referenceLinks.enabled.description%",
 					"scope": "resource",
 					"type": "string"
 				},
 				"markdown.validate.unusedLinkDefinitions.enabled": {
 					"default": "hint",
-					"enum": [
-						"ignore",
-						"hint",
-						"warning",
-						"error"
-					],
+					"enum": ["ignore", "hint", "warning", "error"],
 					"markdownDescription": "%configuration.markdown.validate.unusedLinkDefinitions.description%",
 					"scope": "resource",
 					"type": "string"
@@ -532,9 +453,7 @@
 				"when": "editorLangId == markdown && !notebookEditorFocused"
 			}
 		],
-		"markdown.previewScripts": [
-			"./media/index.js"
-		],
+		"markdown.previewScripts": ["./media/index.js"],
 		"markdown.previewStyles": [
 			"./media/markdown.css",
 			"./media/highlight.css"
@@ -759,14 +678,10 @@
 	"capabilities": {
 		"untrustedWorkspaces": {
 			"description": "%workspaceTrust%",
-			"restrictedConfigurations": [
-				"markdown.styles"
-			],
+			"restrictedConfigurations": ["markdown.styles"],
 			"supported": "limited"
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"documentPaste"
-	]
+	"enabledApiProposals": ["documentPaste"]
 }

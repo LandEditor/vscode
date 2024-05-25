@@ -22,24 +22,11 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Docker",
-					"Dockerfile",
-					"Containerfile"
-				],
+				"aliases": ["Docker", "Dockerfile", "Containerfile"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".dockerfile",
-					".containerfile"
-				],
-				"filenamePatterns": [
-					"Dockerfile.*",
-					"Containerfile.*"
-				],
-				"filenames": [
-					"Dockerfile",
-					"Containerfile"
-				],
+				"extensions": [".dockerfile", ".containerfile"],
+				"filenamePatterns": ["Dockerfile.*", "Containerfile.*"],
+				"filenames": ["Dockerfile", "Containerfile"],
 				"id": "dockerfile"
 			}
 		]

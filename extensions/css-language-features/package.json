@@ -37,10 +37,7 @@
 					},
 					"css.format.braceStyle": {
 						"default": "collapse",
-						"enum": [
-							"collapse",
-							"expand"
-						],
+						"enum": ["collapse", "expand"],
 						"markdownDescription": "%css.format.braceStyle.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -55,10 +52,7 @@
 						"default": null,
 						"markdownDescription": "%css.format.maxPreserveNewLines.desc%",
 						"scope": "resource",
-						"type": [
-							"number",
-							"null"
-						]
+						"type": ["number", "null"]
 					},
 					"css.format.newlineBetweenRules": {
 						"default": true,
@@ -99,21 +93,13 @@
 					"css.lint.argumentsInColorFunction": {
 						"default": "error",
 						"description": "%css.lint.argumentsInColorFunction.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.boxModel": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%css.lint.boxModel.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -121,54 +107,34 @@
 					"css.lint.compatibleVendorPrefixes": {
 						"default": "ignore",
 						"description": "%css.lint.compatibleVendorPrefixes.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.duplicateProperties": {
 						"default": "ignore",
 						"description": "%css.lint.duplicateProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.emptyRules": {
 						"default": "warning",
 						"description": "%css.lint.emptyRules.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.float": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%css.lint.float.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.fontFaceProperties": {
 						"default": "warning",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%css.lint.fontFaceProperties.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -176,76 +142,48 @@
 					"css.lint.hexColorLength": {
 						"default": "error",
 						"description": "%css.lint.hexColorLength.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.idSelector": {
 						"default": "ignore",
 						"description": "%css.lint.idSelector.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.ieHack": {
 						"default": "ignore",
 						"description": "%css.lint.ieHack.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.importStatement": {
 						"default": "ignore",
 						"description": "%css.lint.importStatement.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.important": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%css.lint.important.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.propertyIgnoredDueToDisplay": {
 						"default": "warning",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%css.lint.propertyIgnoredDueToDisplay.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.universalSelector": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%css.lint.universalSelector.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -253,33 +191,21 @@
 					"css.lint.unknownAtRules": {
 						"default": "warning",
 						"description": "%css.lint.unknownAtRules.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.unknownProperties": {
 						"default": "warning",
 						"description": "%css.lint.unknownProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.unknownVendorSpecificProperties": {
 						"default": "ignore",
 						"description": "%css.lint.unknownVendorSpecificProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
@@ -296,33 +222,21 @@
 					"css.lint.vendorPrefix": {
 						"default": "warning",
 						"description": "%css.lint.vendorPrefix.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.lint.zeroUnits": {
 						"default": "ignore",
 						"description": "%css.lint.zeroUnits.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"css.trace.server": {
 						"default": "off",
 						"description": "%css.trace.server.desc%",
-						"enum": [
-							"off",
-							"messages",
-							"verbose"
-						],
+						"enum": ["off", "messages", "verbose"],
 						"scope": "window",
 						"type": "string"
 					},
@@ -353,10 +267,7 @@
 					},
 					"scss.format.braceStyle": {
 						"default": "collapse",
-						"enum": [
-							"collapse",
-							"expand"
-						],
+						"enum": ["collapse", "expand"],
 						"markdownDescription": "%scss.format.braceStyle.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -371,10 +282,7 @@
 						"default": null,
 						"markdownDescription": "%scss.format.maxPreserveNewLines.desc%",
 						"scope": "resource",
-						"type": [
-							"number",
-							"null"
-						]
+						"type": ["number", "null"]
 					},
 					"scss.format.newlineBetweenRules": {
 						"default": true,
@@ -415,21 +323,13 @@
 					"scss.lint.argumentsInColorFunction": {
 						"default": "error",
 						"description": "%scss.lint.argumentsInColorFunction.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.boxModel": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%scss.lint.boxModel.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -437,54 +337,34 @@
 					"scss.lint.compatibleVendorPrefixes": {
 						"default": "ignore",
 						"description": "%scss.lint.compatibleVendorPrefixes.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.duplicateProperties": {
 						"default": "ignore",
 						"description": "%scss.lint.duplicateProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.emptyRules": {
 						"default": "warning",
 						"description": "%scss.lint.emptyRules.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.float": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%scss.lint.float.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.fontFaceProperties": {
 						"default": "warning",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%scss.lint.fontFaceProperties.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -492,76 +372,48 @@
 					"scss.lint.hexColorLength": {
 						"default": "error",
 						"description": "%scss.lint.hexColorLength.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.idSelector": {
 						"default": "ignore",
 						"description": "%scss.lint.idSelector.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.ieHack": {
 						"default": "ignore",
 						"description": "%scss.lint.ieHack.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.importStatement": {
 						"default": "ignore",
 						"description": "%scss.lint.importStatement.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.important": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%scss.lint.important.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.propertyIgnoredDueToDisplay": {
 						"default": "warning",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%scss.lint.propertyIgnoredDueToDisplay.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.universalSelector": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%scss.lint.universalSelector.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -569,33 +421,21 @@
 					"scss.lint.unknownAtRules": {
 						"default": "warning",
 						"description": "%scss.lint.unknownAtRules.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.unknownProperties": {
 						"default": "warning",
 						"description": "%scss.lint.unknownProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.unknownVendorSpecificProperties": {
 						"default": "ignore",
 						"description": "%scss.lint.unknownVendorSpecificProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
@@ -612,22 +452,14 @@
 					"scss.lint.vendorPrefix": {
 						"default": "warning",
 						"description": "%scss.lint.vendorPrefix.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"scss.lint.zeroUnits": {
 						"default": "ignore",
 						"description": "%scss.lint.zeroUnits.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
@@ -658,10 +490,7 @@
 					},
 					"less.format.braceStyle": {
 						"default": "collapse",
-						"enum": [
-							"collapse",
-							"expand"
-						],
+						"enum": ["collapse", "expand"],
 						"markdownDescription": "%less.format.braceStyle.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -676,10 +505,7 @@
 						"default": null,
 						"markdownDescription": "%less.format.maxPreserveNewLines.desc%",
 						"scope": "resource",
-						"type": [
-							"number",
-							"null"
-						]
+						"type": ["number", "null"]
 					},
 					"less.format.newlineBetweenRules": {
 						"default": true,
@@ -720,21 +546,13 @@
 					"less.lint.argumentsInColorFunction": {
 						"default": "error",
 						"description": "%less.lint.argumentsInColorFunction.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.boxModel": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%less.lint.boxModel.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -742,54 +560,34 @@
 					"less.lint.compatibleVendorPrefixes": {
 						"default": "ignore",
 						"description": "%less.lint.compatibleVendorPrefixes.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.duplicateProperties": {
 						"default": "ignore",
 						"description": "%less.lint.duplicateProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.emptyRules": {
 						"default": "warning",
 						"description": "%less.lint.emptyRules.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.float": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%less.lint.float.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.fontFaceProperties": {
 						"default": "warning",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%less.lint.fontFaceProperties.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -797,76 +595,48 @@
 					"less.lint.hexColorLength": {
 						"default": "error",
 						"description": "%less.lint.hexColorLength.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.idSelector": {
 						"default": "ignore",
 						"description": "%less.lint.idSelector.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.ieHack": {
 						"default": "ignore",
 						"description": "%less.lint.ieHack.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.importStatement": {
 						"default": "ignore",
 						"description": "%less.lint.importStatement.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.important": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%less.lint.important.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.propertyIgnoredDueToDisplay": {
 						"default": "warning",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%less.lint.propertyIgnoredDueToDisplay.desc%",
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.universalSelector": {
 						"default": "ignore",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"markdownDescription": "%less.lint.universalSelector.desc%",
 						"scope": "resource",
 						"type": "string"
@@ -874,33 +644,21 @@
 					"less.lint.unknownAtRules": {
 						"default": "warning",
 						"description": "%less.lint.unknownAtRules.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.unknownProperties": {
 						"default": "warning",
 						"description": "%less.lint.unknownProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.unknownVendorSpecificProperties": {
 						"default": "ignore",
 						"description": "%less.lint.unknownVendorSpecificProperties.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
@@ -917,22 +675,14 @@
 					"less.lint.vendorPrefix": {
 						"default": "warning",
 						"description": "%less.lint.vendorPrefix.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},
 					"less.lint.zeroUnits": {
 						"default": "ignore",
 						"description": "%less.lint.zeroUnits.desc%",
-						"enum": [
-							"ignore",
-							"warning",
-							"error"
-						],
+						"enum": ["ignore", "warning", "error"],
 						"scope": "resource",
 						"type": "string"
 					},

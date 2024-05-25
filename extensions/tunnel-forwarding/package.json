@@ -22,9 +22,7 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onTunnel"
-	],
+	"activationEvents": ["onTunnel"],
 	"devDependencies": {
 		"@types/node": "20.x"
 	},
@@ -35,8 +33,5 @@
 		},
 		"virtualWorkspaces": false
 	},
-	"enabledApiProposals": [
-		"resolvers",
-		"tunnelFactory"
-	]
+	"enabledApiProposals": ["resolvers", "tunnelFactory"]
 }

@@ -22,25 +22,15 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Julia",
-					"julia"
-				],
+				"aliases": ["Julia", "julia"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".jl"
-				],
+				"extensions": [".jl"],
 				"firstLine": "^#!\\s*/.*\\bjulia[0-9.-]*\\b",
 				"id": "julia"
 			},
 			{
-				"aliases": [
-					"Julia Markdown",
-					"juliamarkdown"
-				],
-				"extensions": [
-					".jmd"
-				],
+				"aliases": ["Julia Markdown", "juliamarkdown"],
+				"extensions": [".jmd"],
 				"id": "juliamarkdown"
 			}
 		]

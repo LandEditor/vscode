@@ -124,10 +124,7 @@
 				"references.preferredLocation": {
 					"default": "peek",
 					"description": "%config.references.preferredLocation%",
-					"enum": [
-						"peek",
-						"view"
-					],
+					"enum": ["peek", "view"],
 					"enumDescriptions": [
 						"%config.references.preferredLocation.peek%",
 						"%config.references.preferredLocation.view%"

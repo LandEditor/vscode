@@ -3,21 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from 'vs/nls';
-import { ITunnelService, TunnelOptions, RemoteTunnel, TunnelCreationOptions, ITunnel, TunnelProtocol, TunnelPrivacyId } from 'vs/platform/tunnel/common/tunnel';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IWorkbenchContribution } from 'vs/workbench/common/contributions';
-import { IBrowserWorkbenchEnvironmentService } from 'vs/workbench/services/environment/browser/environmentService';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
-import { URI } from 'vs/base/common/uri';
-import { IRemoteExplorerService } from 'vs/workbench/services/remote/common/remoteExplorerService';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { forwardedPortsViewEnabled } from 'vs/workbench/services/remote/common/tunnelModel';
+import { Disposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import { ILogService } from "vs/platform/log/common/log";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import {
+	type ITunnel,
+	ITunnelService,
+	type RemoteTunnel,
+	type TunnelCreationOptions,
+	type TunnelOptions,
+	TunnelPrivacyId,
+	TunnelProtocol,
+} from "vs/platform/tunnel/common/tunnel";
+import type { IWorkbenchContribution } from "vs/workbench/common/contributions";
+import { IBrowserWorkbenchEnvironmentService } from "vs/workbench/services/environment/browser/environmentService";
+import { IRemoteExplorerService } from "vs/workbench/services/remote/common/remoteExplorerService";
+import { forwardedPortsViewEnabled } from "vs/workbench/services/remote/common/tunnelModel";
 
-export class TunnelFactoryContribution extends Disposable implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.tunnelFactory';
+export class TunnelFactoryContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
+	static readonly ID = "workbench.contrib.tunnelFactory";
 
 	constructor(
 		@ITunnelService tunnelService: ITunnelService,
@@ -100,7 +110,9 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
 
 	private async resolveExternalUri(uri: string): Promise<string> {
 		try {
-			return (await this.openerService.resolveExternalUri(URI.parse(uri))).resolved.toString();
+			return (
+				await this.openerService.resolveExternalUri(URI.parse(uri))
+			).resolved.toString();
 		} catch {
 			return uri;
 		}

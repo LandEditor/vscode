@@ -129,9 +129,7 @@
 		"configuration": {
 			"properties": {
 				"emmet.excludeLanguages": {
-					"default": [
-						"markdown"
-					],
+					"default": ["markdown"],
 					"items": {
 						"type": "string"
 					},
@@ -236,24 +234,17 @@
 							"type": "string"
 						},
 						"filter.commentTrigger": {
-							"default": [
-								"id",
-								"class"
-							],
+							"default": ["id", "class"],
 							"markdownDescription": "%emmetPreferencesFilterCommentTrigger%",
 							"type": "array"
 						},
 						"format.forceIndentationForTags": {
-							"default": [
-								"body"
-							],
+							"default": ["body"],
 							"markdownDescription": "%emmetPreferencesFormatForceIndentTags%",
 							"type": "array"
 						},
 						"format.noIndentTags": {
-							"default": [
-								"html"
-							],
+							"default": ["html"],
 							"markdownDescription": "%emmetPreferencesFormatNoIndentTags%",
 							"type": "array"
 						},
@@ -269,11 +260,7 @@
 						},
 						"output.selfClosingStyle": {
 							"default": "html",
-							"enum": [
-								"html",
-								"xhtml",
-								"xml"
-							],
+							"enum": ["html", "xhtml", "xml"],
 							"markdownDescription": "%emmetPreferencesOutputSelfClosingStyle%",
 							"type": "string"
 						},
@@ -319,9 +306,7 @@
 						"inMarkupAndStylesheetFilesOnly"
 					],
 					"markdownDescription": "%emmetShowExpandedAbbreviation%",
-					"type": [
-						"string"
-					]
+					"type": ["string"]
 				},
 				"emmet.showSuggestionsAsSnippets": {
 					"default": false,
@@ -459,10 +444,7 @@
 			]
 		}
 	},
-	"activationEvents": [
-		"onCommand:emmet.expandAbbreviation",
-		"onLanguage"
-	],
+	"activationEvents": ["onCommand:emmet.expandAbbreviation", "onLanguage"],
 	"dependencies": {
 		"image-size": "1.1.1"
 	},

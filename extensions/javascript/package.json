@@ -56,39 +56,19 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"JavaScript JSX",
-					"JavaScript React",
-					"jsx"
-				],
+				"aliases": ["JavaScript JSX", "JavaScript React", "jsx"],
 				"configuration": "./javascript-language-configuration.json",
-				"extensions": [
-					".jsx"
-				],
+				"extensions": [".jsx"],
 				"id": "javascriptreact"
 			},
 			{
-				"aliases": [
-					"JavaScript",
-					"javascript",
-					"js"
-				],
+				"aliases": ["JavaScript", "javascript", "js"],
 				"configuration": "./javascript-language-configuration.json",
-				"extensions": [
-					".js",
-					".es6",
-					".mjs",
-					".cjs",
-					".pac"
-				],
-				"filenames": [
-					"jakefile"
-				],
+				"extensions": [".js", ".es6", ".mjs", ".cjs", ".pac"],
+				"filenames": ["jakefile"],
 				"firstLine": "^#!.*\\bnode",
 				"id": "javascript",
-				"mimetypes": [
-					"text/javascript"
-				]
+				"mimetypes": ["text/javascript"]
 			},
 			{
 				"aliases": [],
@@ -100,59 +80,31 @@
 			{
 				"language": "javascript",
 				"scopes": {
-					"function": [
-						"entity.name.function.js"
-					],
-					"function.defaultLibrary": [
-						"support.function.js"
-					],
-					"namespace": [
-						"entity.name.type.module.js"
-					],
-					"property": [
-						"variable.other.property.js"
-					],
+					"function": ["entity.name.function.js"],
+					"function.defaultLibrary": ["support.function.js"],
+					"namespace": ["entity.name.type.module.js"],
+					"property": ["variable.other.property.js"],
 					"property.readonly": [
 						"variable.other.constant.property.js"
 					],
-					"variable": [
-						"variable.other.readwrite.js"
-					],
-					"variable.defaultLibrary": [
-						"support.variable.js"
-					],
-					"variable.readonly": [
-						"variable.other.constant.object.js"
-					]
+					"variable": ["variable.other.readwrite.js"],
+					"variable.defaultLibrary": ["support.variable.js"],
+					"variable.readonly": ["variable.other.constant.object.js"]
 				}
 			},
 			{
 				"language": "javascriptreact",
 				"scopes": {
-					"function": [
-						"entity.name.function.jsx"
-					],
-					"function.defaultLibrary": [
-						"support.function.js"
-					],
-					"namespace": [
-						"entity.name.type.module.jsx"
-					],
-					"property": [
-						"variable.other.property.jsx"
-					],
+					"function": ["entity.name.function.jsx"],
+					"function.defaultLibrary": ["support.function.js"],
+					"namespace": ["entity.name.type.module.jsx"],
+					"property": ["variable.other.property.jsx"],
 					"property.readonly": [
 						"variable.other.constant.property.jsx"
 					],
-					"variable": [
-						"variable.other.readwrite.jsx"
-					],
-					"variable.defaultLibrary": [
-						"support.variable.js"
-					],
-					"variable.readonly": [
-						"variable.other.constant.object.jsx"
-					]
+					"variable": ["variable.other.readwrite.jsx"],
+					"variable.defaultLibrary": ["support.variable.js"],
+					"variable.readonly": ["variable.other.constant.object.jsx"]
 				}
 			}
 		],

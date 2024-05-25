@@ -3,10 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export namespace chat {
-
 		/**
 		 * Register a variable which can be used in a chat request to any participant.
 		 * @param id A unique ID for the variable.
@@ -18,7 +16,16 @@ declare module 'vscode' {
 		 * @param fullName The full name of the variable when selecting context in the picker UI.
 		 * @param icon An icon to display when selecting context in the picker UI.
 		 */
-		export function registerChatVariableResolver(id: string, name: string, userDescription: string, modelDescription: string | undefined, isSlow: boolean | undefined, resolver: ChatVariableResolver, fullName?: string, icon?: ThemeIcon): Disposable;
+		export function registerChatVariableResolver(
+			id: string,
+			name: string,
+			userDescription: string,
+			modelDescription: string | undefined,
+			isSlow: boolean | undefined,
+			resolver: ChatVariableResolver,
+			fullName?: string,
+			icon?: ThemeIcon,
+		): Disposable;
 	}
 
 	export interface ChatVariableValue {
@@ -56,6 +63,10 @@ declare module 'vscode' {
 		 * @param context Contextual information about this chat request.
 		 * @param token A cancellation token.
 		 */
-		resolve(name: string, context: ChatVariableContext, token: CancellationToken): ProviderResult<ChatVariableValue[]>;
+		resolve(
+			name: string,
+			context: ChatVariableContext,
+			token: CancellationToken,
+		): ProviderResult<ChatVariableValue[]>;
 	}
 }

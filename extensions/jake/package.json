@@ -13,10 +13,7 @@
 				"jake.autoDetect": {
 					"default": "off",
 					"description": "%config.jake.autoDetect%",
-					"enum": [
-						"off",
-						"on"
-					],
+					"enum": ["off", "on"],
 					"scope": "application",
 					"type": "string"
 				}
@@ -36,17 +33,13 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"task"
-				],
+				"required": ["task"],
 				"type": "jake",
 				"when": "shellExecutionSupported"
 			}
 		]
 	},
-	"activationEvents": [
-		"onTaskType:jake"
-	],
+	"activationEvents": ["onTaskType:jake"],
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"

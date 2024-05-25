@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// https://github.com/microsoft/vscode/issues/205317
 
 	/**
@@ -128,8 +127,6 @@ declare module 'vscode' {
 		afterContext?: number;
 	}
 
-
-
 	/**
 	 * A message regarding a completed search.
 	 */
@@ -231,7 +228,6 @@ declare module 'vscode' {
 		lineNumber: number;
 	}
 
-
 	/**
 	 * An AITextSearchProvider provides additional AI text search results in the workspace.
 	 */
@@ -243,7 +239,12 @@ declare module 'vscode' {
 		 * @param progress A progress callback that must be invoked for all results.
 		 * @param token A cancellation token.
 		 */
-		provideAITextSearchResults(query: string, options: AITextSearchOptions, progress: Progress<TextSearchResult>, token: CancellationToken): ProviderResult<TextSearchComplete>;
+		provideAITextSearchResults(
+			query: string,
+			options: AITextSearchOptions,
+			progress: Progress<TextSearchResult>,
+			token: CancellationToken,
+		): ProviderResult<TextSearchComplete>;
 	}
 
 	export namespace workspace {
@@ -256,6 +257,9 @@ declare module 'vscode' {
 		 * @param provider The provider.
 		 * @return A {@link Disposable} that unregisters this provider when being disposed.
 		 */
-		export function registerAITextSearchProvider(scheme: string, provider: AITextSearchProvider): Disposable;
+		export function registerAITextSearchProvider(
+			scheme: string,
+			provider: AITextSearchProvider,
+		): Disposable;
 	}
 }

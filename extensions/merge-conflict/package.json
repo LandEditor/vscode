@@ -102,11 +102,7 @@
 				"merge-conflict.diffViewPosition": {
 					"default": "Current",
 					"description": "%config.diffViewPosition%",
-					"enum": [
-						"Current",
-						"Beside",
-						"Below"
-					],
+					"enum": ["Current", "Beside", "Below"],
 					"enumDescriptions": [
 						"%config.diffViewPosition.current%",
 						"%config.diffViewPosition.beside%",
@@ -144,9 +140,7 @@
 			]
 		}
 	},
-	"activationEvents": [
-		"onStartupFinished"
-	],
+	"activationEvents": ["onStartupFinished"],
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"

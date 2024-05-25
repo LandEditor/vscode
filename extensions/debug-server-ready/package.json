@@ -24,9 +24,7 @@
 										"properties": {
 											"action": {
 												"default": "openExternally",
-												"enum": [
-													"openExternally"
-												],
+												"enum": ["openExternally"],
 												"enumDescriptions": [
 													"%debug.server.ready.action.openExternally.description%"
 												],
@@ -108,9 +106,7 @@
 										"properties": {
 											"action": {
 												"default": "startDebugging",
-												"enum": [
-													"startDebugging"
-												],
+												"enum": ["startDebugging"],
 												"enumDescriptions": [
 													"%debug.server.ready.action.startDebugging.description%"
 												],
@@ -133,9 +129,7 @@
 												"type": "string"
 											}
 										},
-										"required": [
-											"name"
-										],
+										"required": ["name"],
 										"type": "object"
 									},
 									{
@@ -152,9 +146,7 @@
 										"properties": {
 											"action": {
 												"default": "startDebugging",
-												"enum": [
-													"startDebugging"
-												],
+												"enum": ["startDebugging"],
 												"enumDescriptions": [
 													"%debug.server.ready.action.startDebugging.description%"
 												],
@@ -177,9 +169,7 @@
 												"type": "string"
 											}
 										},
-										"required": [
-											"config"
-										],
+										"required": ["config"],
 										"type": "object"
 									}
 								]
@@ -191,9 +181,7 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onDebugResolve"
-	],
+	"activationEvents": ["onDebugResolve"],
 	"devDependencies": {
 		"@types/node": "20.x"
 	},
@@ -204,7 +192,5 @@
 		},
 		"virtualWorkspaces": false
 	},
-	"enabledApiProposals": [
-		"terminalDataWriteEvent"
-	]
+	"enabledApiProposals": ["terminalDataWriteEvent"]
 }

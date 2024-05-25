@@ -20,21 +20,13 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Ini",
-					"ini"
-				],
+				"aliases": ["Ini", "ini"],
 				"configuration": "./ini.language-configuration.json",
-				"extensions": [
-					".ini"
-				],
+				"extensions": [".ini"],
 				"id": "ini"
 			},
 			{
-				"aliases": [
-					"Properties",
-					"properties"
-				],
+				"aliases": ["Properties", "properties"],
 				"configuration": "./properties.language-configuration.json",
 				"extensions": [
 					".conf",
@@ -47,14 +39,8 @@
 					".editorconfig",
 					".repo"
 				],
-				"filenamePatterns": [
-					"**/.config/git/config",
-					"**/.git/config"
-				],
-				"filenames": [
-					"gitconfig",
-					".env"
-				],
+				"filenamePatterns": ["**/.config/git/config", "**/.git/config"],
+				"filenames": ["gitconfig", ".env"],
 				"id": "properties"
 			}
 		]

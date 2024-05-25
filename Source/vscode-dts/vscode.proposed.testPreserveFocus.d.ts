@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// See https://github.com/microsoft/vscode/issues/209491
 
 	export class TestRunRequest2 extends TestRunRequest {
@@ -23,6 +22,11 @@ declare module 'vscode' {
 		 * @param continuous Whether to run tests continuously as source changes.
 		 * @param preserveFocus Whether to preserve the user's focus when the run is started
 		 */
-		constructor(include?: readonly TestItem[], exclude?: readonly TestItem[], profile?: TestRunProfile, continuous?: boolean);
+		constructor(
+			include?: readonly TestItem[],
+			exclude?: readonly TestItem[],
+			profile?: TestRunProfile,
+			continuous?: boolean,
+		);
 	}
 }

@@ -49,11 +49,6 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"externalUriOpener"
-	],
-	"extensionKind": [
-		"ui",
-		"workspace"
-	]
+	"enabledApiProposals": ["externalUriOpener"],
+	"extensionKind": ["ui", "workspace"]
 }

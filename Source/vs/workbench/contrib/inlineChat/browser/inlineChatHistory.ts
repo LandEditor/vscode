@@ -3,12 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
 
 export class InlineChatHistory {
 	private _promptHistory: string[] = [];
-	private _historyOffset: number = -1;
-	private _historyCandidate: string = '';
+	private _historyOffset = -1;
+	private _historyCandidate = "";
 
 	constructor(
 		private readonly _storageKey: string,
@@ -24,13 +28,18 @@ export class InlineChatHistory {
 		}
 		this._promptHistory.unshift(prompt);
 		this._historyOffset = -1;
-		this._historyCandidate = '';
-		this._storageService.store(this._storageKey, JSON.stringify(this._promptHistory), StorageScope.PROFILE, StorageTarget.USER);
+		this._historyCandidate = "";
+		this._storageService.store(
+			this._storageKey,
+			JSON.stringify(this._promptHistory),
+			StorageScope.PROFILE,
+			StorageTarget.USER,
+		);
 	}
 
 	clearCandidate() {
 		this._historyOffset = -1;
-		this._historyCandidate = '';
+		this._historyCandidate = "";
 	}
 
 	populateHistory(currentValue: string, up: boolean): undefined | string {

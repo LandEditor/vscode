@@ -3,24 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from 'vs/nls';
-import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteAgentService';
-import { IRemoteAuthorityResolverService, RemoteConnectionType, RemoteAuthorityResolverError } from 'vs/platform/remote/common/remoteAuthorityResolver';
-import { IProductService } from 'vs/platform/product/common/productService';
-import { AbstractRemoteAgentService } from 'vs/workbench/services/remote/common/abstractRemoteAgentService';
-import { ISignService } from 'vs/platform/sign/common/sign';
-import { ILogService } from 'vs/platform/log/common/log';
-import { IWorkbenchEnvironmentService } from 'vs/workbench/services/environment/common/environmentService';
-import { INotificationService, IPromptChoice, Severity } from 'vs/platform/notification/common/notification';
-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { INativeHostService } from 'vs/platform/native/common/native';
-import { URI } from 'vs/base/common/uri';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
-import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile';
-import { IRemoteSocketFactoryService } from 'vs/platform/remote/common/remoteSocketFactoryService';
+import { URI } from "vs/base/common/uri";
+import * as nls from "vs/nls";
+import { ILogService } from "vs/platform/log/common/log";
+import { INativeHostService } from "vs/platform/native/common/native";
+import {
+	INotificationService,
+	type IPromptChoice,
+	Severity,
+} from "vs/platform/notification/common/notification";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IProductService } from "vs/platform/product/common/productService";
+import {
+	IRemoteAuthorityResolverService,
+	RemoteAuthorityResolverError,
+	RemoteConnectionType,
+} from "vs/platform/remote/common/remoteAuthorityResolver";
+import { IRemoteSocketFactoryService } from "vs/platform/remote/common/remoteSocketFactoryService";
+import { ISignService } from "vs/platform/sign/common/sign";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import {
+	type IWorkbenchContribution,
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "vs/workbench/common/contributions";
+import { IWorkbenchEnvironmentService } from "vs/workbench/services/environment/common/environmentService";
+import { AbstractRemoteAgentService } from "vs/workbench/services/remote/common/abstractRemoteAgentService";
+import { IRemoteAgentService } from "vs/workbench/services/remote/common/remoteAgentService";
+import { IUserDataProfileService } from "vs/workbench/services/userDataProfile/common/userDataProfile";
 
-export class RemoteAgentService extends AbstractRemoteAgentService implements IRemoteAgentService {
+export class RemoteAgentService
+	extends AbstractRemoteAgentService
+	implements IRemoteAgentService
+{
 	constructor(
 		@IRemoteSocketFactoryService remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
@@ -30,13 +45,23 @@ export class RemoteAgentService extends AbstractRemoteAgentService implements IR
 		@ISignService signService: ISignService,
 		@ILogService logService: ILogService,
 	) {
-		super(remoteSocketFactoryService, userDataProfileService, environmentService, productService, remoteAuthorityResolverService, signService, logService);
+		super(
+			remoteSocketFactoryService,
+			userDataProfileService,
+			environmentService,
+			productService,
+			remoteAuthorityResolverService,
+			signService,
+			logService,
+		);
 	}
 }
 
-class RemoteConnectionFailureNotificationContribution implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.nativeRemoteConnectionFailureNotification';
+class RemoteConnectionFailureNotificationContribution
+	implements IWorkbenchContribution
+{
+	static readonly ID =
+		"workbench.contrib.nativeRemoteConnectionFailureNotification";
 
 	constructor(
 		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
@@ -79,17 +104,26 @@ class RemoteConnectionFailureNotificationContribution implements IWorkbenchContr
 		if (!remoteAgentConnection) {
 			return null;
 		}
-		const connectionData = this._remoteAuthorityResolverService.getConnectionData(remoteAgentConnection.remoteAuthority);
-		if (!connectionData || connectionData.connectTo.type !== RemoteConnectionType.WebSocket) {
+		const connectionData =
+			this._remoteAuthorityResolverService.getConnectionData(
+				remoteAgentConnection.remoteAuthority,
+			);
+		if (
+			!connectionData ||
+			connectionData.connectTo.type !== RemoteConnectionType.WebSocket
+		) {
 			return null;
 		}
 		return URI.from({
-			scheme: 'http',
+			scheme: "http",
 			authority: `${connectionData.connectTo.host}:${connectionData.connectTo.port}`,
-			path: `/version`
+			path: `/version`,
 		});
 	}
-
 }
 
-registerWorkbenchContribution2(RemoteConnectionFailureNotificationContribution.ID, RemoteConnectionFailureNotificationContribution, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	RemoteConnectionFailureNotificationContribution.ID,
+	RemoteConnectionFailureNotificationContribution,
+	WorkbenchPhase.BlockRestore,
+);

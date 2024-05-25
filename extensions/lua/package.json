@@ -18,14 +18,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Lua",
-					"lua"
-				],
+				"aliases": ["Lua", "lua"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".lua"
-				],
+				"extensions": [".lua"],
 				"id": "lua"
 			}
 		]

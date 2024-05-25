@@ -52,18 +52,14 @@
 				"json.schemaDownload.enable": {
 					"default": true,
 					"description": "%json.enableSchemaDownload.desc%",
-					"tags": [
-						"usesOnlineServices"
-					],
+					"tags": ["usesOnlineServices"],
 					"type": "boolean"
 				},
 				"json.schemas": {
 					"description": "%json.schemas.desc%",
 					"items": {
 						"default": {
-							"fileMatch": [
-								"/myfile"
-							],
+							"fileMatch": ["/myfile"],
 							"url": "schemaURL"
 						},
 						"properties": {
@@ -95,11 +91,7 @@
 				"json.trace.server": {
 					"default": "off",
 					"description": "%json.tracing.desc%",
-					"enum": [
-						"off",
-						"messages",
-						"verbose"
-					],
+					"enum": ["off", "messages", "verbose"],
 					"scope": "window",
 					"type": "string"
 				},
@@ -153,7 +145,5 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"extensionsAny"
-	]
+	"enabledApiProposals": ["extensionsAny"]
 }

@@ -2,49 +2,66 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import 'vs/css!./output';
-import * as nls from 'vs/nls';
-import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
-import { IEditorOptions as ICodeEditorOptions } from 'vs/editor/common/config/editorOptions';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
-import { IStorageService } from 'vs/platform/storage/common/storage';
-import { ITextResourceConfigurationService } from 'vs/editor/common/services/textResourceConfiguration';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IContextKeyService, IContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { IEditorOpenContext } from 'vs/workbench/common/editor';
-import { AbstractTextResourceEditor } from 'vs/workbench/browser/parts/editor/textResourceEditor';
-import { OUTPUT_VIEW_ID, CONTEXT_IN_OUTPUT, IOutputChannel, CONTEXT_OUTPUT_SCROLL_LOCK } from 'vs/workbench/services/output/common/output';
-import { IThemeService } from 'vs/platform/theme/common/themeService';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { CancellationToken } from 'vs/base/common/cancellation';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { CursorChangeReason } from 'vs/editor/common/cursorEvents';
-import { ViewPane, IViewPaneOptions } from 'vs/workbench/browser/parts/views/viewPane';
-import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import { IViewDescriptorService } from 'vs/workbench/common/views';
-import { TextResourceEditorInput } from 'vs/workbench/common/editor/textResourceEditorInput';
-import { IOpenerService } from 'vs/platform/opener/common/opener';
-import { Dimension } from 'vs/base/browser/dom';
-import { ITextEditorOptions } from 'vs/platform/editor/common/editor';
-import { CancelablePromise, createCancelablePromise } from 'vs/base/common/async';
-import { IFileService } from 'vs/platform/files/common/files';
-import { ResourceContextKey } from 'vs/workbench/common/contextkeys';
-import { ServiceCollection } from 'vs/platform/instantiation/common/serviceCollection';
-import { IEditorConfiguration } from 'vs/workbench/browser/parts/editor/textEditor';
-import { computeEditorAriaLabel } from 'vs/workbench/browser/editor';
-import { IHoverService } from 'vs/platform/hover/browser/hover';
+import "vs/css!./output";
+import { Dimension } from "vs/base/browser/dom";
+import {
+	type CancelablePromise,
+	createCancelablePromise,
+} from "vs/base/common/async";
+import type { CancellationToken } from "vs/base/common/cancellation";
+import type { ICodeEditor } from "vs/editor/browser/editorBrowser";
+import type { IEditorOptions as ICodeEditorOptions } from "vs/editor/common/config/editorOptions";
+import { CursorChangeReason } from "vs/editor/common/cursorEvents";
+import { ITextResourceConfigurationService } from "vs/editor/common/services/textResourceConfiguration";
+import * as nls from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import {
+	type IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
+import type { ITextEditorOptions } from "vs/platform/editor/common/editor";
+import { IFileService } from "vs/platform/files/common/files";
+import { IHoverService } from "vs/platform/hover/browser/hover";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import { ServiceCollection } from "vs/platform/instantiation/common/serviceCollection";
+import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
+import { IOpenerService } from "vs/platform/opener/common/opener";
+import { IStorageService } from "vs/platform/storage/common/storage";
+import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
+import { IThemeService } from "vs/platform/theme/common/themeService";
+import { computeEditorAriaLabel } from "vs/workbench/browser/editor";
+import type { IEditorConfiguration } from "vs/workbench/browser/parts/editor/textEditor";
+import { AbstractTextResourceEditor } from "vs/workbench/browser/parts/editor/textResourceEditor";
+import {
+	type IViewPaneOptions,
+	ViewPane,
+} from "vs/workbench/browser/parts/views/viewPane";
+import { ResourceContextKey } from "vs/workbench/common/contextkeys";
+import type { IEditorOpenContext } from "vs/workbench/common/editor";
+import { TextResourceEditorInput } from "vs/workbench/common/editor/textResourceEditorInput";
+import { IViewDescriptorService } from "vs/workbench/common/views";
+import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
+import {
+	CONTEXT_IN_OUTPUT,
+	CONTEXT_OUTPUT_SCROLL_LOCK,
+	type IOutputChannel,
+	OUTPUT_VIEW_ID,
+} from "vs/workbench/services/output/common/output";
 
 export class OutputViewPane extends ViewPane {
-
 	private readonly editor: OutputEditor;
 	private channelId: string | undefined;
 	private editorPromise: CancelablePromise<OutputEditor> | null = null;
 
 	private readonly scrollLockContextKey: IContextKey<boolean>;
-	get scrollLock(): boolean { return !!this.scrollLockContextKey.get(); }
-	set scrollLock(scrollLock: boolean) { this.scrollLockContextKey.set(scrollLock); }
+	get scrollLock(): boolean {
+		return !!this.scrollLockContextKey.get();
+	}
+	set scrollLock(scrollLock: boolean) {
+		this.scrollLockContextKey.set(scrollLock);
+	}
 
 	constructor(
 		options: IViewPaneOptions,
@@ -59,16 +76,41 @@ export class OutputViewPane extends ViewPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
-		this.scrollLockContextKey = CONTEXT_OUTPUT_SCROLL_LOCK.bindTo(this.contextKeyService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
+		this.scrollLockContextKey = CONTEXT_OUTPUT_SCROLL_LOCK.bindTo(
+			this.contextKeyService,
+		);
 
-		const editorInstantiationService = instantiationService.createChild(new ServiceCollection([IContextKeyService, this.scopedContextKeyService]));
+		const editorInstantiationService = instantiationService.createChild(
+			new ServiceCollection([
+				IContextKeyService,
+				this.scopedContextKeyService,
+			]),
+		);
 		this.editor = editorInstantiationService.createInstance(OutputEditor);
-		this._register(this.editor.onTitleAreaUpdate(() => {
-			this.updateTitle(this.editor.getTitle());
-			this.updateActions();
-		}));
-		this._register(this.onDidChangeBodyVisibility(() => this.onDidChangeVisibility(this.isBodyVisible())));
+		this._register(
+			this.editor.onTitleAreaUpdate(() => {
+				this.updateTitle(this.editor.getTitle());
+				this.updateActions();
+			}),
+		);
+		this._register(
+			this.onDidChangeBodyVisibility(() =>
+				this.onDidChangeVisibility(this.isBodyVisible()),
+			),
+		);
 	}
 
 	showChannel(channel: IOutputChannel, preserveFocus: boolean): void {
@@ -88,30 +130,41 @@ export class OutputViewPane extends ViewPane {
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 		this.editor.create(container);
-		container.classList.add('output-view');
+		container.classList.add("output-view");
 		const codeEditor = <ICodeEditor>this.editor.getControl();
-		codeEditor.setAriaOptions({ role: 'document', activeDescendant: undefined });
-		this._register(codeEditor.onDidChangeModelContent(() => {
-			if (!this.scrollLock) {
-				this.editor.revealLastLine();
-			}
-		}));
-		this._register(codeEditor.onDidChangeCursorPosition((e) => {
-			if (e.reason !== CursorChangeReason.Explicit) {
-				return;
-			}
+		codeEditor.setAriaOptions({
+			role: "document",
+			activeDescendant: undefined,
+		});
+		this._register(
+			codeEditor.onDidChangeModelContent(() => {
+				if (!this.scrollLock) {
+					this.editor.revealLastLine();
+				}
+			}),
+		);
+		this._register(
+			codeEditor.onDidChangeCursorPosition((e) => {
+				if (e.reason !== CursorChangeReason.Explicit) {
+					return;
+				}
 
-			if (!this.configurationService.getValue('output.smartScroll.enabled')) {
-				return;
-			}
+				if (
+					!this.configurationService.getValue(
+						"output.smartScroll.enabled",
+					)
+				) {
+					return;
+				}
 
-			const model = codeEditor.getModel();
-			if (model) {
-				const newPositionLine = e.position.lineNumber;
-				const lastLine = model.getLineCount();
-				this.scrollLock = lastLine !== newPositionLine;
-			}
-		}));
+				const model = codeEditor.getModel();
+				if (model) {
+					const newPositionLine = e.position.lineNumber;
+					const lastLine = model.getLineCount();
+					this.scrollLock = lastLine !== newPositionLine;
+				}
+			}),
+		);
 	}
 
 	protected override layoutBody(height: number, width: number): void {
@@ -132,10 +185,17 @@ export class OutputViewPane extends ViewPane {
 		const input = this.createInput(channel);
 		if (!this.editor.input || !input.matches(this.editor.input)) {
 			this.editorPromise?.cancel();
-			this.editorPromise = createCancelablePromise(token => this.editor.setInput(this.createInput(channel), { preserveFocus: true }, Object.create(null), token)
-				.then(() => this.editor));
+			this.editorPromise = createCancelablePromise((token) =>
+				this.editor
+					.setInput(
+						this.createInput(channel),
+						{ preserveFocus: true },
+						Object.create(null),
+						token,
+					)
+					.then(() => this.editor),
+			);
 		}
-
 	}
 
 	private clearInput(): void {
@@ -145,9 +205,15 @@ export class OutputViewPane extends ViewPane {
 	}
 
 	private createInput(channel: IOutputChannel): TextResourceEditorInput {
-		return this.instantiationService.createInstance(TextResourceEditorInput, channel.uri, nls.localize('output model title', "{0} - Output", channel.label), nls.localize('channel', "Output channel for '{0}'", channel.label), undefined, undefined);
+		return this.instantiationService.createInstance(
+			TextResourceEditorInput,
+			channel.uri,
+			nls.localize("output model title", "{0} - Output", channel.label),
+			nls.localize("channel", "Output channel for '{0}'", channel.label),
+			undefined,
+			undefined,
+		);
 	}
-
 }
 
 class OutputEditor extends AbstractTextResourceEditor {
@@ -174,21 +240,23 @@ class OutputEditor extends AbstractTextResourceEditor {
 	}
 
 	override getTitle(): string {
-		return nls.localize('output', "Output");
+		return nls.localize("output", "Output");
 	}
 
-	protected override getConfigurationOverrides(configuration: IEditorConfiguration): ICodeEditorOptions {
+	protected override getConfigurationOverrides(
+		configuration: IEditorConfiguration,
+	): ICodeEditorOptions {
 		const options = super.getConfigurationOverrides(configuration);
-		options.wordWrap = 'on';				// all output editors wrap
-		options.lineNumbers = 'off';			// all output editors hide line numbers
+		options.wordWrap = "on"; // all output editors wrap
+		options.lineNumbers = "off"; // all output editors hide line numbers
 		options.glyphMargin = false;
 		options.lineDecorationsWidth = 20;
 		options.rulers = [];
 		options.folding = false;
 		options.scrollBeyondLastLine = false;
-		options.renderLineHighlight = 'none';
+		options.renderLineHighlight = "none";
 		options.minimap = { enabled: false };
-		options.renderValidationDecorations = 'editable';
+		options.renderValidationDecorations = "editable";
 		options.padding = undefined;
 		options.readOnly = true;
 		options.domReadOnly = true;
@@ -198,13 +266,13 @@ class OutputEditor extends AbstractTextResourceEditor {
 			ambiguousCharacters: false,
 		};
 
-		const outputConfig = this.configurationService.getValue<any>('[Log]');
+		const outputConfig = this.configurationService.getValue<any>("[Log]");
 		if (outputConfig) {
-			if (outputConfig['editor.minimap.enabled']) {
+			if (outputConfig["editor.minimap.enabled"]) {
 				options.minimap = { enabled: true };
 			}
-			if ('editor.wordWrap' in outputConfig) {
-				options.wordWrap = outputConfig['editor.wordWrap'];
+			if ("editor.wordWrap" in outputConfig) {
+				options.wordWrap = outputConfig["editor.wordWrap"];
 			}
 		}
 
@@ -212,14 +280,28 @@ class OutputEditor extends AbstractTextResourceEditor {
 	}
 
 	protected getAriaLabel(): string {
-		return this.input ? this.input.getAriaLabel() : nls.localize('outputViewAriaLabel', "Output panel");
+		return this.input
+			? this.input.getAriaLabel()
+			: nls.localize("outputViewAriaLabel", "Output panel");
 	}
 
 	protected override computeAriaLabel(): string {
-		return this.input ? computeEditorAriaLabel(this.input, undefined, undefined, this.editorGroupService.count) : this.getAriaLabel();
+		return this.input
+			? computeEditorAriaLabel(
+					this.input,
+					undefined,
+					undefined,
+					this.editorGroupService.count,
+				)
+			: this.getAriaLabel();
 	}
 
-	override async setInput(input: TextResourceEditorInput, options: ITextEditorOptions | undefined, context: IEditorOpenContext, token: CancellationToken): Promise<void> {
+	override async setInput(
+		input: TextResourceEditorInput,
+		options: ITextEditorOptions | undefined,
+		context: IEditorOpenContext,
+		token: CancellationToken,
+	): Promise<void> {
 		const focus = !(options && options.preserveFocus);
 		if (this.input && input.matches(this.input)) {
 			return;
@@ -250,8 +332,7 @@ class OutputEditor extends AbstractTextResourceEditor {
 	}
 
 	protected override createEditor(parent: HTMLElement): void {
-
-		parent.setAttribute('role', 'document');
+		parent.setAttribute("role", "document");
 
 		super.createEditor(parent);
 

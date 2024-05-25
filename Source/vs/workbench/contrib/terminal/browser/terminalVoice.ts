@@ -3,62 +3,76 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler } from 'vs/base/common/async';
-import { CancellationTokenSource } from 'vs/base/common/cancellation';
-import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { AccessibilityVoiceSettingId, SpeechTimeoutDefault } from 'vs/workbench/contrib/accessibility/browser/accessibilityConfiguration';
-import { ISpeechService, ISpeechToTextEvent, SpeechToTextStatus } from 'vs/workbench/contrib/speech/common/speechService';
-import { ITerminalService } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { isNumber } from 'vs/base/common/types';
-import type { IDecoration } from '@xterm/xterm';
-import { IXtermMarker } from 'vs/platform/terminal/common/capabilities/capabilities';
-import { ThemeIcon } from 'vs/base/common/themables';
-import { Codicon } from 'vs/base/common/codicons';
-import { alert } from 'vs/base/browser/ui/aria/aria';
-import { localize } from 'vs/nls';
+import type { IDecoration } from "@xterm/xterm";
+import { alert } from "vs/base/browser/ui/aria/aria";
+import { RunOnceScheduler } from "vs/base/common/async";
+import { CancellationTokenSource } from "vs/base/common/cancellation";
+import { Codicon } from "vs/base/common/codicons";
+import {
+	Disposable,
+	DisposableStore,
+	toDisposable,
+} from "vs/base/common/lifecycle";
+import { ThemeIcon } from "vs/base/common/themables";
+import { isNumber } from "vs/base/common/types";
+import { localize } from "vs/nls";
+import { IConfigurationService } from "vs/platform/configuration/common/configuration";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import type { IXtermMarker } from "vs/platform/terminal/common/capabilities/capabilities";
+import {
+	AccessibilityVoiceSettingId,
+	SpeechTimeoutDefault,
+} from "vs/workbench/contrib/accessibility/browser/accessibilityConfiguration";
+import {
+	ISpeechService,
+	type ISpeechToTextEvent,
+	SpeechToTextStatus,
+} from "vs/workbench/contrib/speech/common/speechService";
+import { ITerminalService } from "vs/workbench/contrib/terminal/browser/terminal";
 
 const symbolMap: { [key: string]: string } = {
-	'Ampersand': '&',
-	'ampersand': '&',
-	'Dollar': '$',
-	'dollar': '$',
-	'Percent': '%',
-	'percent': '%',
-	'Asterisk': '*',
-	'asterisk': '*',
-	'Plus': '+',
-	'plus': '+',
-	'Equals': '=',
-	'equals': '=',
-	'Exclamation': '!',
-	'exclamation': '!',
-	'Slash': '/',
-	'slash': '/',
-	'Backslash': '\\',
-	'backslash': '\\',
-	'Dot': '.',
-	'dot': '.',
-	'Period': '.',
-	'period': '.',
-	'Quote': '\'',
-	'quote': '\'',
-	'double quote': '"',
-	'Double quote': '"',
+	Ampersand: "&",
+	ampersand: "&",
+	Dollar: "$",
+	dollar: "$",
+	Percent: "%",
+	percent: "%",
+	Asterisk: "*",
+	asterisk: "*",
+	Plus: "+",
+	plus: "+",
+	Equals: "=",
+	equals: "=",
+	Exclamation: "!",
+	exclamation: "!",
+	Slash: "/",
+	slash: "/",
+	Backslash: "\\",
+	backslash: "\\",
+	Dot: ".",
+	dot: ".",
+	Period: ".",
+	period: ".",
+	Quote: "'",
+	quote: "'",
+	"double quote": '"',
+	"Double quote": '"',
 };
 
 export class TerminalVoiceSession extends Disposable {
-	private _input: string = '';
+	private _input = "";
 	private _ghostText: IDecoration | undefined;
 	private _decoration: IDecoration | undefined;
 	private _marker: IXtermMarker | undefined;
 	private _ghostTextMarker: IXtermMarker | undefined;
 	private static _instance: TerminalVoiceSession | undefined = undefined;
 	private _acceptTranscriptionScheduler: RunOnceScheduler | undefined;
-	static getInstance(instantiationService: IInstantiationService): TerminalVoiceSession {
+	static getInstance(
+		instantiationService: IInstantiationService,
+	): TerminalVoiceSession {
 		if (!TerminalVoiceSession._instance) {
-			TerminalVoiceSession._instance = instantiationService.createInstance(TerminalVoiceSession);
+			TerminalVoiceSession._instance =
+				instantiationService.createInstance(TerminalVoiceSession);
 		}
 
 		return TerminalVoiceSession._instance;
@@ -79,49 +93,61 @@ export class TerminalVoiceSession extends Disposable {
 
 	async start(): Promise<void> {
 		this.stop();
-		let voiceTimeout = this.configurationService.getValue<number>(AccessibilityVoiceSettingId.SpeechTimeout);
+		let voiceTimeout = this.configurationService.getValue<number>(
+			AccessibilityVoiceSettingId.SpeechTimeout,
+		);
 		if (!isNumber(voiceTimeout) || voiceTimeout < 0) {
 			voiceTimeout = SpeechTimeoutDefault;
 		}
-		this._acceptTranscriptionScheduler = this._disposables.add(new RunOnceScheduler(() => {
-			this._sendText();
-			this.stop();
-		}, voiceTimeout));
+		this._acceptTranscriptionScheduler = this._disposables.add(
+			new RunOnceScheduler(() => {
+				this._sendText();
+				this.stop();
+			}, voiceTimeout),
+		);
 		this._cancellationTokenSource = new CancellationTokenSource();
-		this._register(toDisposable(() => this._cancellationTokenSource?.dispose(true)));
-		const session = await this._speechService.createSpeechToTextSession(this._cancellationTokenSource?.token);
+		this._register(
+			toDisposable(() => this._cancellationTokenSource?.dispose(true)),
+		);
+		const session = await this._speechService.createSpeechToTextSession(
+			this._cancellationTokenSource?.token,
+		);
 
-		this._disposables.add(session.onDidChange((e) => {
-			if (this._cancellationTokenSource?.token.isCancellationRequested) {
-				return;
-			}
-			switch (e.status) {
-				case SpeechToTextStatus.Started:
-					// TODO: play start audio cue
-					if (!this._decoration) {
-						this._createDecoration();
-					}
-					break;
-				case SpeechToTextStatus.Recognizing: {
-					this._updateInput(e);
-					this._renderGhostText(e);
-					if (voiceTimeout > 0) {
-						this._acceptTranscriptionScheduler!.cancel();
-					}
-					break;
+		this._disposables.add(
+			session.onDidChange((e) => {
+				if (
+					this._cancellationTokenSource?.token.isCancellationRequested
+				) {
+					return;
 				}
-				case SpeechToTextStatus.Recognized:
-					this._updateInput(e);
-					if (voiceTimeout > 0) {
-						this._acceptTranscriptionScheduler!.schedule();
+				switch (e.status) {
+					case SpeechToTextStatus.Started:
+						// TODO: play start audio cue
+						if (!this._decoration) {
+							this._createDecoration();
+						}
+						break;
+					case SpeechToTextStatus.Recognizing: {
+						this._updateInput(e);
+						this._renderGhostText(e);
+						if (voiceTimeout > 0) {
+							this._acceptTranscriptionScheduler!.cancel();
+						}
+						break;
 					}
-					break;
-				case SpeechToTextStatus.Stopped:
-					// TODO: play stop audio cue
-					this.stop();
-					break;
-			}
-		}));
+					case SpeechToTextStatus.Recognized:
+						this._updateInput(e);
+						if (voiceTimeout > 0) {
+							this._acceptTranscriptionScheduler!.schedule();
+						}
+						break;
+					case SpeechToTextStatus.Stopped:
+						// TODO: play stop audio cue
+						this.stop();
+						break;
+				}
+			}),
+		);
 	}
 	stop(send?: boolean): void {
 		this._setInactive();
@@ -137,21 +163,26 @@ export class TerminalVoiceSession extends Disposable {
 		this._decoration = undefined;
 		this._cancellationTokenSource?.cancel();
 		this._disposables.clear();
-		this._input = '';
+		this._input = "";
 	}
 
 	private _sendText(): void {
 		this._terminalService.activeInstance?.sendText(this._input, false);
-		alert(localize('terminalVoiceTextInserted', '{0} inserted', this._input));
+		alert(
+			localize("terminalVoiceTextInserted", "{0} inserted", this._input),
+		);
 	}
 
 	private _updateInput(e: ISpeechToTextEvent): void {
 		if (e.text) {
-			let input = e.text.replaceAll(/[.,?;!]/g, '');
+			let input = e.text.replaceAll(/[.,?;!]/g, "");
 			for (const symbol of Object.entries(symbolMap)) {
-				input = input.replace(new RegExp('\\b' + symbol[0] + '\\b'), symbol[1]);
+				input = input.replace(
+					new RegExp("\\b" + symbol[0] + "\\b"),
+					symbol[1],
+				);
 			}
-			this._input = ' ' + input;
+			this._input = " " + input;
 		}
 	}
 
@@ -168,17 +199,23 @@ export class TerminalVoiceSession extends Disposable {
 		}
 		this._decoration = xterm.registerDecoration({
 			marker: this._marker,
-			layer: 'top',
+			layer: "top",
 			x: xterm.buffer.active.cursorX ?? 0,
 		});
 		this._decoration?.onRender((e: HTMLElement) => {
-			e.classList.add(...ThemeIcon.asClassNameArray(Codicon.micFilled), 'terminal-voice', 'recording');
-			e.style.transform = onFirstLine ? 'translate(10px, -2px)' : 'translate(-6px, -5px)';
+			e.classList.add(
+				...ThemeIcon.asClassNameArray(Codicon.micFilled),
+				"terminal-voice",
+				"recording",
+			);
+			e.style.transform = onFirstLine
+				? "translate(10px, -2px)"
+				: "translate(-6px, -5px)";
 		});
 	}
 
 	private _setInactive(): void {
-		this._decoration?.element?.classList.remove('recording');
+		this._decoration?.element?.classList.remove("recording");
 	}
 
 	private _renderGhostText(e: ISpeechToTextEvent): void {
@@ -199,15 +236,18 @@ export class TerminalVoiceSession extends Disposable {
 		const onFirstLine = xterm.buffer.active.cursorY === 0;
 		this._ghostText = xterm.registerDecoration({
 			marker: this._ghostTextMarker,
-			layer: 'top',
-			x: onFirstLine ? xterm.buffer.active.cursorX + 4 : xterm.buffer.active.cursorX + 1 ?? 0,
+			layer: "top",
+			x: onFirstLine
+				? xterm.buffer.active.cursorX + 4
+				: xterm.buffer.active.cursorX + 1 ?? 0,
 		});
 		this._ghostText?.onRender((e: HTMLElement) => {
-			e.classList.add('terminal-voice-progress-text');
+			e.classList.add("terminal-voice-progress-text");
 			e.textContent = text;
-			e.style.width = (xterm.cols - xterm.buffer.active.cursorX) / xterm.cols * 100 + '%';
+			e.style.width =
+				((xterm.cols - xterm.buffer.active.cursorX) / xterm.cols) *
+					100 +
+				"%";
 		});
 	}
 }
-
-

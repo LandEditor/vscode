@@ -20,16 +20,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Pug",
-					"Jade",
-					"jade"
-				],
+				"aliases": ["Pug", "Jade", "jade"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".pug",
-					".jade"
-				],
+				"extensions": [".pug", ".jade"],
 				"id": "jade"
 			}
 		]

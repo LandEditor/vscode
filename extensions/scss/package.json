@@ -19,19 +19,11 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"SCSS",
-					"scss"
-				],
+				"aliases": ["SCSS", "scss"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".scss"
-				],
+				"extensions": [".scss"],
 				"id": "scss",
-				"mimetypes": [
-					"text/x-scss",
-					"text/scss"
-				]
+				"mimetypes": ["text/x-scss", "text/scss"]
 			}
 		],
 		"problemMatchers": [

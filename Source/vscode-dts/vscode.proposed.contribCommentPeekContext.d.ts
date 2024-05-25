@@ -7,4 +7,3 @@
 
 // https://github.com/microsoft/vscode/issues/151533 @alexr00
 
-

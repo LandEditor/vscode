@@ -15,14 +15,9 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"ShaderLab",
-					"shaderlab"
-				],
+				"aliases": ["ShaderLab", "shaderlab"],
 				"configuration": "./language-configuration.json",
-				"extensions": [
-					".shader"
-				],
+				"extensions": [".shader"],
 				"id": "shaderlab"
 			}
 		]

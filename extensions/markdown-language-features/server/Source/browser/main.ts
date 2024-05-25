@@ -3,8 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserMessageReader, BrowserMessageWriter, createConnection } from 'vscode-languageserver/browser';
-import { startVsCodeServer } from '../server';
+import {
+	BrowserMessageReader,
+	BrowserMessageWriter,
+	createConnection,
+} from "vscode-languageserver/browser";
+import { startVsCodeServer } from "../server";
 
 const messageReader = new BrowserMessageReader(self);
 const messageWriter = new BrowserMessageWriter(self);

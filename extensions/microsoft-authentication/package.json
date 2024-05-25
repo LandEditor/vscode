@@ -63,11 +63,7 @@
 						"type": "object"
 					},
 					"microsoft-sovereign-cloud.environment": {
-						"enum": [
-							"ChinaCloud",
-							"USGovernment",
-							"custom"
-						],
+						"enum": ["ChinaCloud", "USGovernment", "custom"],
 						"enumDescriptions": [
 							"%microsoft-sovereign-cloud.environment.enumDescriptions.AzureChinaCloud%",
 							"%microsoft-sovereign-cloud.environment.enumDescriptions.AzureUSGovernment%",
@@ -100,11 +96,6 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"idToken"
-	],
-	"extensionKind": [
-		"ui",
-		"workspace"
-	]
+	"enabledApiProposals": ["idToken"],
+	"extensionKind": ["ui", "workspace"]
 }

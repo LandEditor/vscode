@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	/**
 	 * Represents a user request in chat history.
 	 */
@@ -35,7 +34,12 @@ declare module 'vscode' {
 		 */
 		readonly variables: ChatResolvedVariable[];
 
-		private constructor(prompt: string, command: string | undefined, variables: ChatResolvedVariable[], participant: string);
+		private constructor(
+			prompt: string,
+			command: string | undefined,
+			variables: ChatResolvedVariable[],
+			participant: string,
+		);
 	}
 
 	/**
@@ -45,7 +49,12 @@ declare module 'vscode' {
 		/**
 		 * The content that was received from the chat participant. Only the stream parts that represent actual content (not metadata) are represented.
 		 */
-		readonly response: ReadonlyArray<ChatResponseMarkdownPart | ChatResponseFileTreePart | ChatResponseAnchorPart | ChatResponseCommandButtonPart>;
+		readonly response: ReadonlyArray<
+			| ChatResponseMarkdownPart
+			| ChatResponseFileTreePart
+			| ChatResponseAnchorPart
+			| ChatResponseCommandButtonPart
+		>;
 
 		/**
 		 * The result that was received from the chat participant.
@@ -62,7 +71,16 @@ declare module 'vscode' {
 		 */
 		readonly command?: string;
 
-		private constructor(response: ReadonlyArray<ChatResponseMarkdownPart | ChatResponseFileTreePart | ChatResponseAnchorPart | ChatResponseCommandButtonPart>, result: ChatResult, participant: string);
+		private constructor(
+			response: ReadonlyArray<
+				| ChatResponseMarkdownPart
+				| ChatResponseFileTreePart
+				| ChatResponseAnchorPart
+				| ChatResponseCommandButtonPart
+			>,
+			result: ChatResult,
+			participant: string,
+		);
 	}
 
 	export interface ChatContext {
@@ -177,13 +195,22 @@ declare module 'vscode' {
 		 * @param result This object has the same properties as the result returned from the participant callback, including `metadata`, but is not the same instance.
 		 * @param token A cancellation token.
 		 */
-		provideFollowups(result: ChatResult, context: ChatContext, token: CancellationToken): ProviderResult<ChatFollowup[]>;
+		provideFollowups(
+			result: ChatResult,
+			context: ChatContext,
+			token: CancellationToken,
+		): ProviderResult<ChatFollowup[]>;
 	}
 
 	/**
 	 * A chat request handler is a callback that will be invoked when a request is made to a chat participant.
 	 */
-	export type ChatRequestHandler = (request: ChatRequest, context: ChatContext, response: ChatResponseStream, token: CancellationToken) => ProviderResult<ChatResult | void>;
+	export type ChatRequestHandler = (
+		request: ChatRequest,
+		context: ChatContext,
+		response: ChatResponseStream,
+		token: CancellationToken,
+	) => ProviderResult<ChatResult | void>;
 
 	/**
 	 * A chat participant can be invoked by the user in a chat session, using the `@` prefix. When it is invoked, it handles the chat request and is solely
@@ -198,16 +225,19 @@ declare module 'vscode' {
 		/**
 		 * An icon for the participant shown in UI.
 		 */
-		iconPath?: Uri | {
-			/**
-			 * The icon path for the light theme.
-			 */
-			light: Uri;
-			/**
-			 * The icon path for the dark theme.
-			 */
-			dark: Uri;
-		} | ThemeIcon;
+		iconPath?:
+			| Uri
+			| {
+					/**
+					 * The icon path for the light theme.
+					 */
+					light: Uri;
+					/**
+					 * The icon path for the dark theme.
+					 */
+					dark: Uri;
+			  }
+			| ThemeIcon;
 
 		/**
 		 * The handler for requests to this participant.
@@ -277,7 +307,6 @@ declare module 'vscode' {
 		 */
 		readonly command: string | undefined;
 
-
 		/**
 		 * The list of variables and their values that are referenced in the prompt.
 		 *
@@ -334,7 +363,10 @@ declare module 'vscode' {
 		 * @param baseUri The base uri to which this file tree is relative to.
 		 * @returns This stream.
 		 */
-		filetree(value: ChatResponseFileTree[], baseUri: Uri): ChatResponseStream;
+		filetree(
+			value: ChatResponseFileTree[],
+			baseUri: Uri,
+		): ChatResponseStream;
 
 		/**
 		 * Push a progress part to this stream. Short-hand for
@@ -355,7 +387,13 @@ declare module 'vscode' {
 		 * @param iconPath Icon for the reference shown in UI
 		 * @returns This stream.
 		 */
-		reference(value: Uri | Location | { variableName: string; value?: Uri | Location }, iconPath?: ThemeIcon): ChatResponseStream;
+		reference(
+			value:
+				| Uri
+				| Location
+				| { variableName: string; value?: Uri | Location },
+			iconPath?: ThemeIcon,
+		): ChatResponseStream;
 
 		/**
 		 * Pushes a part to this stream.
@@ -397,9 +435,18 @@ declare module 'vscode' {
 	}
 
 	export class ChatResponseReferencePart {
-		value: Uri | Location | { variableName: string; value?: Uri | Location };
+		value:
+			| Uri
+			| Location
+			| { variableName: string; value?: Uri | Location };
 		iconPath?: ThemeIcon;
-		constructor(value: Uri | Location | { variableName: string; value?: Uri | Location }, iconPath?: ThemeIcon);
+		constructor(
+			value:
+				| Uri
+				| Location
+				| { variableName: string; value?: Uri | Location },
+			iconPath?: ThemeIcon,
+		);
 	}
 
 	export class ChatResponseCommandButtonPart {
@@ -410,9 +457,13 @@ declare module 'vscode' {
 	/**
 	 * Represents the different chat response types.
 	 */
-	export type ChatResponsePart = ChatResponseMarkdownPart | ChatResponseFileTreePart | ChatResponseAnchorPart
-		| ChatResponseProgressPart | ChatResponseReferencePart | ChatResponseCommandButtonPart;
-
+	export type ChatResponsePart =
+		| ChatResponseMarkdownPart
+		| ChatResponseFileTreePart
+		| ChatResponseAnchorPart
+		| ChatResponseProgressPart
+		| ChatResponseReferencePart
+		| ChatResponseCommandButtonPart;
 
 	export namespace chat {
 		/**
@@ -422,7 +473,10 @@ declare module 'vscode' {
 		 * @param handler A request handler for the participant.
 		 * @returns A new chat participant
 		 */
-		export function createChatParticipant(id: string, handler: ChatRequestHandler): ChatParticipant;
+		export function createChatParticipant(
+			id: string,
+			handler: ChatRequestHandler,
+		): ChatParticipant;
 	}
 
 	/**
@@ -431,7 +485,7 @@ declare module 'vscode' {
 	export enum ChatVariableLevel {
 		Short = 1,
 		Medium = 2,
-		Full = 3
+		Full = 3,
 	}
 
 	export interface ChatVariableValue {

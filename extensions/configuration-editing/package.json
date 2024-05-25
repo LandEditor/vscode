@@ -128,17 +128,12 @@
 				"id": "jsonc"
 			},
 			{
-				"extensions": [
-					".code-profile"
-				],
+				"extensions": [".code-profile"],
 				"id": "json"
 			}
 		]
 	},
-	"activationEvents": [
-		"onProfile",
-		"onProfile:github"
-	],
+	"activationEvents": ["onProfile", "onProfile:github"],
 	"dependencies": {
 		"@octokit/rest": "20.1.1",
 		"jsonc-parser": "3.2.1",
@@ -154,7 +149,5 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"profileContentHandlers"
-	]
+	"enabledApiProposals": ["profileContentHandlers"]
 }

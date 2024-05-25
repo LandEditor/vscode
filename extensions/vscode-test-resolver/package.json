@@ -155,11 +155,6 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"resolvers",
-		"tunnels"
-	],
-	"extensionKind": [
-		"ui"
-	]
+	"enabledApiProposals": ["resolvers", "tunnels"],
+	"extensionKind": ["ui"]
 }

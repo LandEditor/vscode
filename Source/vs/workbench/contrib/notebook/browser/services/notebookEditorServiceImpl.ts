@@ -3,25 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CodeWindow } from 'vs/base/browser/window';
-import { ResourceMap } from 'vs/base/common/map';
-import { getDefaultNotebookCreationOptions, NotebookEditorWidget } from 'vs/workbench/contrib/notebook/browser/notebookEditorWidget';
-import { DisposableStore, IDisposable } from 'vs/base/common/lifecycle';
-import { IEditorGroupsService, IEditorGroup } from 'vs/workbench/services/editor/common/editorGroupsService';
-import { IInstantiationService, ServicesAccessor } from 'vs/platform/instantiation/common/instantiation';
-import { isCompositeNotebookEditorInput, NotebookEditorInput } from 'vs/workbench/contrib/notebook/common/notebookEditorInput';
-import { IBorrowValue, INotebookEditorService } from 'vs/workbench/contrib/notebook/browser/services/notebookEditorService';
-import { INotebookEditor, INotebookEditorCreationOptions } from 'vs/workbench/contrib/notebook/browser/notebookBrowser';
-import { Emitter } from 'vs/base/common/event';
-import { GroupIdentifier, GroupModelChangeKind } from 'vs/workbench/common/editor';
-import { Dimension } from 'vs/base/browser/dom';
-import { URI } from 'vs/base/common/uri';
-import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { InteractiveWindowOpen } from 'vs/workbench/contrib/notebook/common/notebookContextKeys';
+import type { Dimension } from "vs/base/browser/dom";
+import type { CodeWindow } from "vs/base/browser/window";
+import { Emitter } from "vs/base/common/event";
+import { DisposableStore, type IDisposable } from "vs/base/common/lifecycle";
+import { ResourceMap } from "vs/base/common/map";
+import type { URI } from "vs/base/common/uri";
+import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
+import {
+	IInstantiationService,
+	type ServicesAccessor,
+} from "vs/platform/instantiation/common/instantiation";
+import {
+	type GroupIdentifier,
+	GroupModelChangeKind,
+} from "vs/workbench/common/editor";
+import type {
+	INotebookEditor,
+	INotebookEditorCreationOptions,
+} from "vs/workbench/contrib/notebook/browser/notebookBrowser";
+import {
+	NotebookEditorWidget,
+	getDefaultNotebookCreationOptions,
+} from "vs/workbench/contrib/notebook/browser/notebookEditorWidget";
+import type {
+	IBorrowValue,
+	INotebookEditorService,
+} from "vs/workbench/contrib/notebook/browser/services/notebookEditorService";
+import { InteractiveWindowOpen } from "vs/workbench/contrib/notebook/common/notebookContextKeys";
+import {
+	NotebookEditorInput,
+	isCompositeNotebookEditorInput,
+} from "vs/workbench/contrib/notebook/common/notebookEditorInput";
+import {
+	type IEditorGroup,
+	IEditorGroupsService,
+} from "vs/workbench/services/editor/common/editorGroupsService";
+import { IEditorService } from "vs/workbench/services/editor/common/editorService";
 
 export class NotebookEditorWidgetService implements INotebookEditorService {
-
 	readonly _serviceBrand: undefined;
 
 	private _tokenPool = 1;
@@ -34,7 +54,10 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	readonly onDidAddNotebookEditor = this._onNotebookEditorAdd.event;
 	readonly onDidRemoveNotebookEditor = this._onNotebookEditorsRemove.event;
 
-	private readonly _borrowableEditors = new Map<number, ResourceMap<{ widget: NotebookEditorWidget; token: number | undefined }>>();
+	private readonly _borrowableEditors = new Map<
+		number,
+		ResourceMap<{ widget: NotebookEditorWidget; token: number | undefined }>
+	>();
 
 	constructor(
 		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
@@ -126,7 +149,11 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		domNode.remove();
 	}
 
-	private _allowWidgetMove(input: NotebookEditorInput, sourceID: GroupIdentifier, targetID: GroupIdentifier): void {
+	private _allowWidgetMove(
+		input: NotebookEditorInput,
+		sourceID: GroupIdentifier,
+		targetID: GroupIdentifier,
+	): void {
 		const sourcePart = this.editorGroupService.getPart(sourceID);
 		const targetPart = this.editorGroupService.getPart(targetID);
 
@@ -134,15 +161,19 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 			return;
 		}
 
-		const targetWidget = this._borrowableEditors.get(targetID)?.get(input.resource);
+		const targetWidget = this._borrowableEditors
+			.get(targetID)
+			?.get(input.resource);
 		if (targetWidget) {
 			// not needed
 			return;
 		}
 
-		const widget = this._borrowableEditors.get(sourceID)?.get(input.resource);
+		const widget = this._borrowableEditors
+			.get(sourceID)
+			?.get(input.resource);
 		if (!widget) {
-			throw new Error('no widget at source group');
+			throw new Error("no widget at source group");
 		}
 		// don't allow the widget to be retrieved at its previous location any more
 		this._borrowableEditors.get(sourceID)?.delete(input.resource);
@@ -156,7 +187,9 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		targetMap.set(input.resource, widget);
 	}
 
-	retrieveExistingWidgetFromURI(resource: URI): IBorrowValue<NotebookEditorWidget> | undefined {
+	retrieveExistingWidgetFromURI(
+		resource: URI,
+	): IBorrowValue<NotebookEditorWidget> | undefined {
 		for (const widgetInfo of this._borrowableEditors.values()) {
 			const widget = widgetInfo.get(resource);
 			if (widget) {
@@ -176,18 +209,33 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 		return ret;
 	}
 
-	retrieveWidget(accessor: ServicesAccessor, group: IEditorGroup, input: NotebookEditorInput, creationOptions?: INotebookEditorCreationOptions, initialDimension?: Dimension, codeWindow?: CodeWindow): IBorrowValue<NotebookEditorWidget> {
-
+	retrieveWidget(
+		accessor: ServicesAccessor,
+		group: IEditorGroup,
+		input: NotebookEditorInput,
+		creationOptions?: INotebookEditorCreationOptions,
+		initialDimension?: Dimension,
+		codeWindow?: CodeWindow,
+	): IBorrowValue<NotebookEditorWidget> {
 		let value = this._borrowableEditors.get(group.id)?.get(input.resource);
 
-		if (!value) {
+		if (value) {
+			// reuse a widget which was either free'ed before or which
+			// is simply being reused...
+			value.token = this._tokenPool++;
+		} else {
 			// NEW widget
 			const instantiationService = accessor.get(IInstantiationService);
-			const ctorOptions = creationOptions ?? getDefaultNotebookCreationOptions();
-			const widget = instantiationService.createInstance(NotebookEditorWidget, {
-				...ctorOptions,
-				codeWindow: codeWindow ?? ctorOptions.codeWindow,
-			}, initialDimension);
+			const ctorOptions =
+				creationOptions ?? getDefaultNotebookCreationOptions();
+			const widget = instantiationService.createInstance(
+				NotebookEditorWidget,
+				{
+					...ctorOptions,
+					codeWindow: codeWindow ?? ctorOptions.codeWindow,
+				},
+				initialDimension,
+			);
 			const token = this._tokenPool++;
 			value = { widget, token };
 
@@ -197,21 +245,19 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 				this._borrowableEditors.set(group.id, map);
 			}
 			map.set(input.resource, value);
-
-		} else {
-			// reuse a widget which was either free'ed before or which
-			// is simply being reused...
-			value.token = this._tokenPool++;
 		}
 
 		return this._createBorrowValue(value.token!, value);
 	}
 
-	private _createBorrowValue(myToken: number, widget: { widget: NotebookEditorWidget; token: number | undefined }): IBorrowValue<NotebookEditorWidget> {
+	private _createBorrowValue(
+		myToken: number,
+		widget: { widget: NotebookEditorWidget; token: number | undefined },
+	): IBorrowValue<NotebookEditorWidget> {
 		return {
 			get value() {
 				return widget.token === myToken ? widget.widget : undefined;
-			}
+			},
 		};
 	}
 
@@ -234,6 +280,6 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	}
 
 	listNotebookEditors(): readonly INotebookEditor[] {
-		return [...this._notebookEditors].map(e => e[1]);
+		return [...this._notebookEditors].map((e) => e[1]);
 	}
 }

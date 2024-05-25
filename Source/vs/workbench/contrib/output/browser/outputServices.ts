@@ -3,32 +3,61 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from 'vs/base/common/event';
-import { URI } from 'vs/base/common/uri';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { IOutputChannel, IOutputService, OUTPUT_VIEW_ID, OUTPUT_SCHEME, LOG_MIME, OUTPUT_MIME, OutputChannelUpdateMode, IOutputChannelDescriptor, Extensions, IOutputChannelRegistry, ACTIVE_OUTPUT_CHANNEL_CONTEXT, CONTEXT_ACTIVE_FILE_OUTPUT, CONTEXT_ACTIVE_OUTPUT_LEVEL_SETTABLE, CONTEXT_ACTIVE_OUTPUT_LEVEL, CONTEXT_ACTIVE_OUTPUT_LEVEL_IS_DEFAULT } from 'vs/workbench/services/output/common/output';
-import { OutputLinkProvider } from 'vs/workbench/contrib/output/browser/outputLinkProvider';
-import { ITextModelService, ITextModelContentProvider } from 'vs/editor/common/services/resolverService';
-import { ITextModel } from 'vs/editor/common/model';
-import { ILogService, ILoggerService, LogLevelToString } from 'vs/platform/log/common/log';
-import { ILifecycleService } from 'vs/workbench/services/lifecycle/common/lifecycle';
-import { IOutputChannelModel } from 'vs/workbench/contrib/output/common/outputChannelModel';
-import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
-import { OutputViewPane } from 'vs/workbench/contrib/output/browser/outputView';
-import { IOutputChannelModelService } from 'vs/workbench/contrib/output/common/outputChannelModelService';
-import { ILanguageService } from 'vs/editor/common/languages/language';
-import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { SetLogLevelAction } from 'vs/workbench/contrib/logs/common/logsActions';
-import { IDefaultLogLevelsService } from 'vs/workbench/contrib/logs/common/defaultLogLevels';
+import { Emitter, Event } from "vs/base/common/event";
+import { Disposable } from "vs/base/common/lifecycle";
+import { URI } from "vs/base/common/uri";
+import { ILanguageService } from "vs/editor/common/languages/language";
+import type { ITextModel } from "vs/editor/common/model";
+import {
+	type ITextModelContentProvider,
+	ITextModelService,
+} from "vs/editor/common/services/resolverService";
+import {
+	type IContextKey,
+	IContextKeyService,
+} from "vs/platform/contextkey/common/contextkey";
+import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
+import {
+	ILogService,
+	ILoggerService,
+	LogLevelToString,
+} from "vs/platform/log/common/log";
+import { Registry } from "vs/platform/registry/common/platform";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "vs/platform/storage/common/storage";
+import { IDefaultLogLevelsService } from "vs/workbench/contrib/logs/common/defaultLogLevels";
+import { SetLogLevelAction } from "vs/workbench/contrib/logs/common/logsActions";
+import { OutputLinkProvider } from "vs/workbench/contrib/output/browser/outputLinkProvider";
+import type { OutputViewPane } from "vs/workbench/contrib/output/browser/outputView";
+import type { IOutputChannelModel } from "vs/workbench/contrib/output/common/outputChannelModel";
+import { IOutputChannelModelService } from "vs/workbench/contrib/output/common/outputChannelModelService";
+import { ILifecycleService } from "vs/workbench/services/lifecycle/common/lifecycle";
+import {
+	ACTIVE_OUTPUT_CHANNEL_CONTEXT,
+	CONTEXT_ACTIVE_FILE_OUTPUT,
+	CONTEXT_ACTIVE_OUTPUT_LEVEL,
+	CONTEXT_ACTIVE_OUTPUT_LEVEL_IS_DEFAULT,
+	CONTEXT_ACTIVE_OUTPUT_LEVEL_SETTABLE,
+	Extensions,
+	type IOutputChannel,
+	type IOutputChannelDescriptor,
+	type IOutputChannelRegistry,
+	type IOutputService,
+	LOG_MIME,
+	OUTPUT_MIME,
+	OUTPUT_SCHEME,
+	OUTPUT_VIEW_ID,
+	type OutputChannelUpdateMode,
+} from "vs/workbench/services/output/common/output";
+import { IViewsService } from "vs/workbench/services/views/common/viewsService";
 
-const OUTPUT_ACTIVE_CHANNEL_KEY = 'output.activechannel';
+const OUTPUT_ACTIVE_CHANNEL_KEY = "output.activechannel";
 
 class OutputChannel extends Disposable implements IOutputChannel {
-
-	scrollLock: boolean = false;
+	scrollLock = false;
 	readonly model: IOutputChannelModel;
 	readonly id: string;
 	readonly label: string;
@@ -43,7 +72,22 @@ class OutputChannel extends Disposable implements IOutputChannel {
 		this.id = outputChannelDescriptor.id;
 		this.label = outputChannelDescriptor.label;
 		this.uri = URI.from({ scheme: OUTPUT_SCHEME, path: this.id });
-		this.model = this._register(outputChannelModelService.createOutputChannelModel(this.id, this.uri, outputChannelDescriptor.languageId ? languageService.createById(outputChannelDescriptor.languageId) : languageService.createByMimeType(outputChannelDescriptor.log ? LOG_MIME : OUTPUT_MIME), outputChannelDescriptor.file));
+		this.model = this._register(
+			outputChannelModelService.createOutputChannelModel(
+				this.id,
+				this.uri,
+				outputChannelDescriptor.languageId
+					? languageService.createById(
+							outputChannelDescriptor.languageId,
+						)
+					: languageService.createByMimeType(
+							outputChannelDescriptor.log
+								? LOG_MIME
+								: OUTPUT_MIME,
+						),
+				outputChannelDescriptor.file,
+			),
+		);
 	}
 
 	append(output: string): void {
@@ -63,16 +107,24 @@ class OutputChannel extends Disposable implements IOutputChannel {
 	}
 }
 
-export class OutputService extends Disposable implements IOutputService, ITextModelContentProvider {
-
+export class OutputService
+	extends Disposable
+	implements IOutputService, ITextModelContentProvider
+{
 	declare readonly _serviceBrand: undefined;
 
-	private channels: Map<string, OutputChannel> = new Map<string, OutputChannel>();
+	private channels: Map<string, OutputChannel> = new Map<
+		string,
+		OutputChannel
+	>();
 	private activeChannelIdInStorage: string;
 	private activeChannel?: OutputChannel;
 
-	private readonly _onActiveOutputChannel = this._register(new Emitter<string>());
-	readonly onActiveOutputChannel: Event<string> = this._onActiveOutputChannel.event;
+	private readonly _onActiveOutputChannel = this._register(
+		new Emitter<string>(),
+	);
+	readonly onActiveOutputChannel: Event<string> =
+		this._onActiveOutputChannel.event;
 
 	private readonly activeOutputChannelContext: IContextKey<string>;
 	private readonly activeFileOutputChannelContext: IContextKey<boolean>;
@@ -150,7 +202,10 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
 			this.setActiveChannel(channel);
 			this._onActiveOutputChannel.fire(id);
 		}
-		const outputView = await this.viewsService.openView<OutputViewPane>(OUTPUT_VIEW_ID, !preserveFocus);
+		const outputView = await this.viewsService.openView<OutputViewPane>(
+			OUTPUT_VIEW_ID,
+			!preserveFocus,
+		);
 		if (outputView && channel) {
 			outputView.showChannel(channel, !!preserveFocus);
 		}
@@ -161,11 +216,15 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
 	}
 
 	getChannelDescriptor(id: string): IOutputChannelDescriptor | undefined {
-		return Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannel(id);
+		return Registry.as<IOutputChannelRegistry>(
+			Extensions.OutputChannels,
+		).getChannel(id);
 	}
 
 	getChannelDescriptors(): IOutputChannelDescriptor[] {
-		return Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannels();
+		return Registry.as<IOutputChannelRegistry>(
+			Extensions.OutputChannels,
+		).getChannels();
 	}
 
 	getActiveChannel(): IOutputChannel | undefined {
@@ -175,53 +234,86 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
 	private async onDidRegisterChannel(channelId: string): Promise<void> {
 		const channel = this.createChannel(channelId);
 		this.channels.set(channelId, channel);
-		if (!this.activeChannel || this.activeChannelIdInStorage === channelId) {
+		if (
+			!this.activeChannel ||
+			this.activeChannelIdInStorage === channelId
+		) {
 			this.setActiveChannel(channel);
 			this._onActiveOutputChannel.fire(channelId);
-			const outputView = this.viewsService.getActiveViewWithId<OutputViewPane>(OUTPUT_VIEW_ID);
+			const outputView =
+				this.viewsService.getActiveViewWithId<OutputViewPane>(
+					OUTPUT_VIEW_ID,
+				);
 			outputView?.showChannel(channel, true);
 		}
 	}
 
 	private createChannel(id: string): OutputChannel {
 		const channel = this.instantiateChannel(id);
-		this._register(Event.once(channel.model.onDispose)(() => {
-			if (this.activeChannel === channel) {
-				const channels = this.getChannelDescriptors();
-				const channel = channels.length ? this.getChannel(channels[0].id) : undefined;
-				if (channel && this.viewsService.isViewVisible(OUTPUT_VIEW_ID)) {
-					this.showChannel(channel.id);
-				} else {
-					this.setActiveChannel(undefined);
+		this._register(
+			Event.once(channel.model.onDispose)(() => {
+				if (this.activeChannel === channel) {
+					const channels = this.getChannelDescriptors();
+					const channel = channels.length
+						? this.getChannel(channels[0].id)
+						: undefined;
+					if (
+						channel &&
+						this.viewsService.isViewVisible(OUTPUT_VIEW_ID)
+					) {
+						this.showChannel(channel.id);
+					} else {
+						this.setActiveChannel(undefined);
+					}
 				}
-			}
-			Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).removeChannel(id);
-		}));
+				Registry.as<IOutputChannelRegistry>(
+					Extensions.OutputChannels,
+				).removeChannel(id);
+			}),
+		);
 
 		return channel;
 	}
 
 	private instantiateChannel(id: string): OutputChannel {
-		const channelData = Registry.as<IOutputChannelRegistry>(Extensions.OutputChannels).getChannel(id);
+		const channelData = Registry.as<IOutputChannelRegistry>(
+			Extensions.OutputChannels,
+		).getChannel(id);
 		if (!channelData) {
 			this.logService.error(`Channel '${id}' is not registered yet`);
 			throw new Error(`Channel '${id}' is not registered yet`);
 		}
-		return this.instantiationService.createInstance(OutputChannel, channelData);
+		return this.instantiationService.createInstance(
+			OutputChannel,
+			channelData,
+		);
 	}
 
 	private setLevelContext(): void {
 		const descriptor = this.activeChannel?.outputChannelDescriptor;
-		const channelLogLevel = descriptor?.log ? this.loggerService.getLogLevel(descriptor.file) : undefined;
-		this.activeOutputChannelLevelContext.set(channelLogLevel !== undefined ? LogLevelToString(channelLogLevel) : '');
+		const channelLogLevel = descriptor?.log
+			? this.loggerService.getLogLevel(descriptor.file)
+			: undefined;
+		this.activeOutputChannelLevelContext.set(
+			channelLogLevel !== undefined
+				? LogLevelToString(channelLogLevel)
+				: "",
+		);
 	}
 
 	private async setLevelIsDefaultContext(): Promise<void> {
 		const descriptor = this.activeChannel?.outputChannelDescriptor;
 		if (descriptor?.log) {
-			const channelLogLevel = this.loggerService.getLogLevel(descriptor.file);
-			const channelDefaultLogLevel = await this.defaultLogLevelsService.getDefaultLogLevel(descriptor.extensionId);
-			this.activeOutputChannelLevelIsDefaultContext.set(channelDefaultLogLevel === channelLogLevel);
+			const channelLogLevel = this.loggerService.getLogLevel(
+				descriptor.file,
+			);
+			const channelDefaultLogLevel =
+				await this.defaultLogLevelsService.getDefaultLogLevel(
+					descriptor.extensionId,
+				);
+			this.activeOutputChannelLevelIsDefaultContext.set(
+				channelDefaultLogLevel === channelLogLevel,
+			);
 		} else {
 			this.activeOutputChannelLevelIsDefaultContext.set(false);
 		}
@@ -231,14 +323,25 @@ export class OutputService extends Disposable implements IOutputService, ITextMo
 		this.activeChannel = channel;
 		const descriptor = channel?.outputChannelDescriptor;
 		this.activeFileOutputChannelContext.set(!!descriptor?.file);
-		this.activeOutputChannelLevelSettableContext.set(descriptor !== undefined && SetLogLevelAction.isLevelSettable(descriptor));
+		this.activeOutputChannelLevelSettableContext.set(
+			descriptor !== undefined &&
+				SetLogLevelAction.isLevelSettable(descriptor),
+		);
 		this.setLevelIsDefaultContext();
 		this.setLevelContext();
 
 		if (this.activeChannel) {
-			this.storageService.store(OUTPUT_ACTIVE_CHANNEL_KEY, this.activeChannel.id, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+			this.storageService.store(
+				OUTPUT_ACTIVE_CHANNEL_KEY,
+				this.activeChannel.id,
+				StorageScope.WORKSPACE,
+				StorageTarget.MACHINE,
+			);
 		} else {
-			this.storageService.remove(OUTPUT_ACTIVE_CHANNEL_KEY, StorageScope.WORKSPACE);
+			this.storageService.remove(
+				OUTPUT_ACTIVE_CHANNEL_KEY,
+				StorageScope.WORKSPACE,
+			);
 		}
 	}
 }

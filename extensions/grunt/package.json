@@ -13,10 +13,7 @@
 				"grunt.autoDetect": {
 					"default": "off",
 					"description": "%config.grunt.autoDetect%",
-					"enum": [
-						"off",
-						"on"
-					],
+					"enum": ["off", "on"],
 					"scope": "application",
 					"type": "string"
 				}
@@ -40,17 +37,13 @@
 						"type": "string"
 					}
 				},
-				"required": [
-					"task"
-				],
+				"required": ["task"],
 				"type": "grunt",
 				"when": "shellExecutionSupported"
 			}
 		]
 	},
-	"activationEvents": [
-		"onTaskType:grunt"
-	],
+	"activationEvents": ["onTaskType:grunt"],
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "20.x"

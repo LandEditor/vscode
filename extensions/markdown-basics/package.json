@@ -73,10 +73,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Markdown",
-					"markdown"
-				],
+				"aliases": ["Markdown", "markdown"],
 				"configuration": "./language-configuration.json",
 				"extensions": [
 					".md",

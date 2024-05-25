@@ -20,10 +20,7 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"XML",
-					"xml"
-				],
+				"aliases": ["XML", "xml"],
 				"configuration": "./xml.language-configuration.json",
 				"extensions": [
 					".xml",
@@ -92,15 +89,9 @@
 				"id": "xml"
 			},
 			{
-				"aliases": [
-					"XSL",
-					"xsl"
-				],
+				"aliases": ["XSL", "xsl"],
 				"configuration": "./xsl.language-configuration.json",
-				"extensions": [
-					".xsl",
-					".xslt"
-				],
+				"extensions": [".xsl", ".xslt"],
 				"id": "xsl"
 			}
 		]

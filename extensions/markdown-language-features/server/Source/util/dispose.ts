@@ -17,7 +17,10 @@ export function disposeAll(disposables: Iterable<IDisposable>) {
 	if (errors.length === 1) {
 		throw errors[0];
 	} else if (errors.length > 1) {
-		throw new AggregateError(errors, 'Encountered errors while disposing of store');
+		throw new AggregateError(
+			errors,
+			"Encountered errors while disposing of store",
+		);
 	}
 }
 
@@ -51,4 +54,3 @@ export abstract class Disposable {
 		return this._isDisposed;
 	}
 }
-

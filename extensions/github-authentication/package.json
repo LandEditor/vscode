@@ -43,15 +43,10 @@
 	"api": "none",
 	"capabilities": {
 		"untrustedWorkspaces": {
-			"restrictedConfigurations": [
-				"github-enterprise.uri"
-			],
+			"restrictedConfigurations": ["github-enterprise.uri"],
 			"supported": "limited"
 		},
 		"virtualWorkspaces": true
 	},
-	"extensionKind": [
-		"ui",
-		"workspace"
-	]
+	"extensionKind": ["ui", "workspace"]
 }

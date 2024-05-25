@@ -22,19 +22,13 @@
 		],
 		"languages": [
 			{
-				"aliases": [
-					"Search Result"
-				],
-				"extensions": [
-					".code-search"
-				],
+				"aliases": ["Search Result"],
+				"extensions": [".code-search"],
 				"id": "search-result"
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:search-result"
-	],
+	"activationEvents": ["onLanguage:search-result"],
 	"icon": "images/icon.png",
 	"capabilities": {
 		"untrustedWorkspaces": {
@@ -42,7 +36,5 @@
 		},
 		"virtualWorkspaces": true
 	},
-	"enabledApiProposals": [
-		"documentFiltersExclusive"
-	]
+	"enabledApiProposals": ["documentFiltersExclusive"]
 }
