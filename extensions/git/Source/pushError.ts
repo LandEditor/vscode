@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Disposable } from "vscode";
-import type { PushErrorHandler } from "./api/git";
+import { Disposable } from 'vscode';
+import { PushErrorHandler } from './api/git';
 
 export interface IPushErrorHandlerRegistry {
 	registerPushErrorHandler(provider: PushErrorHandler): Disposable;

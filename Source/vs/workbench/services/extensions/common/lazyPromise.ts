@@ -3,9 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationError, onUnexpectedError } from "vs/base/common/errors";
+import { CancellationError, onUnexpectedError } from 'vs/base/common/errors';
 
 export class LazyPromise implements Promise<any> {
+
 	private _actual: Promise<any> | null;
 	private _actualOk: ((value?: any) => any) | null;
 	private _actualErr: ((err?: any) => any) | null;

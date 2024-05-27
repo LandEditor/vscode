@@ -3,23 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isLinux } from "vs/base/common/platform";
-import { stripComments } from "vs/base/common/stripComments";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { IFileService } from "vs/platform/files/common/files";
-import { Registry } from "vs/platform/registry/common/platform";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
-import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "vs/workbench/common/contributions";
-import { IJSONEditingService } from "vs/workbench/services/configuration/common/jsonEditing";
-import { LifecyclePhase } from "vs/workbench/services/lifecycle/common/lifecycle";
+import { isLinux } from 'vs/base/common/platform';
+import { stripComments } from 'vs/base/common/stripComments';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { IFileService } from 'vs/platform/files/common/files';
+import { Registry } from 'vs/platform/registry/common/platform';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
+import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from 'vs/workbench/common/contributions';
+import { IJSONEditingService } from 'vs/workbench/services/configuration/common/jsonEditing';
+import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle';
 
 class EncryptionContribution implements IWorkbenchContribution {
 	constructor(
@@ -37,46 +29,20 @@ class EncryptionContribution implements IWorkbenchContribution {
 	 * can be cleaned up.
 	 */
 	private async migrateToGnomeLibsecret(): Promise<void> {
-		if (
-			!isLinux ||
-			this.storageService.getBoolean(
-				"encryption.migratedToGnomeLibsecret",
-				StorageScope.APPLICATION,
-				false,
-			)
-		) {
+		if (!isLinux || this.storageService.getBoolean('encryption.migratedToGnomeLibsecret', StorageScope.APPLICATION, false)) {
 			return;
 		}
 		try {
-			const content = await this.fileService.readFile(
-				this.environmentService.argvResource,
-			);
+			const content = await this.fileService.readFile(this.environmentService.argvResource);
 			const argv = JSON.parse(stripComments(content.value.toString()));
-			if (
-				argv["password-store"] === "gnome" ||
-				argv["password-store"] === "gnome-keyring"
-			) {
-				this.jsonEditingService.write(
-					this.environmentService.argvResource,
-					[{ path: ["password-store"], value: "gnome-libsecret" }],
-					true,
-				);
+			if (argv['password-store'] === 'gnome' || argv['password-store'] === 'gnome-keyring') {
+				this.jsonEditingService.write(this.environmentService.argvResource, [{ path: ['password-store'], value: 'gnome-libsecret' }], true);
 			}
-			this.storageService.store(
-				"encryption.migratedToGnomeLibsecret",
-				true,
-				StorageScope.APPLICATION,
-				StorageTarget.USER,
-			);
+			this.storageService.store('encryption.migratedToGnomeLibsecret', true, StorageScope.APPLICATION, StorageTarget.USER);
 		} catch (error) {
 			console.error(error);
 		}
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
-	EncryptionContribution,
-	LifecyclePhase.Eventually,
-);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(EncryptionContribution, LifecyclePhase.Eventually);

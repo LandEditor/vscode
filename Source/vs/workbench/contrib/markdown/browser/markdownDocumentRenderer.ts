@@ -3,20 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	basicMarkupHtmlTags,
-	hookDomPurifyHrefAndSrcSanitizer,
-} from "vs/base/browser/dom";
-import * as dompurify from "vs/base/browser/dompurify/dompurify";
-import { allowedMarkdownAttr } from "vs/base/browser/markdownRenderer";
-import type { CancellationToken } from "vs/base/common/cancellation";
-import { marked } from "vs/base/common/marked/marked";
-import { Schemas } from "vs/base/common/network";
-import { escape } from "vs/base/common/strings";
-import type { ILanguageService } from "vs/editor/common/languages/language";
-import { tokenizeToString } from "vs/editor/common/languages/textToHtmlTokenizer";
-import type { SimpleSettingRenderer } from "vs/workbench/contrib/markdown/browser/markdownSettingRenderer";
-import type { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import { hookDomPurifyHrefAndSrcSanitizer, basicMarkupHtmlTags } from 'vs/base/browser/dom';
+import * as dompurify from 'vs/base/browser/dompurify/dompurify';
+import { allowedMarkdownAttr } from 'vs/base/browser/markdownRenderer';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { marked } from 'vs/base/common/marked/marked';
+import { Schemas } from 'vs/base/common/network';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import { tokenizeToString } from 'vs/editor/common/languages/textToHtmlTokenizer';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { escape } from 'vs/base/common/strings';
+import { SimpleSettingRenderer } from 'vs/workbench/contrib/markdown/browser/markdownSettingRenderer';
 
 export const DEFAULT_MARKDOWN_STYLES = `
 body {
@@ -161,29 +158,23 @@ pre code {
 `;
 
 const allowedProtocols = [Schemas.http, Schemas.https, Schemas.command];
-function sanitize(
-	documentContent: string,
-	allowUnknownProtocols: boolean,
-): string {
+function sanitize(documentContent: string, allowUnknownProtocols: boolean): string {
+
 	const hook = hookDomPurifyHrefAndSrcSanitizer(allowedProtocols, true);
 
 	try {
 		return dompurify.sanitize(documentContent, {
 			...{
-				ALLOWED_TAGS: [...basicMarkupHtmlTags, "checkbox", "checklist"],
+				ALLOWED_TAGS: [
+					...basicMarkupHtmlTags,
+					'checkbox',
+					'checklist',
+				],
 				ALLOWED_ATTR: [
 					...allowedMarkdownAttr,
-					"data-command",
-					"name",
-					"id",
-					"role",
-					"tabindex",
-					"x-dispatch",
-					"required",
-					"checked",
-					"placeholder",
-					"when-checked",
-					"checked-on",
+					'data-command', 'name', 'id', 'role', 'tabindex',
+					'x-dispatch',
+					'required', 'checked', 'placeholder', 'when-checked', 'checked-on',
 				],
 			},
 			...(allowUnknownProtocols ? { ALLOW_UNKNOWN_PROTOCOLS: true } : {}),
@@ -202,44 +193,33 @@ export async function renderMarkdownDocument(
 	text: string,
 	extensionService: IExtensionService,
 	languageService: ILanguageService,
-	shouldSanitize = true,
-	allowUnknownProtocols = false,
+	shouldSanitize: boolean = true,
+	allowUnknownProtocols: boolean = false,
 	token?: CancellationToken,
-	settingRenderer?: SimpleSettingRenderer,
+	settingRenderer?: SimpleSettingRenderer
 ): Promise<string> {
-	const highlight = (
-		code: string,
-		lang: string | undefined,
-		callback: ((error: any, code: string) => void) | undefined,
-	): any => {
+
+	const highlight = (code: string, lang: string | undefined, callback: ((error: any, code: string) => void) | undefined): any => {
 		if (!callback) {
 			return code;
 		}
 
-		if (typeof lang !== "string") {
+		if (typeof lang !== 'string') {
 			callback(null, escape(code));
-			return "";
+			return '';
 		}
 
 		extensionService.whenInstalledExtensionsRegistered().then(async () => {
 			if (token?.isCancellationRequested) {
-				callback(null, "");
+				callback(null, '');
 				return;
 			}
 
-			const languageId =
-				languageService.getLanguageIdByLanguageName(lang) ??
-				languageService.getLanguageIdByLanguageName(
-					lang.split(/\s+|:|,|(?!^)\{|\?]/, 1)[0],
-				);
-			const html = await tokenizeToString(
-				languageService,
-				code,
-				languageId,
-			);
+			const languageId = languageService.getLanguageIdByLanguageName(lang) ?? languageService.getLanguageIdByLanguageName(lang.split(/\s+|:|,|(?!^)\{|\?]/, 1)[0]);
+			const html = await tokenizeToString(languageService, code, languageId);
 			callback(null, html);
 		});
-		return "";
+		return '';
 	};
 
 	const renderer = new marked.Renderer();
@@ -248,10 +228,8 @@ export async function renderMarkdownDocument(
 	}
 
 	return new Promise<string>((resolve, reject) => {
-		marked(text, { highlight, renderer }, (err, value) =>
-			err ? reject(err) : resolve(value),
-		);
-	}).then((raw) => {
+		marked(text, { highlight, renderer }, (err, value) => err ? reject(err) : resolve(value));
+	}).then(raw => {
 		if (shouldSanitize) {
 			return sanitize(raw, allowUnknownProtocols);
 		} else {

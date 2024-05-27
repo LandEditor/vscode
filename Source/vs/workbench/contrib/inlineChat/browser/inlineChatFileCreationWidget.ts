@@ -3,48 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Dimension, h } from "vs/base/browser/dom";
-import { ButtonBar, type IButton } from "vs/base/browser/ui/button/button";
-import { renderIcon } from "vs/base/browser/ui/iconLabel/iconLabels";
-import { type IAction, toAction } from "vs/base/common/actions";
-import { Codicon } from "vs/base/common/codicons";
-import { Event } from "vs/base/common/event";
-import { DisposableStore, MutableDisposable } from "vs/base/common/lifecycle";
-import type { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { EditorExtensionsRegistry } from "vs/editor/browser/editorExtensions";
-import { EmbeddedCodeEditorWidget } from "vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget";
-import { EditorOption } from "vs/editor/common/config/editorOptions";
-import * as editorColorRegistry from "vs/editor/common/core/editorColorRegistry";
-import type { Position } from "vs/editor/common/core/position";
-import type { Range } from "vs/editor/common/core/range";
-import { ITextModelService } from "vs/editor/common/services/resolverService";
-import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
-import { localize } from "vs/nls";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { FileKind } from "vs/platform/files/common/files";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { defaultButtonStyles } from "vs/platform/theme/browser/defaultStyles";
-import * as colorRegistry from "vs/platform/theme/common/colorRegistry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import { ResourceLabel } from "vs/workbench/browser/labels";
-import { SaveReason, SideBySideEditor } from "vs/workbench/common/editor";
-import { TAB_ACTIVE_MODIFIED_BORDER } from "vs/workbench/common/theme";
-import {
-	INLINE_CHAT_ID,
-	inlineChatRegionHighlight,
-} from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { IEditorService } from "vs/workbench/services/editor/common/editorService";
-import type { IUntitledTextEditorModel } from "vs/workbench/services/untitled/common/untitledTextEditorModel";
+import { Dimension, h } from 'vs/base/browser/dom';
+import { DisposableStore, MutableDisposable } from 'vs/base/common/lifecycle';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { EmbeddedCodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/embeddedCodeEditorWidget';
+import { EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Range } from 'vs/editor/common/core/range';
+import { ZoneWidget } from 'vs/editor/contrib/zoneWidget/browser/zoneWidget';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import * as colorRegistry from 'vs/platform/theme/common/colorRegistry';
+import * as editorColorRegistry from 'vs/editor/common/core/editorColorRegistry';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { INLINE_CHAT_ID, inlineChatRegionHighlight } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
+import { Position } from 'vs/editor/common/core/position';
+import { EditorExtensionsRegistry } from 'vs/editor/browser/editorExtensions';
+import { ResourceLabel } from 'vs/workbench/browser/labels';
+import { FileKind } from 'vs/platform/files/common/files';
+import { ITextModelService } from 'vs/editor/common/services/resolverService';
+import { ButtonBar, IButton } from 'vs/base/browser/ui/button/button';
+import { defaultButtonStyles } from 'vs/platform/theme/browser/defaultStyles';
+import { SaveReason, SideBySideEditor } from 'vs/workbench/common/editor';
+import { IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { IAction, toAction } from 'vs/base/common/actions';
+import { IUntitledTextEditorModel } from 'vs/workbench/services/untitled/common/untitledTextEditorModel';
+import { renderIcon } from 'vs/base/browser/ui/iconLabel/iconLabels';
+import { Codicon } from 'vs/base/common/codicons';
+import { TAB_ACTIVE_MODIFIED_BORDER } from 'vs/workbench/common/theme';
+import { localize } from 'vs/nls';
+import { Event } from 'vs/base/common/event';
 
 export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
+
 	private static TitleHeight = 35;
 
-	private readonly _elements = h("div.inline-chat-newfile-widget@domNode", [
-		h("div.title@title", [
-			h("span.name.show-file-icons@name"),
-			h("span.detail@detail"),
+	private readonly _elements = h('div.inline-chat-newfile-widget@domNode', [
+		h('div.title@title', [
+			h('span.name.show-file-icons@name'),
+			h('span.detail@detail'),
 		]),
-		h("div.editor@editor"),
+		h('div.editor@editor'),
 	]);
 
 	private readonly _name: ResourceLabel;
@@ -120,66 +118,48 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 	}
 
 	override show(): void {
-		throw new Error("Use showFileCreation");
+		throw new Error('Use showFileCreation');
 	}
 
-	async showCreation(
-		where: Position,
-		untitledTextModel: IUntitledTextEditorModel,
-	): Promise<void> {
+	async showCreation(where: Position, untitledTextModel: IUntitledTextEditorModel): Promise<void> {
+
 		const store = new DisposableStore();
 		this._previewStore.value = store;
 
 		this._name.element.setFile(untitledTextModel.resource, {
 			fileKind: FileKind.FILE,
-			fileDecorations: { badges: true, colors: true },
+			fileDecorations: { badges: true, colors: true }
 		});
 
 		const actionSave = toAction({
-			id: "1",
-			label: localize("save", "Create"),
-			run: () => untitledTextModel.save({ reason: SaveReason.EXPLICIT }),
+			id: '1',
+			label: localize('save', "Create"),
+			run: () => untitledTextModel.save({ reason: SaveReason.EXPLICIT })
 		});
 		const actionSaveAs = toAction({
-			id: "2",
-			label: localize("saveAs", "Create As"),
+			id: '2',
+			label: localize('saveAs', "Create As"),
 			run: async () => {
-				const ids = this._editorService.findEditors(
-					untitledTextModel.resource,
-					{ supportSideBySide: SideBySideEditor.ANY },
-				);
-				await this._editorService.save(ids.slice(), {
-					saveAs: true,
-					reason: SaveReason.EXPLICIT,
-				});
-			},
+				const ids = this._editorService.findEditors(untitledTextModel.resource, { supportSideBySide: SideBySideEditor.ANY });
+				await this._editorService.save(ids.slice(), { saveAs: true, reason: SaveReason.EXPLICIT });
+			}
 		});
 
 		this._buttonBar.update([
 			[actionSave, actionSaveAs],
-			[
-				toAction({
-					id: "3",
-					label: localize("discard", "Discard"),
-					run: () => untitledTextModel.revert(),
-				}),
-			],
+			[(toAction({ id: '3', label: localize('discard', "Discard"), run: () => untitledTextModel.revert() }))]
 		]);
 
-		store.add(
-			Event.any(
-				untitledTextModel.onDidRevert,
-				untitledTextModel.onDidSave,
-				untitledTextModel.onDidChangeDirty,
-				untitledTextModel.onWillDispose,
-			)(() => this.hide()),
-		);
+		store.add(Event.any(
+			untitledTextModel.onDidRevert,
+			untitledTextModel.onDidSave,
+			untitledTextModel.onDidChangeDirty,
+			untitledTextModel.onWillDispose
+		)(() => this.hide()));
 
 		await untitledTextModel.resolve();
 
-		const ref = await this._textModelResolverService.createModelReference(
-			untitledTextModel.resource,
-		);
+		const ref = await this._textModelResolverService.createModelReference(untitledTextModel.resource);
 		store.add(ref);
 
 		const model = ref.object.textEditorModel;
@@ -188,15 +168,9 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 		const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 
 		this._elements.title.style.height = `${InlineChatFileCreatePreviewWidget.TitleHeight}px`;
-		const titleHightInLines =
-			InlineChatFileCreatePreviewWidget.TitleHeight / lineHeight;
+		const titleHightInLines = InlineChatFileCreatePreviewWidget.TitleHeight / lineHeight;
 
-		const maxLines = Math.max(
-			4,
-			Math.floor(
-				(this.editor.getLayoutInfo().height / lineHeight) * 0.33,
-			),
-		);
+		const maxLines = Math.max(4, Math.floor((this.editor.getLayoutInfo().height / lineHeight) * .33));
 		const lines = Math.min(maxLines, model.getLineCount());
 
 		super.show(where, titleHightInLines + lines);
@@ -219,29 +193,23 @@ export class InlineChatFileCreatePreviewWidget extends ZoneWidget {
 		}
 	}
 
-	protected override _doLayout(
-		heightInPixel: number,
-		widthInPixel: number,
-	): void {
+	protected override _doLayout(heightInPixel: number, widthInPixel: number): void {
+
 		const { lineNumbersLeft } = this.editor.getLayoutInfo();
 		this._elements.title.style.marginLeft = `${lineNumbersLeft}px`;
 
 		const newDim = new Dimension(widthInPixel, heightInPixel);
 		if (!Dimension.equals(this._dim, newDim)) {
 			this._dim = newDim;
-			this._previewEditor.layout(
-				this._dim.with(
-					undefined,
-					this._dim.height -
-						InlineChatFileCreatePreviewWidget.TitleHeight,
-				),
-			);
+			this._previewEditor.layout(this._dim.with(undefined, this._dim.height - InlineChatFileCreatePreviewWidget.TitleHeight));
 		}
 	}
 }
 
+
 class ButtonBarWidget {
-	private readonly _domNode = h("div.buttonbar-widget");
+
+	private readonly _domNode = h('div.buttonbar-widget');
 	private readonly _buttonBar: ButtonBar;
 	private readonly _store = new DisposableStore();
 
@@ -262,16 +230,13 @@ class ButtonBarWidget {
 				continue;
 			} else if (rest.length === 0) {
 				// single action
-				btn = this._buttonBar.addButton({
-					...defaultButtonStyles,
-					secondary,
-				});
+				btn = this._buttonBar.addButton({ ...defaultButtonStyles, secondary });
 			} else {
 				btn = this._buttonBar.addButtonWithDropdown({
 					...defaultButtonStyles,
 					addPrimaryActionToDropdown: false,
 					actions: rest,
-					contextMenuProvider: this._contextMenuService,
+					contextMenuProvider: this._contextMenuService
 				});
 			}
 			btn.label = first.label;

@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	export interface ChatResponseFragment {
 		index: number;
 		part: string;
@@ -15,27 +16,16 @@ declare module "vscode" {
 	 * Represents a large language model that accepts ChatML messages and produces a streaming response
 	 */
 	export interface ChatResponseProvider {
-		onDidReceiveLanguageModelResponse2?: Event<{
-			readonly extensionId: string;
-			readonly participant?: string;
-			readonly tokenCount?: number;
-		}>;
 
-		provideLanguageModelResponse(
-			messages: LanguageModelChatMessage[],
-			options: { [name: string]: any },
-			extensionId: string,
-			progress: Progress<ChatResponseFragment>,
-			token: CancellationToken,
-		): Thenable<any>;
+		onDidReceiveLanguageModelResponse2?: Event<{ readonly extensionId: string; readonly participant?: string; readonly tokenCount?: number }>;
 
-		provideTokenCount(
-			text: string | LanguageModelChatMessage,
-			token: CancellationToken,
-		): Thenable<number>;
+		provideLanguageModelResponse(messages: LanguageModelChatMessage[], options: { [name: string]: any }, extensionId: string, progress: Progress<ChatResponseFragment>, token: CancellationToken): Thenable<any>;
+
+		provideTokenCount(text: string | LanguageModelChatMessage, token: CancellationToken): Thenable<number>;
 	}
 
 	export interface ChatResponseProviderMetadata {
+
 		readonly vendor: string;
 
 		/**
@@ -59,11 +49,6 @@ declare module "vscode" {
 		readonly maxOutputTokens: number;
 
 		/**
-		 * @deprecated
-		 */
-		tokens: number;
-
-		/**
 		 * When present, this gates the use of `requestLanguageModelAccess` behind an authorization flow where
 		 * the user must approve of another extension accessing the models contributed by this extension.
 		 * Additionally, the extension can provide a label that will be shown in the UI.
@@ -77,6 +62,7 @@ declare module "vscode" {
 	}
 
 	export namespace chat {
+
 		/**
 		 * Register a LLM as chat response provider to the editor.
 		 *
@@ -85,10 +71,7 @@ declare module "vscode" {
 		 * @param provider
 		 * @param metadata
 		 */
-		export function registerChatResponseProvider(
-			id: string,
-			provider: ChatResponseProvider,
-			metadata: ChatResponseProviderMetadata,
-		): Disposable;
+		export function registerChatResponseProvider(id: string, provider: ChatResponseProvider, metadata: ChatResponseProviderMetadata): Disposable;
 	}
+
 }

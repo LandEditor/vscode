@@ -3,28 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, type Event } from "vs/base/common/event";
-import { type ParsedPattern, parse as parseGlob } from "vs/base/common/glob";
-import { Disposable } from "vs/base/common/lifecycle";
-import { MRUCache } from "vs/base/common/map";
-import {
-	type ParsedPath,
-	dirname,
-	isAbsolute,
-	parse as parsePath,
-} from "vs/base/common/path";
-import {
-	relativePath as getRelativePath,
-	dirname as resourceDirname,
-} from "vs/base/common/resources";
-import type { URI } from "vs/base/common/uri";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
+import { Emitter, Event } from 'vs/base/common/event';
+import { ParsedPattern, parse as parseGlob } from 'vs/base/common/glob';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { isAbsolute, parse as parsePath, ParsedPath, dirname } from 'vs/base/common/path';
+import { dirname as resourceDirname, relativePath as getRelativePath } from 'vs/base/common/resources';
+import { URI } from 'vs/base/common/uri';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { MRUCache } from 'vs/base/common/map';
 
 interface ICustomEditorLabelObject {
 	readonly [key: string]: string;
@@ -38,16 +27,12 @@ interface ICustomEditorLabelPattern {
 	readonly parsedPattern: ParsedPattern;
 }
 
-export class CustomEditorLabelService
-	extends Disposable
-	implements ICustomEditorLabelService
-{
+export class CustomEditorLabelService extends Disposable implements ICustomEditorLabelService {
+
 	readonly _serviceBrand: undefined;
 
-	static readonly SETTING_ID_PATTERNS =
-		"workbench.editor.customLabels.patterns";
-	static readonly SETTING_ID_ENABLED =
-		"workbench.editor.customLabels.enabled";
+	static readonly SETTING_ID_PATTERNS = 'workbench.editor.customLabels.patterns';
+	static readonly SETTING_ID_ENABLED = 'workbench.editor.customLabels.enabled';
 
 	private readonly _onDidChange = this._register(new Emitter<void>());
 	readonly onDidChange = this._onDidChange.event;
@@ -70,51 +55,33 @@ export class CustomEditorLabelService
 	}
 
 	private registerListernes(): void {
-		this._register(
-			this.configurationService.onDidChangeConfiguration((e) => {
-				// Cache the enabled state
-				if (
-					e.affectsConfiguration(
-						CustomEditorLabelService.SETTING_ID_ENABLED,
-					)
-				) {
-					const oldEnablement = this.enabled;
-					this.storeEnablementState();
-					if (
-						oldEnablement !== this.enabled &&
-						this.patterns.length > 0
-					) {
-						this._onDidChange.fire();
-					}
-				}
-
-				// Cache the patterns
-				else if (
-					e.affectsConfiguration(
-						CustomEditorLabelService.SETTING_ID_PATTERNS,
-					)
-				) {
-					this.cache.clear();
-					this.storeCustomPatterns();
+		this._register(this.configurationService.onDidChangeConfiguration(e => {
+			// Cache the enabled state
+			if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_ENABLED)) {
+				const oldEnablement = this.enabled;
+				this.storeEnablementState();
+				if (oldEnablement !== this.enabled && this.patterns.length > 0) {
 					this._onDidChange.fire();
 				}
-			}),
-		);
+			}
+
+			// Cache the patterns
+			else if (e.affectsConfiguration(CustomEditorLabelService.SETTING_ID_PATTERNS)) {
+				this.cache.clear();
+				this.storeCustomPatterns();
+				this._onDidChange.fire();
+			}
+		}));
 	}
 
 	private storeEnablementState(): void {
-		this.enabled = this.configurationService.getValue<boolean>(
-			CustomEditorLabelService.SETTING_ID_ENABLED,
-		);
+		this.enabled = this.configurationService.getValue<boolean>(CustomEditorLabelService.SETTING_ID_ENABLED);
 	}
 
 	private _templateRegexValidation: RegExp = /[a-zA-Z0-9]/;
 	private storeCustomPatterns(): void {
 		this.patterns = [];
-		const customLabelPatterns =
-			this.configurationService.getValue<ICustomEditorLabelObject>(
-				CustomEditorLabelService.SETTING_ID_PATTERNS,
-			);
+		const customLabelPatterns = this.configurationService.getValue<ICustomEditorLabelObject>(CustomEditorLabelService.SETTING_ID_PATTERNS);
 		for (const pattern in customLabelPatterns) {
 			const template = customLabelPatterns[pattern];
 
@@ -125,30 +92,22 @@ export class CustomEditorLabelService
 			const isAbsolutePath = isAbsolute(pattern);
 			const parsedPattern = parseGlob(pattern);
 
-			this.patterns.push({
-				pattern,
-				template,
-				isAbsolutePath,
-				parsedPattern,
-			});
+			this.patterns.push({ pattern, template, isAbsolutePath, parsedPattern });
 		}
 
-		this.patterns.sort(
-			(a, b) =>
-				this.patternWeight(b.pattern) - this.patternWeight(a.pattern),
-		);
+		this.patterns.sort((a, b) => this.patternWeight(b.pattern) - this.patternWeight(a.pattern));
 	}
 
 	private patternWeight(pattern: string): number {
 		let weight = 0;
-		for (const fragment of pattern.split("/")) {
-			if (fragment === "**") {
+		for (const fragment of pattern.split('/')) {
+			if (fragment === '**') {
 				weight += 1;
-			} else if (fragment === "*") {
+			} else if (fragment === '*') {
 				weight += 10;
-			} else if (fragment.includes("*") || fragment.includes("?")) {
+			} else if (fragment.includes('*') || fragment.includes('?')) {
 				weight += 50;
-			} else if (fragment !== "") {
+			} else if (fragment !== '') {
 				weight += 100;
 			}
 		}
@@ -181,9 +140,7 @@ export class CustomEditorLabelService
 			let relevantPath: string;
 			if (root && !pattern.isAbsolutePath) {
 				if (!relativePath) {
-					relativePath =
-						getRelativePath(resourceDirname(root.uri), resource) ??
-						resource.path;
+					relativePath = getRelativePath(resourceDirname(root.uri), resource) ?? resource.path;
 				}
 				relevantPath = relativePath;
 			} else {
@@ -191,57 +148,40 @@ export class CustomEditorLabelService
 			}
 
 			if (pattern.parsedPattern(relevantPath)) {
-				return this.applyTempate(
-					pattern.template,
-					resource,
-					relevantPath,
-				);
+				return this.applyTempate(pattern.template, resource, relevantPath);
 			}
 		}
 
 		return undefined;
 	}
 
-	private readonly _parsedTemplateExpression =
-		/\$\{(dirname|filename|extname|dirname\(([-+]?\d+)\))\}/g;
-	private applyTempate(
-		template: string,
-		resource: URI,
-		relevantPath: string,
-	): string {
+	private readonly _parsedTemplateExpression = /\$\{(dirname|filename|extname|dirname\(([-+]?\d+)\))\}/g;
+	private applyTempate(template: string, resource: URI, relevantPath: string): string {
 		let parsedPath: undefined | ParsedPath;
-		return template.replace(
-			this._parsedTemplateExpression,
-			(match: string, variable: string, arg: string) => {
-				parsedPath = parsedPath ?? parsePath(resource.path);
-				switch (variable) {
-					case "filename":
-						return parsedPath.name;
-					case "extname":
-						return parsedPath.ext.slice(1);
-					default: {
-						// dirname and dirname(arg)
-						const n =
-							variable === "dirname" ? 0 : Number.parseInt(arg);
-						const nthDir = this.getNthDirname(
-							dirname(relevantPath),
-							n,
-						);
-						if (nthDir) {
-							return nthDir;
-						}
+		return template.replace(this._parsedTemplateExpression, (match: string, variable: string, arg: string) => {
+			parsedPath = parsedPath ?? parsePath(resource.path);
+			switch (variable) {
+				case 'filename':
+					return parsedPath.name;
+				case 'extname':
+					return parsedPath.ext.slice(1);
+				default: { // dirname and dirname(arg)
+					const n = variable === 'dirname' ? 0 : parseInt(arg);
+					const nthDir = this.getNthDirname(dirname(relevantPath), n);
+					if (nthDir) {
+						return nthDir;
 					}
 				}
+			}
 
-				return match;
-			},
-		);
+			return match;
+		});
 	}
 
 	private getNthDirname(path: string, n: number): string | undefined {
 		// grand-parent/parent/filename.ext1.ext2 -> [grand-parent, parent]
-		path = path.startsWith("/") ? path.slice(1) : path;
-		const pathFragments = path.split("/");
+		path = path.startsWith('/') ? path.slice(1) : path;
+		const pathFragments = path.split('/');
 
 		const length = pathFragments.length;
 
@@ -253,15 +193,14 @@ export class CustomEditorLabelService
 		}
 
 		const nthDir = pathFragments[nth];
-		if (nthDir === undefined || nthDir === "") {
+		if (nthDir === undefined || nthDir === '') {
 			return undefined;
 		}
 		return nthDir;
 	}
 }
 
-export const ICustomEditorLabelService =
-	createDecorator<ICustomEditorLabelService>("ICustomEditorLabelService");
+export const ICustomEditorLabelService = createDecorator<ICustomEditorLabelService>('ICustomEditorLabelService');
 
 export interface ICustomEditorLabelService {
 	readonly _serviceBrand: undefined;
@@ -269,8 +208,4 @@ export interface ICustomEditorLabelService {
 	getName(resource: URI): string | undefined;
 }
 
-registerSingleton(
-	ICustomEditorLabelService,
-	CustomEditorLabelService,
-	InstantiationType.Delayed,
-);
+registerSingleton(ICustomEditorLabelService, CustomEditorLabelService, InstantiationType.Delayed);

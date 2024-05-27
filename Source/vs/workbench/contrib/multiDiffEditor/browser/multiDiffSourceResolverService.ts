@@ -3,17 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BugIndicatingError } from "vs/base/common/errors";
-import type { IValueWithChangeEvent } from "vs/base/common/event";
-import { type IDisposable, toDisposable } from "vs/base/common/lifecycle";
-import type { URI } from "vs/base/common/uri";
-import type { ContextKeyValue } from "vs/platform/contextkey/common/contextkey";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
+import { BugIndicatingError } from 'vs/base/common/errors';
+import { IValueWithChangeEvent } from 'vs/base/common/event';
+import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { URI } from 'vs/base/common/uri';
+import { ContextKeyValue } from 'vs/platform/contextkey/common/contextkey';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
 
-export const IMultiDiffSourceResolverService =
-	createDecorator<IMultiDiffSourceResolverService>(
-		"multiDiffSourceResolverService",
-	);
+export const IMultiDiffSourceResolverService = createDecorator<IMultiDiffSourceResolverService>('multiDiffSourceResolverService');
 
 export interface IMultiDiffSourceResolverService {
 	readonly _serviceBrand: undefined;
@@ -40,21 +37,16 @@ export class MultiDiffEditorItem {
 		readonly modified: URI | undefined,
 	) {
 		if (!original && !modified) {
-			throw new BugIndicatingError("Invalid arguments");
+			throw new BugIndicatingError('Invalid arguments');
 		}
 	}
 
 	getKey(): string {
-		return JSON.stringify([
-			this.modified?.toString(),
-			this.original?.toString(),
-		]);
+		return JSON.stringify([this.modified?.toString(), this.original?.toString()]);
 	}
 }
 
-export class MultiDiffSourceResolverService
-	implements IMultiDiffSourceResolverService
-{
+export class MultiDiffSourceResolverService implements IMultiDiffSourceResolverService {
 	public readonly _serviceBrand: undefined;
 
 	private readonly _resolvers = new Set<IMultiDiffSourceResolver>();
@@ -62,7 +54,7 @@ export class MultiDiffSourceResolverService
 	registerResolver(resolver: IMultiDiffSourceResolver): IDisposable {
 		// throw on duplicate
 		if (this._resolvers.has(resolver)) {
-			throw new BugIndicatingError("Duplicate resolver");
+			throw new BugIndicatingError('Duplicate resolver');
 		}
 		this._resolvers.add(resolver);
 		return toDisposable(() => this._resolvers.delete(resolver));

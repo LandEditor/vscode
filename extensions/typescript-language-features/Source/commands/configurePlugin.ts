@@ -3,13 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { PluginManager } from "../tsServer/plugins";
-import type { Command } from "./commandManager";
+import { PluginManager } from '../tsServer/plugins';
+import { Command } from './commandManager';
 
 export class ConfigurePluginCommand implements Command {
-	public readonly id = "_typescript.configurePlugin";
+	public readonly id = '_typescript.configurePlugin';
 
-	public constructor(private readonly pluginManager: PluginManager) {}
+	public constructor(
+		private readonly pluginManager: PluginManager,
+	) { }
 
 	public execute(pluginId: string, configuration: any) {
 		this.pluginManager.setConfiguration(pluginId, configuration);

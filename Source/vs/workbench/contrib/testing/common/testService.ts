@@ -3,36 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "vs/base/common/cancellation";
-import type { Event } from "vs/base/common/event";
-import { Iterable } from "vs/base/common/iterator";
-import type { IDisposable } from "vs/base/common/lifecycle";
-import { MarshalledId } from "vs/base/common/marshallingIds";
-import type { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import type { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import type {
-	IObservableValue,
-	MutableObservableValue,
-} from "vs/workbench/contrib/testing/common/observableValue";
-import type { TestExclusions } from "vs/workbench/contrib/testing/common/testExclusions";
-import { TestId } from "vs/workbench/contrib/testing/common/testId";
-import type { ITestResult } from "vs/workbench/contrib/testing/common/testResult";
-import {
-	type AbstractIncrementalTestCollection,
-	type ICallProfileRunHandler,
-	type IStartControllerTests,
-	type IStartControllerTestsResult,
-	type ITestItemContext,
-	type IncrementalTestCollectionItem,
-	type InternalTestItem,
-	type ResolvedTestRunRequest,
-	TestItemExpandState,
-	type TestRunProfileBitset,
-	type TestsDiff,
-} from "vs/workbench/contrib/testing/common/testTypes";
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { Event } from 'vs/base/common/event';
+import { Iterable } from 'vs/base/common/iterator';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { MarshalledId } from 'vs/base/common/marshallingIds';
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
+import { IObservableValue, MutableObservableValue } from 'vs/workbench/contrib/testing/common/observableValue';
+import { AbstractIncrementalTestCollection, ICallProfileRunHandler, IncrementalTestCollectionItem, InternalTestItem, ITestItemContext, ResolvedTestRunRequest, IStartControllerTests, IStartControllerTestsResult, TestItemExpandState, TestRunProfileBitset, TestsDiff, TestMessageFollowupResponse, TestMessageFollowupRequest } from 'vs/workbench/contrib/testing/common/testTypes';
+import { TestExclusions } from 'vs/workbench/contrib/testing/common/testExclusions';
+import { TestId } from 'vs/workbench/contrib/testing/common/testId';
+import { ITestResult } from 'vs/workbench/contrib/testing/common/testResult';
 
-export const ITestService = createDecorator<ITestService>("testService");
+export const ITestService = createDecorator<ITestService>('testService');
 
 export interface IMainThreadTestController {
 	readonly id: string;
@@ -42,18 +27,17 @@ export interface IMainThreadTestController {
 	refreshTests(token: CancellationToken): Promise<void>;
 	configureRunProfile(profileId: number): void;
 	expandTest(id: string, levels: number): Promise<void>;
-	startContinuousRun(
-		request: ICallProfileRunHandler[],
-		token: CancellationToken,
-	): Promise<IStartControllerTestsResult[]>;
-	runTests(
-		request: IStartControllerTests[],
-		token: CancellationToken,
-	): Promise<IStartControllerTestsResult[]>;
+	startContinuousRun(request: ICallProfileRunHandler[], token: CancellationToken): Promise<IStartControllerTestsResult[]>;
+	runTests(request: IStartControllerTests[], token: CancellationToken): Promise<IStartControllerTestsResult[]>;
 }
 
-export interface IMainThreadTestCollection
-	extends AbstractIncrementalTestCollection<IncrementalTestCollectionItem> {
+export interface IMainThreadTestHostProxy {
+	provideTestFollowups(req: TestMessageFollowupRequest, token: CancellationToken): Promise<TestMessageFollowupResponse[]>;
+	executeTestFollowup(id: number): Promise<void>;
+	disposeTestFollowups(ids: number[]): void;
+}
+
+export interface IMainThreadTestCollection extends AbstractIncrementalTestCollection<IncrementalTestCollectionItem> {
 	onBusyProvidersChange: Event<number>;
 
 	/**
@@ -102,13 +86,10 @@ export interface IMainThreadTestCollection
 }
 
 export const testCollectionIsEmpty = (collection: IMainThreadTestCollection) =>
-	!Iterable.some(collection.rootItems, (r) => r.children.size > 0);
+	!Iterable.some(collection.rootItems, r => r.children.size > 0);
 
-export const getContextForTestItem = (
-	collection: IMainThreadTestCollection,
-	id: string | TestId,
-) => {
-	if (typeof id === "string") {
+export const getContextForTestItem = (collection: IMainThreadTestCollection, id: string | TestId) => {
+	if (typeof id === 'string') {
 		id = TestId.fromString(id);
 	}
 
@@ -116,10 +97,7 @@ export const getContextForTestItem = (
 		return { controller: id.toString() };
 	}
 
-	const context: ITestItemContext = {
-		$mid: MarshalledId.TestItemContext,
-		tests: [],
-	};
+	const context: ITestItemContext = { $mid: MarshalledId.TestItemContext, tests: [] };
 	for (const i of id.idsFromRoot()) {
 		if (!i.isRoot) {
 			const test = collection.getNodeById(i.toString());
@@ -137,18 +115,11 @@ export const getContextForTestItem = (
  * If cancellation is requested, or the test cannot be found, it will return
  * undefined.
  */
-export const expandAndGetTestById = async (
-	collection: IMainThreadTestCollection,
-	id: string,
-	ct = CancellationToken.None,
-) => {
+export const expandAndGetTestById = async (collection: IMainThreadTestCollection, id: string, ct = CancellationToken.None) => {
 	const idPath = [...TestId.fromString(id).idsFromRoot()];
 
 	let expandToLevel = 0;
-	for (
-		let i = idPath.length - 1;
-		!ct.isCancellationRequested && i >= expandToLevel;
-	) {
+	for (let i = idPath.length - 1; !ct.isCancellationRequested && i >= expandToLevel;) {
 		const id = idPath[i].toString();
 		const existing = collection.getNodeById(id);
 		if (!existing) {
@@ -174,20 +145,14 @@ export const expandAndGetTestById = async (
 /**
  * Waits for the test to no longer be in the "busy" state.
  */
-const waitForTestToBeIdle = (
-	testService: ITestService,
-	test: IncrementalTestCollectionItem,
-) => {
+const waitForTestToBeIdle = (testService: ITestService, test: IncrementalTestCollectionItem) => {
 	if (!test.item.busy) {
 		return;
 	}
 
-	return new Promise<void>((resolve) => {
+	return new Promise<void>(resolve => {
 		const l = testService.onDidProcessDiff(() => {
-			if (
-				testService.collection.getNodeById(test.item.extId)?.item
-					.busy !== true
-			) {
+			if (testService.collection.getNodeById(test.item.extId)?.item.busy !== true) {
 				resolve(); // removed, or no longer busy
 				l.dispose();
 			}
@@ -199,12 +164,7 @@ const waitForTestToBeIdle = (
  * Iterator that expands to and iterates through tests in the file. Iterates
  * in strictly descending order.
  */
-export const testsInFile = async function* (
-	testService: ITestService,
-	ident: IUriIdentityService,
-	uri: URI,
-	waitForIdle = true,
-): AsyncIterable<IncrementalTestCollectionItem> {
+export const testsInFile = async function* (testService: ITestService, ident: IUriIdentityService, uri: URI, waitForIdle = true): AsyncIterable<IncrementalTestCollectionItem> {
 	for (const test of testService.collection.all) {
 		if (!test.item.uri) {
 			continue;
@@ -229,12 +189,8 @@ export const testsInFile = async function* (
  * Iterator that iterates to the top-level children of tests under the given
  * the URI.
  */
-export const testsUnderUri = async function* (
-	testService: ITestService,
-	ident: IUriIdentityService,
-	uri: URI,
-	waitForIdle = true,
-): AsyncIterable<IncrementalTestCollectionItem> {
+export const testsUnderUri = async function* (testService: ITestService, ident: IUriIdentityService, uri: URI, waitForIdle = true): AsyncIterable<IncrementalTestCollectionItem> {
+
 	const queue = [testService.collection.rootIds];
 	while (queue.length) {
 		for (const testId of queue.pop()!) {
@@ -264,12 +220,6 @@ export const testsUnderUri = async function* (
 };
 
 /**
- * An instance of the RootProvider should be registered for each extension
- * host.
- */
-export type ITestRootProvider = {};
-
-/**
  * A run request that expresses the intent of the request and allows the
  * test service to resolve the specifics of the group.
  */
@@ -282,6 +232,15 @@ export interface AmbiguousRunTestsRequest {
 	exclude?: InternalTestItem[];
 	/** Whether this was triggered from an auto run. */
 	continuous?: boolean;
+}
+
+export interface ITestFollowup {
+	message: string;
+	execute(): Promise<void>;
+}
+
+export interface ITestFollowups extends IDisposable {
+	followups: ITestFollowup[];
 }
 
 export interface ITestService {
@@ -318,19 +277,19 @@ export interface ITestService {
 	readonly showInlineOutput: MutableObservableValue<boolean>;
 
 	/**
+	 * Registers an interface that represents an extension host..
+	 */
+	registerExtHost(controller: IMainThreadTestHostProxy): IDisposable;
+
+	/**
 	 * Registers an interface that runs tests for the given provider ID.
 	 */
-	registerTestController(
-		providerId: string,
-		controller: IMainThreadTestController,
-	): IDisposable;
+	registerTestController(providerId: string, controller: IMainThreadTestController): IDisposable;
 
 	/**
 	 * Gets a registered test controller by ID.
 	 */
-	getTestController(
-		controllerId: string,
-	): IMainThreadTestController | undefined;
+	getTestController(controllerId: string): IMainThreadTestController | undefined;
 
 	/**
 	 * Refreshes tests for the controller, or all controllers if no ID is given.
@@ -345,26 +304,22 @@ export interface ITestService {
 	/**
 	 * Requests that tests be executed continuously, until the token is cancelled.
 	 */
-	startContinuousRun(
-		req: ResolvedTestRunRequest,
-		token: CancellationToken,
-	): Promise<void>;
+	startContinuousRun(req: ResolvedTestRunRequest, token: CancellationToken): Promise<void>;
 
 	/**
 	 * Requests that tests be executed.
 	 */
-	runTests(
-		req: AmbiguousRunTestsRequest,
-		token?: CancellationToken,
-	): Promise<ITestResult>;
+	runTests(req: AmbiguousRunTestsRequest, token?: CancellationToken): Promise<ITestResult>;
 
 	/**
 	 * Requests that tests be executed.
 	 */
-	runResolvedTests(
-		req: ResolvedTestRunRequest,
-		token?: CancellationToken,
-	): Promise<ITestResult>;
+	runResolvedTests(req: ResolvedTestRunRequest, token?: CancellationToken): Promise<ITestResult>;
+
+	/**
+	 * Provides followup actions for a test run.
+	 */
+	provideTestFollowups(req: TestMessageFollowupRequest, token: CancellationToken): Promise<ITestFollowups>;
 
 	/**
 	 * Ensures the test diff from the remote ext host is flushed and waits for

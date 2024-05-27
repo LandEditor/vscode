@@ -3,31 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IAction } from "vs/base/common/actions";
-import type { Event } from "vs/base/common/event";
-import type { IMarkdownString } from "vs/base/common/htmlContent";
-import type { IDisposable } from "vs/base/common/lifecycle";
-import type { ResourceTree } from "vs/base/common/resourceTree";
-import type { ThemeIcon } from "vs/base/common/themables";
-import type { URI } from "vs/base/common/uri";
-import type { Command } from "vs/editor/common/languages";
-import type { ITextModel } from "vs/editor/common/model";
-import type { IMenu } from "vs/platform/actions/common/actions";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import type {
-	ISCMHistoryProvider,
-	ISCMHistoryProviderMenus,
-} from "vs/workbench/contrib/scm/common/history";
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { Event } from 'vs/base/common/event';
+import { IDisposable } from 'vs/base/common/lifecycle';
+import { Command } from 'vs/editor/common/languages';
+import { IAction } from 'vs/base/common/actions';
+import { IMenu } from 'vs/platform/actions/common/actions';
+import { ThemeIcon } from 'vs/base/common/themables';
+import { IMarkdownString } from 'vs/base/common/htmlContent';
+import { ResourceTree } from 'vs/base/common/resourceTree';
+import { ISCMHistoryProvider, ISCMHistoryProviderMenus } from 'vs/workbench/contrib/scm/common/history';
+import { ITextModel } from 'vs/editor/common/model';
 
-export const VIEWLET_ID = "workbench.view.scm";
-export const VIEW_PANE_ID = "workbench.scm";
-export const REPOSITORIES_VIEW_PANE_ID = "workbench.scm.repositories";
+export const VIEWLET_ID = 'workbench.view.scm';
+export const VIEW_PANE_ID = 'workbench.scm';
+export const REPOSITORIES_VIEW_PANE_ID = 'workbench.scm.repositories';
 
 export interface IBaselineResourceProvider {
 	getBaselineResource(resource: URI): Promise<URI>;
 }
 
-export const ISCMService = createDecorator<ISCMService>("scm");
+export const ISCMService = createDecorator<ISCMService>('scm');
 
 export interface ISCMResourceDecorations {
 	icon?: URI | ThemeIcon;
@@ -94,10 +91,10 @@ export interface ISCMInputValueProviderContext {
 	readonly resources: readonly URI[];
 }
 
-export enum InputValidationType {
+export const enum InputValidationType {
 	Error = 0,
 	Warning = 1,
-	Information = 2,
+	Information = 2
 }
 
 export interface IInputValidation {
@@ -106,15 +103,12 @@ export interface IInputValidation {
 }
 
 export interface IInputValidator {
-	(
-		value: string,
-		cursorPosition: number,
-	): Promise<IInputValidation | undefined>;
+	(value: string, cursorPosition: number): Promise<IInputValidation | undefined>;
 }
 
 export enum SCMInputChangeReason {
-	HistoryPrevious = 0,
-	HistoryNext = 1,
+	HistoryPrevious,
+	HistoryNext
 }
 
 export interface ISCMInputChangeEvent {
@@ -130,7 +124,7 @@ export interface ISCMActionButtonDescriptor {
 }
 
 export interface ISCMActionButton {
-	readonly type: "actionButton";
+	readonly type: 'actionButton';
 	readonly repository: ISCMRepository;
 	readonly button?: ISCMActionButtonDescriptor;
 }
@@ -157,10 +151,7 @@ export interface ISCMInput {
 	setFocus(): void;
 	readonly onDidChangeFocus: Event<void>;
 
-	showValidationMessage(
-		message: string | IMarkdownString,
-		type: InputValidationType,
-	): void;
+	showValidationMessage(message: string | IMarkdownString, type: InputValidationType): void;
 	readonly onDidChangeValidationMessage: Event<IInputValidation>;
 
 	showNextHistoryValue(): void;
@@ -174,6 +165,7 @@ export interface ISCMRepository extends IDisposable {
 }
 
 export interface ISCMService {
+
 	readonly _serviceBrand: undefined;
 	readonly onDidAddRepository: Event<ISCMRepository>;
 	readonly onDidRemoveRepository: Event<ISCMRepository>;
@@ -205,13 +197,13 @@ export interface ISCMMenus {
 	getRepositoryMenus(provider: ISCMProvider): ISCMRepositoryMenus;
 }
 
-export enum ISCMRepositorySortKey {
-	DiscoveryTime = "discoveryTime",
-	Name = "name",
-	Path = "path",
+export const enum ISCMRepositorySortKey {
+	DiscoveryTime = 'discoveryTime',
+	Name = 'name',
+	Path = 'path'
 }
 
-export const ISCMViewService = createDecorator<ISCMViewService>("scmView");
+export const ISCMViewService = createDecorator<ISCMViewService>('scmView');
 
 export interface ISCMViewVisibleRepositoryChangeEvent {
 	readonly added: Iterable<ISCMRepository>;
@@ -239,6 +231,6 @@ export interface ISCMViewService {
 	focus(repository: ISCMRepository): void;
 }
 
-export const SCM_CHANGES_EDITOR_ID = "workbench.editor.scmChangesEditor";
+export const SCM_CHANGES_EDITOR_ID = 'workbench.editor.scmChangesEditor';
 
-export type ISCMChangesEditor = {};
+export interface ISCMChangesEditor { }

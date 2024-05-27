@@ -3,23 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { CodeWindow } from "vs/base/browser/window";
-import { Schemas } from "vs/base/common/network";
-import { URI } from "vs/base/common/uri";
-import { generateUuid } from "vs/base/common/uuid";
-import type { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	EditorInputCapabilities,
-	type GroupIdentifier,
-	type IUntypedEditorInput,
-	type Verbosity,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import type { IOverlayWebview } from "vs/workbench/contrib/webview/browser/webview";
-import type {
-	WebviewIconManager,
-	WebviewIcons,
-} from "vs/workbench/contrib/webviewPanel/browser/webviewIconManager";
+import { CodeWindow } from 'vs/base/browser/window';
+import { Schemas } from 'vs/base/common/network';
+import { URI } from 'vs/base/common/uri';
+import { generateUuid } from 'vs/base/common/uuid';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { EditorInputCapabilities, GroupIdentifier, IUntypedEditorInput, Verbosity } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IOverlayWebview } from 'vs/workbench/contrib/webview/browser/webview';
+import { WebviewIconManager, WebviewIcons } from 'vs/workbench/contrib/webviewPanel/browser/webviewIconManager';
 
 export interface WebviewInputInitInfo {
 	readonly viewType: string;
@@ -28,7 +20,8 @@ export interface WebviewInputInitInfo {
 }
 
 export class WebviewInput extends EditorInput {
-	public static typeId = "workbench.editors.webviewInput";
+
+	public static typeId = 'workbench.editors.webviewInput';
 
 	public override get typeId(): string {
 		return WebviewInput.typeId;
@@ -39,11 +32,7 @@ export class WebviewInput extends EditorInput {
 	}
 
 	public override get capabilities(): EditorInputCapabilities {
-		return (
-			EditorInputCapabilities.Readonly |
-			EditorInputCapabilities.Singleton |
-			EditorInputCapabilities.CanDropIntoEditor
-		);
+		return EditorInputCapabilities.Readonly | EditorInputCapabilities.Singleton | EditorInputCapabilities.CanDropIntoEditor;
 	}
 
 	private readonly _resourceId = generateUuid();
@@ -59,7 +48,7 @@ export class WebviewInput extends EditorInput {
 	get resource() {
 		return URI.from({
 			scheme: Schemas.webviewPanel,
-			path: `webview-panel/webview-${this._resourceId}`,
+			path: `webview-panel/webview-${this._resourceId}`
 		});
 	}
 
@@ -145,15 +134,7 @@ export class WebviewInput extends EditorInput {
 		return other;
 	}
 
-	public claim(
-		claimant: unknown,
-		targetWindow: CodeWindow,
-		scopedContextKeyService: IContextKeyService | undefined,
-	): void {
-		return this._webview.claim(
-			claimant,
-			targetWindow,
-			scopedContextKeyService,
-		);
+	public claim(claimant: unknown, targetWindow: CodeWindow, scopedContextKeyService: IContextKeyService | undefined): void {
+		return this._webview.claim(claimant, targetWindow, scopedContextKeyService);
 	}
 }

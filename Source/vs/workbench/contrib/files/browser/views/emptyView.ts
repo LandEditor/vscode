@@ -3,38 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DragAndDropObserver, getWindow } from "vs/base/browser/dom";
-import { isWeb } from "vs/base/common/platform";
-import * as nls from "vs/nls";
-import type { ILocalizedString } from "vs/platform/action/common/action";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import { IContextMenuService } from "vs/platform/contextview/browser/contextView";
-import { IHoverService } from "vs/platform/hover/browser/hover";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { ILabelService } from "vs/platform/label/common/label";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { ITelemetryService } from "vs/platform/telemetry/common/telemetry";
-import { listDropOverBackground } from "vs/platform/theme/common/colorRegistry";
-import { IThemeService } from "vs/platform/theme/common/themeService";
-import {
-	IWorkspaceContextService,
-	WorkbenchState,
-	isTemporaryWorkspace,
-} from "vs/platform/workspace/common/workspace";
-import { ResourcesDropHandler } from "vs/workbench/browser/dnd";
-import { ViewPane } from "vs/workbench/browser/parts/views/viewPane";
-import type { IViewletViewOptions } from "vs/workbench/browser/parts/views/viewsViewlet";
-import { IViewDescriptorService } from "vs/workbench/common/views";
+import * as nls from 'vs/nls';
+import { IViewletViewOptions } from 'vs/workbench/browser/parts/views/viewsViewlet';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { IThemeService } from 'vs/platform/theme/common/themeService';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
+import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from 'vs/platform/workspace/common/workspace';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { ViewPane } from 'vs/workbench/browser/parts/views/viewPane';
+import { ResourcesDropHandler } from 'vs/workbench/browser/dnd';
+import { listDropOverBackground } from 'vs/platform/theme/common/colorRegistry';
+import { ILabelService } from 'vs/platform/label/common/label';
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IViewDescriptorService } from 'vs/workbench/common/views';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { isWeb } from 'vs/base/common/platform';
+import { DragAndDropObserver, getWindow } from 'vs/base/browser/dom';
+import { ILocalizedString } from 'vs/platform/action/common/action';
+import { IHoverService } from 'vs/platform/hover/browser/hover';
 
 export class EmptyView extends ViewPane {
-	static readonly ID: string = "workbench.explorer.emptyView";
-	static readonly NAME: ILocalizedString = nls.localize2(
-		"noWorkspace",
-		"No Folder Opened",
-	);
-	private _disposed = false;
+
+	static readonly ID: string = 'workbench.explorer.emptyView';
+	static readonly NAME: ILocalizedString = nls.localize2('noWorkspace', "No Folder Opened");
+	private _disposed: boolean = false;
 
 	constructor(
 		options: IViewletViewOptions,
@@ -64,44 +58,28 @@ export class EmptyView extends ViewPane {
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
-		this._register(
-			new DragAndDropObserver(container, {
-				onDrop: (e) => {
-					container.style.backgroundColor = "";
-					const dropHandler =
-						this.instantiationService.createInstance(
-							ResourcesDropHandler,
-							{
-								allowWorkspaceOpen:
-									!isWeb ||
-									isTemporaryWorkspace(
-										this.contextService.getWorkspace(),
-									),
-							},
-						);
-					dropHandler.handleDrop(e, getWindow(container));
-				},
-				onDragEnter: () => {
-					const color = this.themeService
-						.getColorTheme()
-						.getColor(listDropOverBackground);
-					container.style.backgroundColor = color
-						? color.toString()
-						: "";
-				},
-				onDragEnd: () => {
-					container.style.backgroundColor = "";
-				},
-				onDragLeave: () => {
-					container.style.backgroundColor = "";
-				},
-				onDragOver: (e) => {
-					if (e.dataTransfer) {
-						e.dataTransfer.dropEffect = "copy";
-					}
-				},
-			}),
-		);
+		this._register(new DragAndDropObserver(container, {
+			onDrop: e => {
+				container.style.backgroundColor = '';
+				const dropHandler = this.instantiationService.createInstance(ResourcesDropHandler, { allowWorkspaceOpen: !isWeb || isTemporaryWorkspace(this.contextService.getWorkspace()) });
+				dropHandler.handleDrop(e, getWindow(container));
+			},
+			onDragEnter: () => {
+				const color = this.themeService.getColorTheme().getColor(listDropOverBackground);
+				container.style.backgroundColor = color ? color.toString() : '';
+			},
+			onDragEnd: () => {
+				container.style.backgroundColor = '';
+			},
+			onDragLeave: () => {
+				container.style.backgroundColor = '';
+			},
+			onDragOver: e => {
+				if (e.dataTransfer) {
+					e.dataTransfer.dropEffect = 'copy';
+				}
+			}
+		}));
 
 		this.refreshTitle();
 	}
@@ -111,9 +89,7 @@ export class EmptyView extends ViewPane {
 			return;
 		}
 
-		if (
-			this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE
-		) {
+		if (this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE) {
 			this.updateTitle(EmptyView.NAME.value);
 		} else {
 			this.updateTitle(this.title);

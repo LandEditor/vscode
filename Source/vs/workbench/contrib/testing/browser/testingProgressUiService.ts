@@ -3,27 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, DisposableStore } from "vs/base/common/lifecycle";
-import { autorun } from "vs/base/common/observable";
-import { localize } from "vs/nls";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { ExplorerTestCoverageBars } from "vs/workbench/contrib/testing/browser/testCoverageBars";
-import {
-	AutoOpenTesting,
-	TestingConfigKeys,
-	getTestingConfiguration,
-} from "vs/workbench/contrib/testing/common/configuration";
-import { Testing } from "vs/workbench/contrib/testing/common/constants";
-import { ITestCoverageService } from "vs/workbench/contrib/testing/common/testCoverageService";
-import {
-	type ITestResult,
-	type LiveTestResult,
-	TestResultItemChangeReason,
-} from "vs/workbench/contrib/testing/common/testResult";
-import { ITestResultService } from "vs/workbench/contrib/testing/common/testResultService";
-import { TestResultState } from "vs/workbench/contrib/testing/common/testTypes";
-import { isFailedState } from "vs/workbench/contrib/testing/common/testingStates";
-import { IViewsService } from "vs/workbench/services/views/common/viewsService";
+import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
+import { autorun } from 'vs/base/common/observable';
+import { localize } from 'vs/nls';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { ExplorerTestCoverageBars } from 'vs/workbench/contrib/testing/browser/testCoverageBars';
+import { AutoOpenTesting, getTestingConfiguration, TestingConfigKeys } from 'vs/workbench/contrib/testing/common/configuration';
+import { Testing } from 'vs/workbench/contrib/testing/common/constants';
+import { ITestCoverageService } from 'vs/workbench/contrib/testing/common/testCoverageService';
+import { isFailedState } from 'vs/workbench/contrib/testing/common/testingStates';
+import { ITestResult, LiveTestResult, TestResultItemChangeReason } from 'vs/workbench/contrib/testing/common/testResult';
+import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService';
+import { TestResultState } from 'vs/workbench/contrib/testing/common/testTypes';
+import { IViewsService } from 'vs/workbench/services/views/common/viewsService';
 
 /** Workbench contribution that triggers updates in the TestingProgressUi service */
 export class TestingProgressTrigger extends Disposable {
@@ -59,10 +51,7 @@ export class TestingProgressTrigger extends Disposable {
 			return;
 		}
 
-		const cfg = getTestingConfiguration(
-			this.configurationService,
-			TestingConfigKeys.OpenTesting,
-		);
+		const cfg = getTestingConfiguration(this.configurationService, TestingConfigKeys.OpenTesting);
 		if (cfg === AutoOpenTesting.NeverOpen) {
 			return;
 		}
@@ -78,17 +67,12 @@ export class TestingProgressTrigger extends Disposable {
 		// open on failure
 		const disposable = new DisposableStore();
 		disposable.add(result.onComplete(() => disposable.dispose()));
-		disposable.add(
-			result.onChange((e) => {
-				if (
-					e.reason === TestResultItemChangeReason.OwnStateChange &&
-					isFailedState(e.item.ownComputedState)
-				) {
-					this.openResultsView();
-					disposable.dispose();
-				}
-			}),
-		);
+		disposable.add(result.onChange(e => {
+			if (e.reason === TestResultItemChangeReason.OwnStateChange && isFailedState(e.item.ownComputedState)) {
+				this.openResultsView();
+				disposable.dispose();
+			}
+		}));
 	}
 
 	private openExplorerView() {
@@ -102,10 +86,7 @@ export class TestingProgressTrigger extends Disposable {
 
 export type CountSummary = ReturnType<typeof collectTestStateCounts>;
 
-export const collectTestStateCounts = (
-	isRunning: boolean,
-	results: ReadonlyArray<ITestResult>,
-) => {
+export const collectTestStateCounts = (isRunning: boolean, results: ReadonlyArray<ITestResult>) => {
 	let passed = 0;
 	let failed = 0;
 	let skipped = 0;
@@ -114,8 +95,7 @@ export const collectTestStateCounts = (
 
 	for (const result of results) {
 		const count = result.counts;
-		failed +=
-			count[TestResultState.Errored] + count[TestResultState.Failed];
+		failed += count[TestResultState.Errored] + count[TestResultState.Failed];
 		passed += count[TestResultState.Passed];
 		skipped += count[TestResultState.Skipped];
 		running += count[TestResultState.Running];
@@ -132,15 +112,8 @@ export const collectTestStateCounts = (
 	};
 };
 
-export const getTestProgressText = ({
-	isRunning,
-	passed,
-	runSoFar,
-	totalWillBeRun,
-	skipped,
-	failed,
-}: CountSummary) => {
-	let percent = (passed / runSoFar) * 100;
+export const getTestProgressText = ({ isRunning, passed, runSoFar, totalWillBeRun, skipped, failed }: CountSummary) => {
+	let percent = passed / runSoFar * 100;
 	if (failed > 0) {
 		// fix: prevent from rounding to 100 if there's any failed test
 		percent = Math.min(percent, 99.9);
@@ -150,41 +123,17 @@ export const getTestProgressText = ({
 
 	if (isRunning) {
 		if (runSoFar === 0) {
-			return localize("testProgress.runningInitial", "Running tests...");
+			return localize('testProgress.runningInitial', 'Running tests...');
 		} else if (skipped === 0) {
-			return localize(
-				"testProgress.running",
-				"Running tests, {0}/{1} passed ({2}%)",
-				passed,
-				totalWillBeRun,
-				percent.toPrecision(3),
-			);
+			return localize('testProgress.running', 'Running tests, {0}/{1} passed ({2}%)', passed, totalWillBeRun, percent.toPrecision(3));
 		} else {
-			return localize(
-				"testProgressWithSkip.running",
-				"Running tests, {0}/{1} tests passed ({2}%, {3} skipped)",
-				passed,
-				totalWillBeRun,
-				percent.toPrecision(3),
-				skipped,
-			);
+			return localize('testProgressWithSkip.running', 'Running tests, {0}/{1} tests passed ({2}%, {3} skipped)', passed, totalWillBeRun, percent.toPrecision(3), skipped);
 		}
-	} else if (skipped === 0) {
-		return localize(
-			"testProgress.completed",
-			"{0}/{1} tests passed ({2}%)",
-			passed,
-			runSoFar,
-			percent.toPrecision(3),
-		);
 	} else {
-		return localize(
-			"testProgressWithSkip.completed",
-			"{0}/{1} tests passed ({2}%, {3} skipped)",
-			passed,
-			runSoFar,
-			percent.toPrecision(3),
-			skipped,
-		);
+		if (skipped === 0) {
+			return localize('testProgress.completed', '{0}/{1} tests passed ({2}%)', passed, runSoFar, percent.toPrecision(3));
+		} else {
+			return localize('testProgressWithSkip.completed', '{0}/{1} tests passed ({2}%, {3} skipped)', passed, runSoFar, percent.toPrecision(3), skipped);
+		}
 	}
 };

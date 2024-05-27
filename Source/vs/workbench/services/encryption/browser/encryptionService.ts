@@ -3,16 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	IEncryptionService,
-	KnownStorageProvider,
-} from "vs/platform/encryption/common/encryptionService";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
+import { IEncryptionService, KnownStorageProvider } from 'vs/platform/encryption/common/encryptionService';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
 
 export class EncryptionService implements IEncryptionService {
+
 	declare readonly _serviceBrand: undefined;
 
 	encrypt(value: string): Promise<string> {
@@ -36,8 +31,4 @@ export class EncryptionService implements IEncryptionService {
 	}
 }
 
-registerSingleton(
-	IEncryptionService,
-	EncryptionService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IEncryptionService, EncryptionService, InstantiationType.Delayed);

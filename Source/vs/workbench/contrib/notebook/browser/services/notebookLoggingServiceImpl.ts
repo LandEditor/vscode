@@ -3,20 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "vs/base/common/lifecycle";
-import * as nls from "vs/nls";
-import { type ILogger, ILoggerService } from "vs/platform/log/common/log";
-import type { INotebookLoggingService } from "vs/workbench/contrib/notebook/common/notebookLoggingService";
+import * as nls from 'vs/nls';
+import { Disposable } from 'vs/base/common/lifecycle';
+import { INotebookLoggingService } from 'vs/workbench/contrib/notebook/common/notebookLoggingService';
+import { ILogger, ILoggerService } from 'vs/platform/log/common/log';
 
-const logChannelId = "notebook.rendering";
+const logChannelId = 'notebook.rendering';
 
-export class NotebookLoggingService
-	extends Disposable
-	implements INotebookLoggingService
-{
+export class NotebookLoggingService extends Disposable implements INotebookLoggingService {
 	_serviceBrand: undefined;
 
-	static ID = "notebook";
+	static ID: string = 'notebook';
 	private readonly _logger: ILogger;
 
 	constructor(
@@ -34,3 +31,4 @@ export class NotebookLoggingService
 		this._logger.info(`[${category}] ${output}`);
 	}
 }
+

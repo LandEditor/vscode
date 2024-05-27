@@ -2,50 +2,37 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { Dimension, addDisposableListener } from "vs/base/browser/dom";
-import * as aria from "vs/base/browser/ui/aria/aria";
-import { toDisposable } from "vs/base/common/lifecycle";
-import { isEqual } from "vs/base/common/resources";
-import { assertType } from "vs/base/common/types";
-import type { ICodeEditor } from "vs/editor/browser/editorBrowser";
-import { StableEditorBottomScrollState } from "vs/editor/browser/stableEditorScroll";
-import {
-	type EditorLayoutInfo,
-	EditorOption,
-} from "vs/editor/common/config/editorOptions";
-import type { Position } from "vs/editor/common/core/position";
-import { type IRange, Range } from "vs/editor/common/core/range";
-import { ScrollType } from "vs/editor/common/editorCommon";
-import { ZoneWidget } from "vs/editor/contrib/zoneWidget/browser/zoneWidget";
-import { localize } from "vs/nls";
-import { MenuId } from "vs/platform/actions/common/actions";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import {
-	type IContextKey,
-	IContextKeyService,
-} from "vs/platform/contextkey/common/contextkey";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	ACTION_ACCEPT_CHANGES,
-	ACTION_REGENERATE_RESPONSE,
-	ACTION_TOGGLE_DIFF,
-	ACTION_VIEW_IN_CHAT,
-	CTX_INLINE_CHAT_OUTER_CURSOR_POSITION,
-	EditMode,
-	InlineChatConfigKeys,
-	MENU_INLINE_CHAT_WIDGET,
-	MENU_INLINE_CHAT_WIDGET_STATUS,
-} from "vs/workbench/contrib/inlineChat/common/inlineChat";
-import { EditorBasedInlineChatWidget } from "./inlineChatWidget";
+import { addDisposableListener, Dimension } from 'vs/base/browser/dom';
+import * as aria from 'vs/base/browser/ui/aria/aria';
+import { toDisposable } from 'vs/base/common/lifecycle';
+import { assertType } from 'vs/base/common/types';
+import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
+import { EditorLayoutInfo, EditorOption } from 'vs/editor/common/config/editorOptions';
+import { Position } from 'vs/editor/common/core/position';
+import { IRange, Range } from 'vs/editor/common/core/range';
+import { ZoneWidget } from 'vs/editor/contrib/zoneWidget/browser/zoneWidget';
+import { localize } from 'vs/nls';
+import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { ACTION_ACCEPT_CHANGES, ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, CTX_INLINE_CHAT_OUTER_CURSOR_POSITION, EditMode, InlineChatConfigKeys, MENU_INLINE_CHAT_WIDGET, MENU_INLINE_CHAT_WIDGET_STATUS } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
+import { EditorBasedInlineChatWidget } from './inlineChatWidget';
+import { MenuId } from 'vs/platform/actions/common/actions';
+import { isEqual } from 'vs/base/common/resources';
+import { StableEditorBottomScrollState } from 'vs/editor/browser/stableEditorScroll';
+import { ScrollType } from 'vs/editor/common/editorCommon';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { ChatAgentLocation } from 'vs/workbench/contrib/chat/common/chatAgents';
 
 export class InlineChatZoneWidget extends ZoneWidget {
+
 	readonly widget: EditorBasedInlineChatWidget;
 
-	private readonly _ctxCursorPosition: IContextKey<"above" | "below" | "">;
+	private readonly _ctxCursorPosition: IContextKey<'above' | 'below' | ''>;
 	private _dimension?: Dimension;
 	private _indentationWidth: number | undefined;
 
 	constructor(
+		location: ChatAgentLocation,
 		editor: ICodeEditor,
 		@IInstantiationService private readonly _instaService: IInstantiationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -59,7 +46,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			this._ctxCursorPosition.reset();
 		}));
 
-		this.widget = this._instaService.createInstance(EditorBasedInlineChatWidget, this.editor, {
+		this.widget = this._instaService.createInstance(EditorBasedInlineChatWidget, location, this.editor, {
 			telemetrySource: 'interactiveEditorWidget-toolbar',
 			inputMenuId: MenuId.ChatExecute,
 			widgetMenuId: MENU_INLINE_CHAT_WIDGET,
@@ -67,9 +54,9 @@ export class InlineChatZoneWidget extends ZoneWidget {
 				menu: MENU_INLINE_CHAT_WIDGET_STATUS,
 				options: {
 					buttonConfigProvider: action => {
-						if (action.id === ACTION_REGENERATE_RESPONSE || action.id === ACTION_TOGGLE_DIFF) {
-							return { showIcon: true, showLabel: false, isSecondary: true };
-						} else if (action.id === ACTION_VIEW_IN_CHAT || action.id === ACTION_ACCEPT_CHANGES) {
+						if (new Set([ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF]).has(action.id)) {
+							return { isSecondary: true, showIcon: true, showLabel: false };
+						} else if (action.id === ACTION_ACCEPT_CHANGES) {
 							return { isSecondary: false };
 						} else {
 							return { isSecondary: true };
@@ -123,37 +110,24 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		container.appendChild(this.widget.domNode);
 	}
 
+
 	protected override _doLayout(heightInPixel: number): void {
-		const width = Math.min(
-			640,
-			this._availableSpaceGivenIndentation(this._indentationWidth),
-		);
+		const width = Math.min(640, this._availableSpaceGivenIndentation(this._indentationWidth));
 		this._dimension = new Dimension(width, heightInPixel);
 		this.widget.layout(this._dimension);
 	}
 
-	private _availableSpaceGivenIndentation(
-		indentationWidth: number | undefined,
-	): number {
+	private _availableSpaceGivenIndentation(indentationWidth: number | undefined): number {
 		const info = this.editor.getLayoutInfo();
-		return (
-			info.contentWidth -
-			(info.glyphMarginWidth +
-				info.decorationsWidth +
-				(indentationWidth ?? 0))
-		);
+		return info.contentWidth - (info.glyphMarginWidth + info.decorationsWidth + (indentationWidth ?? 0));
 	}
 
 	private _computeHeightInLines(): number {
 		const chatContentHeight = this.widget.contentHeight;
 		const editorHeight = this.editor.getLayoutInfo().height;
 
-		const contentHeight = Math.min(
-			chatContentHeight,
-			Math.max(this.widget.minHeight, editorHeight * 0.42),
-		);
-		const heightInLines =
-			contentHeight / this.editor.getOption(EditorOption.lineHeight);
+		const contentHeight = Math.min(chatContentHeight, Math.max(this.widget.minHeight, editorHeight * 0.42));
+		const heightInLines = contentHeight / this.editor.getOption(EditorOption.lineHeight);
 		return heightInLines;
 	}
 
@@ -168,10 +142,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 		const scrollState = StableEditorBottomScrollState.capture(this.editor);
 		const info = this.editor.getLayoutInfo();
-		const marginWithoutIndentation =
-			info.glyphMarginWidth +
-			info.decorationsWidth +
-			info.lineNumbersWidth;
+		const marginWithoutIndentation = info.glyphMarginWidth + info.decorationsWidth + info.lineNumbersWidth;
 		this.container.style.marginLeft = `${marginWithoutIndentation}px`;
 
 		super.show(position, this._computeHeightInLines());
@@ -179,10 +150,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		this.widget.focus();
 
 		scrollState.restore(this.editor);
-		this.editor.revealRangeNearTopIfOutsideViewport(
-			Range.fromPositions(position.delta(-1)),
-			ScrollType.Immediate,
-		);
+		this.editor.revealRangeNearTopIfOutsideViewport(Range.fromPositions(position.delta(-1)), ScrollType.Immediate);
 	}
 
 	override updatePositionAndHeight(position: Position): void {
@@ -197,11 +165,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 	updateBackgroundColor(newPosition: Position, wholeRange: IRange) {
 		assertType(this.container);
 		const widgetLineNumber = newPosition.lineNumber;
-		this.container.classList.toggle(
-			"inside-selection",
-			widgetLineNumber > wholeRange.startLineNumber &&
-				widgetLineNumber < wholeRange.endLineNumber,
-		);
+		this.container.classList.toggle('inside-selection', widgetLineNumber > wholeRange.startLineNumber && widgetLineNumber < wholeRange.endLineNumber);
 	}
 
 	private _calculateIndentationWidth(position: Position): number {
@@ -217,17 +181,10 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			return 0;
 		}
 
-		let indentationLevel = viewModel.getLineFirstNonWhitespaceColumn(
-			position.lineNumber,
-		);
+		let indentationLevel = viewModel.getLineFirstNonWhitespaceColumn(position.lineNumber);
 		let indentationLineNumber = position.lineNumber;
-		for (
-			let lineNumber = position.lineNumber;
-			lineNumber >= visibleRange.startLineNumber;
-			lineNumber--
-		) {
-			const currentIndentationLevel =
-				viewModel.getLineFirstNonWhitespaceColumn(lineNumber);
+		for (let lineNumber = position.lineNumber; lineNumber >= visibleRange.startLineNumber; lineNumber--) {
+			const currentIndentationLevel = viewModel.getLineFirstNonWhitespaceColumn(lineNumber);
 			if (currentIndentationLevel !== 0) {
 				indentationLineNumber = lineNumber;
 				indentationLevel = currentIndentationLevel;
@@ -235,13 +192,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			}
 		}
 
-		return Math.max(
-			0,
-			this.editor.getOffsetForColumn(
-				indentationLineNumber,
-				indentationLevel,
-			),
-		); // double-guard against invalie getOffsetForColumn-calls
+		return Math.max(0, this.editor.getOffsetForColumn(indentationLineNumber, indentationLevel)); // double-guard against invalie getOffsetForColumn-calls
 	}
 
 	private _setWidgetMargins(position: Position): void {
@@ -249,21 +200,16 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		if (this._indentationWidth === indentationWidth) {
 			return;
 		}
-		this._indentationWidth =
-			this._availableSpaceGivenIndentation(indentationWidth) > 400
-				? indentationWidth
-				: 0;
+		this._indentationWidth = this._availableSpaceGivenIndentation(indentationWidth) > 400 ? indentationWidth : 0;
 		this.widget.domNode.style.marginLeft = `${this._indentationWidth}px`;
-		this.widget.domNode.style.marginRight = `${
-			this.editor.getLayoutInfo().minimap.minimapWidth
-		}px`;
+		this.widget.domNode.style.marginRight = `${this.editor.getLayoutInfo().minimap.minimapWidth}px`;
 	}
 
 	override hide(): void {
-		this.container!.classList.remove("inside-selection");
+		this.container!.classList.remove('inside-selection');
 		this._ctxCursorPosition.reset();
 		this.widget.reset();
 		super.hide();
-		aria.status(localize("inlineChatClosed", "Closed inline chat widget"));
+		aria.status(localize('inlineChatClosed', 'Closed inline chat widget'));
 	}
 }

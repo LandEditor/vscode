@@ -3,57 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "vs/base/common/event";
-import type { IReference } from "vs/base/common/lifecycle";
-import * as paths from "vs/base/common/path";
-import { isEqual, joinPath } from "vs/base/common/resources";
-import type { URI } from "vs/base/common/uri";
-import { PLAINTEXT_LANGUAGE_ID } from "vs/editor/common/languages/modesRegistry";
-import {
-	type IResolvedTextEditorModel,
-	ITextModelService,
-} from "vs/editor/common/services/resolverService";
-import { IConfigurationService } from "vs/platform/configuration/common/configuration";
-import { IFileDialogService } from "vs/platform/dialogs/common/dialogs";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import {
-	EditorInputCapabilities,
-	type GroupIdentifier,
-	type IRevertOptions,
-	type ISaveOptions,
-	type IUntypedEditorInput,
-} from "vs/workbench/common/editor";
-import { EditorInput } from "vs/workbench/common/editor/editorInput";
-import { IInteractiveDocumentService } from "vs/workbench/contrib/interactive/browser/interactiveDocumentService";
-import { IInteractiveHistoryService } from "vs/workbench/contrib/interactive/browser/interactiveHistoryService";
-import {
-	type IResolvedNotebookEditorModel,
-	NotebookSetting,
-} from "vs/workbench/contrib/notebook/common/notebookCommon";
-import {
-	type ICompositeNotebookEditorInput,
-	NotebookEditorInput,
-} from "vs/workbench/contrib/notebook/common/notebookEditorInput";
-import { INotebookService } from "vs/workbench/contrib/notebook/common/notebookService";
+import { Event } from 'vs/base/common/event';
+import { IReference } from 'vs/base/common/lifecycle';
+import * as paths from 'vs/base/common/path';
+import { isEqual, joinPath } from 'vs/base/common/resources';
+import { URI } from 'vs/base/common/uri';
+import { PLAINTEXT_LANGUAGE_ID } from 'vs/editor/common/languages/modesRegistry';
+import { IResolvedTextEditorModel, ITextModelService } from 'vs/editor/common/services/resolverService';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { IFileDialogService } from 'vs/platform/dialogs/common/dialogs';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { EditorInputCapabilities, GroupIdentifier, IRevertOptions, ISaveOptions, IUntypedEditorInput } from 'vs/workbench/common/editor';
+import { EditorInput } from 'vs/workbench/common/editor/editorInput';
+import { IInteractiveDocumentService } from 'vs/workbench/contrib/interactive/browser/interactiveDocumentService';
+import { IInteractiveHistoryService } from 'vs/workbench/contrib/interactive/browser/interactiveHistoryService';
+import { IResolvedNotebookEditorModel, NotebookSetting } from 'vs/workbench/contrib/notebook/common/notebookCommon';
+import { ICompositeNotebookEditorInput, NotebookEditorInput } from 'vs/workbench/contrib/notebook/common/notebookEditorInput';
+import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService';
 
-export class InteractiveEditorInput
-	extends EditorInput
-	implements ICompositeNotebookEditorInput
-{
-	static create(
-		instantiationService: IInstantiationService,
-		resource: URI,
-		inputResource: URI,
-		title?: string,
-		language?: string,
-	) {
-		return instantiationService.createInstance(
-			InteractiveEditorInput,
-			resource,
-			inputResource,
-			title,
-			language,
-		);
+export class InteractiveEditorInput extends EditorInput implements ICompositeNotebookEditorInput {
+	static create(instantiationService: IInstantiationService, resource: URI, inputResource: URI, title?: string, language?: string) {
+		return instantiationService.createInstance(InteractiveEditorInput, resource, inputResource, title, language);
 	}
 
 	private static windowNames: Record<string, string> = {};
@@ -64,10 +34,10 @@ export class InteractiveEditorInput
 		}
 	}
 
-	static readonly ID: string = "workbench.input.interactive";
+	static readonly ID: string = 'workbench.input.interactive';
 
 	public override get editorId(): string {
-		return "interactive";
+		return 'interactive';
 	}
 
 	override get typeId(): string {
@@ -78,10 +48,7 @@ export class InteractiveEditorInput
 	private readonly isScratchpad: boolean;
 
 	get language() {
-		return (
-			this._inputModelRef?.object.textEditorModel.getLanguageId() ??
-			this._initLanguage
-		);
+		return this._inputModelRef?.object.textEditorModel.getLanguageId() ?? this._initLanguage;
 	}
 	private _initLanguage?: string;
 
@@ -117,6 +84,7 @@ export class InteractiveEditorInput
 	private _interactiveDocumentService: IInteractiveDocumentService;
 	private _historyService: IInteractiveHistoryService;
 
+
 	constructor(
 		resource: URI,
 		inputResource: URI,
@@ -151,46 +119,31 @@ export class InteractiveEditorInput
 
 	private _registerListeners(): void {
 		const oncePrimaryDisposed = Event.once(this.primary.onWillDispose);
-		this._register(
-			oncePrimaryDisposed(() => {
-				if (!this.isDisposed()) {
-					this.dispose();
-				}
-			}),
-		);
+		this._register(oncePrimaryDisposed(() => {
+			if (!this.isDisposed()) {
+				this.dispose();
+			}
+		}));
 
 		// Re-emit some events from the primary side to the outside
-		this._register(
-			this.primary.onDidChangeDirty(() => this._onDidChangeDirty.fire()),
-		);
-		this._register(
-			this.primary.onDidChangeLabel(() => this._onDidChangeLabel.fire()),
-		);
+		this._register(this.primary.onDidChangeDirty(() => this._onDidChangeDirty.fire()));
+		this._register(this.primary.onDidChangeLabel(() => this._onDidChangeLabel.fire()));
 
 		// Re-emit some events from both sides to the outside
-		this._register(
-			this.primary.onDidChangeCapabilities(() =>
-				this._onDidChangeCapabilities.fire(),
-			),
-		);
+		this._register(this.primary.onDidChangeCapabilities(() => this._onDidChangeCapabilities.fire()));
 	}
 
 	override get capabilities(): EditorInputCapabilities {
-		const scratchPad = this.isScratchpad
-			? EditorInputCapabilities.Scratchpad
-			: 0;
+		const scratchPad = this.isScratchpad ? EditorInputCapabilities.Scratchpad : 0;
 
-		return (
-			EditorInputCapabilities.Untitled |
-			EditorInputCapabilities.Readonly |
-			scratchPad
-		);
+		return EditorInputCapabilities.Untitled
+			| EditorInputCapabilities.Readonly
+			| scratchPad;
 	}
 
 	private async _resolveEditorModel() {
 		if (!this._editorModelReference) {
-			this._editorModelReference =
-				await this._notebookEditorInput.resolve();
+			this._editorModelReference = await this._notebookEditorInput.resolve();
 		}
 
 		return this._editorModelReference;
@@ -215,25 +168,16 @@ export class InteractiveEditorInput
 			return this._inputModelRef.object.textEditorModel;
 		}
 
-		const resolvedLanguage =
-			language ?? this._initLanguage ?? PLAINTEXT_LANGUAGE_ID;
-		this._interactiveDocumentService.willCreateInteractiveDocument(
-			this.resource,
-			this.inputResource,
-			resolvedLanguage,
-		);
-		this._inputModelRef = await this._textModelService.createModelReference(
-			this.inputResource,
-		);
+		const resolvedLanguage = language ?? this._initLanguage ?? PLAINTEXT_LANGUAGE_ID;
+		this._interactiveDocumentService.willCreateInteractiveDocument(this.resource, this.inputResource, resolvedLanguage);
+		this._inputModelRef = await this._textModelService.createModelReference(this.inputResource);
 
 		return this._inputModelRef.object.textEditorModel;
 	}
 
-	override async save(
-		group: GroupIdentifier,
-		options?: ISaveOptions,
-	): Promise<EditorInput | IUntypedEditorInput | undefined> {
+	override async save(group: GroupIdentifier, options?: ISaveOptions): Promise<EditorInput | IUntypedEditorInput | undefined> {
 		if (this._editorModelReference) {
+
 			if (this.hasCapability(EditorInputCapabilities.Untitled)) {
 				return this.saveAs(group, options);
 			} else {
@@ -246,40 +190,28 @@ export class InteractiveEditorInput
 		return undefined;
 	}
 
-	override async saveAs(
-		group: GroupIdentifier,
-		options?: ISaveOptions,
-	): Promise<IUntypedEditorInput | undefined> {
+	override async saveAs(group: GroupIdentifier, options?: ISaveOptions): Promise<IUntypedEditorInput | undefined> {
 		if (!this._editorModelReference) {
 			return undefined;
 		}
 
-		const provider =
-			this._notebookService.getContributedNotebookType("interactive");
+		const provider = this._notebookService.getContributedNotebookType('interactive');
 
 		if (!provider) {
 			return undefined;
 		}
 
-		const filename = this.getName() + ".ipynb";
-		const pathCandidate = joinPath(
-			await this._fileDialogService.defaultFilePath(),
-			filename,
-		);
+		const filename = this.getName() + '.ipynb';
+		const pathCandidate = joinPath(await this._fileDialogService.defaultFilePath(), filename);
 
-		const target = await this._fileDialogService.pickFileToSave(
-			pathCandidate,
-			options?.availableFileSystems,
-		);
+		const target = await this._fileDialogService.pickFileToSave(pathCandidate, options?.availableFileSystems);
 		if (!target) {
 			return undefined; // save cancelled
 		}
 
 		const saved = await this._editorModelReference.saveAs(target);
-		if (saved && "resource" in saved && saved.resource) {
-			this._notebookService
-				.getNotebookTextModel(saved.resource)
-				?.dispose();
+		if (saved && 'resource' in saved && saved.resource) {
+			this._notebookService.getNotebookTextModel(saved.resource)?.dispose();
 		}
 		return saved;
 	}
@@ -289,10 +221,7 @@ export class InteractiveEditorInput
 			return true;
 		}
 		if (otherInput instanceof InteractiveEditorInput) {
-			return (
-				isEqual(this.resource, otherInput.resource) &&
-				isEqual(this.inputResource, otherInput.inputResource)
-			);
+			return isEqual(this.resource, otherInput.resource) && isEqual(this.inputResource, otherInput.inputResource);
 		}
 		return false;
 	}
@@ -313,14 +242,8 @@ export class InteractiveEditorInput
 		return this._editorModelReference?.isModified() ?? false;
 	}
 
-	override async revert(
-		_group: GroupIdentifier,
-		options?: IRevertOptions,
-	): Promise<void> {
-		if (
-			this._editorModelReference &&
-			this._editorModelReference.isDirty()
-		) {
+	override async revert(_group: GroupIdentifier, options?: IRevertOptions): Promise<void> {
+		if (this._editorModelReference && this._editorModelReference.isDirty()) {
 			await this._editorModelReference.revert(options);
 		}
 	}
@@ -332,10 +255,7 @@ export class InteractiveEditorInput
 		this._notebookEditorInput?.dispose();
 		this._editorModelReference?.dispose();
 		this._editorModelReference = null;
-		this._interactiveDocumentService.willRemoveInteractiveDocument(
-			this.resource,
-			this.inputResource,
-		);
+		this._interactiveDocumentService.willRemoveInteractiveDocument(this.resource, this.inputResource);
 		this._inputModelRef?.dispose();
 		this._inputModelRef = null;
 		super.dispose();

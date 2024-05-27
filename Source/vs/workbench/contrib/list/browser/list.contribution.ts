@@ -3,15 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IContextKeyService } from "vs/platform/contextkey/common/contextkey";
-import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
-	registerWorkbenchContribution2,
-} from "vs/workbench/common/contributions";
+import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
 
 export class ListContext implements IWorkbenchContribution {
-	static readonly ID = "workbench.contrib.listContext";
+
+	static readonly ID = 'workbench.contrib.listContext';
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService
@@ -23,8 +20,4 @@ export class ListContext implements IWorkbenchContribution {
 	}
 }
 
-registerWorkbenchContribution2(
-	ListContext.ID,
-	ListContext,
-	WorkbenchPhase.BlockStartup,
-);
+registerWorkbenchContribution2(ListContext.ID, ListContext, WorkbenchPhase.BlockStartup);

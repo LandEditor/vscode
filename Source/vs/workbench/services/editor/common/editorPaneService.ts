@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import type { IWillInstantiateEditorPaneEvent } from "vs/workbench/common/editor";
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IWillInstantiateEditorPaneEvent } from 'vs/workbench/common/editor';
+import { Event } from 'vs/base/common/event';
 
-export const IEditorPaneService =
-	createDecorator<IEditorPaneService>("editorPaneService");
+export const IEditorPaneService = createDecorator<IEditorPaneService>('editorPaneService');
 
 export interface IEditorPaneService {
+
 	readonly _serviceBrand: undefined;
 
 	/**

@@ -3,15 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { URI } from "vs/base/common/uri";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import type { INotebookDiffResult } from "vs/workbench/contrib/notebook/common/notebookCommon";
+import { URI } from 'vs/base/common/uri';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { INotebookDiffResult } from 'vs/workbench/contrib/notebook/common/notebookCommon';
 
-export const ID_NOTEBOOK_EDITOR_WORKER_SERVICE = "notebookEditorWorkerService";
-export const INotebookEditorWorkerService =
-	createDecorator<INotebookEditorWorkerService>(
-		ID_NOTEBOOK_EDITOR_WORKER_SERVICE,
-	);
+export const ID_NOTEBOOK_EDITOR_WORKER_SERVICE = 'notebookEditorWorkerService';
+export const INotebookEditorWorkerService = createDecorator<INotebookEditorWorkerService>(ID_NOTEBOOK_EDITOR_WORKER_SERVICE);
 
 export interface INotebookEditorWorkerService {
 	readonly _serviceBrand: undefined;

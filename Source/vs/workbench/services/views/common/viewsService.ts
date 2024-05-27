@@ -3,39 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Event } from "vs/base/common/event";
-import { createDecorator } from "vs/platform/instantiation/common/instantiation";
-import type { IProgressIndicator } from "vs/platform/progress/common/progress";
-import type { IPaneComposite } from "vs/workbench/common/panecomposite";
-import type {
-	IView,
-	IViewPaneContainer,
-	ViewContainer,
-	ViewContainerLocation,
-} from "vs/workbench/common/views";
+import { Event } from 'vs/base/common/event';
+import { createDecorator } from 'vs/platform/instantiation/common/instantiation';
+import { IProgressIndicator } from 'vs/platform/progress/common/progress';
+import { IPaneComposite } from 'vs/workbench/common/panecomposite';
+import { IView, IViewPaneContainer, ViewContainer, ViewContainerLocation } from 'vs/workbench/common/views';
 
-export const IViewsService = createDecorator<IViewsService>("viewsService");
+export const IViewsService = createDecorator<IViewsService>('viewsService');
 export interface IViewsService {
+
 	readonly _serviceBrand: undefined;
 
 	// View Container APIs
-	readonly onDidChangeViewContainerVisibility: Event<{
-		id: string;
-		visible: boolean;
-		location: ViewContainerLocation;
-	}>;
+	readonly onDidChangeViewContainerVisibility: Event<{ id: string; visible: boolean; location: ViewContainerLocation }>;
 	isViewContainerVisible(id: string): boolean;
-	openViewContainer(
-		id: string,
-		focus?: boolean,
-	): Promise<IPaneComposite | null>;
+	openViewContainer(id: string, focus?: boolean): Promise<IPaneComposite | null>;
 	closeViewContainer(id: string): void;
-	getVisibleViewContainer(
-		location: ViewContainerLocation,
-	): ViewContainer | null;
-	getActiveViewPaneContainerWithId(
-		viewContainerId: string,
-	): IViewPaneContainer | null;
+	getVisibleViewContainer(location: ViewContainerLocation): ViewContainer | null;
+	getActiveViewPaneContainerWithId(viewContainerId: string): IViewPaneContainer | null;
 	getFocusedViewName(): string;
 
 	// View APIs

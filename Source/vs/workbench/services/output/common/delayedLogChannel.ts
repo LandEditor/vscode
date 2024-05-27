@@ -3,15 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { URI } from "vs/base/common/uri";
-import {
-	type ILogger,
-	ILoggerService,
-	type LogLevel,
-	log,
-} from "vs/platform/log/common/log";
+import { ILogger, ILoggerService, log, LogLevel } from 'vs/platform/log/common/log';
+import { URI } from 'vs/base/common/uri';
 
 export class DelayedLogChannel {
+
 	private readonly logger: ILogger;
 
 	constructor(
@@ -25,4 +21,5 @@ export class DelayedLogChannel {
 		this.loggerService.setVisibility(this.file, true);
 		log(this.logger, level, message);
 	}
+
 }

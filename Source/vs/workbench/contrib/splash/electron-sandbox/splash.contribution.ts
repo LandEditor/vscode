@@ -3,18 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	InstantiationType,
-	registerSingleton,
-} from "vs/platform/instantiation/common/extensions";
-import { INativeHostService } from "vs/platform/native/common/native";
-import type { IPartsSplash } from "vs/platform/theme/common/themeService";
-import {
-	WorkbenchPhase,
-	registerWorkbenchContribution2,
-} from "vs/workbench/common/contributions";
-import { PartsSplash } from "vs/workbench/contrib/splash/browser/partsSplash";
-import { ISplashStorageService } from "vs/workbench/contrib/splash/browser/splash";
+import { WorkbenchPhase, registerWorkbenchContribution2 } from 'vs/workbench/common/contributions';
+import { ISplashStorageService } from 'vs/workbench/contrib/splash/browser/splash';
+import { INativeHostService } from 'vs/platform/native/common/native';
+import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
+import { PartsSplash } from 'vs/workbench/contrib/splash/browser/partsSplash';
+import { IPartsSplash } from 'vs/platform/theme/common/themeService';
 
 class SplashStorageService implements ISplashStorageService {
 	_serviceBrand: undefined;
@@ -25,14 +19,10 @@ class SplashStorageService implements ISplashStorageService {
 	}
 }
 
-registerSingleton(
-	ISplashStorageService,
-	SplashStorageService,
-	InstantiationType.Delayed,
-);
+registerSingleton(ISplashStorageService, SplashStorageService, InstantiationType.Delayed);
 
 registerWorkbenchContribution2(
 	PartsSplash.ID,
 	PartsSplash,
-	WorkbenchPhase.BlockStartup,
+	WorkbenchPhase.BlockStartup
 );

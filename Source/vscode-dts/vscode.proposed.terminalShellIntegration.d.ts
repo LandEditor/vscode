@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// https://github.com/microsoft/vscode/issues/145234
 
 	/**
@@ -117,7 +118,7 @@ declare module "vscode" {
 		 * from the shell integration script or the command was executed via the
 		 * {@link TerminalShellIntegration.executeCommand} API.
 		 */
-		High = 2,
+		High = 2
 	}
 
 	export interface Terminal {
@@ -234,10 +235,7 @@ declare module "vscode" {
 		 *   // exit code was.
 		 * }
 		 */
-		executeCommand(
-			executable: string,
-			args: string[],
-		): TerminalShellExecution;
+		executeCommand(executable: string, args: string[]): TerminalShellExecution;
 	}
 
 	export interface TerminalShellIntegrationChangeEvent {

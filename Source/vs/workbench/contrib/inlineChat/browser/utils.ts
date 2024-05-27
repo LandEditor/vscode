@@ -3,19 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AsyncIterableSource, type IntervalTimer } from "vs/base/common/async";
-import type { CancellationToken } from "vs/base/common/cancellation";
-import { EditOperation } from "vs/editor/common/core/editOperation";
-import type { IRange } from "vs/editor/common/core/range";
-import {
-	type IIdentifiedSingleEditOperation,
-	type ITextModel,
-	type IValidEditOperation,
-	TrackedRangeStickiness,
-} from "vs/editor/common/model";
-import type { IProgress } from "vs/platform/progress/common/progress";
-import { getNWords } from "vs/workbench/contrib/chat/common/chatWordCounter";
-import type { IEditObserver } from "./inlineChatStrategies";
+import { EditOperation } from 'vs/editor/common/core/editOperation';
+import { IRange } from 'vs/editor/common/core/range';
+import { IIdentifiedSingleEditOperation, ITextModel, IValidEditOperation, TrackedRangeStickiness } from 'vs/editor/common/model';
+import { IEditObserver } from './inlineChatStrategies';
+import { IProgress } from 'vs/platform/progress/common/progress';
+import { IntervalTimer, AsyncIterableSource } from 'vs/base/common/async';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { getNWords } from 'vs/workbench/contrib/chat/common/chatWordCounter';
+
+
 
 // --- async edit
 
@@ -24,37 +21,26 @@ export interface AsyncTextEdit {
 	readonly newText: AsyncIterable<string>;
 }
 
-export async function performAsyncTextEdit(
-	model: ITextModel,
-	edit: AsyncTextEdit,
-	progress?: IProgress<IValidEditOperation[]>,
-	obs?: IEditObserver,
-) {
-	const [id] = model.deltaDecorations(
-		[],
-		[
-			{
-				range: edit.range,
-				options: {
-					description: "asyncTextEdit",
-					stickiness:
-						TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges,
-				},
-			},
-		],
-	);
+export async function performAsyncTextEdit(model: ITextModel, edit: AsyncTextEdit, progress?: IProgress<IValidEditOperation[]>, obs?: IEditObserver) {
+
+	const [id] = model.deltaDecorations([], [{
+		range: edit.range,
+		options: {
+			description: 'asyncTextEdit',
+			stickiness: TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+		}
+	}]);
 
 	let first = true;
 	for await (const part of edit.newText) {
+
 		if (model.isDisposed()) {
 			break;
 		}
 
 		const range = model.getDecorationRange(id);
 		if (!range) {
-			throw new Error(
-				"FAILED to perform async replace edit because the anchor decoration was removed",
-			);
+			throw new Error('FAILED to perform async replace edit because the anchor decoration was removed');
 		}
 
 		const edit = first
@@ -70,16 +56,12 @@ export async function performAsyncTextEdit(
 	}
 }
 
-export function asProgressiveEdit(
-	interval: IntervalTimer,
-	edit: IIdentifiedSingleEditOperation,
-	wordsPerSec: number,
-	token: CancellationToken,
-): AsyncTextEdit {
+export function asProgressiveEdit(interval: IntervalTimer, edit: IIdentifiedSingleEditOperation, wordsPerSec: number, token: CancellationToken): AsyncTextEdit {
+
 	wordsPerSec = Math.max(30, wordsPerSec);
 
 	const stream = new AsyncIterableSource<string>();
-	let newText = edit.text ?? "";
+	let newText = edit.text ?? '';
 
 	interval.cancelAndSet(() => {
 		const r = getNWords(newText, 1);
@@ -90,6 +72,7 @@ export function asProgressiveEdit(
 			stream.resolve();
 			d.dispose();
 		}
+
 	}, 1000 / wordsPerSec);
 
 	// cancel ASAP
@@ -101,6 +84,6 @@ export function asProgressiveEdit(
 
 	return {
 		range: edit.range,
-		newText: stream.asyncIterable,
+		newText: stream.asyncIterable
 	};
 }

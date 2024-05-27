@@ -3,43 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { distinct, equals } from "vs/base/common/arrays";
-import { RunOnceScheduler } from "vs/base/common/async";
-import { Emitter } from "vs/base/common/event";
-import type { URI } from "vs/base/common/uri";
-import { localize } from "vs/nls";
-import { EXTENSION_IDENTIFIER_PATTERN } from "vs/platform/extensionManagement/common/extensionManagement";
-import { FileChangeType, IFileService } from "vs/platform/files/common/files";
-import { INotificationService } from "vs/platform/notification/common/notification";
-import { IUriIdentityService } from "vs/platform/uriIdentity/common/uriIdentity";
-import { IWorkspaceContextService } from "vs/platform/workspace/common/workspace";
-import {
-	type ExtensionRecommendation,
-	ExtensionRecommendations,
-} from "vs/workbench/contrib/extensions/browser/extensionRecommendations";
-import { IWorkbenchExtensionManagementService } from "vs/workbench/services/extensionManagement/common/extensionManagement";
-import { ExtensionRecommendationReason } from "vs/workbench/services/extensionRecommendations/common/extensionRecommendations";
-import {
-	type IExtensionsConfigContent,
-	IWorkspaceExtensionsConfigService,
-} from "vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig";
+import { EXTENSION_IDENTIFIER_PATTERN } from 'vs/platform/extensionManagement/common/extensionManagement';
+import { distinct, equals } from 'vs/base/common/arrays';
+import { ExtensionRecommendations, ExtensionRecommendation } from 'vs/workbench/contrib/extensions/browser/extensionRecommendations';
+import { INotificationService } from 'vs/platform/notification/common/notification';
+import { ExtensionRecommendationReason } from 'vs/workbench/services/extensionRecommendations/common/extensionRecommendations';
+import { localize } from 'vs/nls';
+import { Emitter } from 'vs/base/common/event';
+import { IExtensionsConfigContent, IWorkspaceExtensionsConfigService } from 'vs/workbench/services/extensionRecommendations/common/workspaceExtensionsConfig';
+import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
+import { IUriIdentityService } from 'vs/platform/uriIdentity/common/uriIdentity';
+import { FileChangeType, IFileService } from 'vs/platform/files/common/files';
+import { URI } from 'vs/base/common/uri';
+import { RunOnceScheduler } from 'vs/base/common/async';
+import { IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
 
-const WORKSPACE_EXTENSIONS_FOLDER = ".vscode/extensions";
+const WORKSPACE_EXTENSIONS_FOLDER = '.vscode/extensions';
 
 export class WorkspaceRecommendations extends ExtensionRecommendations {
+
 	private _recommendations: ExtensionRecommendation[] = [];
-	get recommendations(): ReadonlyArray<ExtensionRecommendation> {
-		return this._recommendations;
-	}
+	get recommendations(): ReadonlyArray<ExtensionRecommendation> { return this._recommendations; }
 
 	private _onDidChangeRecommendations = this._register(new Emitter<void>());
-	readonly onDidChangeRecommendations =
-		this._onDidChangeRecommendations.event;
+	readonly onDidChangeRecommendations = this._onDidChangeRecommendations.event;
 
 	private _ignoredRecommendations: string[] = [];
-	get ignoredRecommendations(): ReadonlyArray<string> {
-		return this._ignoredRecommendations;
-	}
+	get ignoredRecommendations(): ReadonlyArray<string> { return this._ignoredRecommendations; }
 
 	private workspaceExtensions: URI[] = [];
 	private readonly onDidChangeWorkspaceExtensionsScheduler: RunOnceScheduler;
@@ -60,64 +50,32 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 		this.workspaceExtensions = await this.fetchWorkspaceExtensions();
 		await this.fetch();
 
-		this._register(
-			this.workspaceExtensionsConfigService.onDidChangeExtensionsConfigs(
-				() => this.onDidChangeExtensionsConfigs(),
-			),
-		);
+		this._register(this.workspaceExtensionsConfigService.onDidChangeExtensionsConfigs(() => this.onDidChangeExtensionsConfigs()));
 		for (const folder of this.contextService.getWorkspace().folders) {
-			this._register(
-				this.fileService.watch(
-					this.uriIdentityService.extUri.joinPath(
-						folder.uri,
-						WORKSPACE_EXTENSIONS_FOLDER,
-					),
-				),
-			);
+			this._register(this.fileService.watch(this.uriIdentityService.extUri.joinPath(folder.uri, WORKSPACE_EXTENSIONS_FOLDER)));
 		}
 
-		this._register(
-			this.fileService.onDidFilesChange((e) => {
-				if (
-					this.contextService
-						.getWorkspace()
-						.folders.some((folder) =>
-							e.affects(
-								this.uriIdentityService.extUri.joinPath(
-									folder.uri,
-									WORKSPACE_EXTENSIONS_FOLDER,
-								),
-								FileChangeType.ADDED,
-								FileChangeType.DELETED,
-							),
-						)
-				) {
-					this.onDidChangeWorkspaceExtensionsScheduler.schedule();
-				}
-			}),
-		);
+		this._register(this.fileService.onDidFilesChange(e => {
+			if (this.contextService.getWorkspace().folders.some(folder =>
+				e.affects(this.uriIdentityService.extUri.joinPath(folder.uri, WORKSPACE_EXTENSIONS_FOLDER), FileChangeType.ADDED, FileChangeType.DELETED))
+			) {
+				this.onDidChangeWorkspaceExtensionsScheduler.schedule();
+			}
+		}));
 	}
 
 	private async onDidChangeWorkspaceExtensionsFolders(): Promise<void> {
 		const existing = this.workspaceExtensions;
 		this.workspaceExtensions = await this.fetchWorkspaceExtensions();
-		if (
-			!equals(existing, this.workspaceExtensions, (a, b) =>
-				this.uriIdentityService.extUri.isEqual(a, b),
-			)
-		) {
+		if (!equals(existing, this.workspaceExtensions, (a, b) => this.uriIdentityService.extUri.isEqual(a, b))) {
 			this.onDidChangeExtensionsConfigs();
 		}
 	}
 
 	private async fetchWorkspaceExtensions(): Promise<URI[]> {
 		const workspaceExtensions: URI[] = [];
-		for (const workspaceFolder of this.contextService.getWorkspace()
-			.folders) {
-			const extensionsLocaiton = this.uriIdentityService.extUri.joinPath(
-				workspaceFolder.uri,
-				WORKSPACE_EXTENSIONS_FOLDER,
-			);
+		for (const workspaceFolder of this.contextService.getWorkspace().folders) {
+			const extensionsLocaiton = this.uriIdentityService.extUri.joinPath(workspaceFolder.uri, WORKSPACE_EXTENSIONS_FOLDER);
 			try {
 				const stat = await this.fileService.resolve(extensionsLocaiton);
 				for (const extension of stat.children ?? []) {
@@ -131,11 +89,8 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			}
 		}
 		if (workspaceExtensions.length) {
-			const resourceExtensions =
-				await this.workbenchExtensionManagementService.getExtensions(
-					workspaceExtensions,
-				);
-			return resourceExtensions.map((extension) => extension.location);
+			const resourceExtensions = await this.workbenchExtensionManagementService.getExtensions(workspaceExtensions);
+			return resourceExtensions.map(extension => extension.location);
 		}
 		return [];
 	}
@@ -144,15 +99,12 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 	 * Parse all extensions.json files, fetch workspace recommendations, filter out invalid and unwanted ones
 	 */
 	private async fetch(): Promise<void> {
-		const extensionsConfigs =
-			await this.workspaceExtensionsConfigService.getExtensionsConfigs();
 
-		const { invalidRecommendations, message } =
-			await this.validateExtensions(extensionsConfigs);
+		const extensionsConfigs = await this.workspaceExtensionsConfigService.getExtensionsConfigs();
+
+		const { invalidRecommendations, message } = await this.validateExtensions(extensionsConfigs);
 		if (invalidRecommendations.length) {
-			this.notificationService.warn(
-				`The ${invalidRecommendations.length} extension(s) below, in workspace recommendations have issues:\n${message}`,
-			);
+			this.notificationService.warn(`The ${invalidRecommendations.length} extension(s) below, in workspace recommendations have issues:\n${message}`);
 		}
 
 		this._recommendations = [];
@@ -161,14 +113,8 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 		for (const extensionsConfig of extensionsConfigs) {
 			if (extensionsConfig.unwantedRecommendations) {
 				for (const unwantedRecommendation of extensionsConfig.unwantedRecommendations) {
-					if (
-						invalidRecommendations.indexOf(
-							unwantedRecommendation,
-						) === -1
-					) {
-						this._ignoredRecommendations.push(
-							unwantedRecommendation,
-						);
+					if (invalidRecommendations.indexOf(unwantedRecommendation) === -1) {
+						this._ignoredRecommendations.push(unwantedRecommendation);
 					}
 				}
 			}
@@ -178,13 +124,9 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 						this._recommendations.push({
 							extension: extensionId,
 							reason: {
-								reasonId:
-									ExtensionRecommendationReason.Workspace,
-								reasonText: localize(
-									"workspaceRecommendation",
-									"This extension is recommended by users of the current workspace.",
-								),
-							},
+								reasonId: ExtensionRecommendationReason.Workspace,
+								reasonText: localize('workspaceRecommendation', "This extension is recommended by users of the current workspace.")
+							}
 						});
 					}
 				}
@@ -196,29 +138,19 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 				extension,
 				reason: {
 					reasonId: ExtensionRecommendationReason.Workspace,
-					reasonText: localize(
-						"workspaceRecommendation",
-						"This extension is recommended by users of the current workspace.",
-					),
-				},
+					reasonText: localize('workspaceRecommendation', "This extension is recommended by users of the current workspace.")
+				}
 			});
 		}
 	}
 
-	private async validateExtensions(
-		contents: IExtensionsConfigContent[],
-	): Promise<{
-		validRecommendations: string[];
-		invalidRecommendations: string[];
-		message: string;
-	}> {
+	private async validateExtensions(contents: IExtensionsConfigContent[]): Promise<{ validRecommendations: string[]; invalidRecommendations: string[]; message: string }> {
+
 		const validExtensions: string[] = [];
 		const invalidExtensions: string[] = [];
-		let message = "";
+		let message = '';
 
-		const allRecommendations = distinct(
-			contents.flatMap(({ recommendations }) => recommendations || []),
-		);
+		const allRecommendations = distinct(contents.flatMap(({ recommendations }) => recommendations || []));
 		const regEx = new RegExp(EXTENSION_IDENTIFIER_PATTERN);
 		for (const extensionId of allRecommendations) {
 			if (regEx.test(extensionId)) {
@@ -229,15 +161,13 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 			}
 		}
 
-		return {
-			validRecommendations: validExtensions,
-			invalidRecommendations: invalidExtensions,
-			message,
-		};
+		return { validRecommendations: validExtensions, invalidRecommendations: invalidExtensions, message };
 	}
 
 	private async onDidChangeExtensionsConfigs(): Promise<void> {
 		await this.fetch();
 		this._onDidChangeRecommendations.fire();
 	}
+
 }
+

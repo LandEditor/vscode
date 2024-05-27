@@ -3,52 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "vs/css!./media/releasenoteseditor";
-import { CancellationToken } from "vs/base/common/cancellation";
-import { onUnexpectedError } from "vs/base/common/errors";
-import { escapeMarkdownSyntaxTokens } from "vs/base/common/htmlContent";
-import { KeybindingParser } from "vs/base/common/keybindingParser";
-import { DisposableStore } from "vs/base/common/lifecycle";
-import { Schemas } from "vs/base/common/network";
-import { escape } from "vs/base/common/strings";
-import { URI } from "vs/base/common/uri";
-import { generateUuid } from "vs/base/common/uuid";
-import { ICodeEditorService } from "vs/editor/browser/services/codeEditorService";
-import { TokenizationRegistry } from "vs/editor/common/languages";
-import { ILanguageService } from "vs/editor/common/languages/language";
-import { generateTokensCSSForColorMap } from "vs/editor/common/languages/supports/tokenization";
-import * as nls from "vs/nls";
-import {
-	type IConfigurationChangeEvent,
-	IConfigurationService,
-} from "vs/platform/configuration/common/configuration";
-import { IEnvironmentService } from "vs/platform/environment/common/environment";
-import { IInstantiationService } from "vs/platform/instantiation/common/instantiation";
-import { IKeybindingService } from "vs/platform/keybinding/common/keybinding";
-import { IOpenerService } from "vs/platform/opener/common/opener";
-import { IProductService } from "vs/platform/product/common/productService";
-import {
-	IRequestService,
-	asTextOrError,
-} from "vs/platform/request/common/request";
-import { TelemetryLevel } from "vs/platform/telemetry/common/telemetry";
-import {
-	getTelemetryLevel,
-	supportsTelemetry,
-} from "vs/platform/telemetry/common/telemetryUtils";
-import {
-	DEFAULT_MARKDOWN_STYLES,
-	renderMarkdownDocument,
-} from "vs/workbench/contrib/markdown/browser/markdownDocumentRenderer";
-import { SimpleSettingRenderer } from "vs/workbench/contrib/markdown/browser/markdownSettingRenderer";
-import type { WebviewInput } from "vs/workbench/contrib/webviewPanel/browser/webviewEditorInput";
-import { IWebviewWorkbenchService } from "vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService";
-import { IEditorGroupsService } from "vs/workbench/services/editor/common/editorGroupsService";
-import {
-	ACTIVE_GROUP,
-	IEditorService,
-} from "vs/workbench/services/editor/common/editorService";
-import { IExtensionService } from "vs/workbench/services/extensions/common/extensions";
+import 'vs/css!./media/releasenoteseditor';
+import { CancellationToken } from 'vs/base/common/cancellation';
+import { onUnexpectedError } from 'vs/base/common/errors';
+import { escapeMarkdownSyntaxTokens } from 'vs/base/common/htmlContent';
+import { KeybindingParser } from 'vs/base/common/keybindingParser';
+import { escape } from 'vs/base/common/strings';
+import { URI } from 'vs/base/common/uri';
+import { generateUuid } from 'vs/base/common/uuid';
+import { TokenizationRegistry } from 'vs/editor/common/languages';
+import { generateTokensCSSForColorMap } from 'vs/editor/common/languages/supports/tokenization';
+import { ILanguageService } from 'vs/editor/common/languages/language';
+import * as nls from 'vs/nls';
+import { IEnvironmentService } from 'vs/platform/environment/common/environment';
+import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
+import { IOpenerService } from 'vs/platform/opener/common/opener';
+import { IProductService } from 'vs/platform/product/common/productService';
+import { asTextOrError, IRequestService } from 'vs/platform/request/common/request';
+import { DEFAULT_MARKDOWN_STYLES, renderMarkdownDocument } from 'vs/workbench/contrib/markdown/browser/markdownDocumentRenderer';
+import { WebviewInput } from 'vs/workbench/contrib/webviewPanel/browser/webviewEditorInput';
+import { IWebviewWorkbenchService } from 'vs/workbench/contrib/webviewPanel/browser/webviewWorkbenchService';
+import { IEditorGroupsService } from 'vs/workbench/services/editor/common/editorGroupsService';
+import { ACTIVE_GROUP, IEditorService } from 'vs/workbench/services/editor/common/editorService';
+import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
+import { getTelemetryLevel, supportsTelemetry } from 'vs/platform/telemetry/common/telemetryUtils';
+import { IConfigurationChangeEvent, IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { TelemetryLevel } from 'vs/platform/telemetry/common/telemetry';
+import { DisposableStore } from 'vs/base/common/lifecycle';
+import { SimpleSettingRenderer } from 'vs/workbench/contrib/markdown/browser/markdownSettingRenderer';
+import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
+import { Schemas } from 'vs/base/common/network';
+import { ICodeEditorService } from 'vs/editor/browser/services/codeEditorService';
 
 export class ReleaseNotesManager {
 	private readonly _simpleSettingRenderer: SimpleSettingRenderer;
@@ -92,88 +77,53 @@ export class ReleaseNotesManager {
 		}
 	}
 
-	public async show(
-		version: string,
-		useCurrentFile: boolean,
-	): Promise<boolean> {
-		const releaseNoteText = await this.loadReleaseNotes(
-			version,
-			useCurrentFile,
-		);
+	public async show(version: string, useCurrentFile: boolean): Promise<boolean> {
+		const releaseNoteText = await this.loadReleaseNotes(version, useCurrentFile);
 		this._lastText = releaseNoteText;
 		const html = await this.renderBody(releaseNoteText);
-		const title = nls.localize(
-			"releaseNotesInputName",
-			"Release Notes: {0}",
-			version,
-		);
+		const title = nls.localize('releaseNotesInputName', "Release Notes: {0}", version);
 
 		const activeEditorPane = this._editorService.activeEditorPane;
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.setName(title);
 			this._currentReleaseNotes.webview.setHtml(html);
-			this._webviewWorkbenchService.revealWebview(
-				this._currentReleaseNotes,
-				activeEditorPane
-					? activeEditorPane.group
-					: this._editorGroupService.activeGroup,
-				false,
-			);
+			this._webviewWorkbenchService.revealWebview(this._currentReleaseNotes, activeEditorPane ? activeEditorPane.group : this._editorGroupService.activeGroup, false);
 		} else {
-			this._currentReleaseNotes =
-				this._webviewWorkbenchService.openWebview(
-					{
-						title,
-						options: {
-							tryRestoreScrollPosition: true,
-							enableFindWidget: true,
-							disableServiceWorker: true,
-						},
-						contentOptions: {
-							localResourceRoots: [],
-							allowScripts: true,
-						},
-						extension: undefined,
-					},
-					"releaseNotes",
+			this._currentReleaseNotes = this._webviewWorkbenchService.openWebview(
+				{
 					title,
-					{ group: ACTIVE_GROUP, preserveFocus: false },
-				);
+					options: {
+						tryRestoreScrollPosition: true,
+						enableFindWidget: true,
+						disableServiceWorker: true,
+					},
+					contentOptions: {
+						localResourceRoots: [],
+						allowScripts: true
+					},
+					extension: undefined
+				},
+				'releaseNotes',
+				title,
+				{ group: ACTIVE_GROUP, preserveFocus: false });
 
-			this._currentReleaseNotes.webview.onDidClickLink((uri) =>
-				this.onDidClickLink(URI.parse(uri)),
-			);
+			this._currentReleaseNotes.webview.onDidClickLink(uri => this.onDidClickLink(URI.parse(uri)));
 
 			const disposables = new DisposableStore();
-			disposables.add(
-				this._currentReleaseNotes.webview.onMessage((e) => {
-					if (e.message.type === "showReleaseNotes") {
-						this._configurationService.updateValue(
-							"update.showReleaseNotes",
-							e.message.value,
-						);
-					} else if (e.message.type === "clickSetting") {
-						const x =
-							this._currentReleaseNotes?.webview.container
-								.offsetLeft + e.message.value.x;
-						const y =
-							this._currentReleaseNotes?.webview.container
-								.offsetTop + e.message.value.y;
-						this._simpleSettingRenderer.updateSetting(
-							URI.parse(e.message.value.uri),
-							x,
-							y,
-						);
-					}
-				}),
-			);
+			disposables.add(this._currentReleaseNotes.webview.onMessage(e => {
+				if (e.message.type === 'showReleaseNotes') {
+					this._configurationService.updateValue('update.showReleaseNotes', e.message.value);
+				} else if (e.message.type === 'clickSetting') {
+					const x = this._currentReleaseNotes?.webview.container.offsetLeft + e.message.value.x;
+					const y = this._currentReleaseNotes?.webview.container.offsetTop + e.message.value.y;
+					this._simpleSettingRenderer.updateSetting(URI.parse(e.message.value.uri), x, y);
+				}
+			}));
 
-			disposables.add(
-				this._currentReleaseNotes.onWillDispose(() => {
-					disposables.dispose();
-					this._currentReleaseNotes = undefined;
-				}),
-			);
+			disposables.add(this._currentReleaseNotes.onWillDispose(() => {
+				disposables.dispose();
+				this._currentReleaseNotes = undefined;
+			}));
 
 			this._currentReleaseNotes.webview.setHtml(html);
 		}
@@ -181,22 +131,19 @@ export class ReleaseNotesManager {
 		return true;
 	}
 
-	private async loadReleaseNotes(
-		version: string,
-		useCurrentFile: boolean,
-	): Promise<string> {
+	private async loadReleaseNotes(version: string, useCurrentFile: boolean): Promise<string> {
 		const match = /^(\d+\.\d+)\./.exec(version);
 		if (!match) {
-			throw new Error("not found");
+			throw new Error('not found');
 		}
 
-		const versionLabel = match[1].replace(/\./g, "_");
-		const baseUrl = "https://code.visualstudio.com/raw";
+		const versionLabel = match[1].replace(/\./g, '_');
+		const baseUrl = 'https://code.visualstudio.com/raw';
 		const url = `${baseUrl}/v${versionLabel}.md`;
-		const unassigned = nls.localize("unassigned", "unassigned");
+		const unassigned = nls.localize('unassigned', "unassigned");
 
 		const escapeMdHtml = (text: string): string => {
-			return escape(text).replace(/\\/g, "\\\\");
+			return escape(text).replace(/\\/g, '\\\\');
 		};
 
 		const patchKeybindings = (text: string): string => {
@@ -217,8 +164,7 @@ export class ReleaseNotesManager {
 					return unassigned;
 				}
 
-				const resolvedKeybindings =
-					this._keybindingService.resolveKeybinding(keybinding);
+				const resolvedKeybindings = this._keybindingService.resolveKeybinding(keybinding);
 
 				if (resolvedKeybindings.length === 0) {
 					return unassigned;
@@ -229,57 +175,36 @@ export class ReleaseNotesManager {
 
 			const kbCode = (match: string, binding: string) => {
 				const resolved = kb(match, binding);
-				return resolved
-					? `<code title="${binding}">${escapeMdHtml(
-							resolved,
-						)}</code>`
-					: resolved;
+				return resolved ? `<code title="${binding}">${escapeMdHtml(resolved)}</code>` : resolved;
 			};
 
 			const kbstyleCode = (match: string, binding: string) => {
 				const resolved = kbstyle(match, binding);
-				return resolved
-					? `<code title="${binding}">${escapeMdHtml(
-							resolved,
-						)}</code>`
-					: resolved;
+				return resolved ? `<code title="${binding}">${escapeMdHtml(resolved)}</code>` : resolved;
 			};
 
 			return text
 				.replace(/`kb\(([a-z.\d\-]+)\)`/gi, kbCode)
 				.replace(/`kbstyle\(([^\)]+)\)`/gi, kbstyleCode)
-				.replace(/kb\(([a-z.\d\-]+)\)/gi, (match, binding) =>
-					escapeMarkdownSyntaxTokens(kb(match, binding)),
-				)
-				.replace(/kbstyle\(([^\)]+)\)/gi, (match, binding) =>
-					escapeMarkdownSyntaxTokens(kbstyle(match, binding)),
-				);
+				.replace(/kb\(([a-z.\d\-]+)\)/gi, (match, binding) => escapeMarkdownSyntaxTokens(kb(match, binding)))
+				.replace(/kbstyle\(([^\)]+)\)/gi, (match, binding) => escapeMarkdownSyntaxTokens(kbstyle(match, binding)));
 		};
 
 		const fetchReleaseNotes = async () => {
 			let text;
 			try {
 				if (useCurrentFile) {
-					const file = this._codeEditorService
-						.getActiveCodeEditor()
-						?.getModel()
-						?.getValue();
-					text = file ? file.substring(file.indexOf("#")) : undefined;
+					const file = this._codeEditorService.getActiveCodeEditor()?.getModel()?.getValue();
+					text = file ? file.substring(file.indexOf('#')) : undefined;
 				} else {
-					text = await asTextOrError(
-						await this._requestService.request(
-							{ url },
-							CancellationToken.None,
-						),
-					);
+					text = await asTextOrError(await this._requestService.request({ url }, CancellationToken.None));
 				}
 			} catch {
-				throw new Error("Failed to fetch release notes");
+				throw new Error('Failed to fetch release notes');
 			}
 
-			if (!text || !/^#\s/.test(text)) {
-				// release notes always starts with `#` followed by whitespace
-				throw new Error("Invalid release notes");
+			if (!text || !/^#\s/.test(text)) { // release notes always starts with `#` followed by whitespace
+				throw new Error('Invalid release notes');
 			}
 
 			return patchKeybindings(text);
@@ -290,17 +215,14 @@ export class ReleaseNotesManager {
 			return fetchReleaseNotes();
 		}
 		if (!this._releaseNotesCache.has(version)) {
-			this._releaseNotesCache.set(
-				version,
-				(async () => {
-					try {
-						return await fetchReleaseNotes();
-					} catch (err) {
-						this._releaseNotesCache.delete(version);
-						throw err;
-					}
-				})(),
-			);
+			this._releaseNotesCache.set(version, (async () => {
+				try {
+					return await fetchReleaseNotes();
+				} catch (err) {
+					this._releaseNotesCache.delete(version);
+					throw err;
+				}
+			})());
 		}
 
 		return this._releaseNotesCache.get(version)!;
@@ -310,37 +232,16 @@ export class ReleaseNotesManager {
 		if (uri.scheme === Schemas.codeSetting) {
 			// handled in receive message
 		} else {
-			this.addGAParameters(uri, "ReleaseNotes")
-				.then((updated) =>
-					this._openerService.open(updated, {
-						allowCommands: ["workbench.action.openSettings"],
-					}),
-				)
+			this.addGAParameters(uri, 'ReleaseNotes')
+				.then(updated => this._openerService.open(updated, { allowCommands: ['workbench.action.openSettings'] }))
 				.then(undefined, onUnexpectedError);
 		}
 	}
 
-	private async addGAParameters(
-		uri: URI,
-		origin: string,
-		experiment = "1",
-	): Promise<URI> {
-		if (
-			supportsTelemetry(this._productService, this._environmentService) &&
-			getTelemetryLevel(this._configurationService) ===
-				TelemetryLevel.USAGE
-		) {
-			if (
-				uri.scheme === "https" &&
-				uri.authority === "code.visualstudio.com"
-			) {
-				return uri.with({
-					query: `${
-						uri.query ? uri.query + "&" : ""
-					}utm_source=VsCode&utm_medium=${encodeURIComponent(
-						origin,
-					)}&utm_content=${encodeURIComponent(experiment)}`,
-				});
+	private async addGAParameters(uri: URI, origin: string, experiment = '1'): Promise<URI> {
+		if (supportsTelemetry(this._productService, this._environmentService) && getTelemetryLevel(this._configurationService) === TelemetryLevel.USAGE) {
+			if (uri.scheme === 'https' && uri.authority === 'code.visualstudio.com') {
+				return uri.with({ query: `${uri.query ? uri.query + '&' : ''}utm_source=VsCode&utm_medium=${encodeURIComponent(origin)}&utm_content=${encodeURIComponent(experiment)}` });
 			}
 		}
 		return uri;
@@ -348,22 +249,10 @@ export class ReleaseNotesManager {
 
 	private async renderBody(text: string) {
 		const nonce = generateUuid();
-		const content = await renderMarkdownDocument(
-			text,
-			this._extensionService,
-			this._languageService,
-			false,
-			undefined,
-			undefined,
-			this._simpleSettingRenderer,
-		);
+		const content = await renderMarkdownDocument(text, this._extensionService, this._languageService, false, undefined, undefined, this._simpleSettingRenderer);
 		const colorMap = TokenizationRegistry.getColorMap();
-		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : "";
-		const showReleaseNotes = Boolean(
-			this._configurationService.getValue<boolean>(
-				"update.showReleaseNotes",
-			),
-		);
+		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
+		const showReleaseNotes = Boolean(this._configurationService.getValue<boolean>('update.showReleaseNotes'));
 
 		return `<!DOCTYPE html>
 		<html>
@@ -478,10 +367,7 @@ export class ReleaseNotesManager {
 
 					const label = document.createElement('label');
 					label.htmlFor = 'showReleaseNotes';
-					label.textContent = '${nls.localize(
-						"showOnUpdate",
-						"Show release notes after an update",
-					)}';
+					label.textContent = '${nls.localize('showOnUpdate', "Show release notes after an update")}';
 					container.appendChild(label);
 
 					const beforeElement = document.querySelector("body > h1")?.nextElementSibling;
@@ -522,14 +408,12 @@ export class ReleaseNotesManager {
 	}
 
 	private onDidChangeConfiguration(e: IConfigurationChangeEvent): void {
-		if (e.affectsConfiguration("update.showReleaseNotes")) {
+		if (e.affectsConfiguration('update.showReleaseNotes')) {
 			this.updateCheckboxWebview();
 		}
 	}
 
-	private onDidChangeActiveWebviewEditor(
-		input: WebviewInput | undefined,
-	): void {
+	private onDidChangeActiveWebviewEditor(input: WebviewInput | undefined): void {
 		if (input && input === this._currentReleaseNotes) {
 			this.updateCheckboxWebview();
 		}
@@ -538,10 +422,8 @@ export class ReleaseNotesManager {
 	private updateCheckboxWebview() {
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.webview.postMessage({
-				type: "showReleaseNotes",
-				value: this._configurationService.getValue<boolean>(
-					"update.showReleaseNotes",
-				),
+				type: 'showReleaseNotes',
+				value: this._configurationService.getValue<boolean>('update.showReleaseNotes')
 			});
 		}
 	}

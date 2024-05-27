@@ -3,21 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ArrayQueue, CompareResult } from "vs/base/common/arrays";
-import { onUnexpectedError } from "vs/base/common/errors";
-import {
-	DisposableStore,
-	type IDisposable,
-	toDisposable,
-} from "vs/base/common/lifecycle";
-import { type IObservable, autorunOpts } from "vs/base/common/observable";
-import type { CodeEditorWidget } from "vs/editor/browser/widget/codeEditor/codeEditorWidget";
-import type { IModelDeltaDecoration } from "vs/editor/common/model";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "vs/platform/storage/common/storage";
+import { ArrayQueue, CompareResult } from 'vs/base/common/arrays';
+import { onUnexpectedError } from 'vs/base/common/errors';
+import { DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { IObservable, autorunOpts } from 'vs/base/common/observable';
+import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/codeEditorWidget';
+import { IModelDeltaDecoration } from 'vs/editor/common/model';
+import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 
 export function setStyle(
 	element: HTMLElement,
@@ -26,7 +18,7 @@ export function setStyle(
 		height?: number | string;
 		left?: number | string;
 		top?: number | string;
-	},
+	}
 ): void {
 	Object.entries(style).forEach(([key, value]) => {
 		element.style.setProperty(key, toSize(value));
@@ -34,35 +26,24 @@ export function setStyle(
 }
 
 function toSize(value: number | string): string {
-	return typeof value === "number" ? `${value}px` : value;
+	return typeof value === 'number' ? `${value}px` : value;
 }
 
-export function applyObservableDecorations(
-	editor: CodeEditorWidget,
-	decorations: IObservable<IModelDeltaDecoration[]>,
-): IDisposable {
+export function applyObservableDecorations(editor: CodeEditorWidget, decorations: IObservable<IModelDeltaDecoration[]>): IDisposable {
 	const d = new DisposableStore();
 	let decorationIds: string[] = [];
-	d.add(
-		autorunOpts(
-			{
-				debugName: () =>
-					`Apply decorations from ${decorations.debugName}`,
-			},
-			(reader) => {
-				const d = decorations.read(reader);
-				editor.changeDecorations((a) => {
-					decorationIds = a.deltaDecorations(decorationIds, d);
-				});
-			},
-		),
-	);
+	d.add(autorunOpts({ debugName: () => `Apply decorations from ${decorations.debugName}` }, reader => {
+		const d = decorations.read(reader);
+		editor.changeDecorations(a => {
+			decorationIds = a.deltaDecorations(decorationIds, d);
+		});
+	}));
 	d.add({
 		dispose: () => {
-			editor.changeDecorations((a) => {
+			editor.changeDecorations(a => {
 				decorationIds = a.deltaDecorations(decorationIds, []);
 			});
-		},
+		}
 	});
 	return d;
 }
@@ -74,14 +55,8 @@ export function* leftJoin<TLeft, TRight>(
 ): IterableIterator<{ left: TLeft; rights: TRight[] }> {
 	const rightQueue = new ArrayQueue(right);
 	for (const leftElement of left) {
-		rightQueue.takeWhile((rightElement) =>
-			CompareResult.isGreaterThan(compare(leftElement, rightElement)),
-		);
-		const equals = rightQueue.takeWhile((rightElement) =>
-			CompareResult.isNeitherLessOrGreaterThan(
-				compare(leftElement, rightElement),
-			),
-		);
+		rightQueue.takeWhile(rightElement => CompareResult.isGreaterThan(compare(leftElement, rightElement)));
+		const equals = rightQueue.takeWhile(rightElement => CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement)));
 		yield { left: leftElement, rights: equals || [] };
 	}
 }
@@ -93,38 +68,24 @@ export function* join<TLeft, TRight>(
 ): IterableIterator<{ left?: TLeft; rights: TRight[] }> {
 	const rightQueue = new ArrayQueue(right);
 	for (const leftElement of left) {
-		const skipped = rightQueue.takeWhile((rightElement) =>
-			CompareResult.isGreaterThan(compare(leftElement, rightElement)),
-		);
+		const skipped = rightQueue.takeWhile(rightElement => CompareResult.isGreaterThan(compare(leftElement, rightElement)));
 		if (skipped) {
 			yield { rights: skipped };
 		}
-		const equals = rightQueue.takeWhile((rightElement) =>
-			CompareResult.isNeitherLessOrGreaterThan(
-				compare(leftElement, rightElement),
-			),
-		);
+		const equals = rightQueue.takeWhile(rightElement => CompareResult.isNeitherLessOrGreaterThan(compare(leftElement, rightElement)));
 		yield { left: leftElement, rights: equals || [] };
 	}
 }
 
-export function concatArrays<TArr extends any[]>(
-	...arrays: TArr
-): TArr[number][number][] {
+export function concatArrays<TArr extends any[]>(...arrays: TArr): TArr[number][number][] {
 	return ([] as any[]).concat(...arrays);
 }
 
-export function elementAtOrUndefined<T>(
-	arr: T[],
-	index: number,
-): T | undefined {
+export function elementAtOrUndefined<T>(arr: T[], index: number): T | undefined {
 	return arr[index];
 }
 
-export function thenIfNotDisposed<T>(
-	promise: Promise<T>,
-	then: () => void,
-): IDisposable {
+export function thenIfNotDisposed<T>(promise: Promise<T>, then: () => void): IDisposable {
 	let disposed = false;
 	promise.then(() => {
 		if (disposed) {
@@ -148,11 +109,7 @@ export function deepMerge<T extends {}>(source1: T, source2: Partial<T>): T {
 	}
 	for (const key in source2) {
 		const source2Value = source2[key];
-		if (
-			typeof result[key] === "object" &&
-			source2Value &&
-			typeof source2Value === "object"
-		) {
+		if (typeof result[key] === 'object' && source2Value && typeof source2Value === 'object') {
 			result[key] = deepMerge<any>(result[key], source2Value);
 		} else {
 			result[key] = source2Value as any;
@@ -172,10 +129,7 @@ export class PersistentStore<T> {
 
 	public get(): Readonly<T> | undefined {
 		if (!this.hasValue) {
-			const value = this.storageService.get(
-				this.key,
-				StorageScope.PROFILE,
-			);
+			const value = this.storageService.get(this.key, StorageScope.PROFILE);
 			if (value !== undefined) {
 				try {
 					this.value = JSON.parse(value) as any;
@@ -196,7 +150,8 @@ export class PersistentStore<T> {
 			this.key,
 			JSON.stringify(this.value),
 			StorageScope.PROFILE,
-			StorageTarget.USER,
+			StorageTarget.USER
 		);
 	}
 }
+
