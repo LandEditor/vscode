@@ -1,17 +1,27 @@
-const path = require("path");
-const withBrowserDefaults = require("../shared.webpack.config").browser;
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+//@ts-check
+
+'use strict';
+
+const path = require('path');
+const withBrowserDefaults = require('../shared.webpack.config').browser;
 
 module.exports = withBrowserDefaults({
 	context: __dirname,
 	entry: {
-		extension: "./src/configurationEditingMain.ts",
+		extension: './src/configurationEditingMain.ts'
 	},
 	output: {
-		filename: "configurationEditingMain.js",
+		filename: 'configurationEditingMain.js'
 	},
 	resolve: {
 		alias: {
-			"./node/net": path.resolve(__dirname, "src", "browser", "net"),
-		},
-	},
+			'./node/net': path.resolve(__dirname, 'src', 'browser', 'net'),
+		}
+	}
 });
+

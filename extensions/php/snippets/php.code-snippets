@@ -50,7 +50,11 @@
 	},
 	"case …": {
 		"prefix": "case",
-		"body": ["case '${1:value}':", "\t${0:# code...}", "\tbreak;"],
+		"body": [
+			"case '${1:value}':",
+			"\t${0:# code...}",
+			"\tbreak;"
+		],
 		"description": "Case Block"
 	},
 	"class …": {
@@ -89,11 +93,18 @@
 	},
 	"enum": {
 		"prefix": "enum",
-		"body": ["enum $1 {", "\tcase $2;$0", "}"]
+		"body": [
+			"enum $1 {",
+			"\tcase $2;$0",
+			"}"
+		]
 	},
 	"define(…, …)": {
 		"prefix": "def",
-		"body": ["define('$1', ${2:'$3'});", "$0"],
+		"body": [
+			"define('$1', ${2:'$3'});",
+			"$0"
+		],
 		"description": "Definition"
 	},
 	"do … while …": {
@@ -107,12 +118,20 @@
 	},
 	"else …": {
 		"prefix": "else",
-		"body": ["else {", "\t${0:# code...}", "}"],
+		"body": [
+			"else {",
+			"\t${0:# code...}",
+			"}"
+		],
 		"description": "Else block"
 	},
 	"elseif …": {
 		"prefix": "elseif",
-		"body": ["elseif (${1:condition}) {", "\t${0:# code...}", "}"],
+		"body": [
+			"elseif (${1:condition}) {",
+			"\t${0:# code...}",
+			"}"
+		],
 		"description": "Elseif block"
 	},
 	"for …": {
@@ -144,12 +163,20 @@
 	},
 	"anonymous function": {
 		"prefix": "fun_anonymous",
-		"body": ["function ($1)${2: use ($${3:var})} {", "\t$0", "}"],
+		"body": [
+			"function ($1)${2: use ($${3:var})} {",
+			"\t$0",
+			"}"
+		],
 		"description": "Anonymous Function"
 	},
 	"if …": {
 		"prefix": "if",
-		"body": ["if (${1:condition}) {", "\t${0:# code...}", "}"],
+		"body": [
+			"if (${1:condition}) {",
+			"\t${0:# code...}",
+			"}"
+		],
 		"description": "If block"
 	},
 	"if … else …": {
@@ -219,7 +246,9 @@
 	},
 	"PHPDoc param …": {
 		"prefix": "doc_param",
-		"body": ["* @param ${1:Type} ${2:var} ${3:Description}$0"],
+		"body": [
+			"* @param ${1:Type} ${2:var} ${3:Description}$0"
+		],
 		"description": "Paramater documentation"
 	},
 	"PHPDoc trait": {
@@ -246,12 +275,16 @@
 	},
 	"Region End": {
 		"prefix": "#endregion",
-		"body": ["#endregion"],
+		"body": [
+			"#endregion"
+		],
 		"description": "Folding Region End"
 	},
 	"Region Start": {
 		"prefix": "#region",
-		"body": ["#region"],
+		"body": [
+			"#region"
+		],
 		"description": "Folding Region Start"
 	},
 	"switch …": {
@@ -284,7 +317,13 @@
 	},
 	"trait …": {
 		"prefix": "trait",
-		"body": ["trait ${1:TraitName}", "{", "\t$0", "}", ""],
+		"body": [
+			"trait ${1:TraitName}",
+			"{",
+			"\t$0",
+			"}",
+			""
+		],
 		"description": "Trait"
 	},
 	"Try Catch Block": {
@@ -308,7 +347,11 @@
 	},
 	"use grouping": {
 		"prefix": "use_group",
-		"body": ["use${1| const , function |}$2\\{", "\t$0,", "}"],
+		"body": [
+			"use${1| const , function |}$2\\{",
+			"\t$0,",
+			"}"
+		],
 		"description": "Use grouping imports"
 	},
 	"use as ": {
@@ -318,7 +361,11 @@
 	},
 	"while …": {
 		"prefix": "while",
-		"body": ["while (${1:$${2:a} <= ${3:10}}) {", "\t${0:# code...}", "}"],
+		"body": [
+			"while (${1:$${2:a} <= ${3:10}}) {",
+			"\t${0:# code...}",
+			"}"
+		],
 		"description": "While-loop"
 	}
 }

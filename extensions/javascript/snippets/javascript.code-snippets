@@ -63,7 +63,11 @@
 	},
 	"If Statement": {
 		"prefix": "if",
-		"body": ["if (${1:condition}) {", "\t$TM_SELECTED_TEXT$0", "}"],
+		"body": [
+			"if (${1:condition}) {",
+			"\t$TM_SELECTED_TEXT$0",
+			"}"
+		],
 		"description": "If Statement"
 	},
 	"If-Else Statement": {
@@ -79,7 +83,9 @@
 	},
 	"New Statement": {
 		"prefix": "new",
-		"body": ["const ${1:name} = new ${2:type}(${3:arguments});$0"],
+		"body": [
+			"const ${1:name} = new ${2:type}(${3:arguments});$0"
+		],
 		"description": "New Statement"
 	},
 	"Switch Statement": {
@@ -98,12 +104,20 @@
 	},
 	"While Statement": {
 		"prefix": "while",
-		"body": ["while (${1:condition}) {", "\t$TM_SELECTED_TEXT$0", "}"],
+		"body": [
+			"while (${1:condition}) {",
+			"\t$TM_SELECTED_TEXT$0",
+			"}"
+		],
 		"description": "While Statement"
 	},
 	"Do-While Statement": {
 		"prefix": "dowhile",
-		"body": ["do {", "\t$TM_SELECTED_TEXT$0", "} while (${1:condition});"],
+		"body": [
+			"do {",
+			"\t$TM_SELECTED_TEXT$0",
+			"} while (${1:condition});"
+		],
 		"description": "Do-While Statement"
 	},
 	"Try-Catch Statement": {
@@ -137,32 +151,44 @@
 	},
 	"Import Statement": {
 		"prefix": "import",
-		"body": ["import { $0 } from \"${1:module}\";"],
+		"body": [
+			"import { $0 } from \"${1:module}\";"
+		],
 		"description": "Import external module"
 	},
 	"Region Start": {
 		"prefix": "#region",
-		"body": ["//#region $0"],
+		"body": [
+			"//#region $0"
+		],
 		"description": "Folding Region Start"
 	},
 	"Region End": {
 		"prefix": "#endregion",
-		"body": ["//#endregion"],
+		"body": [
+			"//#endregion"
+		],
 		"description": "Folding Region End"
 	},
 	"Log to the console": {
 		"prefix": "log",
-		"body": ["console.log($1);"],
+		"body": [
+			"console.log($1);"
+		],
 		"description": "Log to the console"
 	},
 	"Log warning to console": {
 		"prefix": "warn",
-		"body": ["console.warn($1);"],
+		"body": [
+			"console.warn($1);"
+		],
 		"description": "Log warning to the console"
 	},
 	"Log error to console": {
 		"prefix": "error",
-		"body": ["console.error($1);"],
+		"body": [
+			"console.error($1);"
+		],
 		"description": "Log error to the console"
 	},
 	"new Promise": {

@@ -62,17 +62,25 @@
 	},
 	"While ... End While": {
 		"prefix": "while",
-		"body": ["While ${1:Boolean}", "\t$0", "End While"],
+		"body": [
+			"While ${1:Boolean}",
+			"\t$0",
+			"End While"
+		],
 		"description": "While ... End While"
 	},
 	"Region Start": {
 		"prefix": "#Region",
-		"body": ["#Region $0"],
+		"body": [
+			"#Region $0"
+		],
 		"description": "Folding Region Start"
 	},
 	"Region End": {
 		"prefix": "#End Region",
-		"body": ["#End Region"],
+		"body": [
+			"#End Region"
+		],
 		"description": "Folding Region End"
 	}
 }
