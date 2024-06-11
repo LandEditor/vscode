@@ -23,7 +23,7 @@
 		"yazl": "^2.5.1"
 	},
 	"devDependencies": {
-		"@swc/core": "1.5.27",
+		"@swc/core": "1.5.28",
 		"@types/cookie": "^0.6.0",
 		"@types/debug": "^4.1.12",
 		"@types/http-proxy-agent": "^4.0.0",
