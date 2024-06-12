@@ -8,7 +8,6 @@ const path = require('path');
 
 const moduleNames = [
 	'@xterm/xterm',
-	'@xterm/addon-clipboard',
 	'@xterm/addon-image',
 	'@xterm/addon-search',
 	'@xterm/addon-serialize',

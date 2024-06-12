@@ -305,7 +305,7 @@ class SwcTranspiler {
         },
         module: {
             type: 'amd',
-            noInterop: false
+            noInterop: true
         },
         minify: false,
     };
@@ -313,7 +313,7 @@ class SwcTranspiler {
         ...this._swcrcAmd,
         module: {
             type: 'commonjs',
-            importInterop: 'swc'
+            importInterop: 'none'
         }
     };
     static _swcrcEsm = {

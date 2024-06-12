@@ -36,7 +36,7 @@ import { ltrim } from 'vs/base/common/strings';
 import { RenderIndentGuides } from 'vs/base/browser/ui/tree/abstractTree';
 import { ThrottledDelayer } from 'vs/base/common/async';
 import { isCancellationError } from 'vs/base/common/errors';
-import type { IHoverWidget, IManagedHoverTooltipMarkdownString } from 'vs/base/browser/ui/hover/hover';
+import type { IHoverWidget, IUpdatableHoverTooltipMarkdownString } from 'vs/base/browser/ui/hover/hover';
 import { QuickPickFocus } from '../common/quickInput';
 import { IAccessibilityService } from 'vs/platform/accessibility/common/accessibility';
 
@@ -434,7 +434,7 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
 		}
 
 		// Label
-		let descriptionTitle: IManagedHoverTooltipMarkdownString | undefined;
+		let descriptionTitle: IUpdatableHoverTooltipMarkdownString | undefined;
 		// if we have a tooltip, that will be the hover,
 		// with the saneDescription as fallback if it
 		// is defined
@@ -465,7 +465,7 @@ class QuickPickItemElementRenderer extends BaseQuickInputListRenderer<QuickPickI
 
 		// Detail
 		if (element.saneDetail) {
-			let title: IManagedHoverTooltipMarkdownString | undefined;
+			let title: IUpdatableHoverTooltipMarkdownString | undefined;
 			// If we have a tooltip, we want that to be shown and not any other hover
 			if (!element.saneTooltip) {
 				title = {
@@ -566,7 +566,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
 		data.icon.className = '';
 
 		// Label
-		let descriptionTitle: IManagedHoverTooltipMarkdownString | undefined;
+		let descriptionTitle: IUpdatableHoverTooltipMarkdownString | undefined;
 		// if we have a tooltip, that will be the hover,
 		// with the saneDescription as fallback if it
 		// is defined
@@ -591,7 +591,7 @@ class QuickPickSeparatorElementRenderer extends BaseQuickInputListRenderer<Quick
 
 		// Detail
 		if (element.saneDetail) {
-			let title: IManagedHoverTooltipMarkdownString | undefined;
+			let title: IUpdatableHoverTooltipMarkdownString | undefined;
 			// If we have a tooltip, we want that to be shown and not any other hover
 			if (!element.saneTooltip) {
 				title = {
@@ -903,13 +903,13 @@ export class QuickInputTree extends Disposable {
 		this._register(this._tree.onMouseOver(async e => {
 			// If we hover over an anchor element, we don't want to show the hover because
 			// the anchor may have a tooltip that we want to show instead.
-			if (dom.isHTMLAnchorElement(e.browserEvent.target)) {
+			if (e.browserEvent.target instanceof HTMLAnchorElement) {
 				delayer.cancel();
 				return;
 			}
 			if (
 				// anchors are an exception as called out above so we skip them here
-				!(dom.isHTMLAnchorElement(e.browserEvent.relatedTarget)) &&
+				!(e.browserEvent.relatedTarget instanceof HTMLAnchorElement) &&
 				// check if the mouse is still over the same element
 				dom.isAncestor(e.browserEvent.relatedTarget as Node, e.element?.element as Node)
 			) {
@@ -1125,7 +1125,7 @@ export class QuickInputTree extends Disposable {
 				const parent = focusedElement?.parentNode;
 				if (focusedElement && parent) {
 					const nextSibling = focusedElement.nextSibling;
-					focusedElement.remove();
+					parent.removeChild(focusedElement);
 					parent.insertBefore(focusedElement, nextSibling);
 				}
 			}, 0);

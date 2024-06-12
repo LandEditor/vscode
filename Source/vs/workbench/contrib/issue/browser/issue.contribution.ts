@@ -23,15 +23,6 @@ import 'vs/workbench/contrib/issue/browser/issueTroubleshoot';
 class WebIssueContribution extends BaseIssueContribution {
 	constructor(@IProductService productService: IProductService, @IConfigurationService configurationService: IConfigurationService) {
 		super(productService, configurationService);
-		Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration).registerConfiguration({
-			properties: {
-				'issueReporter.experimental.webReporter': {
-					type: 'boolean',
-					default: productService.quality !== 'stable',
-					description: 'Enable experimental issue reporter for web.',
-				},
-			}
-		});
 	}
 }
 
@@ -43,3 +34,14 @@ registerSingleton(IIssueMainService, IssueFormService, InstantiationType.Delayed
 CommandsRegistry.registerCommand('_issues.getSystemStatus', (accessor) => {
 	return nls.localize('statusUnsupported', "The --status argument is not yet supported in browsers.");
 });
+
+Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration)
+	.registerConfiguration({
+		properties: {
+			'issueReporter.experimental.webReporter': {
+				type: 'boolean',
+				default: true,
+				description: 'Enable experimental issue reporter for web.',
+			},
+		}
+	});

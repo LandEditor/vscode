@@ -285,7 +285,7 @@ export class InlineChatWidget {
 		this._updateAriaLabel();
 
 		// this._elements.status
-		this._store.add(this._hoverService.setupManagedHover(getDefaultHoverDelegate('element'), this._elements.statusLabel, () => {
+		this._store.add(this._hoverService.setupUpdatableHover(getDefaultHoverDelegate('element'), this._elements.statusLabel, () => {
 			return this._elements.statusLabel.dataset['title'];
 		}));
 
@@ -448,12 +448,12 @@ export class InlineChatWidget {
 		if (!viewModel) {
 			return undefined;
 		}
-		const items = viewModel.getItems().filter(i => isResponseVM(i));
-		if (!items.length) {
-			return;
+		for (const item of viewModel.getItems()) {
+			if (isResponseVM(item)) {
+				return viewModel.codeBlockModelCollection.get(viewModel.sessionId, item, codeBlockIndex)?.model;
+			}
 		}
-		const item = items[items.length - 1];
-		return viewModel.codeBlockModelCollection.get(viewModel.sessionId, item, codeBlockIndex)?.model;
+		return undefined;
 	}
 
 	get responseContent(): string | undefined {
@@ -612,16 +612,6 @@ export class EditorBasedInlineChatWidget extends InlineChatWidget {
 	}
 
 	// --- layout
-
-	override get contentHeight(): number {
-		let result = super.contentHeight;
-
-		if (this._accessibleViewer.value) {
-			result += this._accessibleViewer.value.height;
-		}
-
-		return result;
-	}
 
 	protected override _doLayout(dimension: Dimension): void {
 

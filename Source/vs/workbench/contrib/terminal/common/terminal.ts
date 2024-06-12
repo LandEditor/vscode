@@ -6,7 +6,7 @@
 import { Event } from 'vs/base/common/event';
 import { IDisposable } from 'vs/base/common/lifecycle';
 import { MarshalledId } from 'vs/base/common/marshallingIds';
-import { IProcessEnvironment, isLinux, OperatingSystem } from 'vs/base/common/platform';
+import { IProcessEnvironment, OperatingSystem } from 'vs/base/common/platform';
 import Severity from 'vs/base/common/severity';
 import { ThemeIcon } from 'vs/base/common/themables';
 import { URI } from 'vs/base/common/uri';
@@ -33,12 +33,7 @@ export const TERMINAL_CONFIG_SECTION = 'terminal.integrated';
 
 export const DEFAULT_LETTER_SPACING = 0;
 export const MINIMUM_LETTER_SPACING = -5;
-// HACK: On Linux it's common for fonts to include an underline that is rendered lower than the
-// bottom of the cell which causes it to be cut off due to `overflow:hidden` in the DOM renderer.
-// See:
-// - https://github.com/microsoft/vscode/issues/211933
-// - https://github.com/xtermjs/xterm.js/issues/4067
-export const DEFAULT_LINE_HEIGHT = isLinux ? 1.1 : 1;
+export const DEFAULT_LINE_HEIGHT = 1;
 
 export const MINIMUM_FONT_WEIGHT = 1;
 export const MAXIMUM_FONT_WEIGHT = 1000;
@@ -209,6 +204,8 @@ export interface ITerminalConfiguration {
 	shellIntegration?: {
 		enabled: boolean;
 		decorationsEnabled: boolean;
+		// TODO: Legacy - remove soon
+		suggestEnabled: boolean;
 	};
 	enableImages: boolean;
 	smoothScrolling: boolean;

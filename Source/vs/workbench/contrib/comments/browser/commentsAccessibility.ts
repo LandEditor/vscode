@@ -48,5 +48,4 @@ export class CommentsAccessibilityHelp implements IAccessibleViewImplentation {
 	getProvider(accessor: ServicesAccessor) {
 		return accessor.get(IInstantiationService).createInstance(CommentsAccessibilityHelpProvider);
 	}
-	dispose() { }
 }

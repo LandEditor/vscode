@@ -278,6 +278,9 @@ class DiffToolBar extends Disposable implements IGutterItemView {
 		// Item might have changed
 		itemHeight = this._elements.buttons.clientHeight;
 
+		this._elements.root.style.top = itemRange.start + 'px';
+		this._elements.root.style.height = itemRange.length + 'px';
+
 		const middleHeight = itemRange.length / 2 - itemHeight / 2;
 
 		const margin = itemHeight;

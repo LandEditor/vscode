@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableMap, DisposableStore, IDisposable, isDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { Disposable, DisposableMap, DisposableStore, IDisposable, isDisposable } from 'vs/base/common/lifecycle';
 import { isFalsyOrWhitespace } from 'vs/base/common/strings';
 import { isString } from 'vs/base/common/types';
 import { localize } from 'vs/nls';
@@ -200,12 +200,10 @@ export class AuthenticationService extends Disposable implements IAuthentication
 			return provider;
 		}
 
-		const store = new DisposableStore();
-
 		// When activate has completed, the extension has made the call to `registerAuthenticationProvider`.
 		// However, activate cannot block on this, so the renderer may not have gotten the event yet.
 		const didRegister: Promise<IAuthenticationProvider> = new Promise((resolve, _) => {
-			store.add(Event.once(this.onDidRegisterAuthenticationProvider)(e => {
+			this.onDidRegisterAuthenticationProvider(e => {
 				if (e.id === providerId) {
 					provider = this._authenticationProviders.get(providerId);
 					if (provider) {
@@ -214,18 +212,16 @@ export class AuthenticationService extends Disposable implements IAuthentication
 						throw new Error(`No authentication provider '${providerId}' is currently registered.`);
 					}
 				}
-			}));
+			});
 		});
 
 		const didTimeout: Promise<IAuthenticationProvider> = new Promise((_, reject) => {
-			const handle = setTimeout(() => {
+			setTimeout(() => {
 				reject('Timed out waiting for authentication provider to register');
 			}, 5000);
-
-			store.add(toDisposable(() => clearTimeout(handle)));
 		});
 
-		return Promise.race([didRegister, didTimeout]).finally(() => store.dispose());
+		return Promise.race([didRegister, didTimeout]);
 	}
 }
 

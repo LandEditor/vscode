@@ -7,7 +7,7 @@ import { CancellationToken } from 'vs/base/common/cancellation';
 import { Emitter, Event } from 'vs/base/common/event';
 import { Iterable } from 'vs/base/common/iterator';
 import { IJSONSchema } from 'vs/base/common/jsonSchema';
-import { DisposableStore, IDisposable, toDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable, toDisposable } from 'vs/base/common/lifecycle';
 import { isFalsyOrWhitespace } from 'vs/base/common/strings';
 import { localize } from 'vs/nls';
 import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
@@ -23,42 +23,14 @@ export const enum ChatMessageRole {
 	Assistant,
 }
 
-export interface IChatMessageTextPart {
-	type: 'text';
-	value: string;
-}
-
-export interface IChatMessageFunctionResultPart {
-	type: 'function_result';
-	name: string;
-	value: any;
-	isError?: boolean;
-}
-
-export type IChatMessagePart = IChatMessageTextPart | IChatMessageFunctionResultPart;
-
 export interface IChatMessage {
-	readonly name?: string | undefined;
 	readonly role: ChatMessageRole;
-	readonly content: IChatMessagePart;
+	readonly content: string;
 }
-
-export interface IChatResponseTextPart {
-	type: 'text';
-	value: string;
-}
-
-export interface IChatResponceFunctionUsePart {
-	type: 'function_use';
-	name: string;
-	parameters: any;
-}
-
-export type IChatResponsePart = IChatResponseTextPart | IChatResponceFunctionUsePart;
 
 export interface IChatResponseFragment {
 	index: number;
-	part: IChatResponsePart;
+	part: string;
 }
 
 export interface ILanguageModelChatMetadata {
@@ -161,12 +133,10 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 	readonly _serviceBrand: undefined;
 
-	private readonly _store = new DisposableStore();
-
 	private readonly _providers = new Map<string, ILanguageModelChat>();
 	private readonly _vendors = new Set<string>();
 
-	private readonly _onDidChangeProviders = this._store.add(new Emitter<ILanguageModelsChangeEvent>());
+	private readonly _onDidChangeProviders = new Emitter<ILanguageModelsChangeEvent>();
 	readonly onDidChangeLanguageModels: Event<ILanguageModelsChangeEvent> = this._onDidChangeProviders.event;
 
 	constructor(
@@ -174,7 +144,7 @@ export class LanguageModelsService implements ILanguageModelsService {
 		@ILogService private readonly _logService: ILogService,
 	) {
 
-		this._store.add(languageModelExtensionPoint.setHandler((extensions) => {
+		languageModelExtensionPoint.setHandler((extensions) => {
 
 			this._vendors.clear();
 
@@ -212,11 +182,11 @@ export class LanguageModelsService implements ILanguageModelsService {
 			if (removed.length > 0) {
 				this._onDidChangeProviders.fire({ removed });
 			}
-		}));
+		});
 	}
 
 	dispose() {
-		this._store.dispose();
+		this._onDidChangeProviders.dispose();
 		this._providers.clear();
 	}
 
@@ -243,12 +213,22 @@ export class LanguageModelsService implements ILanguageModelsService {
 
 		for (const [identifier, model] of this._providers) {
 
-			if ((selector.vendor === undefined || model.metadata.vendor === selector.vendor)
-				&& (selector.family === undefined || model.metadata.family === selector.family)
-				&& (selector.version === undefined || model.metadata.version === selector.version)
-				&& (selector.identifier === undefined || model.metadata.id === selector.identifier)
-				&& (!model.metadata.targetExtensions || model.metadata.targetExtensions.some(candidate => ExtensionIdentifier.equals(candidate, selector.extension)))
+			if (selector.vendor !== undefined && model.metadata.vendor === selector.vendor
+				|| selector.family !== undefined && model.metadata.family === selector.family
+				|| selector.version !== undefined && model.metadata.version === selector.version
+				|| selector.identifier !== undefined && model.metadata.id === selector.identifier
+				|| selector.extension !== undefined && model.metadata.targetExtensions?.some(candidate => ExtensionIdentifier.equals(candidate, selector.extension))
 			) {
+				// true selection
+				result.push(identifier);
+
+			} else if (!selector || (
+				selector.vendor === undefined
+				&& selector.family === undefined
+				&& selector.version === undefined
+				&& selector.identifier === undefined)
+			) {
+				// no selection
 				result.push(identifier);
 			}
 		}

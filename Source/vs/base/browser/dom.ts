@@ -18,7 +18,6 @@ import * as platform from 'vs/base/common/platform';
 import { URI } from 'vs/base/common/uri';
 import { hash } from 'vs/base/common/hash';
 import { CodeWindow, ensureCodeWindow, mainWindow } from 'vs/base/browser/window';
-import { isPointWithinTriangle } from 'vs/base/common/numbers';
 
 export interface IRegisteredCodeWindow {
 	readonly window: CodeWindow;
@@ -796,7 +795,7 @@ export function isAncestorUsingFlowTo(testChild: Node, testAncestor: Node): bool
 			return true;
 		}
 
-		if (isHTMLElement(node)) {
+		if (node instanceof HTMLElement) {
 			const flowToParentElement = getParentFlowToElement(node);
 			if (flowToParentElement) {
 				node = flowToParentElement;
@@ -968,7 +967,7 @@ export function createStyleSheet(container: HTMLElement = mainWindow.document.he
 	container.appendChild(style);
 
 	if (disposableStore) {
-		disposableStore.add(toDisposable(() => style.remove()));
+		disposableStore.add(toDisposable(() => container.removeChild(style)));
 	}
 
 	// With <head> as container, the stylesheet becomes global and is tracked
@@ -1005,7 +1004,7 @@ function cloneGlobalStyleSheet(globalStylesheet: HTMLStyleElement, globalStylesh
 
 	const clone = globalStylesheet.cloneNode(true) as HTMLStyleElement;
 	targetWindow.document.head.appendChild(clone);
-	disposables.add(toDisposable(() => clone.remove()));
+	disposables.add(toDisposable(() => targetWindow.document.head.removeChild(clone)));
 
 	for (const rule of getDynamicStyleSheetRules(globalStylesheet)) {
 		clone.sheet?.insertRule(rule.cssText, clone.sheet?.cssRules.length);
@@ -1149,41 +1148,6 @@ function isCSSStyleRule(rule: CSSRule): rule is CSSStyleRule {
 	return typeof (rule as CSSStyleRule).selectorText === 'string';
 }
 
-export function isHTMLElement(e: unknown): e is HTMLElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLElement || e instanceof getWindow(e as Node).HTMLElement;
-}
-
-export function isHTMLAnchorElement(e: unknown): e is HTMLAnchorElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLAnchorElement || e instanceof getWindow(e as Node).HTMLAnchorElement;
-}
-
-export function isHTMLSpanElement(e: unknown): e is HTMLSpanElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLSpanElement || e instanceof getWindow(e as Node).HTMLSpanElement;
-}
-
-export function isHTMLTextAreaElement(e: unknown): e is HTMLTextAreaElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLTextAreaElement || e instanceof getWindow(e as Node).HTMLTextAreaElement;
-}
-
-export function isHTMLInputElement(e: unknown): e is HTMLInputElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLInputElement || e instanceof getWindow(e as Node).HTMLInputElement;
-}
-
-export function isHTMLButtonElement(e: unknown): e is HTMLButtonElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLButtonElement || e instanceof getWindow(e as Node).HTMLButtonElement;
-}
-
-export function isHTMLDivElement(e: unknown): e is HTMLDivElement {
-	// eslint-disable-next-line no-restricted-syntax
-	return e instanceof HTMLDivElement || e instanceof getWindow(e as Node).HTMLDivElement;
-}
-
 export function isMouseEvent(e: unknown): e is MouseEvent {
 	// eslint-disable-next-line no-restricted-syntax
 	return e instanceof MouseEvent || e instanceof getWindow(e as UIEvent).MouseEvent;
@@ -1322,7 +1286,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 	private _refreshStateHandler: () => void;
 
 	private static hasFocusWithin(element: HTMLElement | Window): boolean {
-		if (isHTMLElement(element)) {
+		if (element instanceof HTMLElement) {
 			const shadowRoot = getShadowRoot(element);
 			const activeElement = (shadowRoot ? shadowRoot.activeElement : element.ownerDocument.activeElement);
 			return isAncestor(activeElement, element);
@@ -1348,7 +1312,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 		const onBlur = () => {
 			if (hasFocus) {
 				loosingFocus = true;
-				(isHTMLElement(element) ? getWindow(element) : element).setTimeout(() => {
+				(element instanceof HTMLElement ? getWindow(element) : element).setTimeout(() => {
 					if (loosingFocus) {
 						loosingFocus = false;
 						hasFocus = false;
@@ -1371,7 +1335,7 @@ class FocusTracker extends Disposable implements IFocusTracker {
 
 		this._register(addDisposableListener(element, EventType.FOCUS, onFocus, true));
 		this._register(addDisposableListener(element, EventType.BLUR, onBlur, true));
-		if (isHTMLElement(element)) {
+		if (element instanceof HTMLElement) {
 			this._register(addDisposableListener(element, EventType.FOCUS_IN, () => this._refreshStateHandler()));
 			this._register(addDisposableListener(element, EventType.FOCUS_OUT, () => this._refreshStateHandler()));
 		}
@@ -1524,7 +1488,7 @@ export function hide(...elements: HTMLElement[]): void {
 
 function findParentWithAttribute(node: Node | null, attribute: string): HTMLElement | null {
 	while (node && node.nodeType === node.ELEMENT_NODE) {
-		if (isHTMLElement(node) && node.hasAttribute(attribute)) {
+		if (node instanceof HTMLElement && node.hasAttribute(attribute)) {
 			return node;
 		}
 
@@ -1727,7 +1691,7 @@ export function triggerDownload(dataOrUri: Uint8Array | URI, name: string): void
 	anchor.click();
 
 	// Ensure to remove the element from DOM eventually
-	setTimeout(() => anchor.remove());
+	setTimeout(() => activeWindow.document.body.removeChild(anchor));
 }
 
 export function triggerUpload(): Promise<FileList | undefined> {
@@ -1750,7 +1714,7 @@ export function triggerUpload(): Promise<FileList | undefined> {
 		input.click();
 
 		// Ensure to remove the element from DOM eventually
-		setTimeout(() => input.remove());
+		setTimeout(() => activeWindow.document.body.removeChild(input));
 	});
 }
 
@@ -2340,7 +2304,7 @@ export function h(tag: string, ...args: [] | [attributes: { $: string } & Partia
 
 	if (children) {
 		for (const c of children) {
-			if (isHTMLElement(c)) {
+			if (c instanceof HTMLElement) {
 				el.appendChild(c);
 			} else if (typeof c === 'string') {
 				el.append(c);
@@ -2408,54 +2372,4 @@ export function trackAttributes(from: Element, to: Element, filter?: string[]): 
 	}));
 
 	return disposables;
-}
-
-/**
- * Helper for calculating the "safe triangle" occluded by hovers to avoid early dismissal.
- * @see https://www.smashingmagazine.com/2023/08/better-context-menus-safe-triangles/ for example
- */
-export class SafeTriangle {
-	// 4 triangles, 2 points (x, y) stored for each
-	private triangles: number[] = [];
-
-	constructor(
-		private readonly originX: number,
-		private readonly originY: number,
-		target: HTMLElement
-	) {
-		const { top, left, right, bottom } = target.getBoundingClientRect();
-		const t = this.triangles;
-		let i = 0;
-
-		t[i++] = left;
-		t[i++] = top;
-		t[i++] = right;
-		t[i++] = top;
-
-		t[i++] = left;
-		t[i++] = top;
-		t[i++] = left;
-		t[i++] = bottom;
-
-		t[i++] = right;
-		t[i++] = top;
-		t[i++] = right;
-		t[i++] = bottom;
-
-		t[i++] = left;
-		t[i++] = bottom;
-		t[i++] = right;
-		t[i++] = bottom;
-	}
-
-	public contains(x: number, y: number) {
-		const { triangles, originX, originY } = this;
-		for (let i = 0; i < 4; i++) {
-			if (isPointWithinTriangle(x, y, originX, originY, triangles[2 * i], triangles[2 * i + 1], triangles[2 * i + 2], triangles[2 * i + 3])) {
-				return true;
-			}
-		}
-
-		return false;
-	}
 }

@@ -388,7 +388,7 @@ export class SwcTranspiler implements ITranspiler {
 		},
 		module: {
 			type: 'amd',
-			noInterop: false
+			noInterop: true
 		},
 		minify: false,
 	};
@@ -397,7 +397,7 @@ export class SwcTranspiler implements ITranspiler {
 		...this._swcrcAmd,
 		module: {
 			type: 'commonjs',
-			importInterop: 'swc'
+			importInterop: 'none'
 		}
 	};
 

@@ -328,7 +328,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 		}
 
 		// by element
-		if (DOM.isHTMLElement(indexOrElement)) {
+		if (indexOrElement instanceof HTMLElement) {
 			while (indexOrElement.parentElement !== this.actionsList) {
 				if (!indexOrElement.parentElement) {
 					return undefined;
@@ -422,7 +422,7 @@ export class ActionBar extends Disposable implements IActionRunner {
 
 	pull(index: number): void {
 		if (index >= 0 && index < this.viewItems.length) {
-			this.actionsList.childNodes[index].remove();
+			this.actionsList.removeChild(this.actionsList.childNodes[index]);
 			this.viewItemDisposables.deleteAndDispose(this.viewItems[index]);
 			dispose(this.viewItems.splice(index, 1));
 			this.refreshRole();

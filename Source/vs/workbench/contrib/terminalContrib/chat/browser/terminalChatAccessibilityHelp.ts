@@ -35,7 +35,6 @@ export class TerminalChatAccessibilityHelp implements IAccessibleViewImplentatio
 			options: { type: AccessibleViewType.Help }
 		};
 	}
-	dispose() { }
 }
 
 export function getAccessibilityHelpText(accessor: ServicesAccessor): string {

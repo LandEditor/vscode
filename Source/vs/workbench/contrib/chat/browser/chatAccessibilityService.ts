@@ -11,7 +11,6 @@ import { AccessibilityProgressSignalScheduler } from 'vs/platform/accessibilityS
 import { IChatAccessibilityService } from 'vs/workbench/contrib/chat/browser/chat';
 import { IChatResponseViewModel } from 'vs/workbench/contrib/chat/common/chatViewModel';
 import { renderStringAsPlaintext } from 'vs/base/browser/markdownRenderer';
-import { MarkdownString } from 'vs/base/common/htmlContent';
 
 const CHAT_RESPONSE_PENDING_ALLOWANCE_MS = 4000;
 export class ChatAccessibilityService extends Disposable implements IChatAccessibilityService {
@@ -40,8 +39,7 @@ export class ChatAccessibilityService extends Disposable implements IChatAccessi
 			return;
 		}
 		const errorDetails = isPanelChat && response.errorDetails ? ` ${response.errorDetails.message}` : '';
-		const plainTextResponse = renderStringAsPlaintext(new MarkdownString(responseContent));
-		status(plainTextResponse + errorDetails);
+		status(renderStringAsPlaintext(responseContent) + errorDetails);
 	}
 }
 

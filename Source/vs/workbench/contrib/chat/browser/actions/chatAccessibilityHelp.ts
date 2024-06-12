@@ -25,7 +25,6 @@ export class ChatAccessibilityHelp implements IAccessibleViewImplentation {
 		const codeEditor = accessor.get(ICodeEditorService).getActiveCodeEditor() || accessor.get(ICodeEditorService).getFocusedCodeEditor();
 		return getChatAccessibilityHelpProvider(accessor, codeEditor ?? undefined, 'panelChat');
 	}
-	dispose() { }
 }
 
 export function getAccessibilityHelpText(type: 'panelChat' | 'inlineChat'): string {

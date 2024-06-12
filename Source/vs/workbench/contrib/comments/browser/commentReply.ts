@@ -117,11 +117,9 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		this.setCommentEditorDecorations();
 
 		// Only add the additional step of clicking a reply button to expand the textarea when there are existing comments
-		if (this._pendingComment) {
-			this.expandReplyArea();
-		} else if (hasExistingComments) {
+		if (hasExistingComments) {
 			this.createReplyButton(this.commentEditor, this.form);
-		} else if (focus && (this._commentThread.comments && this._commentThread.comments.length === 0)) {
+		} else if (focus && ((this._commentThread.comments && this._commentThread.comments.length === 0) || this._pendingComment)) {
 			this.expandReplyArea();
 		}
 		this._error = dom.append(this.form, dom.$('.validation-error.hidden'));
@@ -368,7 +366,7 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 
 	private createReplyButton(commentEditor: ICodeEditor, commentForm: HTMLElement) {
 		this._reviewThreadReplyButton = <HTMLButtonElement>dom.append(commentForm, dom.$(`button.review-thread-reply-button.${MOUSE_CURSOR_TEXT_CSS_CLASS_NAME}`));
-		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this._reviewThreadReplyButton, this._commentOptions?.prompt || nls.localize('reply', "Reply...")));
+		this._register(this.hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), this._reviewThreadReplyButton, this._commentOptions?.prompt || nls.localize('reply', "Reply...")));
 
 		this._reviewThreadReplyButton.textContent = this._commentOptions?.prompt || nls.localize('reply', "Reply...");
 		// bind click/escape actions for reviewThreadReplyButton and textArea

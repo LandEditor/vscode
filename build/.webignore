@@ -20,9 +20,6 @@ vscode-textmate/webpack.config.js
 
 @xterm/xterm/src/**
 
-@xterm/addon-clipboard/src/**
-@xterm/addon-clipboard/out/**
-
 @xterm/addon-image/src/**
 @xterm/addon-image/out/**
 
