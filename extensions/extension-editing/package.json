@@ -47,9 +47,9 @@
 		"onLanguage:markdown"
 	],
 	"dependencies": {
-		"jsonc-parser": "^3.2.1",
-		"markdown-it": "^14.1.0",
-		"parse5": "^7.1.2"
+		"jsonc-parser": "3.2.1",
+		"markdown-it": "14.1.0",
+		"parse5": "7.1.2"
 	},
 	"devDependencies": {
 		"@types/markdown-it": "14.1.1",

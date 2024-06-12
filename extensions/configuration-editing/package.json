@@ -143,8 +143,8 @@
 	],
 	"dependencies": {
 		"@octokit/rest": "20.1.1",
-		"jsonc-parser": "^3.2.1",
-		"tunnel": "^0.0.6"
+		"jsonc-parser": "3.2.1",
+		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
 		"@types/node": "20.x"
