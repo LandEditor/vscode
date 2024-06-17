@@ -146,7 +146,7 @@ export class ExtensionManagementCLI {
 				if (areSameExtensions(oldVersion.identifier, newVersion.identifier) && gt(newVersion.version, oldVersion.manifest.version)) {
 					extensionsToUpdate.push({
 						extension: newVersion,
-						options: { operation: InstallOperation.Update, installPreReleaseVersion: oldVersion.preRelease, profileLocation, isApplicationScoped: oldVersion.isApplicationScoped }
+						options: { operation: InstallOperation.Update, installPreReleaseVersion: oldVersion.preRelease, profileLocation }
 					});
 				}
 			}
@@ -224,7 +224,7 @@ export class ExtensionManagementCLI {
 			}
 			extensionsToInstall.push({
 				extension: gallery,
-				options: { ...installOptions, installGivenVersion: !!version, isApplicationScoped: installedExtension?.isApplicationScoped },
+				options: { ...installOptions, installGivenVersion: !!version },
 			});
 		}));
 

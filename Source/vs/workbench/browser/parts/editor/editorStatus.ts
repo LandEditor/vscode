@@ -1079,20 +1079,11 @@ export class ChangeLanguageAction extends Action2 {
 				weight: KeybindingWeight.WorkbenchContrib,
 				primary: KeyChord(KeyMod.CtrlCmd | KeyCode.KeyK, KeyCode.KeyM)
 			},
-			precondition: ContextKeyExpr.not('notebookEditorFocused'),
-			metadata: {
-				description: localize('changeLanguageMode.description', "Change the language mode of the active text editor."),
-				args: [
-					{
-						name: localize('changeLanguageMode.arg.name', "The name of the language mode to change to."),
-						constraint: (value: any) => typeof value === 'string',
-					}
-				]
-			}
+			precondition: ContextKeyExpr.not('notebookEditorFocused')
 		});
 	}
 
-	override async run(accessor: ServicesAccessor, languageMode?: string): Promise<void> {
+	override async run(accessor: ServicesAccessor): Promise<void> {
 		const quickInputService = accessor.get(IQuickInputService);
 		const editorService = accessor.get(IEditorService);
 		const languageService = accessor.get(ILanguageService);
@@ -1171,7 +1162,7 @@ export class ChangeLanguageAction extends Action2 {
 		};
 		picks.unshift(autoDetectLanguage);
 
-		const pick = typeof languageMode === 'string' ? { label: languageMode } : await quickInputService.pick(picks, { placeHolder: localize('pickLanguage', "Select Language Mode"), matchOnDescription: true });
+		const pick = await quickInputService.pick(picks, { placeHolder: localize('pickLanguage', "Select Language Mode"), matchOnDescription: true });
 		if (!pick) {
 			return;
 		}
@@ -1453,16 +1444,13 @@ export class ChangeEncodingAction extends Action2 {
 
 		let guessedEncoding: string | undefined = undefined;
 		if (fileService.hasProvider(resource)) {
-			const content = await textFileService.readStream(resource, {
-				autoGuessEncoding: true,
-				candidateGuessEncodings: textResourceConfigurationService.getValue(resource, 'files.candidateGuessEncodings')
-			});
+			const content = await textFileService.readStream(resource, { autoGuessEncoding: true });
 			guessedEncoding = content.encoding;
 		}
 
 		const isReopenWithEncoding = (action === reopenWithEncodingPick);
 
-		const configuredEncoding = textResourceConfigurationService.getValue(resource, 'files.encoding');
+		const configuredEncoding = textResourceConfigurationService.getValue(resource ?? undefined, 'files.encoding');
 
 		let directMatchIndex: number | undefined;
 		let aliasMatchIndex: number | undefined;

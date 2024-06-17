@@ -15,8 +15,7 @@ import { IAccessibilityService } from 'vs/platform/accessibility/common/accessib
 import { EditorContextKeys } from 'vs/editor/common/editorContextKeys';
 import { getHoverAccessibleViewHint, HoverWidget } from 'vs/base/browser/ui/hover/hoverWidget';
 import { PositionAffinity } from 'vs/editor/common/model';
-import { Emitter } from 'vs/base/common/event';
-import { RenderedContentHover } from 'vs/editor/contrib/hover/browser/contentHoverRendered';
+import { ContentHoverVisibleData } from 'vs/editor/contrib/hover/browser/contentHoverTypes';
 
 const HORIZONTAL_SCROLLING_BY = 30;
 const CONTAINER_HEIGHT_PADDING = 6;
@@ -26,7 +25,7 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	public static ID = 'editor.contrib.resizableContentHoverWidget';
 	private static _lastDimensions: dom.Dimension = new dom.Dimension(0, 0);
 
-	private _renderedHover: RenderedContentHover | undefined;
+	private _visibleData: ContentHoverVisibleData | undefined;
 	private _positionPreference: ContentWidgetPositionPreference | undefined;
 	private _minimumSize: dom.Dimension;
 	private _contentWidth: number | undefined;
@@ -35,11 +34,12 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	private readonly _hoverVisibleKey: IContextKey<boolean>;
 	private readonly _hoverFocusedKey: IContextKey<boolean>;
 
-	private readonly _onDidResize = this._register(new Emitter<void>());
-	public readonly onDidResize = this._onDidResize.event;
+	public get isColorPickerVisible(): boolean {
+		return Boolean(this._visibleData?.colorPicker);
+	}
 
 	public get isVisibleFromKeyboard(): boolean {
-		return (this._renderedHover?.source === HoverStartSource.Keyboard);
+		return (this._visibleData?.source === HoverStartSource.Keyboard);
 	}
 
 	public get isVisible(): boolean {
@@ -86,13 +86,13 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		this._register(focusTracker.onDidBlur(() => {
 			this._hoverFocusedKey.set(false);
 		}));
-		this._setRenderedHover(undefined);
+		this._setHoverData(undefined);
 		this._editor.addContentWidget(this);
 	}
 
 	public override dispose(): void {
 		super.dispose();
-		this._renderedHover?.dispose();
+		this._visibleData?.disposables.dispose();
 		this._editor.removeContentWidget(this);
 	}
 
@@ -158,11 +158,11 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		this._updateResizableNodeMaxDimensions();
 		this._hover.scrollbar.scanDomNode();
 		this._editor.layoutContentWidget(this);
-		this._onDidResize.fire();
+		this._visibleData?.colorPicker?.layout();
 	}
 
 	private _findAvailableSpaceVertically(): number | undefined {
-		const position = this._renderedHover?.showAtPosition;
+		const position = this._visibleData?.showAtPosition;
 		if (!position) {
 			return;
 		}
@@ -223,20 +223,23 @@ export class ContentHoverWidget extends ResizableContentWidget {
 
 	public isMouseGettingCloser(posx: number, posy: number): boolean {
 
-		if (!this._renderedHover) {
+		if (!this._visibleData) {
 			return false;
 		}
-		if (this._renderedHover.initialMousePosX === undefined || this._renderedHover.initialMousePosY === undefined) {
-			this._renderedHover.initialMousePosX = posx;
-			this._renderedHover.initialMousePosY = posy;
+		if (
+			typeof this._visibleData.initialMousePosX === 'undefined'
+			|| typeof this._visibleData.initialMousePosY === 'undefined'
+		) {
+			this._visibleData.initialMousePosX = posx;
+			this._visibleData.initialMousePosY = posy;
 			return false;
 		}
 
 		const widgetRect = dom.getDomNodePagePosition(this.getDomNode());
-		if (this._renderedHover.closestMouseDistance === undefined) {
-			this._renderedHover.closestMouseDistance = computeDistanceFromPointToRectangle(
-				this._renderedHover.initialMousePosX,
-				this._renderedHover.initialMousePosY,
+		if (typeof this._visibleData.closestMouseDistance === 'undefined') {
+			this._visibleData.closestMouseDistance = computeDistanceFromPointToRectangle(
+				this._visibleData.initialMousePosX,
+				this._visibleData.initialMousePosY,
 				widgetRect.left,
 				widgetRect.top,
 				widgetRect.width,
@@ -252,20 +255,20 @@ export class ContentHoverWidget extends ResizableContentWidget {
 			widgetRect.width,
 			widgetRect.height
 		);
-		if (distance > this._renderedHover.closestMouseDistance + 4 /* tolerance of 4 pixels */) {
+		if (distance > this._visibleData.closestMouseDistance + 4 /* tolerance of 4 pixels */) {
 			// The mouse is getting farther away
 			return false;
 		}
 
-		this._renderedHover.closestMouseDistance = Math.min(this._renderedHover.closestMouseDistance, distance);
+		this._visibleData.closestMouseDistance = Math.min(this._visibleData.closestMouseDistance, distance);
 		return true;
 	}
 
-	private _setRenderedHover(renderedHover: RenderedContentHover | undefined): void {
-		this._renderedHover?.dispose();
-		this._renderedHover = renderedHover;
-		this._hoverVisibleKey.set(!!renderedHover);
-		this._hover.containerDomNode.classList.toggle('hidden', !renderedHover);
+	private _setHoverData(hoverData: ContentHoverVisibleData | undefined): void {
+		this._visibleData?.disposables.dispose();
+		this._visibleData = hoverData;
+		this._hoverVisibleKey.set(!!hoverData);
+		this._hover.containerDomNode.classList.toggle('hidden', !hoverData);
 	}
 
 	private _updateFont(): void {
@@ -295,10 +298,10 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		this._setHoverWidgetMaxDimensions(width, height);
 	}
 
-	private _render(renderedHover: RenderedContentHover) {
-		this._setRenderedHover(renderedHover);
+	private _render(node: DocumentFragment, hoverData: ContentHoverVisibleData) {
+		this._setHoverData(hoverData);
 		this._updateFont();
-		this._updateContent(renderedHover.domNode);
+		this._updateContent(node);
 		this._updateMaxDimensions();
 		this.onContentsChanged();
 		// Simply force a synchronous render on the editor
@@ -307,33 +310,33 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	}
 
 	override getPosition(): IContentWidgetPosition | null {
-		if (!this._renderedHover) {
+		if (!this._visibleData) {
 			return null;
 		}
 		return {
-			position: this._renderedHover.showAtPosition,
-			secondaryPosition: this._renderedHover.showAtSecondaryPosition,
-			positionAffinity: this._renderedHover.shouldAppearBeforeContent ? PositionAffinity.LeftOfInjectedText : undefined,
+			position: this._visibleData.showAtPosition,
+			secondaryPosition: this._visibleData.showAtSecondaryPosition,
+			positionAffinity: this._visibleData.isBeforeContent ? PositionAffinity.LeftOfInjectedText : undefined,
 			preference: [this._positionPreference ?? ContentWidgetPositionPreference.ABOVE]
 		};
 	}
 
-	public show(renderedHover: RenderedContentHover): void {
+	public showAt(node: DocumentFragment, hoverData: ContentHoverVisibleData): void {
 		if (!this._editor || !this._editor.hasModel()) {
 			return;
 		}
-		this._render(renderedHover);
+		this._render(node, hoverData);
 		const widgetHeight = dom.getTotalHeight(this._hover.containerDomNode);
-		const widgetPosition = renderedHover.showAtPosition;
+		const widgetPosition = hoverData.showAtPosition;
 		this._positionPreference = this._findPositionPreference(widgetHeight, widgetPosition) ?? ContentWidgetPositionPreference.ABOVE;
 
 		// See https://github.com/microsoft/vscode/issues/140339
 		// TODO: Doing a second layout of the hover after force rendering the editor
 		this.onContentsChanged();
-		if (renderedHover.shouldFocus) {
+		if (hoverData.stoleFocus) {
 			this._hover.containerDomNode.focus();
 		}
-		this._onDidResize.fire();
+		hoverData.colorPicker?.layout();
 		// The aria label overrides the label, so if we add to it, add the contents of the hover
 		const hoverFocused = this._hover.containerDomNode.ownerDocument.activeElement === this._hover.containerDomNode;
 		const accessibleViewHint = hoverFocused && getHoverAccessibleViewHint(
@@ -347,16 +350,16 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	}
 
 	public hide(): void {
-		if (!this._renderedHover) {
+		if (!this._visibleData) {
 			return;
 		}
-		const hoverStoleFocus = this._renderedHover.shouldFocus || this._hoverFocusedKey.get();
-		this._setRenderedHover(undefined);
+		const stoleFocus = this._visibleData.stoleFocus || this._hoverFocusedKey.get();
+		this._setHoverData(undefined);
 		this._resizableNode.maxSize = new dom.Dimension(Infinity, Infinity);
 		this._resizableNode.clearSashHoverState();
 		this._hoverFocusedKey.set(false);
 		this._editor.layoutContentWidget(this);
-		if (hoverStoleFocus) {
+		if (stoleFocus) {
 			this._editor.focus();
 		}
 	}
@@ -403,9 +406,9 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		this._updateMinimumWidth();
 		this._resizableNode.layout(height, width);
 
-		if (this._renderedHover?.showAtPosition) {
+		if (this._visibleData?.showAtPosition) {
 			const widgetHeight = dom.getTotalHeight(this._hover.containerDomNode);
-			this._positionPreference = this._findPositionPreference(widgetHeight, this._renderedHover.showAtPosition);
+			this._positionPreference = this._findPositionPreference(widgetHeight, this._visibleData.showAtPosition);
 		}
 		this._layoutContentWidget();
 	}

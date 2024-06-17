@@ -61,7 +61,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 		token: vscode.CancellationToken,
 	): Promise<vscode.DocumentPasteEdit[] | undefined> {
 		const config = vscode.workspace.getConfiguration(this._modeId, document.uri);
-		if (!config.get('experimental.updateImportsOnPaste', false)) {
+		if (!config.get('experimental.updateImportsOnPaste')) {
 			return;
 		}
 
@@ -91,10 +91,6 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 			if (copyFile) {
 				copiedFrom = { file: copyFile, spans };
 			}
-		}
-
-		if (copiedFrom?.file === file) {
-			return;
 		}
 
 		const response = await this._client.execute('getPasteEdits', {
@@ -130,7 +126,7 @@ class DocumentPasteProvider implements vscode.DocumentPasteEditProvider {
 export function register(selector: DocumentSelector, language: LanguageDescription, client: ITypeScriptServiceClient) {
 	return conditionalRegistration([
 		requireSomeCapability(client, ClientCapability.Semantic),
-		requireMinVersion(client, API.v560),
+		requireMinVersion(client, API.v550),
 	], () => {
 		return vscode.languages.registerDocumentPasteEditProvider(selector.semantic, new DocumentPasteProvider(language.id, client), {
 			providedPasteEditKinds: [DocumentPasteProvider.kind],

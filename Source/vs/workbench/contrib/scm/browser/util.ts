@@ -173,7 +173,3 @@ export function getActionViewItemProvider(instaService: IInstantiationService): 
 export function getProviderKey(provider: ISCMProvider): string {
 	return `${provider.contextValue}:${provider.label}${provider.rootUri ? `:${provider.rootUri.toString()}` : ''}`;
 }
-
-export function getRepositoryResourceCount(provider: ISCMProvider): number {
-	return provider.groups.reduce<number>((r, g) => r + g.resources.length, 0);
-}

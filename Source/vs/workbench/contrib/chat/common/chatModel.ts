@@ -3,7 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from 'vs/nls';
 import { asArray, firstOrDefault } from 'vs/base/common/arrays';
 import { DeferredPromise } from 'vs/base/common/async';
 import { Emitter, Event } from 'vs/base/common/event';
@@ -252,7 +251,7 @@ export class Response implements IResponse {
 			} else if (part.kind === 'command') {
 				return part.command.title;
 			} else if (part.kind === 'textEditGroup') {
-				return localize('editsSummary', "Made changes.");
+				return '';
 			} else if (part.kind === 'progressMessage') {
 				return '';
 			} else if (part.kind === 'confirmation') {
@@ -529,28 +528,10 @@ export interface IChatAddResponseEvent {
 	response: IChatResponseModel;
 }
 
-export const enum ChatRequestRemovalReason {
-	/**
-	 * "Normal" remove
-	 */
-	Removal,
-
-	/**
-	 * Removed because the request will be resent
-	 */
-	Resend,
-
-	/**
-	 * Remove because the request is moving to another model
-	 */
-	Adoption
-}
-
 export interface IChatRemoveRequestEvent {
 	kind: 'removeRequest';
 	requestId: string;
 	responseId?: string;
-	reason: ChatRequestRemovalReason;
 }
 
 export interface IChatInitEvent {
@@ -725,8 +706,7 @@ export class ChatModel extends Disposable implements IChatModel {
 			{ variables: [] };
 
 		variableData.variables = variableData.variables.map<IChatRequestVariableEntry>((v): IChatRequestVariableEntry => {
-			// Old variables format
-			if (v && 'values' in v && Array.isArray(v.values)) {
+			if ('values' in v && Array.isArray(v.values)) {
 				return {
 					id: v.id ?? '',
 					name: v.name,
@@ -823,7 +803,7 @@ export class ChatModel extends Disposable implements IChatModel {
 		request.response?.adoptTo(this);
 		this._requests.push(request);
 
-		oldOwner._onDidChange.fire({ kind: 'removeRequest', requestId: request.id, responseId: request.response?.id, reason: ChatRequestRemovalReason.Adoption });
+		oldOwner._onDidChange.fire({ kind: 'removeRequest', requestId: request.id, responseId: request.response?.id });
 		this._onDidChange.fire({ kind: 'addRequest', request });
 	}
 
@@ -860,12 +840,12 @@ export class ChatModel extends Disposable implements IChatModel {
 		}
 	}
 
-	removeRequest(id: string, reason: ChatRequestRemovalReason = ChatRequestRemovalReason.Removal): void {
+	removeRequest(id: string): void {
 		const index = this._requests.findIndex(request => request.id === id);
 		const request = this._requests[index];
 
 		if (index !== -1) {
-			this._onDidChange.fire({ kind: 'removeRequest', requestId: request.id, responseId: request.response?.id, reason });
+			this._onDidChange.fire({ kind: 'removeRequest', requestId: request.id, responseId: request.response?.id });
 			this._requests.splice(index, 1);
 			request.response?.dispose();
 		}

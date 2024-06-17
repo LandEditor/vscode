@@ -5,23 +5,23 @@
 
 import * as cp from 'child_process';
 import * as net from 'net';
+import { getNLSConfiguration } from 'vs/server/node/remoteLanguagePacks';
+import { FileAccess } from 'vs/base/common/network';
+import { join, delimiter } from 'vs/base/common/path';
 import { VSBuffer } from 'vs/base/common/buffer';
 import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable, DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
-import { FileAccess } from 'vs/base/common/network';
-import { delimiter, join } from 'vs/base/common/path';
-import { IProcessEnvironment, isWindows } from 'vs/base/common/platform';
-import { removeDangerousEnvVariables } from 'vs/base/common/processes';
 import { createRandomIPCHandle, NodeSocket, WebSocketNodeSocket } from 'vs/base/parts/ipc/node/ipc.net';
-import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
+import { getResolvedShellEnv } from 'vs/platform/shell/node/shellEnv';
 import { ILogService } from 'vs/platform/log/common/log';
 import { IRemoteExtensionHostStartParams } from 'vs/platform/remote/common/remoteAgentConnection';
-import { getResolvedShellEnv } from 'vs/platform/shell/node/shellEnv';
-import { IExtensionHostStatusService } from 'vs/server/node/extensionHostStatusService';
-import { getNLSConfiguration } from 'vs/server/node/remoteLanguagePacks';
+import { IExtHostReadyMessage, IExtHostSocketMessage, IExtHostReduceGraceTimeMessage } from 'vs/workbench/services/extensions/common/extensionHostProtocol';
 import { IServerEnvironmentService } from 'vs/server/node/serverEnvironmentService';
-import { IPCExtHostConnection, SocketExtHostConnection, writeExtHostConnection } from 'vs/workbench/services/extensions/common/extensionHostEnv';
-import { IExtHostReadyMessage, IExtHostReduceGraceTimeMessage, IExtHostSocketMessage } from 'vs/workbench/services/extensions/common/extensionHostProtocol';
+import { IProcessEnvironment, isWindows } from 'vs/base/common/platform';
+import { removeDangerousEnvVariables } from 'vs/base/common/processes';
+import { IExtensionHostStatusService } from 'vs/server/node/extensionHostStatusService';
+import { DisposableStore, toDisposable } from 'vs/base/common/lifecycle';
+import { IPCExtHostConnection, writeExtHostConnection, SocketExtHostConnection } from 'vs/workbench/services/extensions/common/extensionHostEnv';
+import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 
 export async function buildUserEnvironment(startParamsEnv: { [key: string]: string | null } = {}, withUserShellEnvironment: boolean, language: string, environmentService: IServerEnvironmentService, logService: ILogService, configurationService: IConfigurationService): Promise<IProcessEnvironment> {
 	const nlsConfig = await getNLSConfiguration(language, environmentService.userDataPath);
@@ -103,7 +103,7 @@ class ConnectionData {
 	}
 }
 
-export class ExtensionHostConnection extends Disposable {
+export class ExtensionHostConnection {
 
 	private _onClose = new Emitter<void>();
 	readonly onClose: Event<void> = this._onClose.event;
@@ -124,7 +124,6 @@ export class ExtensionHostConnection extends Disposable {
 		@IExtensionHostStatusService private readonly _extensionHostStatusService: IExtensionHostStatusService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService
 	) {
-		super();
 		this._canSendSocket = (!isWindows || !this._environmentService.args['socket-path']);
 		this._disposed = false;
 		this._remoteAddress = remoteAddress;
@@ -132,11 +131,6 @@ export class ExtensionHostConnection extends Disposable {
 		this._connectionData = new ConnectionData(socket, initialDataChunk);
 
 		this._log(`New connection established.`);
-	}
-
-	override dispose(): void {
-		this._cleanResources();
-		super.dispose();
 	}
 
 	private get _logPrefix(): string {
@@ -277,8 +271,8 @@ export class ExtensionHostConnection extends Disposable {
 			this._extensionHostProcess.stderr!.setEncoding('utf8');
 			const onStdout = Event.fromNodeEventEmitter<string>(this._extensionHostProcess.stdout!, 'data');
 			const onStderr = Event.fromNodeEventEmitter<string>(this._extensionHostProcess.stderr!, 'data');
-			this._register(onStdout((e) => this._log(`<${pid}> ${e}`)));
-			this._register(onStderr((e) => this._log(`<${pid}><stderr> ${e}`)));
+			onStdout((e) => this._log(`<${pid}> ${e}`));
+			onStderr((e) => this._log(`<${pid}><stderr> ${e}`));
 
 			// Lifecycle
 			this._extensionHostProcess.on('error', (err) => {

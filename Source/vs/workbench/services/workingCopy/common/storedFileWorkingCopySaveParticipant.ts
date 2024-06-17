@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { localize } from 'vs/nls';
 import { raceCancellation } from 'vs/base/common/async';
-import { CancellationToken } from 'vs/base/common/cancellation';
+import { CancellationTokenSource, CancellationToken } from 'vs/base/common/cancellation';
 import { ILogService } from 'vs/platform/log/common/log';
-import { IProgress, IProgressStep } from 'vs/platform/progress/common/progress';
+import { IProgressService, ProgressLocation } from 'vs/platform/progress/common/progress';
 import { IDisposable, Disposable, toDisposable } from 'vs/base/common/lifecycle';
 import { insert } from 'vs/base/common/arrays';
 import { IStoredFileWorkingCopySaveParticipant, IStoredFileWorkingCopySaveParticipantContext } from 'vs/workbench/services/workingCopy/common/workingCopyFileService';
@@ -19,6 +20,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 	get length(): number { return this.saveParticipants.length; }
 
 	constructor(
+		@IProgressService private readonly progressService: IProgressService,
 		@ILogService private readonly logService: ILogService
 	) {
 		super();
@@ -30,26 +32,41 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 		return toDisposable(() => remove());
 	}
 
-	async participate(workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>, context: IStoredFileWorkingCopySaveParticipantContext, progress: IProgress<IProgressStep>, token: CancellationToken): Promise<void> {
+	participate(workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>, context: IStoredFileWorkingCopySaveParticipantContext, token: CancellationToken): Promise<void> {
+		const cts = new CancellationTokenSource(token);
 
-		// undoStop before participation
-		workingCopy.model?.pushStackElement();
+		return this.progressService.withProgress({
+			title: localize('saveParticipants', "Saving '{0}'", workingCopy.name),
+			location: ProgressLocation.Notification,
+			cancellable: true,
+			delay: workingCopy.isDirty() ? 3000 : 5000
+		}, async progress => {
 
-		for (const saveParticipant of this.saveParticipants) {
-			if (token.isCancellationRequested || workingCopy.isDisposed()) {
-				break;
+			// undoStop before participation
+			workingCopy.model?.pushStackElement();
+
+			for (const saveParticipant of this.saveParticipants) {
+				if (cts.token.isCancellationRequested || workingCopy.isDisposed()) {
+					break;
+				}
+
+				try {
+					const promise = saveParticipant.participate(workingCopy, context, progress, cts.token);
+					await raceCancellation(promise, cts.token);
+				} catch (err) {
+					this.logService.warn(err);
+				}
 			}
 
-			try {
-				const promise = saveParticipant.participate(workingCopy, context, progress, token);
-				await raceCancellation(promise, token);
-			} catch (err) {
-				this.logService.warn(err);
-			}
-		}
+			// undoStop after participation
+			workingCopy.model?.pushStackElement();
 
-		// undoStop after participation
-		workingCopy.model?.pushStackElement();
+			// Cleanup
+			cts.dispose();
+		}, () => {
+			// user cancel
+			cts.dispose(true);
+		});
 	}
 
 	override dispose(): void {

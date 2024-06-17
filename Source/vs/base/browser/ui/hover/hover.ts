@@ -14,12 +14,11 @@ import type { IDisposable } from 'vs/base/common/lifecycle';
  */
 export interface IHoverDelegate2 {
 	/**
-	 * Shows a hover, provided a hover with the same {@link options} object is not already visible.
-	 *
+	 * Shows a hover, provided a hover with the same options object is not already visible.
 	 * @param options A set of options defining the characteristics of the hover.
 	 * @param focus Whether to focus the hover (useful for keyboard accessibility).
 	 *
-	 * @example A simple usage with a single element target.
+	 * **Example:** A simple usage with a single element target.
 	 *
 	 * ```typescript
 	 * showHover({
@@ -28,10 +27,7 @@ export interface IHoverDelegate2 {
 	 * });
 	 * ```
 	 */
-	showHover(
-		options: IHoverOptions,
-		focus?: boolean
-	): IHoverWidget | undefined;
+	showHover(options: IHoverOptions, focus?: boolean): IHoverWidget | undefined;
 
 	/**
 	 * Hides the hover if it was visible. This call will be ignored if the the hover is currently
@@ -45,37 +41,16 @@ export interface IHoverDelegate2 {
 	 */
 	showAndFocusLastHover(): void;
 
-	/**
-	 * Sets up a managed hover for the given element. A managed hover will set up listeners for
-	 * mouse events, show the hover after a delay and provide hooks to easily update the content.
-	 *
-	 * This should be used over {@link showHover} when fine-grained control is not needed. The
-	 * managed hover also does not scale well, consider using {@link showHover} when showing hovers
-	 * for many elements.
-	 *
-	 * @param hoverDelegate The hover delegate containing hooks and configuration for the hover.
-	 * @param targetElement The target element to show the hover for.
-	 * @param content The content of the hover or a factory that creates it at the time it's shown.
-	 * @param options Additional options for the managed hover.
-	 */
-	// TODO: The hoverDelegate parameter should be removed in favor of just a set of options. This
-	//       will avoid confusion around IHoverDelegate/IHoverDelegate2 as well as align more with
-	//       the design of the hover service.
-	// TODO: Align prototype closer to showHover, deriving options from IHoverOptions if possible.
-	setupManagedHover(hoverDelegate: IHoverDelegate, targetElement: HTMLElement, content: IManagedHoverContentOrFactory, options?: IManagedHoverOptions): IManagedHover;
+	// TODO: Change hoverDelegate arg to exclude the actual delegate and instead use the new options
+	setupUpdatableHover(hoverDelegate: IHoverDelegate, htmlElement: HTMLElement, content: IUpdatableHoverContentOrFactory, options?: IUpdatableHoverOptions): IUpdatableHover;
 
 	/**
 	 * Shows the hover for the given element if one has been setup.
-	 *
-	 * @param targetElement The target element of the hover, as set up in {@link setupManagedHover}.
 	 */
-	showManagedHover(targetElement: HTMLElement): void;
+	triggerUpdatableHover(htmlElement: HTMLElement): void;
 }
 
 export interface IHoverWidget extends IDisposable {
-	/**
-	 * Whether the hover widget has been disposed.
-	 */
 	readonly isDisposed: boolean;
 }
 
@@ -254,29 +229,33 @@ export interface IHoverTarget extends IDisposable {
 	 * An optional absolute x coordinate to position the hover with, for example to position the
 	 * hover using `MouseEvent.pageX`.
 	 */
-	readonly x?: number;
+	x?: number;
 
 	/**
 	 * An optional absolute y coordinate to position the hover with, for example to position the
 	 * hover using `MouseEvent.pageY`.
 	 */
-	readonly y?: number;
+	y?: number;
 }
 
-// #region Managed hover
+// #region Updatable hover
 
-export interface IManagedHoverTooltipMarkdownString {
+export interface IUpdatableHoverTooltipMarkdownString {
 	markdown: IMarkdownString | string | undefined | ((token: CancellationToken) => Promise<IMarkdownString | string | undefined>);
 	markdownNotSupportedFallback: string | undefined;
 }
 
-export type IManagedHoverContent = string | IManagedHoverTooltipMarkdownString | HTMLElement | undefined;
-export type IManagedHoverContentOrFactory = IManagedHoverContent | (() => IManagedHoverContent);
+export type IUpdatableHoverContent = string | IUpdatableHoverTooltipMarkdownString | HTMLElement | undefined;
+export type IUpdatableHoverContentOrFactory = IUpdatableHoverContent | (() => IUpdatableHoverContent);
 
-export interface IManagedHoverOptions extends Pick<IHoverOptions, 'actions' | 'linkHandler' | 'trapFocus'> {
+export interface IUpdatableHoverOptions {
+	actions?: IHoverAction[];
+	linkHandler?(url: string): void;
+	trapFocus?: boolean;
 }
 
-export interface IManagedHover extends IDisposable {
+export interface IUpdatableHover extends IDisposable {
+
 	/**
 	 * Allows to programmatically open the hover.
 	 */
@@ -290,7 +269,7 @@ export interface IManagedHover extends IDisposable {
 	/**
 	 * Updates the contents of the hover.
 	 */
-	update(tooltip: IManagedHoverContent, options?: IManagedHoverOptions): void;
+	update(tooltip: IUpdatableHoverContent, options?: IUpdatableHoverOptions): void;
 }
 
-// #endregion Managed hover
+// #endregion Updatable hover

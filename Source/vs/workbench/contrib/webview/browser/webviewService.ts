@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter } from 'vs/base/common/event';
-import { Disposable, DisposableStore } from 'vs/base/common/lifecycle';
+import { Disposable } from 'vs/base/common/lifecycle';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { WebviewThemeDataProvider } from 'vs/workbench/contrib/webview/browser/themeing';
 import { IOverlayWebview, IWebview, IWebviewElement, IWebviewService, WebviewInitInfo } from 'vs/workbench/contrib/webview/browser/webview';
@@ -58,11 +58,9 @@ export class WebviewService extends Disposable implements IWebviewService {
 	protected registerNewWebview(webview: IWebview) {
 		this._webviews.add(webview);
 
-		const store = new DisposableStore();
-
-		store.add(webview.onDidFocus(() => {
+		webview.onDidFocus(() => {
 			this._updateActiveWebview(webview);
-		}));
+		});
 
 		const onBlur = () => {
 			if (this._activeWebview === webview) {
@@ -70,11 +68,10 @@ export class WebviewService extends Disposable implements IWebviewService {
 			}
 		};
 
-		store.add(webview.onDidBlur(onBlur));
-		store.add(webview.onDidDispose(() => {
+		webview.onDidBlur(onBlur);
+		webview.onDidDispose(() => {
 			onBlur();
-			store.dispose();
 			this._webviews.delete(webview);
-		}));
+		});
 	}
 }

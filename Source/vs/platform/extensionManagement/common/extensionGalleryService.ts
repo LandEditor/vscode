@@ -957,7 +957,7 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 		};
 
 		const stopWatch = new StopWatch();
-		let context: IRequestContext | undefined, errorCode: ExtensionGalleryErrorCode | undefined, total: number = 0;
+		let context: IRequestContext | undefined, error: ExtensionGalleryError | undefined, total: number = 0;
 
 		try {
 			context = await this.requestService.request({
@@ -989,14 +989,9 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 			return { galleryExtensions: [], total };
 
 		} catch (e) {
-			if (isCancellationError(e)) {
-				errorCode = ExtensionGalleryErrorCode.Cancelled;
-				throw e;
-			} else {
-				const errorMessage = getErrorMessage(e);
-				errorCode = errorMessage.startsWith('XHR timeout') ? ExtensionGalleryErrorCode.Timeout : ExtensionGalleryErrorCode.Failed;
-				throw new ExtensionGalleryError(errorMessage, errorCode);
-			}
+			const errorCode = isCancellationError(e) ? ExtensionGalleryErrorCode.Cancelled : getErrorMessage(e).startsWith('XHR timeout') ? ExtensionGalleryErrorCode.Timeout : ExtensionGalleryErrorCode.Failed;
+			error = new ExtensionGalleryError(getErrorMessage(e), errorCode);
+			throw error;
 		} finally {
 			this.telemetryService.publicLog2<GalleryServiceQueryEvent, GalleryServiceQueryClassification>('galleryService:query', {
 				...query.telemetryData,
@@ -1005,7 +1000,7 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 				success: !!context && isSuccess(context),
 				responseBodySize: context?.res.headers['Content-Length'],
 				statusCode: context ? String(context.res.statusCode) : undefined,
-				errorCode,
+				errorCode: error?.code,
 				count: String(total)
 			});
 		}

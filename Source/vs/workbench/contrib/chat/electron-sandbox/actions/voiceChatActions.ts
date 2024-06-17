@@ -665,10 +665,7 @@ export class StopListeningAndSubmitAction extends Action2 {
 			f1: true,
 			keybinding: {
 				weight: KeybindingWeight.WorkbenchContrib,
-				when: ContextKeyExpr.and(
-					FocusInChatInput,
-					AnyScopedVoiceChatInProgress
-				),
+				when: FocusInChatInput,
 				primary: KeyMod.CtrlCmd | KeyCode.KeyI
 			},
 			precondition: GlobalVoiceChatInProgress // need global context here because of `f1: true`

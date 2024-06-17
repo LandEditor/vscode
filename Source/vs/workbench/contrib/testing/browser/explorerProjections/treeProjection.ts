@@ -223,11 +223,9 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 						break;
 					}
 
-					// Removing the first element will cause the root to be hidden.
-					// Changing first-level elements will need the root to re-render if
-					// there are no other controllers with items.
+					// The first element will cause the root to be hidden
 					const parent = toRemove.parent;
-					const affectsRootElement = toRemove.depth === 1 && (parent?.children.size === 1 || !Iterable.some(this.rootsWithChildren, (_, i) => i === 1));
+					const affectsRootElement = toRemove.depth === 1 && parent?.children.size === 1;
 					this.changedParents.add(affectsRootElement ? null : parent);
 
 					const queue: Iterable<TestExplorerTreeElement>[] = [[toRemove]];

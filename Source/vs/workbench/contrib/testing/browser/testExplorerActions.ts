@@ -44,7 +44,7 @@ import { ITestProfileService, canUseProfileWithTest } from 'vs/workbench/contrib
 import { ITestResult } from 'vs/workbench/contrib/testing/common/testResult';
 import { ITestResultService } from 'vs/workbench/contrib/testing/common/testResultService';
 import { IMainThreadTestCollection, IMainThreadTestController, ITestService, expandAndGetTestById, testsInFile, testsUnderUri } from 'vs/workbench/contrib/testing/common/testService';
-import { ExtTestRunProfileKind, ITestRunProfile, InternalTestItem, TestItemExpandState, TestRunProfileBitset } from 'vs/workbench/contrib/testing/common/testTypes';
+import { ExtTestRunProfileKind, ITestRunProfile, InternalTestItem, TestRunProfileBitset } from 'vs/workbench/contrib/testing/common/testTypes';
 import { TestingContextKeys } from 'vs/workbench/contrib/testing/common/testingContextKeys';
 import { ITestingContinuousRunService } from 'vs/workbench/contrib/testing/common/testingContinuousRunService';
 import { ITestingPeekOpener } from 'vs/workbench/contrib/testing/common/testingPeekOpener';
@@ -224,8 +224,8 @@ export class RunUsingProfileAction extends Action2 {
 		}
 
 		testService.runResolvedTests({
-			group: profile.group,
 			targets: [{
+				profileGroup: profile.group,
 				profileId: profile.profileId,
 				controllerId: profile.controllerId,
 				testIds: elements.filter(t => canUseProfileWithTest(profile, t.test)).map(t => t.test.item.extId)
@@ -625,8 +625,7 @@ abstract class RunOrDebugAllTestsAction extends Action2 {
 		const testService = accessor.get(ITestService);
 		const notifications = accessor.get(INotificationService);
 
-		const roots = [...testService.collection.rootItems].filter(r => r.children.size
-			|| r.expand === TestItemExpandState.Expandable || r.expand === TestItemExpandState.BusyExpanding);
+		const roots = [...testService.collection.rootItems];
 		if (!roots.length) {
 			notifications.info(this.noTestsFoundError);
 			return;
@@ -1346,8 +1345,7 @@ abstract class RunOrDebugFailedTests extends RunOrDebugExtsByPath {
 	}
 }
 
-
-abstract class RunOrDebugLastRun extends Action2 {
+abstract class RunOrDebugLastRun extends RunOrDebugExtsByPath {
 	constructor(options: IAction2Options) {
 		super({
 			...options,
@@ -1361,46 +1359,21 @@ abstract class RunOrDebugLastRun extends Action2 {
 		});
 	}
 
-	protected abstract getGroup(): TestRunProfileBitset;
-
-	protected getLastTestRunRequest(accessor: ServicesAccessor, runId?: string) {
-		const resultService = accessor.get(ITestResultService);
-		const lastResult = runId ? resultService.results.find(r => r.id === runId) : resultService.results[0];
-		return lastResult?.request;
-	}
-
-	/** @inheritdoc */
-	public override async run(accessor: ServicesAccessor, runId?: string) {
+	/**
+	 * @inheritdoc
+	 */
+	protected *getTestExtIdsToRun(accessor: ServicesAccessor, runId?: string): Iterable<string> {
 		const resultService = accessor.get(ITestResultService);
 		const lastResult = runId ? resultService.results.find(r => r.id === runId) : resultService.results[0];
 		if (!lastResult) {
 			return;
 		}
 
-		const req = lastResult.request;
-		const testService = accessor.get(ITestService);
-		const profileService = accessor.get(ITestProfileService);
-		const profileExists = (t: { controllerId: string; profileId: number }) =>
-			profileService.getControllerProfiles(t.controllerId).some(p => p.profileId === t.profileId);
-
-		await discoverAndRunTests(
-			testService.collection,
-			accessor.get(IProgressService),
-			req.targets.flatMap(t => t.testIds),
-			tests => {
-				// If we're requesting a re-run in the same group and have the same profiles
-				// as were used before, then use those exactly. Otherwise guess naively.
-				if (this.getGroup() & req.group && req.targets.every(profileExists)) {
-					return testService.runResolvedTests({
-						targets: req.targets,
-						group: req.group,
-						exclude: req.exclude,
-					});
-				} else {
-					return testService.runTests({ tests, group: this.getGroup() });
-				}
-			},
-		);
+		for (const test of lastResult.request.targets) {
+			for (const testId of test.testIds) {
+				yield testId;
+			}
+		}
 	}
 }
 
@@ -1459,8 +1432,11 @@ export class ReRunLastRun extends RunOrDebugLastRun {
 		});
 	}
 
-	protected override getGroup(): TestRunProfileBitset {
-		return TestRunProfileBitset.Run;
+	protected runTest(service: ITestService, internalTests: InternalTestItem[]): Promise<ITestResult> {
+		return service.runTests({
+			group: TestRunProfileBitset.Run,
+			tests: internalTests,
+		});
 	}
 }
 
@@ -1477,8 +1453,11 @@ export class DebugLastRun extends RunOrDebugLastRun {
 		});
 	}
 
-	protected override getGroup(): TestRunProfileBitset {
-		return TestRunProfileBitset.Debug;
+	protected runTest(service: ITestService, internalTests: InternalTestItem[]): Promise<ITestResult> {
+		return service.runTests({
+			group: TestRunProfileBitset.Debug,
+			tests: internalTests,
+		});
 	}
 }
 
@@ -1495,8 +1474,11 @@ export class CoverageLastRun extends RunOrDebugLastRun {
 		});
 	}
 
-	protected override getGroup(): TestRunProfileBitset {
-		return TestRunProfileBitset.Coverage;
+	protected runTest(service: ITestService, internalTests: InternalTestItem[]): Promise<ITestResult> {
+		return service.runTests({
+			group: TestRunProfileBitset.Coverage,
+			tests: internalTests,
+		});
 	}
 }
 

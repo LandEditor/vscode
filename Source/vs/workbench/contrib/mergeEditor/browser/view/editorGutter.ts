@@ -10,12 +10,12 @@ import { CodeEditorWidget } from 'vs/editor/browser/widget/codeEditor/codeEditor
 import { LineRange } from 'vs/workbench/contrib/mergeEditor/browser/model/lineRange';
 
 export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends Disposable {
-	private readonly scrollTop = observableFromEvent(this,
+	private readonly scrollTop = observableFromEvent(
 		this._editor.onDidScrollChange,
 		(e) => /** @description editor.onDidScrollChange */ this._editor.getScrollTop()
 	);
 	private readonly isScrollTopZero = this.scrollTop.map((scrollTop) => /** @description isScrollTopZero */ scrollTop === 0);
-	private readonly modelAttached = observableFromEvent(this,
+	private readonly modelAttached = observableFromEvent(
 		this._editor.onDidChangeModel,
 		(e) => /** @description editor.onDidChangeModel */ this._editor.hasModel()
 	);
@@ -126,7 +126,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 		for (const id of unusedIds) {
 			const view = this.views.get(id)!;
 			view.gutterItemView.dispose();
-			view.domNode.remove();
+			this._domNode.removeChild(view.domNode);
 			this.views.delete(id);
 		}
 	}
@@ -154,3 +154,4 @@ export interface IGutterItemView<T extends IGutterItemInfo> extends IDisposable 
 	update(item: T): void;
 	layout(top: number, height: number, viewTop: number, viewHeight: number): void;
 }
+

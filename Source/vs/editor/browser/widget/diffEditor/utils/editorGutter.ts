@@ -11,12 +11,12 @@ import { LineRange } from 'vs/editor/common/core/lineRange';
 import { OffsetRange } from 'vs/editor/common/core/offsetRange';
 
 export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends Disposable {
-	private readonly scrollTop = observableFromEvent(this,
+	private readonly scrollTop = observableFromEvent(
 		this._editor.onDidScrollChange,
 		(e) => /** @description editor.onDidScrollChange */ this._editor.getScrollTop()
 	);
 	private readonly isScrollTopZero = this.scrollTop.map((scrollTop) => /** @description isScrollTopZero */ scrollTop === 0);
-	private readonly modelAttached = observableFromEvent(this,
+	private readonly modelAttached = observableFromEvent(
 		this._editor.onDidChangeModel,
 		(e) => /** @description editor.onDidChangeModel */ this._editor.hasModel()
 	);
@@ -136,7 +136,7 @@ export class EditorGutter<T extends IGutterItemInfo = IGutterItemInfo> extends D
 		for (const id of unusedIds) {
 			const view = this.views.get(id)!;
 			view.gutterItemView.dispose();
-			view.domNode.remove();
+			this._domNode.removeChild(view.domNode);
 			this.views.delete(id);
 		}
 	}

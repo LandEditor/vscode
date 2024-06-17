@@ -81,7 +81,7 @@ export class DiffEditorViewZones extends Disposable {
 		}));
 
 		const originalModelTokenizationCompleted = this._diffModel.map(m =>
-			m ? observableFromEvent(this, m.model.original.onDidChangeTokens, () => m.model.original.tokenization.backgroundTokenizationState === BackgroundTokenizationState.Completed) : undefined
+			m ? observableFromEvent(m.model.original.onDidChangeTokens, () => m.model.original.tokenization.backgroundTokenizationState === BackgroundTokenizationState.Completed) : undefined
 		).map((m, reader) => m?.read(reader));
 
 		const alignments = derived<ILineRangeAlignment[] | null>((reader) => {
@@ -525,15 +525,13 @@ function computeRangeAlignment(
 		let lastModLineNumber = c.modified.startLineNumber;
 		let lastOrigLineNumber = c.original.startLineNumber;
 
-		function emitAlignment(origLineNumberExclusive: number, modLineNumberExclusive: number, forceAlignment = false) {
+		function emitAlignment(origLineNumberExclusive: number, modLineNumberExclusive: number) {
 			if (origLineNumberExclusive < lastOrigLineNumber || modLineNumberExclusive < lastModLineNumber) {
 				return;
 			}
 			if (first) {
 				first = false;
-			} else if (!forceAlignment && (origLineNumberExclusive === lastOrigLineNumber || modLineNumberExclusive === lastModLineNumber)) {
-				// This causes a re-alignment of an already aligned line.
-				// However, we don't care for the final alignment.
+			} else if (origLineNumberExclusive === lastOrigLineNumber || modLineNumberExclusive === lastModLineNumber) {
 				return;
 			}
 			const originalRange = new LineRange(lastOrigLineNumber, origLineNumberExclusive);
@@ -577,7 +575,7 @@ function computeRangeAlignment(
 			}
 		}
 
-		emitAlignment(c.original.endLineNumberExclusive, c.modified.endLineNumberExclusive, true);
+		emitAlignment(c.original.endLineNumberExclusive, c.modified.endLineNumberExclusive);
 
 		lastOriginalLineNumber = c.original.endLineNumberExclusive;
 		lastModifiedLineNumber = c.modified.endLineNumberExclusive;

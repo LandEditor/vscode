@@ -7,8 +7,7 @@ import { Emitter, Event, EventMultiplexer } from 'vs/base/common/event';
 import {
 	ILocalExtension, IGalleryExtension, IExtensionIdentifier, IExtensionsControlManifest, IExtensionGalleryService, InstallOptions, UninstallOptions, InstallExtensionResult, ExtensionManagementError, ExtensionManagementErrorCode, Metadata, InstallOperation, EXTENSION_INSTALL_SOURCE_CONTEXT, InstallExtensionInfo,
 	IProductVersion,
-	ExtensionInstallSource,
-	DidUpdateExtensionMetadata
+	ExtensionInstallSource
 } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { DidChangeProfileForServerEvent, DidUninstallExtensionOnServerEvent, IExtensionManagementServer, IExtensionManagementServerService, InstallExtensionOnServerEvent, IResourceExtension, IWorkbenchExtensionManagementService, UninstallExtensionOnServerEvent } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
 import { ExtensionType, isLanguagePackExtension, IExtensionManifest, getWorkspaceSupportTypeMessage, TargetPlatform } from 'vs/platform/extensions/common/extensions';
@@ -61,7 +60,7 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 	private readonly _onDidUninstallExtension = this._register(new Emitter<DidUninstallExtensionOnServerEvent>());
 	readonly onDidUninstallExtension: Event<DidUninstallExtensionOnServerEvent>;
 
-	readonly onDidUpdateExtensionMetadata: Event<DidUpdateExtensionMetadata>;
+	readonly onDidUpdateExtensionMetadata: Event<ILocalExtension>;
 	readonly onDidChangeProfile: Event<DidChangeProfileForServerEvent>;
 
 	readonly onDidEnableExtensions: Event<ILocalExtension[]>;
@@ -118,7 +117,7 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 		this._register(onDidUninstallExtensionEventMultiplexer.add(this._onDidUninstallExtension.event));
 		this.onDidUninstallExtension = onDidUninstallExtensionEventMultiplexer.event;
 
-		const onDidUpdateExtensionMetadaEventMultiplexer = this._register(new EventMultiplexer<DidUpdateExtensionMetadata>());
+		const onDidUpdateExtensionMetadaEventMultiplexer = this._register(new EventMultiplexer<ILocalExtension>());
 		this.onDidUpdateExtensionMetadata = onDidUpdateExtensionMetadaEventMultiplexer.event;
 
 		const onDidChangeProfileEventMultiplexer = this._register(new EventMultiplexer<DidChangeProfileForServerEvent>());
@@ -218,10 +217,10 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 		return Promise.reject(`Invalid location ${extension.location.toString()}`);
 	}
 
-	updateMetadata(extension: ILocalExtension, metadata: Partial<Metadata>): Promise<ILocalExtension> {
+	updateMetadata(extension: ILocalExtension, metadata: Partial<Metadata>, profileLocation?: URI): Promise<ILocalExtension> {
 		const server = this.getServer(extension);
 		if (server) {
-			return server.extensionManagementService.updateMetadata(extension, metadata, this.userDataProfileService.currentProfile.extensionsResource);
+			return server.extensionManagementService.updateMetadata(extension, metadata, profileLocation);
 		}
 		return Promise.reject(`Invalid location ${extension.location.toString()}`);
 	}
@@ -378,7 +377,6 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 			servers.push(server);
 		}
 
-		installOptions = { ...(installOptions || {}), isApplicationScoped: extension.isApplicationScoped };
 		return Promises.settled(servers.map(server => server.extensionManagementService.installFromGallery(gallery, installOptions))).then(([local]) => local);
 	}
 
@@ -402,12 +400,7 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 					exensions.push({ extension, options });
 				}
 			} catch (error) {
-				results.set(extension.identifier.id.toLowerCase(), {
-					identifier: extension.identifier,
-					source: extension, error,
-					operation: InstallOperation.Install,
-					profileLocation: options.profileLocation ?? this.userDataProfileService.currentProfile.extensionsResource
-				});
+				results.set(extension.identifier.id.toLowerCase(), { identifier: extension.identifier, source: extension, error, operation: InstallOperation.Install });
 			}
 		}));
 
@@ -524,8 +517,7 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 			identifier: extension.identifier,
 			server,
 			applicationScoped: false,
-			workspaceScoped: true,
-			profileLocation: this.userDataProfileService.currentProfile.extensionsResource
+			workspaceScoped: true
 		});
 
 		try {
@@ -539,8 +531,7 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 				identifier: extension.identifier,
 				server,
 				applicationScoped: false,
-				workspaceScoped: true,
-				profileLocation: this.userDataProfileService.currentProfile.extensionsResource
+				workspaceScoped: true
 			});
 		} catch (error) {
 			this.logService.error(`Failed to uninstall the workspace extension ${extension.identifier.id} from ${extension.location.toString()}`, getErrorMessage(error));
@@ -549,8 +540,7 @@ export class ExtensionManagementService extends Disposable implements IWorkbench
 				server,
 				error,
 				applicationScoped: false,
-				workspaceScoped: true,
-				profileLocation: this.userDataProfileService.currentProfile.extensionsResource
+				workspaceScoped: true
 			});
 			throw error;
 		}

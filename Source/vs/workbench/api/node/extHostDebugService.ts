@@ -27,7 +27,6 @@ import { ExtensionDescriptionRegistry } from 'vs/workbench/services/extensions/c
 import type * as vscode from 'vscode';
 import { ExtHostConfigProvider, IExtHostConfiguration } from '../common/extHostConfiguration';
 import { IExtHostCommands } from 'vs/workbench/api/common/extHostCommands';
-import { IExtHostTesting } from 'vs/workbench/api/common/extHostTesting';
 
 export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
@@ -45,9 +44,8 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		@IExtHostEditorTabs editorTabs: IExtHostEditorTabs,
 		@IExtHostVariableResolverProvider variableResolver: IExtHostVariableResolverProvider,
 		@IExtHostCommands commands: IExtHostCommands,
-		@IExtHostTesting testing: IExtHostTesting,
 	) {
-		super(extHostRpcService, workspaceService, extensionService, configurationService, editorTabs, variableResolver, commands, testing);
+		super(extHostRpcService, workspaceService, extensionService, configurationService, editorTabs, variableResolver, commands);
 	}
 
 	protected override createDebugAdapter(adapter: IAdapterDescriptor, session: ExtHostDebugSession): AbstractDebugAdapter | undefined {
@@ -80,9 +78,9 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 
 			if (!this._terminalDisposedListener) {
 				// React on terminal disposed and check if that is the debug terminal #12956
-				this._terminalDisposedListener = this._register(this._terminalService.onDidCloseTerminal(terminal => {
+				this._terminalDisposedListener = this._terminalService.onDidCloseTerminal(terminal => {
 					this._integratedTerminalInstances.onTerminalClosed(terminal);
-				}));
+				});
 			}
 
 			const configProvider = await this._configurationService.getConfigProvider();

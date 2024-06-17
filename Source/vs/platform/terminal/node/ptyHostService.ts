@@ -108,16 +108,14 @@ export class PtyHostService extends Disposable implements IPtyHostService {
 		this._register(toDisposable(() => this._disposePtyHost()));
 
 		this._resolveVariablesRequestStore = this._register(new RequestStore(undefined, this._logService));
-		this._register(this._resolveVariablesRequestStore.onCreateRequest(this._onPtyHostRequestResolveVariables.fire, this._onPtyHostRequestResolveVariables));
+		this._resolveVariablesRequestStore.onCreateRequest(this._onPtyHostRequestResolveVariables.fire, this._onPtyHostRequestResolveVariables);
 
 		// Start the pty host when a window requests a connection, if the starter has that capability.
 		if (this._ptyHostStarter.onRequestConnection) {
-			this._register(Event.once(this._ptyHostStarter.onRequestConnection)(() => this._ensurePtyHost()));
+			Event.once(this._ptyHostStarter.onRequestConnection)(() => this._ensurePtyHost());
 		}
 
-		if (this._ptyHostStarter.onWillShutdown) {
-			this._register(this._ptyHostStarter.onWillShutdown(() => this._wasQuitRequested = true));
-		}
+		this._ptyHostStarter.onWillShutdown?.(() => this._wasQuitRequested = true);
 	}
 
 	private get _ignoreProcessNames(): string[] {

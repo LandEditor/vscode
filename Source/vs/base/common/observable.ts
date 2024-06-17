@@ -60,9 +60,6 @@ export {
 	waitForState,
 	derivedWithCancellationToken,
 } from 'vs/base/common/observableInternal/promise';
-export {
-	observableValueOpts
-} from 'vs/base/common/observableInternal/api';
 
 import { ConsoleObservableLogger, setLogger } from 'vs/base/common/observableInternal/logging';
 

@@ -42,7 +42,7 @@ import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 import { defaultCountBadgeStyles } from 'vs/platform/theme/browser/defaultStyles';
 import { getDefaultHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegateFactory';
 import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace';
-import type { IManagedHover } from 'vs/base/browser/ui/hover/hover';
+import type { IUpdatableHover } from 'vs/base/browser/ui/hover/hover';
 
 export abstract class ExtensionWidget extends Disposable implements IExtensionContainer {
 	private _extension: IExtension | null = null;
@@ -126,7 +126,7 @@ export class InstallCountWidget extends ExtensionWidget {
 
 export class RatingsWidget extends ExtensionWidget {
 
-	private readonly containerHover: IManagedHover;
+	private readonly containerHover: IUpdatableHover;
 
 	constructor(
 		private container: HTMLElement,
@@ -140,7 +140,7 @@ export class RatingsWidget extends ExtensionWidget {
 			container.classList.add('small');
 		}
 
-		this.containerHover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), container, ''));
+		this.containerHover = this._register(hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), container, ''));
 
 		this.render();
 	}
@@ -192,7 +192,7 @@ export class RatingsWidget extends ExtensionWidget {
 export class VerifiedPublisherWidget extends ExtensionWidget {
 
 	private readonly disposables = this._register(new DisposableStore());
-	private readonly containerHover: IManagedHover;
+	private readonly containerHover: IUpdatableHover;
 
 	constructor(
 		private container: HTMLElement,
@@ -201,7 +201,7 @@ export class VerifiedPublisherWidget extends ExtensionWidget {
 		@IOpenerService private readonly openerService: IOpenerService,
 	) {
 		super();
-		this.containerHover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), container, ''));
+		this.containerHover = this._register(hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), container, ''));
 		this.render();
 	}
 
@@ -258,7 +258,7 @@ export class SponsorWidget extends ExtensionWidget {
 		}
 
 		const sponsor = append(this.container, $('span.sponsor.clickable', { tabIndex: 0 }));
-		this.disposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), sponsor, this.extension?.publisherSponsorLink.toString() ?? ''));
+		this.disposables.add(this.hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), sponsor, this.extension?.publisherSponsorLink.toString() ?? ''));
 		sponsor.setAttribute('role', 'link'); // #132645
 		const sponsorIconElement = renderIcon(sponsorIcon);
 		const label = $('span', undefined, localize('sponsor', "Sponsor"));
@@ -294,7 +294,9 @@ export class RecommendationWidget extends ExtensionWidget {
 	}
 
 	private clear(): void {
-		this.element?.remove();
+		if (this.element) {
+			this.parent.removeChild(this.element);
+		}
 		this.element = undefined;
 		this.disposables.clear();
 	}
@@ -328,7 +330,9 @@ export class PreReleaseBookmarkWidget extends ExtensionWidget {
 	}
 
 	private clear(): void {
-		this.element?.remove();
+		if (this.element) {
+			this.parent.removeChild(this.element);
+		}
 		this.element = undefined;
 		this.disposables.clear();
 	}
@@ -363,7 +367,9 @@ export class RemoteBadgeWidget extends ExtensionWidget {
 	}
 
 	private clear(): void {
-		this.remoteBadge.value?.element.remove();
+		if (this.remoteBadge.value) {
+			this.element.removeChild(this.remoteBadge.value.element);
+		}
 		this.remoteBadge.clear();
 	}
 
@@ -380,7 +386,7 @@ export class RemoteBadgeWidget extends ExtensionWidget {
 class RemoteBadge extends Disposable {
 
 	readonly element: HTMLElement;
-	readonly elementHover: IManagedHover;
+	readonly elementHover: IUpdatableHover;
 
 	constructor(
 		private readonly tooltip: boolean,
@@ -391,7 +397,7 @@ class RemoteBadge extends Disposable {
 	) {
 		super();
 		this.element = $('div.extension-badge.extension-remote-badge');
-		this.elementHover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.element, ''));
+		this.elementHover = this._register(hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), this.element, ''));
 		this.render();
 	}
 
@@ -472,7 +478,7 @@ export class SyncIgnoredWidget extends ExtensionWidget {
 
 		if (this.extension && this.extension.state === ExtensionState.Installed && this.userDataSyncEnablementService.isEnabled() && this.extensionsWorkbenchService.isExtensionIgnoredToSync(this.extension)) {
 			const element = append(this.container, $('span.extension-sync-ignored' + ThemeIcon.asCSSSelector(syncIgnoredIcon)));
-			this.disposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), element, localize('syncingore.label', "This extension is ignored during sync.")));
+			this.disposables.add(this.hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), element, localize('syncingore.label', "This extension is ignored during sync.")));
 			element.classList.add(...ThemeIcon.asClassNameArray(syncIgnoredIcon));
 		}
 	}
@@ -545,7 +551,7 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 	render(): void {
 		this.hover.value = undefined;
 		if (this.extension) {
-			this.hover.value = this.hoverService.setupManagedHover({
+			this.hover.value = this.hoverService.setupUpdatableHover({
 				delay: this.configurationService.getValue<number>('workbench.hover.delay'),
 				showHover: (options, focus) => {
 					return this.hoverService.showHover({

@@ -5,8 +5,6 @@
 
 import { ILanguageIdCodec } from 'vs/editor/common/languages';
 import { FontStyle, ColorId, StandardTokenType, MetadataConsts, TokenMetadata, ITokenPresentation } from 'vs/editor/common/encodedTokenAttributes';
-import { IPosition } from 'vs/editor/common/core/position';
-import { ITextModel } from 'vs/editor/common/model';
 
 export interface IViewLineTokens {
 	languageIdCodec: ILanguageIdCodec;
@@ -368,16 +366,4 @@ class SliceLineTokens implements IViewLineTokens {
 			callback(tokenIndex);
 		}
 	}
-}
-
-export function getStandardTokenTypeAtPosition(model: ITextModel, position: IPosition): StandardTokenType | undefined {
-	const lineNumber = position.lineNumber;
-	if (!model.tokenization.isCheapToTokenize(lineNumber)) {
-		return undefined;
-	}
-	model.tokenization.forceTokenization(lineNumber);
-	const lineTokens = model.tokenization.getLineTokens(lineNumber);
-	const tokenIndex = lineTokens.findTokenIndexAtOffset(position.column - 1);
-	const tokenType = lineTokens.getStandardTokenType(tokenIndex);
-	return tokenType;
 }

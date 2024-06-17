@@ -49,7 +49,6 @@ export interface IRenderValueOptions {
 export interface IVariableTemplateData {
 	expression: HTMLElement;
 	name: HTMLElement;
-	type: HTMLElement;
 	value: HTMLElement;
 	label: HighlightedLabel;
 	lazyButton: HTMLElement;
@@ -110,7 +109,7 @@ export function renderExpressionValue(expressionOrValue: IExpressionValue | stri
 
 	if (options.hover) {
 		const { store, commands, commandService } = options.hover instanceof DisposableStore ? { store: options.hover, commands: [], commandService: undefined } : options.hover;
-		store.add(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), container, () => {
+		store.add(hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), container, () => {
 			const container = dom.$('div');
 			const markdownHoverElement = dom.$('div.hover-row');
 			const hoverContentsElement = dom.append(markdownHoverElement, dom.$('div.hover-contents'));
@@ -131,20 +130,13 @@ export function renderExpressionValue(expressionOrValue: IExpressionValue | stri
 	}
 }
 
-export function renderVariable(store: DisposableStore, commandService: ICommandService, hoverService: IHoverService, variable: Variable, data: IVariableTemplateData, showChanged: boolean, highlights: IHighlight[], linkDetector?: LinkDetector, displayType?: boolean): void {
+export function renderVariable(store: DisposableStore, commandService: ICommandService, hoverService: IHoverService, variable: Variable, data: IVariableTemplateData, showChanged: boolean, highlights: IHighlight[], linkDetector?: LinkDetector): void {
 	if (variable.available) {
-		data.type.textContent = '';
 		let text = variable.name;
 		if (variable.value && typeof variable.name === 'string') {
-			if (variable.type && displayType) {
-				text += ': ';
-				data.type.textContent = variable.type + ' =';
-			} else {
-				text += ' =';
-			}
+			text += ':';
 		}
-
-		data.label.set(text, highlights, variable.type && !displayType ? variable.type : variable.name);
+		data.label.set(text, highlights, variable.type ? variable.type : variable.name);
 		data.name.classList.toggle('virtual', variable.presentationHint?.kind === 'virtual');
 		data.name.classList.toggle('internal', variable.presentationHint?.visibility === 'internal');
 	} else if (variable.value && typeof variable.name === 'string' && variable.name) {
@@ -179,7 +171,6 @@ export interface IInputBoxOptions {
 export interface IExpressionTemplateData {
 	expression: HTMLElement;
 	name: HTMLSpanElement;
-	type: HTMLSpanElement;
 	value: HTMLSpanElement;
 	inputBoxContainer: HTMLElement;
 	actionBar?: ActionBar;
@@ -237,10 +228,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
 		const name = dom.append(expression, $('span.name'));
 		const lazyButton = dom.append(expression, $('span.lazy-button'));
 		lazyButton.classList.add(...ThemeIcon.asClassNameArray(Codicon.eye));
-
-		templateDisposable.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), lazyButton, localize('debug.lazyButton.tooltip', "Click to expand")));
-		const type = dom.append(expression, $('span.type'));
-
+		templateDisposable.add(this.hoverService.setupUpdatableHover(getDefaultHoverDelegate('mouse'), lazyButton, localize('debug.lazyButton.tooltip', "Click to expand")));
 		const value = dom.append(expression, $('span.value'));
 
 		const label = templateDisposable.add(new HighlightedLabel(name));
@@ -253,7 +241,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
 			actionBar = templateDisposable.add(new ActionBar(expression));
 		}
 
-		const template: IExpressionTemplateData = { expression, name, type, value, label, inputBoxContainer, actionBar, elementDisposable: new DisposableStore(), templateDisposable, lazyButton, currentElement: undefined };
+		const template: IExpressionTemplateData = { expression, name, value, label, inputBoxContainer, actionBar, elementDisposable: new DisposableStore(), templateDisposable, lazyButton, currentElement: undefined };
 
 		templateDisposable.add(dom.addDisposableListener(lazyButton, dom.EventType.CLICK, () => {
 			if (template.currentElement) {
@@ -267,6 +255,7 @@ export abstract class AbstractExpressionsRenderer<T = IExpression> implements IT
 	public abstract renderElement(node: ITreeNode<T, FuzzyScore>, index: number, data: IExpressionTemplateData): void;
 
 	protected renderExpressionElement(element: IExpression, node: ITreeNode<T, FuzzyScore>, data: IExpressionTemplateData): void {
+		data.elementDisposable.clear();
 		data.currentElement = element;
 		this.renderExpression(node.element, data, createMatches(node.filterData));
 		if (data.actionBar) {

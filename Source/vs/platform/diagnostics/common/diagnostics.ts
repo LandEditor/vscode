@@ -80,8 +80,6 @@ export interface WorkspaceStats {
 	fileCount: number;
 	maxFilesReached: boolean;
 	launchConfigFiles: WorkspaceStatItem[];
-	totalScanTime: number;
-	totalReaddirCount: number;
 }
 
 export interface PerformanceInfo {

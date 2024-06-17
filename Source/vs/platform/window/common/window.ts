@@ -49,9 +49,6 @@ export interface IBaseOpenWindowsOptions {
 	 * If not set, defaults to the remote authority of the current window.
 	 */
 	readonly remoteAuthority?: string | null;
-
-	readonly forceProfile?: string;
-	readonly forceTempProfile?: boolean;
 }
 
 export interface IOpenWindowOptions extends IBaseOpenWindowsOptions {
@@ -67,6 +64,9 @@ export interface IOpenWindowOptions extends IBaseOpenWindowsOptions {
 	readonly gotoLineMode?: boolean;
 
 	readonly waitMarkerFileURI?: URI;
+
+	readonly forceProfile?: string;
+	readonly forceTempProfile?: boolean;
 }
 
 export interface IAddFoldersRequest {

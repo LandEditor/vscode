@@ -77,16 +77,11 @@ export function connectProxyResolver(
 }
 
 function createPatchedModules(params: ProxyAgentParams, resolveProxy: ReturnType<typeof createProxyResolver>) {
-
-	function mergeModules(module: any, patch: any) {
-		return Object.assign({}, module, patch);
-	}
-
 	return {
-		http: mergeModules(http, createHttpPatch(params, http, resolveProxy)),
-		https: mergeModules(https, createHttpPatch(params, https, resolveProxy)),
-		net: mergeModules(net, createNetPatch(params, net)),
-		tls: mergeModules(tls, createTlsPatch(params, tls))
+		http: Object.assign(http, createHttpPatch(params, http, resolveProxy)),
+		https: Object.assign(https, createHttpPatch(params, https, resolveProxy)),
+		net: Object.assign(net, createNetPatch(params, net)),
+		tls: Object.assign(tls, createTlsPatch(params, tls))
 	};
 }
 

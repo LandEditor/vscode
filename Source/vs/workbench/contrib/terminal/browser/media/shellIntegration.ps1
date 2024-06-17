@@ -21,9 +21,6 @@ $Global:__LastHistoryId = -1
 $Nonce = $env:VSCODE_NONCE
 $env:VSCODE_NONCE = $null
 
-$isStable = $env:VSCODE_STABLE
-$env:VSCODE_STABLE = $null
-
 $osVersion = [System.Environment]::OSVersion.Version
 $isWindows10 = $IsWindows -and $osVersion.Major -eq 10 -and $osVersion.Minor -eq 0 -and $osVersion.Build -lt 22000
 
@@ -55,7 +52,7 @@ if ($env:VSCODE_ENV_APPEND) {
 function Global:__VSCode-Escape-Value([string]$value) {
 	# NOTE: In PowerShell v6.1+, this can be written `$value -replace '…', { … }` instead of `[regex]::Replace`.
 	# Replace any non-alphanumeric characters.
-	[regex]::Replace($value, "[$([char]0x00)-$([char]0x1f)\\\n;]", { param($match)
+	[regex]::Replace($value, "[$([char]0x1b)\\\n;]", { param($match)
 			# Encode the (ascii) matches as `\x<hex>`
 			-Join (
 				[System.Text.Encoding]::UTF8.GetBytes($match.Value) | ForEach-Object { '\x{0:x2}' -f $_ }
@@ -98,9 +95,7 @@ function Global:Prompt() {
 
 	# Prompt
 	# OSC 633 ; <Property>=<Value> ST
-	if ($isStable -eq "1") {
-		$Result += "$([char]0x1b)]633;P;Prompt=$(__VSCode-Escape-Value $OriginalPrompt)`a"
-	}
+	$Result += "$([char]0x1b)]633;P;Prompt=$(__VSCode-Escape-Value $OriginalPrompt)`a"
 
 	# Write command started
 	$Result += "$([char]0x1b)]633;B`a"
@@ -208,7 +203,7 @@ function Send-Completions {
 	# `[` is included here as namespace commands are not included in CompleteCommand(''),
 	# additionally for some reason CompleteVariable('[') causes the prompt to clear and reprint
 	# multiple times
-	if ($completionPrefix.Contains(' ') -or $completionPrefix.Contains('[') -or $PSVersionTable.PSVersion -lt "6.0") {
+	if ($completionPrefix.Contains(' ') -or $completionPrefix.Contains('[')) {
 		$completions = TabExpansion2 -inputScript $completionPrefix -cursorColumn $cursorIndex
 		if ($null -ne $completions.CompletionMatches) {
 			$result += ";$($completions.ReplacementIndex);$($completions.ReplacementLength);$($cursorIndex);"

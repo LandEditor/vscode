@@ -1470,7 +1470,6 @@ export interface IFilesConfigurationNode {
 	watcherInclude: string[];
 	encoding: string;
 	autoGuessEncoding: boolean;
-	candidateGuessEncodings: string[];
 	defaultLanguage: string;
 	trimTrailingWhitespace: boolean;
 	autoSave: string;

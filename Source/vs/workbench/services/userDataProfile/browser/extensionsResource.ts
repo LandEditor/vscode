@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from 'vs/base/common/cancellation';
-import { Codicon } from 'vs/base/common/codicons';
 import { DisposableStore } from 'vs/base/common/lifecycle';
 import { localize } from 'vs/nls';
 import { GlobalExtensionEnablementService } from 'vs/platform/extensionManagement/common/extensionEnablementService';
@@ -115,7 +114,7 @@ export class ExtensionsResource implements IProfileResource {
 		return JSON.stringify(exclude?.length ? extensions.filter(e => !exclude.includes(e.identifier.id.toLowerCase())) : extensions);
 	}
 
-	async apply(content: string, profile: IUserDataProfile, progress?: (message: string) => void, token?: CancellationToken): Promise<void> {
+	async apply(content: string, profile: IUserDataProfile): Promise<void> {
 		return this.withProfileScopedServices(profile, async (extensionEnablementService) => {
 			const profileExtensions: IProfileExtension[] = await this.getProfileExtensions(content);
 			const installedExtensions = await this.extensionManagementService.getInstalled(undefined, profile.extensionsResource);
@@ -169,17 +168,7 @@ export class ExtensionsResource implements IProfileResource {
 					}
 				}));
 				if (installExtensionInfos.length) {
-					if (token) {
-						for (const installExtensionInfo of installExtensionInfos) {
-							if (token.isCancellationRequested) {
-								return;
-							}
-							progress?.(localize('installingExtension', "Installing extension {0}...", installExtensionInfo.extension.displayName ?? installExtensionInfo.extension.identifier.id));
-							await this.extensionManagementService.installFromGallery(installExtensionInfo.extension, installExtensionInfo.options);
-						}
-					} else {
-						await this.extensionManagementService.installGalleryExtensions(installExtensionInfos);
-					}
+					await this.extensionManagementService.installGalleryExtensions(installExtensionInfos);
 				}
 				this.logService.info(`Importing Profile (${profile.name}): Finished installing extensions.`);
 			}
@@ -295,7 +284,6 @@ export abstract class ExtensionsResourceTreeItem implements IProfileResourceTree
 					label: localize('exclude', "Select {0} Extension", e.displayName || e.identifier.id),
 				}
 			} : undefined,
-			themeIcon: Codicon.extensions,
 			command: {
 				id: 'extension.open',
 				title: '',

@@ -3,18 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Promises } from 'vs/base/common/async';
 import { canceled } from 'vs/base/common/errors';
-import { Event } from 'vs/base/common/event';
-import { Disposable, IDisposable } from 'vs/base/common/lifecycle';
+import { IDisposable } from 'vs/base/common/lifecycle';
 import { IExtensionHostProcessOptions, IExtensionHostStarter } from 'vs/platform/extensions/common/extensionHostStarter';
-import { ILifecycleMainService } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
+import { Event } from 'vs/base/common/event';
 import { ILogService } from 'vs/platform/log/common/log';
-import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
+import { ILifecycleMainService } from 'vs/platform/lifecycle/electron-main/lifecycleMainService';
+import { Promises } from 'vs/base/common/async';
 import { WindowUtilityProcess } from 'vs/platform/utilityProcess/electron-main/utilityProcess';
 import { IWindowsMainService } from 'vs/platform/windows/electron-main/windows';
+import { ITelemetryService } from 'vs/platform/telemetry/common/telemetry';
 
-export class ExtensionHostStarter extends Disposable implements IDisposable, IExtensionHostStarter {
+export class ExtensionHostStarter implements IDisposable, IExtensionHostStarter {
 
 	readonly _serviceBrand: undefined;
 
@@ -29,18 +29,16 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
 		@IWindowsMainService private readonly _windowsMainService: IWindowsMainService,
 		@ITelemetryService private readonly _telemetryService: ITelemetryService,
 	) {
-		super();
 
 		// On shutdown: gracefully await extension host shutdowns
-		this._register(this._lifecycleMainService.onWillShutdown(e => {
+		this._lifecycleMainService.onWillShutdown(e => {
 			this._shutdown = true;
 			e.join('extHostStarter', this._waitForAllExit(6000));
-		}));
+		});
 	}
 
-	override dispose(): void {
+	dispose(): void {
 		// Intentionally not killing the extension host processes
-		super.dispose();
 	}
 
 	private _getExtHost(id: string): WindowUtilityProcess {
@@ -74,8 +72,7 @@ export class ExtensionHostStarter extends Disposable implements IDisposable, IEx
 		const id = String(++ExtensionHostStarter._lastId);
 		const extHost = new WindowUtilityProcess(this._logService, this._windowsMainService, this._telemetryService, this._lifecycleMainService);
 		this._extHosts.set(id, extHost);
-		const disposable = extHost.onExit(({ pid, code, signal }) => {
-			disposable.dispose();
+		extHost.onExit(({ pid, code, signal }) => {
 			this._logService.info(`Extension host with pid ${pid} exited with code: ${code}, signal: ${signal}.`);
 			setTimeout(() => {
 				extHost.dispose();

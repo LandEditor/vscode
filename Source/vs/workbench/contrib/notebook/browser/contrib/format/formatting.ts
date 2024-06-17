@@ -32,7 +32,6 @@ import { LifecyclePhase } from 'vs/workbench/services/lifecycle/common/lifecycle
 import { Registry } from 'vs/platform/registry/common/platform';
 import { IWorkbenchContribution, IWorkbenchContributionsRegistry, Extensions as WorkbenchContributionsExtensions } from 'vs/workbench/common/contributions';
 import { INotebookService } from 'vs/workbench/contrib/notebook/common/notebookService';
-import { CodeActionParticipantUtils } from 'vs/workbench/contrib/notebook/browser/contrib/saveParticipants/saveParticipants';
 
 // format notebook
 registerAction2(class extends Action2 {
@@ -64,7 +63,6 @@ registerAction2(class extends Action2 {
 		const editorWorkerService = accessor.get(IEditorWorkerService);
 		const languageFeaturesService = accessor.get(ILanguageFeaturesService);
 		const bulkEditService = accessor.get(IBulkEditService);
-		const instantiationService = accessor.get(IInstantiationService);
 
 		const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
 		if (!editor || !editor.hasModel()) {
@@ -72,41 +70,37 @@ registerAction2(class extends Action2 {
 		}
 
 		const notebook = editor.textModel;
-
-		const formatApplied: boolean = await instantiationService.invokeFunction(CodeActionParticipantUtils.checkAndRunFormatCodeAction, notebook, Progress.None, CancellationToken.None);
-
 		const disposable = new DisposableStore();
 		try {
-			if (!formatApplied) {
-				const allCellEdits = await Promise.all(notebook.cells.map(async cell => {
-					const ref = await textModelService.createModelReference(cell.uri);
-					disposable.add(ref);
+			const allCellEdits = await Promise.all(notebook.cells.map(async cell => {
+				const ref = await textModelService.createModelReference(cell.uri);
+				disposable.add(ref);
 
-					const model = ref.object.textEditorModel;
+				const model = ref.object.textEditorModel;
 
-					const formatEdits = await getDocumentFormattingEditsWithSelectedProvider(
-						editorWorkerService,
-						languageFeaturesService,
-						model,
-						FormattingMode.Explicit,
-						CancellationToken.None
-					);
+				const formatEdits = await getDocumentFormattingEditsWithSelectedProvider(
+					editorWorkerService,
+					languageFeaturesService,
+					model,
+					FormattingMode.Explicit,
+					CancellationToken.None
+				);
 
-					const edits: ResourceTextEdit[] = [];
+				const edits: ResourceTextEdit[] = [];
 
-					if (formatEdits) {
-						for (const edit of formatEdits) {
-							edits.push(new ResourceTextEdit(model.uri, edit, model.getVersionId()));
-						}
-
-						return edits;
+				if (formatEdits) {
+					for (const edit of formatEdits) {
+						edits.push(new ResourceTextEdit(model.uri, edit, model.getVersionId()));
 					}
 
-					return [];
-				}));
+					return edits;
+				}
 
-				await bulkEditService.apply(/* edit */allCellEdits.flat(), { label: localize('label', "Format Notebook"), code: 'undoredo.formatNotebook', });
-			}
+				return [];
+			}));
+
+			await bulkEditService.apply(/* edit */allCellEdits.flat(), { label: localize('label', "Format Notebook"), code: 'undoredo.formatNotebook', });
+
 		} finally {
 			disposable.dispose();
 		}

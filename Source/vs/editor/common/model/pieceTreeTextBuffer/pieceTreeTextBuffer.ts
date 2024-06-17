@@ -167,10 +167,6 @@ export class PieceTreeTextBuffer extends Disposable implements ITextBuffer {
 		return this.getValueLengthInRange(range, eol);
 	}
 
-	public getNearestChunk(offset: number): string {
-		return this._pieceTree.getNearestChunk(offset);
-	}
-
 	public getLength(): number {
 		return this._pieceTree.getLength();
 	}

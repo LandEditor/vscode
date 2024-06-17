@@ -11,6 +11,7 @@ import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataPr
 import { ProfileAwareExtensionManagementChannelClient } from 'vs/workbench/services/extensionManagement/common/extensionManagementChannelClient';
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile';
 import { IUserDataProfilesService } from 'vs/platform/userDataProfile/common/userDataProfile';
+import { ExtensionEventResult } from 'vs/platform/extensionManagement/common/extensionManagementIpc';
 import { ExtensionIdentifier } from 'vs/platform/extensions/common/extensions';
 
 export class RemoteExtensionManagementService extends ProfileAwareExtensionManagementChannelClient implements IProfileAwareExtensionManagementService {
@@ -25,15 +26,15 @@ export class RemoteExtensionManagementService extends ProfileAwareExtensionManag
 		super(channel, userDataProfileService, uriIdentityService);
 	}
 
-	protected async filterEvent(profileLocation: URI, applicationScoped: boolean): Promise<boolean> {
-		if (applicationScoped) {
+	protected async filterEvent(e: ExtensionEventResult): Promise<boolean> {
+		if (e.applicationScoped) {
 			return true;
 		}
-		if (!profileLocation && this.userDataProfileService.currentProfile.isDefault) {
+		if (!e.profileLocation && this.userDataProfileService.currentProfile.isDefault) {
 			return true;
 		}
 		const currentRemoteProfile = await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile);
-		if (this.uriIdentityService.extUri.isEqual(currentRemoteProfile.extensionsResource, profileLocation)) {
+		if (this.uriIdentityService.extUri.isEqual(currentRemoteProfile.extensionsResource, e.profileLocation)) {
 			return true;
 		}
 		return false;

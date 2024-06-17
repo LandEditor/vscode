@@ -79,10 +79,6 @@ export class UserDataProfileManagementService extends Disposable implements IUse
 		}
 	}
 
-	async createProfile(name: string, options?: IUserDataProfileOptions): Promise<IUserDataProfile> {
-		return this.userDataProfilesService.createNamedProfile(name, options);
-	}
-
 	async createAndEnterProfile(name: string, options?: IUserDataProfileOptions): Promise<IUserDataProfile> {
 		const profile = await this.userDataProfilesService.createNamedProfile(name, options, toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()));
 		await this.changeCurrentProfile(profile);
@@ -97,16 +93,15 @@ export class UserDataProfileManagementService extends Disposable implements IUse
 		return profile;
 	}
 
-	async updateProfile(profile: IUserDataProfile, updateOptions: IUserDataProfileUpdateOptions): Promise<IUserDataProfile> {
+	async updateProfile(profile: IUserDataProfile, updateOptions: IUserDataProfileUpdateOptions): Promise<void> {
 		if (!this.userDataProfilesService.profiles.some(p => p.id === profile.id)) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
 		if (profile.isDefault) {
 			throw new Error(localize('cannotRenameDefaultProfile', "Cannot rename the default profile"));
 		}
-		const updatedProfile = await this.userDataProfilesService.updateProfile(profile, updateOptions);
+		await this.userDataProfilesService.updateProfile(profile, updateOptions);
 		this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'updateProfile' });
-		return updatedProfile;
 	}
 
 	async removeProfile(profile: IUserDataProfile): Promise<void> {

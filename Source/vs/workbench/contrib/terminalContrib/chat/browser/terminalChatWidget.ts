@@ -16,7 +16,7 @@ import { ChatAgentLocation } from 'vs/workbench/contrib/chat/common/chatAgents';
 import { IChatProgress } from 'vs/workbench/contrib/chat/common/chatService';
 import { InlineChatWidget } from 'vs/workbench/contrib/inlineChat/browser/inlineChatWidget';
 import { ITerminalInstance, type IXtermTerminal } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { MENU_TERMINAL_CHAT_INPUT, MENU_TERMINAL_CHAT_WIDGET, MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChat';
+import { MENU_TERMINAL_CHAT_INPUT, MENU_TERMINAL_CHAT_WIDGET, MENU_TERMINAL_CHAT_WIDGET_FEEDBACK, MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChat';
 import { TerminalStickyScrollContribution } from 'vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollContribution';
 
 const enum Constants {
@@ -58,6 +58,8 @@ export class TerminalChatWidget extends Disposable {
 			InlineChatWidget,
 			ChatAgentLocation.Terminal,
 			{
+				inputMenuId: MENU_TERMINAL_CHAT_INPUT,
+				widgetMenuId: MENU_TERMINAL_CHAT_WIDGET,
 				statusMenuId: {
 					menu: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 					options: {
@@ -70,20 +72,14 @@ export class TerminalChatWidget extends Disposable {
 						}
 					}
 				},
-				chatWidgetViewOptions: {
-					rendererOptions: { editableCodeBlock: true },
-					menus: {
-						telemetrySource: 'terminal-inline-chat',
-						executeToolbar: MENU_TERMINAL_CHAT_INPUT,
-						inputSideToolbar: MENU_TERMINAL_CHAT_WIDGET,
-					}
-				}
+				feedbackMenuId: MENU_TERMINAL_CHAT_WIDGET_FEEDBACK,
+				telemetrySource: 'terminal-inline-chat',
+				rendererOptions: { editableCodeBlock: true }
 			}
 		);
 		this._register(Event.any(
 			this._inlineChatWidget.onDidChangeHeight,
 			this._instance.onDimensionsChanged,
-			this._inlineChatWidget.chatWidget.onDidChangeContentHeight,
 			Event.debounce(this._xterm.raw.onCursorMove, () => void 0, MicrotaskDelay),
 		)(() => this._relayout()));
 
@@ -159,14 +155,10 @@ export class TerminalChatWidget extends Disposable {
 		if (!terminalWrapperHeight) {
 			return;
 		}
-		if (top > terminalWrapperHeight - widgetHeight && terminalWrapperHeight - widgetHeight > 0) {
+		if (top > terminalWrapperHeight - widgetHeight) {
 			this._setTerminalOffset(top - (terminalWrapperHeight - widgetHeight));
 		} else {
 			this._setTerminalOffset(undefined);
-		}
-		if (terminalWrapperHeight - widgetHeight < 0) {
-			this._dimension = new Dimension(this._dimension!.width, terminalWrapperHeight - top - 20);
-			this._inlineChatWidget.layout(this._dimension!);
 		}
 	}
 

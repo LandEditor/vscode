@@ -105,10 +105,6 @@ interface IItemHeightChangeParams {
 	height: number;
 }
 
-interface IChatMarkdownRenderResult extends IMarkdownRenderResult {
-	codeBlockCount: number;
-}
-
 const forceVerboseLayoutTracing = false;
 
 export interface IChatRendererDelegate {
@@ -271,42 +267,17 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 		if (this.rendererOptions.noPadding) {
 			rowContainer.classList.add('no-padding');
 		}
-
-		let headerParent = rowContainer;
-		let referencesListParent = rowContainer;
-		let valueParent = rowContainer;
-		let detailContainerParent: HTMLElement | undefined;
-		let toolbarParent: HTMLElement | undefined;
-
-		if (this.rendererOptions.renderStyle === 'minimal') {
-			rowContainer.classList.add('interactive-item-compact');
-			rowContainer.classList.add('minimal');
-			// -----------------------------------------------------
-			//  icon | details
-			//       | references
-			//       | value
-			// -----------------------------------------------------
-			const lhsContainer = dom.append(rowContainer, $('.column.left'));
-			const rhsContainer = dom.append(rowContainer, $('.column'));
-
-			headerParent = lhsContainer;
-			detailContainerParent = rhsContainer;
-			referencesListParent = rhsContainer;
-			valueParent = rhsContainer;
-			toolbarParent = dom.append(rowContainer, $('.header'));
-		}
-
-		const header = dom.append(headerParent, $('.header'));
+		const header = dom.append(rowContainer, $('.header'));
 		const user = dom.append(header, $('.user'));
 		user.tabIndex = 0;
 		user.role = 'toolbar';
 		const avatarContainer = dom.append(user, $('.avatar-container'));
 		const username = dom.append(user, $('h3.username'));
-		const detailContainer = dom.append(detailContainerParent ?? user, $('span.detail-container'));
+		const detailContainer = dom.append(user, $('span.detail-container'));
 		const detail = dom.append(detailContainer, $('span.detail'));
 		dom.append(detailContainer, $('span.chat-animated-ellipsis'));
-		const referencesListContainer = dom.append(referencesListParent, $('.referencesListContainer'));
-		const value = dom.append(valueParent, $('.value'));
+		const referencesListContainer = dom.append(rowContainer, $('.referencesListContainer'));
+		const value = dom.append(rowContainer, $('.value'));
 		const elementDisposables = new DisposableStore();
 
 		const contextKeyService = templateDisposables.add(this.contextKeyService.createScoped(rowContainer));
@@ -315,7 +286,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 		if (this.rendererOptions.noHeader) {
 			header.classList.add('hidden');
 		} else {
-			titleToolbar = templateDisposables.add(scopedInstantiationService.createInstance(MenuWorkbenchToolBar, toolbarParent ?? header, MenuId.ChatMessageTitle, {
+			titleToolbar = templateDisposables.add(scopedInstantiationService.createInstance(MenuWorkbenchToolBar, header, MenuId.ChatMessageTitle, {
 				menuOptions: {
 					shouldForwardArgs: true
 				},
@@ -333,7 +304,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 
 		const agentHover = templateDisposables.add(this.instantiationService.createInstance(ChatAgentHover));
 		const hoverContent = () => {
-			if (isResponseVM(template.currentElement) && template.currentElement.agent && !template.currentElement.agent.isDefault) {
+			if (isResponseVM(template.currentElement) && template.currentElement.agent) {
 				agentHover.setAgent(template.currentElement.agent.id);
 				return agentHover.domNode;
 			}
@@ -341,7 +312,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 			return undefined;
 		};
 		const hoverOptions = getChatAgentHoverOptions(() => isResponseVM(template.currentElement) ? template.currentElement.agent : undefined, this.commandService);
-		templateDisposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), user, hoverContent, hoverOptions));
+		templateDisposables.add(this.hoverService.setupUpdatableHover(getDefaultHoverDelegate('element'), user, hoverContent, hoverOptions));
 		templateDisposables.add(dom.addDisposableListener(user, dom.EventType.KEY_DOWN, e => {
 			const ev = new StandardKeyboardEvent(e);
 			if (ev.equals(KeyCode.Space) || ev.equals(KeyCode.Enter)) {
@@ -510,12 +481,11 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 		this.renderContentReferencesIfNeeded(element, templateData, templateData.elementDisposables);
 
 		let fileTreeIndex = 0;
-		let codeBlockIndex = 0;
 		value.forEach((data, index) => {
 			const result = data.kind === 'treeData'
 				? this.renderTreeData(data.treeData, element, templateData, fileTreeIndex++)
 				: data.kind === 'markdownContent'
-					? this.renderMarkdown(data.content, element, templateData, fillInIncompleteTokens, codeBlockIndex)
+					? this.renderMarkdown(data.content, element, templateData, fillInIncompleteTokens)
 					: data.kind === 'progressMessage' && onlyProgressMessagesAfterI(value, index) ? this.renderProgressMessage(data, false) // TODO render command
 						: data.kind === 'progressTask' ? this.renderProgressTask(data, false, element, templateData)
 							: data.kind === 'command' ? this.renderCommandButton(element, data)
@@ -527,10 +497,6 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 			if (result) {
 				templateData.value.appendChild(result.element);
 				templateData.elementDisposables.add(result);
-
-				if ('codeBlockCount' in result) {
-					codeBlockIndex += (result as IChatMarkdownRenderResult).codeBlockCount;
-				}
 			}
 		});
 
@@ -709,6 +675,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 				disposables.clear();
 				this.basicRenderElement(renderableResponse, element, index, templateData);
 			} else if (!isFullyRendered) {
+				disposables.clear();
 				this.renderContentReferencesIfNeeded(element, templateData, disposables);
 				let hasRenderedOneMarkdownBlock = false;
 				partsToRender.forEach((partToRender, index) => {
@@ -1104,8 +1071,7 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 					URI.from({ scheme: Schemas.vscodeChatCodeBlock, path: original.uri.path, query: generateUuid() }),
 					false
 				);
-				const modRef = await this.textModelService.createModelReference(modified.uri);
-				store.add(modRef);
+				store.add(modified);
 
 				const editGroups: ISingleEditOperation[][] = [];
 				if (isResponseVM(element)) {
@@ -1147,18 +1113,17 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 			element: ref.object.element,
 			dispose() {
 				store.dispose();
-				ref.dispose();
 			},
 		};
 	}
 
-	private renderMarkdown(markdown: IMarkdownString, element: ChatTreeItem, templateData: IChatListItemTemplate, fillInIncompleteTokens = false, codeBlockStartIndex = 0): IChatMarkdownRenderResult {
+	private renderMarkdown(markdown: IMarkdownString, element: ChatTreeItem, templateData: IChatListItemTemplate, fillInIncompleteTokens = false): IMarkdownRenderResult {
 		const disposables = new DisposableStore();
 
 		// We release editors in order so that it's more likely that the same editor will be assigned if this element is re-rendered right away, like it often is during progressive rendering
 		const orderedDisposablesList: IDisposable[] = [];
 		const codeblocks: IChatCodeBlockInfo[] = [];
-		let codeBlockIndex = codeBlockStartIndex;
+		let codeBlockIndex = 0;
 		const result = this.renderer.render(markdown, {
 			fillInIncompleteTokens,
 			codeBlockRendererSync: (languageId, text) => {
@@ -1226,7 +1191,6 @@ export class ChatListItemRenderer extends Disposable implements ITreeRenderer<Ch
 
 		orderedDisposablesList.reverse().forEach(d => disposables.add(d));
 		return {
-			codeBlockCount: codeBlockIndex - codeBlockStartIndex,
 			element: result.element,
 			dispose() {
 				result.dispose();

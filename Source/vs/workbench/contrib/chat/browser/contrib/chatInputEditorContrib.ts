@@ -197,7 +197,10 @@ class InputEditorDecorations extends Disposable {
 
 		const textDecorations: IDecorationOptions[] | undefined = [];
 		if (agentPart) {
-			textDecorations.push({ range: agentPart.editorRange });
+			const isDupe = !!this.chatAgentService.getAgents().find(other => other.name === agentPart.agent.name && other.id !== agentPart.agent.id);
+			const publisher = isDupe ? `(${agentPart.agent.publisherDisplayName}) ` : '';
+			const agentHover = `${publisher}${agentPart.agent.description}`;
+			textDecorations.push({ range: agentPart.editorRange, hoverMessage: new MarkdownString(agentHover) });
 			if (agentSubcommandPart) {
 				textDecorations.push({ range: agentSubcommandPart.editorRange, hoverMessage: new MarkdownString(agentSubcommandPart.command.description) });
 			}

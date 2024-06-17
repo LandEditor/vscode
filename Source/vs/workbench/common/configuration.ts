@@ -234,7 +234,7 @@ export class DynamicWorkbenchSecurityConfiguration extends Disposable implements
 	}
 }
 
-export const CONFIG_NEW_WINDOW_PROFILE = 'window.newWindowProfile';
+const CONFIG_NEW_WINDOW_PROFILE = 'window.newWindowProfile';
 
 export class DynamicWindowConfiguration extends Disposable implements IWorkbenchContribution {
 
