@@ -82,7 +82,7 @@
   },
   "dependencies": {
     "@jridgewell/trace-mapping": "^0.3.25",
-    "ansi-styles": "^5.2.0",
-    "istanbul-to-vscode": "^2.0.1"
+    "ansi-styles": "^6.2.1",
+    "istanbul-to-vscode": "^2.1.0"
   }
 }
