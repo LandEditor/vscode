@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationTokenSource } from 'vs/base/common/cancellation';
-import { Iterable } from 'vs/base/common/iterator';
 import { Disposable, MutableDisposable } from 'vs/base/common/lifecycle';
 import { IObservable, ISettableObservable, observableValue, transaction } from 'vs/base/common/observable';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
@@ -37,11 +36,6 @@ export interface ITestCoverageService {
 	readonly filterToTest: ISettableObservable<TestId | undefined>;
 
 	/**
-	 * Whether inline coverage is shown.
-	 */
-	readonly showInline: ISettableObservable<boolean>;
-
-	/**
 	 * Opens a test coverage report from a task, optionally focusing it in the editor.
 	 */
 	openCoverage(task: ITestRunTaskResults, focus?: boolean): Promise<void>;
@@ -58,7 +52,6 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
 
 	public readonly selected = observableValue<TestCoverage | undefined>('testCoverage', undefined);
 	public readonly filterToTest = observableValue<TestId | undefined>('filterToTest', undefined);
-	public readonly showInline = observableValue('inlineCoverage', false);
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -76,12 +69,6 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
 		));
 
 		this._register(bindContextKey(
-			TestingContextKeys.inlineCoverageEnabled,
-			contextKeyService,
-			reader => this.showInline.read(reader),
-		));
-
-		this._register(bindContextKey(
 			TestingContextKeys.isTestCoverageOpen,
 			contextKeyService,
 			reader => !!this.selected.read(reader),
@@ -90,7 +77,7 @@ export class TestCoverageService extends Disposable implements ITestCoverageServ
 		this._register(bindContextKey(
 			TestingContextKeys.hasPerTestCoverage,
 			contextKeyService,
-			reader => !Iterable.isEmpty(this.selected.read(reader)?.allPerTestIDs()),
+			reader => !!this.selected.read(reader)?.perTestCoverageIDs.size,
 		));
 
 		this._register(bindContextKey(

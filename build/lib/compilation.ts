@@ -275,7 +275,7 @@ function generateApiProposalNames() {
 	let eol: string;
 
 	try {
-		const src = fs.readFileSync('src/vs/platform/extensions/common/extensionsApiProposals.ts', 'utf-8');
+		const src = fs.readFileSync('src/vs/workbench/services/extensions/common/extensionsApiProposals.ts', 'utf-8');
 		const match = /\r?\n/m.exec(src);
 		eol = match ? match[0] : os.EOL;
 	} catch {
@@ -283,8 +283,7 @@ function generateApiProposalNames() {
 	}
 
 	const pattern = /vscode\.proposed\.([a-zA-Z\d]+)\.d\.ts$/;
-	const versionPattern = /^\s*\/\/\s*version\s*:\s*(\d+)\s*$/mi;
-	const proposals = new Map<string, { proposal: string; version?: number }>();
+	const proposalNames = new Set<string>();
 
 	const input = es.through();
 	const output = input
@@ -293,22 +292,11 @@ function generateApiProposalNames() {
 			const name = path.basename(f.path);
 			const match = pattern.exec(name);
 
-			if (!match) {
-				return;
+			if (match) {
+				proposalNames.add(match[1]);
 			}
-
-			const proposalName = match[1];
-
-			const contents = f.contents.toString('utf8');
-			const versionMatch = versionPattern.exec(contents);
-			const version = versionMatch ? versionMatch[1] : undefined;
-
-			proposals.set(proposalName, {
-				proposal: `https://raw.githubusercontent.com/microsoft/vscode/main/src/vscode-dts/vscode.proposed.${proposalName}.d.ts`,
-				version: version ? parseInt(version) : undefined
-			});
 		}, function () {
-			const names = [...proposals.keys()].sort();
+			const names = [...proposalNames.values()].sort();
 			const contents = [
 				'/*---------------------------------------------------------------------------------------------',
 				' *  Copyright (c) Microsoft Corporation. All rights reserved.',
@@ -317,19 +305,15 @@ function generateApiProposalNames() {
 				'',
 				'// THIS IS A GENERATED FILE. DO NOT EDIT DIRECTLY.',
 				'',
-				'const _allApiProposals = {',
-				`${names.map(proposalName => {
-					const proposal = proposals.get(proposalName)!;
-					return `\t${proposalName}: {${eol}\t\tproposal: '${proposal.proposal}',${eol}${proposal.version ? `\t\tversion: ${proposal.version}${eol}` : ''}\t}`;
-				}).join(`,${eol}`)}`,
-				'};',
-				'export const allApiProposals = Object.freeze<{ [proposalName: string]: Readonly<{ proposal: string; version?: number }> }>(_allApiProposals);',
-				'export type ApiProposalName = keyof typeof _allApiProposals;',
+				'export const allApiProposals = Object.freeze({',
+				`${names.map(name => `\t${name}: 'https://raw.githubusercontent.com/microsoft/vscode/main/src/vscode-dts/vscode.proposed.${name}.d.ts'`).join(`,${eol}`)}`,
+				'});',
+				'export type ApiProposalName = keyof typeof allApiProposals;',
 				'',
 			].join(eol);
 
 			this.emit('data', new File({
-				path: 'vs/platform/extensions/common/extensionsApiProposals.ts',
+				path: 'vs/workbench/services/extensions/common/extensionsApiProposals.ts',
 				contents: Buffer.from(contents)
 			}));
 			this.emit('end');

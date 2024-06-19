@@ -65,7 +65,7 @@ export interface IProgressNotificationOptions extends IProgressOptions {
 	readonly secondaryActions?: readonly IAction[];
 	readonly delay?: number;
 	readonly priority?: NotificationPriority;
-	readonly type?: 'loading' | 'syncing';
+	readonly type?: 'syncing' | 'loading';
 }
 
 export interface IProgressDialogOptions extends IProgressOptions {
@@ -77,7 +77,7 @@ export interface IProgressDialogOptions extends IProgressOptions {
 export interface IProgressWindowOptions extends IProgressOptions {
 	readonly location: ProgressLocation.Window;
 	readonly command?: string;
-	readonly type?: 'loading' | 'syncing';
+	readonly type?: 'syncing' | 'loading';
 }
 
 export interface IProgressCompositeOptions extends IProgressOptions {

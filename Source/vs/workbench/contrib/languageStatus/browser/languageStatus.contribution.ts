@@ -122,7 +122,7 @@ class LanguageStatus {
 				this._update();
 				this._storeState();
 			}
-		}, undefined, this._disposables);
+		}, this._disposables);
 
 	}
 
@@ -231,7 +231,7 @@ class LanguageStatus {
 			const targetWindow = dom.getWindow(editor?.getContainerDomNode());
 			const node = targetWindow.document.querySelector('.monaco-workbench .statusbar DIV#status\\.languageStatus A>SPAN.codicon');
 			const container = targetWindow.document.querySelector('.monaco-workbench .statusbar DIV#status\\.languageStatus');
-			if (dom.isHTMLElement(node) && container) {
+			if (node instanceof HTMLElement && container) {
 				const _wiggle = 'wiggle';
 				const _flash = 'flash';
 				if (!isOneBusy) {
@@ -251,7 +251,7 @@ class LanguageStatus {
 			//  use that as signal that the user has interacted/learned language status items work
 			if (!userHasInteractedWithStatus) {
 				const hoverTarget = targetWindow.document.querySelector('.monaco-workbench .context-view');
-				if (dom.isHTMLElement(hoverTarget)) {
+				if (hoverTarget instanceof HTMLElement) {
 					const observer = new MutationObserver(() => {
 						if (targetWindow.document.contains(element)) {
 							this._interactionCounter.increment();

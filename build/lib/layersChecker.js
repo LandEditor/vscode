@@ -68,8 +68,7 @@ const CORE_TYPES = [
     'fetch',
     'RequestInit',
     'Headers',
-    'Response',
-    '__global'
+    'Response'
 ];
 // Types that are defined in a common layer but are known to be only
 // available in native environments should not be allowed in browser
@@ -171,17 +170,59 @@ const RULES = [
             '@types/node' // no node.js
         ]
     },
-    // Common: vs/base/parts/sandbox/electron-sandbox/preload.js
+    // Common: vs/workbench/api/common/extHostTypes.ts
     {
-        target: '**/vs/base/parts/sandbox/electron-sandbox/preload.js',
+        target: '**/vs/workbench/api/common/extHostTypes.ts',
         allowedTypes: [
             ...CORE_TYPES,
-            // Safe access to a very small subset of node.js
-            'process',
-            'NodeJS'
+            // Safe access to global
+            '__global'
         ],
         disallowedTypes: NATIVE_TYPES,
         disallowedDefinitions: [
+            'lib.dom.d.ts', // no DOM
+            '@types/node' // no node.js
+        ]
+    },
+    // Common: vs/workbench/api/common/extHostChatAgents2.ts
+    {
+        target: '**/vs/workbench/api/common/extHostChatAgents2.ts',
+        allowedTypes: [
+            ...CORE_TYPES,
+            // Safe access to global
+            '__global'
+        ],
+        disallowedTypes: NATIVE_TYPES,
+        disallowedDefinitions: [
+            'lib.dom.d.ts', // no DOM
+            '@types/node' // no node.js
+        ]
+    },
+    // Common: vs/workbench/api/common/extHostChatVariables.ts
+    {
+        target: '**/vs/workbench/api/common/extHostChatVariables.ts',
+        allowedTypes: [
+            ...CORE_TYPES,
+            // Safe access to global
+            '__global'
+        ],
+        disallowedTypes: NATIVE_TYPES,
+        disallowedDefinitions: [
+            'lib.dom.d.ts', // no DOM
+            '@types/node' // no node.js
+        ]
+    },
+    // Common: vs/workbench/api/common/extensionHostMain.ts
+    {
+        target: '**/vs/workbench/api/common/extensionHostMain.ts',
+        allowedTypes: [
+            ...CORE_TYPES,
+            // Safe access to global
+            '__global'
+        ],
+        disallowedTypes: NATIVE_TYPES,
+        disallowedDefinitions: [
+            'lib.dom.d.ts', // no DOM
             '@types/node' // no node.js
         ]
     },

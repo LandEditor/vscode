@@ -5,7 +5,6 @@
 
 import * as arrays from 'vs/base/common/arrays';
 import { Emitter, Event } from 'vs/base/common/event';
-import { Disposable } from 'vs/base/common/lifecycle';
 import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import { ExtHostEditorsShape, IEditorPropertiesChangeData, IMainContext, ITextDocumentShowOptions, ITextEditorPositionData, MainContext, MainThreadTextEditorsShape } from 'vs/workbench/api/common/extHost.protocol';
 import { ExtHostDocumentsAndEditors } from 'vs/workbench/api/common/extHostDocumentsAndEditors';
@@ -14,7 +13,7 @@ import * as TypeConverters from 'vs/workbench/api/common/extHostTypeConverters';
 import { TextEditorSelectionChangeKind } from 'vs/workbench/api/common/extHostTypes';
 import * as vscode from 'vscode';
 
-export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
+export class ExtHostEditors implements ExtHostEditorsShape {
 
 	private readonly _onDidChangeTextEditorSelection = new Emitter<vscode.TextEditorSelectionChangeEvent>();
 	private readonly _onDidChangeTextEditorOptions = new Emitter<vscode.TextEditorOptionsChangeEvent>();
@@ -36,11 +35,11 @@ export class ExtHostEditors extends Disposable implements ExtHostEditorsShape {
 		mainContext: IMainContext,
 		private readonly _extHostDocumentsAndEditors: ExtHostDocumentsAndEditors,
 	) {
-		super();
 		this._proxy = mainContext.getProxy(MainContext.MainThreadTextEditors);
 
-		this._register(this._extHostDocumentsAndEditors.onDidChangeVisibleTextEditors(e => this._onDidChangeVisibleTextEditors.fire(e)));
-		this._register(this._extHostDocumentsAndEditors.onDidChangeActiveTextEditor(e => this._onDidChangeActiveTextEditor.fire(e)));
+
+		this._extHostDocumentsAndEditors.onDidChangeVisibleTextEditors(e => this._onDidChangeVisibleTextEditors.fire(e));
+		this._extHostDocumentsAndEditors.onDidChangeActiveTextEditor(e => this._onDidChangeActiveTextEditor.fire(e));
 	}
 
 	getActiveTextEditor(): vscode.TextEditor | undefined {

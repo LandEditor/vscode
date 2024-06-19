@@ -65,7 +65,6 @@ export interface INotebookService {
 
 	registerNotebookSerializer(viewType: string, extensionData: NotebookExtensionDescription, serializer: INotebookSerializer): IDisposable;
 	withNotebookDataProvider(viewType: string): Promise<SimpleNotebookProviderInfo>;
-	tryGetDataProviderSync(viewType: string): SimpleNotebookProviderInfo | undefined;
 
 	getOutputMimeTypeInfo(textModel: NotebookTextModel, kernelProvides: readonly string[] | undefined, output: IOutputDto): readonly IOrderedMimeType[];
 

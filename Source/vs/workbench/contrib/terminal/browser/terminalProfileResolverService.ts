@@ -22,7 +22,6 @@ import { URI } from 'vs/base/common/uri';
 import { deepClone } from 'vs/base/common/objects';
 import { isUriComponents } from 'vs/platform/terminal/common/terminalProfiles';
 import { ITerminalInstanceService } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { Disposable } from 'vs/base/common/lifecycle';
 
 export interface IProfileContextProvider {
 	getDefaultSystemShell(remoteAuthority: string | undefined, os: OperatingSystem): Promise<string>;
@@ -35,7 +34,7 @@ const generatedProfileName = 'Generated';
  * Resolves terminal shell launch config and terminal profiles for the given operating system,
  * environment, and user configuration.
  */
-export abstract class BaseTerminalProfileResolverService extends Disposable implements ITerminalProfileResolverService {
+export abstract class BaseTerminalProfileResolverService implements ITerminalProfileResolverService {
 	declare _serviceBrand: undefined;
 
 	private _primaryBackendOs: OperatingSystem | undefined;
@@ -55,21 +54,19 @@ export abstract class BaseTerminalProfileResolverService extends Disposable impl
 		private readonly _workspaceContextService: IWorkspaceContextService,
 		private readonly _remoteAgentService: IRemoteAgentService
 	) {
-		super();
-
 		if (this._remoteAgentService.getConnection()) {
 			this._remoteAgentService.getEnvironment().then(env => this._primaryBackendOs = env?.os || OS);
 		} else {
 			this._primaryBackendOs = OS;
 		}
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
+		this._configurationService.onDidChangeConfiguration(e => {
 			if (e.affectsConfiguration(TerminalSettingId.DefaultProfileWindows) ||
 				e.affectsConfiguration(TerminalSettingId.DefaultProfileMacOs) ||
 				e.affectsConfiguration(TerminalSettingId.DefaultProfileLinux)) {
 				this._refreshDefaultProfileName();
 			}
-		}));
-		this._register(this._terminalProfileService.onDidChangeAvailableProfiles(() => this._refreshDefaultProfileName()));
+		});
+		this._terminalProfileService.onDidChangeAvailableProfiles(() => this._refreshDefaultProfileName());
 	}
 
 	@debounce(200)

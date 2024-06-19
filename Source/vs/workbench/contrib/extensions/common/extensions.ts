@@ -163,7 +163,6 @@ export const ConfigurationKey = 'extensions';
 export const AutoUpdateConfigurationKey = 'extensions.autoUpdate';
 export const AutoCheckUpdatesConfigurationKey = 'extensions.autoCheckUpdates';
 export const CloseExtensionDetailsOnViewChangeKey = 'extensions.closeExtensionDetailsOnViewChange';
-export const AutoRestartConfigurationKey = 'extensions.autoRestart';
 
 export type AutoUpdateConfigurationValue = boolean | 'onlyEnabledExtensions' | 'onlySelectedExtensions';
 
@@ -231,9 +230,3 @@ export const INSTALL_ACTIONS_GROUP = '0_install';
 export const UPDATE_ACTIONS_GROUP = '0_update';
 
 export const extensionsSearchActionsMenu = new MenuId('extensionsSearchActionsMenu');
-
-export interface IExtensionArg {
-	id: string;
-	version: string;
-	location: URI | undefined;
-}

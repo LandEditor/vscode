@@ -11,11 +11,11 @@ import { IWorkspaceContextService } from 'vs/platform/workspace/common/workspace
 import { OUTPUT_MODE_ID, LOG_MODE_ID } from 'vs/workbench/services/output/common/output';
 import { MonacoWebWorker, createWebWorker } from 'vs/editor/browser/services/webWorker';
 import { ICreateData, OutputLinkComputer } from 'vs/workbench/contrib/output/common/outputLinkComputer';
-import { IDisposable, dispose, Disposable } from 'vs/base/common/lifecycle';
+import { IDisposable, dispose } from 'vs/base/common/lifecycle';
 import { ILanguageConfigurationService } from 'vs/editor/common/languages/languageConfigurationRegistry';
 import { ILanguageFeaturesService } from 'vs/editor/common/services/languageFeatures';
 
-export class OutputLinkProvider extends Disposable {
+export class OutputLinkProvider {
 
 	private static readonly DISPOSE_WORKER_TIME = 3 * 60 * 1000; // dispose worker after 3 minutes of inactivity
 
@@ -29,8 +29,6 @@ export class OutputLinkProvider extends Disposable {
 		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
 		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
-		super();
-
 		this.disposeWorkerScheduler = new RunOnceScheduler(() => this.disposeWorker(), OutputLinkProvider.DISPOSE_WORKER_TIME);
 
 		this.registerListeners();
@@ -38,7 +36,7 @@ export class OutputLinkProvider extends Disposable {
 	}
 
 	private registerListeners(): void {
-		this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.updateLinkProviderWorker()));
+		this.contextService.onDidChangeWorkspaceFolders(() => this.updateLinkProviderWorker());
 	}
 
 	private updateLinkProviderWorker(): void {

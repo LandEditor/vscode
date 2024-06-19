@@ -14,8 +14,6 @@ const enum SemanticTokensProviderStylingConstants {
 	NO_STYLING = 0b01111111111111111111111111111111
 }
 
-const ENABLE_TRACE = false;
-
 export class SemanticTokensProviderStyling {
 
 	private readonly _hashTable: HashTable;
@@ -38,7 +36,7 @@ export class SemanticTokensProviderStyling {
 		let metadata: number;
 		if (entry) {
 			metadata = entry.metadata;
-			if (ENABLE_TRACE && this._logService.getLevel() === LogLevel.Trace) {
+			if (this._logService.getLevel() === LogLevel.Trace) {
 				this._logService.trace(`SemanticTokensProviderStyling [CACHED] ${tokenTypeIndex} / ${tokenModifierSet}: foreground ${TokenMetadata.getForeground(metadata)}, fontStyle ${TokenMetadata.getFontStyle(metadata).toString(2)}`);
 			}
 		} else {
@@ -52,7 +50,7 @@ export class SemanticTokensProviderStyling {
 					}
 					modifierSet = modifierSet >> 1;
 				}
-				if (ENABLE_TRACE && modifierSet > 0 && this._logService.getLevel() === LogLevel.Trace) {
+				if (modifierSet > 0 && this._logService.getLevel() === LogLevel.Trace) {
 					this._logService.trace(`SemanticTokensProviderStyling: unknown token modifier index: ${tokenModifierSet.toString(2)} for legend: ${JSON.stringify(this._legend.tokenModifiers)}`);
 					tokenModifiers.push('not-in-legend');
 				}
@@ -88,7 +86,7 @@ export class SemanticTokensProviderStyling {
 					}
 				}
 			} else {
-				if (ENABLE_TRACE && this._logService.getLevel() === LogLevel.Trace) {
+				if (this._logService.getLevel() === LogLevel.Trace) {
 					this._logService.trace(`SemanticTokensProviderStyling: unknown token type index: ${tokenTypeIndex} for legend: ${JSON.stringify(this._legend.tokenTypes)}`);
 				}
 				metadata = SemanticTokensProviderStylingConstants.NO_STYLING;
@@ -96,7 +94,7 @@ export class SemanticTokensProviderStyling {
 			}
 			this._hashTable.add(tokenTypeIndex, tokenModifierSet, encodedLanguageId, metadata);
 
-			if (ENABLE_TRACE && this._logService.getLevel() === LogLevel.Trace) {
+			if (this._logService.getLevel() === LogLevel.Trace) {
 				this._logService.trace(`SemanticTokensProviderStyling ${tokenTypeIndex} (${tokenType}) / ${tokenModifierSet} (${tokenModifiers.join(' ')}): foreground ${TokenMetadata.getForeground(metadata)}, fontStyle ${TokenMetadata.getFontStyle(metadata).toString(2)}`);
 			}
 		}

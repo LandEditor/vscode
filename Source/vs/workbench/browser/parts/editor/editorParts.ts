@@ -21,7 +21,6 @@ import { IThemeService } from 'vs/platform/theme/common/themeService';
 import { IAuxiliaryWindowOpenOptions, IAuxiliaryWindowService } from 'vs/workbench/services/auxiliaryWindow/browser/auxiliaryWindowService';
 import { generateUuid } from 'vs/base/common/uuid';
 import { ContextKeyValue, IContextKey, IContextKeyService, RawContextKey } from 'vs/platform/contextkey/common/contextkey';
-import { isHTMLElement } from 'vs/base/browser/dom';
 
 interface IEditorPartsUIState {
 	readonly auxiliary: IAuxiliaryEditorPartState[];
@@ -162,7 +161,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
 	override getPart(element: HTMLElement): EditorPart;
 	override getPart(groupOrElement: IEditorGroupView | GroupIdentifier | HTMLElement): EditorPart {
 		if (this._parts.size > 1) {
-			if (isHTMLElement(groupOrElement)) {
+			if (groupOrElement instanceof HTMLElement) {
 				const element = groupOrElement;
 
 				return this.getPartByDocument(element.ownerDocument);
@@ -761,7 +760,7 @@ export class EditorParts extends MultiWindowParts<EditorPart> implements IEditor
 		let groupRegisteredContextKeys = this.registeredContextKeys.get(group.id);
 		if (!groupRegisteredContextKeys) {
 			groupRegisteredContextKeys = new Map<string, IContextKey>();
-			this.registeredContextKeys.set(group.id, groupRegisteredContextKeys);
+			this.scopedContextKeys.set(group.id, groupRegisteredContextKeys);
 		}
 
 		let scopedRegisteredContextKey = groupRegisteredContextKeys.get(provider.contextKey.key);

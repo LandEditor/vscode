@@ -16,12 +16,11 @@ import { ChatAgentLocation } from 'vs/workbench/contrib/chat/common/chatAgents';
 import { IChatProgress } from 'vs/workbench/contrib/chat/common/chatService';
 import { InlineChatWidget } from 'vs/workbench/contrib/inlineChat/browser/inlineChatWidget';
 import { ITerminalInstance, type IXtermTerminal } from 'vs/workbench/contrib/terminal/browser/terminal';
-import { MENU_TERMINAL_CHAT_INPUT, MENU_TERMINAL_CHAT_WIDGET, MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChat';
+import { MENU_TERMINAL_CHAT_INPUT, MENU_TERMINAL_CHAT_WIDGET, MENU_TERMINAL_CHAT_WIDGET_FEEDBACK, MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from 'vs/workbench/contrib/terminalContrib/chat/browser/terminalChat';
 import { TerminalStickyScrollContribution } from 'vs/workbench/contrib/terminalContrib/stickyScroll/browser/terminalStickyScrollContribution';
 
 const enum Constants {
-	HorizontalMargin = 10,
-	VerticalMargin = 30
+	HorizontalMargin = 10
 }
 
 export class TerminalChatWidget extends Disposable {
@@ -59,6 +58,8 @@ export class TerminalChatWidget extends Disposable {
 			InlineChatWidget,
 			ChatAgentLocation.Terminal,
 			{
+				inputMenuId: MENU_TERMINAL_CHAT_INPUT,
+				widgetMenuId: MENU_TERMINAL_CHAT_WIDGET,
 				statusMenuId: {
 					menu: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 					options: {
@@ -71,20 +72,14 @@ export class TerminalChatWidget extends Disposable {
 						}
 					}
 				},
-				chatWidgetViewOptions: {
-					rendererOptions: { editableCodeBlock: true },
-					menus: {
-						telemetrySource: 'terminal-inline-chat',
-						executeToolbar: MENU_TERMINAL_CHAT_INPUT,
-						inputSideToolbar: MENU_TERMINAL_CHAT_WIDGET,
-					}
-				}
+				feedbackMenuId: MENU_TERMINAL_CHAT_WIDGET_FEEDBACK,
+				telemetrySource: 'terminal-inline-chat',
+				rendererOptions: { editableCodeBlock: true }
 			}
 		);
 		this._register(Event.any(
 			this._inlineChatWidget.onDidChangeHeight,
 			this._instance.onDimensionsChanged,
-			this._inlineChatWidget.chatWidget.onDidChangeContentHeight,
 			Event.debounce(this._xterm.raw.onCursorMove, () => void 0, MicrotaskDelay),
 		)(() => this._relayout()));
 
@@ -120,26 +115,15 @@ export class TerminalChatWidget extends Disposable {
 		const style = getActiveWindow().getComputedStyle(xtermElement);
 		const xtermPadding = parseInt(style.paddingLeft) + parseInt(style.paddingRight);
 		const width = Math.min(640, xtermElement.clientWidth - 12/* padding */ - 2/* border */ - Constants.HorizontalMargin - xtermPadding);
-		const terminalWrapperHeight = this._getTerminalWrapperHeight() ?? Number.MAX_SAFE_INTEGER;
-		let height = Math.min(480, heightInPixel, terminalWrapperHeight);
-		const top = this._getTop() ?? 0;
+		const height = Math.min(480, heightInPixel, this._getTerminalWrapperHeight() ?? Number.MAX_SAFE_INTEGER);
 		if (width === 0 || height === 0) {
 			return;
-		}
-
-		let adjustedHeight = undefined;
-		if (height < this._inlineChatWidget.contentHeight) {
-			if (height - top > 0) {
-				height = height - top - Constants.VerticalMargin;
-			} else {
-				height = height - Constants.VerticalMargin;
-				adjustedHeight = height;
-			}
 		}
 		this._container.style.paddingLeft = style.paddingLeft;
 		this._dimension = new Dimension(width, height);
 		this._inlineChatWidget.layout(this._dimension);
-		this._updateVerticalPosition(adjustedHeight);
+
+		this._updateVerticalPosition();
 	}
 
 	private _reset() {
@@ -156,7 +140,7 @@ export class TerminalChatWidget extends Disposable {
 		this._instance.scrollToBottom();
 	}
 
-	private _getTop(): number | undefined {
+	private _updateVerticalPosition(): void {
 		const font = this._instance.xterm?.getFont();
 		if (!font?.charHeight) {
 			return;
@@ -165,24 +149,14 @@ export class TerminalChatWidget extends Disposable {
 		const cellHeight = font.charHeight * font.lineHeight;
 		const topPadding = terminalWrapperHeight - (this._instance.rows * cellHeight);
 		const cursorY = (this._instance.xterm?.raw.buffer.active.cursorY ?? 0) + 1;
-		return topPadding + cursorY * cellHeight;
-	}
-
-	private _updateVerticalPosition(adjustedHeight?: number): void {
-		const top = this._getTop();
-		if (!top) {
-			return;
-		}
+		const top = topPadding + cursorY * cellHeight;
 		this._container.style.top = `${top}px`;
 		const widgetHeight = this._inlineChatWidget.contentHeight;
-		const terminalWrapperHeight = this._getTerminalWrapperHeight();
 		if (!terminalWrapperHeight) {
 			return;
 		}
-		if (top > terminalWrapperHeight - widgetHeight && terminalWrapperHeight - widgetHeight > 0) {
+		if (top > terminalWrapperHeight - widgetHeight) {
 			this._setTerminalOffset(top - (terminalWrapperHeight - widgetHeight));
-		} else if (adjustedHeight) {
-			this._setTerminalOffset(adjustedHeight);
 		} else {
 			this._setTerminalOffset(undefined);
 		}

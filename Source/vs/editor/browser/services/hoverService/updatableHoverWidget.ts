@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isHTMLElement } from 'vs/base/browser/dom';
-import type { IHoverWidget, IManagedHoverContent, IManagedHoverOptions } from 'vs/base/browser/ui/hover/hover';
+import type { IHoverWidget, IUpdatableHoverContent, IUpdatableHoverOptions } from 'vs/base/browser/ui/hover/hover';
 import type { IHoverDelegate, IHoverDelegateOptions, IHoverDelegateTarget } from 'vs/base/browser/ui/hover/hoverDelegate';
 import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
 import { CancellationTokenSource } from 'vs/base/common/cancellation';
@@ -13,9 +12,9 @@ import { IDisposable } from 'vs/base/common/lifecycle';
 import { isFunction, isString } from 'vs/base/common/types';
 import { localize } from 'vs/nls';
 
-type IManagedHoverResolvedContent = IMarkdownString | string | HTMLElement | undefined;
+type IUpdatableHoverResolvedContent = IMarkdownString | string | HTMLElement | undefined;
 
-export class ManagedHoverWidget implements IDisposable {
+export class UpdatableHoverWidget implements IDisposable {
 
 	private _hoverWidget: IHoverWidget | undefined;
 	private _cancellationTokenSource: CancellationTokenSource | undefined;
@@ -23,7 +22,7 @@ export class ManagedHoverWidget implements IDisposable {
 	constructor(private hoverDelegate: IHoverDelegate, private target: IHoverDelegateTarget | HTMLElement, private fadeInAnimation: boolean) {
 	}
 
-	async update(content: IManagedHoverContent, focus?: boolean, options?: IManagedHoverOptions): Promise<void> {
+	async update(content: IUpdatableHoverContent, focus?: boolean, options?: IUpdatableHoverOptions): Promise<void> {
 		if (this._cancellationTokenSource) {
 			// there's an computation ongoing, cancel it
 			this._cancellationTokenSource.dispose(true);
@@ -34,7 +33,7 @@ export class ManagedHoverWidget implements IDisposable {
 		}
 
 		let resolvedContent;
-		if (content === undefined || isString(content) || isHTMLElement(content)) {
+		if (content === undefined || isString(content) || content instanceof HTMLElement) {
 			resolvedContent = content;
 		} else if (!isFunction(content.markdown)) {
 			resolvedContent = content.markdown ?? content.markdownNotSupportedFallback;
@@ -64,7 +63,7 @@ export class ManagedHoverWidget implements IDisposable {
 		this.show(resolvedContent, focus, options);
 	}
 
-	private show(content: IManagedHoverResolvedContent, focus?: boolean, options?: IManagedHoverOptions): void {
+	private show(content: IUpdatableHoverResolvedContent, focus?: boolean, options?: IUpdatableHoverOptions): void {
 		const oldHoverWidget = this._hoverWidget;
 
 		if (this.hasContent(content)) {
@@ -86,7 +85,7 @@ export class ManagedHoverWidget implements IDisposable {
 		oldHoverWidget?.dispose();
 	}
 
-	private hasContent(content: IManagedHoverResolvedContent): content is NonNullable<IManagedHoverResolvedContent> {
+	private hasContent(content: IUpdatableHoverResolvedContent): content is NonNullable<IUpdatableHoverResolvedContent> {
 		if (!content) {
 			return false;
 		}

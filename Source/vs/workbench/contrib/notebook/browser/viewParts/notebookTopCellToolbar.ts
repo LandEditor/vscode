@@ -113,11 +113,9 @@ export class ListTopCellToolbar extends Disposable {
 				hiddenItemStrategy: HiddenItemStrategy.Ignore,
 			});
 
-			if (this.notebookEditor.hasModel()) {
-				toolbar.context = {
-					notebookEditor: this.notebookEditor
-				} satisfies INotebookActionContext;
-			}
+			toolbar.context = <INotebookActionContext>{
+				notebookEditor: this.notebookEditor
+			};
 
 			this.viewZone.value?.add(toolbar);
 

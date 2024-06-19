@@ -33,5 +33,4 @@ export class TerminalInlineChatAccessibleView implements IAccessibleViewImplenta
 			options: { type: AccessibleViewType.View }
 		};
 	}
-	dispose() { }
 }

@@ -17,7 +17,6 @@ import { IMainProcessService } from 'vs/platform/ipc/common/mainProcessService';
 import { disposableWindowInterval, getActiveDocument, getWindowId, getWindowsCount, hasWindow, onDidRegisterWindow } from 'vs/base/browser/dom';
 import { memoize } from 'vs/base/common/decorators';
 import { isAuxiliaryWindow } from 'vs/base/browser/window';
-import { webUtils } from 'vs/base/parts/sandbox/electron-sandbox/globals';
 
 class WorkbenchNativeHostService extends NativeHostService {
 
@@ -66,6 +65,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	}
 
 	//#endregion
+
 
 	//#region Window
 
@@ -160,6 +160,7 @@ class WorkbenchHostService extends Disposable implements IHostService {
 
 	//#endregion
 
+
 	//#region Lifecycle
 
 	focus(targetWindow: Window, options?: { force: boolean }): Promise<void> {
@@ -186,15 +187,6 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	}
 
 	//#endregion
-
-	//#region File
-
-	getPathForFile(file: File): string {
-		return webUtils.getPathForFile(file);
-	}
-
-	//#endregion
-
 }
 
 registerSingleton(IHostService, WorkbenchHostService, InstantiationType.Delayed);

@@ -228,14 +228,12 @@ export class MarkupCell extends Disposable {
 			e.added.forEach(options => {
 				if (options.className) {
 					this.notebookEditor.deltaCellContainerClassNames(this.viewCell.id, [options.className], []);
-					this.templateData.rootContainer.classList.add(options.className);
 				}
 			});
 
 			e.removed.forEach(options => {
 				if (options.className) {
 					this.notebookEditor.deltaCellContainerClassNames(this.viewCell.id, [], [options.className]);
-					this.templateData.rootContainer.classList.remove(options.className);
 				}
 			});
 		}));
@@ -243,7 +241,6 @@ export class MarkupCell extends Disposable {
 		this.viewCell.getCellDecorations().forEach(options => {
 			if (options.className) {
 				this.notebookEditor.deltaCellContainerClassNames(this.viewCell.id, [options.className], []);
-				this.templateData.rootContainer.classList.add(options.className);
 			}
 		});
 	}
@@ -349,7 +346,7 @@ export class MarkupCell extends Disposable {
 			// create a special context key service that set the inCompositeEditor-contextkey
 			const editorContextKeyService = this.contextKeyService.createScoped(this.templateData.editorPart);
 			EditorContextKeys.inCompositeEditor.bindTo(editorContextKeyService).set(true);
-			const editorInstaService = this.editorDisposables.add(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, editorContextKeyService])));
+			const editorInstaService = this.instantiationService.createChild(new ServiceCollection([IContextKeyService, editorContextKeyService]));
 			this.editorDisposables.add(editorContextKeyService);
 
 			this.editor = this.editorDisposables.add(editorInstaService.createInstance(CodeEditorWidget, this.templateData.editorContainer, {

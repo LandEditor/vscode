@@ -174,9 +174,9 @@ export interface IStatusbarEntry {
 
 	/**
 	 * Will enable a spinning icon in front of the text to indicate progress. When `true` is
-	 * specified, `loading` will be used.
+	 * specified, `syncing` will be used.
 	 */
-	readonly showProgress?: boolean | 'loading' | 'syncing';
+	readonly showProgress?: boolean | 'syncing' | 'loading';
 
 	/**
 	 * The kind of status bar entry. This applies different colors to the entry.

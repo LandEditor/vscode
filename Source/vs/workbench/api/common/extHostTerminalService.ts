@@ -921,7 +921,7 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
 	public getEnvironmentVariableCollection(extension: IExtensionDescription): IEnvironmentVariableCollection {
 		let collection = this._environmentVariableCollections.get(extension.identifier.value);
 		if (!collection) {
-			collection = this._register(new UnifiedEnvironmentVariableCollection());
+			collection = new UnifiedEnvironmentVariableCollection();
 			this._setEnvironmentVariableCollection(extension.identifier.value, collection);
 		}
 		return collection.getScopedEnvironmentVariableCollection(undefined);
@@ -936,7 +936,7 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
 	public $initEnvironmentVariableCollections(collections: [string, ISerializableEnvironmentVariableCollection][]): void {
 		collections.forEach(entry => {
 			const extensionIdentifier = entry[0];
-			const collection = this._register(new UnifiedEnvironmentVariableCollection(entry[1]));
+			const collection = new UnifiedEnvironmentVariableCollection(entry[1]);
 			this._setEnvironmentVariableCollection(extensionIdentifier, collection);
 		});
 	}
@@ -952,20 +952,20 @@ export abstract class BaseExtHostTerminalService extends Disposable implements I
 
 	private _setEnvironmentVariableCollection(extensionIdentifier: string, collection: UnifiedEnvironmentVariableCollection): void {
 		this._environmentVariableCollections.set(extensionIdentifier, collection);
-		this._register(collection.onDidChangeCollection(() => {
+		collection.onDidChangeCollection(() => {
 			// When any collection value changes send this immediately, this is done to ensure
 			// following calls to createTerminal will be created with the new environment. It will
 			// result in more noise by sending multiple updates when called but collections are
 			// expected to be small.
 			this._syncEnvironmentVariableCollection(extensionIdentifier, collection);
-		}));
+		});
 	}
 }
 
 /**
  * Unified environment variable collection carrying information for all scopes, for a specific extension.
  */
-class UnifiedEnvironmentVariableCollection extends Disposable {
+class UnifiedEnvironmentVariableCollection {
 	readonly map: Map<string, IEnvironmentVariableMutator> = new Map();
 	private readonly scopedCollections: Map<string, ScopedEnvironmentVariableCollection> = new Map();
 	readonly descriptionMap: Map<string, IEnvironmentVariableCollectionDescription> = new Map();
@@ -983,7 +983,6 @@ class UnifiedEnvironmentVariableCollection extends Disposable {
 	constructor(
 		serialized?: ISerializableEnvironmentVariableCollection
 	) {
-		super();
 		this.map = new Map(serialized);
 	}
 
@@ -993,7 +992,7 @@ class UnifiedEnvironmentVariableCollection extends Disposable {
 		if (!scopedCollection) {
 			scopedCollection = new ScopedEnvironmentVariableCollection(this, scope);
 			this.scopedCollections.set(scopedCollectionKey, scopedCollection);
-			this._register(scopedCollection.onDidChangeCollection(() => this._onDidChangeCollection.fire()));
+			scopedCollection.onDidChangeCollection(() => this._onDidChangeCollection.fire());
 		}
 		return scopedCollection;
 	}

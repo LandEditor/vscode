@@ -288,7 +288,6 @@ export class FindDecorations implements IDisposable {
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		zIndex: 13,
 		className: 'currentFindMatch',
-		inlineClassName: 'currentFindMatchInline',
 		showIfCollapsed: true,
 		overviewRuler: {
 			color: themeColorFromId(overviewRulerFindMatchForeground),
@@ -305,7 +304,6 @@ export class FindDecorations implements IDisposable {
 		stickiness: TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
 		zIndex: 10,
 		className: 'findMatch',
-		inlineClassName: 'findMatchInline',
 		showIfCollapsed: true,
 		overviewRuler: {
 			color: themeColorFromId(overviewRulerFindMatchForeground),

@@ -264,7 +264,7 @@ export class BreakpointWidget extends ZoneWidget implements IPrivateBreakpointWi
 	}
 
 	private createTriggerBreakpointInput(container: HTMLElement) {
-		const breakpoints = this.debugService.getModel().getBreakpoints().filter(bp => bp !== this.breakpoint && !bp.logMessage);
+		const breakpoints = this.debugService.getModel().getBreakpoints().filter(bp => bp !== this.breakpoint);
 		const breakpointOptions: ISelectOptionItem[] = [
 			{ text: nls.localize('noTriggerByBreakpoint', 'None'), isDisabled: true },
 			...breakpoints.map(bp => ({
@@ -346,10 +346,7 @@ export class BreakpointWidget extends ZoneWidget implements IPrivateBreakpointWi
 		this.toDispose.push(scopedContextKeyService);
 
 		const scopedInstatiationService = this.instantiationService.createChild(new ServiceCollection(
-			[IContextKeyService, scopedContextKeyService],
-			[IPrivateBreakpointWidgetService, this]
-		));
-		this.toDispose.push(scopedInstatiationService);
+			[IContextKeyService, scopedContextKeyService], [IPrivateBreakpointWidgetService, this]));
 
 		const options = this.createEditorOptions();
 		const codeEditorWidgetOptions = getSimpleCodeEditorWidgetOptions();
@@ -436,12 +433,12 @@ export class BreakpointWidget extends ZoneWidget implements IPrivateBreakpointWi
 		if (success) {
 			// if there is already a breakpoint on this location - remove it.
 
-			let condition: string | undefined = undefined;
-			let hitCondition: string | undefined = undefined;
-			let logMessage: string | undefined = undefined;
-			let triggeredBy: string | undefined = undefined;
-			let mode: string | undefined = undefined;
-			let modeLabel: string | undefined = undefined;
+			let condition = this.breakpoint?.condition;
+			let hitCondition = this.breakpoint?.hitCondition;
+			let logMessage = this.breakpoint?.logMessage;
+			let triggeredBy = this.breakpoint?.triggeredBy;
+			let mode = this.breakpoint?.mode;
+			let modeLabel = this.breakpoint?.modeLabel;
 
 			this.rememberInput();
 

@@ -3,36 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { compareBy, numberComparator } from 'vs/base/common/arrays';
-import { findFirstMax } from 'vs/base/common/arraysFind';
-import { Emitter, Event } from 'vs/base/common/event';
+import { Event } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
 import { ICodeEditor } from 'vs/editor/browser/editorBrowser';
 import { Position } from 'vs/editor/common/core/position';
 import { Range } from 'vs/editor/common/core/range';
-import { SingleTextEdit } from 'vs/editor/common/core/textEdit';
 import { CompletionItemInsertTextRule, CompletionItemKind, SelectedSuggestionInfo } from 'vs/editor/common/languages';
-import { ITextModel } from 'vs/editor/common/model';
-import { singleTextEditAugments, singleTextRemoveCommonPrefix } from 'vs/editor/contrib/inlineCompletions/browser/singleTextEdit';
 import { SnippetParser } from 'vs/editor/contrib/snippet/browser/snippetParser';
 import { SnippetSession } from 'vs/editor/contrib/snippet/browser/snippetSession';
 import { CompletionItem } from 'vs/editor/contrib/suggest/browser/suggest';
 import { SuggestController } from 'vs/editor/contrib/suggest/browser/suggestController';
+import { IObservable, ITransaction, observableValue, transaction } from 'vs/base/common/observable';
+import { SingleTextEdit } from 'vs/editor/common/core/textEdit';
+import { ITextModel } from 'vs/editor/common/model';
+import { compareBy, numberComparator } from 'vs/base/common/arrays';
+import { findFirstMax } from 'vs/base/common/arraysFind';
+import { singleTextEditAugments, singleTextRemoveCommonPrefix } from 'vs/editor/contrib/inlineCompletions/browser/singleTextEdit';
 
 export class SuggestWidgetAdaptor extends Disposable {
 	private isSuggestWidgetVisible: boolean = false;
 	private isShiftKeyPressed = false;
 	private _isActive = false;
 	private _currentSuggestItemInfo: SuggestItemInfo | undefined = undefined;
-	public get selectedItem(): SuggestItemInfo | undefined {
-		return this._currentSuggestItemInfo;
+
+	private readonly _selectedItem = observableValue(this, undefined as SuggestItemInfo | undefined);
+
+	public get selectedItem(): IObservable<SuggestItemInfo | undefined> {
+		return this._selectedItem;
 	}
-	private _onDidSelectedItemChange = this._register(new Emitter<void>());
-	public readonly onDidSelectedItemChange: Event<void> = this._onDidSelectedItemChange.event;
 
 	constructor(
 		private readonly editor: ICodeEditor,
 		private readonly suggestControllerPreselector: () => SingleTextEdit | undefined,
+		private readonly checkModelVersion: (tx: ITransaction) => void,
 		private readonly onWillAccept: (item: SuggestItemInfo) => void,
 	) {
 		super();
@@ -56,6 +59,8 @@ export class SuggestWidgetAdaptor extends Disposable {
 			this._register(suggestController.registerSelector({
 				priority: 100,
 				select: (model, pos, suggestItems) => {
+					transaction(tx => this.checkModelVersion(tx));
+
 					const textModel = this.editor.getModel();
 					if (!textModel) {
 						// Should not happen
@@ -137,7 +142,11 @@ export class SuggestWidgetAdaptor extends Disposable {
 			this._isActive = newActive;
 			this._currentSuggestItemInfo = newInlineCompletion;
 
-			this._onDidSelectedItemChange.fire();
+			transaction(tx => {
+				/** @description Update state from suggest widget */
+				this.checkModelVersion(tx);
+				this._selectedItem.set(this._isActive ? this._currentSuggestItemInfo : undefined, tx);
+			});
 		}
 	}
 

@@ -16,6 +16,7 @@ import { IContextKey } from 'vs/platform/contextkey/common/contextkey';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 import { activeContrastBorder } from 'vs/platform/theme/common/colorRegistry';
+import { ITerminalConfigurationService } from 'vs/workbench/contrib/terminal/browser/terminal';
 import { TerminalStorageKeys } from 'vs/workbench/contrib/terminal/common/terminalStorageKeys';
 import type { ITerminalAddon, Terminal } from '@xterm/xterm';
 
@@ -113,6 +114,7 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 		private readonly _terminalSuggestWidgetVisibleContextKey: IContextKey<boolean>,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService
 	) {
 		super();
 
@@ -157,7 +159,7 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 
 	private _sync(promptInputState: IPromptInputModelState): void {
 		const config = this._configurationService.getValue<ITerminalSuggestConfiguration>(terminalSuggestConfigSection);
-		const enabled = config.enabled;
+		const enabled = config.enabled || this._terminalConfigurationService.config.shellIntegration?.suggestEnabled;
 		if (!enabled) {
 			return;
 		}
@@ -267,7 +269,6 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 		if (!Array.isArray(completionList)) {
 			completionList = [completionList];
 		}
-
 		const completions = completionList.map((e: any) => {
 			return new SimpleCompletionItem({
 				label: e.ListItemText,
@@ -284,8 +285,7 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 		if (this._leadingLineContent.trim().includes(' ') || firstChar === '[') {
 			replacementIndex = parseInt(args[0]);
 			replacementLength = parseInt(args[1]);
-			const firstCompletion = completions[0]?.completion;
-			this._leadingLineContent = (firstCompletion?.completionText ?? firstCompletion?.label)?.slice(0, replacementLength) ?? '';
+			this._leadingLineContent = completions[0]?.completion.label.slice(0, replacementLength) ?? '';
 		} else {
 			completions.push(...this._cachedPwshCommands);
 		}
@@ -407,7 +407,7 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 		this._leadingLineContent = completions[0].completion.label.slice(0, replacementLength);
 		const model = new SimpleCompletionModel(completions, new LineContext(this._leadingLineContent, replacementIndex), replacementIndex, replacementLength);
 		if (completions.length === 1) {
-			const insertText = (completions[0].completion.completionText ?? completions[0].completion.label).substring(replacementLength);
+			const insertText = completions[0].completion.label.substring(replacementLength);
 			if (insertText.length === 0) {
 				this._onBell.fire();
 				return;
@@ -504,12 +504,6 @@ export class SuggestAddon extends Disposable implements ITerminalAddon, ISuggest
 		const completion = suggestion.item.completion;
 		const completionText = completion.completionText ?? completion.label;
 		const finalCompletionRightSide = completionText.substring((this._leadingLineContent?.length ?? 0) - (lastSpaceIndex === -1 ? 0 : lastSpaceIndex + 1));
-
-		// Hide the widget if there is no change
-		if (finalCompletionRightSide === additionalInput) {
-			this.hideSuggestWidget();
-			return;
-		}
 
 		// Get the final completion on the right side of the cursor if it differs from the initial
 		// propmt input state

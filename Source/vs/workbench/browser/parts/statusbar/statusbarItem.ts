@@ -24,7 +24,7 @@ import { spinningLoading, syncing } from 'vs/platform/theme/common/iconRegistry'
 import { isMarkdownString, markdownStringEqual } from 'vs/base/common/htmlContent';
 import { IHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegate';
 import { Gesture, EventType as TouchEventType } from 'vs/base/browser/touch';
-import type { IManagedHover } from 'vs/base/browser/ui/hover/hover';
+import type { IUpdatableHover } from 'vs/base/browser/ui/hover/hover';
 import { IHoverService } from 'vs/platform/hover/browser/hover';
 
 export class StatusbarEntryItem extends Disposable {
@@ -42,7 +42,7 @@ export class StatusbarEntryItem extends Disposable {
 	private readonly focusListener = this._register(new MutableDisposable());
 	private readonly focusOutListener = this._register(new MutableDisposable());
 
-	private hover: IManagedHover | undefined = undefined;
+	private hover: IUpdatableHover | undefined = undefined;
 
 	readonly labelContainer: HTMLElement;
 	readonly beakContainer: HTMLElement;
@@ -122,7 +122,7 @@ export class StatusbarEntryItem extends Disposable {
 			if (this.hover) {
 				this.hover.update(hoverContents);
 			} else {
-				this.hover = this._register(this.hoverService.setupManagedHover(this.hoverDelegate, this.container, hoverContents));
+				this.hover = this._register(this.hoverService.setupUpdatableHover(this.hoverDelegate, this.container, hoverContents));
 			}
 			if (entry.command !== ShowTooltipCommand /* prevents flicker on click */) {
 				this.focusListener.value = addDisposableListener(this.labelContainer, EventType.FOCUS, e => {
@@ -283,7 +283,7 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 	private progressCodicon = renderIcon(syncing);
 
 	private currentText = '';
-	private currentShowProgress: boolean | 'loading' | 'syncing' = false;
+	private currentShowProgress: boolean | 'syncing' | 'loading' = false;
 
 	constructor(
 		private readonly container: HTMLElement
@@ -291,10 +291,10 @@ class StatusBarCodiconLabel extends SimpleIconLabel {
 		super(container);
 	}
 
-	set showProgress(showProgress: boolean | 'loading' | 'syncing') {
+	set showProgress(showProgress: boolean | 'syncing' | 'loading') {
 		if (this.currentShowProgress !== showProgress) {
 			this.currentShowProgress = showProgress;
-			this.progressCodicon = renderIcon(showProgress === 'syncing' ? syncing : spinningLoading);
+			this.progressCodicon = renderIcon(showProgress === 'loading' ? spinningLoading : syncing);
 			this.text = this.currentText;
 		}
 	}

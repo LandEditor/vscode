@@ -7,7 +7,7 @@ import { IRemoteAgentService } from 'vs/workbench/services/remote/common/remoteA
 import { IRemoteExtensionsScannerService, RemoteExtensionsScannerChannelName } from 'vs/platform/remote/common/remoteExtensionsScanner';
 import * as platform from 'vs/base/common/platform';
 import { IChannel } from 'vs/base/parts/ipc/common/ipc';
-import { IExtensionDescription } from 'vs/platform/extensions/common/extensions';
+import { IExtensionDescription, IRelaxedExtensionDescription } from 'vs/platform/extensions/common/extensions';
 import { URI } from 'vs/base/common/uri';
 import { IUserDataProfileService } from 'vs/workbench/services/userDataProfile/common/userDataProfile';
 import { IRemoteUserDataProfilesService } from 'vs/workbench/services/userDataProfile/common/remoteUserDataProfiles';
@@ -16,7 +16,6 @@ import { ILogService } from 'vs/platform/log/common/log';
 import { InstantiationType, registerSingleton } from 'vs/platform/instantiation/common/extensions';
 import { IActiveLanguagePackService } from 'vs/workbench/services/localization/common/locale';
 import { IWorkbenchExtensionManagementService } from 'vs/workbench/services/extensionManagement/common/extensionManagement';
-import { Mutable } from 'vs/base/common/types';
 
 class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService {
 
@@ -45,7 +44,7 @@ class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService 
 			return await this.withChannel(
 				async (channel) => {
 					const profileLocation = this.userDataProfileService.currentProfile.isDefault ? undefined : (await this.remoteUserDataProfilesService.getRemoteProfile(this.userDataProfileService.currentProfile)).extensionsResource;
-					const scannedExtensions = await channel.call<Mutable<IExtensionDescription>[]>('scanExtensions', [
+					const scannedExtensions = await channel.call<IRelaxedExtensionDescription[]>('scanExtensions', [
 						platform.language,
 						profileLocation,
 						this.extensionManagementService.getInstalledWorkspaceExtensionLocations(),
@@ -62,6 +61,25 @@ class RemoteExtensionsScannerService implements IRemoteExtensionsScannerService 
 		} catch (error) {
 			this.logService.error(error);
 			return [];
+		}
+	}
+
+	async scanSingleExtension(extensionLocation: URI, isBuiltin: boolean): Promise<IExtensionDescription | null> {
+		try {
+			return await this.withChannel(
+				async (channel) => {
+					const extension = await channel.call<IRelaxedExtensionDescription>('scanSingleExtension', [extensionLocation, isBuiltin, platform.language]);
+					if (extension !== null) {
+						extension.extensionLocation = URI.revive(extension.extensionLocation);
+						// ImplicitActivationEvents.updateManifest(extension);
+					}
+					return extension;
+				},
+				null
+			);
+		} catch (error) {
+			this.logService.error(error);
+			return null;
 		}
 	}
 

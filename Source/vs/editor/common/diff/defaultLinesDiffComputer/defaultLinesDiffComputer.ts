@@ -80,8 +80,7 @@ export class DefaultLinesDiffComputer implements ILinesDiffComputer {
 
 			return this.myersDiffingAlgorithm.compute(
 				sequence1,
-				sequence2,
-				timeout
+				sequence2
 			);
 		})();
 

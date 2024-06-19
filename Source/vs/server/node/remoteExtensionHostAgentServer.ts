@@ -505,7 +505,6 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 				this._extHostConnections[reconnectionToken] = con;
 				this._allReconnectionTokens.add(reconnectionToken);
 				con.onClose(() => {
-					con.dispose();
 					delete this._extHostConnections[reconnectionToken];
 					this._onDidCloseExtHostConnection();
 				});

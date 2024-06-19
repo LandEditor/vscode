@@ -151,11 +151,7 @@ class EntitlementsContribution extends Disposable implements IWorkbenchContribut
 		return [true, orgs && orgs.length > 0 ? (orgs[0].name ? orgs[0].name : orgs[0].login) : undefined];
 	}
 
-	private async enableEntitlements(session: AuthenticationSession | undefined) {
-		if (!session) {
-			return;
-		}
-
+	private async enableEntitlements(session: AuthenticationSession) {
 		const isInternal = isInternalTelemetry(this.productService, this.configurationService);
 		const showAccountsBadge = this.configurationService.inspect<boolean>(accountsBadgeConfigKey).value ?? false;
 		const showWelcomeView = this.configurationService.inspect<boolean>(chatWelcomeViewConfigKey).value ?? false;

@@ -33,7 +33,6 @@ import { IAccessibilityService } from 'vs/platform/accessibility/common/accessib
 import { PLAINTEXT_LANGUAGE_ID } from 'vs/editor/common/languages/modesRegistry';
 import { IExtensionService } from 'vs/workbench/services/extensions/common/extensions';
 import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { IProgress, IProgressService, IProgressStep, ProgressLocation } from 'vs/platform/progress/common/progress';
 
 interface IBackupMetaData extends IWorkingCopyBackupMeta {
 	mtime: number;
@@ -124,8 +123,7 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 		@ILanguageDetectionService languageDetectionService: ILanguageDetectionService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@IPathService private readonly pathService: IPathService,
-		@IExtensionService private readonly extensionService: IExtensionService,
-		@IProgressService private readonly progressService: IProgressService
+		@IExtensionService private readonly extensionService: IExtensionService
 	) {
 		super(modelService, languageService, languageDetectionService, accessibilityService);
 
@@ -758,7 +756,7 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 			options.reason = SaveReason.EXPLICIT;
 		}
 
-		const versionId = this.versionId;
+		let versionId = this.versionId;
 		this.trace(`doSave(${versionId}) - enter with versionId ${versionId}`);
 
 		// Return early if saved from within save participant to break recursion
@@ -820,21 +818,6 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 
 		const saveCancellation = new CancellationTokenSource();
 
-		return this.progressService.withProgress({
-			title: localize('saveParticipants', "Saving '{0}'", this.name),
-			location: ProgressLocation.Window,
-			cancellable: true,
-			delay: this.isDirty() ? 3000 : 5000
-		}, progress => {
-			return this.doSaveSequential(versionId, options, progress, saveCancellation);
-		}, () => {
-			saveCancellation.cancel();
-		}).finally(() => {
-			saveCancellation.dispose();
-		});
-	}
-
-	private doSaveSequential(versionId: number, options: ITextFileSaveAsOptions, progress: IProgress<IProgressStep>, saveCancellation: CancellationTokenSource): Promise<void> {
 		return this.saveSequentializer.run(versionId, (async () => {
 
 			// A save participant can still change the model now and since we are so close to saving
@@ -869,7 +852,7 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 					if (!saveCancellation.token.isCancellationRequested) {
 						this.ignoreSaveFromSaveParticipants = true;
 						try {
-							await this.textFileService.files.runSaveParticipants(this, { reason: options.reason ?? SaveReason.EXPLICIT, savedFrom: options.from }, progress, saveCancellation.token);
+							await this.textFileService.files.runSaveParticipants(this, { reason: options.reason ?? SaveReason.EXPLICIT, savedFrom: options.from }, saveCancellation.token);
 						} finally {
 							this.ignoreSaveFromSaveParticipants = false;
 						}
@@ -915,7 +898,6 @@ export class TextFileEditorModel extends BaseTextEditorModel implements ITextFil
 			// Save to Disk. We mark the save operation as currently running with
 			// the latest versionId because it might have changed from a save
 			// participant triggering
-			progress.report({ message: localize('saveTextFile', "Writing into file...") });
 			this.trace(`doSave(${versionId}) - before write()`);
 			const lastResolvedFileStat = assertIsDefined(this.lastResolvedFileStat);
 			const resolvedTextFileEditorModel = this;

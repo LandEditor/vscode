@@ -19,7 +19,6 @@ import { TokenizationSupportWithLineLimit } from 'vs/workbench/services/textMate
 import type { StackDiff, StateStack, diffStateStacksRefEq } from 'vscode-textmate';
 import { ICreateGrammarResult } from 'vs/workbench/services/textMate/common/TMGrammarFactory';
 import { StateDeltas } from 'vs/workbench/services/textMate/browser/backgroundTokenization/worker/textMateTokenizationWorker.worker';
-import { Disposable } from 'vs/base/common/lifecycle';
 
 export interface TextMateModelTokenizerHost {
 	getOrCreateGrammar(languageId: string, encodedLanguageId: LanguageId): Promise<ICreateGrammarResult | null>;
@@ -99,7 +98,6 @@ export class TextMateWorkerTokenizer extends MirrorTextModel {
 					},
 					false
 				),
-				Disposable.None,
 				this._maxTokenizationLineLength
 			);
 			this._tokenizerWithStateStore = new TokenizerWithStateStore(this._lines.length, tokenizationSupport);

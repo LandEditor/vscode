@@ -269,9 +269,6 @@ export async function showRunRecentQuickPick(
 			return;
 		}
 		const [item] = quickPick.activeItems;
-		if (!item) {
-			return;
-		}
 		if ('command' in item && item.command && item.command.marker) {
 			if (!terminalScrollStateSaved) {
 				xterm.markTracker.saveScrollState();

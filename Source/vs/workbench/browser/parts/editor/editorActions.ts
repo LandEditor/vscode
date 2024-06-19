@@ -437,7 +437,7 @@ export class UnpinEditorAction extends Action {
 	}
 }
 
-export class CloseEditorTabAction extends Action {
+export class CloseOneEditorAction extends Action {
 
 	static readonly ID = 'workbench.action.closeActiveEditor';
 	static readonly LABEL = localize('closeOneEditor', "Close");
@@ -451,28 +451,33 @@ export class CloseEditorTabAction extends Action {
 	}
 
 	override async run(context?: IEditorCommandsContext): Promise<void> {
-		const group = context ? this.editorGroupService.getGroup(context.groupId) : this.editorGroupService.activeGroup;
+		let group: IEditorGroup | undefined;
+		let editorIndex: number | undefined;
+		if (context) {
+			group = this.editorGroupService.getGroup(context.groupId);
+
+			if (group) {
+				editorIndex = context.editorIndex; // only allow editor at index if group is valid
+			}
+		}
+
 		if (!group) {
-			// group mentioned in context does not exist
+			group = this.editorGroupService.activeGroup;
+		}
+
+		// Close specific editor in group
+		if (typeof editorIndex === 'number') {
+			const editorAtIndex = group.getEditorByIndex(editorIndex);
+			if (editorAtIndex) {
+				await group.closeEditor(editorAtIndex, { preserveFocus: context?.preserveFocus });
+				return;
+			}
+		}
+
+		// Otherwise close active editor in group
+		if (group.activeEditor) {
+			await group.closeEditor(group.activeEditor, { preserveFocus: context?.preserveFocus });
 			return;
-		}
-
-		const targetEditor = context?.editorIndex !== undefined ? group.getEditorByIndex(context.editorIndex) : group.activeEditor;
-		if (!targetEditor) {
-			// No editor open or editor at index does not exist
-			return;
-		}
-
-		const editors: EditorInput[] = [];
-		if (group.isSelected(targetEditor)) {
-			editors.push(...group.selectedEditors);
-		} else {
-			editors.push(targetEditor);
-		}
-
-		// Close specific editors in group
-		for (const editor of editors) {
-			await group.closeEditor(editor, { preserveFocus: context?.preserveFocus });
 		}
 	}
 }

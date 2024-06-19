@@ -342,11 +342,6 @@ export class ExtHostChatAgents2 extends Disposable implements ExtHostChatAgentsS
 			}), token);
 		} catch (e) {
 			this._logService.error(e, agent.extension);
-
-			if (e instanceof extHostTypes.LanguageModelError && e.cause) {
-				e = e.cause;
-			}
-
 			return { errorDetails: { message: toErrorMessage(e), responseIsIncomplete: true } };
 
 		} finally {

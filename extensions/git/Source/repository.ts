@@ -1865,14 +1865,13 @@ export class Repository implements Disposable {
 			const configFiles = workspace.getConfiguration('files', Uri.file(filePath));
 			const defaultEncoding = configFiles.get<string>('encoding');
 			const autoGuessEncoding = configFiles.get<boolean>('autoGuessEncoding');
-			const candidateGuessEncodings = configFiles.get<string[]>('candidateGuessEncodings');
 
 			try {
-				return await this.repository.bufferString(`${ref}:${path}`, defaultEncoding, autoGuessEncoding, candidateGuessEncodings);
+				return await this.repository.bufferString(`${ref}:${path}`, defaultEncoding, autoGuessEncoding);
 			} catch (err) {
 				if (err.gitErrorCode === GitErrorCodes.WrongCase) {
 					const gitRelativePath = await this.repository.getGitRelativePath(ref, path);
-					return await this.repository.bufferString(`${ref}:${gitRelativePath}`, defaultEncoding, autoGuessEncoding, candidateGuessEncodings);
+					return await this.repository.bufferString(`${ref}:${gitRelativePath}`, defaultEncoding, autoGuessEncoding);
 				}
 
 				throw err;

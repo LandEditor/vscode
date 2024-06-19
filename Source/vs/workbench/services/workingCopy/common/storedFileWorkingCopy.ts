@@ -29,7 +29,6 @@ import { IElevatedFileService } from 'vs/workbench/services/files/common/elevate
 import { IResourceWorkingCopy, ResourceWorkingCopy } from 'vs/workbench/services/workingCopy/common/resourceWorkingCopy';
 import { IFileWorkingCopy, IFileWorkingCopyModel, IFileWorkingCopyModelFactory, SnapshotContext } from 'vs/workbench/services/workingCopy/common/fileWorkingCopy';
 import { IMarkdownString } from 'vs/base/common/htmlContent';
-import { IProgress, IProgressService, IProgressStep, ProgressLocation } from 'vs/platform/progress/common/progress';
 
 /**
  * Stored file specific working copy model factory.
@@ -360,8 +359,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel> extend
 		@INotificationService private readonly notificationService: INotificationService,
 		@IWorkingCopyEditorService private readonly workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IElevatedFileService private readonly elevatedFileService: IElevatedFileService,
-		@IProgressService private readonly progressService: IProgressService
+		@IElevatedFileService private readonly elevatedFileService: IElevatedFileService
 	) {
 		super(resource, fileService);
 
@@ -867,7 +865,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel> extend
 			options.reason = SaveReason.EXPLICIT;
 		}
 
-		const versionId = this.versionId;
+		let versionId = this.versionId;
 		this.trace(`doSave(${versionId}) - enter with versionId ${versionId}`);
 
 		// Return early if saved from within save participant to break recursion
@@ -931,21 +929,6 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel> extend
 
 		const saveCancellation = new CancellationTokenSource();
 
-		return this.progressService.withProgress({
-			title: localize('saveParticipants', "Saving '{0}'", this.name),
-			location: ProgressLocation.Window,
-			cancellable: true,
-			delay: this.isDirty() ? 3000 : 5000
-		}, progress => {
-			return this.doSaveSequential(versionId, options, progress, saveCancellation);
-		}, () => {
-			saveCancellation.cancel();
-		}).finally(() => {
-			saveCancellation.dispose();
-		});
-	}
-
-	private doSaveSequential(versionId: number, options: IStoredFileWorkingCopySaveAsOptions, progress: IProgress<IProgressStep>, saveCancellation: CancellationTokenSource): Promise<void> {
 		return this.saveSequentializer.run(versionId, (async () => {
 
 			// A save participant can still change the working copy now
@@ -981,7 +964,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel> extend
 					if (!saveCancellation.token.isCancellationRequested) {
 						this.ignoreSaveFromSaveParticipants = true;
 						try {
-							await this.workingCopyFileService.runSaveParticipants(this, { reason: options.reason ?? SaveReason.EXPLICIT, savedFrom: options.from }, progress, saveCancellation.token);
+							await this.workingCopyFileService.runSaveParticipants(this, { reason: options.reason ?? SaveReason.EXPLICIT, savedFrom: options.from }, saveCancellation.token);
 						} finally {
 							this.ignoreSaveFromSaveParticipants = false;
 						}
@@ -1021,7 +1004,6 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel> extend
 			// Save to Disk. We mark the save operation as currently running with
 			// the latest versionId because it might have changed from a save
 			// participant triggering
-			progress.report({ message: localize('saveTextFile', "Writing into file...") });
 			this.trace(`doSave(${versionId}) - before write()`);
 			const lastResolvedFileStat = assertIsDefined(this.lastResolvedFileStat);
 			const resolvedFileWorkingCopy = this;
