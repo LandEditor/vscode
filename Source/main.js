@@ -21,7 +21,7 @@ const os = require('os');
 const bootstrap = require('./bootstrap');
 const bootstrapNode = require('./bootstrap-node');
 const { getUserDataPath } = require('./vs/platform/environment/node/userDataPath');
-const { stripComments } = require('./vs/base/common/stripComments');
+const { parse } = require('./vs/base/common/jsonc');
 const { getUNCHost, addUNCHostToAllowlist } = require('./vs/base/node/unc');
 /** @type {Partial<IProductConfiguration>} */
 // @ts-ignore
@@ -294,6 +294,13 @@ function configureCommandlineSwitchesSync(cliArgs) {
 		`CalculateNativeWinOcclusion,${app.commandLine.getSwitchValue('disable-features')}`;
 	app.commandLine.appendSwitch('disable-features', featuresToDisable);
 
+	// Blink features to configure.
+	// `FontMatchingCTMigration` - Siwtch font matching on macOS to CoreText (Refs https://github.com/microsoft/vscode/issues/214390).
+	//  TODO(deepak1556): Enable this feature again after updating to Electron 30.
+	const blinkFeaturesToDisable =
+		`FontMatchingCTMigration,${app.commandLine.getSwitchValue('disable-blink-features')}`;
+	app.commandLine.appendSwitch('disable-blink-features', blinkFeaturesToDisable);
+
 	// Support JS Flags
 	const jsFlags = getJSFlags(cliArgs);
 	if (jsFlags) {
@@ -309,7 +316,7 @@ function readArgvConfigSync() {
 	const argvConfigPath = getArgvConfigPath();
 	let argvConfig;
 	try {
-		argvConfig = JSON.parse(stripComments(fs.readFileSync(argvConfigPath).toString()));
+		argvConfig = parse(fs.readFileSync(argvConfigPath).toString());
 	} catch (error) {
 		if (error && error.code === 'ENOENT') {
 			createDefaultArgvConfigSync(argvConfigPath);

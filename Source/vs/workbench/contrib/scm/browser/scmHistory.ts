@@ -5,6 +5,7 @@
 
 import { lastOrDefault } from 'vs/base/common/arrays';
 import { deepClone } from 'vs/base/common/objects';
+import { ThemeIcon } from 'vs/base/common/themables';
 import { ISCMHistoryItem, ISCMHistoryItemGraphNode, ISCMHistoryItemViewModel } from 'vs/workbench/contrib/scm/common/history';
 
 const SWIMLANE_HEIGHT = 22;
@@ -13,6 +14,21 @@ const CIRCLE_RADIUS = 4;
 const SWIMLANE_CURVE_RADIUS = 5;
 
 const graphColors = ['#007ACC', '#BC3FBC', '#BF8803', '#CC6633', '#F14C4C', '#16825D'];
+
+function getNextColorIndex(colorIndex: number): number {
+	return colorIndex < graphColors.length - 1 ? colorIndex + 1 : 1;
+}
+
+function getLabelColorIndex(historyItem: ISCMHistoryItem, colorMap: Map<string, number>): number | undefined {
+	for (const label of historyItem.labels ?? []) {
+		const colorIndex = colorMap.get(label.title);
+		if (colorIndex !== undefined) {
+			return colorIndex;
+		}
+	}
+
+	return undefined;
+}
 
 function createPath(stroke: string): SVGPathElement {
 	const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
@@ -60,10 +76,12 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 	const outputSwimlanes = historyItemViewModel.outputSwimlanes;
 
 	const inputIndex = inputSwimlanes.findIndex(node => node.id === historyItem.id);
-	const outputIndex = historyItem.parentIds.length === 0 ? -1 : outputSwimlanes.findIndex(node => node.id === historyItem.parentIds[0]);
+	const outputIndex = historyItem.parentIds.length === 0 ? -1 : findLastIndex(outputSwimlanes, historyItem.parentIds[0]);
 
 	const circleIndex = inputIndex !== -1 ? inputIndex : inputSwimlanes.length;
-	const circleColorIndex = inputIndex !== -1 ? inputSwimlanes[inputIndex].color : outputSwimlanes[circleIndex]?.color ?? 0;
+	const circleColorIndex =
+		outputIndex !== -1 ? outputSwimlanes[outputIndex].color :
+			inputIndex !== -1 ? inputSwimlanes[inputIndex].color : 0;
 
 	for (let index = 0; index < inputSwimlanes.length; index++) {
 		const node = inputSwimlanes[index];
@@ -153,15 +171,15 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 		svg.append(path);
 	}
 
-	// Draw | to circle
+	// Draw | to *
 	if (inputIndex !== -1) {
-		const path = drawVerticalLine(SWIMLANE_WIDTH * (circleIndex + 1), 0, SWIMLANE_HEIGHT / 2, graphColors[circleColorIndex]);
+		const path = drawVerticalLine(SWIMLANE_WIDTH * (circleIndex + 1), 0, SWIMLANE_HEIGHT / 2, graphColors[inputSwimlanes[inputIndex].color]);
 		svg.append(path);
 	}
 
-	// Draw | from circle
+	// Draw | from *
 	if (outputIndex !== -1) {
-		const path = drawVerticalLine(SWIMLANE_WIDTH * (circleIndex + 1), SWIMLANE_HEIGHT / 2, SWIMLANE_HEIGHT, graphColors[circleColorIndex]);
+		const path = drawVerticalLine(SWIMLANE_WIDTH * (circleIndex + 1), SWIMLANE_HEIGHT / 2, SWIMLANE_HEIGHT, graphColors[outputSwimlanes[outputIndex].color]);
 		svg.append(path);
 	}
 
@@ -174,6 +192,13 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 		const circleInner = drawCircle(circleIndex, CIRCLE_RADIUS - 1, graphColors[circleColorIndex]);
 		svg.append(circleInner);
 	} else {
+		// HEAD
+		// TODO@lszomoru - implement a better way to determine if the commit is HEAD
+		if (historyItem.labels?.some(l => ThemeIcon.isThemeIcon(l.icon) && l.icon.id === 'target')) {
+			const outerCircle = drawCircle(circleIndex, CIRCLE_RADIUS + 2, graphColors[circleColorIndex]);
+			svg.append(outerCircle);
+		}
+
 		// Node
 		const circle = drawCircle(circleIndex, CIRCLE_RADIUS, graphColors[circleColorIndex]);
 		svg.append(circle);
@@ -186,7 +211,7 @@ export function renderSCMHistoryItemGraph(historyItemViewModel: ISCMHistoryItemV
 	return svg;
 }
 
-export function toISCMHistoryItemViewModelArray(historyItems: ISCMHistoryItem[]): ISCMHistoryItemViewModel[] {
+export function toISCMHistoryItemViewModelArray(historyItems: ISCMHistoryItem[], colorMap = new Map<string, number>()): ISCMHistoryItemViewModel[] {
 	let colorIndex = -1;
 	const viewModels: ISCMHistoryItemViewModel[] = [];
 
@@ -205,8 +230,8 @@ export function toISCMHistoryItemViewModelArray(historyItems: ISCMHistoryItem[])
 				if (node.id === historyItem.id) {
 					if (!firstParentAdded) {
 						outputSwimlanes.push({
-							...deepClone(node),
-							id: historyItem.parentIds[0]
+							id: historyItem.parentIds[0],
+							color: getLabelColorIndex(historyItem, colorMap) ?? node.color
 						});
 						firstParentAdded = true;
 					}
@@ -219,7 +244,9 @@ export function toISCMHistoryItemViewModelArray(historyItems: ISCMHistoryItem[])
 
 			// Add unprocessed parent(s) to the output
 			for (let i = firstParentAdded ? 1 : 0; i < historyItem.parentIds.length; i++) {
-				colorIndex = colorIndex < graphColors.length - 1 ? colorIndex + 1 : 1;
+				// Color index (label -> next color)
+				colorIndex = getLabelColorIndex(historyItem, colorMap) ?? getNextColorIndex(colorIndex);
+
 				outputSwimlanes.push({
 					id: historyItem.parentIds[i],
 					color: colorIndex

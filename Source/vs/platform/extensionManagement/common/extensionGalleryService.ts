@@ -18,7 +18,7 @@ import { IEnvironmentService } from 'vs/platform/environment/common/environment'
 import { getTargetPlatform, IExtensionGalleryService, IExtensionIdentifier, IExtensionInfo, IGalleryExtension, IGalleryExtensionAsset, IGalleryExtensionAssets, IGalleryExtensionVersion, InstallOperation, IQueryOptions, IExtensionsControlManifest, isNotWebExtensionInWebTargetPlatform, isTargetPlatformCompatible, ITranslation, SortBy, SortOrder, StatisticType, toTargetPlatform, WEB_EXTENSION_TAG, IExtensionQueryOptions, IDeprecationInfo, ISearchPrefferedResults, ExtensionGalleryError, ExtensionGalleryErrorCode, IProductVersion } from 'vs/platform/extensionManagement/common/extensionManagement';
 import { adoptToGalleryExtensionId, areSameExtensions, getGalleryExtensionId, getGalleryExtensionTelemetryData } from 'vs/platform/extensionManagement/common/extensionManagementUtil';
 import { IExtensionManifest, TargetPlatform } from 'vs/platform/extensions/common/extensions';
-import { isEngineValid } from 'vs/platform/extensions/common/extensionValidator';
+import { areApiProposalsCompatible, isEngineValid } from 'vs/platform/extensions/common/extensionValidator';
 import { IFileService } from 'vs/platform/files/common/files';
 import { ILogService } from 'vs/platform/log/common/log';
 import { IProductService } from 'vs/platform/product/common/productService';
@@ -209,6 +209,7 @@ const PropertyType = {
 	ExtensionPack: 'Microsoft.VisualStudio.Code.ExtensionPack',
 	Engine: 'Microsoft.VisualStudio.Code.Engine',
 	PreRelease: 'Microsoft.VisualStudio.Code.PreRelease',
+	EnabledApiProposals: 'Microsoft.VisualStudio.Code.EnabledApiProposals',
 	LocalizedLanguages: 'Microsoft.VisualStudio.Code.LocalizedLanguages',
 	WebExtension: 'Microsoft.VisualStudio.Code.WebExtension',
 	SponsorLink: 'Microsoft.VisualStudio.Code.SponsorLink',
@@ -430,6 +431,12 @@ function isPreReleaseVersion(version: IRawGalleryExtensionVersion): boolean {
 	return values.length > 0 && values[0].value === 'true';
 }
 
+function getEnabledApiProposals(version: IRawGalleryExtensionVersion): string[] {
+	const values = version.properties ? version.properties.filter(p => p.key === PropertyType.EnabledApiProposals) : [];
+	const value = (values.length > 0 && values[0].value) || '';
+	return value ? value.split(',') : [];
+}
+
 function getLocalizedLanguages(version: IRawGalleryExtensionVersion): string[] {
 	const values = version.properties ? version.properties.filter(p => p.key === PropertyType.LocalizedLanguages) : [];
 	const value = (values.length > 0 && values[0].value) || '';
@@ -548,6 +555,7 @@ function toExtension(galleryExtension: IRawGalleryExtension, version: IRawGaller
 			dependencies: getExtensions(version, PropertyType.Dependency),
 			extensionPack: getExtensions(version, PropertyType.ExtensionPack),
 			engine: getEngine(version),
+			enabledApiProposals: getEnabledApiProposals(version),
 			localizedLanguages: getLocalizedLanguages(version),
 			targetPlatform: getTargetPlatformForExtensionVersion(version),
 			isPreReleaseVersion: isPreReleaseVersion(version)
@@ -704,7 +712,16 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 			}
 			engine = manifest.engines.vscode;
 		}
-		return isEngineValid(engine, productVersion.version, productVersion.date);
+
+		if (!isEngineValid(engine, productVersion.version, productVersion.date)) {
+			return false;
+		}
+
+		if (!areApiProposalsCompatible(extension.properties.enabledApiProposals ?? [])) {
+			return false;
+		}
+
+		return true;
 	}
 
 	private async isValidVersion(extension: string, rawGalleryExtensionVersion: IRawGalleryExtensionVersion, versionType: 'release' | 'prerelease' | 'any', compatible: boolean, allTargetPlatforms: TargetPlatform[], targetPlatform: TargetPlatform, productVersion: IProductVersion = { version: this.productService.version, date: this.productService.date }): Promise<boolean> {
@@ -915,7 +932,18 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 				continue;
 			}
 			// Allow any version if includePreRelease flag is set otherwise only release versions are allowed
-			if (await this.isValidVersion(getGalleryExtensionId(rawGalleryExtension.publisher.publisherName, rawGalleryExtension.extensionName), rawGalleryExtensionVersion, includePreRelease ? 'any' : 'release', criteria.compatible, allTargetPlatforms, criteria.targetPlatform, criteria.productVersion)) {
+			if (await this.isValidVersion(
+				getGalleryExtensionId(rawGalleryExtension.publisher.publisherName, rawGalleryExtension.extensionName),
+				rawGalleryExtensionVersion,
+				includePreRelease ? 'any' : 'release',
+				criteria.compatible,
+				allTargetPlatforms,
+				criteria.targetPlatform,
+				criteria.productVersion)
+			) {
+				if (criteria.compatible && !areApiProposalsCompatible(getEnabledApiProposals(rawGalleryExtensionVersion))) {
+					return null;
+				}
 				return toExtension(rawGalleryExtension, rawGalleryExtensionVersion, allTargetPlatforms, queryContext);
 			}
 			if (version && rawGalleryExtensionVersion.version === version) {
@@ -957,7 +985,7 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 		};
 
 		const stopWatch = new StopWatch();
-		let context: IRequestContext | undefined, error: ExtensionGalleryError | undefined, total: number = 0;
+		let context: IRequestContext | undefined, errorCode: ExtensionGalleryErrorCode | undefined, total: number = 0;
 
 		try {
 			context = await this.requestService.request({
@@ -989,9 +1017,14 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 			return { galleryExtensions: [], total };
 
 		} catch (e) {
-			const errorCode = isCancellationError(e) ? ExtensionGalleryErrorCode.Cancelled : getErrorMessage(e).startsWith('XHR timeout') ? ExtensionGalleryErrorCode.Timeout : ExtensionGalleryErrorCode.Failed;
-			error = new ExtensionGalleryError(getErrorMessage(e), errorCode);
-			throw error;
+			if (isCancellationError(e)) {
+				errorCode = ExtensionGalleryErrorCode.Cancelled;
+				throw e;
+			} else {
+				const errorMessage = getErrorMessage(e);
+				errorCode = errorMessage.startsWith('XHR timeout') ? ExtensionGalleryErrorCode.Timeout : ExtensionGalleryErrorCode.Failed;
+				throw new ExtensionGalleryError(errorMessage, errorCode);
+			}
 		} finally {
 			this.telemetryService.publicLog2<GalleryServiceQueryEvent, GalleryServiceQueryClassification>('galleryService:query', {
 				...query.telemetryData,
@@ -1000,7 +1033,7 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 				success: !!context && isSuccess(context),
 				responseBodySize: context?.res.headers['Content-Length'],
 				statusCode: context ? String(context.res.statusCode) : undefined,
-				errorCode: error?.code,
+				errorCode,
 				count: String(total)
 			});
 		}
@@ -1132,15 +1165,15 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 		return '';
 	}
 
-	async getAllCompatibleVersions(extension: IGalleryExtension, includePreRelease: boolean, targetPlatform: TargetPlatform): Promise<IGalleryExtensionVersion[]> {
+	async getAllCompatibleVersions(extensionIdentifier: IExtensionIdentifier, includePreRelease: boolean, targetPlatform: TargetPlatform): Promise<IGalleryExtensionVersion[]> {
 		let query = new Query()
 			.withFlags(Flags.IncludeVersions, Flags.IncludeCategoryAndTags, Flags.IncludeFiles, Flags.IncludeVersionProperties)
 			.withPage(1, 1);
 
-		if (extension.identifier.uuid) {
-			query = query.withFilter(FilterType.ExtensionId, extension.identifier.uuid);
+		if (extensionIdentifier.uuid) {
+			query = query.withFilter(FilterType.ExtensionId, extensionIdentifier.uuid);
 		} else {
-			query = query.withFilter(FilterType.ExtensionName, extension.identifier.id);
+			query = query.withFilter(FilterType.ExtensionName, extensionIdentifier.id);
 		}
 
 		const { galleryExtensions } = await this.queryRawGalleryExtensions(query, CancellationToken.None);
@@ -1156,7 +1189,15 @@ abstract class AbstractExtensionGalleryService implements IExtensionGalleryServi
 		const validVersions: IRawGalleryExtensionVersion[] = [];
 		await Promise.all(galleryExtensions[0].versions.map(async (version) => {
 			try {
-				if (await this.isValidVersion(extension.identifier.id, version, includePreRelease ? 'any' : 'release', true, allTargetPlatforms, targetPlatform)) {
+				if (
+					(await this.isValidVersion(
+						extensionIdentifier.id,
+						version, includePreRelease ? 'any' : 'release',
+						true,
+						allTargetPlatforms,
+						targetPlatform))
+					&& areApiProposalsCompatible(getEnabledApiProposals(version))
+				) {
 					validVersions.push(version);
 				}
 			} catch (error) { /* Ignore error and skip version */ }
