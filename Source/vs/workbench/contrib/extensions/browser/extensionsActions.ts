@@ -1168,6 +1168,7 @@ async function getContextMenuActionsGroups(extension: IExtension | undefined | n
 			cksOverlay.push(['installedExtensionIsOptedToPreRelease', !!extension.local?.preRelease]);
 			cksOverlay.push(['galleryExtensionIsPreReleaseVersion', !!extension.gallery?.properties.isPreReleaseVersion]);
 			cksOverlay.push(['galleryExtensionHasPreReleaseVersion', extension.gallery?.hasPreReleaseVersion]);
+			cksOverlay.push(['extensionHasPreReleaseVersion', extension.hasPreReleaseVersion]);
 			cksOverlay.push(['extensionHasReleaseVersion', extension.hasReleaseVersion]);
 
 			const [colorThemes, fileIconThemes, productIconThemes] = await Promise.all([workbenchThemeService.getColorThemes(), workbenchThemeService.getFileIconThemes(), workbenchThemeService.getProductIconThemes()]);
@@ -3091,12 +3092,7 @@ registerColor('extensionButton.hoverBackground', {
 	hcLight: null
 }, localize('extensionButtonHoverBackground', "Button background hover color for extension actions."));
 
-registerColor('extensionButton.separator', {
-	dark: buttonSeparator,
-	light: buttonSeparator,
-	hcDark: buttonSeparator,
-	hcLight: buttonSeparator
-}, localize('extensionButtonSeparator', "Button separator color for extension actions"));
+registerColor('extensionButton.separator', buttonSeparator, localize('extensionButtonSeparator', "Button separator color for extension actions"));
 
 export const extensionButtonProminentBackground = registerColor('extensionButton.prominentBackground', {
 	dark: buttonBackground,
