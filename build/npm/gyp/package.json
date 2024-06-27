@@ -1,7 +1,7 @@
 {
-	"name": "code-oss-dev-build",
+	"name": "@codeeditorland/node-gyp",
 	"scripts": {},
 	"devDependencies": {
-		"node-gyp": "^9.4.0"
+		"node-gyp": "9.4.0"
 	}
 }
