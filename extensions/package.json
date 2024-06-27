@@ -7,6 +7,6 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
-		"esbuild": "0.20.0"
+		"esbuild": "0.21.5"
 	}
 }
