@@ -327,7 +327,6 @@ export interface IExtensionsControlManifest {
 	readonly malicious: IExtensionIdentifier[];
 	readonly deprecated: IStringDictionary<IDeprecationInfo>;
 	readonly search: ISearchPrefferedResults[];
-	readonly extensionsEnabledWithPreRelease?: string[];
 }
 
 export const enum InstallOperation {

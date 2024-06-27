@@ -577,8 +577,7 @@ export class ShellIntegrationAddon extends Disposable implements IShellIntegrati
 		if (!this._terminal || !this.capabilities.has(TerminalCapability.CommandDetection)) {
 			return {
 				isWindowsPty: false,
-				commands: [],
-				promptInputModel: undefined,
+				commands: []
 			};
 		}
 		const result = this._createOrGetCommandDetection(this._terminal).serialize();

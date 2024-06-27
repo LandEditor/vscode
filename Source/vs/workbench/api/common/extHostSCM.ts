@@ -654,9 +654,9 @@ class ExtHostSourceControl implements vscode.SourceControl {
 	}
 
 	set statusBarCommands(statusBarCommands: vscode.Command[] | undefined) {
-		this.logService.trace('ExtHostSourceControl#statusBarCommands', (statusBarCommands ?? []).map(c => c.command).join(', '));
+		this.logService.info('ExtHostSourceControl#statusBarCommands', (statusBarCommands ?? []).map(c => c.command).join(', '));
 		if (this._statusBarCommands && statusBarCommands && commandListEquals(this._statusBarCommands, statusBarCommands)) {
-			this.logService.trace('ExtHostSourceControl#statusBarCommands are equal');
+			this.logService.info('ExtHostSourceControl#statusBarCommands are equal');
 			return;
 		}
 

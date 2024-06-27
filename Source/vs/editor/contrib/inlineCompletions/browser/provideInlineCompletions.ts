@@ -18,19 +18,19 @@ import { ILanguageConfigurationService } from 'vs/editor/common/languages/langua
 import { ITextModel } from 'vs/editor/common/model';
 import { fixBracketsInLine } from 'vs/editor/common/model/bracketPairsTextModelPart/fixBrackets';
 import { SingleTextEdit } from 'vs/editor/common/core/textEdit';
-import { getReadonlyEmptyArray } from './utils';
+import { getReadonlyEmptyArray } from 'vs/editor/contrib/inlineCompletions/browser/utils';
 import { SnippetParser, Text } from 'vs/editor/contrib/snippet/browser/snippetParser';
 
 export async function provideInlineCompletions(
 	registry: LanguageFeatureRegistry<InlineCompletionsProvider>,
-	positionOrRange: Position | Range,
+	position: Position,
 	model: ITextModel,
 	context: InlineCompletionContext,
 	token: CancellationToken = CancellationToken.None,
 	languageConfigurationService?: ILanguageConfigurationService,
 ): Promise<InlineCompletionProviderResult> {
 	// Important: Don't use position after the await calls, as the model could have been changed in the meantime!
-	const defaultReplaceRange = positionOrRange instanceof Position ? getDefaultRange(positionOrRange, model) : positionOrRange;
+	const defaultReplaceRange = getDefaultRange(position, model);
 	const providers = registry.all(model);
 
 	const multiMap = new SetMap<InlineCompletionProviderGroupId, InlineCompletionsProvider<any>>();
@@ -100,13 +100,8 @@ export async function provideInlineCompletions(
 			}
 
 			try {
-				if (positionOrRange instanceof Position) {
-					const completions = await provider.provideInlineCompletions(model, positionOrRange, context, token);
-					return completions;
-				} else {
-					const completions = await provider.provideInlineEdits?.(model, positionOrRange, context, token);
-					return completions;
-				}
+				const completions = await provider.provideInlineCompletions(model, position, context, token);
+				return completions;
 			} catch (e) {
 				onUnexpectedExternalError(e);
 				return undefined;

@@ -256,7 +256,11 @@ export class GitHistoryProvider implements SourceControlHistoryProvider, FileDec
 			return undefined;
 		}
 
-		const refsMergeBase = await this.repository.getMergeBase(refNames[0], refNames[1], ...refNames.slice(2));
+		let refsMergeBase = refNames[0];
+		for (let index = 1; index < refNames.length; index++) {
+			refsMergeBase = await this.repository.getMergeBase(refsMergeBase, refNames[index]) ?? refsMergeBase;
+		}
+
 		return refsMergeBase;
 	}
 

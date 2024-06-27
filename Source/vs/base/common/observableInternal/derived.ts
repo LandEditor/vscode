@@ -140,15 +140,11 @@ export function derivedDisposable<T extends IDisposable | undefined>(computeFnOr
 		computeFn = computeFnOrUndefined as any;
 	}
 
-	let store: DisposableStore | undefined = undefined;
+	const store = new DisposableStore();
 	return new Derived(
 		new DebugNameData(owner, undefined, computeFn),
 		r => {
-			if (!store) {
-				store = new DisposableStore();
-			} else {
-				store.clear();
-			}
+			store.clear();
 			const result = computeFn(r);
 			if (result) {
 				store.add(result);
@@ -156,12 +152,7 @@ export function derivedDisposable<T extends IDisposable | undefined>(computeFnOr
 			return result;
 		}, undefined,
 		undefined,
-		() => {
-			if (store) {
-				store.dispose();
-				store = undefined;
-			}
-		},
+		() => store.dispose(),
 		strictEquals
 	);
 }

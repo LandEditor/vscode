@@ -12,7 +12,7 @@ import { ThemeIcon } from 'vs/base/common/themables';
 import { URI } from 'vs/base/common/uri';
 import { localize } from 'vs/nls';
 import { isRemoteDiagnosticError } from 'vs/platform/diagnostics/common/diagnostics';
-import { IIssueMainService, IProcessMainService, IssueReporterData, IssueReporterExtensionData, IssueReporterWindowConfiguration, IssueType } from 'vs/platform/issue/common/issue';
+import { IIssueMainService, IssueReporterData, IssueReporterExtensionData, IssueReporterWindowConfiguration, IssueType } from 'vs/platform/issue/common/issue';
 import { INativeHostService } from 'vs/platform/native/common/native';
 import { applyZoom, zoomIn, zoomOut } from 'vs/platform/window/electron-sandbox/window';
 import { BaseIssueReporterService, hide, show } from 'vs/workbench/contrib/issue/browser/issue';
@@ -24,17 +24,14 @@ const MAX_URL_LENGTH = 7500;
 
 
 export class IssueReporter2 extends BaseIssueReporterService {
-	private readonly processMainService: IProcessMainService;
 	constructor(
 		private readonly configuration: IssueReporterWindowConfiguration,
 		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@IIssueMainService issueMainService: IIssueMainService,
-		@IProcessMainService processMainService: IProcessMainService
+		@IIssueMainService issueMainService: IIssueMainService
 	) {
 		super(configuration.disableExtensions, configuration.data, configuration.os, configuration.product, mainWindow, false, issueMainService);
 
-		this.processMainService = processMainService;
-		this.processMainService.$getSystemInfo().then(info => {
+		this.issueMainService.$getSystemInfo().then(info => {
 			this.issueReporterModel.update({ systemInfo: info });
 			this.receivedSystemInfo = true;
 
@@ -42,7 +39,7 @@ export class IssueReporter2 extends BaseIssueReporterService {
 			this.updatePreviewButtonState();
 		});
 		if (configuration.data.issueType === IssueType.PerformanceIssue) {
-			this.processMainService.$getPerformanceInfo().then(info => {
+			this.issueMainService.$getPerformanceInfo().then(info => {
 				this.updatePerformanceInfo(info as Partial<IssueReporterData>);
 			});
 		}
@@ -83,26 +80,6 @@ export class IssueReporter2 extends BaseIssueReporterService {
 
 	public override setEventHandlers(): void {
 		super.setEventHandlers();
-
-		this.addEventListener('issue-type', 'change', (event: Event) => {
-			const issueType = parseInt((<HTMLInputElement>event.target).value);
-			this.issueReporterModel.update({ issueType: issueType });
-			if (issueType === IssueType.PerformanceIssue && !this.receivedPerformanceInfo) {
-				this.processMainService.$getPerformanceInfo().then(info => {
-					this.updatePerformanceInfo(info as Partial<IssueReporterData>);
-				});
-			}
-
-			// Resets placeholder
-			const descriptionTextArea = <HTMLInputElement>this.getElementById('issue-title');
-			if (descriptionTextArea) {
-				descriptionTextArea.placeholder = localize('undefinedPlaceholder', "Please enter a title");
-			}
-
-			this.updatePreviewButtonState();
-			this.setSourceOptions();
-			this.render();
-		});
 
 		// Keep all event listerns involving window and issue creation
 		this.previewButton.onDidClick(async () => {

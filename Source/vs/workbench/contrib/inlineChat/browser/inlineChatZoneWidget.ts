@@ -14,14 +14,13 @@ import { ZoneWidget } from 'vs/editor/contrib/zoneWidget/browser/zoneWidget';
 import { localize } from 'vs/nls';
 import { IContextKey, IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
 import { IInstantiationService } from 'vs/platform/instantiation/common/instantiation';
-import { ACTION_ACCEPT_CHANGES, ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, CTX_INLINE_CHAT_OUTER_CURSOR_POSITION, EditMode, InlineChatConfigKeys, MENU_INLINE_CHAT_EXECUTE, MENU_INLINE_CHAT_WIDGET_STATUS } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
+import { ACTION_ACCEPT_CHANGES, ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, CTX_INLINE_CHAT_OUTER_CURSOR_POSITION, EditMode, InlineChatConfigKeys, MENU_INLINE_CHAT_WIDGET, MENU_INLINE_CHAT_WIDGET_STATUS } from 'vs/workbench/contrib/inlineChat/common/inlineChat';
 import { EditorBasedInlineChatWidget } from './inlineChatWidget';
 import { isEqual } from 'vs/base/common/resources';
 import { StableEditorBottomScrollState } from 'vs/editor/browser/stableEditorScroll';
 import { ScrollType } from 'vs/editor/common/editorCommon';
 import { IConfigurationService } from 'vs/platform/configuration/common/configuration';
 import { ChatAgentLocation } from 'vs/workbench/contrib/chat/common/chatAgents';
-import { ILogService } from 'vs/platform/log/common/log';
 
 export class InlineChatZoneWidget extends ZoneWidget {
 
@@ -34,7 +33,6 @@ export class InlineChatZoneWidget extends ZoneWidget {
 		location: ChatAgentLocation,
 		editor: ICodeEditor,
 		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@ILogService private _logService: ILogService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
 	) {
@@ -63,7 +61,7 @@ export class InlineChatZoneWidget extends ZoneWidget {
 			},
 			chatWidgetViewOptions: {
 				menus: {
-					executeToolbar: MENU_INLINE_CHAT_EXECUTE,
+					inputSideToolbar: MENU_INLINE_CHAT_WIDGET,
 					telemetrySource: 'interactiveEditorWidget-toolbar',
 				},
 				rendererOptions: {
@@ -184,26 +182,25 @@ export class InlineChatZoneWidget extends ZoneWidget {
 
 		const lineNumber = position.lineNumber <= 1 ? 1 : 1 + position.lineNumber;
 
-		const scrollTop = this.editor.getScrollTop();
 		const lineTop = this.editor.getTopForLineNumber(lineNumber);
 		const zoneTop = lineTop - height.pixelsValue;
 
 		const editorHeight = this.editor.getLayoutInfo().height;
-		const lineBottom = this.editor.getBottomForLineNumber(lineNumber);
+		const newLineBottom = this.editor.getBottomForLineNumber(lineNumber);
 
-		let newScrollTop = zoneTop;
-		let forceScrollTop = false;
-
-		if (lineBottom >= (scrollTop + editorHeight)) {
-			// revealing the top of the zone would pust out the line we are interested it and
-			// therefore we keep the line in the view port
-			newScrollTop = lineBottom - editorHeight;
-			forceScrollTop = true;
+		let newTop: number;
+		if (newLineBottom > editorHeight) {
+			newTop = newLineBottom - editorHeight;
+		} else {
+			newTop = zoneTop;
 		}
 
-		if (newScrollTop < scrollTop || forceScrollTop) {
-			this._logService.trace('[IE] REVEAL zone', { zoneTop, lineTop, lineBottom, scrollTop, newScrollTop, forceScrollTop });
-			this.editor.setScrollTop(newScrollTop, ScrollType.Immediate);
+		const currentTop = this.editor.getScrollTop();
+
+		// console.log('REVEAL ZONE TOP', { zoneTop, newLineBottom, editorHeight, currentTop, newTop });
+
+		if (newTop < currentTop) {
+			this.editor.setScrollTop(newTop, ScrollType.Immediate);
 		}
 	}
 

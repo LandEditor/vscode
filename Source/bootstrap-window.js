@@ -8,10 +8,6 @@
 //@ts-check
 'use strict';
 
-/**
- * @import { ISandboxConfiguration } from './vs/base/parts/sandbox/common/sandboxTypes'
- */
-
 /* eslint-disable no-restricted-globals */
 
 // Simple module style to support node.js and browser environments
@@ -33,6 +29,8 @@
 	const safeProcess = preloadGlobals.process;
 
 	/**
+	 * @typedef {import('./vs/base/parts/sandbox/common/sandboxTypes').ISandboxConfiguration} ISandboxConfiguration
+	 *
 	 * @param {string[]} modulePaths
 	 * @param {(result: unknown, configuration: ISandboxConfiguration) => Promise<unknown> | undefined} resultCallback
 	 * @param {{

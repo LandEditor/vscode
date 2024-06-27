@@ -128,7 +128,6 @@
 		"--vscode-dropdown-foreground",
 		"--vscode-dropdown-listBackground",
 		"--vscode-editor-background",
-		"--vscode-editor-collapsedText",
 		"--vscode-editor-findMatchBackground",
 		"--vscode-editor-findMatchBorder",
 		"--vscode-editor-findMatchForeground",
@@ -855,7 +854,6 @@
 		"--z-index-run-button-container",
 		"--zoom-factor",
 		"--test-bar-width",
-		"--widget-color",
-		"--text-link-decoration"
+		"--widget-color"
 	]
 }

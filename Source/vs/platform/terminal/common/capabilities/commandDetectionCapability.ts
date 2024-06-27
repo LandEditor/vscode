@@ -408,8 +408,7 @@ export class CommandDetectionCapability extends Disposable implements ICommandDe
 		}
 		return {
 			isWindowsPty: this._ptyHeuristics.value instanceof WindowsPtyHeuristics,
-			commands,
-			promptInputModel: this._promptInputModel.serialize(),
+			commands
 		};
 	}
 
@@ -443,9 +442,6 @@ export class CommandDetectionCapability extends Disposable implements ICommandDe
 			this._commands.push(newCommand);
 			this._logService.debug('CommandDetectionCapability#onCommandFinished', newCommand);
 			this._onCommandFinished.fire(newCommand);
-		}
-		if (serialized.promptInputModel) {
-			this._promptInputModel.deserialize(serialized.promptInputModel);
 		}
 	}
 }
