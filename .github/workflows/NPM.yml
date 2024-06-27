@@ -24,7 +24,7 @@ jobs:
             id-token: write
 
         steps:
-            - uses: actions/checkout@v4.1.6
+            - uses: actions/checkout@v4.1.7
 
             - uses: actions/setup-node@v4.0.2
               with:
@@ -44,14 +44,6 @@ jobs:
             - name: Publish ./extensions/markdown-language-features/server
               continue-on-error: true
               working-directory: ./extensions/markdown-language-features/server
-              run: |
-                  npm publish --legacy-peer-deps --provenance --ignore-scripts
-              env:
-                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-            - name: Publish ./test/automation
-              continue-on-error: true
-              working-directory: ./test/automation
               run: |
                   npm publish --legacy-peer-deps --provenance --ignore-scripts
               env:

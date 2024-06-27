@@ -57,7 +57,7 @@ jobs:
                 node-version: [18, 19, 20]
 
         steps:
-            - uses: actions/checkout@v4.1.6
+            - uses: actions/checkout@v4.1.7
 
             - uses: pnpm/action-setup@v4.0.0
               with:
@@ -110,9 +110,6 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/css-language-features
 
-            - run: pnpm run test
-              working-directory: ./extensions/css-language-features
-
             - uses: actions/setup-node@v4.0.2
               with:
                   node-version: ${{ matrix.node-version }}
@@ -120,9 +117,6 @@ jobs:
                   cache-dependency-path: ./extensions/css-language-features/server/pnpm-lock.yaml
 
             - run: pnpm install
-              working-directory: ./extensions/css-language-features/server
-
-            - run: pnpm run test
               working-directory: ./extensions/css-language-features/server
 
             - uses: actions/setup-node@v4.0.2
@@ -179,9 +173,6 @@ jobs:
             - run: pnpm install
               working-directory: ./extensions/git
 
-            - run: pnpm run test
-              working-directory: ./extensions/git
-
             - uses: actions/setup-node@v4.0.2
               with:
                   node-version: ${{ matrix.node-version }}
@@ -234,9 +225,6 @@ jobs:
                   cache-dependency-path: ./extensions/html-language-features/server/pnpm-lock.yaml
 
             - run: pnpm install
-              working-directory: ./extensions/html-language-features/server
-
-            - run: pnpm run test
               working-directory: ./extensions/html-language-features/server
 
             - uses: actions/setup-node@v4.0.2
@@ -453,9 +441,6 @@ jobs:
             - run: pnpm install
               working-directory: .
 
-            - run: pnpm run test
-              working-directory: .
-
             - uses: actions/setup-node@v4.0.2
               with:
                   node-version: ${{ matrix.node-version }}
@@ -473,59 +458,3 @@ jobs:
 
             - run: pnpm install
               working-directory: ./remote/web
-
-            - uses: actions/setup-node@v4.0.2
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: "pnpm"
-                  cache-dependency-path: ./test/automation/pnpm-lock.yaml
-
-            - run: pnpm install
-              working-directory: ./test/automation
-
-            - run: pnpm run prepublishOnly
-              working-directory: .
-
-            - uses: actions/upload-artifact@v4.3.3
-              with:
-                  name: .-test-automation-Node-${{ matrix.node-version }}-Target
-                  path: ./test/automation/Target
-
-            - uses: actions/setup-node@v4.0.2
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: "pnpm"
-                  cache-dependency-path: ./test/integration/browser/pnpm-lock.yaml
-
-            - run: pnpm install
-              working-directory: ./test/integration/browser
-
-            - uses: actions/setup-node@v4.0.2
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: "pnpm"
-                  cache-dependency-path: ./test/leaks/pnpm-lock.yaml
-
-            - run: pnpm install
-              working-directory: ./test/leaks
-
-            - uses: actions/setup-node@v4.0.2
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: "pnpm"
-                  cache-dependency-path: ./test/monaco/pnpm-lock.yaml
-
-            - run: pnpm install
-              working-directory: ./test/monaco
-
-            - run: pnpm run test
-              working-directory: ./test/monaco
-
-            - uses: actions/setup-node@v4.0.2
-              with:
-                  node-version: ${{ matrix.node-version }}
-                  cache: "pnpm"
-                  cache-dependency-path: ./test/smoke/pnpm-lock.yaml
-
-            - run: pnpm install
-              working-directory: ./test/smoke
