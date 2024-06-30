@@ -1,4 +1,5 @@
 {
+	"name": "vscode-web",
 	"dependencies": {
 		"@xterm/addon-clipboard": "0.2.0-beta.4",
 		"@xterm/addon-image": "0.9.0-beta.21",
@@ -9,6 +10,5 @@
 		"@xterm/xterm": "5.6.0-beta.21",
 		"jschardet": "3.1.2",
 		"tas-client-umd": "0.2.0"
-	},
-	"name": "vscode-web"
+	}
 }
