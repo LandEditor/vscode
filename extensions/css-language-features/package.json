@@ -1,12 +1,16 @@
 {
-	"name": "css-language-features",
-	"displayName": "%displayName%",
-	"description": "%description%",
-	"main": "./client/out/node/cssClientMain",
+	"activationEvents": [
+		"onLanguage:css",
+		"onLanguage:less",
+		"onLanguage:scss",
+		"onCommand:_css.applyCodeAction"
+	],
 	"browser": "./client/dist/browser/cssClientMain",
-	"scripts": {
-		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
-		"install-client-next": "yarn add vscode-languageclient@next"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": true
 	},
 	"contributes": {
 		"configuration": [
@@ -969,21 +973,17 @@
 			}
 		]
 	},
-	"activationEvents": [
-		"onLanguage:css",
-		"onLanguage:less",
-		"onLanguage:scss",
-		"onCommand:_css.applyCodeAction"
-	],
 	"dependencies": {},
+	"description": "%description%",
 	"devDependencies": {
 		"@types/node": "20.x"
 	},
+	"displayName": "%displayName%",
 	"icon": "icons/css.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"main": "./client/out/node/cssClientMain",
+	"name": "css-language-features",
+	"scripts": {
+		"compile": "npx gulp compile-extension:css-language-features-client compile-extension:css-language-features-server",
+		"install-client-next": "yarn add vscode-languageclient@next"
 	}
 }

@@ -1,8 +1,4 @@
 {
-	"name": "vscode-reh",
-	"resolutions": {
-		"node-gyp-build": "4.8.1"
-	},
 	"dependencies": {
 		"@vscode/deviceid": "^0.1.1",
 		"@xterm/addon-clipboard": "0.2.0-beta.4",
@@ -24,5 +20,9 @@
 		"tas-client-umd": "0.2.0",
 		"yauzl": "^3.0.0",
 		"yazl": "^2.4.3"
+	},
+	"name": "vscode-reh",
+	"resolutions": {
+		"node-gyp-build": "4.8.1"
 	}
 }

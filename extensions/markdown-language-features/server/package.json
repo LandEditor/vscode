@@ -1,20 +1,20 @@
 {
-	"name": "vscode-markdown-languageserver",
-	"description": "Markdown language server",
-	"main": "./out/node/main",
 	"browser": "./dist/browser/main",
+	"dependencies": {},
+	"description": "Markdown language server",
+	"devDependencies": {
+		"@types/node": "20.x"
+	},
 	"files": [
 		"dist/**/*.js",
 		"out/**/*.js"
 	],
+	"main": "./out/node/main",
+	"name": "vscode-markdown-languageserver",
 	"scripts": {
 		"compile": "gulp compile-extension:markdown-language-features-server",
 		"compile-web": "npx webpack-cli --config extension-browser.webpack.config --mode none",
 		"prepublishOnly": "npm run compile",
 		"watch-web": "npx webpack-cli --config extension-browser.webpack.config --mode none --watch --info-verbosity verbose"
-	},
-	"dependencies": {},
-	"devDependencies": {
-		"@types/node": "20.x"
 	}
 }
