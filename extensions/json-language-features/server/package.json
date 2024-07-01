@@ -16,7 +16,7 @@
 		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
 	},
 	"dependencies": {
-		"jsonc-parser": "3.2.1",
+		"jsonc-parser": "3.3.1",
 		"request-light": "0.7.0"
 	},
 	"devDependencies": {
