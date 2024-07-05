@@ -140,7 +140,7 @@
 		"onLanguage:snippets"
 	],
 	"dependencies": {
-		"request-light": "^0.7.0"
+		"request-light": "^0.8.0"
 	},
 	"devDependencies": {
 		"@types/node": "20.x"
