@@ -11,7 +11,7 @@
 
 // ESM-uncomment-begin
 // import * as path from 'path';
-// import { createRequire } from 'node:module';
+// import { createRequire } from 'module';
 // import { fileURLToPath } from 'url';
 //
 // const require = createRequire(import.meta.url);

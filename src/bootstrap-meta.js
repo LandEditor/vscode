@@ -11,7 +11,7 @@
  */
 
 // ESM-uncomment-begin
-// import { createRequire } from 'node:module';
+// import { createRequire } from 'module';
 //
 // const require = createRequire(import.meta.url);
 // const module = { exports: {} };

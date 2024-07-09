@@ -16,7 +16,7 @@ const isESM = false;
 // import * as path from 'path';
 // import * as fs from 'fs';
 // import { fileURLToPath } from 'url';
-// import { createRequire } from 'node:module';
+// import { createRequire } from 'module';
 //
 // const require = createRequire(import.meta.url);
 // const isESM = true;

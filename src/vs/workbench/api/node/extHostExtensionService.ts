@@ -19,7 +19,7 @@ import { realpathSync } from 'vs/base/node/extpath';
 import { ExtHostConsoleForwarder } from 'vs/workbench/api/node/extHostConsoleForwarder';
 import { ExtHostDiskFileSystemProvider } from 'vs/workbench/api/node/extHostDiskFileSystemProvider';
 // ESM-uncomment-begin
-// import { createRequire } from 'node:module';
+// import { createRequire } from 'module';
 // const require = createRequire(import.meta.url);
 // ESM-uncomment-end
 

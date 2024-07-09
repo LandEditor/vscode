@@ -22,7 +22,7 @@ import { LogLevel, createHttpPatch, createProxyResolver, createTlsPatch, ProxySu
 import { AuthInfo } from 'vs/platform/request/common/request';
 
 // ESM-uncomment-begin
-// import { createRequire } from 'node:module';
+// import { createRequire } from 'module';
 // const require = createRequire(import.meta.url);
 // const http = require('http');
 // const https = require('https');

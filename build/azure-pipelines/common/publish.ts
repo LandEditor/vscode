@@ -7,7 +7,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
-import { pipeline } from 'node:stream/promises';
+import { pipeline } from 'stream/promises';
 import * as yauzl from 'yauzl';
 import * as crypto from 'crypto';
 import { retry } from './retry';
@@ -15,7 +15,7 @@ import { CosmosClient } from '@azure/cosmos';
 import { ClientSecretCredential } from '@azure/identity';
 import * as cp from 'child_process';
 import * as os from 'os';
-import { Worker, isMainThread, workerData } from 'node:worker_threads';
+import { Worker, isMainThread, workerData } from 'worker_threads';
 
 function e(name: string): string {
 	const result = process.env[name];

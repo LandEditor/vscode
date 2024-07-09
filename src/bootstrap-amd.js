@@ -18,7 +18,7 @@ const isESM = false;
 // import * as path from 'path';
 // import * as fs from 'fs';
 // import { fileURLToPath } from 'url';
-// import { createRequire } from 'node:module';
+// import { createRequire } from 'module';
 // import { product, pkg } from './bootstrap-meta.js';
 // import * as bootstrap from './bootstrap.js';
 // import * as performance from './vs/base/common/performance.js';

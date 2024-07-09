@@ -5,9 +5,9 @@
 
 import * as swc from '@swc/core';
 import * as ts from 'typescript';
-import * as threads from 'node:worker_threads';
+import * as threads from 'worker_threads';
 import * as Vinyl from 'vinyl';
-import { cpus } from 'node:os';
+import { cpus } from 'os';
 
 interface TranspileReq {
 	readonly tsSrcs: string[];
