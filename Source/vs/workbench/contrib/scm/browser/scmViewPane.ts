@@ -37,7 +37,7 @@ import { URI } from 'vs/base/common/uri';
 import { FileKind } from 'vs/platform/files/common/files';
 import { compareFileNames, comparePaths } from 'vs/base/common/comparers';
 import { FuzzyScore, createMatches, IMatch } from 'vs/base/common/filters';
-import { IViewDescriptorService } from 'vs/workbench/common/views';
+import { IViewDescriptorService, ViewContainerLocation } from 'vs/workbench/common/views';
 import { localize } from 'vs/nls';
 import { IStorageService, StorageScope, StorageTarget } from 'vs/platform/storage/common/storage';
 import { EditorResourceAccessor, SideBySideEditor } from 'vs/workbench/common/editor';
@@ -102,14 +102,18 @@ import { DropdownWithPrimaryActionViewItem } from 'vs/platform/actions/browser/d
 import { clamp, rot } from 'vs/base/common/numbers';
 import { ILogService } from 'vs/platform/log/common/log';
 import { MarkdownString } from 'vs/base/common/htmlContent';
-import type { IManagedHover, IManagedHoverTooltipMarkdownString } from 'vs/base/browser/ui/hover/hover';
-import { IHoverService } from 'vs/platform/hover/browser/hover';
+import type { IHoverOptions, IManagedHover, IManagedHoverTooltipMarkdownString } from 'vs/base/browser/ui/hover/hover';
+import { IHoverService, WorkbenchHoverDelegate } from 'vs/platform/hover/browser/hover';
 import { OpenScmGroupAction } from 'vs/workbench/contrib/multiDiffEditor/browser/scmMultiDiffSourceResolver';
 import { HoverController } from 'vs/editor/contrib/hover/browser/hoverController';
 import { ITextModel } from 'vs/editor/common/model';
 import { autorun } from 'vs/base/common/observable';
-import { getDefaultHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegateFactory';
+import { createInstantHoverDelegate, getDefaultHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegateFactory';
 import { renderSCMHistoryItemGraph, toISCMHistoryItemViewModelArray } from 'vs/workbench/contrib/scm/browser/scmHistory';
+import { PlaceholderTextContribution } from 'vs/editor/contrib/placeholderText/browser/placeholderTextContribution';
+import { HoverPosition } from 'vs/base/browser/ui/hover/hoverWidget';
+import { IHoverDelegate } from 'vs/base/browser/ui/hover/hoverDelegate';
+import { IWorkbenchLayoutService, Position } from 'vs/workbench/services/layout/browser/layoutService';
 
 // type SCMResourceTreeNode = IResourceNode<ISCMResource, ISCMResourceGroup>;
 // type SCMHistoryItemChangeResourceTreeNode = IResourceNode<SCMHistoryItemChangeTreeElement, SCMHistoryItemTreeElement>;
@@ -129,9 +133,9 @@ type TreeElement =
 
 type ShowChangesSetting = 'always' | 'never' | 'auto';
 
-registerColor('scm.historyItemAdditionsForeground', 'gitDecoration.addedResourceForeground', localize('scm.historyItemAdditionsForeground', "History item additions foreground color."));
+const historyItemAdditionsForeground = registerColor('scm.historyItemAdditionsForeground', 'gitDecoration.addedResourceForeground', localize('scm.historyItemAdditionsForeground', "History item additions foreground color."));
 
-registerColor('scm.historyItemDeletionsForeground', 'gitDecoration.deletedResourceForeground', localize('scm.historyItemDeletionsForeground', "History item deletions foreground color."));
+const historyItemDeletionsForeground = registerColor('scm.historyItemDeletionsForeground', 'gitDecoration.deletedResourceForeground', localize('scm.historyItemDeletionsForeground', "History item deletions foreground color."));
 
 registerColor('scm.historyItemStatisticsBorder', transparent(foreground, 0.2), localize('scm.historyItemStatisticsBorder', "History item statistics border color."));
 
@@ -839,6 +843,31 @@ class HistoryItemActionRunner extends ActionRunner {
 	}
 }
 
+class HistoryItemHoverDelegate extends WorkbenchHoverDelegate {
+	constructor(
+		private readonly viewContainerLocation: ViewContainerLocation | null,
+		private readonly sideBarPosition: Position,
+		@IConfigurationService configurationService: IConfigurationService,
+		@IHoverService hoverService: IHoverService
+
+	) {
+		super('element', true, () => this.getHoverOptions(), configurationService, hoverService);
+	}
+
+	private getHoverOptions(): Partial<IHoverOptions> {
+		let hoverPosition: HoverPosition;
+		if (this.viewContainerLocation === ViewContainerLocation.Sidebar) {
+			hoverPosition = this.sideBarPosition === Position.LEFT ? HoverPosition.RIGHT : HoverPosition.LEFT;
+		} else if (this.viewContainerLocation === ViewContainerLocation.AuxiliaryBar) {
+			hoverPosition = this.sideBarPosition === Position.LEFT ? HoverPosition.LEFT : HoverPosition.RIGHT;
+		} else {
+			hoverPosition = HoverPosition.RIGHT;
+		}
+
+		return { position: { hoverPosition, forcePosition: true } };
+	}
+}
+
 interface HistoryItemTemplate {
 	readonly iconContainer: HTMLElement;
 	readonly label: IconLabel;
@@ -985,6 +1014,7 @@ class HistoryItemRenderer implements ICompressibleTreeRenderer<SCMHistoryItemTre
 }
 
 interface HistoryItem2Template {
+	readonly element: HTMLElement;
 	readonly label: IconLabel;
 	readonly graphContainer: HTMLElement;
 	readonly labelContainer: HTMLElement;
@@ -998,7 +1028,9 @@ class HistoryItem2Renderer implements ICompressibleTreeRenderer<SCMHistoryItemVi
 	get templateId(): string { return HistoryItem2Renderer.TEMPLATE_ID; }
 
 	constructor(
-		@IHoverService private readonly hoverService: IHoverService
+		private readonly hoverDelegate: IHoverDelegate,
+		@IHoverService private readonly hoverService: IHoverService,
+		@IThemeService private readonly themeService: IThemeService
 	) { }
 
 	renderTemplate(container: HTMLElement): HistoryItem2Template {
@@ -1007,34 +1039,39 @@ class HistoryItem2Renderer implements ICompressibleTreeRenderer<SCMHistoryItemVi
 
 		const element = append(container, $('.history-item'));
 		const graphContainer = append(element, $('.graph-container'));
-
 		const iconLabel = new IconLabel(element, { supportIcons: true, supportHighlights: true, supportDescriptionHighlights: true });
 
 		const labelContainer = append(element, $('.label-container'));
 		element.appendChild(labelContainer);
 
-		return { graphContainer, label: iconLabel, labelContainer, elementDisposables: new DisposableStore(), disposables: new DisposableStore() };
+		return { element, graphContainer, label: iconLabel, labelContainer, elementDisposables: new DisposableStore(), disposables: new DisposableStore() };
 	}
 
 	renderElement(node: ITreeNode<SCMHistoryItemViewModelTreeElement, LabelFuzzyScore>, index: number, templateData: HistoryItem2Template, height: number | undefined): void {
 		const historyItemViewModel = node.element.historyItemViewModel;
 		const historyItem = historyItemViewModel.historyItem;
 
+		const historyItemHover = this.hoverService.setupManagedHover(this.hoverDelegate, templateData.element, this.getTooltip(historyItemViewModel));
+		templateData.elementDisposables.add(historyItemHover);
+
 		templateData.graphContainer.textContent = '';
 		templateData.graphContainer.appendChild(renderSCMHistoryItemGraph(historyItemViewModel));
 
-		const title = this.getTooltip(historyItemViewModel);
 		const [matches, descriptionMatches] = this.processMatches(historyItemViewModel, node.filterData);
-		templateData.label.setLabel(historyItem.message, undefined, { title, matches, descriptionMatches });
+		templateData.label.setLabel(historyItem.message, historyItem.author, { matches, descriptionMatches });
 
 		templateData.labelContainer.textContent = '';
 		if (historyItem.labels) {
+			const instantHoverDelegate = createInstantHoverDelegate();
+			templateData.elementDisposables.add(instantHoverDelegate);
+
 			for (const label of historyItem.labels) {
 				if (label.icon && ThemeIcon.isThemeIcon(label.icon)) {
 					const icon = append(templateData.labelContainer, $('div.label'));
 					icon.classList.add(...ThemeIcon.asClassNameArray(label.icon));
 
-					templateData.elementDisposables.add(this.hoverService.setupManagedHover(getDefaultHoverDelegate('element'), icon, label.title));
+					const hover = this.hoverService.setupManagedHover(instantHoverDelegate, icon, label.title);
+					templateData.elementDisposables.add(hover);
 				}
 			}
 		}
@@ -1052,12 +1089,25 @@ class HistoryItem2Renderer implements ICompressibleTreeRenderer<SCMHistoryItemVi
 			markdown.appendMarkdown(`$(account) **${historyItem.author}**\n\n`);
 		}
 
+		markdown.appendMarkdown(`${historyItem.message}\n\n`);
+
 		if (historyItem.timestamp) {
+			markdown.appendMarkdown(`---\n\n`);
+
 			const dateFormatter = new Intl.DateTimeFormat(platform.language, { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric' });
-			markdown.appendMarkdown(`$(history) ${dateFormatter.format(historyItem.timestamp)}\n\n`);
+			markdown.appendMarkdown(`$(history) ${dateFormatter.format(historyItem.timestamp)}`);
 		}
 
-		markdown.appendMarkdown(historyItem.message);
+		if (historyItem.statistics?.files) {
+			const colorTheme = this.themeService.getColorTheme();
+			const historyItemAdditionsForegroundColor = colorTheme.getColor(historyItemAdditionsForeground);
+			const historyItemDeletionsForegroundColor = colorTheme.getColor(historyItemDeletionsForeground);
+
+			markdown.appendMarkdown(`  |  `);
+			markdown.appendMarkdown(`<span>${historyItem.statistics.files}</span>`);
+			markdown.appendMarkdown(historyItem.statistics.insertions ? `,&nbsp;<span style="color:${historyItemAdditionsForegroundColor};">+${historyItem.statistics.insertions}</span>` : '');
+			markdown.appendMarkdown(historyItem.statistics.deletions ? `,&nbsp;<span style="color:${historyItemDeletionsForegroundColor};">-${historyItem.statistics.deletions}</span>` : '');
+		}
 
 		return { markdown, markdownNotSupportedFallback: historyItem.message };
 	}
@@ -2129,7 +2179,7 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 	private _onDidChange = new Emitter<void>();
 	readonly onDidChange: Event<void> = this._onDidChange.event;
 
-	private readonly repositoryDisposables = new DisposableStore();
+	private readonly _disposables = this._register(new MutableDisposable<DisposableStore>());
 
 	constructor(
 		container: HTMLElement,
@@ -2157,7 +2207,7 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 	}
 
 	public setInput(input: ISCMInput): void {
-		this.repositoryDisposables.clear();
+		this._disposables.value = new DisposableStore();
 
 		const contextKeyService = this.contextKeyService.createOverlay([
 			['scmProvider', input.repository.provider.contextValue],
@@ -2165,7 +2215,7 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 			['scmProviderHasRootUri', !!input.repository.provider.rootUri]
 		]);
 
-		const menu = this.repositoryDisposables.add(this.menuService.createMenu(MenuId.SCMInputBox, contextKeyService, { emitEventsForSubmenuChanges: true }));
+		const menu = this._disposables.value.add(this.menuService.createMenu(MenuId.SCMInputBox, contextKeyService, { emitEventsForSubmenuChanges: true }));
 
 		const isEnabled = (): boolean => {
 			return input.repository.provider.groups.some(g => g.resources.length > 0);
@@ -2195,18 +2245,18 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 			this._onDidChange.fire();
 		};
 
-		this.repositoryDisposables.add(menu.onDidChange(() => updateToolbar()));
-		this.repositoryDisposables.add(input.repository.provider.onDidChangeResources(() => updateToolbar()));
-		this.repositoryDisposables.add(this.storageService.onDidChangeValue(StorageScope.PROFILE, SCMInputWidgetStorageKey.LastActionId, this.repositoryDisposables)(() => updateToolbar()));
+		this._disposables.value.add(menu.onDidChange(() => updateToolbar()));
+		this._disposables.value.add(input.repository.provider.onDidChangeResources(() => updateToolbar()));
+		this._disposables.value.add(this.storageService.onDidChangeValue(StorageScope.PROFILE, SCMInputWidgetStorageKey.LastActionId, this._disposables.value)(() => updateToolbar()));
 
 		this.actionRunner = new SCMInputWidgetActionRunner(input, this.storageService);
-		this.repositoryDisposables.add(this.actionRunner.onWillRun(e => {
+		this._disposables.value.add(this.actionRunner.onWillRun(e => {
 			if ((this.actionRunner as SCMInputWidgetActionRunner).runningActions.size === 0) {
 				super.setActions([this._cancelAction], []);
 				this._onDidChange.fire();
 			}
 		}));
-		this.repositoryDisposables.add(this.actionRunner.onDidRun(e => {
+		this._disposables.value.add(this.actionRunner.onDidRun(e => {
 			if ((this.actionRunner as SCMInputWidgetActionRunner).runningActions.size === 0) {
 				updateToolbar();
 			}
@@ -2214,7 +2264,6 @@ class SCMInputWidgetToolbar extends WorkbenchToolBar {
 
 		updateToolbar();
 	}
-
 }
 
 class SCMInputWidgetEditorOptions {
@@ -2338,7 +2387,6 @@ class SCMInputWidget {
 
 	private element: HTMLElement;
 	private editorContainer: HTMLElement;
-	private placeholderTextContainer: HTMLElement;
 	private readonly inputEditor: CodeEditorWidget;
 	private readonly inputEditorOptions: SCMInputWidgetEditorOptions;
 	private toolbarContainer: HTMLElement;
@@ -2429,14 +2477,11 @@ class SCMInputWidget {
 		this.repositoryDisposables.add(input.onDidChangeValidationMessage((e) => this.setValidation(e, { focus: true, timeout: true })));
 		this.repositoryDisposables.add(input.onDidChangeValidateInput((e) => triggerValidation()));
 
-		// Keep API in sync with model, update placeholder visibility and validate
-		const updatePlaceholderVisibility = () => this.placeholderTextContainer.classList.toggle('hidden', textModel.getValueLength() > 0);
+		// Keep API in sync with model and validate
 		this.repositoryDisposables.add(textModel.onDidChangeContent(() => {
 			input.setValue(textModel.getValue(), true);
-			updatePlaceholderVisibility();
 			triggerValidation();
 		}));
-		updatePlaceholderVisibility();
 
 		// Update placeholder text
 		const updatePlaceholderText = () => {
@@ -2444,8 +2489,7 @@ class SCMInputWidget {
 			const label = binding ? binding.getLabel() : (platform.isMacintosh ? 'Cmd+Enter' : 'Ctrl+Enter');
 			const placeholderText = format(input.placeholder, label);
 
-			this.inputEditor.updateOptions({ ariaLabel: placeholderText });
-			this.placeholderTextContainer.textContent = placeholderText;
+			this.inputEditor.updateOptions({ placeholder: placeholderText });
 		};
 		this.repositoryDisposables.add(input.onDidChangePlaceholder(updatePlaceholderText));
 		this.repositoryDisposables.add(this.keybindingService.onDidUpdateKeybindings(updatePlaceholderText));
@@ -2526,7 +2570,6 @@ class SCMInputWidget {
 	) {
 		this.element = append(container, $('.scm-editor'));
 		this.editorContainer = append(this.element, $('.scm-editor-container'));
-		this.placeholderTextContainer = append(this.editorContainer, $('.scm-editor-placeholder'));
 		this.toolbarContainer = append(this.element, $('.scm-editor-toolbar'));
 
 		this.contextKeyService = contextKeyService.createScoped(this.element);
@@ -2536,33 +2579,32 @@ class SCMInputWidget {
 		this.disposables.add(this.inputEditorOptions.onDidChange(this.onDidChangeEditorOptions, this));
 		this.disposables.add(this.inputEditorOptions);
 
-		const editorConstructionOptions = this.inputEditorOptions.getEditorConstructionOptions();
-		this.setPlaceholderFontStyles(editorConstructionOptions.fontFamily!, editorConstructionOptions.fontSize!, editorConstructionOptions.lineHeight!);
-
 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
-			isSimpleWidget: true,
 			contributions: EditorExtensionsRegistry.getSomeEditorContributions([
+				CodeActionController.ID,
 				ColorDetector.ID,
 				ContextMenuController.ID,
-				DragAndDropController.ID,
 				CopyPasteController.ID,
+				DragAndDropController.ID,
 				DropIntoEditorController.ID,
+				EditorDictation.ID,
+				FormatOnType.ID,
+				HoverController.ID,
+				InlineCompletionsController.ID,
 				LinkDetector.ID,
 				MenuPreventer.ID,
 				MessageController.ID,
-				HoverController.ID,
+				PlaceholderTextContribution.ID,
 				SelectionClipboardContributionID,
 				SnippetController2.ID,
-				SuggestController.ID,
-				InlineCompletionsController.ID,
-				CodeActionController.ID,
-				FormatOnType.ID,
-				EditorDictation.ID,
-			])
+				SuggestController.ID
+			]),
+			isSimpleWidget: true
 		};
 
 		const services = new ServiceCollection([IContextKeyService, this.contextKeyService]);
 		const instantiationService2 = instantiationService.createChild(services, this.disposables);
+		const editorConstructionOptions = this.inputEditorOptions.getEditorConstructionOptions();
 		this.inputEditor = instantiationService2.createInstance(CodeEditorWidget, this.editorContainer, editorConstructionOptions, codeEditorWidgetOptions);
 		this.disposables.add(this.inputEditor);
 
@@ -2652,7 +2694,6 @@ class SCMInputWidget {
 
 		this.lastLayoutWasTrash = false;
 		this.inputEditor.layout(dimension);
-		this.placeholderTextContainer.style.width = `${dimension.width}px`;
 		this.renderValidation();
 
 		const showInputActionButton = this.configurationService.getValue<boolean>('scm.showInputActionButton') === true;
@@ -2680,10 +2721,7 @@ class SCMInputWidget {
 	}
 
 	private onDidChangeEditorOptions(): void {
-		const editorOptions = this.inputEditorOptions.getEditorOptions();
-
-		this.inputEditor.updateOptions(editorOptions);
-		this.setPlaceholderFontStyles(editorOptions.fontFamily!, editorOptions.fontSize!, editorOptions.lineHeight!);
+		this.inputEditor.updateOptions(this.inputEditorOptions.getEditorOptions());
 	}
 
 	private renderValidation(): void {
@@ -2772,11 +2810,6 @@ class SCMInputWidget {
 		return this.toolbar.dropdownActions.length === 0 ?
 			26 /* 22px action + 4px margin */ :
 			39 /* 35px action + 4px margin */;
-	}
-	private setPlaceholderFontStyles(fontFamily: string, fontSize: number, lineHeight: number): void {
-		this.placeholderTextContainer.style.fontFamily = fontFamily;
-		this.placeholderTextContainer.style.fontSize = `${fontSize}px`;
-		this.placeholderTextContainer.style.lineHeight = `${lineHeight}px`;
 	}
 
 	clearValidation(): void {
@@ -2879,6 +2912,7 @@ export class SCMViewPane extends ViewPane {
 		@ISCMViewService private readonly scmViewService: ISCMViewService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IThemeService themeService: IThemeService,
 		@IContextMenuService contextMenuService: IContextMenuService,
@@ -3057,6 +3091,9 @@ export class SCMViewPane extends ViewPane {
 		historyItemActionRunner.onWillRun(() => this.tree.domFocus(), this, this.disposables);
 		this.disposables.add(historyItemActionRunner);
 
+		const historyItemHoverDelegate = this.instantiationService.createInstance(HistoryItemHoverDelegate, this.viewDescriptorService.getViewLocationById(this.id), this.layoutService.getSideBarPosition());
+		this.disposables.add(historyItemHoverDelegate);
+
 		const treeDataSource = this.instantiationService.createInstance(SCMTreeDataSource, () => this.viewMode);
 		this.disposables.add(treeDataSource);
 
@@ -3074,7 +3111,7 @@ export class SCMViewPane extends ViewPane {
 				this.instantiationService.createInstance(ResourceRenderer, () => this.viewMode, this.listLabels, getActionViewItemProvider(this.instantiationService), resourceActionRunner),
 				this.instantiationService.createInstance(HistoryItemGroupRenderer, historyItemGroupActionRunner),
 				this.instantiationService.createInstance(HistoryItemRenderer, historyItemActionRunner, getActionViewItemProvider(this.instantiationService)),
-				this.instantiationService.createInstance(HistoryItem2Renderer),
+				this.instantiationService.createInstance(HistoryItem2Renderer, historyItemHoverDelegate),
 				this.instantiationService.createInstance(HistoryItemChangeRenderer, () => this.viewMode, this.listLabels),
 				this.instantiationService.createInstance(SeparatorRenderer)
 			],
@@ -3337,16 +3374,14 @@ export class SCMViewPane extends ViewPane {
 
 	private onListContextMenu(e: ITreeContextMenuEvent<TreeElement | null>): void {
 		if (!e.element) {
-			const menu = this.menuService.createMenu(Menus.ViewSort, this.contextKeyService);
+			const menu = this.menuService.getMenuActions(Menus.ViewSort, this.contextKeyService);
 			const actions: IAction[] = [];
-			createAndFillInContextMenuActions(menu, undefined, actions);
+			createAndFillInContextMenuActions(menu, actions);
 
 			return this.contextMenuService.showContextMenu({
 				getAnchor: () => e.anchor,
 				getActions: () => actions,
-				onHide: () => {
-					menu.dispose();
-				}
+				onHide: () => { }
 			});
 		}
 
@@ -4252,6 +4287,7 @@ registerThemingParticipant((theme, collector) => {
 		// Override inactive selection bg
 		const inputBackgroundColor = theme.getColor(inputBackground);
 		if (inputBackgroundColor) {
+			collector.addRule(`.scm-view .scm-editor-container .monaco-editor-background { background-color: ${inputBackgroundColor}; } `);
 			collector.addRule(`.scm-view .scm-editor-container .monaco-editor .selected-text { background-color: ${inputBackgroundColor.transparent(0.4)}; }`);
 		}
 
@@ -4261,10 +4297,6 @@ registerThemingParticipant((theme, collector) => {
 			collector.addRule(`.scm-view .scm-editor-container .monaco-editor .view-line span.inline-selected-text { color: ${inputForegroundColor}; }`);
 		}
 
-		const backgroundColor = theme.getColor(inputBackground);
-		if (backgroundColor) {
-			collector.addRule(`.scm-view .scm-editor-container .monaco-editor-background { background-color: ${backgroundColor}; } `);
-		}
 		collector.addRule(`.scm-view .scm-editor-container .monaco-editor .focused .selected-text { background-color: ${selectionBackgroundColor}; }`);
 	} else {
 		// Use editor selection color if theme has not set a selection background color
