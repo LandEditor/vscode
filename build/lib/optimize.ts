@@ -334,7 +334,6 @@ function optimizeESMTask(opts: IOptimizeAMDTaskOpts, cjsOpts?: IOptimizeCommonJS
 				packages: 'external', // "external all the things", see https://esbuild.github.io/api/#packages
 				platform: 'neutral', // makes esm
 				format: 'esm',
-				sourcemap: 'external',
 				plugins: [boilerplateTrimmer],
 				target: ['es2022'],
 				loader: {
@@ -359,7 +358,6 @@ function optimizeESMTask(opts: IOptimizeAMDTaskOpts, cjsOpts?: IOptimizeCommonJS
 				for (const file of res.outputFiles) {
 
 					let contents = file.contents;
-					let sourceMapFile: esbuild.OutputFile | undefined = undefined;
 
 					if (file.path.endsWith('.js')) {
 
@@ -373,17 +371,13 @@ function optimizeESMTask(opts: IOptimizeAMDTaskOpts, cjsOpts?: IOptimizeCommonJS
 							}
 							contents = Buffer.from(newText);
 						}
-
-						sourceMapFile = res.outputFiles.find(f => f.path === `${file.path}.map`);
 					}
 
-					const fileProps = {
+					files.push(new VinylFile({
 						contents: Buffer.from(contents),
-						sourceMap: sourceMapFile ? JSON.parse(sourceMapFile.text) : undefined, // support gulp-sourcemaps
 						path: file.path,
 						base: path.join(REPO_ROOT_PATH, opts.src)
-					};
-					files.push(new VinylFile(fileProps));
+					}));
 				}
 			});
 
@@ -575,6 +569,13 @@ export function minifyTask(src: string, sourceMapBaseUrl?: string): (cb: any) =>
 			svgFilter,
 			svgmin(),
 			svgFilter.restore,
+			(<any>sourcemaps).mapSources((sourcePath: string) => {
+				if (sourcePath === 'bootstrap-fork.js') {
+					return 'bootstrap-fork.orig.js';
+				}
+
+				return sourcePath;
+			}),
 			sourcemaps.write('./', {
 				sourceMappingURL,
 				sourceRoot: undefined,

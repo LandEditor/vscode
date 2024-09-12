@@ -717,13 +717,16 @@ export abstract class Layout extends Disposable implements IWorkbenchLayoutServi
 		}
 
 		// Auxiliary Panel to restore
-		if (this.isVisible(Parts.AUXILIARYBAR_PART)) {
+		const auxiliaryBarVisible = this.isVisible(Parts.AUXILIARYBAR_PART);
+		if (auxiliaryBarVisible || (isNewWindow && activityBarNotDefault)) {
 			const viewContainerToRestore = this.storageService.get(AuxiliaryBarPart.activePanelSettingsKey, StorageScope.WORKSPACE, this.viewDescriptorService.getDefaultViewContainer(ViewContainerLocation.AuxiliaryBar)?.id);
 
 			if (viewContainerToRestore) {
 				this.state.initialization.views.containerToRestore.auxiliaryBar = viewContainerToRestore;
-			} else {
-				this.stateModel.setRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN, true);
+			}
+
+			if (auxiliaryBarVisible !== !!viewContainerToRestore) {
+				this.stateModel.setRuntimeValue(LayoutStateKeys.AUXILIARYBAR_HIDDEN, !auxiliaryBarVisible);
 			}
 		}
 

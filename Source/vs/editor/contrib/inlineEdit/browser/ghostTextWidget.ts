@@ -15,10 +15,9 @@ import { LineDecoration } from '../../../common/viewLayout/lineDecorations.js';
 import { InlineDecorationType } from '../../../common/viewModel.js';
 import { AdditionalLinesWidget, LineData } from '../../inlineCompletions/browser/view/ghostTextView.js';
 import { GhostText } from '../../inlineCompletions/browser/model/ghostText.js';
-import { ColumnRange } from '../../inlineCompletions/browser/utils.js';
+import { ColumnRange, applyObservableDecorations } from '../../inlineCompletions/browser/utils.js';
 import { diffDeleteDecoration, diffLineDeleteDecorationBackgroundWithIndicator } from '../../../browser/widget/diffEditor/registrations.contribution.js';
 import { LineTokens } from '../../../common/tokens/lineTokens.js';
-import { observableCodeEditor } from '../../../browser/observableCodeEditor.js';
 
 export const INLINE_EDIT_DESCRIPTION = 'inline-edit';
 export interface IGhostTextWidgetModel {
@@ -30,20 +29,17 @@ export interface IGhostTextWidgetModel {
 
 export class GhostTextWidget extends Disposable {
 	private readonly isDisposed = observableValue(this, false);
-	private readonly currentTextModel = observableFromEvent(this, this._editor.onDidChangeModel, () => /** @description editor.model */ this._editor.getModel());
-
-	private readonly _editorObs = observableCodeEditor(this._editor);
+	private readonly currentTextModel = observableFromEvent(this, this.editor.onDidChangeModel, () => /** @description editor.model */ this.editor.getModel());
 
 	constructor(
-		private readonly _editor: ICodeEditor,
+		private readonly editor: ICodeEditor,
 		readonly model: IGhostTextWidgetModel,
 		@ILanguageService private readonly languageService: ILanguageService,
 	) {
 		super();
 
 		this._register(toDisposable(() => { this.isDisposed.set(true, undefined); }));
-
-		this._register(this._editorObs.setDecorations(this.decorations));
+		this._register(applyObservableDecorations(this.editor, this.decorations));
 	}
 
 	private readonly uiState = derived(this, reader => {
@@ -218,7 +214,7 @@ export class GhostTextWidget extends Disposable {
 
 	private readonly additionalLinesWidget = this._register(
 		new AdditionalLinesWidget(
-			this._editor,
+			this.editor,
 			derived(reader => {
 				/** @description lines */
 				const uiState = this.uiState.read(reader);

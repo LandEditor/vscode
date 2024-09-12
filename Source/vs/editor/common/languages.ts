@@ -783,7 +783,7 @@ export interface InlineCompletionsProvider<T extends InlineCompletions = InlineC
 	 * @experimental
 	 * @internal
 	*/
-	provideInlineEditsForRange?(model: model.ITextModel, range: Range, context: InlineCompletionContext, token: CancellationToken): ProviderResult<T>;
+	provideInlineEdits?(model: model.ITextModel, range: Range, context: InlineCompletionContext, token: CancellationToken): ProviderResult<T>;
 
 	/**
 	 * Will be called when an item is shown.

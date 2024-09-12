@@ -24,8 +24,6 @@ import { IConfigurationService } from '../../../../../platform/configuration/com
 import { IUnchangedEditorRegionsService } from './unchangedEditorRegions.js';
 import { Schemas } from '../../../../../base/common/network.js';
 
-const PropertyHeaderHeight = 25;
-
 // From `.monaco-editor .diff-hidden-lines .center` in src/vs/editor/browser/widget/diffEditor/style.css
 export const HeightOfHiddenLinesRegionInDiffEditor = 24;
 
@@ -49,7 +47,6 @@ export type IDiffElementViewModelBase = DiffElementCellViewModelBase | DiffEleme
 export abstract class DiffElementViewModelBase extends Disposable {
 	protected _layoutInfoEmitter = this._register(new Emitter<CellDiffViewModelLayoutChangeEvent>());
 	onDidLayoutChange = this._layoutInfoEmitter.event;
-	abstract renderOutput: boolean;
 	constructor(
 		public readonly mainDocumentTextModel: INotebookTextModel,
 		public readonly editorEventDispatcher: NotebookDiffEditorEventDispatcher,
@@ -75,7 +72,6 @@ export class DiffElementPlaceholderViewModel extends DiffElementViewModelBase {
 	protected _unfoldHiddenCells = this._register(new Emitter<void>());
 	onUnfoldHiddenCells = this._unfoldHiddenCells.event;
 
-	public renderOutput: boolean = false;
 	constructor(
 		mainDocumentTextModel: INotebookTextModel,
 		editorEventDispatcher: NotebookDiffEditorEventDispatcher,
@@ -227,17 +223,17 @@ export abstract class DiffElementCellViewModelBase extends DiffElementViewModelB
 		this.original = original ? this._register(new DiffNestedCellViewModel(original, notebookService)) : undefined;
 		this.modified = modified ? this._register(new DiffNestedCellViewModel(modified, notebookService)) : undefined;
 		const editorHeight = this._estimateEditorHeight(initData.fontInfo);
-		const cellStatusHeight = PropertyHeaderHeight;
+		const cellStatusHeight = 25;
 		this._layoutInfo = {
 			width: 0,
 			editorHeight: editorHeight,
 			editorMargin: 0,
 			metadataHeight: 0,
 			cellStatusHeight,
-			metadataStatusHeight: this.ignoreMetadata ? 0 : PropertyHeaderHeight,
+			metadataStatusHeight: this.ignoreMetadata ? 0 : 25,
 			rawOutputHeight: 0,
 			outputTotalHeight: 0,
-			outputStatusHeight: this.ignoreOutputs ? 0 : PropertyHeaderHeight,
+			outputStatusHeight: this.ignoreOutputs ? 0 : 25,
 			outputMetadataHeight: 0,
 			bodyMargin: 32,
 			totalHeight: 82 + cellStatusHeight + editorHeight,

@@ -41,6 +41,12 @@
 		"configuration": [
 			{
 				"properties": {
+					"ipynb.experimental.serialization": {
+						"default": false,
+						"markdownDescription": "%ipynb.experimental.serialization%",
+						"scope": "resource",
+						"type": "boolean"
+					},
 					"ipynb.pasteImagesAsAttachments.enabled": {
 						"default": true,
 						"markdownDescription": "%ipynb.pasteImagesAsAttachments.enabled%",

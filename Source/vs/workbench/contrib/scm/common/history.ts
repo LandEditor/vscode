@@ -53,7 +53,6 @@ export interface ISCMHistoryItemRefsChangeEvent {
 	readonly added: readonly ISCMHistoryItemRef[];
 	readonly removed: readonly ISCMHistoryItemRef[];
 	readonly modified: readonly ISCMHistoryItemRef[];
-	readonly silent: boolean;
 }
 
 export interface ISCMHistoryItem {

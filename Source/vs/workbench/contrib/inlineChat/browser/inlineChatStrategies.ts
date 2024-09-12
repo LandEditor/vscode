@@ -533,7 +533,7 @@ export class LiveStrategy extends EditModeStrategy {
 							const menu = this._menuService.createMenu(MENU_INLINE_CHAT_ZONE, this._contextService);
 							const makeActions = () => {
 								const actions: IContentWidgetAction[] = [];
-								const tuples = menu.getActions({ arg: hunkData });
+								const tuples = menu.getActions();
 								for (const [, group] of tuples) {
 									for (const item of group) {
 										if (item instanceof MenuItemAction) {
@@ -649,7 +649,8 @@ export class LiveStrategy extends EditModeStrategy {
 			});
 
 			if (widgetData) {
-				this._zone.reveal(widgetData.position);
+				this._zone.updatePositionAndHeight(widgetData.position);
+
 
 				const mode = this._configService.getValue<'on' | 'off' | 'auto'>(InlineChatConfigKeys.AccessibleDiffView);
 				if (mode === 'on' || mode === 'auto' && this._accessibilityService.isScreenReaderOptimized()) {
