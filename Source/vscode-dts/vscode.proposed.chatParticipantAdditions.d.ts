@@ -36,6 +36,11 @@ declare module 'vscode' {
 		constructor(value: string | MarkdownString, vulnerabilities: ChatVulnerability[]);
 	}
 
+	export class ChatResponseCodeblockUriPart {
+		value: Uri;
+		constructor(value: Uri);
+	}
+
 	/**
 	 * Displays a {@link Command command} as a button in the chat response.
 	 */
@@ -155,6 +160,7 @@ declare module 'vscode' {
 
 		textEdit(target: Uri, edits: TextEdit | TextEdit[]): void;
 		markdownWithVulnerabilities(value: string | MarkdownString, vulnerabilities: ChatVulnerability[]): void;
+		codeblockUri(uri: Uri): void;
 		detectedParticipant(participant: string, command?: ChatCommand): void;
 		push(part: ChatResponsePart | ChatResponseTextEditPart | ChatResponseDetectedParticipantPart | ChatResponseWarningPart | ChatResponseProgressPart2): void;
 
@@ -241,6 +247,10 @@ declare module 'vscode' {
 	}
 
 	export type ChatExtendedRequestHandler = (request: ChatRequest, context: ChatContext, response: ChatResponseStream, token: CancellationToken) => ProviderResult<ChatResult | void>;
+
+	export interface ChatRequest {
+		toolInvocationToken: ChatParticipantToolToken;
+	}
 
 	export interface ChatResult {
 		nextQuestion?: {
