@@ -59,6 +59,7 @@ import { clamp } from '../../../../base/common/numbers.js';
 import { observableConfigValue } from '../../../../platform/observable/common/platformObservableUtils.js';
 import { compare } from '../../../../base/common/strings.js';
 import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
+import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
 
 const PICK_REPOSITORY_ACTION_ID = 'workbench.scm.action.graph.pickRepository';
 const PICK_HISTORY_ITEM_REFS_ACTION_ID = 'workbench.scm.action.graph.pickHistoryItemRefs';
@@ -323,6 +324,7 @@ class HistoryItemRenderer implements ITreeRenderer<SCMHistoryItemViewModelTreeEl
 		templateData.elementDisposables.add(historyItemHover);
 
 		templateData.graphContainer.textContent = '';
+		templateData.graphContainer.classList.toggle('current', historyItemViewModel.isCurrent);
 		templateData.graphContainer.appendChild(renderSCMHistoryItemGraph(historyItemViewModel));
 
 		const provider = node.element.repository.provider;
@@ -782,7 +784,7 @@ class SCMHistoryViewModel extends Disposable {
 		// Create the color map
 		const colorMap = this._getGraphColorMap(state.historyItemRefs);
 
-		return toISCMHistoryItemViewModelArray(state.items, colorMap)
+		return toISCMHistoryItemViewModelArray(state.items, colorMap, historyProvider.historyItemRef.get())
 			.map(historyItemViewModel => ({
 				repository,
 				historyItemViewModel,
@@ -906,30 +908,37 @@ class HistoryItemRefPicker extends Disposable {
 		quickPick.busy = true;
 		quickPick.show();
 
-		quickPick.items = await this._createQuickPickItems();
-		quickPick.busy = false;
+		const items = await this._createQuickPickItems();
 
 		// Set initial selection
 		let selectedItems: HistoryItemRefQuickPickItem[] = [];
 		if (this._historyItemsFilter === 'all') {
 			selectedItems.push(this._allQuickPickItem);
-			quickPick.selectedItems = [this._allQuickPickItem];
 		} else if (this._historyItemsFilter === 'auto') {
 			selectedItems.push(this._autoQuickPickItem);
-			quickPick.selectedItems = [this._autoQuickPickItem];
 		} else {
-			for (const item of quickPick.items) {
-				if (item.type === 'separator') {
+			let index = 0;
+			while (index < items.length) {
+				if (items[index].type === 'separator') {
+					index++;
 					continue;
 				}
 
-				if (this._historyItemsFilter.some(ref => ref.id === item.id)) {
-					selectedItems.push(item);
+				if (this._historyItemsFilter.some(ref => ref.id === items[index].id)) {
+					const item = items.splice(index, 1) as HistoryItemRefQuickPickItem[];
+					selectedItems.push(...item);
+				} else {
+					index++;
 				}
 			}
 
-			quickPick.selectedItems = selectedItems;
+			// Insert the selected items after `All` and `Auto`
+			items.splice(2, 0, { type: 'separator' }, ...selectedItems);
 		}
+
+		quickPick.items = items;
+		quickPick.selectedItems = selectedItems;
+		quickPick.busy = false;
 
 		return new Promise<'all' | 'auto' | ISCMHistoryItemRef[] | undefined>(resolve => {
 			this._store.add(quickPick.onDidChangeSelection(items => {
@@ -948,7 +957,9 @@ class HistoryItemRefPicker extends Disposable {
 			}));
 
 			this._store.add(quickPick.onDidAccept(() => {
-				if (selectedItems.length === 1 && selectedItems[0].historyItemRef === 'all') {
+				if (selectedItems.length === 0) {
+					resolve(undefined);
+				} else if (selectedItems.length === 1 && selectedItems[0].historyItemRef === 'all') {
 					resolve('all');
 				} else if (selectedItems.length === 1 && selectedItems[0].historyItemRef === 'auto') {
 					resolve('auto');
@@ -1056,6 +1067,14 @@ export class SCMHistoryViewPane extends ViewPane {
 
 		element.badge.textContent = 'Outdated';
 		container.appendChild(element.root);
+
+		this._register(this.hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), element.root, {
+			markdown: {
+				value: localize('scmGraphViewOutdated', "Please refresh the graph using the refresh action ($(refresh))."),
+				supportThemeIcons: true
+			},
+			markdownNotSupportedFallback: undefined
+		}));
 
 		this._register(autorun(reader => {
 			const outdated = this._repositoryOutdated.read(reader);
