@@ -86,7 +86,10 @@
 	margin-right: 0.8em;
 }
 
-.test-explorer .monaco-list-row .monaco-action-bar .codicon-testing-continuous-is-on {
+.test-explorer
+	.monaco-list-row
+	.monaco-action-bar
+	.codicon-testing-continuous-is-on {
 	color: var(--vscode-inputOption-activeForeground);
 	border-color: var(--vscode-inputOption-activeBorder);
 	background: var(--vscode-inputOption-activeBackground);
@@ -94,11 +97,17 @@
 	border-radius: 3px;
 }
 
-.test-explorer .monaco-list-row:not(.focused, :hover) .monaco-action-bar.testing-is-continuous-run .action-item {
+.test-explorer
+	.monaco-list-row:not(.focused, :hover)
+	.monaco-action-bar.testing-is-continuous-run
+	.action-item {
 	display: none;
 }
 
-.test-explorer .monaco-list-row .monaco-action-bar.testing-is-continuous-run .action-item:last-child {
+.test-explorer
+	.monaco-list-row
+	.monaco-action-bar.testing-is-continuous-run
+	.action-item:last-child {
 	display: block !important;
 }
 
@@ -173,13 +182,21 @@
 	flex-grow: 1;
 }
 
-.monaco-workbench .test-explorer .monaco-action-bar .action-item > .action-label {
+.monaco-workbench
+	.test-explorer
+	.monaco-action-bar
+	.action-item
+	> .action-label {
 	padding: 1px 2px;
 	margin-right: 2px;
 }
 
-.monaco-workbench .part > .title > .title-actions .action-label.codicon-testing-autorun::after {
-	content: '';
+.monaco-workbench
+	.part
+	> .title
+	> .title-actions
+	.action-label.codicon-testing-autorun::after {
+	content: "";
 	display: none;
 	position: absolute;
 	width: 0.4em;
@@ -190,7 +207,11 @@
 	border-radius: 100%;
 }
 
-.monaco-workbench .part > .title > .title-actions .action-label.codicon-testing-autorun.checked::after {
+.monaco-workbench
+	.part
+	> .title
+	> .title-actions
+	.action-label.codicon-testing-autorun.checked::after {
 	display: block;
 }
 
@@ -214,7 +235,9 @@
 }
 
 /** -- peek */
-.monaco-editor .zone-widget.test-output-peek .zone-widget-container.peekview-widget {
+.monaco-editor
+	.zone-widget.test-output-peek
+	.zone-widget-container.peekview-widget {
 	border-top-width: 2px;
 	border-bottom-width: 2px;
 }
@@ -225,9 +248,17 @@
 	box-sizing: border-box;
 }
 
-.monaco-editor .zone-widget.test-output-peek .monaco-editor .monaco-editor-background,
-.monaco-editor .zone-widget.test-output-peek .monaco-editor .inputarea.ime-input,
-.monaco-editor .zone-widget.test-output-peek .test-output-peek-message-container {
+.monaco-editor
+	.zone-widget.test-output-peek
+	.monaco-editor
+	.monaco-editor-background,
+.monaco-editor
+	.zone-widget.test-output-peek
+	.monaco-editor
+	.inputarea.ime-input,
+.monaco-editor
+	.zone-widget.test-output-peek
+	.test-output-peek-message-container {
 	background-color: var(--vscode-peekViewEditor-background);
 }
 
@@ -289,7 +320,8 @@
 		width: fit-content;
 		flex-shrink: 0;
 
-		&, .codicon {
+		&,
+		.codicon {
 			color: var(--vscode-textLink-foreground);
 		}
 
@@ -326,7 +358,9 @@
 	align-items: center;
 }
 
-.testing-filter-action-item > .monaco-action-bar .testing-filter-button.checked {
+.testing-filter-action-item
+	> .monaco-action-bar
+	.testing-filter-button.checked {
 	border-color: var(--vscode-inputOption-activeBorder);
 	color: var(--vscode-inputOption-activeForeground);
 	background-color: var(--vscode-inputOption-activeBackground);
@@ -380,7 +414,7 @@
 }
 
 .test-label-description {
-	opacity: .7;
+	opacity: 0.7;
 	margin-left: 0.5em;
 	font-size: .9em;
 	white-space: pre;
@@ -434,7 +468,7 @@
 }
 
 .test-coverage-bars .bar::before {
-	content: '';
+	content: "";
 	background: currentColor;
 	width: var(--test-bar-width);
 	height: 100%;
@@ -479,7 +513,8 @@
 		}
 	}
 
-	.stat, .action-label {
+	.stat,
+	.action-label {
 		white-space: nowrap;
 		text-overflow: ellipsis;
 		overflow: hidden;
@@ -496,7 +531,6 @@
 			margin-right: 4px;
 		}
 	}
-
 }
 
 .test-coverage-tree-per-test-switcher {
@@ -520,7 +554,7 @@
 	}
 
 	&::after {
-		content: '';
+		content: "";
 		content: var(--vscode-icon-chevron-right-content);
 		font-family: var(--vscode-icon-chevron-right-font-family);
 		font-size: 18px;
@@ -550,7 +584,7 @@
 }
 
 .coverage-deco-gutter::before {
-	content: '';
+	content: "";
 	position: absolute;
 	inset: 0;
 	z-index: -1;
@@ -574,14 +608,16 @@
 }
 
 .coverage-deco-gutter.coverage-deco-miss.coverage-deco-hit::before {
-	background-image: linear-gradient(45deg,
-			var(--vscode-testing-coveredGutterBackground) 25%,
-			var(--vscode-testing-uncoveredGutterBackground) 25%,
-			var(--vscode-testing-uncoveredGutterBackground) 50%,
-			var(--vscode-testing-coveredGutterBackground) 50%,
-			75%,
-			var(--vscode-testing-uncoveredGutterBackground) 75%,
-			var(--vscode-testing-uncoveredGutterBackground) 100%);
+	background-image: linear-gradient(
+		45deg,
+		var(--vscode-testing-coveredGutterBackground) 25%,
+		var(--vscode-testing-uncoveredGutterBackground) 25%,
+		var(--vscode-testing-uncoveredGutterBackground) 50%,
+		var(--vscode-testing-coveredGutterBackground) 50%,
+		75%,
+		var(--vscode-testing-uncoveredGutterBackground) 75%,
+		var(--vscode-testing-uncoveredGutterBackground) 100%
+	);
 	background-size: 6px 6px;
 	background-color: transparent;
 }
@@ -622,7 +658,8 @@
 		transform: translate(-50%, -50%);
 		padding: calc(var(--vscode-testing-coverage-lineHeight) / 10);
 		border-radius: 2px;
-		font: normal normal normal calc(var(--vscode-testing-coverage-lineHeight) / 2)/1 codicon;
+		font: normal normal normal
+			calc(var(--vscode-testing-coverage-lineHeight) / 2) / 1 codicon;
 		border: 1px solid;
 	}
 
@@ -638,16 +675,23 @@
 		border-bottom-left-radius: 2px;
 
 		&::after {
-			content: '';
+			content: "";
 			display: block;
 			position: absolute;
 			left: 100%;
 			top: 0;
 			bottom: 0;
 			width: 0.5em;
-			background-image:
-				linear-gradient(to bottom left, transparent 50%, var(--vscode-testing-coverCountBadgeBackground) 0),
-				linear-gradient(to bottom right, var(--vscode-testing-coverCountBadgeBackground) 50%, transparent 0);
+			background-image: linear-gradient(
+					to bottom left,
+					transparent 50%,
+					var(--vscode-testing-coverCountBadgeBackground) 0
+				),
+				linear-gradient(
+					to bottom right,
+					var(--vscode-testing-coverCountBadgeBackground) 50%,
+					transparent 0
+				);
 			background-size: 100% 50%;
 			background-repeat: no-repeat;
 			background-position: top, bottom;

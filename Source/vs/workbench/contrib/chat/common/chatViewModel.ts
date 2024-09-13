@@ -3,47 +3,82 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { IMarkdownString } from '../../../../base/common/htmlContent.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import * as marked from '../../../../base/common/marked/marked.js';
-import { ThemeIcon } from '../../../../base/common/themables.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { annotateVulnerabilitiesInText } from './annotations.js';
-import { getFullyQualifiedId, IChatAgentCommand, IChatAgentData, IChatAgentNameService, IChatAgentResult } from './chatAgents.js';
-import { ChatModelInitState, IChatModel, IChatProgressRenderableResponseContent, IChatRequestModel, IChatRequestVariableEntry, IChatResponseModel, IChatTextEditGroup, IChatWelcomeMessageContent, IResponse } from './chatModel.js';
-import { IParsedChatRequest } from './chatParserTypes.js';
-import { ChatAgentVoteDirection, ChatAgentVoteDownReason, IChatCodeCitation, IChatContentReference, IChatFollowup, IChatProgressMessage, IChatResponseErrorDetails, IChatTask, IChatUsedContext } from './chatService.js';
-import { countWords } from './chatWordCounter.js';
-import { CodeBlockModelCollection } from './codeBlockModelCollection.js';
-import { hash } from '../../../../base/common/hash.js';
+import { Emitter, type Event } from "../../../../base/common/event.js";
+import { hash } from "../../../../base/common/hash.js";
+import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import * as marked from "../../../../base/common/marked/marked.js";
+import type { ThemeIcon } from "../../../../base/common/themables.js";
+import type { URI } from "../../../../base/common/uri.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { annotateVulnerabilitiesInText } from "./annotations.js";
+import {
+	type IChatAgentCommand,
+	type IChatAgentData,
+	IChatAgentNameService,
+	type IChatAgentResult,
+	getFullyQualifiedId,
+} from "./chatAgents.js";
+import {
+	ChatModelInitState,
+	type IChatModel,
+	type IChatProgressRenderableResponseContent,
+	type IChatRequestModel,
+	type IChatRequestVariableEntry,
+	type IChatResponseModel,
+	type IChatTextEditGroup,
+	type IChatWelcomeMessageContent,
+	type IResponse,
+} from "./chatModel.js";
+import type { IParsedChatRequest } from "./chatParserTypes.js";
+import type {
+	ChatAgentVoteDirection,
+	ChatAgentVoteDownReason,
+	IChatCodeCitation,
+	IChatContentReference,
+	IChatFollowup,
+	IChatProgressMessage,
+	IChatResponseErrorDetails,
+	IChatTask,
+	IChatUsedContext,
+} from "./chatService.js";
+import { countWords } from "./chatWordCounter.js";
+import type { CodeBlockModelCollection } from "./codeBlockModelCollection.js";
 
 export function isRequestVM(item: unknown): item is IChatRequestViewModel {
-	return !!item && typeof item === 'object' && 'message' in item;
+	return !!item && typeof item === "object" && "message" in item;
 }
 
 export function isResponseVM(item: unknown): item is IChatResponseViewModel {
-	return !!item && typeof (item as IChatResponseViewModel).setVote !== 'undefined';
+	return (
+		!!item &&
+		typeof (item as IChatResponseViewModel).setVote !== "undefined"
+	);
 }
 
-export function isWelcomeVM(item: unknown): item is IChatWelcomeMessageViewModel {
-	return !!item && typeof item === 'object' && 'content' in item;
+export function isWelcomeVM(
+	item: unknown,
+): item is IChatWelcomeMessageViewModel {
+	return !!item && typeof item === "object" && "content" in item;
 }
 
-export type IChatViewModelChangeEvent = IChatAddRequestEvent | IChangePlaceholderEvent | IChatSessionInitEvent | null;
+export type IChatViewModelChangeEvent =
+	| IChatAddRequestEvent
+	| IChangePlaceholderEvent
+	| IChatSessionInitEvent
+	| null;
 
 export interface IChatAddRequestEvent {
-	kind: 'addRequest';
+	kind: "addRequest";
 }
 
 export interface IChangePlaceholderEvent {
-	kind: 'changePlaceholder';
+	kind: "changePlaceholder";
 }
 
 export interface IChatSessionInitEvent {
-	kind: 'initialize';
+	kind: "initialize";
 }
 
 export interface IChatViewModel {
@@ -54,7 +89,11 @@ export interface IChatViewModel {
 	readonly onDidChange: Event<IChatViewModelChangeEvent>;
 	readonly requestInProgress: boolean;
 	readonly inputPlaceholder?: string;
-	getItems(): (IChatRequestViewModel | IChatResponseViewModel | IChatWelcomeMessageViewModel)[];
+	getItems(): (
+		| IChatRequestViewModel
+		| IChatResponseViewModel
+		| IChatWelcomeMessageViewModel
+	)[];
 	setInputPlaceholder(text: string): void;
 	resetInputPlaceholder(): void;
 }
@@ -124,7 +163,7 @@ export interface IChatResponseRenderData {
  */
 export interface IChatReferences {
 	references: ReadonlyArray<IChatContentReference>;
-	kind: 'references';
+	kind: "references";
 }
 
 /**
@@ -132,13 +171,16 @@ export interface IChatReferences {
  */
 export interface IChatCodeCitations {
 	citations: ReadonlyArray<IChatCodeCitation>;
-	kind: 'codeCitations';
+	kind: "codeCitations";
 }
 
 /**
  * Type for content parts rendered by IChatListRenderer
  */
-export type IChatRendererContent = IChatProgressRenderableResponseContent | IChatReferences | IChatCodeCitations;
+export type IChatRendererContent =
+	| IChatProgressRenderableResponseContent
+	| IChatReferences
+	| IChatCodeCitations;
 
 export interface IChatLiveUpdateData {
 	firstWordTime: number;
@@ -184,14 +226,16 @@ export interface IChatResponseViewModel {
 }
 
 export class ChatViewModel extends Disposable implements IChatViewModel {
-
 	private readonly _onDidDisposeModel = this._register(new Emitter<void>());
 	readonly onDidDisposeModel = this._onDidDisposeModel.event;
 
-	private readonly _onDidChange = this._register(new Emitter<IChatViewModelChangeEvent>());
+	private readonly _onDidChange = this._register(
+		new Emitter<IChatViewModelChangeEvent>(),
+	);
 	readonly onDidChange = this._onDidChange.event;
 
-	private readonly _items: (ChatRequestViewModel | ChatResponseViewModel)[] = [];
+	private readonly _items: (ChatRequestViewModel | ChatResponseViewModel)[] =
+		[];
 
 	private _inputPlaceholder: string | undefined = undefined;
 	get inputPlaceholder(): string | undefined {
@@ -204,12 +248,12 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 
 	setInputPlaceholder(text: string): void {
 		this._inputPlaceholder = text;
-		this._onDidChange.fire({ kind: 'changePlaceholder' });
+		this._onDidChange.fire({ kind: "changePlaceholder" });
 	}
 
 	resetInputPlaceholder(): void {
 		this._inputPlaceholder = undefined;
-		this._onDidChange.fire({ kind: 'changePlaceholder' });
+		this._onDidChange.fire({ kind: "changePlaceholder" });
 	}
 
 	get sessionId() {
@@ -277,42 +321,66 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 	}
 
 	private onAddResponse(responseModel: IChatResponseModel) {
-		const response = this.instantiationService.createInstance(ChatResponseViewModel, responseModel);
-		this._register(response.onDidChange(() => {
-			if (response.isComplete) {
-				this.updateCodeBlockTextModels(response);
-			}
-			return this._onDidChange.fire(null);
-		}));
+		const response = this.instantiationService.createInstance(
+			ChatResponseViewModel,
+			responseModel,
+		);
+		this._register(
+			response.onDidChange(() => {
+				if (response.isComplete) {
+					this.updateCodeBlockTextModels(response);
+				}
+				return this._onDidChange.fire(null);
+			}),
+		);
 		this._items.push(response);
 		this.updateCodeBlockTextModels(response);
 	}
 
-	getItems(): (IChatRequestViewModel | IChatResponseViewModel | IChatWelcomeMessageViewModel)[] {
-		return [...(this._model.welcomeMessage ? [this._model.welcomeMessage] : []), ...this._items];
+	getItems(): (
+		| IChatRequestViewModel
+		| IChatResponseViewModel
+		| IChatWelcomeMessageViewModel
+	)[] {
+		return [
+			...(this._model.welcomeMessage ? [this._model.welcomeMessage] : []),
+			...this._items,
+		];
 	}
 
 	override dispose() {
 		super.dispose();
 		this._items
-			.filter((item): item is ChatResponseViewModel => item instanceof ChatResponseViewModel)
+			.filter(
+				(item): item is ChatResponseViewModel =>
+					item instanceof ChatResponseViewModel,
+			)
 			.forEach((item: ChatResponseViewModel) => item.dispose());
 	}
 
-	updateCodeBlockTextModels(model: IChatRequestViewModel | IChatResponseViewModel) {
+	updateCodeBlockTextModels(
+		model: IChatRequestViewModel | IChatResponseViewModel,
+	) {
 		let content: string;
 		if (isRequestVM(model)) {
 			content = model.messageText;
 		} else {
-			content = annotateVulnerabilitiesInText(model.response.value).map(x => x.content.value).join('');
+			content = annotateVulnerabilitiesInText(model.response.value)
+				.map((x) => x.content.value)
+				.join("");
 		}
 
 		let codeBlockIndex = 0;
-		marked.walkTokens(marked.lexer(content), token => {
-			if (token.type === 'code') {
-				const lang = token.lang || '';
+		marked.walkTokens(marked.lexer(content), (token) => {
+			if (token.type === "code") {
+				const lang = token.lang || "";
 				const text = token.text;
-				this.codeBlockModelCollection.update(this._model.sessionId, model, codeBlockIndex++, { text, languageId: lang });
+				this.codeBlockModelCollection.update(
+					this._model.sessionId,
+					model,
+					codeBlockIndex++,
+					{ text, languageId: lang },
+				);
 			}
 		});
 	}
@@ -324,7 +392,10 @@ export class ChatRequestViewModel implements IChatRequestViewModel {
 	}
 
 	get dataId() {
-		return this.id + `_${ChatModelInitState[this._model.session.initState]}_${hash(this.variables)}`;
+		return (
+			this.id +
+			`_${ChatModelInitState[this._model.session.initState]}_${hash(this.variables)}`
+		);
 	}
 
 	get sessionId() {
@@ -365,12 +436,13 @@ export class ChatRequestViewModel implements IChatRequestViewModel {
 
 	currentRenderedHeight: number | undefined;
 
-	constructor(
-		private readonly _model: IChatRequestModel,
-	) { }
+	constructor(private readonly _model: IChatRequestModel) {}
 }
 
-export class ChatResponseViewModel extends Disposable implements IChatResponseViewModel {
+export class ChatResponseViewModel
+	extends Disposable
+	implements IChatResponseViewModel
+{
 	private _modelChangeCount = 0;
 
 	private readonly _onDidChange = this._register(new Emitter<void>());
@@ -385,7 +457,11 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	}
 
 	get dataId() {
-		return this._model.id + `_${this._modelChangeCount}` + `_${ChatModelInitState[this._model.session.initState]}`;
+		return (
+			this._model.id +
+			`_${this._modelChangeCount}` +
+			`_${ChatModelInitState[this._model.session.initState]}`
+		);
 	}
 
 	get sessionId() {
@@ -394,7 +470,9 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 
 	get username() {
 		if (this.agent) {
-			const isAllowed = this.chatAgentNameService.getAgentNameRestriction(this.agent);
+			const isAllowed = this.chatAgentNameService.getAgentNameRestriction(
+				this.agent,
+			);
 			if (isAllowed) {
 				return this.agent.fullName || this.agent.name;
 			} else {
@@ -450,7 +528,9 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 	}
 
 	get replyFollowups() {
-		return this._model.followups?.filter((f): f is IChatFollowup => f.kind === 'reply');
+		return this._model.followups?.filter(
+			(f): f is IChatFollowup => f.kind === "reply",
+		);
 	}
 
 	get result() {
@@ -482,7 +562,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 
 	private _usedReferencesExpanded: boolean | undefined;
 	get usedReferencesExpanded(): boolean | undefined {
-		if (typeof this._usedReferencesExpanded === 'boolean') {
+		if (typeof this._usedReferencesExpanded === "boolean") {
 			return this._usedReferencesExpanded;
 		}
 
@@ -493,7 +573,7 @@ export class ChatResponseViewModel extends Disposable implements IChatResponseVi
 		this._usedReferencesExpanded = v;
 	}
 
-	private _vulnerabilitiesListExpanded: boolean = false;
+	private _vulnerabilitiesListExpanded = false;
 	get vulnerabilitiesListExpanded(): boolean {
 		return this._vulnerabilitiesListExpanded;
 	}

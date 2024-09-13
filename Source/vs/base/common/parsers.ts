@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export const enum ValidationState {
+export enum ValidationState {
 	OK = 0,
 	Info = 1,
 	Warning = 2,
 	Error = 3,
-	Fatal = 4
+	Fatal = 4,
 }
 
 export class ValidationStatus {
@@ -46,7 +46,6 @@ export interface IProblemReporter {
 }
 
 export abstract class Parser {
-
 	private _problemReporter: IProblemReporter;
 
 	constructor(problemReporter: IProblemReporter) {

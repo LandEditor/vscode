@@ -3,8 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { addDisposableListener } from '../../../../../base/browser/dom.js';
-import { IDisposable, Disposable } from '../../../../../base/common/lifecycle.js';
+import { addDisposableListener } from "../../../../../base/browser/dom.js";
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../../../base/common/lifecycle.js";
 
 export interface ITypeData {
 	text: string;
@@ -14,15 +17,23 @@ export interface ITypeData {
 }
 
 export class FocusTracker extends Disposable {
-	private _isFocused: boolean = false;
+	private _isFocused = false;
 
 	constructor(
 		private readonly _domNode: HTMLElement,
 		private readonly _onFocusChange: (newFocusValue: boolean) => void,
 	) {
 		super();
-		this._register(addDisposableListener(this._domNode, 'focus', () => this._handleFocusedChanged(true)));
-		this._register(addDisposableListener(this._domNode, 'blur', () => this._handleFocusedChanged(false)));
+		this._register(
+			addDisposableListener(this._domNode, "focus", () =>
+				this._handleFocusedChanged(true),
+			),
+		);
+		this._register(
+			addDisposableListener(this._domNode, "blur", () =>
+				this._handleFocusedChanged(false),
+			),
+		);
 	}
 
 	private _handleFocusedChanged(focused: boolean): void {
@@ -42,11 +53,21 @@ export class FocusTracker extends Disposable {
 	}
 }
 
-export function editContextAddDisposableListener<K extends keyof EditContextEventHandlersEventMap>(target: EventTarget, type: K, listener: (this: GlobalEventHandlers, ev: EditContextEventHandlersEventMap[K]) => any, options?: boolean | AddEventListenerOptions): IDisposable {
+export function editContextAddDisposableListener<
+	K extends keyof EditContextEventHandlersEventMap,
+>(
+	target: EventTarget,
+	type: K,
+	listener: (
+		this: GlobalEventHandlers,
+		ev: EditContextEventHandlersEventMap[K],
+	) => any,
+	options?: boolean | AddEventListenerOptions,
+): IDisposable {
 	target.addEventListener(type, listener as any, options);
 	return {
 		dispose() {
 			target.removeEventListener(type, listener as any);
-		}
+		},
 	};
 }

@@ -3,21 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Codicon } from '../../../../base/common/codicons.js';
-import { KeyCode, KeyMod } from '../../../../base/common/keyCodes.js';
-import { asyncTransaction, transaction } from '../../../../base/common/observable.js';
-import * as nls from '../../../../nls.js';
-import { MenuId } from '../../../../platform/actions/common/actions.js';
-import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
-import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { EditorAction, ServicesAccessor } from '../../../browser/editorExtensions.js';
-import { EmbeddedCodeEditorWidget } from '../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js';
-import { EditorContextKeys } from '../../../common/editorContextKeys.js';
-import { inlineEditAcceptId, inlineEditVisible, showNextInlineEditActionId, showPreviousInlineEditActionId } from './consts.js';
-import { InlineEditsController } from './inlineEditsController.js';
+import { Codicon } from "../../../../base/common/codicons.js";
+import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
+import {
+	asyncTransaction,
+	transaction,
+} from "../../../../base/common/observable.js";
+import * as nls from "../../../../nls.js";
+import { MenuId } from "../../../../platform/actions/common/actions.js";
+import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
+import type { ICodeEditor } from "../../../browser/editorBrowser.js";
+import {
+	EditorAction,
+	type ServicesAccessor,
+} from "../../../browser/editorExtensions.js";
+import { EmbeddedCodeEditorWidget } from "../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js";
+import { EditorContextKeys } from "../../../common/editorContextKeys.js";
+import {
+	inlineEditAcceptId,
+	inlineEditVisible,
+	showNextInlineEditActionId,
+	showPreviousInlineEditActionId,
+} from "./consts.js";
+import { InlineEditsController } from "./inlineEditsController.js";
 
-
-function labelAndAlias(str: nls.ILocalizedString): { label: string; alias: string } {
+function labelAndAlias(str: nls.ILocalizedString): {
+	label: string;
+	alias: string;
+} {
 	return {
 		label: str.value,
 		alias: str.original,
@@ -29,8 +42,16 @@ export class ShowNextInlineEditAction extends EditorAction {
 	constructor() {
 		super({
 			id: ShowNextInlineEditAction.ID,
-			...labelAndAlias(nls.localize2('action.inlineEdits.showNext', "Show Next Inline Edit")),
-			precondition: ContextKeyExpr.and(EditorContextKeys.writable, inlineEditVisible),
+			...labelAndAlias(
+				nls.localize2(
+					"action.inlineEdits.showNext",
+					"Show Next Inline Edit",
+				),
+			),
+			precondition: ContextKeyExpr.and(
+				EditorContextKeys.writable,
+				inlineEditVisible,
+			),
 			kbOpts: {
 				weight: 100,
 				primary: KeyMod.Alt | KeyCode.BracketRight,
@@ -38,7 +59,10 @@ export class ShowNextInlineEditAction extends EditorAction {
 		});
 	}
 
-	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
+	public async run(
+		accessor: ServicesAccessor | undefined,
+		editor: ICodeEditor,
+	): Promise<void> {
 		const controller = InlineEditsController.get(editor);
 		controller?.model.get()?.next();
 	}
@@ -49,8 +73,16 @@ export class ShowPreviousInlineEditAction extends EditorAction {
 	constructor() {
 		super({
 			id: ShowPreviousInlineEditAction.ID,
-			...labelAndAlias(nls.localize2('action.inlineEdits.showPrevious', "Show Previous Inline Edit")),
-			precondition: ContextKeyExpr.and(EditorContextKeys.writable, inlineEditVisible),
+			...labelAndAlias(
+				nls.localize2(
+					"action.inlineEdits.showPrevious",
+					"Show Previous Inline Edit",
+				),
+			),
+			precondition: ContextKeyExpr.and(
+				EditorContextKeys.writable,
+				inlineEditVisible,
+			),
 			kbOpts: {
 				weight: 100,
 				primary: KeyMod.Alt | KeyCode.BracketLeft,
@@ -58,7 +90,10 @@ export class ShowPreviousInlineEditAction extends EditorAction {
 		});
 	}
 
-	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
+	public async run(
+		accessor: ServicesAccessor | undefined,
+		editor: ICodeEditor,
+	): Promise<void> {
 		const controller = InlineEditsController.get(editor);
 		controller?.model.get()?.previous();
 	}
@@ -67,15 +102,23 @@ export class ShowPreviousInlineEditAction extends EditorAction {
 export class TriggerInlineEditAction extends EditorAction {
 	constructor() {
 		super({
-			id: 'editor.action.inlineEdits.trigger',
-			...labelAndAlias(nls.localize2('action.inlineEdits.trigger', "Trigger Inline Edit")),
-			precondition: EditorContextKeys.writable
+			id: "editor.action.inlineEdits.trigger",
+			...labelAndAlias(
+				nls.localize2(
+					"action.inlineEdits.trigger",
+					"Trigger Inline Edit",
+				),
+			),
+			precondition: EditorContextKeys.writable,
 		});
 	}
 
-	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
+	public async run(
+		accessor: ServicesAccessor | undefined,
+		editor: ICodeEditor,
+	): Promise<void> {
 		const controller = InlineEditsController.get(editor);
-		await asyncTransaction(async tx => {
+		await asyncTransaction(async (tx) => {
 			/** @description triggerExplicitly from command */
 			await controller?.model.get()?.triggerExplicitly(tx);
 		});
@@ -86,12 +129,17 @@ export class AcceptInlineEdit extends EditorAction {
 	constructor() {
 		super({
 			id: inlineEditAcceptId,
-			...labelAndAlias(nls.localize2('action.inlineEdits.accept', "Accept Inline Edit")),
+			...labelAndAlias(
+				nls.localize2(
+					"action.inlineEdits.accept",
+					"Accept Inline Edit",
+				),
+			),
 			precondition: inlineEditVisible,
 			menuOpts: {
 				menuId: MenuId.InlineEditsActions,
-				title: nls.localize('inlineEditsActions', "Accept Inline Edit"),
-				group: 'primary',
+				title: nls.localize("inlineEditsActions", "Accept Inline Edit"),
+				group: "primary",
 				order: 1,
 				icon: Codicon.check,
 			},
@@ -99,11 +147,14 @@ export class AcceptInlineEdit extends EditorAction {
 				primary: KeyMod.CtrlCmd | KeyCode.Space,
 				weight: 20000,
 				kbExpr: inlineEditVisible,
-			}
+			},
 		});
 	}
 
-	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
+	public async run(
+		accessor: ServicesAccessor | undefined,
+		editor: ICodeEditor,
+	): Promise<void> {
 		if (editor instanceof EmbeddedCodeEditorWidget) {
 			editor = editor.getParentEditor();
 		}
@@ -161,23 +212,28 @@ MenuRegistry.appendMenuItem(MenuId.InlineEditsActions, {
 });*/
 
 export class HideInlineEdit extends EditorAction {
-	public static ID = 'editor.action.inlineEdits.hide';
+	public static ID = "editor.action.inlineEdits.hide";
 
 	constructor() {
 		super({
 			id: HideInlineEdit.ID,
-			...labelAndAlias(nls.localize2('action.inlineEdits.hide', "Hide Inline Edit")),
+			...labelAndAlias(
+				nls.localize2("action.inlineEdits.hide", "Hide Inline Edit"),
+			),
 			precondition: inlineEditVisible,
 			kbOpts: {
 				weight: 100,
 				primary: KeyCode.Escape,
-			}
+			},
 		});
 	}
 
-	public async run(accessor: ServicesAccessor | undefined, editor: ICodeEditor): Promise<void> {
+	public async run(
+		accessor: ServicesAccessor | undefined,
+		editor: ICodeEditor,
+	): Promise<void> {
 		const controller = InlineEditsController.get(editor);
-		transaction(tx => {
+		transaction((tx) => {
 			controller?.model.get()?.stop(tx);
 		});
 	}

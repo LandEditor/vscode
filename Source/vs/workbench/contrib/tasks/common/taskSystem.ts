@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from '../../../../base/common/uri.js';
-import Severity from '../../../../base/common/severity.js';
-import { TerminateResponse } from '../../../../base/common/processes.js';
-import { Event } from '../../../../base/common/event.js';
-import { Platform } from '../../../../base/common/platform.js';
-import { IWorkspaceFolder } from '../../../../platform/workspace/common/workspace.js';
-import { Task, ITaskEvent, KeyedTaskIdentifier } from './tasks.js';
-import { ConfigurationTarget } from '../../../../platform/configuration/common/configuration.js';
+import type { Event } from "../../../../base/common/event.js";
+import type { Platform } from "../../../../base/common/platform.js";
+import type { TerminateResponse } from "../../../../base/common/processes.js";
+import type Severity from "../../../../base/common/severity.js";
+import type { URI } from "../../../../base/common/uri.js";
+import type { ConfigurationTarget } from "../../../../platform/configuration/common/configuration.js";
+import type { IWorkspaceFolder } from "../../../../platform/workspace/common/workspace.js";
+import type { ITaskEvent, KeyedTaskIdentifier, Task } from "./tasks.js";
 
-export const enum TaskErrors {
-	NotConfigured,
-	RunningTask,
-	NoBuildTask,
-	NoTestTask,
-	ConfigValidationError,
-	TaskNotFound,
-	NoValidTaskRunner,
-	UnknownError
+export enum TaskErrors {
+	NotConfigured = 0,
+	RunningTask = 1,
+	NoBuildTask = 2,
+	NoTestTask = 3,
+	ConfigValidationError = 4,
+	TaskNotFound = 5,
+	NoValidTaskRunner = 6,
+	UnknownError = 7,
 }
 
 export class TaskError {
@@ -36,9 +36,9 @@ export class TaskError {
 }
 
 export namespace Triggers {
-	export const shortcut: string = 'shortcut';
-	export const command: string = 'command';
-	export const reconnect: string = 'reconnect';
+	export const shortcut: string = "shortcut";
+	export const command: string = "command";
+	export const reconnect: string = "reconnect";
 }
 
 export interface ITaskSummary {
@@ -48,9 +48,9 @@ export interface ITaskSummary {
 	exitCode?: number;
 }
 
-export const enum TaskExecuteKind {
+export enum TaskExecuteKind {
 	Started = 1,
-	Active = 2
+	Active = 2,
 }
 
 export interface ITaskExecuteResult {
@@ -67,7 +67,10 @@ export interface ITaskExecuteResult {
 }
 
 export interface ITaskResolver {
-	resolve(uri: URI | string, identifier: string | KeyedTaskIdentifier | undefined): Promise<Task | undefined>;
+	resolve(
+		uri: URI | string,
+		identifier: string | KeyedTaskIdentifier | undefined,
+	): Promise<Task | undefined>;
 }
 
 export interface ITaskTerminateResponse extends TerminateResponse {
@@ -92,12 +95,22 @@ export interface ITaskSystemInfo {
 	platform: Platform;
 	context: any;
 	uriProvider: (this: void, path: string) => URI;
-	resolveVariables(workspaceFolder: IWorkspaceFolder, toResolve: IResolveSet, target: ConfigurationTarget): Promise<IResolvedVariables | undefined>;
-	findExecutable(command: string, cwd?: string, paths?: string[]): Promise<string | undefined>;
+	resolveVariables(
+		workspaceFolder: IWorkspaceFolder,
+		toResolve: IResolveSet,
+		target: ConfigurationTarget,
+	): Promise<IResolvedVariables | undefined>;
+	findExecutable(
+		command: string,
+		cwd?: string,
+		paths?: string[],
+	): Promise<string | undefined>;
 }
 
 export interface ITaskSystemInfoResolver {
-	(workspaceFolder: IWorkspaceFolder | undefined): ITaskSystemInfo | undefined;
+	(
+		workspaceFolder: IWorkspaceFolder | undefined,
+	): ITaskSystemInfo | undefined;
 }
 
 export interface ITaskSystem {

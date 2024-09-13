@@ -3,13 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { extHostNamedCustomer } from '../../services/extensions/common/extHostCustomers.js';
-import { MainContext, MainThreadClipboardShape } from '../common/extHost.protocol.js';
-import { IClipboardService } from '../../../platform/clipboard/common/clipboardService.js';
+import { IClipboardService } from "../../../platform/clipboard/common/clipboardService.js";
+import { extHostNamedCustomer } from "../../services/extensions/common/extHostCustomers.js";
+import {
+	MainContext,
+	type MainThreadClipboardShape,
+} from "../common/extHost.protocol.js";
 
 @extHostNamedCustomer(MainContext.MainThreadClipboard)
 export class MainThreadClipboard implements MainThreadClipboardShape {
-
 	constructor(
 		_context: any,
 		@IClipboardService private readonly _clipboardService: IClipboardService,

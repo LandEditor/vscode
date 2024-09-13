@@ -3,19 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable } from '../../../../../../base/common/lifecycle.js';
-import { ResourceMap } from '../../../../../../base/common/map.js';
-import { Schemas } from '../../../../../../base/common/network.js';
-import { isEqual } from '../../../../../../base/common/resources.js';
-import { Registry } from '../../../../../../platform/registry/common/platform.js';
-import { Extensions as WorkbenchExtensions, IWorkbenchContribution, IWorkbenchContributionsRegistry } from '../../../../../common/contributions.js';
-import { IBreakpoint, IDebugService } from '../../../../debug/common/debug.js';
-import { getNotebookEditorFromEditorPane } from '../../notebookBrowser.js';
-import { NotebookTextModel } from '../../../common/model/notebookTextModel.js';
-import { CellUri, NotebookCellsChangeType } from '../../../common/notebookCommon.js';
-import { INotebookService } from '../../../common/notebookService.js';
-import { IEditorService } from '../../../../../services/editor/common/editorService.js';
-import { LifecyclePhase } from '../../../../../services/lifecycle/common/lifecycle.js';
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../../../../base/common/lifecycle.js";
+import { ResourceMap } from "../../../../../../base/common/map.js";
+import { Schemas } from "../../../../../../base/common/network.js";
+import { isEqual } from "../../../../../../base/common/resources.js";
+import { Registry } from "../../../../../../platform/registry/common/platform.js";
+import {
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from "../../../../../common/contributions.js";
+import { IEditorService } from "../../../../../services/editor/common/editorService.js";
+import { LifecyclePhase } from "../../../../../services/lifecycle/common/lifecycle.js";
+import {
+	type IBreakpoint,
+	IDebugService,
+} from "../../../../debug/common/debug.js";
+import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
+import {
+	CellUri,
+	NotebookCellsChangeType,
+} from "../../../common/notebookCommon.js";
+import { INotebookService } from "../../../common/notebookService.js";
+import { getNotebookEditorFromEditorPane } from "../../notebookBrowser.js";
 
 class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 	constructor(
@@ -92,9 +105,9 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 			idxMap.set(cell.uri, i);
 		});
 
-		bps.forEach(bp => {
+		bps.forEach((bp) => {
 			const idx = idxMap.get(bp.uri);
-			if (typeof idx !== 'number') {
+			if (typeof idx !== "number") {
 				return;
 			}
 
@@ -116,11 +129,13 @@ class NotebookBreakpoints extends Disposable implements IWorkbenchContribution {
 					enabled: bp.enabled,
 					hitCondition: bp.hitCondition,
 					logMessage: bp.logMessage,
-					lineNumber: bp.lineNumber
-				}
+					lineNumber: bp.lineNumber,
+				},
 			]);
 		});
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(NotebookBreakpoints, LifecyclePhase.Restored);
+Registry.as<IWorkbenchContributionsRegistry>(
+	WorkbenchExtensions.Workbench,
+).registerWorkbenchContribution(NotebookBreakpoints, LifecyclePhase.Restored);

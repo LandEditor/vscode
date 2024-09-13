@@ -3,17 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../../../base/common/lifecycle.js';
-import { WorkbenchPhase, registerWorkbenchContribution2 } from '../../../../../common/contributions.js';
-import { CellKind } from '../../../common/notebookCommon.js';
-import { IEditorService } from '../../../../../services/editor/common/editorService.js';
-import { CellEditState, getNotebookEditorFromEditorPane } from '../../notebookBrowser.js';
-import { RedoCommand, UndoCommand } from '../../../../../../editor/browser/editorExtensions.js';
-import { NotebookViewModel } from '../../viewModel/notebookViewModelImpl.js';
+import { Disposable } from "../../../../../../base/common/lifecycle.js";
+import {
+	RedoCommand,
+	UndoCommand,
+} from "../../../../../../editor/browser/editorExtensions.js";
+import {
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "../../../../../common/contributions.js";
+import { IEditorService } from "../../../../../services/editor/common/editorService.js";
+import { CellKind } from "../../../common/notebookCommon.js";
+import {
+	CellEditState,
+	getNotebookEditorFromEditorPane,
+} from "../../notebookBrowser.js";
+import type { NotebookViewModel } from "../../viewModel/notebookViewModelImpl.js";
 
 class NotebookUndoRedoContribution extends Disposable {
-
-	static readonly ID = 'workbench.contrib.notebookUndoRedo';
+	static readonly ID = "workbench.contrib.notebookUndoRedo";
 
 	constructor(@IEditorService private readonly _editorService: IEditorService) {
 		super();
@@ -64,4 +72,8 @@ class NotebookUndoRedoContribution extends Disposable {
 	}
 }
 
-registerWorkbenchContribution2(NotebookUndoRedoContribution.ID, NotebookUndoRedoContribution, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	NotebookUndoRedoContribution.ID,
+	NotebookUndoRedoContribution,
+	WorkbenchPhase.BlockRestore,
+);

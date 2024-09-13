@@ -3,18 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IViewportRange, IBufferRange, ILink, ILinkDecorations, Terminal } from '@xterm/xterm';
-import { DisposableStore } from '../../../../../base/common/lifecycle.js';
-import * as dom from '../../../../../base/browser/dom.js';
-import { RunOnceScheduler } from '../../../../../base/common/async.js';
-import { convertBufferRangeToViewport } from './terminalLinkHelpers.js';
-import { isMacintosh } from '../../../../../base/common/platform.js';
-import { Emitter, Event } from '../../../../../base/common/event.js';
-import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
-import { TerminalLinkType } from './links.js';
-import type { URI } from '../../../../../base/common/uri.js';
-import type { IParsedLink } from './terminalLinkParsing.js';
-import type { IHoverAction } from '../../../../../base/browser/ui/hover/hover.js';
+import type {
+	IBufferRange,
+	ILink,
+	ILinkDecorations,
+	IViewportRange,
+	Terminal,
+} from "@xterm/xterm";
+import * as dom from "../../../../../base/browser/dom.js";
+import type { IHoverAction } from "../../../../../base/browser/ui/hover/hover.js";
+import { RunOnceScheduler } from "../../../../../base/common/async.js";
+import { Emitter, type Event } from "../../../../../base/common/event.js";
+import { DisposableStore } from "../../../../../base/common/lifecycle.js";
+import { isMacintosh } from "../../../../../base/common/platform.js";
+import type { URI } from "../../../../../base/common/uri.js";
+import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
+import type { TerminalLinkType } from "./links.js";
+import { convertBufferRangeToViewport } from "./terminalLinkHelpers.js";
+import type { IParsedLink } from "./terminalLinkParsing.js";
 
 export class TerminalLink extends DisposableStore implements ILink {
 	decorations: ILinkDecorations;
@@ -24,9 +30,13 @@ export class TerminalLink extends DisposableStore implements ILink {
 	private _hoverListeners: DisposableStore | undefined;
 
 	private readonly _onInvalidated = new Emitter<void>();
-	get onInvalidated(): Event<void> { return this._onInvalidated.event; }
+	get onInvalidated(): Event<void> {
+		return this._onInvalidated.event;
+	}
 
-	get type(): TerminalLinkType { return this._type; }
+	get type(): TerminalLinkType {
+		return this._type;
+	}
 
 	constructor(
 		private readonly _xterm: Terminal,
@@ -69,24 +79,30 @@ export class TerminalLink extends DisposableStore implements ILink {
 		const d = w.document;
 		// Listen for modifier before handing it off to the hover to handle so it gets disposed correctly
 		this._hoverListeners = new DisposableStore();
-		this._hoverListeners.add(dom.addDisposableListener(d, 'keydown', e => {
-			if (!e.repeat && this._isModifierDown(e)) {
-				this._enableDecorations();
-			}
-		}));
-		this._hoverListeners.add(dom.addDisposableListener(d, 'keyup', e => {
-			if (!e.repeat && !this._isModifierDown(e)) {
-				this._disableDecorations();
-			}
-		}));
+		this._hoverListeners.add(
+			dom.addDisposableListener(d, "keydown", (e) => {
+				if (!e.repeat && this._isModifierDown(e)) {
+					this._enableDecorations();
+				}
+			}),
+		);
+		this._hoverListeners.add(
+			dom.addDisposableListener(d, "keyup", (e) => {
+				if (!e.repeat && !this._isModifierDown(e)) {
+					this._disableDecorations();
+				}
+			}),
+		);
 
 		// Listen for when the terminal renders on the same line as the link
-		this._hoverListeners.add(this._xterm.onRender(e => {
-			const viewportRangeY = this.range.start.y - this._viewportY;
-			if (viewportRangeY >= e.start && viewportRangeY <= e.end) {
-				this._onInvalidated.fire();
-			}
-		}));
+		this._hoverListeners.add(
+			this._xterm.onRender((e) => {
+				const viewportRangeY = this.range.start.y - this._viewportY;
+				if (viewportRangeY >= e.start && viewportRangeY <= e.end) {
+					this._onInvalidated.fire();
+				}
+			}),
+		);
 
 		// Only show the tooltip and highlight for high confidence links (not word/search workspace
 		// links). Feedback was that this makes using the terminal overly noisy.
@@ -95,33 +111,42 @@ export class TerminalLink extends DisposableStore implements ILink {
 				this._tooltipCallback(
 					this,
 					convertBufferRangeToViewport(this.range, this._viewportY),
-					this._isHighConfidenceLink ? () => this._enableDecorations() : undefined,
-					this._isHighConfidenceLink ? () => this._disableDecorations() : undefined
+					this._isHighConfidenceLink
+						? () => this._enableDecorations()
+						: undefined,
+					this._isHighConfidenceLink
+						? () => this._disableDecorations()
+						: undefined,
 				);
 				// Clear out scheduler until next hover event
 				this._tooltipScheduler?.dispose();
 				this._tooltipScheduler = undefined;
-			}, this._configurationService.getValue('workbench.hover.delay'));
+			}, this._configurationService.getValue("workbench.hover.delay"));
 			this.add(this._tooltipScheduler);
 			this._tooltipScheduler.schedule();
 		}
 
 		const origin = { x: event.pageX, y: event.pageY };
-		this._hoverListeners.add(dom.addDisposableListener(d, dom.EventType.MOUSE_MOVE, e => {
-			// Update decorations
-			if (this._isModifierDown(e)) {
-				this._enableDecorations();
-			} else {
-				this._disableDecorations();
-			}
+		this._hoverListeners.add(
+			dom.addDisposableListener(d, dom.EventType.MOUSE_MOVE, (e) => {
+				// Update decorations
+				if (this._isModifierDown(e)) {
+					this._enableDecorations();
+				} else {
+					this._disableDecorations();
+				}
 
-			// Reset the scheduler if the mouse moves too much
-			if (Math.abs(e.pageX - origin.x) > w.devicePixelRatio * 2 || Math.abs(e.pageY - origin.y) > w.devicePixelRatio * 2) {
-				origin.x = e.pageX;
-				origin.y = e.pageY;
-				this._tooltipScheduler?.schedule();
-			}
-		}));
+				// Reset the scheduler if the mouse moves too much
+				if (
+					Math.abs(e.pageX - origin.x) > w.devicePixelRatio * 2 ||
+					Math.abs(e.pageY - origin.y) > w.devicePixelRatio * 2
+				) {
+					origin.x = e.pageX;
+					origin.y = e.pageY;
+					this._tooltipScheduler?.schedule();
+				}
+			}),
+		);
 	}
 
 	leave(): void {
@@ -150,8 +175,10 @@ export class TerminalLink extends DisposableStore implements ILink {
 	}
 
 	private _isModifierDown(event: MouseEvent | KeyboardEvent): boolean {
-		const multiCursorModifier = this._configurationService.getValue<'ctrlCmd' | 'alt'>('editor.multiCursorModifier');
-		if (multiCursorModifier === 'ctrlCmd') {
+		const multiCursorModifier = this._configurationService.getValue<
+			"ctrlCmd" | "alt"
+		>("editor.multiCursorModifier");
+		if (multiCursorModifier === "ctrlCmd") {
 			return !!event.altKey;
 		}
 		return isMacintosh ? event.metaKey : event.ctrlKey;

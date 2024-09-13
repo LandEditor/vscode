@@ -9,7 +9,7 @@
  *
  * @param content the content to strip comments from
  * @returns the parsed content as JSON
-*/
+ */
 export function parse(content: string): any;
 
 /**
@@ -20,5 +20,5 @@ export function parse(content: string): any;
  *
  * @param content the content to strip comments from
  * @returns the content without comments
-*/
+ */
 export function stripComments(content: string): string;

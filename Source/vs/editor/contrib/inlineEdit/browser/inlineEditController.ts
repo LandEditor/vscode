@@ -3,45 +3,80 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createStyleSheet2 } from '../../../../base/browser/dom.js';
-import { CancellationToken, CancellationTokenSource } from '../../../../base/common/cancellation.js';
-import { onUnexpectedExternalError } from '../../../../base/common/errors.js';
-import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
-import { ISettableObservable, autorun, constObservable, derivedDisposable, observableFromEvent, observableSignalFromEvent, observableValue, transaction } from '../../../../base/common/observable.js';
-import { ICommandService } from '../../../../platform/commands/common/commands.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IContextKeyService, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { ICodeEditor } from '../../../browser/editorBrowser.js';
-import { IDiffProviderFactoryService } from '../../../browser/widget/diffEditor/diffProviderFactoryService.js';
-import { EditorOption } from '../../../common/config/editorOptions.js';
-import { EditOperation } from '../../../common/core/editOperation.js';
-import { Position } from '../../../common/core/position.js';
-import { Range } from '../../../common/core/range.js';
-import { IInlineEdit, InlineEditTriggerKind } from '../../../common/languages.js';
-import { ILanguageFeaturesService } from '../../../common/services/languageFeatures.js';
-import { IModelService } from '../../../common/services/model.js';
-import { GhostText, GhostTextPart } from '../../inlineCompletions/browser/model/ghostText.js';
-import { GhostTextWidget } from './ghostTextWidget.js';
-import { InlineEditHintsWidget } from './inlineEditHintsWidget.js';
-import { InlineEditSideBySideWidget } from './inlineEditSideBySideWidget.js';
+import { createStyleSheet2 } from "../../../../base/browser/dom.js";
+import {
+	type CancellationToken,
+	CancellationTokenSource,
+} from "../../../../base/common/cancellation.js";
+import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../../base/common/lifecycle.js";
+import {
+	type ISettableObservable,
+	autorun,
+	constObservable,
+	derivedDisposable,
+	observableFromEvent,
+	observableSignalFromEvent,
+	observableValue,
+	transaction,
+} from "../../../../base/common/observable.js";
+import { ICommandService } from "../../../../platform/commands/common/commands.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import {
+	IContextKeyService,
+	RawContextKey,
+} from "../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import type { ICodeEditor } from "../../../browser/editorBrowser.js";
+import { IDiffProviderFactoryService } from "../../../browser/widget/diffEditor/diffProviderFactoryService.js";
+import { EditorOption } from "../../../common/config/editorOptions.js";
+import { EditOperation } from "../../../common/core/editOperation.js";
+import { Position } from "../../../common/core/position.js";
+import { Range } from "../../../common/core/range.js";
+import {
+	type IInlineEdit,
+	InlineEditTriggerKind,
+} from "../../../common/languages.js";
+import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
+import { IModelService } from "../../../common/services/model.js";
+import {
+	GhostText,
+	GhostTextPart,
+} from "../../inlineCompletions/browser/model/ghostText.js";
+import { GhostTextWidget } from "./ghostTextWidget.js";
+import { InlineEditHintsWidget } from "./inlineEditHintsWidget.js";
+import { InlineEditSideBySideWidget } from "./inlineEditSideBySideWidget.js";
 
 export class InlineEditController extends Disposable {
-	static ID = 'editor.contrib.inlineEditController';
+	static ID = "editor.contrib.inlineEditController";
 
-	public static readonly inlineEditVisibleKey = 'inlineEditVisible';
-	public static readonly inlineEditVisibleContext = new RawContextKey<boolean>(this.inlineEditVisibleKey, false);
-	private _isVisibleContext = InlineEditController.inlineEditVisibleContext.bindTo(this.contextKeyService);
+	public static readonly inlineEditVisibleKey = "inlineEditVisible";
+	public static readonly inlineEditVisibleContext =
+		new RawContextKey<boolean>(this.inlineEditVisibleKey, false);
+	private _isVisibleContext =
+		InlineEditController.inlineEditVisibleContext.bindTo(
+			this.contextKeyService,
+		);
 
-	public static readonly cursorAtInlineEditKey = 'cursorAtInlineEdit';
-	public static readonly cursorAtInlineEditContext = new RawContextKey<boolean>(this.cursorAtInlineEditKey, false);
-	private _isCursorAtInlineEditContext = InlineEditController.cursorAtInlineEditContext.bindTo(this.contextKeyService);
+	public static readonly cursorAtInlineEditKey = "cursorAtInlineEdit";
+	public static readonly cursorAtInlineEditContext =
+		new RawContextKey<boolean>(this.cursorAtInlineEditKey, false);
+	private _isCursorAtInlineEditContext =
+		InlineEditController.cursorAtInlineEditContext.bindTo(
+			this.contextKeyService,
+		);
 
 	public static get(editor: ICodeEditor): InlineEditController | null {
-		return editor.getContribution<InlineEditController>(InlineEditController.ID);
+		return editor.getContribution<InlineEditController>(
+			InlineEditController.ID,
+		);
 	}
 
-	private _currentEdit: ISettableObservable<IInlineEdit | undefined> = observableValue(this, undefined);
+	private _currentEdit: ISettableObservable<IInlineEdit | undefined> =
+		observableValue(this, undefined);
 	private _currentWidget = derivedDisposable(this._currentEdit, (reader) => {
 		const edit = this._currentEdit.read(reader);
 		if (!edit) {
@@ -49,32 +84,60 @@ export class InlineEditController extends Disposable {
 		}
 		const line = edit.range.endLineNumber;
 		const column = edit.range.endColumn;
-		const textToDisplay = edit.text.endsWith('\n') && !(edit.range.startLineNumber === edit.range.endLineNumber && edit.range.startColumn === edit.range.endColumn) ? edit.text.slice(0, -1) : edit.text;
-		const ghostText = new GhostText(line, [new GhostTextPart(column, textToDisplay, false)]);
+		const textToDisplay =
+			edit.text.endsWith("\n") &&
+			!(
+				edit.range.startLineNumber === edit.range.endLineNumber &&
+				edit.range.startColumn === edit.range.endColumn
+			)
+				? edit.text.slice(0, -1)
+				: edit.text;
+		const ghostText = new GhostText(line, [
+			new GhostTextPart(column, textToDisplay, false),
+		]);
 		//only show ghost text for single line edits
 		//unless it is a pure removal
 		//multi line edits are shown in the side by side widget
-		const isSingleLine = edit.range.startLineNumber === edit.range.endLineNumber && ghostText.parts.length === 1 && ghostText.parts[0].lines.length === 1;
-		const isPureRemoval = edit.text === '';
+		const isSingleLine =
+			edit.range.startLineNumber === edit.range.endLineNumber &&
+			ghostText.parts.length === 1 &&
+			ghostText.parts[0].lines.length === 1;
+		const isPureRemoval = edit.text === "";
 		if (!isSingleLine && !isPureRemoval) {
 			return undefined;
 		}
-		const instance = this.instantiationService.createInstance(GhostTextWidget, this.editor, {
-			ghostText: constObservable(ghostText),
-			minReservedLineCount: constObservable(0),
-			targetTextModel: constObservable(this.editor.getModel() ?? undefined),
-			range: constObservable(edit.range)
-		});
+		const instance = this.instantiationService.createInstance(
+			GhostTextWidget,
+			this.editor,
+			{
+				ghostText: constObservable(ghostText),
+				minReservedLineCount: constObservable(0),
+				targetTextModel: constObservable(
+					this.editor.getModel() ?? undefined,
+				),
+				range: constObservable(edit.range),
+			},
+		);
 		return instance;
 	});
 	private _currentRequestCts: CancellationTokenSource | undefined;
 
 	private _jumpBackPosition: Position | undefined;
-	private _isAccepting: ISettableObservable<boolean> = observableValue(this, false);
+	private _isAccepting: ISettableObservable<boolean> = observableValue(
+		this,
+		false,
+	);
 
-	private readonly _enabled = observableFromEvent(this, this.editor.onDidChangeConfiguration, () => this.editor.getOption(EditorOption.inlineEdit).enabled);
-	private readonly _fontFamily = observableFromEvent(this, this.editor.onDidChangeConfiguration, () => this.editor.getOption(EditorOption.inlineEdit).fontFamily);
-
+	private readonly _enabled = observableFromEvent(
+		this,
+		this.editor.onDidChangeConfiguration,
+		() => this.editor.getOption(EditorOption.inlineEdit).enabled,
+	);
+	private readonly _fontFamily = observableFromEvent(
+		this,
+		this.editor.onDidChangeConfiguration,
+		() => this.editor.getOption(EditorOption.inlineEdit).fontFamily,
+	);
 
 	constructor(
 		public readonly editor: ICodeEditor,
@@ -189,12 +252,21 @@ export class InlineEditController extends Disposable {
 			this._isCursorAtInlineEditContext.set(false);
 			return;
 		}
-		this._isCursorAtInlineEditContext.set(Range.containsPosition(gt.range, position));
+		this._isCursorAtInlineEditContext.set(
+			Range.containsPosition(gt.range, position),
+		);
 	}
 
-	private validateInlineEdit(editor: ICodeEditor, edit: IInlineEdit): boolean {
+	private validateInlineEdit(
+		editor: ICodeEditor,
+		edit: IInlineEdit,
+	): boolean {
 		//Multiline inline replacing edit must replace whole lines
-		if (edit.text.includes('\n') && edit.range.startLineNumber !== edit.range.endLineNumber && edit.range.startColumn !== edit.range.endColumn) {
+		if (
+			edit.text.includes("\n") &&
+			edit.range.startLineNumber !== edit.range.endLineNumber &&
+			edit.range.startColumn !== edit.range.endColumn
+		) {
 			const firstColumn = edit.range.startColumn;
 			if (firstColumn !== 1) {
 				return false;
@@ -209,7 +281,10 @@ export class InlineEditController extends Disposable {
 		return true;
 	}
 
-	private async fetchInlineEdit(editor: ICodeEditor, auto: boolean): Promise<IInlineEdit | undefined> {
+	private async fetchInlineEdit(
+		editor: ICodeEditor,
+		auto: boolean,
+	): Promise<IInlineEdit | undefined> {
 		if (this._currentRequestCts) {
 			this._currentRequestCts.dispose(true);
 		}
@@ -218,26 +293,41 @@ export class InlineEditController extends Disposable {
 			return;
 		}
 		const modelVersion = model.getVersionId();
-		const providers = this.languageFeaturesService.inlineEditProvider.all(model);
+		const providers =
+			this.languageFeaturesService.inlineEditProvider.all(model);
 		if (providers.length === 0) {
 			return;
 		}
 		const provider = providers[0];
 		this._currentRequestCts = new CancellationTokenSource();
 		const token = this._currentRequestCts.token;
-		const triggerKind = auto ? InlineEditTriggerKind.Automatic : InlineEditTriggerKind.Invoke;
+		const triggerKind = auto
+			? InlineEditTriggerKind.Automatic
+			: InlineEditTriggerKind.Invoke;
 		const shouldDebounce = auto;
 		if (shouldDebounce) {
 			await wait(50, token);
 		}
-		if (token.isCancellationRequested || model.isDisposed() || model.getVersionId() !== modelVersion) {
+		if (
+			token.isCancellationRequested ||
+			model.isDisposed() ||
+			model.getVersionId() !== modelVersion
+		) {
 			return;
 		}
-		const edit = await provider.provideInlineEdit(model, { triggerKind }, token);
+		const edit = await provider.provideInlineEdit(
+			model,
+			{ triggerKind },
+			token,
+		);
 		if (!edit) {
 			return;
 		}
-		if (token.isCancellationRequested || model.isDisposed() || model.getVersionId() !== modelVersion) {
+		if (
+			token.isCancellationRequested ||
+			model.isDisposed() ||
+			model.getVersionId() !== modelVersion
+		) {
 			return;
 		}
 		if (!this.validateInlineEdit(editor, edit)) {
@@ -266,7 +356,9 @@ export class InlineEditController extends Disposable {
 		}
 		this.editor.setPosition(this._jumpBackPosition);
 		//if position is outside viewports, scroll to it
-		this.editor.revealPositionInCenterIfOutsideViewport(this._jumpBackPosition);
+		this.editor.revealPositionInCenterIfOutsideViewport(
+			this._jumpBackPosition,
+		);
 	}
 
 	public async accept() {
@@ -278,14 +370,19 @@ export class InlineEditController extends Disposable {
 
 		//It should only happen in case of last line suggestion
 		let text = data.text;
-		if (data.text.startsWith('\n')) {
+		if (data.text.startsWith("\n")) {
 			text = data.text.substring(1);
 		}
 		this.editor.pushUndoStop();
-		this.editor.executeEdits('acceptCurrent', [EditOperation.replace(Range.lift(data.range), text)]);
+		this.editor.executeEdits("acceptCurrent", [
+			EditOperation.replace(Range.lift(data.range), text),
+		]);
 		if (data.accepted) {
 			await this._commandService
-				.executeCommand(data.accepted.id, ...(data.accepted.arguments || []))
+				.executeCommand(
+					data.accepted.id,
+					...(data.accepted.arguments || []),
+				)
 				.then(undefined, onUnexpectedExternalError);
 		}
 		this.freeEdit(data);
@@ -302,17 +399,23 @@ export class InlineEditController extends Disposable {
 		if (!data) {
 			return;
 		}
-		const position = Position.lift({ lineNumber: data.range.startLineNumber, column: data.range.startColumn });
+		const position = Position.lift({
+			lineNumber: data.range.startLineNumber,
+			column: data.range.startColumn,
+		});
 		this.editor.setPosition(position);
 		//if position is outside viewports, scroll to it
 		this.editor.revealPositionInCenterIfOutsideViewport(position);
 	}
 
-	public async clear(sendRejection: boolean = true) {
+	public async clear(sendRejection = true) {
 		const edit = this._currentEdit.get();
 		if (edit && edit?.rejected && sendRejection) {
 			await this._commandService
-				.executeCommand(edit.rejected.id, ...(edit.rejected.arguments || []))
+				.executeCommand(
+					edit.rejected.id,
+					...(edit.rejected.arguments || []),
+				)
 				.then(undefined, onUnexpectedExternalError);
 		}
 		if (edit) {
@@ -326,7 +429,8 @@ export class InlineEditController extends Disposable {
 		if (!model) {
 			return;
 		}
-		const providers = this.languageFeaturesService.inlineEditProvider.all(model);
+		const providers =
+			this.languageFeaturesService.inlineEditProvider.all(model);
 		if (providers.length === 0) {
 			return;
 		}
@@ -344,13 +448,19 @@ export class InlineEditController extends Disposable {
 		}
 		const edit = currentEdit;
 		const model = currentWidget.model;
-		const overReplaceRange = Range.containsPosition(edit.range, range.getStartPosition()) || Range.containsPosition(edit.range, range.getEndPosition());
+		const overReplaceRange =
+			Range.containsPosition(edit.range, range.getStartPosition()) ||
+			Range.containsPosition(edit.range, range.getEndPosition());
 		if (overReplaceRange) {
 			return true;
 		}
 		const ghostText = model.ghostText.get();
 		if (ghostText) {
-			return ghostText.parts.some(p => range.containsPosition(new Position(ghostText.lineNumber, p.column)));
+			return ghostText.parts.some((p) =>
+				range.containsPosition(
+					new Position(ghostText.lineNumber, p.column),
+				),
+			);
 		}
 		return false;
 	}
@@ -358,20 +468,26 @@ export class InlineEditController extends Disposable {
 	public shouldShowHoverAtViewZone(viewZoneId: string): boolean {
 		return this._currentWidget.get()?.ownsViewZone(viewZoneId) ?? false;
 	}
-
 }
 
-function wait(ms: number, cancellationToken?: CancellationToken): Promise<void> {
-	return new Promise(resolve => {
-		let d: IDisposable | undefined = undefined;
+function wait(
+	ms: number,
+	cancellationToken?: CancellationToken,
+): Promise<void> {
+	return new Promise((resolve) => {
+		let d: IDisposable | undefined;
 		const handle = setTimeout(() => {
-			if (d) { d.dispose(); }
+			if (d) {
+				d.dispose();
+			}
 			resolve();
 		}, ms);
 		if (cancellationToken) {
 			d = cancellationToken.onCancellationRequested(() => {
 				clearTimeout(handle);
-				if (d) { d.dispose(); }
+				if (d) {
+					d.dispose();
+				}
 				resolve();
 			});
 		}

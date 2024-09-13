@@ -3,11 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../base/common/event.js';
-import { IDisposable } from '../../../base/common/lifecycle.js';
-import { ConfigurationChangedEvent, IComputedEditorOptions, IEditorOptions } from './editorOptions.js';
-import { IDimension } from '../core/dimension.js';
-import { MenuId } from '../../../platform/actions/common/actions.js';
+import type { Event } from "../../../base/common/event.js";
+import type { IDisposable } from "../../../base/common/lifecycle.js";
+import type { MenuId } from "../../../platform/actions/common/actions.js";
+import type { IDimension } from "../core/dimension.js";
+import type {
+	ConfigurationChangedEvent,
+	IComputedEditorOptions,
+	IEditorOptions,
+} from "./editorOptions.js";
 
 export interface IEditorConfiguration extends IDisposable {
 	/**

@@ -3,15 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { importAMDNodeModule } from '../../../amdX.js';
-import { getErrorMessage } from '../../../base/common/errors.js';
-import { IGalleryExtension } from '../common/extensionManagement.js';
-import { TargetPlatform } from '../../extensions/common/extensions.js';
-import { createDecorator } from '../../instantiation/common/instantiation.js';
-import { ILogService, LogLevel } from '../../log/common/log.js';
-import { ITelemetryService } from '../../telemetry/common/telemetry.js';
+import { importAMDNodeModule } from "../../../amdX.js";
+import { getErrorMessage } from "../../../base/common/errors.js";
+import type { TargetPlatform } from "../../extensions/common/extensions.js";
+import { createDecorator } from "../../instantiation/common/instantiation.js";
+import { ILogService, LogLevel } from "../../log/common/log.js";
+import { ITelemetryService } from "../../telemetry/common/telemetry.js";
+import type { IGalleryExtension } from "../common/extensionManagement.js";
 
-export const IExtensionSignatureVerificationService = createDecorator<IExtensionSignatureVerificationService>('IExtensionSignatureVerificationService');
+export const IExtensionSignatureVerificationService =
+	createDecorator<IExtensionSignatureVerificationService>(
+		"IExtensionSignatureVerificationService",
+	);
 
 /**
  * A service for verifying signed extensions.
@@ -29,41 +32,50 @@ export interface IExtensionSignatureVerificationService {
 	 * @throws { ExtensionSignatureVerificationError } An error with a code indicating the validity, integrity, or trust issue
 	 * found during verification or a more fundamental issue (e.g.:  a required dependency was not found).
 	 */
-	verify(extension: IGalleryExtension, vsixFilePath: string, signatureArchiveFilePath: string, clientTargetPlatform?: TargetPlatform): Promise<boolean>;
+	verify(
+		extension: IGalleryExtension,
+		vsixFilePath: string,
+		signatureArchiveFilePath: string,
+		clientTargetPlatform?: TargetPlatform,
+	): Promise<boolean>;
 }
 
-declare module vsceSign {
-	export function verify(vsixFilePath: string, signatureArchiveFilePath: string, verbose: boolean): Promise<ExtensionSignatureVerificationResult>;
+declare namespace vsceSign {
+	export function verify(
+		vsixFilePath: string,
+		signatureArchiveFilePath: string,
+		verbose: boolean,
+	): Promise<ExtensionSignatureVerificationResult>;
 }
 
 export enum ExtensionSignatureVerificationCode {
-	'Success' = 'Success',
-	'RequiredArgumentMissing' = 'RequiredArgumentMissing',
-	'InvalidArgument' = 'InvalidArgument',
-	'PackageIsUnreadable' = 'PackageIsUnreadable',
-	'UnhandledException' = 'UnhandledException',
-	'SignatureManifestIsMissing' = 'SignatureManifestIsMissing',
-	'SignatureManifestIsUnreadable' = 'SignatureManifestIsUnreadable',
-	'SignatureIsMissing' = 'SignatureIsMissing',
-	'SignatureIsUnreadable' = 'SignatureIsUnreadable',
-	'CertificateIsUnreadable' = 'CertificateIsUnreadable',
-	'SignatureArchiveIsUnreadable' = 'SignatureArchiveIsUnreadable',
-	'FileAlreadyExists' = 'FileAlreadyExists',
-	'SignatureArchiveIsInvalidZip' = 'SignatureArchiveIsInvalidZip',
-	'SignatureArchiveHasSameSignatureFile' = 'SignatureArchiveHasSameSignatureFile',
+	Success = "Success",
+	RequiredArgumentMissing = "RequiredArgumentMissing",
+	InvalidArgument = "InvalidArgument",
+	PackageIsUnreadable = "PackageIsUnreadable",
+	UnhandledException = "UnhandledException",
+	SignatureManifestIsMissing = "SignatureManifestIsMissing",
+	SignatureManifestIsUnreadable = "SignatureManifestIsUnreadable",
+	SignatureIsMissing = "SignatureIsMissing",
+	SignatureIsUnreadable = "SignatureIsUnreadable",
+	CertificateIsUnreadable = "CertificateIsUnreadable",
+	SignatureArchiveIsUnreadable = "SignatureArchiveIsUnreadable",
+	FileAlreadyExists = "FileAlreadyExists",
+	SignatureArchiveIsInvalidZip = "SignatureArchiveIsInvalidZip",
+	SignatureArchiveHasSameSignatureFile = "SignatureArchiveHasSameSignatureFile",
 
-	'PackageIntegrityCheckFailed' = 'PackageIntegrityCheckFailed',
-	'SignatureIsInvalid' = 'SignatureIsInvalid',
-	'SignatureManifestIsInvalid' = 'SignatureManifestIsInvalid',
-	'SignatureIntegrityCheckFailed' = 'SignatureIntegrityCheckFailed',
-	'EntryIsMissing' = 'EntryIsMissing',
-	'EntryIsTampered' = 'EntryIsTampered',
-	'Untrusted' = 'Untrusted',
-	'CertificateRevoked' = 'CertificateRevoked',
-	'SignatureIsNotValid' = 'SignatureIsNotValid',
-	'UnknownError' = 'UnknownError',
-	'PackageIsInvalidZip' = 'PackageIsInvalidZip',
-	'SignatureArchiveHasTooManyEntries' = 'SignatureArchiveHasTooManyEntries',
+	PackageIntegrityCheckFailed = "PackageIntegrityCheckFailed",
+	SignatureIsInvalid = "SignatureIsInvalid",
+	SignatureManifestIsInvalid = "SignatureManifestIsInvalid",
+	SignatureIntegrityCheckFailed = "SignatureIntegrityCheckFailed",
+	EntryIsMissing = "EntryIsMissing",
+	EntryIsTampered = "EntryIsTampered",
+	Untrusted = "Untrusted",
+	CertificateRevoked = "CertificateRevoked",
+	SignatureIsNotValid = "SignatureIsNotValid",
+	UnknownError = "UnknownError",
+	PackageIsInvalidZip = "PackageIsInvalidZip",
+	SignatureArchiveHasTooManyEntries = "SignatureArchiveHasTooManyEntries",
 }
 
 /**
@@ -77,14 +89,14 @@ export interface ExtensionSignatureVerificationResult {
 }
 
 export class ExtensionSignatureVerificationError extends Error {
-	constructor(
-		public readonly code: ExtensionSignatureVerificationCode,
-	) {
+	constructor(public readonly code: ExtensionSignatureVerificationCode) {
 		super(code);
 	}
 }
 
-export class ExtensionSignatureVerificationService implements IExtensionSignatureVerificationService {
+export class ExtensionSignatureVerificationService
+	implements IExtensionSignatureVerificationService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private moduleLoadingPromise: Promise<typeof vsceSign> | undefined;
@@ -104,8 +116,10 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
 
 	private async resolveVsceSign(): Promise<typeof vsceSign> {
 		// ESM-uncomment-begin
-		if (typeof importAMDNodeModule === 'function') { /* fixes unused import, remove me */ }
-		const mod = '@vscode/vsce-sign';
+		if (typeof importAMDNodeModule === "function") {
+			/* fixes unused import, remove me */
+		}
+		const mod = "@vscode/vsce-sign";
 		return import(mod);
 		// ESM-uncomment-end
 
@@ -114,15 +128,25 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
 		// ESM-comment-end
 	}
 
-	public async verify(extension: IGalleryExtension, vsixFilePath: string, signatureArchiveFilePath: string, clientTargetPlatform?: TargetPlatform): Promise<boolean> {
+	public async verify(
+		extension: IGalleryExtension,
+		vsixFilePath: string,
+		signatureArchiveFilePath: string,
+		clientTargetPlatform?: TargetPlatform,
+	): Promise<boolean> {
 		let module: typeof vsceSign;
 		const extensionId = extension.identifier.id;
 
 		try {
 			module = await this.vsceSign();
 		} catch (error) {
-			this.logService.error('Could not load vsce-sign module', getErrorMessage(error));
-			this.logService.info(`Extension signature verification is not done: ${extensionId}`);
+			this.logService.error(
+				"Could not load vsce-sign module",
+				getErrorMessage(error),
+			);
+			this.logService.info(
+				`Extension signature verification is not done: ${extensionId}`,
+			);
 			return false;
 		}
 
@@ -130,31 +154,71 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
 		let result: ExtensionSignatureVerificationResult;
 
 		try {
-			this.logService.trace(`Verifying extension signature for ${extensionId}...`);
-			result = await module.verify(vsixFilePath, signatureArchiveFilePath, this.logService.getLevel() === LogLevel.Trace);
+			this.logService.trace(
+				`Verifying extension signature for ${extensionId}...`,
+			);
+			result = await module.verify(
+				vsixFilePath,
+				signatureArchiveFilePath,
+				this.logService.getLevel() === LogLevel.Trace,
+			);
 		} catch (e) {
 			result = {
 				code: ExtensionSignatureVerificationCode.UnknownError,
 				didExecute: false,
-				output: getErrorMessage(e)
+				output: getErrorMessage(e),
 			};
 		}
 
 		const duration = new Date().getTime() - startTime;
 
-		this.logService.info(`Extension signature verification result for ${extensionId}: ${result.code}. Executed: ${result.didExecute}. Duration: ${duration}ms.`);
-		this.logService.trace(`Extension signature verification output for ${extensionId}:\n${result.output}`);
+		this.logService.info(
+			`Extension signature verification result for ${extensionId}: ${result.code}. Executed: ${result.didExecute}. Duration: ${duration}ms.`,
+		);
+		this.logService.trace(
+			`Extension signature verification output for ${extensionId}:\n${result.output}`,
+		);
 
 		type ExtensionSignatureVerificationClassification = {
-			owner: 'sandy081';
-			comment: 'Extension signature verification event';
-			extensionId: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'extension identifier' };
-			extensionVersion: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'extension version' };
-			code: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'result code of the verification' };
-			internalCode?: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; 'isMeasurement': true; comment: 'internal code of the verification' };
-			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; 'isMeasurement': true; comment: 'amount of time taken to verify the signature' };
-			didExecute: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'whether the verification was executed' };
-			clientTargetPlatform?: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'target platform of the client' };
+			owner: "sandy081";
+			comment: "Extension signature verification event";
+			extensionId: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "extension identifier";
+			};
+			extensionVersion: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "extension version";
+			};
+			code: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "result code of the verification";
+			};
+			internalCode?: {
+				classification: "SystemMetaData";
+				purpose: "PerformanceAndHealth";
+				isMeasurement: true;
+				comment: "internal code of the verification";
+			};
+			duration: {
+				classification: "SystemMetaData";
+				purpose: "PerformanceAndHealth";
+				isMeasurement: true;
+				comment: "amount of time taken to verify the signature";
+			};
+			didExecute: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "whether the verification was executed";
+			};
+			clientTargetPlatform?: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "target platform of the client";
+			};
 		};
 		type ExtensionSignatureVerificationEvent = {
 			extensionId: string;
@@ -165,7 +229,10 @@ export class ExtensionSignatureVerificationService implements IExtensionSignatur
 			didExecute: boolean;
 			clientTargetPlatform?: string;
 		};
-		this.telemetryService.publicLog2<ExtensionSignatureVerificationEvent, ExtensionSignatureVerificationClassification>('extensionsignature:verification', {
+		this.telemetryService.publicLog2<
+			ExtensionSignatureVerificationEvent,
+			ExtensionSignatureVerificationClassification
+		>("extensionsignature:verification", {
 			extensionId,
 			extensionVersion: extension.version,
 			code: result.code,

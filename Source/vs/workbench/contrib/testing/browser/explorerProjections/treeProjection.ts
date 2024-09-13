@@ -3,39 +3,67 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { ObjectTree } from '../../../../../base/browser/ui/tree/objectTree.js';
-import { Emitter } from '../../../../../base/common/event.js';
-import { FuzzyScore } from '../../../../../base/common/filters.js';
-import { Iterable } from '../../../../../base/common/iterator.js';
-import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { ITestTreeProjection, TestExplorerTreeElement, TestItemTreeElement, TestTreeErrorMessage, getChildrenForParent, testIdentityProvider } from './index.js';
-import { ISerializedTestTreeCollapseState, isCollapsedInSerializedTestTree } from './testingViewState.js';
-import { IComputedStateAndDurationAccessor, refreshComputedState } from '../../common/getComputedState.js';
-import { TestId } from '../../common/testId.js';
-import { TestResultItemChangeReason } from '../../common/testResult.js';
-import { ITestResultService } from '../../common/testResultService.js';
-import { ITestService } from '../../common/testService.js';
-import { ITestItemUpdate, InternalTestItem, TestDiffOpType, TestItemExpandState, TestResultState, TestsDiff, applyTestItemUpdate } from '../../common/testTypes.js';
+import type { ObjectTree } from "../../../../../base/browser/ui/tree/objectTree.js";
+import { Emitter } from "../../../../../base/common/event.js";
+import type { FuzzyScore } from "../../../../../base/common/filters.js";
+import { Iterable } from "../../../../../base/common/iterator.js";
+import { Disposable } from "../../../../../base/common/lifecycle.js";
+import {
+	type IComputedStateAndDurationAccessor,
+	refreshComputedState,
+} from "../../common/getComputedState.js";
+import { TestId } from "../../common/testId.js";
+import { TestResultItemChangeReason } from "../../common/testResult.js";
+import { ITestResultService } from "../../common/testResultService.js";
+import { ITestService } from "../../common/testService.js";
+import {
+	type ITestItemUpdate,
+	type InternalTestItem,
+	TestDiffOpType,
+	TestItemExpandState,
+	TestResultState,
+	type TestsDiff,
+	applyTestItemUpdate,
+} from "../../common/testTypes.js";
+import {
+	type ITestTreeProjection,
+	type TestExplorerTreeElement,
+	TestItemTreeElement,
+	TestTreeErrorMessage,
+	getChildrenForParent,
+	testIdentityProvider,
+} from "./index.js";
+import {
+	type ISerializedTestTreeCollapseState,
+	isCollapsedInSerializedTestTree,
+} from "./testingViewState.js";
 
-const computedStateAccessor: IComputedStateAndDurationAccessor<TreeTestItemElement> = {
-	getOwnState: i => i instanceof TestItemTreeElement ? i.ownState : TestResultState.Unset,
-	getCurrentComputedState: i => i.state,
-	setComputedState: (i, s) => i.state = s,
+const computedStateAccessor: IComputedStateAndDurationAccessor<TreeTestItemElement> =
+	{
+		getOwnState: (i) =>
+			i instanceof TestItemTreeElement
+				? i.ownState
+				: TestResultState.Unset,
+		getCurrentComputedState: (i) => i.state,
+		setComputedState: (i, s) => (i.state = s),
 
-	getCurrentComputedDuration: i => i.duration,
-	getOwnDuration: i => i instanceof TestItemTreeElement ? i.ownDuration : undefined,
-	setComputedDuration: (i, d) => i.duration = d,
+		getCurrentComputedDuration: (i) => i.duration,
+		getOwnDuration: (i) =>
+			i instanceof TestItemTreeElement ? i.ownDuration : undefined,
+		setComputedDuration: (i, d) => (i.duration = d),
 
-	getChildren: i => Iterable.filter(
-		i.children.values(),
-		(t): t is TreeTestItemElement => t instanceof TreeTestItemElement,
-	),
-	*getParents(i) {
-		for (let parent = i.parent; parent; parent = parent.parent) {
-			yield parent as TreeTestItemElement;
-		}
-	},
-};
+		getChildren: (i) =>
+			Iterable.filter(
+				i.children.values(),
+				(t): t is TreeTestItemElement =>
+					t instanceof TreeTestItemElement,
+			),
+		*getParents(i) {
+			for (let parent = i.parent; parent; parent = parent.parent) {
+				yield parent as TreeTestItemElement;
+			}
+		},
+	};
 
 /**
  * Test tree element element that groups be hierarchy.
@@ -85,7 +113,10 @@ class TreeTestItemElement extends TestItemTreeElement {
 			this.errorChild = undefined;
 		}
 		if (this.test.item.error && !this.errorChild) {
-			this.errorChild = new TestTreeErrorMessage(this.test.item.error, this);
+			this.errorChild = new TestTreeErrorMessage(
+				this.test.item.error,
+				this,
+			);
 			this.children.add(this.errorChild);
 			this.addedOrRemoved(this);
 		}
@@ -107,8 +138,14 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 	 * Gets root elements of the tree.
 	 */
 	private get rootsWithChildren(): Iterable<TreeTestItemElement> {
-		const rootsIt = Iterable.map(this.testService.collection.rootItems, r => this.items.get(r.item.extId));
-		return Iterable.filter(rootsIt, (r): r is TreeTestItemElement => !!r?.children.size);
+		const rootsIt = Iterable.map(
+			this.testService.collection.rootItems,
+			(r) => this.items.get(r.item.extId),
+		);
+		return Iterable.filter(
+			rootsIt,
+			(r): r is TreeTestItemElement => !!r?.children.size,
+		);
 	}
 
 	/**
@@ -207,7 +244,9 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 
 					// parent needs to be re-rendered on an expand update, so that its
 					// children are rewritten.
-					const needsParentUpdate = existing.test.expand === TestItemExpandState.NotExpandable && patch.expand;
+					const needsParentUpdate =
+						existing.test.expand ===
+							TestItemExpandState.NotExpandable && patch.expand;
 					existing.update(patch);
 					if (needsParentUpdate) {
 						this.changedParents.add(existing.parent);
@@ -227,10 +266,18 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 					// Changing first-level elements will need the root to re-render if
 					// there are no other controllers with items.
 					const parent = toRemove.parent;
-					const affectsRootElement = toRemove.depth === 1 && (parent?.children.size === 1 || !Iterable.some(this.rootsWithChildren, (_, i) => i === 1));
+					const affectsRootElement =
+						toRemove.depth === 1 &&
+						(parent?.children.size === 1 ||
+							!Iterable.some(
+								this.rootsWithChildren,
+								(_, i) => i === 1,
+							));
 					this.changedParents.add(affectsRootElement ? null : parent);
 
-					const queue: Iterable<TestExplorerTreeElement>[] = [[toRemove]];
+					const queue: Iterable<TestExplorerTreeElement>[] = [
+						[toRemove],
+					];
 					while (queue.length) {
 						for (const item of queue.pop()!) {
 							if (item instanceof TreeTestItemElement) {
@@ -240,7 +287,12 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 					}
 
 					if (parent instanceof TreeTestItemElement) {
-						refreshComputedState(computedStateAccessor, parent, undefined, !!parent.duration).forEach(i => i.fireChange());
+						refreshComputedState(
+							computedStateAccessor,
+							parent,
+							undefined,
+							!!parent.duration,
+						).forEach((i) => i.fireChange());
 					}
 				}
 			}
@@ -257,7 +309,15 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 	public applyTo(tree: ObjectTree<TestExplorerTreeElement, FuzzyScore>) {
 		for (const parent of this.changedParents) {
 			if (!parent || tree.hasElement(parent)) {
-				tree.setChildren(parent, getChildrenForParent(this.lastState, this.rootsWithChildren, parent), { diffIdentityProvider: testIdentityProvider });
+				tree.setChildren(
+					parent,
+					getChildrenForParent(
+						this.lastState,
+						this.rootsWithChildren,
+						parent,
+					),
+					{ diffIdentityProvider: testIdentityProvider },
+				);
 			}
 		}
 
@@ -289,7 +349,9 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 	private createItem(item: InternalTestItem): TreeTestItemElement {
 		const parentId = TestId.parentId(item.item.extId);
 		const parent = parentId ? this.items.get(parentId)! : null;
-		return new TreeTestItemElement(item, parent, n => this.changedParents.add(n));
+		return new TreeTestItemElement(item, parent, (n) =>
+			this.changedParents.add(n),
+		);
 	}
 
 	private unstoreItem(treeElement: TreeTestItemElement) {
@@ -306,23 +368,38 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 		// The first element will cause the root to be shown. The first element of
 		// a parent may need to re-render it for #204805.
 		const affectsParent = treeElement.parent?.children.size === 1;
-		const affectedParent = affectsParent ? treeElement.parent.parent : treeElement.parent;
+		const affectedParent = affectsParent
+			? treeElement.parent.parent
+			: treeElement.parent;
 		this.changedParents.add(affectedParent);
 		if (affectedParent?.depth === 0) {
 			this.changedParents.add(null);
 		}
 
-		if (treeElement.depth === 0 || isCollapsedInSerializedTestTree(this.lastState, treeElement.test.item.extId) === false) {
+		if (
+			treeElement.depth === 0 ||
+			isCollapsedInSerializedTestTree(
+				this.lastState,
+				treeElement.test.item.extId,
+			) === false
+		) {
 			this.expandElement(treeElement, 0);
 		}
 
-		const prevState = this.results.getStateById(treeElement.test.item.extId)?.[1];
+		const prevState = this.results.getStateById(
+			treeElement.test.item.extId,
+		)?.[1];
 		if (prevState) {
 			treeElement.retired = !!prevState.retired;
 			treeElement.ownState = prevState.computedState;
 			treeElement.ownDuration = prevState.ownDuration;
 
-			refreshComputedState(computedStateAccessor, treeElement, undefined, !!treeElement.ownDuration).forEach(i => i.fireChange());
+			refreshComputedState(
+				computedStateAccessor,
+				treeElement,
+				undefined,
+				!!treeElement.ownDuration,
+			).forEach((i) => i.fireChange());
 		}
 	}
 }

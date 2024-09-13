@@ -3,26 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IDialogHandler, IDialogResult, IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { ILayoutService } from '../../../../platform/layout/browser/layoutService.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { INativeHostService } from '../../../../platform/native/common/native.js';
-import { IProductService } from '../../../../platform/product/common/productService.js';
-import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
-import { IDialogsModel, IDialogViewItem } from '../../../common/dialogs.js';
-import { BrowserDialogHandler } from '../../../browser/parts/dialogs/dialogHandler.js';
-import { NativeDialogHandler } from './dialogHandler.js';
-import { DialogService } from '../../../services/dialogs/common/dialogService.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { Lazy } from '../../../../base/common/lazy.js';
+import { Lazy } from "../../../../base/common/lazy.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import {
+	type IDialogHandler,
+	type IDialogResult,
+	IDialogService,
+} from "../../../../platform/dialogs/common/dialogs.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
+import { ILayoutService } from "../../../../platform/layout/browser/layoutService.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { INativeHostService } from "../../../../platform/native/common/native.js";
+import { IProductService } from "../../../../platform/product/common/productService.js";
+import { BrowserDialogHandler } from "../../../browser/parts/dialogs/dialogHandler.js";
+import {
+	type IWorkbenchContribution,
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "../../../common/contributions.js";
+import type {
+	IDialogViewItem,
+	IDialogsModel,
+} from "../../../common/dialogs.js";
+import type { DialogService } from "../../../services/dialogs/common/dialogService.js";
+import { NativeDialogHandler } from "./dialogHandler.js";
 
-export class DialogHandlerContribution extends Disposable implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.dialogHandler';
+export class DialogHandlerContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
+	static readonly ID = "workbench.contrib.dialogHandler";
 
 	private nativeImpl: Lazy<IDialogHandler>;
 	private browserImpl: Lazy<IDialogHandler>;
@@ -61,15 +74,19 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 		while (this.model.dialogs.length) {
 			this.currentDialog = this.model.dialogs[0];
 
-			let result: IDialogResult | Error | undefined = undefined;
+			let result: IDialogResult | Error | undefined;
 			try {
-
 				// Confirm
 				if (this.currentDialog.args.confirmArgs) {
 					const args = this.currentDialog.args.confirmArgs;
-					result = (this.useCustomDialog || args?.confirmation.custom) ?
-						await this.browserImpl.value.confirm(args.confirmation) :
-						await this.nativeImpl.value.confirm(args.confirmation);
+					result =
+						this.useCustomDialog || args?.confirmation.custom
+							? await this.browserImpl.value.confirm(
+									args.confirmation,
+								)
+							: await this.nativeImpl.value.confirm(
+									args.confirmation,
+								);
 				}
 
 				// Input (custom only)
@@ -81,18 +98,17 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 				// Prompt
 				else if (this.currentDialog.args.promptArgs) {
 					const args = this.currentDialog.args.promptArgs;
-					result = (this.useCustomDialog || args?.prompt.custom) ?
-						await this.browserImpl.value.prompt(args.prompt) :
-						await this.nativeImpl.value.prompt(args.prompt);
+					result =
+						this.useCustomDialog || args?.prompt.custom
+							? await this.browserImpl.value.prompt(args.prompt)
+							: await this.nativeImpl.value.prompt(args.prompt);
 				}
 
 				// About
-				else {
-					if (this.useCustomDialog) {
-						await this.browserImpl.value.about();
-					} else {
-						await this.nativeImpl.value.about();
-					}
+				else if (this.useCustomDialog) {
+					await this.browserImpl.value.about();
+				} else {
+					await this.nativeImpl.value.about();
 				}
 			} catch (error) {
 				result = error;
@@ -104,12 +120,15 @@ export class DialogHandlerContribution extends Disposable implements IWorkbenchC
 	}
 
 	private get useCustomDialog(): boolean {
-		return this.configurationService.getValue('window.dialogStyle') === 'custom';
+		return (
+			this.configurationService.getValue("window.dialogStyle") ===
+			"custom"
+		);
 	}
 }
 
 registerWorkbenchContribution2(
 	DialogHandlerContribution.ID,
 	DialogHandlerContribution,
-	WorkbenchPhase.BlockStartup // Block to allow for dialogs to show before restore finished
+	WorkbenchPhase.BlockStartup, // Block to allow for dialogs to show before restore finished
 );

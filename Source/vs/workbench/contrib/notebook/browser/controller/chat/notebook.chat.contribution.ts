@@ -3,35 +3,56 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../../../base/common/lifecycle.js';
-import { IContextKey, IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';
-import { IWorkbenchContribution, registerWorkbenchContribution2, WorkbenchPhase } from '../../../../../common/contributions.js';
-import { ChatAgentLocation, IChatAgentService } from '../../../../chat/common/chatAgents.js';
-import './cellChatActions.js';
-import { CTX_NOTEBOOK_CHAT_HAS_AGENT } from './notebookChatContext.js';
+import { Disposable } from "../../../../../../base/common/lifecycle.js";
+import {
+	type IContextKey,
+	IContextKeyService,
+} from "../../../../../../platform/contextkey/common/contextkey.js";
+import {
+	type IWorkbenchContribution,
+	WorkbenchPhase,
+	registerWorkbenchContribution2,
+} from "../../../../../common/contributions.js";
+import {
+	ChatAgentLocation,
+	IChatAgentService,
+} from "../../../../chat/common/chatAgents.js";
+import "./cellChatActions.js";
+import { CTX_NOTEBOOK_CHAT_HAS_AGENT } from "./notebookChatContext.js";
 
-class NotebookChatContribution extends Disposable implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.notebookChatContribution';
+class NotebookChatContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
+	static readonly ID = "workbench.contrib.notebookChatContribution";
 
 	private readonly _ctxHasProvider: IContextKey<boolean>;
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IChatAgentService chatAgentService: IChatAgentService
+		@IChatAgentService chatAgentService: IChatAgentService,
 	) {
 		super();
 
-		this._ctxHasProvider = CTX_NOTEBOOK_CHAT_HAS_AGENT.bindTo(contextKeyService);
+		this._ctxHasProvider =
+			CTX_NOTEBOOK_CHAT_HAS_AGENT.bindTo(contextKeyService);
 
 		const updateNotebookAgentStatus = () => {
-			const hasNotebookAgent = Boolean(chatAgentService.getDefaultAgent(ChatAgentLocation.Notebook));
+			const hasNotebookAgent = Boolean(
+				chatAgentService.getDefaultAgent(ChatAgentLocation.Notebook),
+			);
 			this._ctxHasProvider.set(hasNotebookAgent);
 		};
 
 		updateNotebookAgentStatus();
-		this._register(chatAgentService.onDidChangeAgents(updateNotebookAgentStatus));
+		this._register(
+			chatAgentService.onDidChangeAgents(updateNotebookAgentStatus),
+		);
 	}
 }
 
-registerWorkbenchContribution2(NotebookChatContribution.ID, NotebookChatContribution, WorkbenchPhase.BlockRestore);
+registerWorkbenchContribution2(
+	NotebookChatContribution.ID,
+	NotebookChatContribution,
+	WorkbenchPhase.BlockRestore,
+);

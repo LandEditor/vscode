@@ -6,8 +6,7 @@
 // version: 6
 // https://github.com/microsoft/vscode/issues/213274
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	// TODO@API capabilities
 
 	// API -> LM: an tool/function that is available to the language model
@@ -46,9 +45,11 @@ declare module 'vscode' {
 	}
 
 	export interface LanguageModelChatResponse {
-		stream: AsyncIterable<LanguageModelChatResponseTextPart | LanguageModelChatResponseToolCallPart>;
+		stream: AsyncIterable<
+			| LanguageModelChatResponseTextPart
+			| LanguageModelChatResponseToolCallPart
+		>;
 	}
-
 
 	// USER -> LM: the result of a function call
 	export class LanguageModelChatMessageToolResultPart {
@@ -68,7 +69,11 @@ declare module 'vscode' {
 		 * LanguageModelChatMessageToolResultPart: only on User messages
 		 * LanguageModelChatResponseToolCallPart: only on Assistant messages
 		 */
-		content2: (string | LanguageModelChatMessageToolResultPart | LanguageModelChatResponseToolCallPart)[];
+		content2: (
+			| string
+			| LanguageModelChatMessageToolResultPart
+			| LanguageModelChatResponseToolCallPart
+		)[];
 	}
 
 	export interface LanguageModelToolResult {
@@ -89,7 +94,10 @@ declare module 'vscode' {
 		/**
 		 * Register a LanguageModelTool. The tool must also be registered in the package.json `languageModelTools` contribution point.
 		 */
-		export function registerTool(id: string, tool: LanguageModelTool): Disposable;
+		export function registerTool(
+			id: string,
+			tool: LanguageModelTool,
+		): Disposable;
 
 		/**
 		 * A list of all available tools.
@@ -100,7 +108,11 @@ declare module 'vscode' {
 		 * Invoke a tool with the given parameters.
 		 * TODO@API Could request a set of contentTypes to be returned so they don't all need to be computed?
 		 */
-		export function invokeTool(id: string, options: LanguageModelToolInvocationOptions, token: CancellationToken): Thenable<LanguageModelToolResult>;
+		export function invokeTool(
+			id: string,
+			options: LanguageModelToolInvocationOptions,
+			token: CancellationToken,
+		): Thenable<LanguageModelToolResult>;
 	}
 
 	export type ChatParticipantToolToken = unknown;
@@ -128,7 +140,10 @@ declare module 'vscode' {
 			 * @param token Optional cancellation token.  See {@link CancellationTokenSource} for how to create one.
 			 * @returns A thenable that resolves to the number of tokens.
 			 */
-			countTokens(text: string, token?: CancellationToken): Thenable<number>;
+			countTokens(
+				text: string,
+				token?: CancellationToken,
+			): Thenable<number>;
 		};
 	}
 
@@ -158,7 +173,10 @@ declare module 'vscode' {
 
 	export interface LanguageModelTool {
 		// TODO@API should it be LanguageModelToolResult | string?
-		invoke(options: LanguageModelToolInvocationOptions, token: CancellationToken): ProviderResult<LanguageModelToolResult>;
+		invoke(
+			options: LanguageModelToolInvocationOptions,
+			token: CancellationToken,
+		): ProviderResult<LanguageModelToolResult>;
 	}
 
 	export interface ChatLanguageModelToolReference {

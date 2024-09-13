@@ -3,15 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IBaseCellEditorOptions } from '../notebookBrowser.js';
-import { NotebookEventDispatcher } from './eventDispatcher.js';
-import { NotebookOptions } from '../notebookOptions.js';
+import type { IBaseCellEditorOptions } from "../notebookBrowser.js";
+import type { NotebookOptions } from "../notebookOptions.js";
+import type { NotebookEventDispatcher } from "./eventDispatcher.js";
 
 export class ViewContext {
 	constructor(
 		readonly notebookOptions: NotebookOptions,
 		readonly eventDispatcher: NotebookEventDispatcher,
-		readonly getBaseCellEditorOptions: (language: string) => IBaseCellEditorOptions
-	) {
-	}
+		readonly getBaseCellEditorOptions: (
+			language: string,
+		) => IBaseCellEditorOptions,
+	) {}
 }

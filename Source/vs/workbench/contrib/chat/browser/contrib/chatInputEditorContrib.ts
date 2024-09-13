@@ -3,38 +3,62 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { MarkdownString } from '../../../../../base/common/htmlContent.js';
-import { Disposable, MutableDisposable } from '../../../../../base/common/lifecycle.js';
-import { ICodeEditorService } from '../../../../../editor/browser/services/codeEditorService.js';
-import { Range } from '../../../../../editor/common/core/range.js';
-import { IDecorationOptions } from '../../../../../editor/common/editorCommon.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { inputPlaceholderForeground } from '../../../../../platform/theme/common/colorRegistry.js';
-import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
-import { IChatWidget } from '../chat.js';
-import { ChatWidget } from '../chatWidget.js';
-import { dynamicVariableDecorationType } from './chatDynamicVariables.js';
-import { IChatAgentCommand, IChatAgentData, IChatAgentService } from '../../common/chatAgents.js';
-import { chatSlashCommandBackground, chatSlashCommandForeground } from '../../common/chatColors.js';
-import { ChatRequestAgentPart, ChatRequestAgentSubcommandPart, ChatRequestSlashCommandPart, ChatRequestTextPart, ChatRequestToolPart, ChatRequestVariablePart, IParsedChatRequestPart, chatAgentLeader, chatSubcommandLeader } from '../../common/chatParserTypes.js';
-import { ChatRequestParser } from '../../common/chatRequestParser.js';
+import { MarkdownString } from "../../../../../base/common/htmlContent.js";
+import {
+	Disposable,
+	MutableDisposable,
+} from "../../../../../base/common/lifecycle.js";
+import { ICodeEditorService } from "../../../../../editor/browser/services/codeEditorService.js";
+import { Range } from "../../../../../editor/common/core/range.js";
+import type { IDecorationOptions } from "../../../../../editor/common/editorCommon.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import { inputPlaceholderForeground } from "../../../../../platform/theme/common/colorRegistry.js";
+import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
+import {
+	type IChatAgentCommand,
+	type IChatAgentData,
+	IChatAgentService,
+} from "../../common/chatAgents.js";
+import {
+	chatSlashCommandBackground,
+	chatSlashCommandForeground,
+} from "../../common/chatColors.js";
+import {
+	ChatRequestAgentPart,
+	ChatRequestAgentSubcommandPart,
+	ChatRequestSlashCommandPart,
+	ChatRequestTextPart,
+	ChatRequestToolPart,
+	ChatRequestVariablePart,
+	type IParsedChatRequestPart,
+	chatAgentLeader,
+	chatSubcommandLeader,
+} from "../../common/chatParserTypes.js";
+import { ChatRequestParser } from "../../common/chatRequestParser.js";
+import type { IChatWidget } from "../chat.js";
+import { ChatWidget } from "../chatWidget.js";
+import { dynamicVariableDecorationType } from "./chatDynamicVariables.js";
 
-const decorationDescription = 'chat';
-const placeholderDecorationType = 'chat-session-detail';
-const slashCommandTextDecorationType = 'chat-session-text';
-const variableTextDecorationType = 'chat-variable-text';
+const decorationDescription = "chat";
+const placeholderDecorationType = "chat-session-detail";
+const slashCommandTextDecorationType = "chat-session-text";
+const variableTextDecorationType = "chat-variable-text";
 
-function agentAndCommandToKey(agent: IChatAgentData, subcommand: string | undefined): string {
+function agentAndCommandToKey(
+	agent: IChatAgentData,
+	subcommand: string | undefined,
+): string {
 	return subcommand ? `${agent.id}__${subcommand}` : agent.id;
 }
 
 class InputEditorDecorations extends Disposable {
-
-	public readonly id = 'inputEditorDecorations';
+	public readonly id = "inputEditorDecorations";
 
 	private readonly previouslyUsedAgents = new Set<string>();
 
-	private readonly viewModelDisposables = this._register(new MutableDisposable());
+	private readonly viewModelDisposables = this._register(
+		new MutableDisposable(),
+	);
 
 	constructor(
 		private readonly widget: IChatWidget,
@@ -66,40 +90,69 @@ class InputEditorDecorations extends Disposable {
 	}
 
 	private registerViewModelListeners(): void {
-		this.viewModelDisposables.value = this.widget.viewModel?.onDidChange(e => {
-			if (e?.kind === 'changePlaceholder' || e?.kind === 'initialize') {
-				this.updateInputEditorDecorations();
-			}
-		});
+		this.viewModelDisposables.value = this.widget.viewModel?.onDidChange(
+			(e) => {
+				if (
+					e?.kind === "changePlaceholder" ||
+					e?.kind === "initialize"
+				) {
+					this.updateInputEditorDecorations();
+				}
+			},
+		);
 	}
 
 	private updateRegisteredDecorationTypes() {
 		this.codeEditorService.removeDecorationType(variableTextDecorationType);
-		this.codeEditorService.removeDecorationType(dynamicVariableDecorationType);
-		this.codeEditorService.removeDecorationType(slashCommandTextDecorationType);
+		this.codeEditorService.removeDecorationType(
+			dynamicVariableDecorationType,
+		);
+		this.codeEditorService.removeDecorationType(
+			slashCommandTextDecorationType,
+		);
 
 		const theme = this.themeService.getColorTheme();
-		this.codeEditorService.registerDecorationType(decorationDescription, slashCommandTextDecorationType, {
-			color: theme.getColor(chatSlashCommandForeground)?.toString(),
-			backgroundColor: theme.getColor(chatSlashCommandBackground)?.toString(),
-			borderRadius: '3px'
-		});
-		this.codeEditorService.registerDecorationType(decorationDescription, variableTextDecorationType, {
-			color: theme.getColor(chatSlashCommandForeground)?.toString(),
-			backgroundColor: theme.getColor(chatSlashCommandBackground)?.toString(),
-			borderRadius: '3px'
-		});
-		this.codeEditorService.registerDecorationType(decorationDescription, dynamicVariableDecorationType, {
-			color: theme.getColor(chatSlashCommandForeground)?.toString(),
-			backgroundColor: theme.getColor(chatSlashCommandBackground)?.toString(),
-			borderRadius: '3px'
-		});
+		this.codeEditorService.registerDecorationType(
+			decorationDescription,
+			slashCommandTextDecorationType,
+			{
+				color: theme.getColor(chatSlashCommandForeground)?.toString(),
+				backgroundColor: theme
+					.getColor(chatSlashCommandBackground)
+					?.toString(),
+				borderRadius: "3px",
+			},
+		);
+		this.codeEditorService.registerDecorationType(
+			decorationDescription,
+			variableTextDecorationType,
+			{
+				color: theme.getColor(chatSlashCommandForeground)?.toString(),
+				backgroundColor: theme
+					.getColor(chatSlashCommandBackground)
+					?.toString(),
+				borderRadius: "3px",
+			},
+		);
+		this.codeEditorService.registerDecorationType(
+			decorationDescription,
+			dynamicVariableDecorationType,
+			{
+				color: theme.getColor(chatSlashCommandForeground)?.toString(),
+				backgroundColor: theme
+					.getColor(chatSlashCommandBackground)
+					?.toString(),
+				borderRadius: "3px",
+			},
+		);
 		this.updateInputEditorDecorations();
 	}
 
 	private getPlaceholderColor(): string | undefined {
 		const theme = this.themeService.getColorTheme();
-		const transparentForeground = theme.getColor(inputPlaceholderForeground);
+		const transparentForeground = theme.getColor(
+			inputPlaceholderForeground,
+		);
 		return transparentForeground?.toString();
 	}
 
@@ -112,152 +165,260 @@ class InputEditorDecorations extends Disposable {
 		}
 
 		if (!inputValue) {
-			const defaultAgent = this.chatAgentService.getDefaultAgent(this.widget.location);
+			const defaultAgent = this.chatAgentService.getDefaultAgent(
+				this.widget.location,
+			);
 			const decoration: IDecorationOptions[] = [
 				{
 					range: {
 						startLineNumber: 1,
 						endLineNumber: 1,
 						startColumn: 1,
-						endColumn: 1000
+						endColumn: 1000,
 					},
 					renderOptions: {
 						after: {
-							contentText: viewModel.inputPlaceholder || (defaultAgent?.description ?? ''),
-							color: this.getPlaceholderColor()
-						}
-					}
-				}
+							contentText:
+								viewModel.inputPlaceholder ||
+								(defaultAgent?.description ?? ""),
+							color: this.getPlaceholderColor(),
+						},
+					},
+				},
 			];
-			this.widget.inputEditor.setDecorationsByType(decorationDescription, placeholderDecorationType, decoration);
+			this.widget.inputEditor.setDecorationsByType(
+				decorationDescription,
+				placeholderDecorationType,
+				decoration,
+			);
 			return;
 		}
 
 		const parsedRequest = this.widget.parsedInput.parts;
 
 		let placeholderDecoration: IDecorationOptions[] | undefined;
-		const agentPart = parsedRequest.find((p): p is ChatRequestAgentPart => p instanceof ChatRequestAgentPart);
-		const agentSubcommandPart = parsedRequest.find((p): p is ChatRequestAgentSubcommandPart => p instanceof ChatRequestAgentSubcommandPart);
-		const slashCommandPart = parsedRequest.find((p): p is ChatRequestSlashCommandPart => p instanceof ChatRequestSlashCommandPart);
+		const agentPart = parsedRequest.find(
+			(p): p is ChatRequestAgentPart => p instanceof ChatRequestAgentPart,
+		);
+		const agentSubcommandPart = parsedRequest.find(
+			(p): p is ChatRequestAgentSubcommandPart =>
+				p instanceof ChatRequestAgentSubcommandPart,
+		);
+		const slashCommandPart = parsedRequest.find(
+			(p): p is ChatRequestSlashCommandPart =>
+				p instanceof ChatRequestSlashCommandPart,
+		);
 
-		const exactlyOneSpaceAfterPart = (part: IParsedChatRequestPart): boolean => {
+		const exactlyOneSpaceAfterPart = (
+			part: IParsedChatRequestPart,
+		): boolean => {
 			const partIdx = parsedRequest.indexOf(part);
 			if (parsedRequest.length > partIdx + 2) {
 				return false;
 			}
 
 			const nextPart = parsedRequest[partIdx + 1];
-			return nextPart && nextPart instanceof ChatRequestTextPart && nextPart.text === ' ';
+			return (
+				nextPart &&
+				nextPart instanceof ChatRequestTextPart &&
+				nextPart.text === " "
+			);
 		};
 
 		const getRangeForPlaceholder = (part: IParsedChatRequestPart) => ({
 			startLineNumber: part.editorRange.startLineNumber,
 			endLineNumber: part.editorRange.endLineNumber,
 			startColumn: part.editorRange.endColumn + 1,
-			endColumn: 1000
+			endColumn: 1000,
 		});
 
-		const onlyAgentAndWhitespace = agentPart && parsedRequest.every(p => p instanceof ChatRequestTextPart && !p.text.trim().length || p instanceof ChatRequestAgentPart);
+		const onlyAgentAndWhitespace =
+			agentPart &&
+			parsedRequest.every(
+				(p) =>
+					(p instanceof ChatRequestTextPart &&
+						!p.text.trim().length) ||
+					p instanceof ChatRequestAgentPart,
+			);
 		if (onlyAgentAndWhitespace) {
 			// Agent reference with no other text - show the placeholder
-			const isFollowupSlashCommand = this.previouslyUsedAgents.has(agentAndCommandToKey(agentPart.agent, undefined));
-			const shouldRenderFollowupPlaceholder = isFollowupSlashCommand && agentPart.agent.metadata.followupPlaceholder;
-			if (agentPart.agent.description && exactlyOneSpaceAfterPart(agentPart)) {
-				placeholderDecoration = [{
-					range: getRangeForPlaceholder(agentPart),
-					renderOptions: {
-						after: {
-							contentText: shouldRenderFollowupPlaceholder ? agentPart.agent.metadata.followupPlaceholder : agentPart.agent.description,
-							color: this.getPlaceholderColor(),
-						}
-					}
-				}];
+			const isFollowupSlashCommand = this.previouslyUsedAgents.has(
+				agentAndCommandToKey(agentPart.agent, undefined),
+			);
+			const shouldRenderFollowupPlaceholder =
+				isFollowupSlashCommand &&
+				agentPart.agent.metadata.followupPlaceholder;
+			if (
+				agentPart.agent.description &&
+				exactlyOneSpaceAfterPart(agentPart)
+			) {
+				placeholderDecoration = [
+					{
+						range: getRangeForPlaceholder(agentPart),
+						renderOptions: {
+							after: {
+								contentText: shouldRenderFollowupPlaceholder
+									? agentPart.agent.metadata
+											.followupPlaceholder
+									: agentPart.agent.description,
+								color: this.getPlaceholderColor(),
+							},
+						},
+					},
+				];
 			}
 		}
 
-		const onlyAgentAndAgentCommandAndWhitespace = agentPart && agentSubcommandPart && parsedRequest.every(p => p instanceof ChatRequestTextPart && !p.text.trim().length || p instanceof ChatRequestAgentPart || p instanceof ChatRequestAgentSubcommandPart);
+		const onlyAgentAndAgentCommandAndWhitespace =
+			agentPart &&
+			agentSubcommandPart &&
+			parsedRequest.every(
+				(p) =>
+					(p instanceof ChatRequestTextPart &&
+						!p.text.trim().length) ||
+					p instanceof ChatRequestAgentPart ||
+					p instanceof ChatRequestAgentSubcommandPart,
+			);
 		if (onlyAgentAndAgentCommandAndWhitespace) {
 			// Agent reference and subcommand with no other text - show the placeholder
-			const isFollowupSlashCommand = this.previouslyUsedAgents.has(agentAndCommandToKey(agentPart.agent, agentSubcommandPart.command.name));
-			const shouldRenderFollowupPlaceholder = isFollowupSlashCommand && agentSubcommandPart.command.followupPlaceholder;
-			if (agentSubcommandPart?.command.description && exactlyOneSpaceAfterPart(agentSubcommandPart)) {
-				placeholderDecoration = [{
-					range: getRangeForPlaceholder(agentSubcommandPart),
-					renderOptions: {
-						after: {
-							contentText: shouldRenderFollowupPlaceholder ? agentSubcommandPart.command.followupPlaceholder : agentSubcommandPart.command.description,
-							color: this.getPlaceholderColor(),
-						}
-					}
-				}];
+			const isFollowupSlashCommand = this.previouslyUsedAgents.has(
+				agentAndCommandToKey(
+					agentPart.agent,
+					agentSubcommandPart.command.name,
+				),
+			);
+			const shouldRenderFollowupPlaceholder =
+				isFollowupSlashCommand &&
+				agentSubcommandPart.command.followupPlaceholder;
+			if (
+				agentSubcommandPart?.command.description &&
+				exactlyOneSpaceAfterPart(agentSubcommandPart)
+			) {
+				placeholderDecoration = [
+					{
+						range: getRangeForPlaceholder(agentSubcommandPart),
+						renderOptions: {
+							after: {
+								contentText: shouldRenderFollowupPlaceholder
+									? agentSubcommandPart.command
+											.followupPlaceholder
+									: agentSubcommandPart.command.description,
+								color: this.getPlaceholderColor(),
+							},
+						},
+					},
+				];
 			}
 		}
 
-		const onlyAgentCommandAndWhitespace = agentSubcommandPart && parsedRequest.every(p => p instanceof ChatRequestTextPart && !p.text.trim().length || p instanceof ChatRequestAgentSubcommandPart);
+		const onlyAgentCommandAndWhitespace =
+			agentSubcommandPart &&
+			parsedRequest.every(
+				(p) =>
+					(p instanceof ChatRequestTextPart &&
+						!p.text.trim().length) ||
+					p instanceof ChatRequestAgentSubcommandPart,
+			);
 		if (onlyAgentCommandAndWhitespace) {
 			// Agent subcommand with no other text - show the placeholder
-			if (agentSubcommandPart?.command.description && exactlyOneSpaceAfterPart(agentSubcommandPart)) {
-				placeholderDecoration = [{
-					range: getRangeForPlaceholder(agentSubcommandPart),
-					renderOptions: {
-						after: {
-							contentText: agentSubcommandPart.command.description,
-							color: this.getPlaceholderColor(),
-						}
-					}
-				}];
+			if (
+				agentSubcommandPart?.command.description &&
+				exactlyOneSpaceAfterPart(agentSubcommandPart)
+			) {
+				placeholderDecoration = [
+					{
+						range: getRangeForPlaceholder(agentSubcommandPart),
+						renderOptions: {
+							after: {
+								contentText:
+									agentSubcommandPart.command.description,
+								color: this.getPlaceholderColor(),
+							},
+						},
+					},
+				];
 			}
 		}
 
-		this.widget.inputEditor.setDecorationsByType(decorationDescription, placeholderDecorationType, placeholderDecoration ?? []);
+		this.widget.inputEditor.setDecorationsByType(
+			decorationDescription,
+			placeholderDecorationType,
+			placeholderDecoration ?? [],
+		);
 
 		const textDecorations: IDecorationOptions[] | undefined = [];
 		if (agentPart) {
 			textDecorations.push({ range: agentPart.editorRange });
 		}
 		if (agentSubcommandPart) {
-			textDecorations.push({ range: agentSubcommandPart.editorRange, hoverMessage: new MarkdownString(agentSubcommandPart.command.description) });
+			textDecorations.push({
+				range: agentSubcommandPart.editorRange,
+				hoverMessage: new MarkdownString(
+					agentSubcommandPart.command.description,
+				),
+			});
 		}
 
 		if (slashCommandPart) {
 			textDecorations.push({ range: slashCommandPart.editorRange });
 		}
 
-		this.widget.inputEditor.setDecorationsByType(decorationDescription, slashCommandTextDecorationType, textDecorations);
+		this.widget.inputEditor.setDecorationsByType(
+			decorationDescription,
+			slashCommandTextDecorationType,
+			textDecorations,
+		);
 
 		const varDecorations: IDecorationOptions[] = [];
-		const variableParts = parsedRequest.filter((p): p is ChatRequestVariablePart => p instanceof ChatRequestVariablePart);
+		const variableParts = parsedRequest.filter(
+			(p): p is ChatRequestVariablePart =>
+				p instanceof ChatRequestVariablePart,
+		);
 		for (const variable of variableParts) {
 			varDecorations.push({ range: variable.editorRange });
 		}
 
-		const toolParts = parsedRequest.filter((p): p is ChatRequestToolPart => p instanceof ChatRequestToolPart);
+		const toolParts = parsedRequest.filter(
+			(p): p is ChatRequestToolPart => p instanceof ChatRequestToolPart,
+		);
 		for (const tool of toolParts) {
 			varDecorations.push({ range: tool.editorRange });
 		}
 
-		this.widget.inputEditor.setDecorationsByType(decorationDescription, variableTextDecorationType, varDecorations);
+		this.widget.inputEditor.setDecorationsByType(
+			decorationDescription,
+			variableTextDecorationType,
+			varDecorations,
+		);
 	}
 }
 
 class InputEditorSlashCommandMode extends Disposable {
-	public readonly id = 'InputEditorSlashCommandMode';
+	public readonly id = "InputEditorSlashCommandMode";
 
-	constructor(
-		private readonly widget: IChatWidget
-	) {
+	constructor(private readonly widget: IChatWidget) {
 		super();
-		this._register(this.widget.onDidChangeAgent(e => {
-			if (e.slashCommand && e.slashCommand.isSticky || !e.slashCommand && e.agent.metadata.isSticky) {
+		this._register(
+			this.widget.onDidChangeAgent((e) => {
+				if (
+					(e.slashCommand && e.slashCommand.isSticky) ||
+					(!e.slashCommand && e.agent.metadata.isSticky)
+				) {
+					this.repopulateAgentCommand(e.agent, e.slashCommand);
+				}
+			}),
+		);
+		this._register(
+			this.widget.onDidSubmitAgent((e) => {
 				this.repopulateAgentCommand(e.agent, e.slashCommand);
-			}
-		}));
-		this._register(this.widget.onDidSubmitAgent(e => {
-			this.repopulateAgentCommand(e.agent, e.slashCommand);
-		}));
+			}),
+		);
 	}
 
-	private async repopulateAgentCommand(agent: IChatAgentData, slashCommand: IChatAgentCommand | undefined) {
+	private async repopulateAgentCommand(
+		agent: IChatAgentData,
+		slashCommand: IChatAgentCommand | undefined,
+	) {
 		// Make sure we don't repopulate if the user already has something in the input
 		if (this.widget.inputEditor.getValue().trim()) {
 			return;
@@ -272,7 +433,10 @@ class InputEditorSlashCommandMode extends Disposable {
 
 		if (value) {
 			this.widget.inputEditor.setValue(value);
-			this.widget.inputEditor.setPosition({ lineNumber: 1, column: value.length + 1 });
+			this.widget.inputEditor.setPosition({
+				lineNumber: 1,
+				column: value.length + 1,
+			});
 		}
 	}
 }
@@ -280,8 +444,7 @@ class InputEditorSlashCommandMode extends Disposable {
 ChatWidget.CONTRIBS.push(InputEditorDecorations, InputEditorSlashCommandMode);
 
 class ChatTokenDeleter extends Disposable {
-
-	public readonly id = 'chatTokenDeleter';
+	public readonly id = "chatTokenDeleter";
 
 	constructor(
 		private readonly widget: IChatWidget,

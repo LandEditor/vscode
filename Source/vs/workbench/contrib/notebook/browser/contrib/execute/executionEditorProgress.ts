@@ -3,16 +3,28 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { throttle } from '../../../../../../base/common/decorators.js';
-import { Disposable, MutableDisposable } from '../../../../../../base/common/lifecycle.js';
-import { INotebookEditor, INotebookEditorContribution } from '../../notebookBrowser.js';
-import { registerNotebookContribution } from '../../notebookEditorExtensions.js';
-import { NotebookCellExecutionState } from '../../../common/notebookCommon.js';
-import { INotebookCellExecution, INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
-import { IUserActivityService } from '../../../../../services/userActivity/common/userActivityService.js';
+import { throttle } from "../../../../../../base/common/decorators.js";
+import {
+	Disposable,
+	MutableDisposable,
+} from "../../../../../../base/common/lifecycle.js";
+import { IUserActivityService } from "../../../../../services/userActivity/common/userActivityService.js";
+import { NotebookCellExecutionState } from "../../../common/notebookCommon.js";
+import {
+	type INotebookCellExecution,
+	INotebookExecutionStateService,
+} from "../../../common/notebookExecutionStateService.js";
+import type {
+	INotebookEditor,
+	INotebookEditorContribution,
+} from "../../notebookBrowser.js";
+import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 
-export class ExecutionEditorProgressController extends Disposable implements INotebookEditorContribution {
-	static id: string = 'workbench.notebook.executionEditorProgress';
+export class ExecutionEditorProgressController
+	extends Disposable
+	implements INotebookEditorContribution
+{
+	static id = "workbench.notebook.executionEditorProgress";
 
 	private readonly _activityMutex = this._register(new MutableDisposable());
 
@@ -42,14 +54,23 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 			return;
 		}
 
-		const cellExecutions = this._notebookExecutionStateService.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
-			.filter(exe => exe.state === NotebookCellExecutionState.Executing);
-		const notebookExecution = this._notebookExecutionStateService.getExecution(this._notebookEditor.textModel?.uri);
+		const cellExecutions = this._notebookExecutionStateService
+			.getCellExecutionsForNotebook(this._notebookEditor.textModel?.uri)
+			.filter(
+				(exe) => exe.state === NotebookCellExecutionState.Executing,
+			);
+		const notebookExecution =
+			this._notebookExecutionStateService.getExecution(
+				this._notebookEditor.textModel?.uri,
+			);
 		const executionIsVisible = (exe: INotebookCellExecution) => {
 			for (const range of this._notebookEditor.visibleRanges) {
-				for (const cell of this._notebookEditor.getCellsInRange(range)) {
+				for (const cell of this._notebookEditor.getCellsInRange(
+					range,
+				)) {
 					if (cell.handle === exe.cellHandle) {
-						const top = this._notebookEditor.getAbsoluteTopOfElement(cell);
+						const top =
+							this._notebookEditor.getAbsoluteTopOfElement(cell);
 						if (this._notebookEditor.scrollTop < top + 5) {
 							return true;
 						}
@@ -67,8 +88,12 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 			this._activityMutex.clear();
 		}
 
-		const shouldShowEditorProgressbarForCellExecutions = cellExecutions.length && !cellExecutions.some(executionIsVisible) && !cellExecutions.some(e => e.isPaused);
-		const showEditorProgressBar = !!notebookExecution || shouldShowEditorProgressbarForCellExecutions;
+		const shouldShowEditorProgressbarForCellExecutions =
+			cellExecutions.length &&
+			!cellExecutions.some(executionIsVisible) &&
+			!cellExecutions.some((e) => e.isPaused);
+		const showEditorProgressBar =
+			!!notebookExecution || shouldShowEditorProgressbarForCellExecutions;
 		if (showEditorProgressBar) {
 			this._notebookEditor.showProgress();
 		} else {
@@ -77,5 +102,7 @@ export class ExecutionEditorProgressController extends Disposable implements INo
 	}
 }
 
-
-registerNotebookContribution(ExecutionEditorProgressController.id, ExecutionEditorProgressController);
+registerNotebookContribution(
+	ExecutionEditorProgressController.id,
+	ExecutionEditorProgressController,
+);

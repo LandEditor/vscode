@@ -3,21 +3,31 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from '../../../../nls.js';
-import { ITunnelService, TunnelOptions, RemoteTunnel, TunnelCreationOptions, ITunnel, TunnelProtocol, TunnelPrivacyId } from '../../../../platform/tunnel/common/tunnel.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
-import { IOpenerService } from '../../../../platform/opener/common/opener.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IRemoteExplorerService } from '../../../services/remote/common/remoteExplorerService.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { forwardedPortsViewEnabled } from '../../../services/remote/common/tunnelModel.js';
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { URI } from "../../../../base/common/uri.js";
+import * as nls from "../../../../nls.js";
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { IOpenerService } from "../../../../platform/opener/common/opener.js";
+import {
+	type ITunnel,
+	ITunnelService,
+	type RemoteTunnel,
+	type TunnelCreationOptions,
+	type TunnelOptions,
+	TunnelPrivacyId,
+	TunnelProtocol,
+} from "../../../../platform/tunnel/common/tunnel.js";
+import type { IWorkbenchContribution } from "../../../common/contributions.js";
+import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
+import { IRemoteExplorerService } from "../../../services/remote/common/remoteExplorerService.js";
+import { forwardedPortsViewEnabled } from "../../../services/remote/common/tunnelModel.js";
 
-export class TunnelFactoryContribution extends Disposable implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.tunnelFactory';
+export class TunnelFactoryContribution
+	extends Disposable
+	implements IWorkbenchContribution
+{
+	static readonly ID = "workbench.contrib.tunnelFactory";
 
 	constructor(
 		@ITunnelService tunnelService: ITunnelService,
@@ -100,7 +110,9 @@ export class TunnelFactoryContribution extends Disposable implements IWorkbenchC
 
 	private async resolveExternalUri(uri: string): Promise<string> {
 		try {
-			return (await this.openerService.resolveExternalUri(URI.parse(uri))).resolved.toString();
+			return (
+				await this.openerService.resolveExternalUri(URI.parse(uri))
+			).resolved.toString();
 		} catch {
 			return uri;
 		}

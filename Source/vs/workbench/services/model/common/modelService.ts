@@ -3,15 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from '../../../../base/common/uri.js';
-import { IModelService } from '../../../../editor/common/services/model.js';
-import { ModelService } from '../../../../editor/common/services/modelService.js';
-import { ITextResourcePropertiesService } from '../../../../editor/common/services/textResourceConfiguration.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { IUndoRedoService } from '../../../../platform/undoRedo/common/undoRedo.js';
-import { IPathService } from '../../path/common/pathService.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import type { URI } from "../../../../base/common/uri.js";
+import { IModelService } from "../../../../editor/common/services/model.js";
+import { ModelService } from "../../../../editor/common/services/modelService.js";
+import { ITextResourcePropertiesService } from "../../../../editor/common/services/textResourceConfiguration.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { IUndoRedoService } from "../../../../platform/undoRedo/common/undoRedo.js";
+import { IPathService } from "../../path/common/pathService.js";
 
 export class WorkbenchModelService extends ModelService {
 	constructor(
@@ -26,10 +29,14 @@ export class WorkbenchModelService extends ModelService {
 
 	protected override _schemaShouldMaintainUndoRedoElements(resource: URI) {
 		return (
-			super._schemaShouldMaintainUndoRedoElements(resource)
-			|| resource.scheme === this._pathService.defaultUriScheme
+			super._schemaShouldMaintainUndoRedoElements(resource) ||
+			resource.scheme === this._pathService.defaultUriScheme
 		);
 	}
 }
 
-registerSingleton(IModelService, WorkbenchModelService, InstantiationType.Delayed);
+registerSingleton(
+	IModelService,
+	WorkbenchModelService,
+	InstantiationType.Delayed,
+);

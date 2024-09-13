@@ -3,32 +3,41 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from '../../../../../nls.js';
-import { IViewletViewOptions } from '../../../../browser/parts/views/viewsViewlet.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
-import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
-import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
-import { isTemporaryWorkspace, IWorkspaceContextService, WorkbenchState } from '../../../../../platform/workspace/common/workspace.js';
-import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
-import { ViewPane } from '../../../../browser/parts/views/viewPane.js';
-import { ResourcesDropHandler } from '../../../../browser/dnd.js';
-import { listDropOverBackground } from '../../../../../platform/theme/common/colorRegistry.js';
-import { ILabelService } from '../../../../../platform/label/common/label.js';
-import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { IViewDescriptorService } from '../../../../common/views.js';
-import { IOpenerService } from '../../../../../platform/opener/common/opener.js';
-import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
-import { isWeb } from '../../../../../base/common/platform.js';
-import { DragAndDropObserver, getWindow } from '../../../../../base/browser/dom.js';
-import { ILocalizedString } from '../../../../../platform/action/common/action.js';
-import { IHoverService } from '../../../../../platform/hover/browser/hover.js';
+import {
+	DragAndDropObserver,
+	getWindow,
+} from "../../../../../base/browser/dom.js";
+import { isWeb } from "../../../../../base/common/platform.js";
+import * as nls from "../../../../../nls.js";
+import type { ILocalizedString } from "../../../../../platform/action/common/action.js";
+import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
+import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
+import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
+import { IHoverService } from "../../../../../platform/hover/browser/hover.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
+import { ILabelService } from "../../../../../platform/label/common/label.js";
+import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
+import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
+import { listDropOverBackground } from "../../../../../platform/theme/common/colorRegistry.js";
+import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
+import {
+	IWorkspaceContextService,
+	WorkbenchState,
+	isTemporaryWorkspace,
+} from "../../../../../platform/workspace/common/workspace.js";
+import { ResourcesDropHandler } from "../../../../browser/dnd.js";
+import { ViewPane } from "../../../../browser/parts/views/viewPane.js";
+import type { IViewletViewOptions } from "../../../../browser/parts/views/viewsViewlet.js";
+import { IViewDescriptorService } from "../../../../common/views.js";
 
 export class EmptyView extends ViewPane {
-
-	static readonly ID: string = 'workbench.explorer.emptyView';
-	static readonly NAME: ILocalizedString = nls.localize2('noWorkspace', "No Folder Opened");
-	private _disposed: boolean = false;
+	static readonly ID: string = "workbench.explorer.emptyView";
+	static readonly NAME: ILocalizedString = nls.localize2(
+		"noWorkspace",
+		"No Folder Opened",
+	);
+	private _disposed = false;
 
 	constructor(
 		options: IViewletViewOptions,
@@ -58,28 +67,44 @@ export class EmptyView extends ViewPane {
 	protected override renderBody(container: HTMLElement): void {
 		super.renderBody(container);
 
-		this._register(new DragAndDropObserver(container, {
-			onDrop: e => {
-				container.style.backgroundColor = '';
-				const dropHandler = this.instantiationService.createInstance(ResourcesDropHandler, { allowWorkspaceOpen: !isWeb || isTemporaryWorkspace(this.contextService.getWorkspace()) });
-				dropHandler.handleDrop(e, getWindow(container));
-			},
-			onDragEnter: () => {
-				const color = this.themeService.getColorTheme().getColor(listDropOverBackground);
-				container.style.backgroundColor = color ? color.toString() : '';
-			},
-			onDragEnd: () => {
-				container.style.backgroundColor = '';
-			},
-			onDragLeave: () => {
-				container.style.backgroundColor = '';
-			},
-			onDragOver: e => {
-				if (e.dataTransfer) {
-					e.dataTransfer.dropEffect = 'copy';
-				}
-			}
-		}));
+		this._register(
+			new DragAndDropObserver(container, {
+				onDrop: (e) => {
+					container.style.backgroundColor = "";
+					const dropHandler =
+						this.instantiationService.createInstance(
+							ResourcesDropHandler,
+							{
+								allowWorkspaceOpen:
+									!isWeb ||
+									isTemporaryWorkspace(
+										this.contextService.getWorkspace(),
+									),
+							},
+						);
+					dropHandler.handleDrop(e, getWindow(container));
+				},
+				onDragEnter: () => {
+					const color = this.themeService
+						.getColorTheme()
+						.getColor(listDropOverBackground);
+					container.style.backgroundColor = color
+						? color.toString()
+						: "";
+				},
+				onDragEnd: () => {
+					container.style.backgroundColor = "";
+				},
+				onDragLeave: () => {
+					container.style.backgroundColor = "";
+				},
+				onDragOver: (e) => {
+					if (e.dataTransfer) {
+						e.dataTransfer.dropEffect = "copy";
+					}
+				},
+			}),
+		);
 
 		this.refreshTitle();
 	}
@@ -89,7 +114,9 @@ export class EmptyView extends ViewPane {
 			return;
 		}
 
-		if (this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE) {
+		if (
+			this.contextService.getWorkbenchState() === WorkbenchState.WORKSPACE
+		) {
 			this.updateTitle(EmptyView.NAME.value);
 		} else {
 			this.updateTitle(this.title);

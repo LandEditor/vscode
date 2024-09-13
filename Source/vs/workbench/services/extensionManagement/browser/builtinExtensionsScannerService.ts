@@ -3,19 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IBuiltinExtensionsScannerService, ExtensionType, IExtensionManifest, TargetPlatform, IExtension } from '../../../../platform/extensions/common/extensions.js';
-import { isWeb, Language } from '../../../../base/common/platform.js';
-import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
-import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { getGalleryExtensionId } from '../../../../platform/extensionManagement/common/extensionManagementUtil.js';
-import { builtinExtensionsPath, FileAccess } from '../../../../base/common/network.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IExtensionResourceLoaderService } from '../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js';
-import { IProductService } from '../../../../platform/product/common/productService.js';
-import { ITranslations, localizeManifest } from '../../../../platform/extensionManagement/common/extensionNls.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { mainWindow } from '../../../../base/browser/window.js';
+import { mainWindow } from "../../../../base/browser/window.js";
+import {
+	FileAccess,
+	builtinExtensionsPath,
+} from "../../../../base/common/network.js";
+import { Language, isWeb } from "../../../../base/common/platform.js";
+import { URI } from "../../../../base/common/uri.js";
+import { getGalleryExtensionId } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
+import {
+	type ITranslations,
+	localizeManifest,
+} from "../../../../platform/extensionManagement/common/extensionNls.js";
+import { IExtensionResourceLoaderService } from "../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js";
+import {
+	ExtensionType,
+	IBuiltinExtensionsScannerService,
+	type IExtension,
+	type IExtensionManifest,
+	TargetPlatform,
+} from "../../../../platform/extensions/common/extensions.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { IProductService } from "../../../../platform/product/common/productService.js";
+import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
+import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 
 interface IBundledExtension {
 	extensionPath: string;
@@ -25,8 +40,9 @@ interface IBundledExtension {
 	changelogPath?: string;
 }
 
-export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScannerService {
-
+export class BuiltinExtensionsScannerService
+	implements IBuiltinExtensionsScannerService
+{
 	declare readonly _serviceBrand: undefined;
 
 	private readonly builtinExtensionsPromises: Promise<IExtension>[] = [];
@@ -85,24 +101,48 @@ export class BuiltinExtensionsScannerService implements IBuiltinExtensionsScanne
 	}
 
 	async scanBuiltinExtensions(): Promise<IExtension[]> {
-		return [...await Promise.all(this.builtinExtensionsPromises)];
+		return [...(await Promise.all(this.builtinExtensionsPromises))];
 	}
 
-	private async localizeManifest(extensionId: string, manifest: IExtensionManifest, fallbackTranslations: ITranslations): Promise<IExtensionManifest> {
+	private async localizeManifest(
+		extensionId: string,
+		manifest: IExtensionManifest,
+		fallbackTranslations: ITranslations,
+	): Promise<IExtensionManifest> {
 		if (!this.nlsUrl) {
-			return localizeManifest(this.logService, manifest, fallbackTranslations);
+			return localizeManifest(
+				this.logService,
+				manifest,
+				fallbackTranslations,
+			);
 		}
 		// the `package` endpoint returns the translations in a key-value format similar to the package.nls.json file.
-		const uri = URI.joinPath(this.nlsUrl, extensionId, 'package');
+		const uri = URI.joinPath(this.nlsUrl, extensionId, "package");
 		try {
-			const res = await this.extensionResourceLoaderService.readExtensionResource(uri);
+			const res =
+				await this.extensionResourceLoaderService.readExtensionResource(
+					uri,
+				);
 			const json = JSON.parse(res.toString());
-			return localizeManifest(this.logService, manifest, json, fallbackTranslations);
+			return localizeManifest(
+				this.logService,
+				manifest,
+				json,
+				fallbackTranslations,
+			);
 		} catch (e) {
 			this.logService.error(e);
-			return localizeManifest(this.logService, manifest, fallbackTranslations);
+			return localizeManifest(
+				this.logService,
+				manifest,
+				fallbackTranslations,
+			);
 		}
 	}
 }
 
-registerSingleton(IBuiltinExtensionsScannerService, BuiltinExtensionsScannerService, InstantiationType.Delayed);
+registerSingleton(
+	IBuiltinExtensionsScannerService,
+	BuiltinExtensionsScannerService,
+	InstantiationType.Delayed,
+);

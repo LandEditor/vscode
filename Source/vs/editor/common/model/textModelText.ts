@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Range } from '../core/range.js';
-import { AbstractText } from '../core/textEdit.js';
-import { TextLength } from '../core/textLength.js';
-import { ITextModel } from '../model.js';
+import type { Range } from "../core/range.js";
+import { AbstractText } from "../core/textEdit.js";
+import { TextLength } from "../core/textLength.js";
+import type { ITextModel } from "../model.js";
 
 export class TextModelText extends AbstractText {
 	constructor(private readonly _textModel: ITextModel) {

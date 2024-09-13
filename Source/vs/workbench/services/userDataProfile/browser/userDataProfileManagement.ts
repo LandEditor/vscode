@@ -3,35 +3,62 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { CancellationError } from '../../../../base/common/errors.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { equals } from '../../../../base/common/objects.js';
-import { localize } from '../../../../nls.js';
-import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { IProductService } from '../../../../platform/product/common/productService.js';
-import { IRequestService, asJson } from '../../../../platform/request/common/request.js';
-import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
-import { DidChangeProfilesEvent, IUserDataProfile, IUserDataProfileOptions, IUserDataProfilesService, IUserDataProfileUpdateOptions } from '../../../../platform/userDataProfile/common/userDataProfile.js';
-import { IWorkspaceContextService, toWorkspaceIdentifier } from '../../../../platform/workspace/common/workspace.js';
-import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
-import { IExtensionService } from '../../extensions/common/extensions.js';
-import { IHostService } from '../../host/browser/host.js';
-import { DidChangeUserDataProfileEvent, IProfileTemplateInfo, IUserDataProfileManagementService, IUserDataProfileService } from '../common/userDataProfile.js';
+import { CancellationToken } from "../../../../base/common/cancellation.js";
+import { CancellationError } from "../../../../base/common/errors.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { equals } from "../../../../base/common/objects.js";
+import { localize } from "../../../../nls.js";
+import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { IProductService } from "../../../../platform/product/common/productService.js";
+import {
+	IRequestService,
+	asJson,
+} from "../../../../platform/request/common/request.js";
+import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
+import {
+	type DidChangeProfilesEvent,
+	type IUserDataProfile,
+	type IUserDataProfileOptions,
+	type IUserDataProfileUpdateOptions,
+	IUserDataProfilesService,
+} from "../../../../platform/userDataProfile/common/userDataProfile.js";
+import {
+	IWorkspaceContextService,
+	toWorkspaceIdentifier,
+} from "../../../../platform/workspace/common/workspace.js";
+import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
+import { IExtensionService } from "../../extensions/common/extensions.js";
+import { IHostService } from "../../host/browser/host.js";
+import {
+	type DidChangeUserDataProfileEvent,
+	type IProfileTemplateInfo,
+	IUserDataProfileManagementService,
+	IUserDataProfileService,
+} from "../common/userDataProfile.js";
 
 export type ProfileManagementActionExecutedClassification = {
-	owner: 'sandy081';
-	comment: 'Logged when profile management action is excuted';
-	id: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The identifier of the action that was run.' };
+	owner: "sandy081";
+	comment: "Logged when profile management action is excuted";
+	id: {
+		classification: "SystemMetaData";
+		purpose: "FeatureInsight";
+		comment: "The identifier of the action that was run.";
+	};
 };
 
 export type ProfileManagementActionExecutedEvent = {
 	id: string;
 };
 
-export class UserDataProfileManagementService extends Disposable implements IUserDataProfileManagementService {
+export class UserDataProfileManagementService
+	extends Disposable
+	implements IUserDataProfileManagementService
+{
 	readonly _serviceBrand: undefined;
 
 	constructor(
@@ -60,87 +87,183 @@ export class UserDataProfileManagementService extends Disposable implements IUse
 	}
 
 	private onDidChangeProfiles(e: DidChangeProfilesEvent): void {
-		if (e.removed.some(profile => profile.id === this.userDataProfileService.currentProfile.id)) {
-			this.changeCurrentProfile(this.userDataProfilesService.defaultProfile, localize('reload message when removed', "The current profile has been removed. Please reload to switch back to default profile"));
+		if (
+			e.removed.some(
+				(profile) =>
+					profile.id ===
+					this.userDataProfileService.currentProfile.id,
+			)
+		) {
+			this.changeCurrentProfile(
+				this.userDataProfilesService.defaultProfile,
+				localize(
+					"reload message when removed",
+					"The current profile has been removed. Please reload to switch back to default profile",
+				),
+			);
 			return;
 		}
 	}
 
 	private onDidResetWorkspaces(): void {
 		if (!this.userDataProfileService.currentProfile.isDefault) {
-			this.changeCurrentProfile(this.userDataProfilesService.defaultProfile, localize('reload message when removed', "The current profile has been removed. Please reload to switch back to default profile"));
+			this.changeCurrentProfile(
+				this.userDataProfilesService.defaultProfile,
+				localize(
+					"reload message when removed",
+					"The current profile has been removed. Please reload to switch back to default profile",
+				),
+			);
 			return;
 		}
 	}
 
-	private async onDidChangeCurrentProfile(e: DidChangeUserDataProfileEvent): Promise<void> {
+	private async onDidChangeCurrentProfile(
+		e: DidChangeUserDataProfileEvent,
+	): Promise<void> {
 		if (e.previous.isTransient) {
 			await this.userDataProfilesService.cleanUpTransientProfiles();
 		}
 	}
 
-	async createProfile(name: string, options?: IUserDataProfileOptions): Promise<IUserDataProfile> {
+	async createProfile(
+		name: string,
+		options?: IUserDataProfileOptions,
+	): Promise<IUserDataProfile> {
 		return this.userDataProfilesService.createNamedProfile(name, options);
 	}
 
-	async createAndEnterProfile(name: string, options?: IUserDataProfileOptions): Promise<IUserDataProfile> {
-		const profile = await this.userDataProfilesService.createNamedProfile(name, options, toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()));
+	async createAndEnterProfile(
+		name: string,
+		options?: IUserDataProfileOptions,
+	): Promise<IUserDataProfile> {
+		const profile = await this.userDataProfilesService.createNamedProfile(
+			name,
+			options,
+			toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()),
+		);
 		await this.changeCurrentProfile(profile);
-		this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'createAndEnterProfile' });
+		this.telemetryService.publicLog2<
+			ProfileManagementActionExecutedEvent,
+			ProfileManagementActionExecutedClassification
+		>("profileManagementActionExecuted", { id: "createAndEnterProfile" });
 		return profile;
 	}
 
 	async createAndEnterTransientProfile(): Promise<IUserDataProfile> {
-		const profile = await this.userDataProfilesService.createTransientProfile(toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()));
+		const profile =
+			await this.userDataProfilesService.createTransientProfile(
+				toWorkspaceIdentifier(
+					this.workspaceContextService.getWorkspace(),
+				),
+			);
 		await this.changeCurrentProfile(profile);
-		this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'createAndEnterTransientProfile' });
+		this.telemetryService.publicLog2<
+			ProfileManagementActionExecutedEvent,
+			ProfileManagementActionExecutedClassification
+		>("profileManagementActionExecuted", {
+			id: "createAndEnterTransientProfile",
+		});
 		return profile;
 	}
 
-	async updateProfile(profile: IUserDataProfile, updateOptions: IUserDataProfileUpdateOptions): Promise<IUserDataProfile> {
-		if (!this.userDataProfilesService.profiles.some(p => p.id === profile.id)) {
+	async updateProfile(
+		profile: IUserDataProfile,
+		updateOptions: IUserDataProfileUpdateOptions,
+	): Promise<IUserDataProfile> {
+		if (
+			!this.userDataProfilesService.profiles.some(
+				(p) => p.id === profile.id,
+			)
+		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
 		if (profile.isDefault) {
-			throw new Error(localize('cannotRenameDefaultProfile', "Cannot rename the default profile"));
+			throw new Error(
+				localize(
+					"cannotRenameDefaultProfile",
+					"Cannot rename the default profile",
+				),
+			);
 		}
-		const updatedProfile = await this.userDataProfilesService.updateProfile(profile, updateOptions);
-		this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'updateProfile' });
+		const updatedProfile = await this.userDataProfilesService.updateProfile(
+			profile,
+			updateOptions,
+		);
+		this.telemetryService.publicLog2<
+			ProfileManagementActionExecutedEvent,
+			ProfileManagementActionExecutedClassification
+		>("profileManagementActionExecuted", { id: "updateProfile" });
 		return updatedProfile;
 	}
 
 	async removeProfile(profile: IUserDataProfile): Promise<void> {
-		if (!this.userDataProfilesService.profiles.some(p => p.id === profile.id)) {
+		if (
+			!this.userDataProfilesService.profiles.some(
+				(p) => p.id === profile.id,
+			)
+		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
 		if (profile.isDefault) {
-			throw new Error(localize('cannotDeleteDefaultProfile', "Cannot delete the default profile"));
+			throw new Error(
+				localize(
+					"cannotDeleteDefaultProfile",
+					"Cannot delete the default profile",
+				),
+			);
 		}
 		await this.userDataProfilesService.removeProfile(profile);
-		this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'removeProfile' });
+		this.telemetryService.publicLog2<
+			ProfileManagementActionExecutedEvent,
+			ProfileManagementActionExecutedClassification
+		>("profileManagementActionExecuted", { id: "removeProfile" });
 	}
 
 	async switchProfile(profile: IUserDataProfile): Promise<void> {
-		const workspaceIdentifier = toWorkspaceIdentifier(this.workspaceContextService.getWorkspace());
-		if (!this.userDataProfilesService.profiles.some(p => p.id === profile.id)) {
+		const workspaceIdentifier = toWorkspaceIdentifier(
+			this.workspaceContextService.getWorkspace(),
+		);
+		if (
+			!this.userDataProfilesService.profiles.some(
+				(p) => p.id === profile.id,
+			)
+		) {
 			throw new Error(`Profile ${profile.name} does not exist`);
 		}
 		if (this.userDataProfileService.currentProfile.id === profile.id) {
 			return;
 		}
-		await this.userDataProfilesService.setProfileForWorkspace(workspaceIdentifier, profile);
+		await this.userDataProfilesService.setProfileForWorkspace(
+			workspaceIdentifier,
+			profile,
+		);
 		await this.changeCurrentProfile(profile);
-		this.telemetryService.publicLog2<ProfileManagementActionExecutedEvent, ProfileManagementActionExecutedClassification>('profileManagementActionExecuted', { id: 'switchProfile' });
+		this.telemetryService.publicLog2<
+			ProfileManagementActionExecutedEvent,
+			ProfileManagementActionExecutedClassification
+		>("profileManagementActionExecuted", { id: "switchProfile" });
 	}
 
 	async getBuiltinProfileTemplates(): Promise<IProfileTemplateInfo[]> {
 		if (this.productService.profileTemplatesUrl) {
 			try {
-				const context = await this.requestService.request({ type: 'GET', url: this.productService.profileTemplatesUrl }, CancellationToken.None);
+				const context = await this.requestService.request(
+					{
+						type: "GET",
+						url: this.productService.profileTemplatesUrl,
+					},
+					CancellationToken.None,
+				);
 				if (context.res.statusCode === 200) {
-					return (await asJson<IProfileTemplateInfo[]>(context)) || [];
+					return (
+						(await asJson<IProfileTemplateInfo[]>(context)) || []
+					);
 				} else {
-					this.logService.error('Could not get profile templates.', context.res.statusCode);
+					this.logService.error(
+						"Could not get profile templates.",
+						context.res.statusCode,
+					);
 				}
 			} catch (error) {
 				this.logService.error(error);
@@ -149,17 +272,40 @@ export class UserDataProfileManagementService extends Disposable implements IUse
 		return [];
 	}
 
-	private async changeCurrentProfile(profile: IUserDataProfile, reloadMessage?: string): Promise<void> {
+	private async changeCurrentProfile(
+		profile: IUserDataProfile,
+		reloadMessage?: string,
+	): Promise<void> {
 		const isRemoteWindow = !!this.environmentService.remoteAuthority;
 
-		const shouldRestartExtensionHosts = this.userDataProfileService.currentProfile.id !== profile.id || !equals(this.userDataProfileService.currentProfile.useDefaultFlags, profile.useDefaultFlags);
+		const shouldRestartExtensionHosts =
+			this.userDataProfileService.currentProfile.id !== profile.id ||
+			!equals(
+				this.userDataProfileService.currentProfile.useDefaultFlags,
+				profile.useDefaultFlags,
+			);
 
 		if (shouldRestartExtensionHosts) {
 			if (!isRemoteWindow) {
-				if (!(await this.extensionService.stopExtensionHosts(localize('switch profile', "Switching to a profile.")))) {
+				if (
+					!(await this.extensionService.stopExtensionHosts(
+						localize("switch profile", "Switching to a profile."),
+					))
+				) {
 					// If extension host did not stop, do not switch profile
-					if (this.userDataProfilesService.profiles.some(p => p.id === this.userDataProfileService.currentProfile.id)) {
-						await this.userDataProfilesService.setProfileForWorkspace(toWorkspaceIdentifier(this.workspaceContextService.getWorkspace()), this.userDataProfileService.currentProfile);
+					if (
+						this.userDataProfilesService.profiles.some(
+							(p) =>
+								p.id ===
+								this.userDataProfileService.currentProfile.id,
+						)
+					) {
+						await this.userDataProfilesService.setProfileForWorkspace(
+							toWorkspaceIdentifier(
+								this.workspaceContextService.getWorkspace(),
+							),
+							this.userDataProfileService.currentProfile,
+						);
 					}
 					throw new CancellationError();
 				}
@@ -172,8 +318,13 @@ export class UserDataProfileManagementService extends Disposable implements IUse
 		if (shouldRestartExtensionHosts) {
 			if (isRemoteWindow) {
 				const { confirmed } = await this.dialogService.confirm({
-					message: reloadMessage ?? localize('reload message', "Switching a profile requires reloading VS Code."),
-					primaryButton: localize('reload button', "&&Reload"),
+					message:
+						reloadMessage ??
+						localize(
+							"reload message",
+							"Switching a profile requires reloading VS Code.",
+						),
+					primaryButton: localize("reload button", "&&Reload"),
 				});
 				if (confirmed) {
 					await this.hostService.reload();
@@ -185,4 +336,8 @@ export class UserDataProfileManagementService extends Disposable implements IUse
 	}
 }
 
-registerSingleton(IUserDataProfileManagementService, UserDataProfileManagementService, InstantiationType.Eager /* Eager because it updates the current window profile by listening to profiles changes */);
+registerSingleton(
+	IUserDataProfileManagementService,
+	UserDataProfileManagementService,
+	InstantiationType.Eager /* Eager because it updates the current window profile by listening to profiles changes */,
+);

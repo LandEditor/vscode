@@ -3,9 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../../base/common/event.js';
-import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
-import { IStorageService, IStorageValueChangeEvent, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import type { Event } from "../../../../base/common/event.js";
+import {
+	Disposable,
+	DisposableStore,
+} from "../../../../base/common/lifecycle.js";
+import {
+	IStorageService,
+	type IStorageValueChangeEvent,
+	type StorageScope,
+	type StorageTarget,
+} from "../../../../platform/storage/common/storage.js";
 
 export interface IStoredValueSerialization<T> {
 	deserialize(data: string): T;
@@ -13,8 +21,8 @@ export interface IStoredValueSerialization<T> {
 }
 
 const defaultSerialization: IStoredValueSerialization<any> = {
-	deserialize: d => JSON.parse(d),
-	serialize: d => JSON.stringify(d),
+	deserialize: (d) => JSON.parse(d),
+	serialize: (d) => JSON.stringify(d),
 };
 
 interface IStoredValueOptions<T> {
@@ -65,7 +73,10 @@ export class StoredValue<T> extends Disposable {
 	public get(defaultValue?: T): T | undefined {
 		if (this.value === undefined) {
 			const value = this.storage.get(this.key, this.scope);
-			this.value = value === undefined ? defaultValue : this.serialization.deserialize(value);
+			this.value =
+				value === undefined
+					? defaultValue
+					: this.serialization.deserialize(value);
 		}
 
 		return this.value;
@@ -77,7 +88,12 @@ export class StoredValue<T> extends Disposable {
 	 */
 	public store(value: T) {
 		this.value = value;
-		this.storage.store(this.key, this.serialization.serialize(value), this.scope, this.target);
+		this.storage.store(
+			this.key,
+			this.serialization.serialize(value),
+			this.scope,
+			this.target,
+		);
 	}
 
 	/**

@@ -3,16 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event, Emitter } from '../../../../base/common/event.js';
-import { debounce, throttle } from '../../../../base/common/decorators.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
-import { IExtensionService } from '../../../services/extensions/common/extensions.js';
-import { MergedEnvironmentVariableCollection } from '../../../../platform/terminal/common/environmentVariableCollection.js';
-import { deserializeEnvironmentDescriptionMap, deserializeEnvironmentVariableCollection, serializeEnvironmentDescriptionMap, serializeEnvironmentVariableCollection } from '../../../../platform/terminal/common/environmentVariableShared.js';
-import { IEnvironmentVariableCollectionWithPersistence, IEnvironmentVariableService } from './environmentVariable.js';
-import { TerminalStorageKeys } from './terminalStorageKeys.js';
-import { IMergedEnvironmentVariableCollection, ISerializableEnvironmentDescriptionMap, ISerializableEnvironmentVariableCollection } from '../../../../platform/terminal/common/environmentVariable.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
+import { debounce, throttle } from "../../../../base/common/decorators.js";
+import { Emitter, type Event } from "../../../../base/common/event.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "../../../../platform/storage/common/storage.js";
+import type {
+	IMergedEnvironmentVariableCollection,
+	ISerializableEnvironmentDescriptionMap,
+	ISerializableEnvironmentVariableCollection,
+} from "../../../../platform/terminal/common/environmentVariable.js";
+import { MergedEnvironmentVariableCollection } from "../../../../platform/terminal/common/environmentVariableCollection.js";
+import {
+	deserializeEnvironmentDescriptionMap,
+	deserializeEnvironmentVariableCollection,
+	serializeEnvironmentDescriptionMap,
+	serializeEnvironmentVariableCollection,
+} from "../../../../platform/terminal/common/environmentVariableShared.js";
+import { IExtensionService } from "../../../services/extensions/common/extensions.js";
+import type {
+	IEnvironmentVariableCollectionWithPersistence,
+	IEnvironmentVariableService,
+} from "./environmentVariable.js";
+import { TerminalStorageKeys } from "./terminalStorageKeys.js";
 
 interface ISerializableExtensionEnvironmentVariableCollection {
 	extensionIdentifier: string;
@@ -23,14 +39,22 @@ interface ISerializableExtensionEnvironmentVariableCollection {
 /**
  * Tracks and persists environment variable collections as defined by extensions.
  */
-export class EnvironmentVariableService extends Disposable implements IEnvironmentVariableService {
+export class EnvironmentVariableService
+	extends Disposable
+	implements IEnvironmentVariableService
+{
 	declare readonly _serviceBrand: undefined;
 
-	collections: Map<string, IEnvironmentVariableCollectionWithPersistence> = new Map();
+	collections: Map<string, IEnvironmentVariableCollectionWithPersistence> =
+		new Map();
 	mergedCollection: IMergedEnvironmentVariableCollection;
 
-	private readonly _onDidChangeCollections = this._register(new Emitter<IMergedEnvironmentVariableCollection>());
-	get onDidChangeCollections(): Event<IMergedEnvironmentVariableCollection> { return this._onDidChangeCollections.event; }
+	private readonly _onDidChangeCollections = this._register(
+		new Emitter<IMergedEnvironmentVariableCollection>(),
+	);
+	get onDidChangeCollections(): Event<IMergedEnvironmentVariableCollection> {
+		return this._onDidChangeCollections.event;
+	}
 
 	constructor(
 		@IExtensionService private readonly _extensionService: IExtensionService,
@@ -59,7 +83,10 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
 		this._register(this._extensionService.onDidChangeExtensions(() => this._invalidateExtensionCollections()));
 	}
 
-	set(extensionIdentifier: string, collection: IEnvironmentVariableCollectionWithPersistence): void {
+	set(
+		extensionIdentifier: string,
+		collection: IEnvironmentVariableCollectionWithPersistence,
+	): void {
 		this.collections.set(extensionIdentifier, collection);
 		this._updateCollections();
 	}
@@ -81,18 +108,28 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
 	}
 
 	protected _persistCollections(): void {
-		const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] = [];
+		const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] =
+			[];
 		this.collections.forEach((collection, extensionIdentifier) => {
 			if (collection.persistent) {
 				collectionsJson.push({
 					extensionIdentifier,
-					collection: serializeEnvironmentVariableCollection(this.collections.get(extensionIdentifier)!.map),
-					description: serializeEnvironmentDescriptionMap(collection.descriptionMap)
+					collection: serializeEnvironmentVariableCollection(
+						this.collections.get(extensionIdentifier)!.map,
+					),
+					description: serializeEnvironmentDescriptionMap(
+						collection.descriptionMap,
+					),
 				});
 			}
 		});
 		const stringifiedJson = JSON.stringify(collectionsJson);
-		this._storageService.store(TerminalStorageKeys.EnvironmentVariableCollections, stringifiedJson, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		this._storageService.store(
+			TerminalStorageKeys.EnvironmentVariableCollections,
+			stringifiedJson,
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		);
 	}
 
 	@debounce(1000)
@@ -113,7 +150,9 @@ export class EnvironmentVariableService extends Disposable implements IEnvironme
 		const registeredExtensions = this._extensionService.extensions;
 		let changes = false;
 		this.collections.forEach((_, extensionIdentifier) => {
-			const isExtensionRegistered = registeredExtensions.some(r => r.identifier.value === extensionIdentifier);
+			const isExtensionRegistered = registeredExtensions.some(
+				(r) => r.identifier.value === extensionIdentifier,
+			);
 			if (!isExtensionRegistered) {
 				this.collections.delete(extensionIdentifier);
 				changes = true;

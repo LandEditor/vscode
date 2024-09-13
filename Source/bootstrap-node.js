@@ -1,21 +1,13 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
-//@ts-check
-'use strict';
-
+import * as fs from "fs";
+import { createRequire } from "node:module";
 // ESM-comment-begin
 // const path = require('path');
 // const fs = require('fs');
 // const Module = require('module');
 // ESM-comment-end
 // ESM-uncomment-begin
-import * as path from 'path';
-import * as fs from 'fs';
-import { fileURLToPath } from 'url';
-import { createRequire } from 'node:module';
+import * as path from "path";
+import { fileURLToPath } from "url";
 
 /** @ts-ignore */
 const require = createRequire(import.meta.url);
@@ -27,11 +19,11 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 // increase number of stack frames(from 10, https://github.com/v8/v8/wiki/Stack-Trace-API)
 Error.stackTraceLimit = 100;
 
-if (!process.env['VSCODE_HANDLES_SIGPIPE']) {
+if (!process.env["VSCODE_HANDLES_SIGPIPE"]) {
 	// Workaround for Electron not installing a handler to ignore SIGPIPE
 	// (https://github.com/electron/electron/issues/13254)
 	let didLogAboutSIGPIPE = false;
-	process.on('SIGPIPE', () => {
+	process.on("SIGPIPE", () => {
 		// See https://github.com/microsoft/vscode-remote-release/issues/6543
 		// In certain situations, the console itself can be in a broken pipe state
 		// so logging SIGPIPE to the console will cause an infinite async loop
@@ -47,17 +39,16 @@ if (!process.env['VSCODE_HANDLES_SIGPIPE']) {
 // -  all OS: store the `process.cwd()` inside `VSCODE_CWD` for consistent lookups
 function setupCurrentWorkingDirectory() {
 	try {
-
 		// Store the `process.cwd()` inside `VSCODE_CWD`
 		// for consistent lookups, but make sure to only
 		// do this once unless defined already from e.g.
 		// a parent process.
-		if (typeof process.env['VSCODE_CWD'] !== 'string') {
-			process.env['VSCODE_CWD'] = process.cwd();
+		if (typeof process.env["VSCODE_CWD"] !== "string") {
+			process.env["VSCODE_CWD"] = process.cwd();
 		}
 
 		// Windows: always set application folder as current working dir
-		if (process.platform === 'win32') {
+		if (process.platform === "win32") {
 			process.chdir(path.dirname(process.execPath));
 		}
 	} catch (err) {
@@ -74,19 +65,22 @@ setupCurrentWorkingDirectory();
  *
  * @param {string} injectPath
  */
-module.exports.devInjectNodeModuleLookupPath = function (injectPath) {
-	if (!process.env['VSCODE_DEV']) {
+module.exports.devInjectNodeModuleLookupPath = (injectPath) => {
+	if (!process.env["VSCODE_DEV"]) {
 		return; // only applies running out of sources
 	}
 
 	if (!injectPath) {
-		throw new Error('Missing injectPath');
+		throw new Error("Missing injectPath");
 	}
 
-	const Module = require('node:module');
+	const Module = require("node:module");
 	// ESM-uncomment-begin
 	// register a loader hook
-	Module.register('./bootstrap-import.js', { parentURL: import.meta.url, data: injectPath });
+	Module.register("./bootstrap-import.js", {
+		parentURL: import.meta.url,
+		data: injectPath,
+	});
 	// ESM-uncomment-end
 	// ESM-comment-begin
 	// const nodeModulesPath = path.join(__dirname, '../node_modules');
@@ -111,12 +105,12 @@ module.exports.devInjectNodeModuleLookupPath = function (injectPath) {
 	// ESM-comment-end
 };
 
-module.exports.removeGlobalNodeJsModuleLookupPaths = function () {
-	if (typeof process?.versions?.electron === 'string') {
+module.exports.removeGlobalNodeJsModuleLookupPaths = () => {
+	if (typeof process?.versions?.electron === "string") {
 		return; // Electron disables global search paths in https://github.com/electron/electron/blob/3186c2f0efa92d275dc3d57b5a14a60ed3846b0e/shell/common/node_bindings.cc#L653
 	}
 
-	const Module = require('module');
+	const Module = require("module");
 	// @ts-ignore
 	const globalPaths = Module.globalPaths;
 
@@ -124,11 +118,15 @@ module.exports.removeGlobalNodeJsModuleLookupPaths = function () {
 	const originalResolveLookupPaths = Module._resolveLookupPaths;
 
 	// @ts-ignore
-	Module._resolveLookupPaths = function (moduleName, parent) {
+	Module._resolveLookupPaths = (moduleName, parent) => {
 		const paths = originalResolveLookupPaths(moduleName, parent);
 		if (Array.isArray(paths)) {
 			let commonSuffixLength = 0;
-			while (commonSuffixLength < paths.length && paths[paths.length - 1 - commonSuffixLength] === globalPaths[globalPaths.length - 1 - commonSuffixLength]) {
+			while (
+				commonSuffixLength < paths.length &&
+				paths[paths.length - 1 - commonSuffixLength] ===
+					globalPaths[globalPaths.length - 1 - commonSuffixLength]
+			) {
 				commonSuffixLength++;
 			}
 			return paths.slice(0, paths.length - commonSuffixLength);
@@ -143,18 +141,18 @@ module.exports.removeGlobalNodeJsModuleLookupPaths = function () {
  * @param {Partial<import('./vs/base/common/product').IProductConfiguration>} product
  * @returns {{ portableDataPath: string; isPortable: boolean; }}
  */
-module.exports.configurePortable = function (product) {
+module.exports.configurePortable = (product) => {
 	const appRoot = path.dirname(__dirname);
 
 	/**
 	 * @param {import('path')} path
 	 */
 	function getApplicationPath(path) {
-		if (process.env['VSCODE_DEV']) {
+		if (process.env["VSCODE_DEV"]) {
 			return appRoot;
 		}
 
-		if (process.platform === 'darwin') {
+		if (process.platform === "darwin") {
 			return path.dirname(path.dirname(path.dirname(appRoot)));
 		}
 
@@ -165,49 +163,54 @@ module.exports.configurePortable = function (product) {
 	 * @param {import('path')} path
 	 */
 	function getPortableDataPath(path) {
-		if (process.env['VSCODE_PORTABLE']) {
-			return process.env['VSCODE_PORTABLE'];
+		if (process.env["VSCODE_PORTABLE"]) {
+			return process.env["VSCODE_PORTABLE"];
 		}
 
-		if (process.platform === 'win32' || process.platform === 'linux') {
-			return path.join(getApplicationPath(path), 'data');
+		if (process.platform === "win32" || process.platform === "linux") {
+			return path.join(getApplicationPath(path), "data");
 		}
 
 		// @ts-ignore
-		const portableDataName = product.portable || `${product.applicationName}-portable-data`;
-		return path.join(path.dirname(getApplicationPath(path)), portableDataName);
+		const portableDataName =
+			product.portable || `${product.applicationName}-portable-data`;
+		return path.join(
+			path.dirname(getApplicationPath(path)),
+			portableDataName,
+		);
 	}
 
 	const portableDataPath = getPortableDataPath(path);
-	const isPortable = !('target' in product) && fs.existsSync(portableDataPath);
-	const portableTempPath = path.join(portableDataPath, 'tmp');
+	const isPortable =
+		!("target" in product) && fs.existsSync(portableDataPath);
+	const portableTempPath = path.join(portableDataPath, "tmp");
 	const isTempPortable = isPortable && fs.existsSync(portableTempPath);
 
 	if (isPortable) {
-		process.env['VSCODE_PORTABLE'] = portableDataPath;
+		process.env["VSCODE_PORTABLE"] = portableDataPath;
 	} else {
-		delete process.env['VSCODE_PORTABLE'];
+		delete process.env["VSCODE_PORTABLE"];
 	}
 
 	if (isTempPortable) {
-		if (process.platform === 'win32') {
-			process.env['TMP'] = portableTempPath;
-			process.env['TEMP'] = portableTempPath;
+		if (process.platform === "win32") {
+			process.env["TMP"] = portableTempPath;
+			process.env["TEMP"] = portableTempPath;
 		} else {
-			process.env['TMPDIR'] = portableTempPath;
+			process.env["TMPDIR"] = portableTempPath;
 		}
 	}
 
 	return {
 		portableDataPath,
-		isPortable
+		isPortable,
 	};
 };
 
 /**
  * Helper to enable ASAR support.
  */
-module.exports.enableASARSupport = function () {
+module.exports.enableASARSupport = () => {
 	// ESM-comment-begin
 	// const NODE_MODULES_PATH = path.join(__dirname, '../node_modules');
 	// const NODE_MODULES_ASAR_PATH = `${NODE_MODULES_PATH}.asar`;
@@ -241,12 +244,11 @@ module.exports.enableASARSupport = function () {
  * @param {{ isWindows?: boolean, scheme?: string, fallbackAuthority?: string }} config
  * @returns {string}
  */
-module.exports.fileUriFromPath = function (path, config) {
-
+module.exports.fileUriFromPath = (path, config) => {
 	// Since we are building a URI, we normalize any backslash
 	// to slashes and we ensure that the path begins with a '/'.
-	let pathName = path.replace(/\\/g, '/');
-	if (pathName.length > 0 && pathName.charAt(0) !== '/') {
+	let pathName = path.replace(/\\/g, "/");
+	if (pathName.length > 0 && pathName.charAt(0) !== "/") {
 		pathName = `/${pathName}`;
 	}
 
@@ -256,23 +258,27 @@ module.exports.fileUriFromPath = function (path, config) {
 	// Windows: in order to support UNC paths (which start with '//')
 	// that have their own authority, we do not use the provided authority
 	// but rather preserve it.
-	if (config.isWindows && pathName.startsWith('//')) {
-		uri = encodeURI(`${config.scheme || 'file'}:${pathName}`);
+	if (config.isWindows && pathName.startsWith("//")) {
+		uri = encodeURI(`${config.scheme || "file"}:${pathName}`);
 	}
 
 	// Otherwise we optionally add the provided authority if specified
 	else {
-		uri = encodeURI(`${config.scheme || 'file'}://${config.fallbackAuthority || ''}${pathName}`);
+		uri = encodeURI(
+			`${config.scheme || "file"}://${config.fallbackAuthority || ""}${pathName}`,
+		);
 	}
 
-	return uri.replace(/#/g, '%23');
+	return uri.replace(/#/g, "%23");
 };
 
 //#endregion
 
 // ESM-uncomment-begin
-export const devInjectNodeModuleLookupPath = module.exports.devInjectNodeModuleLookupPath;
-export const removeGlobalNodeJsModuleLookupPaths = module.exports.removeGlobalNodeJsModuleLookupPaths;
+export const devInjectNodeModuleLookupPath =
+	module.exports.devInjectNodeModuleLookupPath;
+export const removeGlobalNodeJsModuleLookupPaths =
+	module.exports.removeGlobalNodeJsModuleLookupPaths;
 export const configurePortable = module.exports.configurePortable;
 export const enableASARSupport = module.exports.enableASARSupport;
 export const fileUriFromPath = module.exports.fileUriFromPath;

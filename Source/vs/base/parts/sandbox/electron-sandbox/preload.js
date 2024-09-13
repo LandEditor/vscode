@@ -4,9 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 // @ts-check
-(function () {
-	'use strict';
-
+(() => {
 	/**
 	 * @import { ISandboxConfiguration }  from '../common/sandboxTypes'
 	 * @import { IpcRenderer }  from './electronTypes'
@@ -14,7 +12,12 @@
 	 * @import { ISandboxNodeProcess }  from './globals'
 	 */
 
-	const { ipcRenderer, webFrame, contextBridge, webUtils } = require('electron');
+	const {
+		ipcRenderer,
+		webFrame,
+		contextBridge,
+		webUtils,
+	} = require("electron");
 
 	//#region Utilities
 
@@ -23,7 +26,7 @@
 	 * @returns {true | never}
 	 */
 	function validateIPC(channel) {
-		if (!channel || !channel.startsWith('vscode:')) {
+		if (!channel || !channel.startsWith("vscode:")) {
 			throw new Error(`Unsupported event IPC channel '${channel}'`);
 		}
 
@@ -37,7 +40,7 @@
 	function parseArgv(key) {
 		for (const arg of process.argv) {
 			if (arg.indexOf(`--${key}=`) === 0) {
-				return arg.split('=')[1];
+				return arg.split("=")[1];
 			}
 		}
 
@@ -49,20 +52,23 @@
 	//#region Resolve Configuration
 
 	/** @type {ISandboxConfiguration | undefined} */
-	let configuration = undefined;
+	let configuration;
 
 	/** @type {Promise<ISandboxConfiguration>} */
 	const resolveConfiguration = (async () => {
-		const windowConfigIpcChannel = parseArgv('vscode-window-config');
+		const windowConfigIpcChannel = parseArgv("vscode-window-config");
 		if (!windowConfigIpcChannel) {
-			throw new Error('Preload: did not find expected vscode-window-config in renderer process arguments list.');
+			throw new Error(
+				"Preload: did not find expected vscode-window-config in renderer process arguments list.",
+			);
 		}
 
 		try {
 			validateIPC(windowConfigIpcChannel);
 
 			// Resolve configuration from electron-main
-			const resolvedConfiguration = configuration = await ipcRenderer.invoke(windowConfigIpcChannel);
+			const resolvedConfiguration = (configuration =
+				await ipcRenderer.invoke(windowConfigIpcChannel));
 
 			// Apply `userEnv` directly
 			Object.assign(process.env, resolvedConfiguration.userEnv);
@@ -77,7 +83,9 @@
 
 			return resolvedConfiguration;
 		} catch (error) {
-			throw new Error(`Preload: unable to fetch vscode-window-config: ${error}`);
+			throw new Error(
+				`Preload: unable to fetch vscode-window-config: ${error}`,
+			);
 		}
 	})();
 
@@ -94,12 +102,11 @@
 	 * @type {Promise<typeof process.env>}
 	 */
 	const resolveShellEnv = (async () => {
-
 		// Resolve `userEnv` from configuration and
 		// `shellEnv` from the main side
 		const [userEnv, shellEnv] = await Promise.all([
 			(async () => (await resolveConfiguration).userEnv)(),
-			ipcRenderer.invoke('vscode:fetchShellEnv')
+			ipcRenderer.invoke("vscode:fetchShellEnv"),
 		]);
 
 		return { ...process.env, ...shellEnv, ...userEnv };
@@ -121,7 +128,6 @@
 	 * @type {import('./globals')}
 	 */
 	const globals = {
-
 		/**
 		 * A minimal set of methods exposed from Electron's `ipcRenderer`
 		 * to support communication to main process.
@@ -130,7 +136,6 @@
 		 */
 
 		ipcRenderer: {
-
 			/**
 			 * @param {string} channel
 			 * @param {any[]} args
@@ -189,35 +194,37 @@
 				ipcRenderer.removeListener(channel, listener);
 
 				return this;
-			}
+			},
 		},
 
 		/**
 		 * @type {import('./globals').IpcMessagePort}
 		 */
 		ipcMessagePort: {
-
 			/**
 			 * @param {string} responseChannel
 			 * @param {string} nonce
 			 */
 			acquire(responseChannel, nonce) {
 				if (validateIPC(responseChannel)) {
-					const responseListener = (/** @type {IpcRendererEvent} */ e, /** @type {string} */ responseNonce) => {
+					const responseListener = (
+						/** @type {IpcRendererEvent} */ e,
+						/** @type {string} */ responseNonce,
+					) => {
 						// validate that the nonce from the response is the same
 						// as when requested. and if so, use `postMessage` to
 						// send the `MessagePort` safely over, even when context
 						// isolation is enabled
 						if (nonce === responseNonce) {
 							ipcRenderer.off(responseChannel, responseListener);
-							window.postMessage(nonce, '*', e.ports);
+							window.postMessage(nonce, "*", e.ports);
 						}
 					};
 
 					// handle reply from main
 					ipcRenderer.on(responseChannel, responseListener);
 				}
-			}
+			},
 		},
 
 		/**
@@ -226,28 +233,26 @@
 		 * @type {import('./electronTypes').WebFrame}
 		 */
 		webFrame: {
-
 			/**
 			 * @param {number} level
 			 */
 			setZoomLevel(level) {
-				if (typeof level === 'number') {
+				if (typeof level === "number") {
 					webFrame.setZoomLevel(level);
 				}
-			}
+			},
 		},
 
 		/**
 		 * Support for subset of Electron's `webUtils` type.
 		 */
 		webUtils: {
-
 			/**
 			 * @param {File} file
 			 */
 			getPathForFile(file) {
 				return webUtils.getPathForFile(file);
-			}
+			},
 		},
 
 		/**
@@ -259,18 +264,38 @@
 		 * @type {ISandboxNodeProcess}
 		 */
 		process: {
-			get platform() { return process.platform; },
-			get arch() { return process.arch; },
-			get env() { return { ...process.env }; },
-			get versions() { return process.versions; },
-			get type() { return 'renderer'; },
-			get execPath() { return process.execPath; },
+			get platform() {
+				return process.platform;
+			},
+			get arch() {
+				return process.arch;
+			},
+			get env() {
+				return { ...process.env };
+			},
+			get versions() {
+				return process.versions;
+			},
+			get type() {
+				return "renderer";
+			},
+			get execPath() {
+				return process.execPath;
+			},
 
 			/**
 			 * @returns {string}
 			 */
 			cwd() {
-				return process.env['VSCODE_CWD'] || process.execPath.substr(0, process.execPath.lastIndexOf(process.platform === 'win32' ? '\\' : '/'));
+				return (
+					process.env["VSCODE_CWD"] ||
+					process.execPath.substr(
+						0,
+						process.execPath.lastIndexOf(
+							process.platform === "win32" ? "\\" : "/",
+						),
+					)
+				);
 			},
 
 			/**
@@ -295,7 +320,7 @@
 			on(type, callback) {
 				// @ts-ignore
 				process.on(type, callback);
-			}
+			},
 		},
 
 		/**
@@ -304,7 +329,6 @@
 		 * @type {import('./globals').ISandboxContext}
 		 */
 		context: {
-
 			/**
 			 * A configuration object made accessible from the main side
 			 * to configure the sandbox browser window.
@@ -326,8 +350,8 @@
 			 */
 			async resolveConfiguration() {
 				return resolveConfiguration;
-			}
-		}
+			},
+		},
 	};
 
 	// Use `contextBridge` APIs to expose globals to VSCode
@@ -335,7 +359,7 @@
 	// add to the DOM global.
 	if (process.contextIsolated) {
 		try {
-			contextBridge.exposeInMainWorld('vscode', globals);
+			contextBridge.exposeInMainWorld("vscode", globals);
 		} catch (error) {
 			console.error(error);
 		}
@@ -343,4 +367,4 @@
 		// @ts-ignore
 		window.vscode = globals;
 	}
-}());
+})();

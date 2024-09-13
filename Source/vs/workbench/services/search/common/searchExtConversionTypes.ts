@@ -8,12 +8,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { asArray, coalesce } from '../../../../base/common/arrays.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IProgress } from '../../../../platform/progress/common/progress.js';
-import { DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS } from './search.js';
-import { Range, FileSearchProviderNew, FileSearchProviderOptions, ProviderResult, TextSearchCompleteNew, TextSearchContextNew, TextSearchMatchNew, TextSearchProviderNew, TextSearchProviderOptions, TextSearchQueryNew, TextSearchResultNew, AITextSearchProviderNew, TextSearchCompleteMessage } from './searchExtTypes.js';
+import { asArray, coalesce } from "../../../../base/common/arrays.js";
+import type { CancellationToken } from "../../../../base/common/cancellation.js";
+import type { URI } from "../../../../base/common/uri.js";
+import type { IProgress } from "../../../../platform/progress/common/progress.js";
+import { DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS } from "./search.js";
+import {
+	type AITextSearchProviderNew,
+	type FileSearchProviderNew,
+	type FileSearchProviderOptions,
+	type ProviderResult,
+	type Range,
+	type TextSearchCompleteMessage,
+	type TextSearchCompleteNew,
+	TextSearchContextNew,
+	TextSearchMatchNew,
+	type TextSearchProviderNew,
+	type TextSearchProviderOptions,
+	type TextSearchQueryNew,
+	type TextSearchResultNew,
+} from "./searchExtTypes.js";
 
 // old types that are retained for backward compatibility
 // TODO: delete this when search apis are adopted by all first-party extensions
@@ -24,7 +38,6 @@ import { Range, FileSearchProviderNew, FileSearchProviderOptions, ProviderResult
  * or a [workspace folder](#WorkspaceFolder).
  */
 export interface RelativePattern {
-
 	/**
 	 * A base file path to which this pattern will be matched against relatively.
 	 */
@@ -313,7 +326,7 @@ export interface TextSearchMatch {
  * @returns True if the object is a TextSearchMatch, false otherwise.
  */
 function isTextSearchMatch(object: any): object is TextSearchMatch {
-	return 'uri' in object && 'ranges' in object && 'preview' in object;
+	return "uri" in object && "ranges" in object && "preview" in object;
 }
 
 /**
@@ -356,7 +369,11 @@ export interface FileSearchProvider {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideFileSearchResults(query: FileSearchQuery, options: FileSearchOptions, token: CancellationToken): ProviderResult<URI[]>;
+	provideFileSearchResults(
+		query: FileSearchQuery,
+		options: FileSearchOptions,
+		token: CancellationToken,
+	): ProviderResult<URI[]>;
 }
 
 /**
@@ -370,7 +387,12 @@ export interface TextSearchProvider {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideTextSearchResults(query: TextSearchQuery, options: TextSearchOptions, progress: IProgress<TextSearchResult>, token: CancellationToken): ProviderResult<TextSearchComplete>;
+	provideTextSearchResults(
+		query: TextSearchQuery,
+		options: TextSearchOptions,
+		progress: IProgress<TextSearchResult>,
+		token: CancellationToken,
+	): ProviderResult<TextSearchComplete>;
 }
 
 export interface AITextSearchProvider {
@@ -381,7 +403,12 @@ export interface AITextSearchProvider {
 	 * @param progress A progress callback that must be invoked for all results.
 	 * @param token A cancellation token.
 	 */
-	provideAITextSearchResults(query: string, options: AITextSearchOptions, progress: IProgress<TextSearchResult>, token: CancellationToken): ProviderResult<TextSearchComplete>;
+	provideAITextSearchResults(
+		query: string,
+		options: AITextSearchOptions,
+		progress: IProgress<TextSearchResult>,
+		token: CancellationToken,
+	): ProviderResult<TextSearchComplete>;
 }
 
 /**
@@ -453,66 +480,100 @@ export interface FindTextInFilesOptions {
 	afterContext?: number;
 }
 
-function newToOldFileProviderOptions(options: FileSearchProviderOptions): FileSearchOptions[] {
-	return options.folderOptions.map(folderOption => ({
-		folder: folderOption.folder,
-		excludes: folderOption.excludes.map(e => typeof (e) === 'string' ? e : e.pattern),
-		includes: folderOption.includes,
-		useGlobalIgnoreFiles: folderOption.useIgnoreFiles.global,
-		useIgnoreFiles: folderOption.useIgnoreFiles.local,
-		useParentIgnoreFiles: folderOption.useIgnoreFiles.parent,
-		followSymlinks: folderOption.followSymlinks,
-		maxResults: options.maxResults,
-		session: <CancellationToken | undefined>options.session // TODO: make sure that we actually use a cancellation token here.
-	} satisfies FileSearchOptions));
+function newToOldFileProviderOptions(
+	options: FileSearchProviderOptions,
+): FileSearchOptions[] {
+	return options.folderOptions.map(
+		(folderOption) =>
+			({
+				folder: folderOption.folder,
+				excludes: folderOption.excludes.map((e) =>
+					typeof e === "string" ? e : e.pattern,
+				),
+				includes: folderOption.includes,
+				useGlobalIgnoreFiles: folderOption.useIgnoreFiles.global,
+				useIgnoreFiles: folderOption.useIgnoreFiles.local,
+				useParentIgnoreFiles: folderOption.useIgnoreFiles.parent,
+				followSymlinks: folderOption.followSymlinks,
+				maxResults: options.maxResults,
+				session: <CancellationToken | undefined>options.session, // TODO: make sure that we actually use a cancellation token here.
+			}) satisfies FileSearchOptions,
+	);
 }
 
 export class OldFileSearchProviderConverter implements FileSearchProviderNew {
-	constructor(private provider: FileSearchProvider) { }
+	constructor(private provider: FileSearchProvider) {}
 
-	provideFileSearchResults(pattern: string, options: FileSearchProviderOptions, token: CancellationToken): ProviderResult<URI[]> {
+	provideFileSearchResults(
+		pattern: string,
+		options: FileSearchProviderOptions,
+		token: CancellationToken,
+	): ProviderResult<URI[]> {
 		const getResult = async () => {
 			const newOpts = newToOldFileProviderOptions(options);
-			return Promise.all(newOpts.map(
-				o => this.provider.provideFileSearchResults({ pattern }, o, token)));
+			return Promise.all(
+				newOpts.map((o) =>
+					this.provider.provideFileSearchResults(
+						{ pattern },
+						o,
+						token,
+					),
+				),
+			);
 		};
-		return getResult().then(e => coalesce(e).flat());
+		return getResult().then((e) => coalesce(e).flat());
 	}
 }
 
-function newToOldTextProviderOptions(options: TextSearchProviderOptions): TextSearchOptions[] {
-	return options.folderOptions.map(folderOption => ({
-		folder: folderOption.folder,
-		excludes: folderOption.excludes.map(e => typeof (e) === 'string' ? e : e.pattern),
-		includes: folderOption.includes,
-		useGlobalIgnoreFiles: folderOption.useIgnoreFiles.global,
-		useIgnoreFiles: folderOption.useIgnoreFiles.local,
-		useParentIgnoreFiles: folderOption.useIgnoreFiles.parent,
-		followSymlinks: folderOption.followSymlinks,
-		maxResults: options.maxResults,
-		previewOptions: newToOldPreviewOptions(options.previewOptions),
-		maxFileSize: options.maxFileSize,
-		encoding: folderOption.encoding,
-		afterContext: options.surroundingContext,
-		beforeContext: options.surroundingContext
-	} satisfies TextSearchOptions));
+function newToOldTextProviderOptions(
+	options: TextSearchProviderOptions,
+): TextSearchOptions[] {
+	return options.folderOptions.map(
+		(folderOption) =>
+			({
+				folder: folderOption.folder,
+				excludes: folderOption.excludes.map((e) =>
+					typeof e === "string" ? e : e.pattern,
+				),
+				includes: folderOption.includes,
+				useGlobalIgnoreFiles: folderOption.useIgnoreFiles.global,
+				useIgnoreFiles: folderOption.useIgnoreFiles.local,
+				useParentIgnoreFiles: folderOption.useIgnoreFiles.parent,
+				followSymlinks: folderOption.followSymlinks,
+				maxResults: options.maxResults,
+				previewOptions: newToOldPreviewOptions(options.previewOptions),
+				maxFileSize: options.maxFileSize,
+				encoding: folderOption.encoding,
+				afterContext: options.surroundingContext,
+				beforeContext: options.surroundingContext,
+			}) satisfies TextSearchOptions,
+	);
 }
 
-export function newToOldPreviewOptions(options: {
-	matchLines?: number;
-	charsPerLine?: number;
-} | undefined
+export function newToOldPreviewOptions(
+	options:
+		| {
+				matchLines?: number;
+				charsPerLine?: number;
+		  }
+		| undefined,
 ): {
 	matchLines: number;
 	charsPerLine: number;
 } {
 	return {
-		matchLines: options?.matchLines ?? DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS.matchLines,
-		charsPerLine: options?.charsPerLine ?? DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS.charsPerLine
+		matchLines:
+			options?.matchLines ??
+			DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS.matchLines,
+		charsPerLine:
+			options?.charsPerLine ??
+			DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS.charsPerLine,
 	};
 }
 
-export function oldToNewTextSearchResult(result: TextSearchResult): TextSearchResultNew {
+export function oldToNewTextSearchResult(
+	result: TextSearchResult,
+): TextSearchResultNew {
 	if (isTextSearchMatch(result)) {
 		const ranges = asArray(result.ranges).map((r, i) => {
 			const previewArr = asArray(result.preview.matches);
@@ -521,15 +582,23 @@ export function oldToNewTextSearchResult(result: TextSearchResult): TextSearchRe
 		});
 		return new TextSearchMatchNew(result.uri, ranges, result.preview.text);
 	} else {
-		return new TextSearchContextNew(result.uri, result.text, result.lineNumber);
+		return new TextSearchContextNew(
+			result.uri,
+			result.text,
+			result.lineNumber,
+		);
 	}
 }
 
 export class OldTextSearchProviderConverter implements TextSearchProviderNew {
-	constructor(private provider: TextSearchProvider) { }
+	constructor(private provider: TextSearchProvider) {}
 
-	provideTextSearchResults(query: TextSearchQueryNew, options: TextSearchProviderOptions, progress: IProgress<TextSearchResultNew>, token: CancellationToken): ProviderResult<TextSearchCompleteNew> {
-
+	provideTextSearchResults(
+		query: TextSearchQueryNew,
+		options: TextSearchProviderOptions,
+		progress: IProgress<TextSearchResultNew>,
+		token: CancellationToken,
+	): ProviderResult<TextSearchCompleteNew> {
 		const progressShim = (oldResult: TextSearchResult) => {
 			if (!validateProviderResult(oldResult)) {
 				return;
@@ -538,28 +607,43 @@ export class OldTextSearchProviderConverter implements TextSearchProviderNew {
 		};
 
 		const getResult = async () => {
-			return coalesce(await Promise.all(
-				newToOldTextProviderOptions(options).map(
-					o => this.provider.provideTextSearchResults(query, o, { report: (e) => progressShim(e) }, token))))
-				.reduce(
-					(prev, cur) => ({ limitHit: prev.limitHit || cur.limitHit }),
-					{ limitHit: false }
-				);
+			return coalesce(
+				await Promise.all(
+					newToOldTextProviderOptions(options).map((o) =>
+						this.provider.provideTextSearchResults(
+							query,
+							o,
+							{ report: (e) => progressShim(e) },
+							token,
+						),
+					),
+				),
+			).reduce(
+				(prev, cur) => ({ limitHit: prev.limitHit || cur.limitHit }),
+				{ limitHit: false },
+			);
 		};
 		const oldResult = getResult();
 		return oldResult.then((e) => {
 			return {
 				limitHit: e.limitHit,
-				message: coalesce(asArray(e.message))
+				message: coalesce(asArray(e.message)),
 			} satisfies TextSearchCompleteNew;
 		});
 	}
 }
 
-export class OldAITextSearchProviderConverter implements AITextSearchProviderNew {
-	constructor(private provider: AITextSearchProvider) { }
+export class OldAITextSearchProviderConverter
+	implements AITextSearchProviderNew
+{
+	constructor(private provider: AITextSearchProvider) {}
 
-	provideAITextSearchResults(query: string, options: TextSearchProviderOptions, progress: IProgress<TextSearchResultNew>, token: CancellationToken): ProviderResult<TextSearchCompleteNew> {
+	provideAITextSearchResults(
+		query: string,
+		options: TextSearchProviderOptions,
+		progress: IProgress<TextSearchResultNew>,
+		token: CancellationToken,
+	): ProviderResult<TextSearchCompleteNew> {
 		const progressShim = (oldResult: TextSearchResult) => {
 			if (!validateProviderResult(oldResult)) {
 				return;
@@ -568,19 +652,27 @@ export class OldAITextSearchProviderConverter implements AITextSearchProviderNew
 		};
 
 		const getResult = async () => {
-			return coalesce(await Promise.all(
-				newToOldTextProviderOptions(options).map(
-					o => this.provider.provideAITextSearchResults(query, o, { report: (e) => progressShim(e) }, token))))
-				.reduce(
-					(prev, cur) => ({ limitHit: prev.limitHit || cur.limitHit }),
-					{ limitHit: false }
-				);
+			return coalesce(
+				await Promise.all(
+					newToOldTextProviderOptions(options).map((o) =>
+						this.provider.provideAITextSearchResults(
+							query,
+							o,
+							{ report: (e) => progressShim(e) },
+							token,
+						),
+					),
+				),
+			).reduce(
+				(prev, cur) => ({ limitHit: prev.limitHit || cur.limitHit }),
+				{ limitHit: false },
+			);
 		};
 		const oldResult = getResult();
 		return oldResult.then((e) => {
 			return {
 				limitHit: e.limitHit,
-				message: coalesce(asArray(e.message))
+				message: coalesce(asArray(e.message)),
 			} satisfies TextSearchCompleteNew;
 		});
 	}
@@ -590,25 +682,34 @@ function validateProviderResult(result: TextSearchResult): boolean {
 	if (extensionResultIsMatch(result)) {
 		if (Array.isArray(result.ranges)) {
 			if (!Array.isArray(result.preview.matches)) {
-				console.warn('INVALID - A text search provider match\'s`ranges` and`matches` properties must have the same type.');
+				console.warn(
+					"INVALID - A text search provider match's`ranges` and`matches` properties must have the same type.",
+				);
 				return false;
 			}
 
-			if ((<Range[]>result.preview.matches).length !== result.ranges.length) {
-				console.warn('INVALID - A text search provider match\'s`ranges` and`matches` properties must have the same length.');
+			if (
+				(<Range[]>result.preview.matches).length !==
+				result.ranges.length
+			) {
+				console.warn(
+					"INVALID - A text search provider match's`ranges` and`matches` properties must have the same length.",
+				);
 				return false;
 			}
-		} else {
-			if (Array.isArray(result.preview.matches)) {
-				console.warn('INVALID - A text search provider match\'s`ranges` and`matches` properties must have the same length.');
-				return false;
-			}
+		} else if (Array.isArray(result.preview.matches)) {
+			console.warn(
+				"INVALID - A text search provider match's`ranges` and`matches` properties must have the same length.",
+			);
+			return false;
 		}
 	}
 
 	return true;
 }
 
-export function extensionResultIsMatch(data: TextSearchResult): data is TextSearchMatch {
+export function extensionResultIsMatch(
+	data: TextSearchResult,
+): data is TextSearchMatch {
 	return !!(<TextSearchMatch>data).preview;
 }

@@ -33,7 +33,8 @@
 	box-sizing: border-box;
 	border: 1px solid var(--vscode-editor-rangeHighlightBorder);
 }
-.monaco-editor.hc-black .rangeHighlight, .monaco-editor.hc-light .rangeHighlight {
+.monaco-editor.hc-black .rangeHighlight,
+.monaco-editor.hc-light .rangeHighlight {
 	border-style: dotted;
 }
 .monaco-editor .symbolHighlight {
@@ -41,7 +42,8 @@
 	box-sizing: border-box;
 	border: 1px solid var(--vscode-editor-symbolHighlightBorder);
 }
-.monaco-editor.hc-black .symbolHighlight, .monaco-editor.hc-light .symbolHighlight {
+.monaco-editor.hc-black .symbolHighlight,
+.monaco-editor.hc-light .symbolHighlight {
 	border-style: dotted;
 }
 
@@ -65,7 +67,8 @@
 	top: 0;
 }
 
-.monaco-editor .view-overlays > div, .monaco-editor .margin-view-overlays > div {
+.monaco-editor .view-overlays > div,
+.monaco-editor .margin-view-overlays > div {
 	position: absolute;
 	width: 100%;
 }
@@ -76,13 +79,12 @@
 }
 */
 
-
 .monaco-editor .squiggly-error {
 	border-bottom: 4px double var(--vscode-editorError-border);
 }
 .monaco-editor .squiggly-error::before {
 	display: block;
-	content: '';
+	content: "";
 	width: 100%;
 	height: 100%;
 	background: var(--vscode-editorError-background);
@@ -92,7 +94,7 @@
 }
 .monaco-editor .squiggly-warning::before {
 	display: block;
-	content: '';
+	content: "";
 	width: 100%;
 	height: 100%;
 	background: var(--vscode-editorWarning-background);
@@ -102,7 +104,7 @@
 }
 .monaco-editor .squiggly-info::before {
 	display: block;
-	content: '';
+	content: "";
 	width: 100%;
 	height: 100%;
 	background: var(--vscode-editorInfo-background);

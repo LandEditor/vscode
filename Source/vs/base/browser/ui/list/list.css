@@ -44,7 +44,10 @@
 
 /* Make sure the scrollbar renders above overlays (sticky scroll) */
 .monaco-list .monaco-scrollable-element > .scrollbar.vertical,
-.monaco-pane-view > .monaco-split-view2.vertical > .monaco-scrollable-element > .scrollbar.vertical {
+.monaco-pane-view
+	> .monaco-split-view2.vertical
+	> .monaco-scrollable-element
+	> .scrollbar.vertical {
 	z-index: 14;
 }
 

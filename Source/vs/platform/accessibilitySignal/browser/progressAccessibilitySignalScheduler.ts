@@ -3,9 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler } from '../../../base/common/async.js';
-import { Disposable, IDisposable } from '../../../base/common/lifecycle.js';
-import { AccessibilitySignal, IAccessibilitySignalService } from './accessibilitySignalService.js';
+import { RunOnceScheduler } from "../../../base/common/async.js";
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../base/common/lifecycle.js";
+import {
+	AccessibilitySignal,
+	IAccessibilitySignalService,
+} from "./accessibilitySignalService.js";
 
 const PROGRESS_SIGNAL_LOOP_DELAY = 5000;
 
@@ -28,4 +34,3 @@ export class AccessibilityProgressSignalScheduler extends Disposable {
 		this._scheduler.dispose();
 	}
 }
-

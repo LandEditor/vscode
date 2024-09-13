@@ -3,14 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Parser } from '@vscode/tree-sitter-wasm';
-import { Event } from '../../../base/common/event.js';
-import { ITextModel } from '../model.js';
-import { createDecorator } from '../../../platform/instantiation/common/instantiation.js';
+import type { Parser } from "@vscode/tree-sitter-wasm";
+import type { Event } from "../../../base/common/event.js";
+import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
+import type { ITextModel } from "../model.js";
 
-export const EDITOR_EXPERIMENTAL_PREFER_TREESITTER = 'editor.experimental.preferTreeSitter';
+export const EDITOR_EXPERIMENTAL_PREFER_TREESITTER =
+	"editor.experimental.preferTreeSitter";
 
-export const ITreeSitterParserService = createDecorator<ITreeSitterParserService>('treeSitterParserService');
+export const ITreeSitterParserService =
+	createDecorator<ITreeSitterParserService>("treeSitterParserService");
 
 export interface ITreeSitterParserService {
 	readonly _serviceBrand: undefined;

@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as performance from '../../../base/common/performance.js';
-import { OperatingSystem } from '../../../base/common/platform.js';
-import { URI } from '../../../base/common/uri.js';
-import { IUserDataProfile } from '../../userDataProfile/common/userDataProfile.js';
+import type * as performance from "../../../base/common/performance.js";
+import type { OperatingSystem } from "../../../base/common/platform.js";
+import type { URI } from "../../../base/common/uri.js";
+import type { IUserDataProfile } from "../../userDataProfile/common/userDataProfile.js";
 
 export interface IRemoteAgentEnvironment {
 	pid: number;

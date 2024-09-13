@@ -3,35 +3,56 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
-import { Dimension, getActiveWindow, IFocusTracker, trackFocus } from '../../../../../base/browser/dom.js';
-import { Emitter, Event } from '../../../../../base/common/event.js';
-import { Disposable, toDisposable } from '../../../../../base/common/lifecycle.js';
-import { MicrotaskDelay } from '../../../../../base/common/symbols.js';
-import './media/terminalChatWidget.css';
-import { localize } from '../../../../../nls.js';
-import { IContextKey, IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { ChatAgentLocation } from '../../../chat/common/chatAgents.js';
-import { InlineChatWidget } from '../../../inlineChat/browser/inlineChatWidget.js';
-import { ITerminalInstance, type IXtermTerminal } from '../../../terminal/browser/terminal.js';
-import { MENU_TERMINAL_CHAT_INPUT, MENU_TERMINAL_CHAT_WIDGET, MENU_TERMINAL_CHAT_WIDGET_STATUS, TerminalChatCommandId, TerminalChatContextKeys } from './terminalChat.js';
-import { TerminalStickyScrollContribution } from '../../stickyScroll/browser/terminalStickyScrollContribution.js';
+import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+import {
+	Dimension,
+	type IFocusTracker,
+	getActiveWindow,
+	trackFocus,
+} from "../../../../../base/browser/dom.js";
+import { Emitter, Event } from "../../../../../base/common/event.js";
+import {
+	Disposable,
+	toDisposable,
+} from "../../../../../base/common/lifecycle.js";
+import { MicrotaskDelay } from "../../../../../base/common/symbols.js";
+import "./media/terminalChatWidget.css";
+import { localize } from "../../../../../nls.js";
+import {
+	type IContextKey,
+	IContextKeyService,
+} from "../../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import { ChatAgentLocation } from "../../../chat/common/chatAgents.js";
+import { InlineChatWidget } from "../../../inlineChat/browser/inlineChatWidget.js";
+import type {
+	ITerminalInstance,
+	IXtermTerminal,
+} from "../../../terminal/browser/terminal.js";
+import { TerminalStickyScrollContribution } from "../../stickyScroll/browser/terminalStickyScrollContribution.js";
+import {
+	MENU_TERMINAL_CHAT_INPUT,
+	MENU_TERMINAL_CHAT_WIDGET,
+	MENU_TERMINAL_CHAT_WIDGET_STATUS,
+	TerminalChatCommandId,
+	TerminalChatContextKeys,
+} from "./terminalChat.js";
 
-const enum Constants {
+enum Constants {
 	HorizontalMargin = 10,
-	VerticalMargin = 30
+	VerticalMargin = 30,
 }
 
 export class TerminalChatWidget extends Disposable {
-
 	private readonly _container: HTMLElement;
 
 	private readonly _onDidHide = this._register(new Emitter<void>());
 	readonly onDidHide = this._onDidHide.event;
 
 	private readonly _inlineChatWidget: InlineChatWidget;
-	public get inlineChatWidget(): InlineChatWidget { return this._inlineChatWidget; }
+	public get inlineChatWidget(): InlineChatWidget {
+		return this._inlineChatWidget;
+	}
 
 	private readonly _focusTracker: IFocusTracker;
 
@@ -126,16 +147,26 @@ export class TerminalChatWidget extends Disposable {
 			return;
 		}
 		const style = getActiveWindow().getComputedStyle(xtermElement);
-		const xtermPadding = parseInt(style.paddingLeft) + parseInt(style.paddingRight);
-		const width = Math.min(640, xtermElement.clientWidth - 12/* padding */ - 2/* border */ - Constants.HorizontalMargin - xtermPadding);
-		const terminalWrapperHeight = this._getTerminalWrapperHeight() ?? Number.MAX_SAFE_INTEGER;
+		const xtermPadding =
+			Number.parseInt(style.paddingLeft) +
+			Number.parseInt(style.paddingRight);
+		const width = Math.min(
+			640,
+			xtermElement.clientWidth -
+				12 /* padding */ -
+				2 /* border */ -
+				Constants.HorizontalMargin -
+				xtermPadding,
+		);
+		const terminalWrapperHeight =
+			this._getTerminalWrapperHeight() ?? Number.MAX_SAFE_INTEGER;
 		let height = Math.min(480, heightInPixel, terminalWrapperHeight);
 		const top = this._getTop() ?? 0;
 		if (width === 0 || height === 0) {
 			return;
 		}
 
-		let adjustedHeight = undefined;
+		let adjustedHeight;
 		if (height < this._inlineChatWidget.contentHeight) {
 			if (height - top > 0) {
 				height = height - top - Constants.VerticalMargin;
@@ -151,13 +182,18 @@ export class TerminalChatWidget extends Disposable {
 	}
 
 	private _reset() {
-		this._inlineChatWidget.placeholder = localize('default.placeholder', "Ask how to do something in the terminal");
-		this._inlineChatWidget.updateInfo(localize('welcome.1', "AI-generated commands may be incorrect"));
+		this._inlineChatWidget.placeholder = localize(
+			"default.placeholder",
+			"Ask how to do something in the terminal",
+		);
+		this._inlineChatWidget.updateInfo(
+			localize("welcome.1", "AI-generated commands may be incorrect"),
+		);
 	}
 
 	reveal(): void {
 		this._doLayout(this._inlineChatWidget.contentHeight);
-		this._container.classList.remove('hide');
+		this._container.classList.remove("hide");
 		this._visibleContextKey.set(true);
 		this._inlineChatWidget.focus();
 		this._instance.scrollToBottom();
@@ -170,8 +206,10 @@ export class TerminalChatWidget extends Disposable {
 		}
 		const terminalWrapperHeight = this._getTerminalWrapperHeight() ?? 0;
 		const cellHeight = font.charHeight * font.lineHeight;
-		const topPadding = terminalWrapperHeight - (this._instance.rows * cellHeight);
-		const cursorY = (this._instance.xterm?.raw.buffer.active.cursorY ?? 0) + 1;
+		const topPadding =
+			terminalWrapperHeight - this._instance.rows * cellHeight;
+		const cursorY =
+			(this._instance.xterm?.raw.buffer.active.cursorY ?? 0) + 1;
 		return topPadding + cursorY * cellHeight;
 	}
 
@@ -186,8 +224,13 @@ export class TerminalChatWidget extends Disposable {
 		if (!terminalWrapperHeight) {
 			return;
 		}
-		if (top > terminalWrapperHeight - widgetHeight && terminalWrapperHeight - widgetHeight > 0) {
-			this._setTerminalOffset(top - (terminalWrapperHeight - widgetHeight));
+		if (
+			top > terminalWrapperHeight - widgetHeight &&
+			terminalWrapperHeight - widgetHeight > 0
+		) {
+			this._setTerminalOffset(
+				top - (terminalWrapperHeight - widgetHeight),
+			);
 		} else if (adjustedHeight) {
 			this._setTerminalOffset(adjustedHeight);
 		} else {
@@ -200,23 +243,26 @@ export class TerminalChatWidget extends Disposable {
 	}
 
 	hide(): void {
-		this._container.classList.add('hide');
+		this._container.classList.add("hide");
 		this._inlineChatWidget.reset();
 		this._reset();
 		this._inlineChatWidget.updateToolbar(false);
 		this._visibleContextKey.set(false);
-		this._inlineChatWidget.value = '';
+		this._inlineChatWidget.value = "";
 		this._instance.focus();
 		this._setTerminalOffset(undefined);
 		this._onDidHide.fire();
 	}
 	private _setTerminalOffset(offset: number | undefined) {
-		if (offset === undefined || this._container.classList.contains('hide')) {
-			this._terminalElement.style.position = '';
-			this._terminalElement.style.bottom = '';
+		if (
+			offset === undefined ||
+			this._container.classList.contains("hide")
+		) {
+			this._terminalElement.style.position = "";
+			this._terminalElement.style.bottom = "";
 			TerminalStickyScrollContribution.get(this._instance)?.hideUnlock();
 		} else {
-			this._terminalElement.style.position = 'relative';
+			this._terminalElement.style.position = "relative";
 			this._terminalElement.style.bottom = `${offset}px`;
 			TerminalStickyScrollContribution.get(this._instance)?.hideLock();
 		}
@@ -231,7 +277,7 @@ export class TerminalChatWidget extends Disposable {
 		return this._inlineChatWidget.value;
 	}
 	setValue(value?: string) {
-		this._inlineChatWidget.value = value ?? '';
+		this._inlineChatWidget.value = value ?? "";
 	}
 	acceptCommand(code: string, shouldExecute: boolean): void {
 		this._instance.runCommand(code, shouldExecute);
