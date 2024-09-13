@@ -56,9 +56,7 @@ export interface IInstantiationService {
 	 */
 	createInstance<T>(descriptor: descriptors.SyncDescriptor0<T>): T;
 	createInstance<
-		Ctor extends new (
-			...args: any[]
-		) => any,
+		Ctor extends new (...args: any[]) => any,
 		R extends InstanceType<Ctor>,
 	>(
 		ctor: Ctor,
