@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Comparator } from './arrays.js';
+import type { Comparator } from './arrays.js';
 
 export function findLast<T>(array: readonly T[], predicate: (item: T) => boolean): T | undefined {
 	const idx = findLastIdx(array, predicate);
@@ -24,6 +24,7 @@ export function findLastIdx<T>(array: readonly T[], predicate: (item: T) => bool
 
 	return -1;
 }
+
 
 /**
  * Finds the last item where predicate is true using binary search.
