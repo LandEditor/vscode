@@ -3,138 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "../../../../base/browser/dom.js";
-import { StandardMouseEvent } from "../../../../base/browser/mouseEvent.js";
-import {
-	ActionBar,
-	ActionsOrientation,
-	type IActionViewItem,
-} from "../../../../base/browser/ui/actionbar/actionbar.js";
-import {
-	Action,
-	type IAction,
-	type IRunEvent,
-	type WorkbenchActionExecutedClassification,
-	type WorkbenchActionExecutedEvent,
-} from "../../../../base/common/actions.js";
-import * as arrays from "../../../../base/common/arrays.js";
-import { RunOnceScheduler } from "../../../../base/common/async.js";
-import * as errors from "../../../../base/common/errors.js";
-import {
-	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
-	dispose,
-	markAsSingleton,
-} from "../../../../base/common/lifecycle.js";
-import type { URI } from "../../../../base/common/uri.js";
-import "./media/debugToolBar.css";
-import { PixelRatio } from "../../../../base/browser/pixelRatio.js";
-import type { IBaseActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
-import {
-	type CodeWindow,
-	mainWindow,
-} from "../../../../base/browser/window.js";
-import { Codicon } from "../../../../base/common/codicons.js";
-import { clamp } from "../../../../base/common/numbers.js";
-import { ThemeIcon } from "../../../../base/common/themables.js";
-import type { ServicesAccessor } from "../../../../editor/browser/editorExtensions.js";
-import { localize } from "../../../../nls.js";
-import type {
-	ICommandAction,
-	ICommandActionTitle,
-} from "../../../../platform/action/common/action.js";
-import {
-	DropdownWithPrimaryActionViewItem,
-	type IDropdownWithPrimaryActionViewItemOptions,
-} from "../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js";
-import {
-	createActionViewItem,
-	createAndFillInActionBarActions,
-} from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
-import {
-	type IMenu,
-	IMenuService,
-	MenuId,
-	type MenuItemAction,
-	MenuRegistry,
-} from "../../../../platform/actions/common/actions.js";
-import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
-import {
-	ContextKeyExpr,
-	type ContextKeyExpression,
-	IContextKeyService,
-} from "../../../../platform/contextkey/common/contextkey.js";
-import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import { INotificationService } from "../../../../platform/notification/common/notification.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../../platform/storage/common/storage.js";
-import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
-import {
-	widgetBorder,
-	widgetShadow,
-} from "../../../../platform/theme/common/colorRegistry.js";
-import {
-	IThemeService,
-	Themable,
-} from "../../../../platform/theme/common/themeService.js";
-import type { IWorkbenchContribution } from "../../../common/contributions.js";
-import {
-	EditorTabsMode,
-	IWorkbenchLayoutService,
-	LayoutSettings,
-	Parts,
-} from "../../../services/layout/browser/layoutService.js";
-import {
-	CONTEXT_DEBUG_STATE,
-	CONTEXT_FOCUSED_SESSION_IS_ATTACH,
-	CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG,
-	CONTEXT_IN_DEBUG_MODE,
-	CONTEXT_MULTI_SESSION_DEBUG,
-	CONTEXT_STEP_BACK_SUPPORTED,
-	CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED,
-	CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-	type IDebugConfiguration,
-	IDebugService,
-	State,
-	VIEWLET_ID,
-} from "../common/debug.js";
-import { FocusSessionActionViewItem } from "./debugActionViewItems.js";
-import { debugToolBarBackground, debugToolBarBorder } from "./debugColors.js";
-import {
-	CONTINUE_ID,
-	CONTINUE_LABEL,
-	DISCONNECT_AND_SUSPEND_ID,
-	DISCONNECT_AND_SUSPEND_LABEL,
-	DISCONNECT_ID,
-	DISCONNECT_LABEL,
-	FOCUS_SESSION_ID,
-	FOCUS_SESSION_LABEL,
-	PAUSE_ID,
-	PAUSE_LABEL,
-	RESTART_LABEL,
-	RESTART_SESSION_ID,
-	REVERSE_CONTINUE_ID,
-	STEP_BACK_ID,
-	STEP_INTO_ID,
-	STEP_INTO_LABEL,
-	STEP_OUT_ID,
-	STEP_OUT_LABEL,
-	STEP_OVER_ID,
-	STEP_OVER_LABEL,
-	STOP_ID,
-	STOP_LABEL,
-} from "./debugCommands.js";
-import * as icons from "./debugIcons.js";
+import * as dom from '../../../../base/browser/dom.js';
+import { StandardMouseEvent } from '../../../../base/browser/mouseEvent.js';
+import { ActionBar, ActionsOrientation, IActionViewItem } from '../../../../base/browser/ui/actionbar/actionbar.js';
+import { Action, IAction, IRunEvent, WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../base/common/actions.js';
+import * as arrays from '../../../../base/common/arrays.js';
+import { RunOnceScheduler } from '../../../../base/common/async.js';
+import * as errors from '../../../../base/common/errors.js';
+import { DisposableStore, dispose, IDisposable, markAsSingleton, MutableDisposable } from '../../../../base/common/lifecycle.js';
+import { URI } from '../../../../base/common/uri.js';
+import './media/debugToolBar.css';
+import { ServicesAccessor } from '../../../../editor/browser/editorExtensions.js';
+import { localize } from '../../../../nls.js';
+import { ICommandAction, ICommandActionTitle } from '../../../../platform/action/common/action.js';
+import { DropdownWithPrimaryActionViewItem, IDropdownWithPrimaryActionViewItemOptions } from '../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js';
+import { createActionViewItem, createAndFillInActionBarActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
+import { IMenu, IMenuService, MenuId, MenuItemAction, MenuRegistry } from '../../../../platform/actions/common/actions.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import { ContextKeyExpr, ContextKeyExpression, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { INotificationService } from '../../../../platform/notification/common/notification.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+import { widgetBorder, widgetShadow } from '../../../../platform/theme/common/colorRegistry.js';
+import { IThemeService, Themable } from '../../../../platform/theme/common/themeService.js';
+import { ThemeIcon } from '../../../../base/common/themables.js';
+import { IWorkbenchContribution } from '../../../common/contributions.js';
+import { FocusSessionActionViewItem } from './debugActionViewItems.js';
+import { debugToolBarBackground, debugToolBarBorder } from './debugColors.js';
+import { CONTINUE_ID, CONTINUE_LABEL, DISCONNECT_AND_SUSPEND_ID, DISCONNECT_AND_SUSPEND_LABEL, DISCONNECT_ID, DISCONNECT_LABEL, FOCUS_SESSION_ID, FOCUS_SESSION_LABEL, PAUSE_ID, PAUSE_LABEL, RESTART_LABEL, RESTART_SESSION_ID, REVERSE_CONTINUE_ID, STEP_BACK_ID, STEP_INTO_ID, STEP_INTO_LABEL, STEP_OUT_ID, STEP_OUT_LABEL, STEP_OVER_ID, STEP_OVER_LABEL, STOP_ID, STOP_LABEL } from './debugCommands.js';
+import * as icons from './debugIcons.js';
+import { CONTEXT_DEBUG_STATE, CONTEXT_FOCUSED_SESSION_IS_ATTACH, CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG, CONTEXT_IN_DEBUG_MODE, CONTEXT_MULTI_SESSION_DEBUG, CONTEXT_STEP_BACK_SUPPORTED, CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED, CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED, IDebugConfiguration, IDebugService, State, VIEWLET_ID } from '../common/debug.js';
+import { EditorTabsMode, IWorkbenchLayoutService, LayoutSettings, Parts } from '../../../services/layout/browser/layoutService.js';
+import { Codicon } from '../../../../base/common/codicons.js';
+import { CodeWindow, mainWindow } from '../../../../base/browser/window.js';
+import { clamp } from '../../../../base/common/numbers.js';
+import { PixelRatio } from '../../../../base/browser/pixelRatio.js';
+import { IBaseActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
 
-const DEBUG_TOOLBAR_POSITION_KEY = "debug.actionswidgetposition";
-const DEBUG_TOOLBAR_Y_KEY = "debug.actionswidgety";
+const DEBUG_TOOLBAR_POSITION_KEY = 'debug.actionswidgetposition';
+const DEBUG_TOOLBAR_Y_KEY = 'debug.actionswidgety';
 
 export class DebugToolBar extends Themable implements IWorkbenchContribution {
+
 	private $el: HTMLElement;
 	private dragArea: HTMLElement;
 	private actionBar: ActionBar;
@@ -145,18 +57,11 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	private isVisible = false;
 	private isBuilt = false;
 
-	private readonly stopActionViewItemDisposables = this._register(
-		new DisposableStore(),
-	);
+	private readonly stopActionViewItemDisposables = this._register(new DisposableStore());
 	/** coordinate of the debug toolbar per aux window */
-	private readonly auxWindowCoordinates = new WeakMap<
-		CodeWindow,
-		{ x: number; y: number | undefined }
-	>();
+	private readonly auxWindowCoordinates = new WeakMap<CodeWindow, { x: number; y: number | undefined }>();
 
-	private readonly trackPixelRatioListener = this._register(
-		new MutableDisposable(),
-	);
+	private readonly trackPixelRatioListener = this._register(new MutableDisposable());
 
 	constructor(
 		@INotificationService private readonly notificationService: INotificationService,
@@ -228,174 +133,95 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	}
 
 	private registerListeners(): void {
-		this._register(
-			this.debugService.onDidChangeState(() =>
-				this.updateScheduler.schedule(),
-			),
-		);
-		this._register(
-			this.configurationService.onDidChangeConfiguration((e) => {
-				if (e.affectsConfiguration("debug.toolBarLocation")) {
-					this.updateScheduler.schedule();
-				}
-				if (
-					e.affectsConfiguration(LayoutSettings.EDITOR_TABS_MODE) ||
-					e.affectsConfiguration(LayoutSettings.COMMAND_CENTER)
-				) {
-					this._yRange = undefined;
-					this.setCoordinates();
-				}
-			}),
-		);
-		this._register(
-			this.debugToolBarMenu.onDidChange(() =>
-				this.updateScheduler.schedule(),
-			),
-		);
-		this._register(
-			this.actionBar.actionRunner.onDidRun((e: IRunEvent) => {
-				// check for error
-				if (e.error && !errors.isCancellationError(e.error)) {
-					this.notificationService.warn(e.error);
-				}
+		this._register(this.debugService.onDidChangeState(() => this.updateScheduler.schedule()));
+		this._register(this.configurationService.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('debug.toolBarLocation')) {
+				this.updateScheduler.schedule();
+			}
+			if (e.affectsConfiguration(LayoutSettings.EDITOR_TABS_MODE) || e.affectsConfiguration(LayoutSettings.COMMAND_CENTER)) {
+				this._yRange = undefined;
+				this.setCoordinates();
+			}
+		}));
+		this._register(this.debugToolBarMenu.onDidChange(() => this.updateScheduler.schedule()));
+		this._register(this.actionBar.actionRunner.onDidRun((e: IRunEvent) => {
+			// check for error
+			if (e.error && !errors.isCancellationError(e.error)) {
+				this.notificationService.warn(e.error);
+			}
 
-				// log in telemetry
-				this.telemetryService.publicLog2<
-					WorkbenchActionExecutedEvent,
-					WorkbenchActionExecutedClassification
-				>("workbenchActionExecuted", {
-					id: e.action.id,
-					from: "debugActionsWidget",
-				});
-			}),
-		);
+			// log in telemetry
+			this.telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: e.action.id, from: 'debugActionsWidget' });
+		}));
 
-		this._register(
-			dom.addDisposableGenericMouseUpListener(
-				this.dragArea,
-				(event: MouseEvent) => {
-					const mouseClickEvent = new StandardMouseEvent(
-						dom.getWindow(this.dragArea),
-						event,
-					);
-					const activeWindow = dom.getWindow(
-						this.layoutService.activeContainer,
-					);
-					if (mouseClickEvent.detail === 2) {
-						// double click on debug bar centers it again #8250
-						const widgetWidth = this.$el.clientWidth;
-						this.setCoordinates(
-							0.5 * activeWindow.innerWidth - 0.5 * widgetWidth,
-							this.yDefault,
-						);
-						this.storePosition();
-					}
-				},
-			),
-		);
+		this._register(dom.addDisposableGenericMouseUpListener(this.dragArea, (event: MouseEvent) => {
+			const mouseClickEvent = new StandardMouseEvent(dom.getWindow(this.dragArea), event);
+			const activeWindow = dom.getWindow(this.layoutService.activeContainer);
+			if (mouseClickEvent.detail === 2) {
+				// double click on debug bar centers it again #8250
+				const widgetWidth = this.$el.clientWidth;
+				this.setCoordinates(0.5 * activeWindow.innerWidth - 0.5 * widgetWidth, this.yDefault);
+				this.storePosition();
+			}
+		}));
 
-		this._register(
-			dom.addDisposableGenericMouseDownListener(
-				this.dragArea,
-				(event: MouseEvent) => {
-					this.dragArea.classList.add("dragged");
-					const activeWindow = dom.getWindow(
-						this.layoutService.activeContainer,
-					);
+		this._register(dom.addDisposableGenericMouseDownListener(this.dragArea, (event: MouseEvent) => {
+			this.dragArea.classList.add('dragged');
+			const activeWindow = dom.getWindow(this.layoutService.activeContainer);
 
-					const mouseMoveListener =
-						dom.addDisposableGenericMouseMoveListener(
-							activeWindow,
-							(e: MouseEvent) => {
-								const mouseMoveEvent = new StandardMouseEvent(
-									activeWindow,
-									e,
-								);
-								// Prevent default to stop editor selecting text #8524
-								mouseMoveEvent.preventDefault();
-								// Reduce x by width of drag handle to reduce jarring #16604
-								this.setCoordinates(
-									mouseMoveEvent.posx - 14,
-									mouseMoveEvent.posy - 14,
-								);
-							},
-						);
+			const mouseMoveListener = dom.addDisposableGenericMouseMoveListener(activeWindow, (e: MouseEvent) => {
+				const mouseMoveEvent = new StandardMouseEvent(activeWindow, e);
+				// Prevent default to stop editor selecting text #8524
+				mouseMoveEvent.preventDefault();
+				// Reduce x by width of drag handle to reduce jarring #16604
+				this.setCoordinates(mouseMoveEvent.posx - 14, mouseMoveEvent.posy - 14);
+			});
 
-					const mouseUpListener =
-						dom.addDisposableGenericMouseUpListener(
-							activeWindow,
-							(e: MouseEvent) => {
-								this.storePosition();
-								this.dragArea.classList.remove("dragged");
+			const mouseUpListener = dom.addDisposableGenericMouseUpListener(activeWindow, (e: MouseEvent) => {
+				this.storePosition();
+				this.dragArea.classList.remove('dragged');
 
-								mouseMoveListener.dispose();
-								mouseUpListener.dispose();
-							},
-						);
-				},
-			),
-		);
+				mouseMoveListener.dispose();
+				mouseUpListener.dispose();
+			});
+		}));
 
-		this._register(
-			this.layoutService.onDidChangePartVisibility(() =>
-				this.setCoordinates(),
-			),
-		);
+		this._register(this.layoutService.onDidChangePartVisibility(() => this.setCoordinates()));
 
 		const resizeListener = this._register(new MutableDisposable());
 		const registerResizeListener = () => {
-			resizeListener.value = this._register(
-				dom.addDisposableListener(
-					dom.getWindow(this.layoutService.activeContainer),
-					dom.EventType.RESIZE,
-					() => this.setCoordinates(),
-				),
+			resizeListener.value = this._register(dom.addDisposableListener(
+				dom.getWindow(this.layoutService.activeContainer), dom.EventType.RESIZE, () => this.setCoordinates())
 			);
 		};
 
-		this._register(
-			this.layoutService.onDidChangeActiveContainer(async () => {
-				this._yRange = undefined;
+		this._register(this.layoutService.onDidChangeActiveContainer(async () => {
+			this._yRange = undefined;
 
-				// note: we intentionally don't keep the activeContainer before the
-				// `await` clause to avoid any races due to quickly switching windows.
-				await this.layoutService.whenContainerStylesLoaded(
-					dom.getWindow(this.layoutService.activeContainer),
-				);
-				if (this.isBuilt) {
-					this.doShowInActiveContainer();
-					this.setCoordinates();
-				}
+			// note: we intentionally don't keep the activeContainer before the
+			// `await` clause to avoid any races due to quickly switching windows.
+			await this.layoutService.whenContainerStylesLoaded(dom.getWindow(this.layoutService.activeContainer));
+			if (this.isBuilt) {
+				this.doShowInActiveContainer();
+				this.setCoordinates();
+			}
 
-				registerResizeListener();
-			}),
-		);
+			registerResizeListener();
+		}));
 
 		registerResizeListener();
 	}
 
 	private storePosition(): void {
 		const activeWindow = dom.getWindow(this.layoutService.activeContainer);
-		const isMainWindow =
-			this.layoutService.activeContainer ===
-			this.layoutService.mainContainer;
+		const isMainWindow = this.layoutService.activeContainer === this.layoutService.mainContainer;
 
 		const rect = this.$el.getBoundingClientRect();
 		const y = rect.top;
 		const x = rect.left / activeWindow.innerWidth;
 		if (isMainWindow) {
-			this.storageService.store(
-				DEBUG_TOOLBAR_POSITION_KEY,
-				x,
-				StorageScope.PROFILE,
-				StorageTarget.MACHINE,
-			);
-			this.storageService.store(
-				DEBUG_TOOLBAR_Y_KEY,
-				y,
-				StorageScope.PROFILE,
-				StorageTarget.MACHINE,
-			);
+			this.storageService.store(DEBUG_TOOLBAR_POSITION_KEY, x, StorageScope.PROFILE, StorageTarget.MACHINE);
+			this.storageService.store(DEBUG_TOOLBAR_Y_KEY, y, StorageScope.PROFILE, StorageTarget.MACHINE);
 		} else {
 			this.auxWindowCoordinates.set(activeWindow, { x, y });
 		}
@@ -405,13 +231,10 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 		super.updateStyles();
 
 		if (this.$el) {
-			this.$el.style.backgroundColor =
-				this.getColor(debugToolBarBackground) || "";
+			this.$el.style.backgroundColor = this.getColor(debugToolBarBackground) || '';
 
 			const widgetShadowColor = this.getColor(widgetShadow);
-			this.$el.style.boxShadow = widgetShadowColor
-				? `0 0 8px 2px ${widgetShadowColor}`
-				: "";
+			this.$el.style.boxShadow = widgetShadowColor ? `0 0 8px 2px ${widgetShadowColor}` : '';
 
 			const contrastBorderColor = this.getColor(widgetBorder);
 			const borderColor = this.getColor(debugToolBarBorder);
@@ -419,10 +242,8 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 			if (contrastBorderColor) {
 				this.$el.style.border = `1px solid ${contrastBorderColor}`;
 			} else {
-				this.$el.style.border = borderColor
-					? `solid ${borderColor}`
-					: "none";
-				this.$el.style.border = "1px 0";
+				this.$el.style.border = borderColor ? `solid ${borderColor}` : 'none';
+				this.$el.style.border = '1px 0';
 			}
 		}
 	}
@@ -438,17 +259,11 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 		if (x === undefined) {
 			const positionPercentage = isMainWindow
-				? Number(
-						this.storageService.get(
-							DEBUG_TOOLBAR_POSITION_KEY,
-							StorageScope.PROFILE,
-						),
-					)
+				? Number(this.storageService.get(DEBUG_TOOLBAR_POSITION_KEY, StorageScope.PROFILE))
 				: this.auxWindowCoordinates.get(currentWindow)?.x;
-			x =
-				positionPercentage !== undefined && !isNaN(positionPercentage)
-					? positionPercentage * currentWindow.innerWidth
-					: 0.5 * currentWindow.innerWidth - 0.5 * widgetWidth;
+			x = positionPercentage !== undefined && !isNaN(positionPercentage)
+				? positionPercentage * currentWindow.innerWidth
+				: (0.5 * currentWindow.innerWidth - 0.5 * widgetWidth);
 		}
 
 		x = clamp(x, 0, currentWindow.innerWidth - widgetWidth); // do not allow the widget to overflow on the right
@@ -456,10 +271,7 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 		if (y === undefined) {
 			y = isMainWindow
-				? this.storageService.getNumber(
-						DEBUG_TOOLBAR_Y_KEY,
-						StorageScope.PROFILE,
-					)
+				? this.storageService.getNumber(DEBUG_TOOLBAR_Y_KEY, StorageScope.PROFILE)
 				: this.auxWindowCoordinates.get(currentWindow)?.y;
 		}
 
@@ -479,32 +291,19 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	private _yRange: [number, number] | undefined;
 	private get yRange(): [number, number] {
 		if (!this._yRange) {
-			const isTitleBarVisible = this.layoutService.isVisible(
-				Parts.TITLEBAR_PART,
-				dom.getWindow(this.layoutService.activeContainer),
-			);
-			const yMin = isTitleBarVisible
-				? 0
-				: this.layoutService.mainContainerOffset.top;
+			const isTitleBarVisible = this.layoutService.isVisible(Parts.TITLEBAR_PART, dom.getWindow(this.layoutService.activeContainer));
+			const yMin = isTitleBarVisible ? 0 : this.layoutService.mainContainerOffset.top;
 			let yMax = 0;
 
 			if (isTitleBarVisible) {
-				if (
-					this.configurationService.getValue(
-						LayoutSettings.COMMAND_CENTER,
-					) === true
-				) {
+				if (this.configurationService.getValue(LayoutSettings.COMMAND_CENTER) === true) {
 					yMax += 35;
 				} else {
 					yMax += 28;
 				}
 			}
 
-			if (
-				this.configurationService.getValue(
-					LayoutSettings.EDITOR_TABS_MODE,
-				) !== EditorTabsMode.NONE
-			) {
+			if (this.configurationService.getValue(LayoutSettings.EDITOR_TABS_MODE) !== EditorTabsMode.NONE) {
 				yMax += 35;
 			}
 			this._yRange = [yMin, yMax];
@@ -529,9 +328,9 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 
 	private doShowInActiveContainer(): void {
 		this.layoutService.activeContainer.appendChild(this.$el);
-		this.trackPixelRatioListener.value = PixelRatio.getInstance(
-			dom.getWindow(this.$el),
-		).onDidChange(() => this.setCoordinates());
+		this.trackPixelRatioListener.value = PixelRatio.getInstance(dom.getWindow(this.$el)).onDidChange(
+			() => this.setCoordinates()
+		);
 	}
 
 	private hide(): void {
@@ -546,22 +345,13 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	}
 }
 
-export function createDisconnectMenuItemAction(
-	action: MenuItemAction,
-	disposables: DisposableStore,
-	accessor: ServicesAccessor,
-	options: IDropdownWithPrimaryActionViewItemOptions,
-): IActionViewItem | undefined {
+export function createDisconnectMenuItemAction(action: MenuItemAction, disposables: DisposableStore, accessor: ServicesAccessor, options: IDropdownWithPrimaryActionViewItemOptions): IActionViewItem | undefined {
 	const menuService = accessor.get(IMenuService);
 	const contextKeyService = accessor.get(IContextKeyService);
 	const instantiationService = accessor.get(IInstantiationService);
 	const contextMenuService = accessor.get(IContextMenuService);
 
-	const menu = menuService.getMenuActions(
-		MenuId.DebugToolBarStop,
-		contextKeyService,
-		{ shouldForwardArgs: true },
-	);
+	const menu = menuService.getMenuActions(MenuId.DebugToolBarStop, contextKeyService, { shouldForwardArgs: true });
 	const secondary: IAction[] = [];
 	createAndFillInActionBarActions(menu, secondary);
 
@@ -569,268 +359,117 @@ export function createDisconnectMenuItemAction(
 		return undefined;
 	}
 
-	const dropdownAction = disposables.add(
-		new Action(
-			"notebook.moreRunActions",
-			localize("notebook.moreRunActionsLabel", "More..."),
-			"codicon-chevron-down",
-			true,
-		),
-	);
-	const item = instantiationService.createInstance(
-		DropdownWithPrimaryActionViewItem,
+	const dropdownAction = disposables.add(new Action('notebook.moreRunActions', localize('notebook.moreRunActionsLabel', "More..."), 'codicon-chevron-down', true));
+	const item = instantiationService.createInstance(DropdownWithPrimaryActionViewItem,
 		action as MenuItemAction,
 		dropdownAction,
 		secondary,
-		"debug-stop-actions",
+		'debug-stop-actions',
 		contextMenuService,
-		options,
-	);
+		options);
 	return item;
 }
 
 // Debug toolbar
 
 const debugViewTitleItems: IDisposable[] = [];
-const registerDebugToolBarItem = (
-	id: string,
-	title: string | ICommandActionTitle,
-	order: number,
-	icon?: { light?: URI; dark?: URI } | ThemeIcon,
-	when?: ContextKeyExpression,
-	precondition?: ContextKeyExpression,
-	alt?: ICommandAction,
-) => {
+const registerDebugToolBarItem = (id: string, title: string | ICommandActionTitle, order: number, icon?: { light?: URI; dark?: URI } | ThemeIcon, when?: ContextKeyExpression, precondition?: ContextKeyExpression, alt?: ICommandAction) => {
 	MenuRegistry.appendMenuItem(MenuId.DebugToolBar, {
-		group: "navigation",
+		group: 'navigation',
 		when,
 		order,
 		command: {
 			id,
 			title,
 			icon,
-			precondition,
+			precondition
 		},
-		alt,
+		alt
 	});
 
 	// Register actions in debug viewlet when toolbar is docked
-	debugViewTitleItems.push(
-		MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
-			group: "navigation",
-			when: ContextKeyExpr.and(
-				when,
-				ContextKeyExpr.equals("viewContainer", VIEWLET_ID),
-				CONTEXT_DEBUG_STATE.notEqualsTo("inactive"),
-				ContextKeyExpr.equals("config.debug.toolBarLocation", "docked"),
-			),
-			order,
-			command: {
-				id,
-				title,
-				icon,
-				precondition,
-			},
-		}),
-	);
+	debugViewTitleItems.push(MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
+		group: 'navigation',
+		when: ContextKeyExpr.and(when, ContextKeyExpr.equals('viewContainer', VIEWLET_ID), CONTEXT_DEBUG_STATE.notEqualsTo('inactive'), ContextKeyExpr.equals('config.debug.toolBarLocation', 'docked')),
+		order,
+		command: {
+			id,
+			title,
+			icon,
+			precondition
+		}
+	}));
 };
 
-markAsSingleton(
-	MenuRegistry.onDidChangeMenu((e) => {
-		// In case the debug toolbar is docked we need to make sure that the docked toolbar has the up to date commands registered #115945
-		if (e.has(MenuId.DebugToolBar)) {
-			dispose(debugViewTitleItems);
-			const items = MenuRegistry.getMenuItems(MenuId.DebugToolBar);
-			for (const i of items) {
-				debugViewTitleItems.push(
-					MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
-						...i,
-						when: ContextKeyExpr.and(
-							i.when,
-							ContextKeyExpr.equals("viewContainer", VIEWLET_ID),
-							CONTEXT_DEBUG_STATE.notEqualsTo("inactive"),
-							ContextKeyExpr.equals(
-								"config.debug.toolBarLocation",
-								"docked",
-							),
-						),
-					}),
-				);
-			}
+markAsSingleton(MenuRegistry.onDidChangeMenu(e => {
+	// In case the debug toolbar is docked we need to make sure that the docked toolbar has the up to date commands registered #115945
+	if (e.has(MenuId.DebugToolBar)) {
+		dispose(debugViewTitleItems);
+		const items = MenuRegistry.getMenuItems(MenuId.DebugToolBar);
+		for (const i of items) {
+			debugViewTitleItems.push(MenuRegistry.appendMenuItem(MenuId.ViewContainerTitle, {
+				...i,
+				when: ContextKeyExpr.and(i.when, ContextKeyExpr.equals('viewContainer', VIEWLET_ID), CONTEXT_DEBUG_STATE.notEqualsTo('inactive'), ContextKeyExpr.equals('config.debug.toolBarLocation', 'docked'))
+			}));
 		}
-	}),
-);
+	}
+}));
 
-const CONTEXT_TOOLBAR_COMMAND_CENTER = ContextKeyExpr.equals(
-	"config.debug.toolBarLocation",
-	"commandCenter",
-);
+
+const CONTEXT_TOOLBAR_COMMAND_CENTER = ContextKeyExpr.equals('config.debug.toolBarLocation', 'commandCenter');
 
 MenuRegistry.appendMenuItem(MenuId.CommandCenterCenter, {
 	submenu: MenuId.DebugToolBar,
-	title: "Debug",
+	title: 'Debug',
 	icon: Codicon.debug,
 	order: 1,
-	when: ContextKeyExpr.and(
-		CONTEXT_IN_DEBUG_MODE,
-		CONTEXT_TOOLBAR_COMMAND_CENTER,
-	),
+	when: ContextKeyExpr.and(CONTEXT_IN_DEBUG_MODE, CONTEXT_TOOLBAR_COMMAND_CENTER)
 });
 
-registerDebugToolBarItem(
-	CONTINUE_ID,
-	CONTINUE_LABEL,
-	10,
-	icons.debugContinue,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-);
-registerDebugToolBarItem(
-	PAUSE_ID,
-	PAUSE_LABEL,
-	10,
-	icons.debugPause,
-	CONTEXT_DEBUG_STATE.notEqualsTo("stopped"),
-	ContextKeyExpr.and(
-		CONTEXT_DEBUG_STATE.isEqualTo("running"),
-		CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated(),
-	),
-);
-registerDebugToolBarItem(
-	STOP_ID,
-	STOP_LABEL,
-	70,
-	icons.debugStop,
-	CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(),
-	undefined,
-	{
-		id: DISCONNECT_ID,
-		title: DISCONNECT_LABEL,
-		icon: icons.debugDisconnect,
-		precondition: ContextKeyExpr.and(
-			CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(),
-			CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-		),
-	},
-);
-registerDebugToolBarItem(
-	DISCONNECT_ID,
-	DISCONNECT_LABEL,
-	70,
-	icons.debugDisconnect,
-	CONTEXT_FOCUSED_SESSION_IS_ATTACH,
-	undefined,
-	{
-		id: STOP_ID,
-		title: STOP_LABEL,
-		icon: icons.debugStop,
-		precondition: ContextKeyExpr.and(
-			CONTEXT_FOCUSED_SESSION_IS_ATTACH,
-			CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-		),
-	},
-);
-registerDebugToolBarItem(
-	STEP_OVER_ID,
-	STEP_OVER_LABEL,
-	20,
-	icons.debugStepOver,
-	undefined,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-);
-registerDebugToolBarItem(
-	STEP_INTO_ID,
-	STEP_INTO_LABEL,
-	30,
-	icons.debugStepInto,
-	undefined,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-);
-registerDebugToolBarItem(
-	STEP_OUT_ID,
-	STEP_OUT_LABEL,
-	40,
-	icons.debugStepOut,
-	undefined,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-);
-registerDebugToolBarItem(
-	RESTART_SESSION_ID,
-	RESTART_LABEL,
-	60,
-	icons.debugRestart,
-);
-registerDebugToolBarItem(
-	STEP_BACK_ID,
-	localize("stepBackDebug", "Step Back"),
-	50,
-	icons.debugStepBack,
-	CONTEXT_STEP_BACK_SUPPORTED,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-);
-registerDebugToolBarItem(
-	REVERSE_CONTINUE_ID,
-	localize("reverseContinue", "Reverse"),
-	55,
-	icons.debugReverseContinue,
-	CONTEXT_STEP_BACK_SUPPORTED,
-	CONTEXT_DEBUG_STATE.isEqualTo("stopped"),
-);
-registerDebugToolBarItem(
-	FOCUS_SESSION_ID,
-	FOCUS_SESSION_LABEL,
-	100,
-	Codicon.listTree,
-	ContextKeyExpr.and(
-		CONTEXT_MULTI_SESSION_DEBUG,
-		CONTEXT_TOOLBAR_COMMAND_CENTER.negate(),
-	),
-);
+registerDebugToolBarItem(CONTINUE_ID, CONTINUE_LABEL, 10, icons.debugContinue, CONTEXT_DEBUG_STATE.isEqualTo('stopped'));
+registerDebugToolBarItem(PAUSE_ID, PAUSE_LABEL, 10, icons.debugPause, CONTEXT_DEBUG_STATE.notEqualsTo('stopped'), ContextKeyExpr.and(CONTEXT_DEBUG_STATE.isEqualTo('running'), CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG.toNegated()));
+registerDebugToolBarItem(STOP_ID, STOP_LABEL, 70, icons.debugStop, CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(), undefined, { id: DISCONNECT_ID, title: DISCONNECT_LABEL, icon: icons.debugDisconnect, precondition: ContextKeyExpr.and(CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(), CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED), });
+registerDebugToolBarItem(DISCONNECT_ID, DISCONNECT_LABEL, 70, icons.debugDisconnect, CONTEXT_FOCUSED_SESSION_IS_ATTACH, undefined, { id: STOP_ID, title: STOP_LABEL, icon: icons.debugStop, precondition: ContextKeyExpr.and(CONTEXT_FOCUSED_SESSION_IS_ATTACH, CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED), });
+registerDebugToolBarItem(STEP_OVER_ID, STEP_OVER_LABEL, 20, icons.debugStepOver, undefined, CONTEXT_DEBUG_STATE.isEqualTo('stopped'));
+registerDebugToolBarItem(STEP_INTO_ID, STEP_INTO_LABEL, 30, icons.debugStepInto, undefined, CONTEXT_DEBUG_STATE.isEqualTo('stopped'));
+registerDebugToolBarItem(STEP_OUT_ID, STEP_OUT_LABEL, 40, icons.debugStepOut, undefined, CONTEXT_DEBUG_STATE.isEqualTo('stopped'));
+registerDebugToolBarItem(RESTART_SESSION_ID, RESTART_LABEL, 60, icons.debugRestart);
+registerDebugToolBarItem(STEP_BACK_ID, localize('stepBackDebug', "Step Back"), 50, icons.debugStepBack, CONTEXT_STEP_BACK_SUPPORTED, CONTEXT_DEBUG_STATE.isEqualTo('stopped'));
+registerDebugToolBarItem(REVERSE_CONTINUE_ID, localize('reverseContinue', "Reverse"), 55, icons.debugReverseContinue, CONTEXT_STEP_BACK_SUPPORTED, CONTEXT_DEBUG_STATE.isEqualTo('stopped'));
+registerDebugToolBarItem(FOCUS_SESSION_ID, FOCUS_SESSION_LABEL, 100, Codicon.listTree, ContextKeyExpr.and(CONTEXT_MULTI_SESSION_DEBUG, CONTEXT_TOOLBAR_COMMAND_CENTER.negate()));
 
 MenuRegistry.appendMenuItem(MenuId.DebugToolBarStop, {
-	group: "navigation",
-	when: ContextKeyExpr.and(
-		CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(),
-		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-	),
+	group: 'navigation',
+	when: ContextKeyExpr.and(CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(), CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED),
 	order: 0,
 	command: {
 		id: DISCONNECT_ID,
 		title: DISCONNECT_LABEL,
-		icon: icons.debugDisconnect,
-	},
+		icon: icons.debugDisconnect
+	}
 });
 
 MenuRegistry.appendMenuItem(MenuId.DebugToolBarStop, {
-	group: "navigation",
-	when: ContextKeyExpr.and(
-		CONTEXT_FOCUSED_SESSION_IS_ATTACH,
-		CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-	),
+	group: 'navigation',
+	when: ContextKeyExpr.and(CONTEXT_FOCUSED_SESSION_IS_ATTACH, CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED),
 	order: 0,
 	command: {
 		id: STOP_ID,
 		title: STOP_LABEL,
-		icon: icons.debugStop,
-	},
+		icon: icons.debugStop
+	}
 });
 
 MenuRegistry.appendMenuItem(MenuId.DebugToolBarStop, {
-	group: "navigation",
+	group: 'navigation',
 	when: ContextKeyExpr.or(
-		ContextKeyExpr.and(
-			CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(),
-			CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED,
-			CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-		),
-		ContextKeyExpr.and(
-			CONTEXT_FOCUSED_SESSION_IS_ATTACH,
-			CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED,
-		),
+		ContextKeyExpr.and(CONTEXT_FOCUSED_SESSION_IS_ATTACH.toNegated(), CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED, CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED),
+		ContextKeyExpr.and(CONTEXT_FOCUSED_SESSION_IS_ATTACH, CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED),
 	),
 	order: 0,
 	command: {
 		id: DISCONNECT_AND_SUSPEND_ID,
 		title: DISCONNECT_AND_SUSPEND_LABEL,
-		icon: icons.debugDisconnect,
-	},
+		icon: icons.debugDisconnect
+	}
 });

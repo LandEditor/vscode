@@ -3,23 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	Disposable,
-	type IDisposable,
-	dispose,
-} from "../../../base/common/lifecycle.js";
-import { IUndoRedoService } from "../../../platform/undoRedo/common/undoRedo.js";
-import {
-	type IUndoRedoDelegate,
-	MultiModelEditStackElement,
-} from "../model/editStack.js";
-import { IModelService } from "./model.js";
-import { ITextModelService } from "./resolverService.js";
+import { IModelService } from './model.js';
+import { ITextModelService } from './resolverService.js';
+import { Disposable, IDisposable, dispose } from '../../../base/common/lifecycle.js';
+import { IUndoRedoService } from '../../../platform/undoRedo/common/undoRedo.js';
+import { IUndoRedoDelegate, MultiModelEditStackElement } from '../model/editStack.js';
 
-export class ModelUndoRedoParticipant
-	extends Disposable
-	implements IUndoRedoDelegate
-{
+export class ModelUndoRedoParticipant extends Disposable implements IUndoRedoDelegate {
 	constructor(
 		@IModelService private readonly _modelService: IModelService,
 		@ITextModelService private readonly _textModelService: ITextModelService,
@@ -45,9 +35,7 @@ export class ModelUndoRedoParticipant
 		}));
 	}
 
-	public prepareUndoRedo(
-		element: MultiModelEditStackElement,
-	): IDisposable | Promise<IDisposable> {
+	public prepareUndoRedo(element: MultiModelEditStackElement): IDisposable | Promise<IDisposable> {
 		// Load all the needed text models
 		const missingModels = element.getMissingModels();
 		if (missingModels.length === 0) {
@@ -57,8 +45,7 @@ export class ModelUndoRedoParticipant
 
 		const disposablesPromises = missingModels.map(async (uri) => {
 			try {
-				const reference =
-					await this._textModelService.createModelReference(uri);
+				const reference = await this._textModelService.createModelReference(uri);
 				return <IDisposable>reference;
 			} catch (err) {
 				// This model could not be loaded, maybe it was deleted in the meantime?
@@ -66,9 +53,9 @@ export class ModelUndoRedoParticipant
 			}
 		});
 
-		return Promise.all(disposablesPromises).then((disposables) => {
+		return Promise.all(disposablesPromises).then(disposables => {
 			return {
-				dispose: () => dispose(disposables),
+				dispose: () => dispose(disposables)
 			};
 		});
 	}

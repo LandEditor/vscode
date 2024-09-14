@@ -3,16 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IAction } from "../../../../base/common/actions.js";
-import type { IDisposable } from "../../../../base/common/lifecycle.js";
-import type { Comment } from "../../../../editor/common/languages.js";
-import { createAndFillInContextMenuActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
-import {
-	type IMenu,
-	IMenuService,
-	MenuId,
-} from "../../../../platform/actions/common/actions.js";
-import type { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { IDisposable } from '../../../../base/common/lifecycle.js';
+import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { IMenuService, MenuId, IMenu } from '../../../../platform/actions/common/actions.js';
+import { IAction } from '../../../../base/common/actions.js';
+import { Comment } from '../../../../editor/common/languages.js';
+import { createAndFillInContextMenuActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
 
 export class CommentMenus implements IDisposable {
 	constructor(
@@ -31,57 +27,35 @@ export class CommentMenus implements IDisposable {
 		return this.getMenu(MenuId.CommentEditorActions, contextKeyService);
 	}
 
-	getCommentThreadAdditionalActions(
-		contextKeyService: IContextKeyService,
-	): IMenu {
-		return this.getMenu(
-			MenuId.CommentThreadAdditionalActions,
-			contextKeyService,
-		);
+	getCommentThreadAdditionalActions(contextKeyService: IContextKeyService): IMenu {
+		return this.getMenu(MenuId.CommentThreadAdditionalActions, contextKeyService);
 	}
 
-	getCommentTitleActions(
-		comment: Comment,
-		contextKeyService: IContextKeyService,
-	): IMenu {
+	getCommentTitleActions(comment: Comment, contextKeyService: IContextKeyService): IMenu {
 		return this.getMenu(MenuId.CommentTitle, contextKeyService);
 	}
 
-	getCommentActions(
-		comment: Comment,
-		contextKeyService: IContextKeyService,
-	): IMenu {
+	getCommentActions(comment: Comment, contextKeyService: IContextKeyService): IMenu {
 		return this.getMenu(MenuId.CommentActions, contextKeyService);
 	}
 
-	getCommentThreadTitleContextActions(
-		contextKeyService: IContextKeyService,
-	): IMenu {
-		return this.getMenu(
-			MenuId.CommentThreadTitleContext,
-			contextKeyService,
-		);
+	getCommentThreadTitleContextActions(contextKeyService: IContextKeyService): IMenu {
+		return this.getMenu(MenuId.CommentThreadTitleContext, contextKeyService);
 	}
 
-	private getMenu(
-		menuId: MenuId,
-		contextKeyService: IContextKeyService,
-	): IMenu {
+	private getMenu(menuId: MenuId, contextKeyService: IContextKeyService): IMenu {
 		const menu = this.menuService.createMenu(menuId, contextKeyService);
 
 		const primary: IAction[] = [];
 		const secondary: IAction[] = [];
 		const result = { primary, secondary };
 
-		createAndFillInContextMenuActions(
-			menu,
-			{ shouldForwardArgs: true },
-			result,
-			"inline",
-		);
+		createAndFillInContextMenuActions(menu, { shouldForwardArgs: true }, result, 'inline');
 
 		return menu;
 	}
 
-	dispose(): void {}
+	dispose(): void {
+
+	}
 }

@@ -3,31 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from "../../../base/common/event.js";
-import { DisposableStore } from "../../../base/common/lifecycle.js";
-import {
-	ExtUri,
-	type IExtUri,
-	normalizePath,
-} from "../../../base/common/resources.js";
-import { SkipList } from "../../../base/common/skipList.js";
-import type { URI } from "../../../base/common/uri.js";
-import {
-	FileSystemProviderCapabilities,
-	IFileService,
-	type IFileSystemProviderCapabilitiesChangeEvent,
-	type IFileSystemProviderRegistrationEvent,
-} from "../../files/common/files.js";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "../../instantiation/common/extensions.js";
-import { IUriIdentityService } from "./uriIdentity.js";
+import { IUriIdentityService } from './uriIdentity.js';
+import { URI } from '../../../base/common/uri.js';
+import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
+import { IFileService, FileSystemProviderCapabilities, IFileSystemProviderCapabilitiesChangeEvent, IFileSystemProviderRegistrationEvent } from '../../files/common/files.js';
+import { ExtUri, IExtUri, normalizePath } from '../../../base/common/resources.js';
+import { SkipList } from '../../../base/common/skipList.js';
+import { Event } from '../../../base/common/event.js';
+import { DisposableStore } from '../../../base/common/lifecycle.js';
 
 class Entry {
 	static _clock = 0;
 	time: number = Entry._clock++;
-	constructor(readonly uri: URI) {}
+	constructor(readonly uri: URI) { }
 	touch() {
 		this.time = Entry._clock++;
 		return this;
@@ -35,6 +23,7 @@ class Entry {
 }
 
 export class UriIdentityService implements IUriIdentityService {
+
 	declare readonly _serviceBrand: undefined;
 
 	readonly extUri: IExtUri;
@@ -79,6 +68,7 @@ export class UriIdentityService implements IUriIdentityService {
 	}
 
 	asCanonicalUri(uri: URI): URI {
+
 		// (1) normalize URI
 		if (this._fileService.hasProvider(uri)) {
 			uri = normalizePath(uri);
@@ -124,8 +114,4 @@ export class UriIdentityService implements IUriIdentityService {
 	}
 }
 
-registerSingleton(
-	IUriIdentityService,
-	UriIdentityService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IUriIdentityService, UriIdentityService, InstantiationType.Delayed);

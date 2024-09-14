@@ -3,27 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createWebWorker } from "../../../../base/browser/defaultWorkerFactory.js";
-import { RunOnceScheduler } from "../../../../base/common/async.js";
-import {
-	Disposable,
-	type IDisposable,
-	dispose,
-} from "../../../../base/common/lifecycle.js";
-import type { URI } from "../../../../base/common/uri.js";
-import type { IWorkerClient } from "../../../../base/common/worker/simpleWorker.js";
-import type { ILink } from "../../../../editor/common/languages.js";
-import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
-import { IModelService } from "../../../../editor/common/services/model.js";
-import { WorkerTextModelSyncClient } from "../../../../editor/common/services/textModelSync/textModelSync.impl.js";
-import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
-import {
-	LOG_MODE_ID,
-	OUTPUT_MODE_ID,
-} from "../../../services/output/common/output.js";
-import type { OutputLinkComputer } from "../common/outputLinkComputer.js";
+import { URI } from '../../../../base/common/uri.js';
+import { RunOnceScheduler } from '../../../../base/common/async.js';
+import { IModelService } from '../../../../editor/common/services/model.js';
+import { ILink } from '../../../../editor/common/languages.js';
+import { IWorkspaceContextService } from '../../../../platform/workspace/common/workspace.js';
+import { OUTPUT_MODE_ID, LOG_MODE_ID } from '../../../services/output/common/output.js';
+import { OutputLinkComputer } from '../common/outputLinkComputer.js';
+import { IDisposable, dispose, Disposable } from '../../../../base/common/lifecycle.js';
+import { ILanguageFeaturesService } from '../../../../editor/common/services/languageFeatures.js';
+import { createWebWorker } from '../../../../base/browser/defaultWorkerFactory.js';
+import { IWorkerClient } from '../../../../base/common/worker/simpleWorker.js';
+import { WorkerTextModelSyncClient } from '../../../../editor/common/services/textModelSync/textModelSync.impl.js';
 
 export class OutputLinkProvider extends Disposable {
+
 	private static readonly DISPOSE_WORKER_TIME = 3 * 60 * 1000; // dispose worker after 3 minutes of inactivity
 
 	private worker?: OutputLinkWorkerClient;
@@ -44,34 +38,22 @@ export class OutputLinkProvider extends Disposable {
 	}
 
 	private registerListeners(): void {
-		this._register(
-			this.contextService.onDidChangeWorkspaceFolders(() =>
-				this.updateLinkProviderWorker(),
-			),
-		);
+		this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.updateLinkProviderWorker()));
 	}
 
 	private updateLinkProviderWorker(): void {
+
 		// Setup link provider depending on folders being opened or not
 		const folders = this.contextService.getWorkspace().folders;
 		if (folders.length > 0) {
 			if (!this.linkProviderRegistration) {
-				this.linkProviderRegistration =
-					this.languageFeaturesService.linkProvider.register(
-						[
-							{ language: OUTPUT_MODE_ID, scheme: "*" },
-							{ language: LOG_MODE_ID, scheme: "*" },
-						],
-						{
-							provideLinks: async (model) => {
-								const links = await this.provideLinks(
-									model.uri,
-								);
+				this.linkProviderRegistration = this.languageFeaturesService.linkProvider.register([{ language: OUTPUT_MODE_ID, scheme: '*' }, { language: LOG_MODE_ID, scheme: '*' }], {
+					provideLinks: async model => {
+						const links = await this.provideLinks(model.uri);
 
-								return links && { links };
-							},
-						},
-					);
+						return links && { links };
+					}
+				});
 			}
 		} else {
 			dispose(this.linkProviderRegistration);
@@ -87,10 +69,7 @@ export class OutputLinkProvider extends Disposable {
 		this.disposeWorkerScheduler.schedule();
 
 		if (!this.worker) {
-			this.worker = new OutputLinkWorkerClient(
-				this.contextService,
-				this.modelService,
-			);
+			this.worker = new OutputLinkWorkerClient(this.contextService, this.modelService);
 		}
 
 		return this.worker;
@@ -127,11 +106,7 @@ class OutputLinkWorkerClient extends Disposable {
 	}
 
 	private async _ensureWorkspaceFolders(): Promise<void> {
-		await this._workerClient.proxy.$setWorkspaceFolders(
-			this.contextService
-				.getWorkspace()
-				.folders.map((folder) => folder.uri.toString()),
-		);
+		await this._workerClient.proxy.$setWorkspaceFolders(this.contextService.getWorkspace().folders.map(folder => folder.uri.toString()));
 	}
 
 	public async provideLinks(modelUri: URI): Promise<ILink[]> {

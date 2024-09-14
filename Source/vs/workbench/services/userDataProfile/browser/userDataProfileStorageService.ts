@@ -3,38 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from "../../../../base/common/event.js";
-import { DisposableStore } from "../../../../base/common/lifecycle.js";
-import type { IStorageDatabase } from "../../../../base/parts/storage/common/storage.js";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "../../../../platform/instantiation/common/extensions.js";
-import { ILogService } from "../../../../platform/log/common/log.js";
-import {
-	type IProfileStorageValueChangeEvent,
-	IStorageService,
-	StorageScope,
-	isProfileUsingDefaultStorage,
-} from "../../../../platform/storage/common/storage.js";
-import type { IUserDataProfile } from "../../../../platform/userDataProfile/common/userDataProfile.js";
-import {
-	AbstractUserDataProfileStorageService,
-	type IProfileStorageChanges,
-	IUserDataProfileStorageService,
-} from "../../../../platform/userDataProfile/common/userDataProfileStorageService.js";
-import { IndexedDBStorageDatabase } from "../../storage/browser/storageService.js";
-import { IUserDataProfileService } from "../common/userDataProfile.js";
+import { Emitter, Event } from '../../../../base/common/event.js';
+import { IStorageDatabase } from '../../../../base/parts/storage/common/storage.js';
+import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import { ILogService } from '../../../../platform/log/common/log.js';
+import { AbstractUserDataProfileStorageService, IProfileStorageChanges, IUserDataProfileStorageService } from '../../../../platform/userDataProfile/common/userDataProfileStorageService.js';
+import { IProfileStorageValueChangeEvent, isProfileUsingDefaultStorage, IStorageService, StorageScope } from '../../../../platform/storage/common/storage.js';
+import { IUserDataProfile } from '../../../../platform/userDataProfile/common/userDataProfile.js';
+import { IndexedDBStorageDatabase } from '../../storage/browser/storageService.js';
+import { IUserDataProfileService } from '../common/userDataProfile.js';
+import { DisposableStore } from '../../../../base/common/lifecycle.js';
 
-export class UserDataProfileStorageService
-	extends AbstractUserDataProfileStorageService
-	implements IUserDataProfileStorageService
-{
-	private readonly _onDidChange = this._register(
-		new Emitter<IProfileStorageChanges>(),
-	);
-	readonly onDidChange: Event<IProfileStorageChanges> =
-		this._onDidChange.event;
+export class UserDataProfileStorageService extends AbstractUserDataProfileStorageService implements IUserDataProfileStorageService {
+
+	private readonly _onDidChange = this._register(new Emitter<IProfileStorageChanges>());
+	readonly onDidChange: Event<IProfileStorageChanges> = this._onDidChange.event;
 
 	constructor(
 		@IStorageService storageService: IStorageService,
@@ -50,42 +33,18 @@ export class UserDataProfileStorageService
 	private onDidChangeStorageTargetInCurrentProfile(): void {
 		// Not broadcasting changes to other windows/tabs as it is not required in web.
 		// Revisit if needed in future.
-		this._onDidChange.fire({
-			targetChanges: [this.userDataProfileService.currentProfile],
-			valueChanges: [],
-		});
+		this._onDidChange.fire({ targetChanges: [this.userDataProfileService.currentProfile], valueChanges: [] });
 	}
 
-	private onDidChangeStorageValueInCurrentProfile(
-		e: IProfileStorageValueChangeEvent,
-	): void {
+	private onDidChangeStorageValueInCurrentProfile(e: IProfileStorageValueChangeEvent): void {
 		// Not broadcasting changes to other windows/tabs as it is not required in web
 		// Revisit if needed in future.
-		this._onDidChange.fire({
-			targetChanges: [],
-			valueChanges: [
-				{
-					profile: this.userDataProfileService.currentProfile,
-					changes: [e],
-				},
-			],
-		});
+		this._onDidChange.fire({ targetChanges: [], valueChanges: [{ profile: this.userDataProfileService.currentProfile, changes: [e] }] });
 	}
 
-	protected createStorageDatabase(
-		profile: IUserDataProfile,
-	): Promise<IStorageDatabase> {
-		return isProfileUsingDefaultStorage(profile)
-			? IndexedDBStorageDatabase.createApplicationStorage(this.logService)
-			: IndexedDBStorageDatabase.createProfileStorage(
-					profile,
-					this.logService,
-				);
+	protected createStorageDatabase(profile: IUserDataProfile): Promise<IStorageDatabase> {
+		return isProfileUsingDefaultStorage(profile) ? IndexedDBStorageDatabase.createApplicationStorage(this.logService) : IndexedDBStorageDatabase.createProfileStorage(profile, this.logService);
 	}
 }
 
-registerSingleton(
-	IUserDataProfileStorageService,
-	UserDataProfileStorageService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IUserDataProfileStorageService, UserDataProfileStorageService, InstantiationType.Delayed);

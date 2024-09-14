@@ -3,26 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, type Event } from "../../../../base/common/event.js";
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
-import { ProxyChannel } from "../../../../base/parts/ipc/common/ipc.js";
-import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
-import { IMainProcessService } from "../../../../platform/ipc/common/mainProcessService.js";
-import {
-	type IKeyboardLayoutInfo,
-	type IKeyboardMapping,
-	type IMacLinuxKeyboardMapping,
-	type IWindowsKeyboardMapping,
-	macLinuxKeyboardMappingEquals,
-	windowsKeyboardMappingEquals,
-} from "../../../../platform/keyboardLayout/common/keyboardLayout.js";
-import type { INativeKeyboardLayoutService as IBaseNativeKeyboardLayoutService } from "../../../../platform/keyboardLayout/common/keyboardLayoutService.js";
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { IKeyboardLayoutInfo, IKeyboardMapping, IMacLinuxKeyboardMapping, IWindowsKeyboardMapping, macLinuxKeyboardMappingEquals, windowsKeyboardMappingEquals } from '../../../../platform/keyboardLayout/common/keyboardLayout.js';
+import { Emitter, Event } from '../../../../base/common/event.js';
+import { OperatingSystem, OS } from '../../../../base/common/platform.js';
+import { IMainProcessService } from '../../../../platform/ipc/common/mainProcessService.js';
+import { INativeKeyboardLayoutService as IBaseNativeKeyboardLayoutService } from '../../../../platform/keyboardLayout/common/keyboardLayoutService.js';
+import { ProxyChannel } from '../../../../base/parts/ipc/common/ipc.js';
+import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
 
-export const INativeKeyboardLayoutService =
-	createDecorator<INativeKeyboardLayoutService>(
-		"nativeKeyboardLayoutService",
-	);
+export const INativeKeyboardLayoutService = createDecorator<INativeKeyboardLayoutService>('nativeKeyboardLayoutService');
 
 export interface INativeKeyboardLayoutService {
 	readonly _serviceBrand: undefined;
@@ -31,15 +21,11 @@ export interface INativeKeyboardLayoutService {
 	getCurrentKeyboardLayout(): IKeyboardLayoutInfo | null;
 }
 
-export class NativeKeyboardLayoutService
-	extends Disposable
-	implements INativeKeyboardLayoutService
-{
+export class NativeKeyboardLayoutService extends Disposable implements INativeKeyboardLayoutService {
+
 	declare readonly _serviceBrand: undefined;
 
-	private readonly _onDidChangeKeyboardLayout = this._register(
-		new Emitter<void>(),
-	);
+	private readonly _onDidChangeKeyboardLayout = this._register(new Emitter<void>());
 	readonly onDidChangeKeyboardLayout = this._onDidChangeKeyboardLayout.event;
 
 	private readonly _keyboardLayoutService: IBaseNativeKeyboardLayoutService;
@@ -77,8 +63,7 @@ export class NativeKeyboardLayoutService
 	}
 
 	private async _doInitialize(): Promise<void> {
-		const keyboardLayoutData =
-			await this._keyboardLayoutService.getKeyboardLayoutData();
+		const keyboardLayoutData = await this._keyboardLayoutService.getKeyboardLayoutData();
 		const { keyboardLayoutInfo, keyboardMapping } = keyboardLayoutData;
 		this._keyboardMapping = keyboardMapping;
 		this._keyboardLayoutInfo = keyboardLayoutInfo;
@@ -93,19 +78,10 @@ export class NativeKeyboardLayoutService
 	}
 }
 
-function keyboardMappingEquals(
-	a: IKeyboardMapping | null,
-	b: IKeyboardMapping | null,
-): boolean {
+function keyboardMappingEquals(a: IKeyboardMapping | null, b: IKeyboardMapping | null): boolean {
 	if (OS === OperatingSystem.Windows) {
-		return windowsKeyboardMappingEquals(
-			<IWindowsKeyboardMapping | null>a,
-			<IWindowsKeyboardMapping | null>b,
-		);
+		return windowsKeyboardMappingEquals(<IWindowsKeyboardMapping | null>a, <IWindowsKeyboardMapping | null>b);
 	}
 
-	return macLinuxKeyboardMappingEquals(
-		<IMacLinuxKeyboardMapping | null>a,
-		<IMacLinuxKeyboardMapping | null>b,
-	);
+	return macLinuxKeyboardMappingEquals(<IMacLinuxKeyboardMapping | null>a, <IMacLinuxKeyboardMapping | null>b);
 }

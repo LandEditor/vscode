@@ -41,9 +41,7 @@
 .monaco-workbench .workbench-hover-lock:focus {
 	outline: 1px solid var(--vscode-focusBorder);
 }
-.monaco-workbench
-	.workbench-hover-container.locked
-	.workbench-hover-lock:hover {
+.monaco-workbench .workbench-hover-container.locked .workbench-hover-lock:hover {
 	background: var(--vscode-toolbar-hoverBackground);
 }
 
@@ -55,7 +53,7 @@
 }
 
 .monaco-workbench .workbench-hover-pointer:after {
-	content: "";
+	content: '';
 	position: absolute;
 	width: 5px;
 	height: 5px;
@@ -70,18 +68,10 @@
 	border-bottom-width: 2px;
 }
 
-.monaco-workbench .workbench-hover-pointer.left {
-	left: -3px;
-}
-.monaco-workbench .workbench-hover-pointer.right {
-	right: 3px;
-}
-.monaco-workbench .workbench-hover-pointer.top {
-	top: -3px;
-}
-.monaco-workbench .workbench-hover-pointer.bottom {
-	bottom: 3px;
-}
+.monaco-workbench .workbench-hover-pointer.left   { left: -3px; }
+.monaco-workbench .workbench-hover-pointer.right  { right: 3px; }
+.monaco-workbench .workbench-hover-pointer.top    { top: -3px; }
+.monaco-workbench .workbench-hover-pointer.bottom { bottom: 3px; }
 
 .monaco-workbench .workbench-hover-pointer.left:after {
 	transform: rotate(135deg);
@@ -128,18 +118,11 @@
 	left: 1px;
 }
 
-.monaco-workbench
-	.workbench-hover.right-aligned
-	.hover-row.status-bar
-	.actions {
+.monaco-workbench .workbench-hover.right-aligned .hover-row.status-bar .actions {
 	flex-direction: row-reverse;
 }
 
-.monaco-workbench
-	.workbench-hover.right-aligned
-	.hover-row.status-bar
-	.actions
-	.action-container {
+.monaco-workbench .workbench-hover.right-aligned .hover-row.status-bar .actions .action-container {
 	margin-right: 0;
 	margin-left: 16px;
 }

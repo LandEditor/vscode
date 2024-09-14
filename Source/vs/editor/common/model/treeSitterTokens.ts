@@ -3,32 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { StandardTokenType } from "../encodedTokenAttributes.js";
-import {
-	type ILanguageIdCodec,
-	type ITreeSitterTokenizationSupport,
-	TreeSitterTokenizationRegistry,
-} from "../languages.js";
-import type { ITreeSitterParserService } from "../services/treeSitterParserService.js";
-import type { IModelContentChangedEvent } from "../textModelEvents.js";
-import type {
-	ITokenizeLineWithEditResult,
-	LineEditWithAdditionalLines,
-} from "../tokenizationTextModelPart.js";
-import { LineTokens } from "../tokens/lineTokens.js";
-import type { TextModel } from "./textModel.js";
-import { AbstractTokens } from "./tokens.js";
+import { ILanguageIdCodec, ITreeSitterTokenizationSupport, TreeSitterTokenizationRegistry } from '../languages.js';
+import { LineTokens } from '../tokens/lineTokens.js';
+import { StandardTokenType } from '../encodedTokenAttributes.js';
+import { TextModel } from './textModel.js';
+import { ITreeSitterParserService } from '../services/treeSitterParserService.js';
+import { IModelContentChangedEvent } from '../textModelEvents.js';
+import { AbstractTokens } from './tokens.js';
+import { ITokenizeLineWithEditResult, LineEditWithAdditionalLines } from '../tokenizationTextModelPart.js';
 
 export class TreeSitterTokens extends AbstractTokens {
 	private _tokenizationSupport: ITreeSitterTokenizationSupport | null = null;
 	private _lastLanguageId: string | undefined;
 
-	constructor(
-		private readonly _treeSitterService: ITreeSitterParserService,
+	constructor(private readonly _treeSitterService: ITreeSitterParserService,
 		languageIdCodec: ILanguageIdCodec,
 		textModel: TextModel,
-		languageId: () => string,
-	) {
+		languageId: () => string) {
 		super(languageIdCodec, textModel, languageId);
 
 		this._initialize();
@@ -36,35 +27,24 @@ export class TreeSitterTokens extends AbstractTokens {
 
 	private _initialize() {
 		const newLanguage = this.getLanguageId();
-		if (
-			!this._tokenizationSupport ||
-			this._lastLanguageId !== newLanguage
-		) {
+		if (!this._tokenizationSupport || this._lastLanguageId !== newLanguage) {
 			this._lastLanguageId = newLanguage;
-			this._tokenizationSupport =
-				TreeSitterTokenizationRegistry.get(newLanguage);
+			this._tokenizationSupport = TreeSitterTokenizationRegistry.get(newLanguage);
 		}
 	}
 
 	public getLineTokens(lineNumber: number): LineTokens {
 		const content = this._textModel.getLineContent(lineNumber);
 		if (this._tokenizationSupport) {
-			const rawTokens = this._tokenizationSupport.tokenizeEncoded(
-				lineNumber,
-				this._textModel,
-			);
+			const rawTokens = this._tokenizationSupport.tokenizeEncoded(lineNumber, this._textModel);
 			if (rawTokens) {
-				return new LineTokens(
-					rawTokens,
-					content,
-					this._languageIdCodec,
-				);
+				return new LineTokens(rawTokens, content, this._languageIdCodec);
 			}
 		}
 		return LineTokens.createEmpty(content, this._languageIdCodec);
 	}
 
-	public resetTokenization(fireTokenChangeEvent = true): void {
+	public resetTokenization(fireTokenChangeEvent: boolean = true): void {
 		if (fireTokenChangeEvent) {
 			this._onDidChangeTokens.fire({
 				semanticTokensApplied: false,
@@ -104,26 +84,17 @@ export class TreeSitterTokens extends AbstractTokens {
 		return true;
 	}
 
-	public override getTokenTypeIfInsertingCharacter(
-		lineNumber: number,
-		column: number,
-		character: string,
-	): StandardTokenType {
+	public override getTokenTypeIfInsertingCharacter(lineNumber: number, column: number, character: string): StandardTokenType {
 		// TODO @alexr00 implement once we have custom parsing and don't just feed in the whole text model value
 		return StandardTokenType.Other;
 	}
-	public override tokenizeLineWithEdit(
-		lineNumber: number,
-		edit: LineEditWithAdditionalLines,
-	): ITokenizeLineWithEditResult {
+	public override tokenizeLineWithEdit(lineNumber: number, edit: LineEditWithAdditionalLines): ITokenizeLineWithEditResult {
 		// TODO @alexr00 understand what this is for and implement
 		return { mainLineTokens: null, additionalLines: null };
 	}
 	public override get hasTokens(): boolean {
 		// TODO @alexr00 once we have a token store, implement properly
-		const hasTree =
-			this._treeSitterService.getParseResult(this._textModel) !==
-			undefined;
+		const hasTree = this._treeSitterService.getParseResult(this._textModel) !== undefined;
 		return hasTree;
 	}
 }

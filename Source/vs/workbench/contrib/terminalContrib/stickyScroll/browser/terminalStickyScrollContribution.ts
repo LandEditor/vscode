@@ -3,59 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
-import { Event } from "../../../../../base/common/event.js";
-import {
-	Disposable,
-	MutableDisposable,
-} from "../../../../../base/common/lifecycle.js";
-import "./media/stickyScroll.css";
-import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
-import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
-import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
-import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
-import { TerminalCapability } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
-import type {
-	ITerminalContribution,
-	ITerminalInstance,
-	IXtermTerminal,
-} from "../../../terminal/browser/terminal.js";
-import {
-	TerminalInstance,
-	TerminalInstanceColorProvider,
-} from "../../../terminal/browser/terminalInstance.js";
-import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
-import type {
-	ITerminalProcessInfo,
-	ITerminalProcessManager,
-} from "../../../terminal/common/terminal.js";
-import { TerminalStickyScrollSettingId } from "../common/terminalStickyScrollConfiguration.js";
-import { TerminalStickyScrollOverlay } from "./terminalStickyScrollOverlay.js";
+import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
+import { Event } from '../../../../../base/common/event.js';
+import { Disposable, MutableDisposable } from '../../../../../base/common/lifecycle.js';
+import './media/stickyScroll.css';
+import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
+import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
+import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
+import { TerminalCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
+import { ITerminalContribution, ITerminalInstance, IXtermTerminal } from '../../../terminal/browser/terminal.js';
+import { TerminalInstance, TerminalInstanceColorProvider } from '../../../terminal/browser/terminalInstance.js';
+import { TerminalWidgetManager } from '../../../terminal/browser/widgets/widgetManager.js';
+import { ITerminalProcessInfo, ITerminalProcessManager } from '../../../terminal/common/terminal.js';
+import { TerminalStickyScrollSettingId } from '../common/terminalStickyScrollConfiguration.js';
+import { TerminalStickyScrollOverlay } from './terminalStickyScrollOverlay.js';
 
-export class TerminalStickyScrollContribution
-	extends Disposable
-	implements ITerminalContribution
-{
-	static readonly ID = "terminal.stickyScroll";
+export class TerminalStickyScrollContribution extends Disposable implements ITerminalContribution {
+	static readonly ID = 'terminal.stickyScroll';
 
-	static get(
-		instance: ITerminalInstance,
-	): TerminalStickyScrollContribution | null {
-		return instance.getContribution<TerminalStickyScrollContribution>(
-			TerminalStickyScrollContribution.ID,
-		);
+	static get(instance: ITerminalInstance): TerminalStickyScrollContribution | null {
+		return instance.getContribution<TerminalStickyScrollContribution>(TerminalStickyScrollContribution.ID);
 	}
 
 	private _xterm?: IXtermTerminal & { raw: RawXtermTerminal };
 
-	private readonly _overlay = this._register(
-		new MutableDisposable<TerminalStickyScrollOverlay>(),
-	);
+	private readonly _overlay = this._register(new MutableDisposable<TerminalStickyScrollOverlay>());
 
 	private readonly _enableListeners = this._register(new MutableDisposable());
-	private readonly _disableListeners = this._register(
-		new MutableDisposable(),
-	);
+	private readonly _disableListeners = this._register(new MutableDisposable());
 
 	constructor(
 		private readonly _instance: ITerminalInstance,
@@ -102,44 +78,34 @@ export class TerminalStickyScrollContribution
 		if (this._overlay.value) {
 			this._enableListeners.clear();
 			if (!this._disableListeners.value) {
-				this._disableListeners.value =
-					this._instance.capabilities.onDidRemoveCapability((e) => {
-						if (e.id === TerminalCapability.CommandDetection) {
-							this._refreshState();
-						}
-					});
+				this._disableListeners.value = this._instance.capabilities.onDidRemoveCapability(e => {
+					if (e.id === TerminalCapability.CommandDetection) {
+						this._refreshState();
+					}
+				});
 			}
 		} else {
 			this._disableListeners.clear();
 			if (!this._enableListeners.value) {
-				this._enableListeners.value =
-					this._instance.capabilities.onDidAddCapability((e) => {
-						if (e.id === TerminalCapability.CommandDetection) {
-							this._refreshState();
-						}
-					});
+				this._enableListeners.value = this._instance.capabilities.onDidAddCapability(e => {
+					if (e.id === TerminalCapability.CommandDetection) {
+						this._refreshState();
+					}
+				});
 			}
 		}
 	}
 
 	private _tryEnable(): void {
 		if (this._shouldBeEnabled()) {
-			const xtermCtorEventually = TerminalInstance.getXtermConstructor(
-				this._keybindingService,
-				this._contextKeyService,
-			);
+			const xtermCtorEventually = TerminalInstance.getXtermConstructor(this._keybindingService, this._contextKeyService);
 			this._overlay.value = this._instantiationService.createInstance(
 				TerminalStickyScrollOverlay,
 				this._instance,
 				this._xterm!,
-				this._instantiationService.createInstance(
-					TerminalInstanceColorProvider,
-					this._instance,
-				),
-				this._instance.capabilities.get(
-					TerminalCapability.CommandDetection,
-				)!,
-				xtermCtorEventually,
+				this._instantiationService.createInstance(TerminalInstanceColorProvider, this._instance),
+				this._instance.capabilities.get(TerminalCapability.CommandDetection)!,
+				xtermCtorEventually
 			);
 		}
 	}
@@ -151,15 +117,7 @@ export class TerminalStickyScrollContribution
 	}
 
 	private _shouldBeEnabled(): boolean {
-		const capability = this._instance.capabilities.get(
-			TerminalCapability.CommandDetection,
-		);
-		return !!(
-			this._configurationService.getValue(
-				TerminalStickyScrollSettingId.Enabled,
-			) &&
-			capability &&
-			this._xterm?.raw?.element
-		);
+		const capability = this._instance.capabilities.get(TerminalCapability.CommandDetection);
+		return !!(this._configurationService.getValue(TerminalStickyScrollSettingId.Enabled) && capability && this._xterm?.raw?.element);
 	}
 }

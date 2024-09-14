@@ -3,36 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { CancellationToken } from "../../../base/common/cancellation.js";
-import { Emitter } from "../../../base/common/event.js";
-import { revive } from "../../../base/common/marshalling.js";
-import type { URI } from "../../../base/common/uri.js";
-import { ILogService } from "../../../platform/log/common/log.js";
-import {
-	ITimelineService,
-	type Timeline,
-	type TimelineChangeEvent,
-	type TimelineOptions,
-	type TimelineProviderDescriptor,
-} from "../../contrib/timeline/common/timeline.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
-import {
-	ExtHostContext,
-	type ExtHostTimelineShape,
-	MainContext,
-	type MainThreadTimelineShape,
-} from "../common/extHost.protocol.js";
+import { Emitter } from '../../../base/common/event.js';
+import { CancellationToken } from '../../../base/common/cancellation.js';
+import { URI } from '../../../base/common/uri.js';
+import { ILogService } from '../../../platform/log/common/log.js';
+import { MainContext, MainThreadTimelineShape, ExtHostTimelineShape, ExtHostContext } from '../common/extHost.protocol.js';
+import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import { TimelineChangeEvent, TimelineOptions, TimelineProviderDescriptor, ITimelineService, Timeline } from '../../contrib/timeline/common/timeline.js';
+import { revive } from '../../../base/common/marshalling.js';
 
 @extHostNamedCustomer(MainContext.MainThreadTimeline)
 export class MainThreadTimeline implements MainThreadTimelineShape {
 	private readonly _proxy: ExtHostTimelineShape;
-	private readonly _providerEmitters = new Map<
-		string,
-		Emitter<TimelineChangeEvent>
-	>();
+	private readonly _providerEmitters = new Map<string, Emitter<TimelineChangeEvent>>();
 
 	constructor(
 		context: IExtHostContext,
@@ -43,9 +26,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 	}
 
 	$registerTimelineProvider(provider: TimelineProviderDescriptor): void {
-		this.logService.trace(
-			`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`,
-		);
+		this.logService.trace(`MainThreadTimeline#registerTimelineProvider: id=${provider.id}`);
 
 		const proxy = this._proxy;
 
@@ -59,34 +40,24 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 		this._timelineService.registerTimelineProvider({
 			...provider,
 			onDidChange: onDidChange.event,
-			async provideTimeline(
-				uri: URI,
-				options: TimelineOptions,
-				token: CancellationToken,
-			) {
-				return revive<Timeline>(
-					await proxy.$getTimeline(provider.id, uri, options, token),
-				);
+			async provideTimeline(uri: URI, options: TimelineOptions, token: CancellationToken) {
+				return revive<Timeline>(await proxy.$getTimeline(provider.id, uri, options, token));
 			},
 			dispose() {
 				emitters.delete(provider.id);
 				onDidChange?.dispose();
-			},
+			}
 		});
 	}
 
 	$unregisterTimelineProvider(id: string): void {
-		this.logService.trace(
-			`MainThreadTimeline#unregisterTimelineProvider: id=${id}`,
-		);
+		this.logService.trace(`MainThreadTimeline#unregisterTimelineProvider: id=${id}`);
 
 		this._timelineService.unregisterTimelineProvider(id);
 	}
 
 	$emitTimelineChangeEvent(e: TimelineChangeEvent): void {
-		this.logService.trace(
-			`MainThreadTimeline#emitChangeEvent: id=${e.id}, uri=${e.uri?.toString(true)}`,
-		);
+		this.logService.trace(`MainThreadTimeline#emitChangeEvent: id=${e.id}, uri=${e.uri?.toString(true)}`);
 
 		const emitter = this._providerEmitters.get(e.id);
 		emitter?.fire(e);

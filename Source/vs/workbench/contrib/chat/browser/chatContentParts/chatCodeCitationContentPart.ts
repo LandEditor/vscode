@@ -3,32 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "../../../../../base/browser/dom.js";
-import { Button } from "../../../../../base/browser/ui/button/button.js";
-import { Disposable } from "../../../../../base/common/lifecycle.js";
-import { localize } from "../../../../../nls.js";
-import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
-import { IEditorService } from "../../../../services/editor/common/editorService.js";
-import { getCodeCitationsMessage } from "../../common/chatModel.js";
-import type {
-	IChatCodeCitations,
-	IChatRendererContent,
-} from "../../common/chatViewModel.js";
-import type { ChatTreeItem } from "../chat.js";
-import type {
-	IChatContentPart,
-	IChatContentPartRenderContext,
-} from "./chatContentParts.js";
+import * as dom from '../../../../../base/browser/dom.js';
+import { Button } from '../../../../../base/browser/ui/button/button.js';
+import { Disposable } from '../../../../../base/common/lifecycle.js';
+import { localize } from '../../../../../nls.js';
+import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
+import { ChatTreeItem } from '../chat.js';
+import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
+import { getCodeCitationsMessage } from '../../common/chatModel.js';
+import { IChatCodeCitations, IChatRendererContent } from '../../common/chatViewModel.js';
+import { IEditorService } from '../../../../services/editor/common/editorService.js';
 
 type ChatCodeCitationOpenedClassification = {
-	owner: "roblourens";
-	comment: "Indicates when a user opens chat code citations";
+	owner: 'roblourens';
+	comment: 'Indicates when a user opens chat code citations';
 };
 
-export class ChatCodeCitationContentPart
-	extends Disposable
-	implements IChatContentPart
-{
+export class ChatCodeCitationContentPart extends Disposable implements IChatContentPart {
 	public readonly domNode: HTMLElement;
 
 	constructor(
@@ -64,11 +55,7 @@ export class ChatCodeCitationContentPart
 		this.domNode = elements.root;
 	}
 
-	hasSameContent(
-		other: IChatRendererContent,
-		followingContent: IChatRendererContent[],
-		element: ChatTreeItem,
-	): boolean {
-		return other.kind === "codeCitations";
+	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+		return other.kind === 'codeCitations';
 	}
 }

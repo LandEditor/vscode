@@ -3,40 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DeferredPromise } from "../../../base/common/async.js";
-import { Emitter, Event } from "../../../base/common/event.js";
-import { hash } from "../../../base/common/hash.js";
-import { Disposable } from "../../../base/common/lifecycle.js";
-import { IConfigurationService } from "../../configuration/common/configuration.js";
-import { createDecorator } from "../../instantiation/common/instantiation.js";
-import { ILifecycleMainService } from "../../lifecycle/electron-main/lifecycleMainService.js";
-import { ILogService } from "../../log/common/log.js";
-import { ITelemetryService } from "../../telemetry/common/telemetry.js";
-import { IWindowsMainService } from "../../windows/electron-main/windows.js";
-import type {
-	IOnDidTerminateUtilityrocessWorkerProcess,
-	IUtilityProcessWorkerConfiguration,
-	IUtilityProcessWorkerCreateConfiguration,
-	IUtilityProcessWorkerProcessExit,
-	IUtilityProcessWorkerService,
-} from "../common/utilityProcessWorkerService.js";
-import {
-	type IWindowUtilityProcessConfiguration,
-	WindowUtilityProcess,
-} from "./utilityProcess.js";
+import { Disposable } from '../../../base/common/lifecycle.js';
+import { createDecorator } from '../../instantiation/common/instantiation.js';
+import { ILogService } from '../../log/common/log.js';
+import { IUtilityProcessWorkerCreateConfiguration, IOnDidTerminateUtilityrocessWorkerProcess, IUtilityProcessWorkerConfiguration, IUtilityProcessWorkerProcessExit, IUtilityProcessWorkerService } from '../common/utilityProcessWorkerService.js';
+import { IWindowsMainService } from '../../windows/electron-main/windows.js';
+import { WindowUtilityProcess } from './utilityProcess.js';
+import { ITelemetryService } from '../../telemetry/common/telemetry.js';
+import { hash } from '../../../base/common/hash.js';
+import { Event, Emitter } from '../../../base/common/event.js';
+import { DeferredPromise } from '../../../base/common/async.js';
+import { ILifecycleMainService } from '../../lifecycle/electron-main/lifecycleMainService.js';
 
-export const IUtilityProcessWorkerMainService =
-	createDecorator<IUtilityProcessWorkerMainService>("utilityProcessWorker");
+export const IUtilityProcessWorkerMainService = createDecorator<IUtilityProcessWorkerMainService>('utilityProcessWorker');
 
-export interface IUtilityProcessWorkerMainService
-	extends IUtilityProcessWorkerService {
+export interface IUtilityProcessWorkerMainService extends IUtilityProcessWorkerService {
+
 	readonly _serviceBrand: undefined;
 }
 
-export class UtilityProcessWorkerMainService
-	extends Disposable
-	implements IUtilityProcessWorkerMainService
-{
+export class UtilityProcessWorkerMainService extends Disposable implements IUtilityProcessWorkerMainService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private readonly workers = new Map<number /* id */, UtilityProcessWorker>();
@@ -45,56 +32,37 @@ export class UtilityProcessWorkerMainService
 		@ILogService private readonly logService: ILogService,
 		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService
 	) {
 		super();
 	}
 
-	async createWorker(
-		configuration: IUtilityProcessWorkerCreateConfiguration,
-	): Promise<IOnDidTerminateUtilityrocessWorkerProcess> {
+	async createWorker(configuration: IUtilityProcessWorkerCreateConfiguration): Promise<IOnDidTerminateUtilityrocessWorkerProcess> {
 		const workerLogId = `window: ${configuration.reply.windowId}, moduleId: ${configuration.process.moduleId}`;
-		this.logService.trace(
-			`[UtilityProcessWorker]: createWorker(${workerLogId})`,
-		);
+		this.logService.trace(`[UtilityProcessWorker]: createWorker(${workerLogId})`);
 
 		// Ensure to dispose any existing process for config
 		const workerId = this.hash(configuration);
 		if (this.workers.has(workerId)) {
-			this.logService.warn(
-				`[UtilityProcessWorker]: createWorker() found an existing worker that will be terminated (${workerLogId})`,
-			);
+			this.logService.warn(`[UtilityProcessWorker]: createWorker() found an existing worker that will be terminated (${workerLogId})`);
 
 			this.disposeWorker(configuration);
 		}
 
 		// Create new worker
-		const worker = new UtilityProcessWorker(
-			this.logService,
-			this.windowsMainService,
-			this.telemetryService,
-			this.lifecycleMainService,
-			this.configurationService,
-			configuration,
-		);
+		const worker = new UtilityProcessWorker(this.logService, this.windowsMainService, this.telemetryService, this.lifecycleMainService, configuration);
 		if (!worker.spawn()) {
-			return { reason: { code: 1, signal: "EINVALID" } };
+			return { reason: { code: 1, signal: 'EINVALID' } };
 		}
 
 		this.workers.set(workerId, worker);
 
-		const onDidTerminate =
-			new DeferredPromise<IOnDidTerminateUtilityrocessWorkerProcess>();
-		Event.once(worker.onDidTerminate)((reason) => {
+		const onDidTerminate = new DeferredPromise<IOnDidTerminateUtilityrocessWorkerProcess>();
+		Event.once(worker.onDidTerminate)(reason => {
 			if (reason.code === 0) {
-				this.logService.trace(
-					`[UtilityProcessWorker]: terminated normally with code ${reason.code}, signal: ${reason.signal}`,
-				);
+				this.logService.trace(`[UtilityProcessWorker]: terminated normally with code ${reason.code}, signal: ${reason.signal}`);
 			} else {
-				this.logService.error(
-					`[UtilityProcessWorker]: terminated unexpectedly with code ${reason.code}, signal: ${reason.signal}`,
-				);
+				this.logService.error(`[UtilityProcessWorker]: terminated unexpectedly with code ${reason.code}, signal: ${reason.signal}`);
 			}
 
 			this.workers.delete(workerId);
@@ -107,22 +75,18 @@ export class UtilityProcessWorkerMainService
 	private hash(configuration: IUtilityProcessWorkerConfiguration): number {
 		return hash({
 			moduleId: configuration.process.moduleId,
-			windowId: configuration.reply.windowId,
+			windowId: configuration.reply.windowId
 		});
 	}
 
-	async disposeWorker(
-		configuration: IUtilityProcessWorkerConfiguration,
-	): Promise<void> {
+	async disposeWorker(configuration: IUtilityProcessWorkerConfiguration): Promise<void> {
 		const workerId = this.hash(configuration);
 		const worker = this.workers.get(workerId);
 		if (!worker) {
 			return;
 		}
 
-		this.logService.trace(
-			`[UtilityProcessWorker]: disposeWorker(window: ${configuration.reply.windowId}, moduleId: ${configuration.process.moduleId})`,
-		);
+		this.logService.trace(`[UtilityProcessWorker]: disposeWorker(window: ${configuration.reply.windowId}, moduleId: ${configuration.process.moduleId})`);
 
 		worker.kill();
 		worker.dispose();
@@ -131,26 +95,17 @@ export class UtilityProcessWorkerMainService
 }
 
 class UtilityProcessWorker extends Disposable {
-	private readonly _onDidTerminate = this._register(
-		new Emitter<IUtilityProcessWorkerProcessExit>(),
-	);
+
+	private readonly _onDidTerminate = this._register(new Emitter<IUtilityProcessWorkerProcessExit>());
 	readonly onDidTerminate = this._onDidTerminate.event;
 
-	private readonly utilityProcess = this._register(
-		new WindowUtilityProcess(
-			this.logService,
-			this.windowsMainService,
-			this.telemetryService,
-			this.lifecycleMainService,
-		),
-	);
+	private readonly utilityProcess = this._register(new WindowUtilityProcess(this.logService, this.windowsMainService, this.telemetryService, this.lifecycleMainService));
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
 		private readonly configuration: IUtilityProcessWorkerCreateConfiguration
 	) {
 		super();
@@ -159,25 +114,15 @@ class UtilityProcessWorker extends Disposable {
 	}
 
 	private registerListeners(): void {
-		this._register(
-			this.utilityProcess.onExit((e) =>
-				this._onDidTerminate.fire({ code: e.code, signal: e.signal }),
-			),
-		);
-		this._register(
-			this.utilityProcess.onCrash((e) =>
-				this._onDidTerminate.fire({ code: e.code, signal: "ECRASH" }),
-			),
-		);
+		this._register(this.utilityProcess.onExit(e => this._onDidTerminate.fire({ code: e.code, signal: e.signal })));
+		this._register(this.utilityProcess.onCrash(e => this._onDidTerminate.fire({ code: e.code, signal: 'ECRASH' })));
 	}
 
 	spawn(): boolean {
-		const window = this.windowsMainService.getWindowById(
-			this.configuration.reply.windowId,
-		);
+		const window = this.windowsMainService.getWindowById(this.configuration.reply.windowId);
 		const windowPid = window?.win?.webContents.getOSProcessId();
 
-		let configuration: IWindowUtilityProcessConfiguration = {
+		return this.utilityProcess.start({
 			type: this.configuration.process.type,
 			entryPoint: this.configuration.process.moduleId,
 			parentLifecycleBound: windowPid,
@@ -185,24 +130,8 @@ class UtilityProcessWorker extends Disposable {
 			correlationId: `${this.configuration.reply.windowId}`,
 			responseWindowId: this.configuration.reply.windowId,
 			responseChannel: this.configuration.reply.channel,
-			responseNonce: this.configuration.reply.nonce,
-		};
-
-		if (
-			this.configuration.process.type === "fileWatcher" &&
-			this.configurationService.getValue<boolean>(
-				"files.experimentalWatcherNext",
-			) === true
-		) {
-			configuration = {
-				...configuration,
-				env: {
-					VSCODE_USE_WATCHER2: "true",
-				},
-			};
-		}
-
-		return this.utilityProcess.start(configuration);
+			responseNonce: this.configuration.reply.nonce
+		});
 	}
 
 	kill() {

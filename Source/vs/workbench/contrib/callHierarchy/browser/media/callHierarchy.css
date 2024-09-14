@@ -37,20 +37,11 @@
 	align-items: center;
 }
 
-.monaco-workbench
-	.call-hierarchy
-	.tree
-	.callhierarchy-element
-	.monaco-icon-label {
+.monaco-workbench .call-hierarchy .tree .callhierarchy-element .monaco-icon-label {
 	padding-left: 4px;
 }
 
-.monaco-editor
-	.call-hierarchy
-	.tree
-	.monaco-list:focus
-	.monaco-list-rows
-	> .monaco-list-row.selected:not(.highlighted) {
+.monaco-editor .call-hierarchy .tree .monaco-list:focus .monaco-list-rows > .monaco-list-row.selected:not(.highlighted) {
 	background-color: var(--vscode-peekViewResult-selectionBackground);
 	color: var(--vscode-peekViewResult-selectionForeground) !important;
 }

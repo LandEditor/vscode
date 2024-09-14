@@ -1,9 +1,17 @@
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+//@ts-check
+'use strict';
+
 // ESM-uncomment-begin
 /** @type any */
 const module = { exports: {} };
 // ESM-uncomment-end
 
-(() => {
+(function () {
 	// ESM-comment-begin
 	// const isESM = false;
 	// ESM-comment-end
@@ -12,10 +20,12 @@ const module = { exports: {} };
 	// ESM-uncomment-end
 
 	function factory() {
+
 		/**
 		 * @returns {Set<string> | undefined}
 		 */
 		function processUNCHostAllowlist() {
+
 			// The property `process.uncHostAllowlist` is not available in official node.js
 			// releases, only in our own builds, so we have to probe for availability
 
@@ -32,7 +42,7 @@ const module = { exports: {} };
 
 			if (Array.isArray(arg0)) {
 				for (const host of arg0) {
-					if (typeof host === "string") {
+					if (typeof host === 'string') {
 						allowedUNCHosts.add(host);
 					}
 				}
@@ -57,13 +67,13 @@ const module = { exports: {} };
 		 * @param {string | string[]} allowedHost
 		 */
 		function addUNCHostToAllowlist(allowedHost) {
-			if (process.platform !== "win32") {
+			if (process.platform !== 'win32') {
 				return;
 			}
 
 			const allowlist = processUNCHostAllowlist();
 			if (allowlist) {
-				if (typeof allowedHost === "string") {
+				if (typeof allowedHost === 'string') {
 					allowlist.add(allowedHost.toLowerCase()); // UNC hosts are case-insensitive
 				} else {
 					for (const host of toSafeStringArray(allowedHost)) {
@@ -78,17 +88,17 @@ const module = { exports: {} };
 		 * @returns {string | undefined}
 		 */
 		function getUNCHost(maybeUNCPath) {
-			if (typeof maybeUNCPath !== "string") {
+			if (typeof maybeUNCPath !== 'string') {
 				return undefined; // require a valid string
 			}
 
 			const uncRoots = [
-				"\\\\.\\UNC\\", // DOS Device paths (https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats)
-				"\\\\?\\UNC\\",
-				"\\\\", // standard UNC path
+				'\\\\.\\UNC\\',	// DOS Device paths (https://learn.microsoft.com/en-us/dotnet/standard/io/file-path-formats)
+				'\\\\?\\UNC\\',
+				'\\\\'			// standard UNC path
 			];
 
-			let host;
+			let host = undefined;
 
 			for (const uncRoot of uncRoots) {
 				const indexOfUNCRoot = maybeUNCPath.indexOf(uncRoot);
@@ -96,18 +106,12 @@ const module = { exports: {} };
 					continue; // not matching any of our expected UNC roots
 				}
 
-				const indexOfUNCPath = maybeUNCPath.indexOf(
-					"\\",
-					uncRoot.length,
-				);
+				const indexOfUNCPath = maybeUNCPath.indexOf('\\', uncRoot.length);
 				if (indexOfUNCPath === -1) {
 					continue; // no path component found
 				}
 
-				const hostCandidate = maybeUNCPath.substring(
-					uncRoot.length,
-					indexOfUNCPath,
-				);
+				const hostCandidate = maybeUNCPath.substring(uncRoot.length, indexOfUNCPath);
 				if (hostCandidate) {
 					host = hostCandidate;
 					break;
@@ -118,7 +122,7 @@ const module = { exports: {} };
 		}
 
 		function disableUNCAccessRestrictions() {
-			if (process.platform !== "win32") {
+			if (process.platform !== 'win32') {
 				return;
 			}
 
@@ -127,7 +131,7 @@ const module = { exports: {} };
 		}
 
 		function isUNCAccessRestrictionsDisabled() {
-			if (process.platform !== "win32") {
+			if (process.platform !== 'win32') {
 				return true;
 			}
 
@@ -140,23 +144,18 @@ const module = { exports: {} };
 			addUNCHostToAllowlist,
 			getUNCHost,
 			disableUNCAccessRestrictions,
-			isUNCAccessRestrictionsDisabled,
+			isUNCAccessRestrictionsDisabled
 		};
 	}
 
-	if (!isESM && typeof define === "function") {
+	if (!isESM && typeof define === 'function') {
 		// amd
-		define([], () => factory());
-	} else if (
-		typeof module === "object" &&
-		typeof module.exports === "object"
-	) {
+		define([], function () { return factory(); });
+	} else if (typeof module === 'object' && typeof module.exports === 'object') {
 		// commonjs
 		module.exports = factory();
 	} else {
-		console.trace(
-			"vs/base/node/unc defined in UNKNOWN context (neither requirejs or commonjs)",
-		);
+		console.trace('vs/base/node/unc defined in UNKNOWN context (neither requirejs or commonjs)');
 	}
 })();
 
@@ -164,8 +163,6 @@ const module = { exports: {} };
 export const getUNCHost = module.exports.getUNCHost;
 export const getUNCHostAllowlist = module.exports.getUNCHostAllowlist;
 export const addUNCHostToAllowlist = module.exports.addUNCHostToAllowlist;
-export const disableUNCAccessRestrictions =
-	module.exports.disableUNCAccessRestrictions;
-export const isUNCAccessRestrictionsDisabled =
-	module.exports.isUNCAccessRestrictionsDisabled;
+export const disableUNCAccessRestrictions = module.exports.disableUNCAccessRestrictions;
+export const isUNCAccessRestrictionsDisabled = module.exports.isUNCAccessRestrictionsDisabled;
 // ESM-uncomment-end

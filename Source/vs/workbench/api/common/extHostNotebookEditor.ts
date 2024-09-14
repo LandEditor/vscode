@@ -3,24 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
-import { illegalArgument } from "../../../base/common/errors.js";
-import type { MainThreadNotebookEditorsShape } from "./extHost.protocol.js";
-import type { ExtHostNotebookDocument } from "./extHostNotebookDocument.js";
-import * as extHostConverter from "./extHostTypeConverters.js";
-import * as extHostTypes from "./extHostTypes.js";
+import { illegalArgument } from '../../../base/common/errors.js';
+import { MainThreadNotebookEditorsShape } from './extHost.protocol.js';
+import * as extHostConverter from './extHostTypeConverters.js';
+import * as extHostTypes from './extHostTypes.js';
+import * as vscode from 'vscode';
+import { ExtHostNotebookDocument } from './extHostNotebookDocument.js';
 
 export class ExtHostNotebookEditor {
-	public static readonly apiEditorsToExtHost = new WeakMap<
-		vscode.NotebookEditor,
-		ExtHostNotebookEditor
-	>();
+
+	public static readonly apiEditorsToExtHost = new WeakMap<vscode.NotebookEditor, ExtHostNotebookEditor>();
 
 	private _selections: vscode.NotebookRange[] = [];
 	private _visibleRanges: vscode.NotebookRange[] = [];
 	private _viewColumn?: vscode.ViewColumn;
 
-	private _visible = false;
+	private _visible: boolean = false;
 
 	private _editor?: vscode.NotebookEditor;
 
@@ -30,7 +28,7 @@ export class ExtHostNotebookEditor {
 		readonly notebookData: ExtHostNotebookDocument,
 		visibleRanges: vscode.NotebookRange[],
 		selections: vscode.NotebookRange[],
-		viewColumn: vscode.ViewColumn | undefined,
+		viewColumn: vscode.ViewColumn | undefined
 	) {
 		this._selections = selections;
 		this._visibleRanges = visibleRanges;
@@ -54,11 +52,8 @@ export class ExtHostNotebookEditor {
 					return that._selections;
 				},
 				set selections(value: vscode.NotebookRange[]) {
-					if (
-						!Array.isArray(value) ||
-						!value.every(extHostTypes.NotebookRange.isNotebookRange)
-					) {
-						throw illegalArgument("selections");
+					if (!Array.isArray(value) || !value.every(extHostTypes.NotebookRange.isNotebookRange)) {
+						throw illegalArgument('selections');
 					}
 					that._selections = value;
 					that._trySetSelections(value);
@@ -70,16 +65,15 @@ export class ExtHostNotebookEditor {
 					that._proxy.$tryRevealRange(
 						that.id,
 						extHostConverter.NotebookRange.from(range),
-						revealType ??
-							extHostTypes.NotebookEditorRevealType.Default,
+						revealType ?? extHostTypes.NotebookEditorRevealType.Default
 					);
 				},
 				get viewColumn() {
 					return that._viewColumn;
 				},
-				[Symbol.for("debug.description")]() {
+				[Symbol.for('debug.description')]() {
 					return `NotebookEditor(${this.notebook.uri.toString()})`;
-				},
+				}
 			};
 
 			ExtHostNotebookEditor.apiEditorsToExtHost.set(this._editor, this);
@@ -104,10 +98,7 @@ export class ExtHostNotebookEditor {
 	}
 
 	private _trySetSelections(value: vscode.NotebookRange[]): void {
-		this._proxy.$trySetSelections(
-			this.id,
-			value.map(extHostConverter.NotebookRange.from),
-		);
+		this._proxy.$trySetSelections(this.id, value.map(extHostConverter.NotebookRange.from));
 	}
 
 	_acceptViewColumn(value: vscode.ViewColumn | undefined) {

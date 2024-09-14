@@ -3,31 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "../../../../base/common/cancellation.js";
-import {
-	LANGUAGE_DEFAULT,
-	Language,
-} from "../../../../base/common/platform.js";
-import { localize } from "../../../../nls.js";
-import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
-import { IExtensionGalleryService } from "../../../../platform/extensionManagement/common/extensionManagement.js";
-import {
-	InstantiationType,
-	registerSingleton,
-} from "../../../../platform/instantiation/common/extensions.js";
-import type { ILanguagePackItem } from "../../../../platform/languagePacks/common/languagePacks.js";
-import { ILogService } from "../../../../platform/log/common/log.js";
-import { IProductService } from "../../../../platform/product/common/productService.js";
-import { IHostService } from "../../host/browser/host.js";
-import {
-	IActiveLanguagePackService,
-	ILocaleService,
-} from "../common/locale.js";
+import { localize } from '../../../../nls.js';
+import { Language, LANGUAGE_DEFAULT } from '../../../../base/common/platform.js';
+import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
+import { ILanguagePackItem } from '../../../../platform/languagePacks/common/languagePacks.js';
+import { IActiveLanguagePackService, ILocaleService } from '../common/locale.js';
+import { IHostService } from '../../host/browser/host.js';
+import { IProductService } from '../../../../platform/product/common/productService.js';
+import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import { CancellationToken } from '../../../../base/common/cancellation.js';
+import { IExtensionGalleryService } from '../../../../platform/extensionManagement/common/extensionManagement.js';
+import { ILogService } from '../../../../platform/log/common/log.js';
 
-const localeStorage = new (class LocaleStorage {
-	private static readonly LOCAL_STORAGE_LOCALE_KEY = "vscode.nls.locale";
-	private static readonly LOCAL_STORAGE_EXTENSION_ID_KEY =
-		"vscode.nls.languagePackExtensionId";
+const localeStorage = new class LocaleStorage {
+
+	private static readonly LOCAL_STORAGE_LOCALE_KEY = 'vscode.nls.locale';
+	private static readonly LOCAL_STORAGE_EXTENSION_ID_KEY = 'vscode.nls.languagePackExtensionId';
 
 	setLocale(locale: string): void {
 		localStorage.setItem(LocaleStorage.LOCAL_STORAGE_LOCALE_KEY, locale);
@@ -48,24 +39,20 @@ const localeStorage = new (class LocaleStorage {
 	}
 
 	setExtensionId(extensionId: string): void {
-		localStorage.setItem(
-			LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY,
-			extensionId,
-		);
+		localStorage.setItem(LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY, extensionId);
 	}
 
 	getExtensionId(): string | null {
-		return localStorage.getItem(
-			LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY,
-		);
+		return localStorage.getItem(LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY);
 	}
 
 	clearExtensionId(): void {
 		localStorage.removeItem(LocaleStorage.LOCAL_STORAGE_EXTENSION_ID_KEY);
 	}
-})();
+};
 
 export class WebLocaleService implements ILocaleService {
+
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
@@ -74,15 +61,9 @@ export class WebLocaleService implements ILocaleService {
 		@IProductService private readonly productService: IProductService
 	) { }
 
-	async setLocale(
-		languagePackItem: ILanguagePackItem,
-		_skipDialog = false,
-	): Promise<void> {
+	async setLocale(languagePackItem: ILanguagePackItem, _skipDialog = false): Promise<void> {
 		const locale = languagePackItem.id;
-		if (
-			locale === Language.value() ||
-			(!locale && Language.value() === navigator.language.toLowerCase())
-		) {
+		if (locale === Language.value() || (!locale && Language.value() === navigator.language.toLowerCase())) {
 			return;
 		}
 		if (locale) {
@@ -96,21 +77,10 @@ export class WebLocaleService implements ILocaleService {
 		}
 
 		const restartDialog = await this.dialogService.confirm({
-			type: "info",
-			message: localize(
-				"relaunchDisplayLanguageMessage",
-				"To change the display language, {0} needs to reload",
-				this.productService.nameLong,
-			),
-			detail: localize(
-				"relaunchDisplayLanguageDetail",
-				"Press the reload button to refresh the page and set the display language to {0}.",
-				languagePackItem.label,
-			),
-			primaryButton: localize(
-				{ key: "reload", comment: ["&& denotes a mnemonic character"] },
-				"&&Reload",
-			),
+			type: 'info',
+			message: localize('relaunchDisplayLanguageMessage', "To change the display language, {0} needs to reload", this.productService.nameLong),
+			detail: localize('relaunchDisplayLanguageDetail', "Press the reload button to refresh the page and set the display language to {0}.", languagePackItem.label),
+			primaryButton: localize({ key: 'reload', comment: ['&& denotes a mnemonic character'] }, "&&Reload"),
 		});
 
 		if (restartDialog.confirmed) {
@@ -127,20 +97,10 @@ export class WebLocaleService implements ILocaleService {
 		}
 
 		const restartDialog = await this.dialogService.confirm({
-			type: "info",
-			message: localize(
-				"clearDisplayLanguageMessage",
-				"To change the display language, {0} needs to reload",
-				this.productService.nameLong,
-			),
-			detail: localize(
-				"clearDisplayLanguageDetail",
-				"Press the reload button to refresh the page and use your browser's language.",
-			),
-			primaryButton: localize(
-				{ key: "reload", comment: ["&& denotes a mnemonic character"] },
-				"&&Reload",
-			),
+			type: 'info',
+			message: localize('clearDisplayLanguageMessage', "To change the display language, {0} needs to reload", this.productService.nameLong),
+			detail: localize('clearDisplayLanguageDetail', "Press the reload button to refresh the page and use your browser's language."),
+			primaryButton: localize({ key: 'reload', comment: ['&& denotes a mnemonic character'] }, "&&Reload"),
 		});
 
 		if (restartDialog.confirmed) {
@@ -172,17 +132,10 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 		}
 
 		try {
-			const tagResult = await this.galleryService.query(
-				{ text: `tag:lp-${language}` },
-				CancellationToken.None,
-			);
+			const tagResult = await this.galleryService.query({ text: `tag:lp-${language}` }, CancellationToken.None);
 
 			// Only install extensions that are published by Microsoft and start with vscode-language-pack for extra certainty
-			const extensionToInstall = tagResult.firstPage.find(
-				(e) =>
-					e.publisher === "MS-CEINTL" &&
-					e.name.startsWith("vscode-language-pack"),
-			);
+			const extensionToInstall = tagResult.firstPage.find(e => e.publisher === 'MS-CEINTL' && e.name.startsWith('vscode-language-pack'));
 			if (extensionToInstall) {
 				localeStorage.setExtensionId(extensionToInstall.identifier.id);
 				return extensionToInstall.identifier.id;
@@ -200,8 +153,4 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 }
 
 registerSingleton(ILocaleService, WebLocaleService, InstantiationType.Delayed);
-registerSingleton(
-	IActiveLanguagePackService,
-	WebActiveLanguagePackService,
-	InstantiationType.Delayed,
-);
+registerSingleton(IActiveLanguagePackService, WebActiveLanguagePackService, InstantiationType.Delayed);

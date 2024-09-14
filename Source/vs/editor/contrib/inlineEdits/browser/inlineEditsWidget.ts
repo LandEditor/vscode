@@ -3,323 +3,204 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { h, svgElem } from "../../../../base/browser/dom.js";
-import { DEFAULT_FONT_FAMILY } from "../../../../base/browser/fonts.js";
-import {
-	Disposable,
-	DisposableStore,
-	type IDisposable,
-} from "../../../../base/common/lifecycle.js";
-import {
-	type IObservable,
-	type ISettableObservable,
-	autorun,
-	constObservable,
-	derived,
-	derivedWithSetter,
-} from "../../../../base/common/observable.js";
-import { MenuWorkbenchToolBar } from "../../../../platform/actions/browser/toolbar.js";
-import { MenuId } from "../../../../platform/actions/common/actions.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import type { ICodeEditor } from "../../../browser/editorBrowser.js";
-import { EditorExtensionsRegistry } from "../../../browser/editorExtensions.js";
-import { observableCodeEditor } from "../../../browser/observableCodeEditor.js";
-import { EmbeddedCodeEditorWidget } from "../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js";
-import {
-	diffAddDecoration,
-	diffAddDecorationEmpty,
-	diffDeleteDecoration,
-	diffDeleteDecorationEmpty,
-	diffLineAddDecorationBackgroundWithIndicator,
-	diffLineDeleteDecorationBackgroundWithIndicator,
-	diffWholeLineAddDecoration,
-	diffWholeLineDeleteDecoration,
-} from "../../../browser/widget/diffEditor/registrations.contribution.js";
-import {
-	appendRemoveOnDispose,
-	applyStyle,
-} from "../../../browser/widget/diffEditor/utils.js";
-import { EditorOption } from "../../../common/config/editorOptions.js";
-import type { LineRange } from "../../../common/core/lineRange.js";
-import type { DetailedLineRangeMapping } from "../../../common/diff/rangeMapping.js";
-import { PLAINTEXT_LANGUAGE_ID } from "../../../common/languages/modesRegistry.js";
-import type { IModelDeltaDecoration } from "../../../common/model.js";
-import { TextModel } from "../../../common/model/textModel.js";
-import { ContextMenuController } from "../../contextmenu/browser/contextmenu.js";
-import { PlaceholderTextContribution } from "../../placeholderText/browser/placeholderTextContribution.js";
-import { SuggestController } from "../../suggest/browser/suggestController.js";
-import "./inlineEditsWidget.css";
+import { h, svgElem } from '../../../../base/browser/dom.js';
+import { DEFAULT_FONT_FAMILY } from '../../../../base/browser/fonts.js';
+import { Disposable, DisposableStore, IDisposable } from '../../../../base/common/lifecycle.js';
+import { autorun, constObservable, derived, derivedWithSetter, IObservable, ISettableObservable } from '../../../../base/common/observable.js';
+import { MenuWorkbenchToolBar } from '../../../../platform/actions/browser/toolbar.js';
+import { MenuId } from '../../../../platform/actions/common/actions.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { ICodeEditor } from '../../../browser/editorBrowser.js';
+import { EditorExtensionsRegistry } from '../../../browser/editorExtensions.js';
+import { observableCodeEditor } from '../../../browser/observableCodeEditor.js';
+import { EmbeddedCodeEditorWidget } from '../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js';
+import { diffAddDecoration, diffAddDecorationEmpty, diffDeleteDecoration, diffDeleteDecorationEmpty, diffLineAddDecorationBackgroundWithIndicator, diffLineDeleteDecorationBackgroundWithIndicator, diffWholeLineAddDecoration, diffWholeLineDeleteDecoration } from '../../../browser/widget/diffEditor/registrations.contribution.js';
+import { appendRemoveOnDispose, applyStyle } from '../../../browser/widget/diffEditor/utils.js';
+import { EditorOption } from '../../../common/config/editorOptions.js';
+import { LineRange } from '../../../common/core/lineRange.js';
+import { DetailedLineRangeMapping } from '../../../common/diff/rangeMapping.js';
+import { PLAINTEXT_LANGUAGE_ID } from '../../../common/languages/modesRegistry.js';
+import { IModelDeltaDecoration } from '../../../common/model.js';
+import { TextModel } from '../../../common/model/textModel.js';
+import { ContextMenuController } from '../../contextmenu/browser/contextmenu.js';
+import { PlaceholderTextContribution } from '../../placeholderText/browser/placeholderTextContribution.js';
+import { SuggestController } from '../../suggest/browser/suggestController.js';
+import './inlineEditsWidget.css';
 
 export class InlineEdit {
 	constructor(
 		public readonly range: LineRange,
 		public readonly newLines: string[],
 		public readonly changes: readonly DetailedLineRangeMapping[],
-	) {}
+	) {
+
+	}
 }
 
 export class InlineEditsWidget extends Disposable {
 	private readonly _editorObs = observableCodeEditor(this._editor);
 
-	private readonly _elements = h(
-		"div.inline-edits-widget",
-		{
-			style: {
-				position: "absolute",
-				overflow: "visible",
-				top: "0px",
-				left: "0px",
-			},
+	private readonly _elements = h('div.inline-edits-widget', {
+		style: {
+			position: 'absolute',
+			overflow: 'visible',
+			top: '0px',
+			left: '0px',
 		},
-		[
-			h(
-				"div@editorContainer",
-				{
-					style: {
-						position: "absolute",
-						top: "0px",
-						left: "0px",
-						width: "500px",
-						height: "500px",
-					},
-				},
-				[
-					h("div.toolbar@toolbar", {
-						style: {
-							position: "absolute",
-							top: "-25px",
-							left: "0px",
-						},
-					}),
-					h("div.promptEditor@promptEditor", {
-						style: {
-							position: "absolute",
-							top: "-25px",
-							left: "80px",
-							width: "300px",
-							height: "22px",
-						},
-					}),
-					h("div.preview@editor", {
-						style: {
-							position: "absolute",
-							top: "0px",
-							left: "0px",
-						},
-					}),
-				],
-			),
-			svgElem(
-				"svg",
-				{ style: { overflow: "visible", pointerEvents: "none" } },
-				[
-					svgElem("defs", [
-						svgElem(
-							"linearGradient",
-							{
-								id: "Gradient2",
-								x1: "0",
-								y1: "0",
-								x2: "1",
-								y2: "0",
-							},
-							[
-								/*svgElem('stop', { offset: '0%', class: 'gradient-start', }),
+	}, [
+		h('div@editorContainer', { style: { position: 'absolute', top: '0px', left: '0px', width: '500px', height: '500px', } }, [
+			h('div.toolbar@toolbar', { style: { position: 'absolute', top: '-25px', left: '0px' } }),
+			h('div.promptEditor@promptEditor', { style: { position: 'absolute', top: '-25px', left: '80px', width: '300px', height: '22px' } }),
+			h('div.preview@editor', { style: { position: 'absolute', top: '0px', left: '0px' } }),
+		]),
+		svgElem('svg', { style: { overflow: 'visible', pointerEvents: 'none' }, }, [
+			svgElem('defs', [
+				svgElem('linearGradient', {
+					id: 'Gradient2',
+					x1: '0',
+					y1: '0',
+					x2: '1',
+					y2: '0',
+				}, [
+					/*svgElem('stop', { offset: '0%', class: 'gradient-start', }),
 					svgElem('stop', { offset: '0%', class: 'gradient-start', }),
 					svgElem('stop', { offset: '20%', class: 'gradient-stop', }),*/
-								svgElem("stop", {
-									offset: "0%",
-									class: "gradient-stop",
-								}),
-								svgElem("stop", {
-									offset: "100%",
-									class: "gradient-stop",
-								}),
-							],
-						),
-					]),
-					svgElem("path@path", {
-						d: "",
-						fill: "url(#Gradient2)",
-					}),
-				],
-			),
-		],
-	);
+					svgElem('stop', { offset: '0%', class: 'gradient-stop', }),
+					svgElem('stop', { offset: '100%', class: 'gradient-stop', }),
+				]),
+			]),
+			svgElem('path@path', {
+				d: '',
+				fill: 'url(#Gradient2)',
+			}),
+		]),
+	]);
 
-	protected readonly _toolbar = this._register(
-		this._instantiationService.createInstance(
-			MenuWorkbenchToolBar,
-			this._elements.toolbar,
-			MenuId.InlineEditsActions,
-			{
-				toolbarOptions: {
-					primaryGroup: (g) => g.startsWith("primary"),
-				},
-			},
-		),
-	);
-	private readonly _previewTextModel = this._register(
-		this._instantiationService.createInstance(
-			TextModel,
-			"",
-			PLAINTEXT_LANGUAGE_ID,
-			TextModel.DEFAULT_CREATION_OPTIONS,
-			null,
-		),
-	);
+	protected readonly _toolbar = this._register(this._instantiationService.createInstance(MenuWorkbenchToolBar, this._elements.toolbar, MenuId.InlineEditsActions, {
+		toolbarOptions: {
+			primaryGroup: g => g.startsWith('primary'),
+		},
+	}));
+	private readonly _previewTextModel = this._register(this._instantiationService.createInstance(
+		TextModel,
+		'',
+		PLAINTEXT_LANGUAGE_ID,
+		TextModel.DEFAULT_CREATION_OPTIONS,
+		null
+	));
 
-	private readonly _setText = derived((reader) => {
+	private readonly _setText = derived(reader => {
 		const edit = this._edit.read(reader);
-		if (!edit) {
-			return;
-		}
-		this._previewTextModel.setValue(edit.newLines.join("\n"));
+		if (!edit) { return; }
+		this._previewTextModel.setValue(edit.newLines.join('\n'));
 	}).recomputeInitiallyAndOnChange(this._store);
 
-	private readonly _promptTextModel = this._register(
-		this._instantiationService.createInstance(
-			TextModel,
-			"",
-			PLAINTEXT_LANGUAGE_ID,
-			TextModel.DEFAULT_CREATION_OPTIONS,
-			null,
-		),
-	);
-	private readonly _promptEditor = this._register(
-		this._instantiationService.createInstance(
-			EmbeddedCodeEditorWidget,
-			this._elements.promptEditor,
-			{
-				glyphMargin: false,
-				lineNumbers: "off",
-				minimap: { enabled: false },
-				guides: {
-					indentation: false,
-					bracketPairs: false,
-					bracketPairsHorizontal: false,
-					highlightActiveIndentation: false,
-				},
-				folding: false,
-				selectOnLineNumbers: false,
-				selectionHighlight: false,
-				columnSelection: false,
-				overviewRulerBorder: false,
-				overviewRulerLanes: 0,
-				lineDecorationsWidth: 0,
-				lineNumbersMinChars: 0,
-				placeholder: "Describe the change you want...",
-				fontFamily: DEFAULT_FONT_FAMILY,
-			},
-			{
-				contributions:
-					EditorExtensionsRegistry.getSomeEditorContributions([
-						SuggestController.ID,
-						PlaceholderTextContribution.ID,
-						ContextMenuController.ID,
-					]),
-				isSimpleWidget: true,
-			},
-			this._editor,
-		),
-	);
 
-	private readonly _previewEditor = this._register(
-		this._instantiationService.createInstance(
-			EmbeddedCodeEditorWidget,
-			this._elements.editor,
-			{
-				glyphMargin: false,
-				lineNumbers: "off",
-				minimap: { enabled: false },
-				guides: {
-					indentation: false,
-					bracketPairs: false,
-					bracketPairsHorizontal: false,
-					highlightActiveIndentation: false,
-				},
-				folding: false,
-				selectOnLineNumbers: false,
-				selectionHighlight: false,
-				columnSelection: false,
-				overviewRulerBorder: false,
-				overviewRulerLanes: 0,
-				lineDecorationsWidth: 0,
-				lineNumbersMinChars: 0,
+	private readonly _promptTextModel = this._register(this._instantiationService.createInstance(
+		TextModel,
+		'',
+		PLAINTEXT_LANGUAGE_ID,
+		TextModel.DEFAULT_CREATION_OPTIONS,
+		null
+	));
+	private readonly _promptEditor = this._register(this._instantiationService.createInstance(
+		EmbeddedCodeEditorWidget,
+		this._elements.promptEditor,
+		{
+			glyphMargin: false,
+			lineNumbers: 'off',
+			minimap: { enabled: false },
+			guides: {
+				indentation: false,
+				bracketPairs: false,
+				bracketPairsHorizontal: false,
+				highlightActiveIndentation: false,
 			},
-			{ contributions: [] },
-			this._editor,
-		),
-	);
+			folding: false,
+			selectOnLineNumbers: false,
+			selectionHighlight: false,
+			columnSelection: false,
+			overviewRulerBorder: false,
+			overviewRulerLanes: 0,
+			lineDecorationsWidth: 0,
+			lineNumbersMinChars: 0,
+			placeholder: 'Describe the change you want...',
+			fontFamily: DEFAULT_FONT_FAMILY,
+		},
+		{
+			contributions: EditorExtensionsRegistry.getSomeEditorContributions([
+				SuggestController.ID,
+				PlaceholderTextContribution.ID,
+				ContextMenuController.ID,
+			]),
+			isSimpleWidget: true
+		},
+		this._editor
+	));
 
-	private readonly _previewEditorObs = observableCodeEditor(
-		this._previewEditor,
-	);
+	private readonly _previewEditor = this._register(this._instantiationService.createInstance(
+		EmbeddedCodeEditorWidget,
+		this._elements.editor,
+		{
+			glyphMargin: false,
+			lineNumbers: 'off',
+			minimap: { enabled: false },
+			guides: {
+				indentation: false,
+				bracketPairs: false,
+				bracketPairsHorizontal: false,
+				highlightActiveIndentation: false,
+			},
+			folding: false,
+			selectOnLineNumbers: false,
+			selectionHighlight: false,
+			columnSelection: false,
+			overviewRulerBorder: false,
+			overviewRulerLanes: 0,
+			lineDecorationsWidth: 0,
+			lineNumbersMinChars: 0,
+		},
+		{ contributions: [], },
+		this._editor
+	));
+
+	private readonly _previewEditorObs = observableCodeEditor(this._previewEditor);
 
 	private readonly _decorations = derived(this, (reader) => {
 		this._setText.read(reader);
 		const diff = this._edit.read(reader)?.changes;
-		if (!diff) {
-			return [];
-		}
+		if (!diff) { return []; }
 
 		const originalDecorations: IModelDeltaDecoration[] = [];
 		const modifiedDecorations: IModelDeltaDecoration[] = [];
 
-		if (
-			diff.length === 1 &&
-			diff[0].innerChanges![0].modifiedRange.equalsRange(
-				this._previewTextModel.getFullModelRange(),
-			)
-		) {
+		if (diff.length === 1 && diff[0].innerChanges![0].modifiedRange.equalsRange(this._previewTextModel.getFullModelRange())) {
 			return [];
 		}
 
 		for (const m of diff) {
 			if (!m.original.isEmpty) {
-				originalDecorations.push({
-					range: m.original.toInclusiveRange()!,
-					options: diffLineDeleteDecorationBackgroundWithIndicator,
-				});
+				originalDecorations.push({ range: m.original.toInclusiveRange()!, options: diffLineDeleteDecorationBackgroundWithIndicator });
 			}
 			if (!m.modified.isEmpty) {
-				modifiedDecorations.push({
-					range: m.modified.toInclusiveRange()!,
-					options: diffLineAddDecorationBackgroundWithIndicator,
-				});
+				modifiedDecorations.push({ range: m.modified.toInclusiveRange()!, options: diffLineAddDecorationBackgroundWithIndicator });
 			}
 
 			if (m.modified.isEmpty || m.original.isEmpty) {
 				if (!m.original.isEmpty) {
-					originalDecorations.push({
-						range: m.original.toInclusiveRange()!,
-						options: diffWholeLineDeleteDecoration,
-					});
+					originalDecorations.push({ range: m.original.toInclusiveRange()!, options: diffWholeLineDeleteDecoration });
 				}
 				if (!m.modified.isEmpty) {
-					modifiedDecorations.push({
-						range: m.modified.toInclusiveRange()!,
-						options: diffWholeLineAddDecoration,
-					});
+					modifiedDecorations.push({ range: m.modified.toInclusiveRange()!, options: diffWholeLineAddDecoration });
 				}
 			} else {
 				for (const i of m.innerChanges || []) {
 					// Don't show empty markers outside the line range
 					if (m.original.contains(i.originalRange.startLineNumber)) {
-						originalDecorations.push({
-							range: i.originalRange,
-							options: i.originalRange.isEmpty()
-								? diffDeleteDecorationEmpty
-								: diffDeleteDecoration,
-						});
+						originalDecorations.push({ range: i.originalRange, options: i.originalRange.isEmpty() ? diffDeleteDecorationEmpty : diffDeleteDecoration });
 					}
 					if (m.modified.contains(i.modifiedRange.startLineNumber)) {
-						modifiedDecorations.push({
-							range: i.modifiedRange,
-							options: i.modifiedRange.isEmpty()
-								? diffAddDecorationEmpty
-								: diffAddDecoration,
-						});
+						modifiedDecorations.push({ range: i.modifiedRange, options: i.modifiedRange.isEmpty() ? diffAddDecorationEmpty : diffAddDecoration });
 					}
 				}
 			}
@@ -328,21 +209,15 @@ export class InlineEditsWidget extends Disposable {
 		return modifiedDecorations;
 	});
 
-	private readonly _layout1 = derived(this, (reader) => {
+	private readonly _layout1 = derived(this, reader => {
 		const model = this._editor.getModel()!;
 		const inlineEdit = this._edit.read(reader);
-		if (!inlineEdit) {
-			return null;
-		}
+		if (!inlineEdit) { return null; }
 
 		const range = inlineEdit.range;
 
 		let maxLeft = 0;
-		for (
-			let i = range.startLineNumber;
-			i < range.endLineNumberExclusive;
-			i++
-		) {
+		for (let i = range.startLineNumber; i < range.endLineNumberExclusive; i++) {
 			const column = model.getLineMaxColumn(i);
 			const left = this._editor.getOffsetForColumn(i, column);
 			maxLeft = Math.max(maxLeft, left);
@@ -356,9 +231,7 @@ export class InlineEditsWidget extends Disposable {
 
 	private readonly _layout = derived(this, (reader) => {
 		const inlineEdit = this._edit.read(reader);
-		if (!inlineEdit) {
-			return null;
-		}
+		if (!inlineEdit) { return null; }
 
 		const range = inlineEdit.range;
 
@@ -366,30 +239,18 @@ export class InlineEditsWidget extends Disposable {
 
 		const left = this._layout1.read(reader)!.left + 20 - scrollLeft;
 
-		const selectionTop =
-			this._editor.getTopForLineNumber(range.startLineNumber) -
-			this._editorObs.scrollTop.read(reader);
-		const selectionBottom =
-			this._editor.getTopForLineNumber(range.endLineNumberExclusive) -
-			this._editorObs.scrollTop.read(reader);
+		const selectionTop = this._editor.getTopForLineNumber(range.startLineNumber) - this._editorObs.scrollTop.read(reader);
+		const selectionBottom = this._editor.getTopForLineNumber(range.endLineNumberExclusive) - this._editorObs.scrollTop.read(reader);
 
 		const topCode = new Point(left, selectionTop);
 		const bottomCode = new Point(left, selectionBottom);
 		const codeHeight = selectionBottom - selectionTop;
 
 		const codeEditDist = 50;
-		const editHeight =
-			this._editor.getOption(EditorOption.lineHeight) *
-			inlineEdit.newLines.length;
+		const editHeight = this._editor.getOption(EditorOption.lineHeight) * inlineEdit.newLines.length;
 		const difference = codeHeight - editHeight;
-		const topEdit = new Point(
-			left + codeEditDist,
-			selectionTop + difference / 2,
-		);
-		const bottomEdit = new Point(
-			left + codeEditDist,
-			selectionBottom - difference / 2,
-		);
+		const topEdit = new Point(left + codeEditDist, selectionTop + (difference / 2));
+		const bottomEdit = new Point(left + codeEditDist, selectionBottom - (difference / 2));
 
 		return {
 			topCode,
@@ -482,23 +343,15 @@ export class InlineEditsWidget extends Disposable {
 	}
 }
 
-function mapSettableObservable<T, T1>(
-	obs: ISettableObservable<T>,
-	fn1: (value: T) => T1,
-	fn2: (value: T1) => T,
-): ISettableObservable<T1> {
-	return derivedWithSetter(
-		undefined,
-		(reader) => fn1(obs.read(reader)),
-		(value, tx) => obs.set(fn2(value), tx),
-	);
+function mapSettableObservable<T, T1>(obs: ISettableObservable<T>, fn1: (value: T) => T1, fn2: (value: T1) => T): ISettableObservable<T1> {
+	return derivedWithSetter(undefined, reader => fn1(obs.read(reader)), (value, tx) => obs.set(fn2(value), tx));
 }
 
 class Point {
 	constructor(
 		public readonly x: number,
 		public readonly y: number,
-	) {}
+	) { }
 
 	public add(other: Point): Point {
 		return new Point(this.x + other.x, this.y + other.y);
@@ -510,7 +363,7 @@ class Point {
 }
 
 class PathBuilder {
-	private _data = "";
+	private _data: string = '';
 
 	public moveTo(point: Point): this {
 		this._data += `M ${point.x} ${point.y} `;
@@ -532,22 +385,15 @@ class PathBuilder {
 	}
 }
 
-function createTwoWaySync<T>(
-	main: ISettableObservable<T>,
-	target: ISettableObservable<T>,
-): IDisposable {
+function createTwoWaySync<T>(main: ISettableObservable<T>, target: ISettableObservable<T>): IDisposable {
 	const store = new DisposableStore();
-	store.add(
-		autorun((reader) => {
-			const value = main.read(reader);
-			target.set(value, undefined);
-		}),
-	);
-	store.add(
-		autorun((reader) => {
-			const value = target.read(reader);
-			main.set(value, undefined);
-		}),
-	);
+	store.add(autorun(reader => {
+		const value = main.read(reader);
+		target.set(value, undefined);
+	}));
+	store.add(autorun(reader => {
+		const value = target.read(reader);
+		main.set(value, undefined);
+	}));
 	return store;
 }

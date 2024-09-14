@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IObservable } from "../../../../base/common/observable.js";
-import type { ThemeIcon } from "../../../../base/common/themables.js";
-import type { URI } from "../../../../base/common/uri.js";
-import type { IMenu } from "../../../../platform/actions/common/actions.js";
-import type { ColorIdentifier } from "../../../../platform/theme/common/colorUtils.js";
-import type { ISCMRepository } from "./scm.js";
+import { IObservable } from '../../../../base/common/observable.js';
+import { ThemeIcon } from '../../../../base/common/themables.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IMenu } from '../../../../platform/actions/common/actions.js';
+import { ColorIdentifier } from '../../../../platform/theme/common/colorUtils.js';
+import { ISCMRepository } from './scm.js';
 
 export interface ISCMHistoryProviderMenus {
 	getHistoryItemMenu(historyItem: SCMHistoryItemViewModelTreeElement): IMenu;
@@ -22,16 +22,9 @@ export interface ISCMHistoryProvider {
 	readonly historyItemRefChanges: IObservable<ISCMHistoryItemRefsChangeEvent>;
 
 	provideHistoryItemRefs(): Promise<ISCMHistoryItemRef[] | undefined>;
-	provideHistoryItems(
-		options: ISCMHistoryOptions,
-	): Promise<ISCMHistoryItem[] | undefined>;
-	provideHistoryItemChanges(
-		historyItemId: string,
-		historyItemParentId: string | undefined,
-	): Promise<ISCMHistoryItemChange[] | undefined>;
-	resolveHistoryItemRefsCommonAncestor(
-		historyItemRefs: string[],
-	): Promise<string | undefined>;
+	provideHistoryItems(options: ISCMHistoryOptions): Promise<ISCMHistoryItem[] | undefined>;
+	provideHistoryItemChanges(historyItemId: string, historyItemParentId: string | undefined): Promise<ISCMHistoryItemChange[] | undefined>;
+	resolveHistoryItemRefsCommonAncestor(historyItemRefs: string[]): Promise<string | undefined>;
 }
 
 export interface ISCMHistoryOptions {
@@ -60,6 +53,7 @@ export interface ISCMHistoryItemRefsChangeEvent {
 	readonly added: readonly ISCMHistoryItemRef[];
 	readonly removed: readonly ISCMHistoryItemRef[];
 	readonly modified: readonly ISCMHistoryItemRef[];
+	readonly silent: boolean;
 }
 
 export interface ISCMHistoryItem {
@@ -89,13 +83,13 @@ export interface ISCMHistoryItemViewModel {
 export interface SCMHistoryItemViewModelTreeElement {
 	readonly repository: ISCMRepository;
 	readonly historyItemViewModel: ISCMHistoryItemViewModel;
-	readonly type: "historyItemViewModel";
+	readonly type: 'historyItemViewModel';
 }
 
 export interface SCMHistoryItemLoadMoreTreeElement {
 	readonly repository: ISCMRepository;
 	readonly graphColumns: ISCMHistoryItemGraphNode[];
-	readonly type: "historyItemLoadMore";
+	readonly type: 'historyItemLoadMore';
 }
 
 export interface ISCMHistoryItemChange {

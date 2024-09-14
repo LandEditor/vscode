@@ -3,30 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CancellationToken } from "../../../base/common/cancellation.js";
-import {
-	DisposableMap,
-	type IDisposable,
-} from "../../../base/common/lifecycle.js";
-import { URI, type UriComponents } from "../../../base/common/uri.js";
-import {
-	IQuickDiffService,
-	type QuickDiffProvider,
-} from "../../contrib/scm/common/quickDiff.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
-import {
-	ExtHostContext,
-	type ExtHostQuickDiffShape,
-	type IDocumentFilterDto,
-	MainContext,
-	type MainThreadQuickDiffShape,
-} from "../common/extHost.protocol.js";
+import { CancellationToken } from '../../../base/common/cancellation.js';
+import { DisposableMap, IDisposable } from '../../../base/common/lifecycle.js';
+import { URI, UriComponents } from '../../../base/common/uri.js';
+import { ExtHostContext, ExtHostQuickDiffShape, IDocumentFilterDto, MainContext, MainThreadQuickDiffShape } from '../common/extHost.protocol.js';
+import { IQuickDiffService, QuickDiffProvider } from '../../contrib/scm/common/quickDiff.js';
+import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
 
 @extHostNamedCustomer(MainContext.MainThreadQuickDiff)
 export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
+
 	private readonly proxy: ExtHostQuickDiffShape;
 	private providerDisposables = new DisposableMap<number, IDisposable>();
 
@@ -37,26 +23,15 @@ export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostQuickDiff);
 	}
 
-	async $registerQuickDiffProvider(
-		handle: number,
-		selector: IDocumentFilterDto[],
-		label: string,
-		rootUri: UriComponents | undefined,
-	): Promise<void> {
+	async $registerQuickDiffProvider(handle: number, selector: IDocumentFilterDto[], label: string, rootUri: UriComponents | undefined): Promise<void> {
 		const provider: QuickDiffProvider = {
 			label,
 			rootUri: URI.revive(rootUri),
 			selector,
 			isSCM: false,
 			getOriginalResource: async (uri: URI) => {
-				return URI.revive(
-					await this.proxy.$provideOriginalResource(
-						handle,
-						uri,
-						CancellationToken.None,
-					),
-				);
-			},
+				return URI.revive(await this.proxy.$provideOriginalResource(handle, uri, CancellationToken.None));
+			}
 		};
 		const disposable = this.quickDiffService.addQuickDiffProvider(provider);
 		this.providerDisposables.set(handle, disposable);

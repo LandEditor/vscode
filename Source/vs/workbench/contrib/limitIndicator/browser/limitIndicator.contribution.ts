@@ -3,62 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Event } from "../../../../base/common/event.js";
-import {
-	Disposable,
-	type IDisposable,
-} from "../../../../base/common/lifecycle.js";
-import Severity from "../../../../base/common/severity.js";
-import {
-	type ICodeEditor,
-	getCodeEditor,
-} from "../../../../editor/browser/editorBrowser.js";
-import * as nls from "../../../../nls.js";
-import { Registry } from "../../../../platform/registry/common/platform.js";
-import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "../../../common/contributions.js";
-import { IEditorService } from "../../../services/editor/common/editorService.js";
-import {
-	type ILanguageStatus,
-	ILanguageStatusService,
-} from "../../../services/languageStatus/common/languageStatusService.js";
-import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
+import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
+import Severity from '../../../../base/common/severity.js';
+import { ICodeEditor, getCodeEditor } from '../../../../editor/browser/editorBrowser.js';
+import { IEditorService } from '../../../services/editor/common/editorService.js';
+import { ILanguageStatus, ILanguageStatusService } from '../../../services/languageStatus/common/languageStatusService.js';
+import { Registry } from '../../../../platform/registry/common/platform.js';
+import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry, IWorkbenchContribution } from '../../../common/contributions.js';
+import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
+import { Event } from '../../../../base/common/event.js';
+import * as nls from '../../../../nls.js';
 
-import { ColorDetector } from "../../../../editor/contrib/colorPicker/browser/colorDetector.js";
-import { FoldingController } from "../../../../editor/contrib/folding/browser/folding.js";
+import { FoldingController } from '../../../../editor/contrib/folding/browser/folding.js';
+import { ColorDetector } from '../../../../editor/contrib/colorPicker/browser/colorDetector.js';
 
-const openSettingsCommand = "workbench.action.openSettings";
-const configureSettingsLabel = nls.localize(
-	"status.button.configure",
-	"Configure",
-);
+const openSettingsCommand = 'workbench.action.openSettings';
+const configureSettingsLabel = nls.localize('status.button.configure', "Configure");
 
 /**
  * Uses that language status indicator to show information which language features have been limited for performance reasons.
  * Currently this is used for folding ranges and for color decorators.
  */
-export class LimitIndicatorContribution
-	extends Disposable
-	implements IWorkbenchContribution
-{
+export class LimitIndicatorContribution extends Disposable implements IWorkbenchContribution {
+
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@ILanguageStatusService languageStatusService: ILanguageStatusService,
+		@ILanguageStatusService languageStatusService: ILanguageStatusService
 	) {
 		super();
 
-		const accessors = [
-			new ColorDecorationAccessor(),
-			new FoldingRangeAccessor(),
-		];
-		const statusEntries = accessors.map(
-			(indicator) =>
-				new LanguageStatusEntry(languageStatusService, indicator),
-		);
-		statusEntries.forEach((entry) => this._register(entry));
+		const accessors = [new ColorDecorationAccessor(), new FoldingRangeAccessor()];
+		const statusEntries = accessors.map(indicator => new LanguageStatusEntry(languageStatusService, indicator));
+		statusEntries.forEach(entry => this._register(entry));
 
 		let control: any;
 
@@ -70,17 +46,15 @@ export class LimitIndicatorContribution
 			control = activeControl;
 			const editor = getCodeEditor(activeControl);
 
-			statusEntries.forEach((statusEntry) =>
-				statusEntry.onActiveEditorChanged(editor),
-			);
+			statusEntries.forEach(statusEntry => statusEntry.onActiveEditorChanged(editor));
 		};
-		this._register(
-			editorService.onDidActiveEditorChange(onActiveEditorChanged),
-		);
+		this._register(editorService.onDidActiveEditorChange(onActiveEditorChanged));
 
 		onActiveEditorChanged();
 	}
+
 }
+
 
 export interface LimitInfo {
 	readonly onDidChange: Event<void>;
@@ -99,20 +73,11 @@ interface LanguageFeatureAccessor {
 }
 
 class ColorDecorationAccessor implements LanguageFeatureAccessor {
-	readonly id = "decoratorsLimitInfo";
-	readonly name = nls.localize(
-		"colorDecoratorsStatusItem.name",
-		"Color Decorator Status",
-	);
-	readonly label = nls.localize(
-		"status.limitedColorDecorators.short",
-		"Color Decorators",
-	);
-	readonly source = nls.localize(
-		"colorDecoratorsStatusItem.source",
-		"Color Decorators",
-	);
-	readonly settingsId = "editor.colorDecoratorsLimit";
+	readonly id = 'decoratorsLimitInfo';
+	readonly name = nls.localize('colorDecoratorsStatusItem.name', 'Color Decorator Status');
+	readonly label = nls.localize('status.limitedColorDecorators.short', 'Color Decorators');
+	readonly source = nls.localize('colorDecoratorsStatusItem.source', 'Color Decorators');
+	readonly settingsId = 'editor.colorDecoratorsLimit';
 
 	getLimitReporter(editor: ICodeEditor): LimitInfo | undefined {
 		return ColorDetector.get(editor)?.limitReporter;
@@ -120,17 +85,11 @@ class ColorDecorationAccessor implements LanguageFeatureAccessor {
 }
 
 class FoldingRangeAccessor implements LanguageFeatureAccessor {
-	readonly id = "foldingLimitInfo";
-	readonly name = nls.localize(
-		"foldingRangesStatusItem.name",
-		"Folding Status",
-	);
-	readonly label = nls.localize(
-		"status.limitedFoldingRanges.short",
-		"Folding Ranges",
-	);
-	readonly source = nls.localize("foldingRangesStatusItem.source", "Folding");
-	readonly settingsId = "editor.foldingMaximumRegions";
+	readonly id = 'foldingLimitInfo';
+	readonly name = nls.localize('foldingRangesStatusItem.name', 'Folding Status');
+	readonly label = nls.localize('status.limitedFoldingRanges.short', 'Folding Ranges');
+	readonly source = nls.localize('foldingRangesStatusItem.source', 'Folding');
+	readonly settingsId = 'editor.foldingMaximumRegions';
 
 	getLimitReporter(editor: ICodeEditor): LimitInfo | undefined {
 		return FoldingController.get(editor)?.limitReporter;
@@ -138,13 +97,12 @@ class FoldingRangeAccessor implements LanguageFeatureAccessor {
 }
 
 class LanguageStatusEntry {
+
 	private _limitStatusItem: IDisposable | undefined;
 	private _indicatorChangeListener: IDisposable | undefined;
 
-	constructor(
-		private languageStatusService: ILanguageStatusService,
-		private accessor: LanguageFeatureAccessor,
-	) {}
+	constructor(private languageStatusService: ILanguageStatusService, private accessor: LanguageFeatureAccessor) {
+	}
 
 	onActiveEditorChanged(editor: ICodeEditor | null): boolean {
 		if (this._indicatorChangeListener) {
@@ -158,13 +116,14 @@ class LanguageStatusEntry {
 		}
 		this.updateStatusItem(info);
 		if (info) {
-			this._indicatorChangeListener = info.onDidChange((_) => {
+			this._indicatorChangeListener = info.onDidChange(_ => {
 				this.updateStatusItem(info);
 			});
 			return true;
 		}
 		return false;
 	}
+
 
 	private updateStatusItem(info: LimitInfo | undefined) {
 		if (this._limitStatusItem) {
@@ -174,26 +133,17 @@ class LanguageStatusEntry {
 		if (info && info.limited !== false) {
 			const status: ILanguageStatus = {
 				id: this.accessor.id,
-				selector: "*",
+				selector: '*',
 				name: this.accessor.name,
 				severity: Severity.Warning,
 				label: this.accessor.label,
-				detail: nls.localize(
-					"status.limited.details",
-					"only {0} shown for performance reasons",
-					info.limited,
-				),
-				command: {
-					id: openSettingsCommand,
-					arguments: [this.accessor.settingsId],
-					title: configureSettingsLabel,
-				},
+				detail: nls.localize('status.limited.details', 'only {0} shown for performance reasons', info.limited),
+				command: { id: openSettingsCommand, arguments: [this.accessor.settingsId], title: configureSettingsLabel },
 				accessibilityInfo: undefined,
 				source: this.accessor.source,
-				busy: false,
+				busy: false
 			};
-			this._limitStatusItem =
-				this.languageStatusService.addStatus(status);
+			this._limitStatusItem = this.languageStatusService.addStatus(status);
 		}
 	}
 
@@ -205,9 +155,7 @@ class LanguageStatusEntry {
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(
 	LimitIndicatorContribution,
-	LifecyclePhase.Restored,
+	LifecyclePhase.Restored
 );

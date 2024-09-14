@@ -3,25 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { onUnexpectedError } from "../../../../base/common/errors.js";
-import {
-	Disposable,
-	type IDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
-import { getEditorFeatures } from "../../../../editor/common/editorFeatures.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
-	registerWorkbenchContribution2,
-} from "../../../common/contributions.js";
+import { onUnexpectedError } from '../../../../base/common/errors.js';
+import { Disposable, IDisposable } from '../../../../base/common/lifecycle.js';
+import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
+import { getEditorFeatures } from '../../../../editor/common/editorFeatures.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
 
-class EditorFeaturesInstantiator
-	extends Disposable
-	implements IWorkbenchContribution
-{
-	static readonly ID = "workbench.contrib.editorFeaturesInstantiator";
+class EditorFeaturesInstantiator extends Disposable implements IWorkbenchContribution {
+
+	static readonly ID = 'workbench.contrib.editorFeaturesInstantiator';
 
 	private _instantiated = false;
 
@@ -48,10 +39,9 @@ class EditorFeaturesInstantiator
 		const editorFeatures = getEditorFeatures();
 		for (const feature of editorFeatures) {
 			try {
-				const instance =
-					this._instantiationService.createInstance(feature);
-				if (typeof (<IDisposable>instance).dispose === "function") {
-					this._register(<IDisposable>instance);
+				const instance = this._instantiationService.createInstance(feature);
+				if (typeof (<IDisposable>instance).dispose === 'function') {
+					this._register((<IDisposable>instance));
 				}
 			} catch (err) {
 				onUnexpectedError(err);
@@ -60,8 +50,4 @@ class EditorFeaturesInstantiator
 	}
 }
 
-registerWorkbenchContribution2(
-	EditorFeaturesInstantiator.ID,
-	EditorFeaturesInstantiator,
-	WorkbenchPhase.BlockRestore,
-);
+registerWorkbenchContribution2(EditorFeaturesInstantiator.ID, EditorFeaturesInstantiator, WorkbenchPhase.BlockRestore);

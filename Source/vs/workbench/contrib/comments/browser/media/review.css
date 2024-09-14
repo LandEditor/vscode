@@ -60,12 +60,7 @@
 	line-height: 18px;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.comment-title
-	.monaco-dropdown
-	.toolbar-toggle-more {
+.review-widget .body .review-comment .comment-title .monaco-dropdown .toolbar-toggle-more {
 	width: 16px;
 	height: 18px;
 	line-height: 18px;
@@ -116,9 +111,11 @@
 	white-space: pre;
 }
 
+
 .review-widget .body .review-comment .review-comment-contents .author {
 	line-height: 22px;
 }
+
 
 .review-widget .body .review-comment .review-comment-contents .isPending {
 	line-height: 22px;
@@ -133,12 +130,7 @@
 	padding: 0 2px 0 2px;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-body
-	.comment-body-plainstring {
+.review-widget .body .review-comment .review-comment-contents .comment-body .comment-body-plainstring {
 	white-space: pre-wrap;
 }
 
@@ -146,30 +138,16 @@
 	padding-top: 4px;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-body-max-height {
+.review-widget .body .review-comment .review-comment-contents .comment-body-max-height {
 	max-height: 20em;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions {
 	margin-top: 8px;
 	min-height: 25px;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	.action-label {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item .action-label {
 	padding: 1px 4px;
 	white-space: pre;
 	text-align: center;
@@ -177,14 +155,7 @@
 	display: flex;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	.action-label
-	.reaction-icon {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item .action-label .reaction-icon {
 	background-size: 14px;
 	background-position: left center;
 	background-repeat: no-repeat;
@@ -195,25 +166,12 @@
 	margin-right: 4px;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	.action-label
-	.reaction-label {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item .action-label .reaction-label {
 	line-height: 20px;
 	margin-right: 4px;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	a.action-label.toolbar-toggle-pickReactions {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label.toolbar-toggle-pickReactions {
 	display: none;
 	background-size: 16px;
 	font-size: 16px;
@@ -225,13 +183,7 @@
 	border: none;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions:hover
-	.action-item
-	a.action-label.toolbar-toggle-pickReactions {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions:hover .action-item a.action-label.toolbar-toggle-pickReactions {
 	display: inline-block;
 	background-size: 16px;
 }
@@ -245,43 +197,19 @@
 	background-repeat: no-repeat;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	a.action-label {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label {
 	border: 1px solid;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	a.action-label.disabled {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label.disabled {
 	opacity: 0.6;
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	a.action-label.active:hover {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label.active:hover {
 	background-color: var(--vscode-statusBarItem-hoverBackground);
 }
 
-.review-widget
-	.body
-	.review-comment
-	.review-comment-contents
-	.comment-reactions
-	.action-item
-	a.action-label:active {
+.review-widget .body .review-comment .review-comment-contents .comment-reactions .action-item a.action-label:active {
 	background-color: var(--vscode-statusBarItem-activeBackground);
 	border: 1px solid transparent;
 }
@@ -343,6 +271,7 @@
 	word-wrap: break-word;
 }
 
+
 .review-widget .body .comment-additional-actions {
 	margin: 10px 20px;
 }
@@ -364,26 +293,15 @@
 	width: auto;
 }
 
-.review-widget
-	.body
-	.comment-additional-actions
-	.button-bar
-	> .monaco-text-button,
-.review-widget
-	.body
-	.comment-additional-actions
-	.button-bar
-	> .monaco-button-dropdown {
+.review-widget .body .comment-additional-actions .button-bar > .monaco-text-button,
+.review-widget .body .comment-additional-actions .button-bar > .monaco-button-dropdown {
 	margin: 0 10px 0 0;
 }
 
-.review-widget
-	.body
-	.comment-additional-actions
-	.button-bar
-	.monaco-text-button {
+.review-widget .body .comment-additional-actions .button-bar .monaco-text-button {
 	padding: 4px 10px;
 }
+
 
 .review-widget .body .comment-additional-actions .codicon-drop-down-button {
 	align-items: center;
@@ -523,11 +441,7 @@
 	background-position: center center;
 }
 
-.review-widget
-	.head
-	.review-actions
-	> .monaco-action-bar
-	.action-label.codicon {
+.review-widget .head .review-actions > .monaco-action-bar .action-label.codicon {
 	margin: 0;
 }
 
@@ -577,16 +491,11 @@ div.preview.inline .monaco-editor .comment-range-glyph {
 
 .monaco-editor .margin-view-overlays .comment-range-glyph.line-hover,
 .monaco-editor .margin-view-overlays .comment-range-glyph.comment-thread,
-.monaco-editor
-	.margin-view-overlays
-	.comment-range-glyph.comment-thread-unresolved {
+.monaco-editor .margin-view-overlays .comment-range-glyph.comment-thread-unresolved {
 	margin-left: 13px;
 }
 
-.monaco-editor
-	.margin-view-overlays
-	> div:hover
-	> .comment-range-glyph.comment-diff-added:before,
+.monaco-editor .margin-view-overlays > div:hover > .comment-range-glyph.comment-diff-added:before,
 .monaco-editor .margin-view-overlays .comment-range-glyph.line-hover:before,
 .monaco-editor .comment-range-glyph.comment-thread:before,
 .monaco-editor .comment-range-glyph.comment-thread-unresolved:before {
@@ -614,10 +523,7 @@ div.preview.inline .monaco-editor .comment-range-glyph {
 	margin-top: 2px;
 }
 
-.monaco-editor
-	.margin-view-overlays
-	> div:hover
-	> .comment-range-glyph.comment-diff-added:before,
+.monaco-editor .margin-view-overlays > div:hover > .comment-range-glyph.comment-diff-added:before,
 .monaco-editor .margin-view-overlays .comment-range-glyph.line-hover:before {
 	content: var(--vscode-icon-plus-content);
 	font-family: var(--vscode-icon-plus-font-family);
@@ -649,6 +555,7 @@ div.preview.inline .monaco-editor .comment-range-glyph {
 .monaco-editor .comment-range-glyph.comment-thread:before {
 	content: var(--vscode-icon-comment-add-content);
 	font-family: var(--vscode-icon-comment-add-font-family);
+
 }
 .monaco-editor .comment-range-glyph.comment-thread-unresolved:before {
 	content: var(--vscode-icon-comment-unresolved-content);

@@ -3,24 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "../../../base/common/lifecycle.js";
-import { INotebookRendererMessagingService } from "../../contrib/notebook/common/notebookRendererMessagingService.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
-import {
-	ExtHostContext,
-	type ExtHostNotebookRenderersShape,
-	MainContext,
-	type MainThreadNotebookRenderersShape,
-} from "../common/extHost.protocol.js";
+import { Disposable } from '../../../base/common/lifecycle.js';
+import { ExtHostContext, ExtHostNotebookRenderersShape, MainContext, MainThreadNotebookRenderersShape } from '../common/extHost.protocol.js';
+import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import { INotebookRendererMessagingService } from '../../contrib/notebook/common/notebookRendererMessagingService.js';
 
 @extHostNamedCustomer(MainContext.MainThreadNotebookRenderers)
-export class MainThreadNotebookRenderers
-	extends Disposable
-	implements MainThreadNotebookRenderersShape
-{
+export class MainThreadNotebookRenderers extends Disposable implements MainThreadNotebookRenderersShape {
 	private readonly proxy: ExtHostNotebookRenderersShape;
 
 	constructor(
@@ -34,11 +23,7 @@ export class MainThreadNotebookRenderers
 		}));
 	}
 
-	$postMessage(
-		editorId: string | undefined,
-		rendererId: string,
-		message: unknown,
-	): Promise<boolean> {
+	$postMessage(editorId: string | undefined, rendererId: string, message: unknown): Promise<boolean> {
 		return this.messaging.receiveMessage(editorId, rendererId, message);
 	}
 }

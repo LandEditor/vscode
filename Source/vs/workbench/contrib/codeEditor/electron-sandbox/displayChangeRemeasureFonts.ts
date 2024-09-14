@@ -3,21 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import { FontMeasurements } from "../../../../editor/browser/config/fontMeasurements.js";
-import { INativeHostService } from "../../../../platform/native/common/native.js";
-import { Registry } from "../../../../platform/registry/common/platform.js";
-import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
-} from "../../../common/contributions.js";
-import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { FontMeasurements } from '../../../../editor/browser/config/fontMeasurements.js';
+import { INativeHostService } from '../../../../platform/native/common/native.js';
+import { Registry } from '../../../../platform/registry/common/platform.js';
+import { Extensions as WorkbenchExtensions, IWorkbenchContribution, IWorkbenchContributionsRegistry } from '../../../common/contributions.js';
+import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
 
-class DisplayChangeRemeasureFonts
-	extends Disposable
-	implements IWorkbenchContribution
-{
+class DisplayChangeRemeasureFonts extends Disposable implements IWorkbenchContribution {
+
 	constructor(
 		@INativeHostService nativeHostService: INativeHostService
 	) {
@@ -29,9 +23,4 @@ class DisplayChangeRemeasureFonts
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(
-	WorkbenchExtensions.Workbench,
-).registerWorkbenchContribution(
-	DisplayChangeRemeasureFonts,
-	LifecyclePhase.Eventually,
-);
+Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(DisplayChangeRemeasureFonts, LifecyclePhase.Eventually);

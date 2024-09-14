@@ -3,17 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { registerAction2 } from "../../../../platform/actions/common/actions.js";
-import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
-import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
-	registerWorkbenchContribution2,
-} from "../../../common/contributions.js";
-import { ListResizeColumnAction } from "./listResizeColumnAction.js";
+import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
+import { registerAction2 } from '../../../../platform/actions/common/actions.js';
+import { ListResizeColumnAction } from './listResizeColumnAction.js';
 
 export class ListContext implements IWorkbenchContribution {
-	static readonly ID = "workbench.contrib.listContext";
+
+	static readonly ID = 'workbench.contrib.listContext';
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService
@@ -25,9 +22,6 @@ export class ListContext implements IWorkbenchContribution {
 	}
 }
 
-registerWorkbenchContribution2(
-	ListContext.ID,
-	ListContext,
-	WorkbenchPhase.BlockStartup,
-);
+registerWorkbenchContribution2(ListContext.ID, ListContext, WorkbenchPhase.BlockStartup);
 registerAction2(ListResizeColumnAction);
+

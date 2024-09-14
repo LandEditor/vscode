@@ -3,28 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { hash } from "../../../../base/common/hash.js";
-import { posix } from "../../../../base/common/path.js";
-import { isCodeEditor } from "../../../../editor/browser/editorBrowser.js";
-import { ILogService } from "../../../../platform/log/common/log.js";
-import { IProductService } from "../../../../platform/product/common/productService.js";
-import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
-import { IUpdateService } from "../../../../platform/update/common/update.js";
-import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
-import type { IWorkbenchContribution } from "../../../common/contributions.js";
-import { ViewContainerLocation } from "../../../common/views.js";
-import { IEditorService } from "../../../services/editor/common/editorService.js";
-import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
-import {
-	ILifecycleService,
-	StartupKind,
-	StartupKindToString,
-} from "../../../services/lifecycle/common/lifecycle.js";
-import { IPaneCompositePartService } from "../../../services/panecomposite/browser/panecomposite.js";
-import { ITimerService } from "../../../services/timer/browser/timerService.js";
-import * as files from "../../files/common/files.js";
+import { isCodeEditor } from '../../../../editor/browser/editorBrowser.js';
+import { ILifecycleService, StartupKind, StartupKindToString } from '../../../services/lifecycle/common/lifecycle.js';
+import { IUpdateService } from '../../../../platform/update/common/update.js';
+import * as files from '../../files/common/files.js';
+import { IEditorService } from '../../../services/editor/common/editorService.js';
+import { IWorkspaceTrustManagementService } from '../../../../platform/workspace/common/workspaceTrust.js';
+import { IPaneCompositePartService } from '../../../services/panecomposite/browser/panecomposite.js';
+import { ViewContainerLocation } from '../../../common/views.js';
+import { ILogService } from '../../../../platform/log/common/log.js';
+import { IProductService } from '../../../../platform/product/common/productService.js';
+import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
+import { IBrowserWorkbenchEnvironmentService } from '../../../services/environment/browser/environmentService.js';
+import { ITimerService } from '../../../services/timer/browser/timerService.js';
+import { IWorkbenchContribution } from '../../../common/contributions.js';
+import { posix } from '../../../../base/common/path.js';
+import { hash } from '../../../../base/common/hash.js';
 
 export abstract class StartupTimings {
+
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
 		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
@@ -46,39 +43,33 @@ export abstract class StartupTimings {
 			return StartupKindToString(this._lifecycleService.startupKind);
 		}
 		if (!this._workspaceTrustService.isWorkspaceTrusted()) {
-			return "Workspace not trusted";
+			return 'Workspace not trusted';
 		}
-		const activeViewlet = this._paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Sidebar,
-		);
+		const activeViewlet = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
 		if (!activeViewlet || activeViewlet.getId() !== files.VIEWLET_ID) {
-			return "Explorer viewlet not visible";
+			return 'Explorer viewlet not visible';
 		}
 		const visibleEditorPanes = this._editorService.visibleEditorPanes;
 		if (visibleEditorPanes.length !== 1) {
 			return `Expected text editor count : 1, Actual : ${visibleEditorPanes.length}`;
 		}
 		if (!isCodeEditor(visibleEditorPanes[0].getControl())) {
-			return "Active editor is not a text editor";
+			return 'Active editor is not a text editor';
 		}
-		const activePanel = this._paneCompositeService.getActivePaneComposite(
-			ViewContainerLocation.Panel,
-		);
+		const activePanel = this._paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel);
 		if (activePanel) {
 			return `Current active panel : ${this._paneCompositeService.getPaneComposite(activePanel.getId(), ViewContainerLocation.Panel)?.name}`;
 		}
 		const isLatestVersion = await this._updateService.isLatestVersion();
 		if (isLatestVersion === false) {
-			return "Not on latest version, updates available";
+			return 'Not on latest version, updates available';
 		}
 		return undefined;
 	}
 }
 
-export class BrowserStartupTimings
-	extends StartupTimings
-	implements IWorkbenchContribution
-{
+export class BrowserStartupTimings extends StartupTimings implements IWorkbenchContribution {
+
 	constructor(
 		@IEditorService editorService: IEditorService,
 		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
@@ -106,13 +97,14 @@ export class BrowserStartupTimings
 		const standardStartupError = await this._isStandardStartup();
 		const perfBaseline = await this.timerService.perfBaseline;
 		const [from, to] = this.environmentService.profDurationMarkers;
-		const content = `${this.timerService.getDuration(from, to)}\t${this.productService.nameShort}\t${(this.productService.commit || "").slice(0, 10) || "0000000000"}\t${this.telemetryService.sessionId}\t${standardStartupError === undefined ? "standard_start" : "NO_standard_start : " + standardStartupError}\t${String(perfBaseline).padStart(4, "0")}ms\n`;
+		const content = `${this.timerService.getDuration(from, to)}\t${this.productService.nameShort}\t${(this.productService.commit || '').slice(0, 10) || '0000000000'}\t${this.telemetryService.sessionId}\t${standardStartupError === undefined ? 'standard_start' : 'NO_standard_start : ' + standardStartupError}\t${String(perfBaseline).padStart(4, '0')}ms\n`;
 
 		this.logService.info(`[prof-timers] ${content}`);
 	}
 }
 
 export class BrowserResourcePerformanceMarks {
+
 	constructor(
 		@ITelemetryService telemetryService: ITelemetryService
 	) {

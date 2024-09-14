@@ -3,18 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	InstantiationType,
-	registerSingleton,
-} from "../../../../platform/instantiation/common/extensions.js";
-import { INativeHostService } from "../../../../platform/native/common/native.js";
-import type { IPartsSplash } from "../../../../platform/theme/common/themeService.js";
-import {
-	WorkbenchPhase,
-	registerWorkbenchContribution2,
-} from "../../../common/contributions.js";
-import { PartsSplash } from "../browser/partsSplash.js";
-import { ISplashStorageService } from "../browser/splash.js";
+import { WorkbenchPhase, registerWorkbenchContribution2 } from '../../../common/contributions.js';
+import { ISplashStorageService } from '../browser/splash.js';
+import { INativeHostService } from '../../../../platform/native/common/native.js';
+import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
+import { PartsSplash } from '../browser/partsSplash.js';
+import { IPartsSplash } from '../../../../platform/theme/common/themeService.js';
 
 class SplashStorageService implements ISplashStorageService {
 	_serviceBrand: undefined;
@@ -25,14 +19,10 @@ class SplashStorageService implements ISplashStorageService {
 	}
 }
 
-registerSingleton(
-	ISplashStorageService,
-	SplashStorageService,
-	InstantiationType.Delayed,
-);
+registerSingleton(ISplashStorageService, SplashStorageService, InstantiationType.Delayed);
 
 registerWorkbenchContribution2(
 	PartsSplash.ID,
 	PartsSplash,
-	WorkbenchPhase.BlockStartup,
+	WorkbenchPhase.BlockStartup
 );

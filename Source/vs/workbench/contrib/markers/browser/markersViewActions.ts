@@ -3,22 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as DOM from "../../../../base/browser/dom.js";
-import {
-	ActionViewItem,
-	type IActionViewItemOptions,
-} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
-import { Action, type IAction } from "../../../../base/common/actions.js";
-import { Codicon } from "../../../../base/common/codicons.js";
-import { Emitter, type Event } from "../../../../base/common/event.js";
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import { ThemeIcon } from "../../../../base/common/themables.js";
-import type { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
-import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
-import { MarkersContextKeys } from "../common/markers.js";
-import type { Marker } from "./markersModel.js";
-import Messages from "./messages.js";
-import "./markersViewActions.css";
+import * as DOM from '../../../../base/browser/dom.js';
+import { Action, IAction } from '../../../../base/common/actions.js';
+import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
+import Messages from './messages.js';
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { Marker } from './markersModel.js';
+import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { Event, Emitter } from '../../../../base/common/event.js';
+import { Codicon } from '../../../../base/common/codicons.js';
+import { ThemeIcon } from '../../../../base/common/themables.js';
+import { ActionViewItem, IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
+import { MarkersContextKeys } from '../common/markers.js';
+import './markersViewActions.css';
 
 export interface IMarkersFiltersChangeEvent {
 	excludedFiles?: boolean;
@@ -38,15 +35,11 @@ export interface IMarkersFiltersOptions {
 }
 
 export class MarkersFilters extends Disposable {
-	private readonly _onDidChange: Emitter<IMarkersFiltersChangeEvent> =
-		this._register(new Emitter<IMarkersFiltersChangeEvent>());
-	readonly onDidChange: Event<IMarkersFiltersChangeEvent> =
-		this._onDidChange.event;
 
-	constructor(
-		options: IMarkersFiltersOptions,
-		private readonly contextKeyService: IContextKeyService,
-	) {
+	private readonly _onDidChange: Emitter<IMarkersFiltersChangeEvent> = this._register(new Emitter<IMarkersFiltersChangeEvent>());
+	readonly onDidChange: Event<IMarkersFiltersChangeEvent> = this._onDidChange.event;
+
+	constructor(options: IMarkersFiltersOptions, private readonly contextKeyService: IContextKeyService) {
 		super();
 
 		this._showErrors.set(options.showErrors);
@@ -59,10 +52,7 @@ export class MarkersFilters extends Disposable {
 
 	filterHistory: string[];
 
-	private readonly _excludedFiles =
-		MarkersContextKeys.ShowExcludedFilesFilterContextKey.bindTo(
-			this.contextKeyService,
-		);
+	private readonly _excludedFiles = MarkersContextKeys.ShowExcludedFilesFilterContextKey.bindTo(this.contextKeyService);
 	get excludedFiles(): boolean {
 		return !!this._excludedFiles.get();
 	}
@@ -73,10 +63,7 @@ export class MarkersFilters extends Disposable {
 		}
 	}
 
-	private readonly _activeFile =
-		MarkersContextKeys.ShowActiveFileFilterContextKey.bindTo(
-			this.contextKeyService,
-		);
+	private readonly _activeFile = MarkersContextKeys.ShowActiveFileFilterContextKey.bindTo(this.contextKeyService);
 	get activeFile(): boolean {
 		return !!this._activeFile.get();
 	}
@@ -87,10 +74,7 @@ export class MarkersFilters extends Disposable {
 		}
 	}
 
-	private readonly _showWarnings =
-		MarkersContextKeys.ShowWarningsFilterContextKey.bindTo(
-			this.contextKeyService,
-		);
+	private readonly _showWarnings = MarkersContextKeys.ShowWarningsFilterContextKey.bindTo(this.contextKeyService);
 	get showWarnings(): boolean {
 		return !!this._showWarnings.get();
 	}
@@ -101,10 +85,7 @@ export class MarkersFilters extends Disposable {
 		}
 	}
 
-	private readonly _showErrors =
-		MarkersContextKeys.ShowErrorsFilterContextKey.bindTo(
-			this.contextKeyService,
-		);
+	private readonly _showErrors = MarkersContextKeys.ShowErrorsFilterContextKey.bindTo(this.contextKeyService);
 	get showErrors(): boolean {
 		return !!this._showErrors.get();
 	}
@@ -115,10 +96,7 @@ export class MarkersFilters extends Disposable {
 		}
 	}
 
-	private readonly _showInfos =
-		MarkersContextKeys.ShowInfoFilterContextKey.bindTo(
-			this.contextKeyService,
-		);
+	private readonly _showInfos = MarkersContextKeys.ShowInfoFilterContextKey.bindTo(this.contextKeyService);
 	get showInfos(): boolean {
 		return !!this._showInfos.get();
 	}
@@ -128,15 +106,14 @@ export class MarkersFilters extends Disposable {
 			this._onDidChange.fire({ showInfos: true });
 		}
 	}
+
 }
 
 export class QuickFixAction extends Action {
-	public static readonly ID: string = "workbench.actions.problems.quickfix";
-	private static readonly CLASS: string =
-		"markers-panel-action-quickfix " +
-		ThemeIcon.asClassName(Codicon.lightBulb);
-	private static readonly AUTO_FIX_CLASS: string =
-		QuickFixAction.CLASS + " autofixable";
+
+	public static readonly ID: string = 'workbench.actions.problems.quickfix';
+	private static readonly CLASS: string = 'markers-panel-action-quickfix ' + ThemeIcon.asClassName(Codicon.lightBulb);
+	private static readonly AUTO_FIX_CLASS: string = QuickFixAction.CLASS + ' autofixable';
 
 	private readonly _onShowQuickFixes = this._register(new Emitter<void>());
 	readonly onShowQuickFixes: Event<void> = this._onShowQuickFixes.event;
@@ -151,18 +128,13 @@ export class QuickFixAction extends Action {
 	}
 
 	autoFixable(autofixable: boolean) {
-		this.class = autofixable
-			? QuickFixAction.AUTO_FIX_CLASS
-			: QuickFixAction.CLASS;
+		this.class = autofixable ? QuickFixAction.AUTO_FIX_CLASS : QuickFixAction.CLASS;
 	}
 
-	constructor(readonly marker: Marker) {
-		super(
-			QuickFixAction.ID,
-			Messages.MARKERS_PANEL_ACTION_TOOLTIP_QUICKFIX,
-			QuickFixAction.CLASS,
-			false,
-		);
+	constructor(
+		readonly marker: Marker,
+	) {
+		super(QuickFixAction.ID, Messages.MARKERS_PANEL_ACTION_TOOLTIP_QUICKFIX, QuickFixAction.CLASS, false);
 	}
 
 	override run(): Promise<void> {
@@ -172,6 +144,7 @@ export class QuickFixAction extends Action {
 }
 
 export class QuickFixActionViewItem extends ActionViewItem {
+
 	constructor(
 		action: QuickFixAction,
 		options: IActionViewItemOptions,
@@ -196,12 +169,10 @@ export class QuickFixActionViewItem extends ActionViewItem {
 		const quickFixes = (<QuickFixAction>this.action).quickFixes;
 		if (quickFixes.length) {
 			this.contextMenuService.showContextMenu({
-				getAnchor: () => ({
-					x: elementPosition.left + 10,
-					y: elementPosition.top + elementPosition.height + 4,
-				}),
-				getActions: () => quickFixes,
+				getAnchor: () => ({ x: elementPosition.left + 10, y: elementPosition.top + elementPosition.height + 4 }),
+				getActions: () => quickFixes
 			});
 		}
 	}
 }
+

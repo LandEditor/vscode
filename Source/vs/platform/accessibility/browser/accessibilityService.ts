@@ -3,34 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { addDisposableListener } from "../../../base/browser/dom.js";
-import { alert, status } from "../../../base/browser/ui/aria/aria.js";
-import { mainWindow } from "../../../base/browser/window.js";
-import { Emitter, type Event } from "../../../base/common/event.js";
-import { Disposable } from "../../../base/common/lifecycle.js";
-import { IConfigurationService } from "../../configuration/common/configuration.js";
-import {
-	type IContextKey,
-	IContextKeyService,
-} from "../../contextkey/common/contextkey.js";
-import { ILayoutService } from "../../layout/browser/layoutService.js";
-import {
-	AccessibilitySupport,
-	CONTEXT_ACCESSIBILITY_MODE_ENABLED,
-	type IAccessibilityService,
-} from "../common/accessibility.js";
+import { addDisposableListener } from '../../../base/browser/dom.js';
+import { alert, status } from '../../../base/browser/ui/aria/aria.js';
+import { mainWindow } from '../../../base/browser/window.js';
+import { Emitter, Event } from '../../../base/common/event.js';
+import { Disposable } from '../../../base/common/lifecycle.js';
+import { AccessibilitySupport, CONTEXT_ACCESSIBILITY_MODE_ENABLED, IAccessibilityService } from '../common/accessibility.js';
+import { IConfigurationService } from '../../configuration/common/configuration.js';
+import { IContextKey, IContextKeyService } from '../../contextkey/common/contextkey.js';
+import { ILayoutService } from '../../layout/browser/layoutService.js';
 
-export class AccessibilityService
-	extends Disposable
-	implements IAccessibilityService
-{
+export class AccessibilityService extends Disposable implements IAccessibilityService {
 	declare readonly _serviceBrand: undefined;
 
 	private _accessibilityModeEnabledContext: IContextKey<boolean>;
 	protected _accessibilitySupport = AccessibilitySupport.Unknown;
 	protected readonly _onDidChangeScreenReaderOptimized = new Emitter<void>();
 
-	protected _configMotionReduced: "auto" | "on" | "off";
+	protected _configMotionReduced: 'auto' | 'on' | 'off';
 	protected _systemMotionReduced: boolean;
 	protected readonly _onDidChangeReducedMotion = new Emitter<void>();
 
@@ -70,60 +60,41 @@ export class AccessibilityService
 	}
 
 	private initReducedMotionListeners(reduceMotionMatcher: MediaQueryList) {
-		this._register(
-			addDisposableListener(reduceMotionMatcher, "change", () => {
-				this._systemMotionReduced = reduceMotionMatcher.matches;
-				if (this._configMotionReduced === "auto") {
-					this._onDidChangeReducedMotion.fire();
-				}
-			}),
-		);
+
+		this._register(addDisposableListener(reduceMotionMatcher, 'change', () => {
+			this._systemMotionReduced = reduceMotionMatcher.matches;
+			if (this._configMotionReduced === 'auto') {
+				this._onDidChangeReducedMotion.fire();
+			}
+		}));
 
 		const updateRootClasses = () => {
 			const reduce = this.isMotionReduced();
-			this._layoutService.mainContainer.classList.toggle(
-				"reduce-motion",
-				reduce,
-			);
-			this._layoutService.mainContainer.classList.toggle(
-				"enable-motion",
-				!reduce,
-			);
+			this._layoutService.mainContainer.classList.toggle('reduce-motion', reduce);
+			this._layoutService.mainContainer.classList.toggle('enable-motion', !reduce);
 		};
 
 		updateRootClasses();
-		this._register(
-			this.onDidChangeReducedMotion(() => updateRootClasses()),
-		);
+		this._register(this.onDidChangeReducedMotion(() => updateRootClasses()));
 	}
 
 	private initLinkUnderlineListeners() {
-		this._register(
-			this._configurationService.onDidChangeConfiguration((e) => {
-				if (e.affectsConfiguration("accessibility.underlineLinks")) {
-					const linkUnderlinesEnabled =
-						this._configurationService.getValue<boolean>(
-							"accessibility.underlineLinks",
-						);
-					this._linkUnderlinesEnabled = linkUnderlinesEnabled;
-					this._onDidChangeLinkUnderline.fire();
-				}
-			}),
-		);
+		this._register(this._configurationService.onDidChangeConfiguration(e => {
+			if (e.affectsConfiguration('accessibility.underlineLinks')) {
+				const linkUnderlinesEnabled = this._configurationService.getValue<boolean>('accessibility.underlineLinks');
+				this._linkUnderlinesEnabled = linkUnderlinesEnabled;
+				this._onDidChangeLinkUnderline.fire();
+			}
+		}));
 
 		const updateLinkUnderlineClasses = () => {
 			const underlineLinks = this._linkUnderlinesEnabled;
-			this._layoutService.mainContainer.classList.toggle(
-				"underline-links",
-				underlineLinks,
-			);
+			this._layoutService.mainContainer.classList.toggle('underline-links', underlineLinks);
 		};
 
 		updateLinkUnderlineClasses();
 
-		this._register(
-			this.onDidChangeLinkUnderlines(() => updateLinkUnderlineClasses()),
-		);
+		this._register(this.onDidChangeLinkUnderlines(() => updateLinkUnderlineClasses()));
 	}
 
 	public onDidChangeLinkUnderlines(listener: () => void) {
@@ -135,14 +106,8 @@ export class AccessibilityService
 	}
 
 	isScreenReaderOptimized(): boolean {
-		const config = this._configurationService.getValue(
-			"editor.accessibilitySupport",
-		);
-		return (
-			config === "on" ||
-			(config === "auto" &&
-				this._accessibilitySupport === AccessibilitySupport.Enabled)
-		);
+		const config = this._configurationService.getValue('editor.accessibilitySupport');
+		return config === 'on' || (config === 'auto' && this._accessibilitySupport === AccessibilitySupport.Enabled);
 	}
 
 	get onDidChangeReducedMotion(): Event<void> {
@@ -151,9 +116,7 @@ export class AccessibilityService
 
 	isMotionReduced(): boolean {
 		const config = this._configMotionReduced;
-		return (
-			config === "on" || (config === "auto" && this._systemMotionReduced)
-		);
+		return config === 'on' || (config === 'auto' && this._systemMotionReduced);
 	}
 
 	alwaysUnderlineAccessKeys(): Promise<boolean> {

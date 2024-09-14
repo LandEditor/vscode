@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type * as vscode from "vscode";
-import { type IMainContext, MainContext } from "./extHost.protocol.js";
+import { IMainContext, MainContext } from './extHost.protocol.js';
+import type * as vscode from 'vscode';
 
 export class ExtHostClipboard {
+
 	readonly value: vscode.Clipboard;
 
 	constructor(mainContext: IMainContext) {
@@ -17,7 +18,7 @@ export class ExtHostClipboard {
 			},
 			writeText(value: string) {
 				return proxy.$writeText(value);
-			},
+			}
 		});
 	}
 }

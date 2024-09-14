@@ -7,25 +7,21 @@
 	--widget-color: var(--vscode-notifications-background);
 
 	.promptEditor .monaco-editor {
-		--vscode-editor-placeholder-foreground: var(
-			--vscode-editorGhostText-foreground
-		);
+		--vscode-editor-placeholder-foreground: var(--vscode-editorGhostText-foreground);
 	}
 
-	.toolbar,
-	.promptEditor {
+	.toolbar, .promptEditor {
 		opacity: 0;
 		transition: opacity 0.2s ease-in-out;
 	}
-	&:hover,
-	&.focused {
-		.toolbar,
-		.promptEditor {
+	&:hover, &.focused {
+		.toolbar, .promptEditor {
 			opacity: 1;
 		}
 	}
 
 	.preview .monaco-editor {
+
 		.mtk1 {
 			/*color: rgba(215, 215, 215, 0.452);*/
 			color: var(--vscode-editorGhostText-foreground);

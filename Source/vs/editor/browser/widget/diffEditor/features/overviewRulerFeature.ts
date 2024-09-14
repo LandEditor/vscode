@@ -3,50 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	EventType,
-	addDisposableListener,
-	addStandardDisposableListener,
-	h,
-} from "../../../../../base/browser/dom.js";
-import { createFastDomNode } from "../../../../../base/browser/fastDomNode.js";
-import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";
-import { ScrollbarState } from "../../../../../base/browser/ui/scrollbar/scrollbarState.js";
-import type { Color } from "../../../../../base/common/color.js";
-import { Disposable } from "../../../../../base/common/lifecycle.js";
-import {
-	type IObservable,
-	autorun,
-	autorunWithStore,
-	derived,
-	observableFromEvent,
-	observableSignalFromEvent,
-} from "../../../../../base/common/observable.js";
-import {
-	defaultInsertColor,
-	defaultRemoveColor,
-	diffInserted,
-	diffOverviewRulerInserted,
-	diffOverviewRulerRemoved,
-	diffRemoved,
-} from "../../../../../platform/theme/common/colorRegistry.js";
-import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
-import {
-	type EditorLayoutInfo,
-	EditorOption,
-} from "../../../../common/config/editorOptions.js";
-import type { LineRange } from "../../../../common/core/lineRange.js";
-import { Position } from "../../../../common/core/position.js";
-import { OverviewRulerZone } from "../../../../common/viewModel/overviewZoneManager.js";
-import type { CodeEditorWidget } from "../../codeEditor/codeEditorWidget.js";
-import type { DiffEditorEditors } from "../components/diffEditorEditors.js";
-import type { DiffEditorViewModel } from "../diffEditorViewModel.js";
-import { appendRemoveOnDispose } from "../utils.js";
+import { EventType, addDisposableListener, addStandardDisposableListener, h } from '../../../../../base/browser/dom.js';
+import { createFastDomNode } from '../../../../../base/browser/fastDomNode.js';
+import { IMouseWheelEvent } from '../../../../../base/browser/mouseEvent.js';
+import { ScrollbarState } from '../../../../../base/browser/ui/scrollbar/scrollbarState.js';
+import { Color } from '../../../../../base/common/color.js';
+import { Disposable } from '../../../../../base/common/lifecycle.js';
+import { IObservable, autorun, autorunWithStore, derived, observableFromEvent, observableSignalFromEvent } from '../../../../../base/common/observable.js';
+import { CodeEditorWidget } from '../../codeEditor/codeEditorWidget.js';
+import { DiffEditorEditors } from '../components/diffEditorEditors.js';
+import { DiffEditorViewModel } from '../diffEditorViewModel.js';
+import { appendRemoveOnDispose } from '../utils.js';
+import { EditorLayoutInfo, EditorOption } from '../../../../common/config/editorOptions.js';
+import { LineRange } from '../../../../common/core/lineRange.js';
+import { Position } from '../../../../common/core/position.js';
+import { OverviewRulerZone } from '../../../../common/viewModel/overviewZoneManager.js';
+import { defaultInsertColor, defaultRemoveColor, diffInserted, diffOverviewRulerInserted, diffOverviewRulerRemoved, diffRemoved } from '../../../../../platform/theme/common/colorRegistry.js';
+import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
 
 export class OverviewRulerFeature extends Disposable {
 	private static readonly ONE_OVERVIEW_WIDTH = 15;
-	public static readonly ENTIRE_DIFF_OVERVIEW_WIDTH =
-		this.ONE_OVERVIEW_WIDTH * 2;
+	public static readonly ENTIRE_DIFF_OVERVIEW_WIDTH = this.ONE_OVERVIEW_WIDTH * 2;
 	public readonly width = OverviewRulerFeature.ENTIRE_DIFF_OVERVIEW_WIDTH;
 
 	constructor(

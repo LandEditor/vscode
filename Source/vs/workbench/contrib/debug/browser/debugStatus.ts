@@ -3,27 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	type IDisposable,
-	dispose,
-} from "../../../../base/common/lifecycle.js";
-import * as nls from "../../../../nls.js";
-import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
-import type { IWorkbenchContribution } from "../../../common/contributions.js";
-import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
-	IStatusbarService,
-	StatusbarAlignment,
-} from "../../../services/statusbar/browser/statusbar.js";
-import {
-	type IDebugConfiguration,
-	IDebugService,
-	State,
-} from "../common/debug.js";
+import * as nls from '../../../../nls.js';
+import { IDisposable, dispose } from '../../../../base/common/lifecycle.js';
+import { IDebugService, State, IDebugConfiguration } from '../common/debug.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import { IStatusbarEntry, IStatusbarService, StatusbarAlignment, IStatusbarEntryAccessor } from '../../../services/statusbar/browser/statusbar.js';
+import { IWorkbenchContribution } from '../../../common/contributions.js';
 
 export class DebugStatusContribution implements IWorkbenchContribution {
-	private showInStatusBar!: "never" | "always" | "onFirstSessionStart";
+
+	private showInStatusBar!: 'never' | 'always' | 'onFirstSessionStart';
 	private toDispose: IDisposable[] = [];
 	private entryAccessor: IStatusbarEntryAccessor | undefined;
 
@@ -65,27 +54,20 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 	}
 
 	private get entry(): IStatusbarEntry {
-		let text = "";
+		let text = '';
 		const manager = this.debugService.getConfigurationManager();
-		const name = manager.selectedConfiguration.name || "";
-		const nameAndLaunchPresent =
-			name && manager.selectedConfiguration.launch;
+		const name = manager.selectedConfiguration.name || '';
+		const nameAndLaunchPresent = name && manager.selectedConfiguration.launch;
 		if (nameAndLaunchPresent) {
-			text =
-				manager.getLaunches().length > 1
-					? `${name} (${manager.selectedConfiguration.launch!.name})`
-					: name;
+			text = (manager.getLaunches().length > 1 ? `${name} (${manager.selectedConfiguration.launch!.name})` : name);
 		}
 
 		return {
-			name: nls.localize("status.debug", "Debug"),
-			text: "$(debug-alt-small) " + text,
-			ariaLabel: nls.localize("debugTarget", "Debug: {0}", text),
-			tooltip: nls.localize(
-				"selectAndStartDebug",
-				"Select and Start Debug Configuration",
-			),
-			command: "workbench.action.debug.selectandstart",
+			name: nls.localize('status.debug', "Debug"),
+			text: '$(debug-alt-small) ' + text,
+			ariaLabel: nls.localize('debugTarget', "Debug: {0}", text),
+			tooltip: nls.localize('selectAndStartDebug', "Select and Start Debug Configuration"),
+			command: 'workbench.action.debug.selectandstart'
 		};
 	}
 

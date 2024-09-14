@@ -9,7 +9,7 @@
 	height: 1em;
 }
 
-.inline-progress-widget {
+.inline-progress-widget  {
 	display: flex !important;
 	justify-content: center;
 	align-items: center;
