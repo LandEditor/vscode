@@ -3,25 +3,45 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from '../../../../base/common/uri.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { ITextModel } from '../../../../editor/common/model.js';
-import { IDisposable, toDisposable, IReference, ReferenceCollection, Disposable, AsyncReferenceCollection } from '../../../../base/common/lifecycle.js';
-import { IModelService } from '../../../../editor/common/services/model.js';
-import { TextResourceEditorModel } from '../../../common/editor/textResourceEditorModel.js';
-import { ITextFileService, TextFileResolveReason } from '../../textfile/common/textfiles.js';
-import { Schemas } from '../../../../base/common/network.js';
-import { ITextModelService, ITextModelContentProvider, ITextEditorModel, IResolvedTextEditorModel, isResolvedTextEditorModel } from '../../../../editor/common/services/resolverService.js';
-import { TextFileEditorModel } from '../../textfile/common/textFileEditorModel.js';
-import { IFileService } from '../../../../platform/files/common/files.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { IUndoRedoService } from '../../../../platform/undoRedo/common/undoRedo.js';
-import { ModelUndoRedoParticipant } from '../../../../editor/common/services/modelUndoRedoParticipant.js';
-import { IUriIdentityService } from '../../../../platform/uriIdentity/common/uriIdentity.js';
-import { UntitledTextEditorModel } from '../../untitled/common/untitledTextEditorModel.js';
+import {
+	AsyncReferenceCollection,
+	Disposable,
+	type IDisposable,
+	type IReference,
+	ReferenceCollection,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import { Schemas } from "../../../../base/common/network.js";
+import { URI } from "../../../../base/common/uri.js";
+import type { ITextModel } from "../../../../editor/common/model.js";
+import { IModelService } from "../../../../editor/common/services/model.js";
+import { ModelUndoRedoParticipant } from "../../../../editor/common/services/modelUndoRedoParticipant.js";
+import {
+	type IResolvedTextEditorModel,
+	type ITextEditorModel,
+	type ITextModelContentProvider,
+	ITextModelService,
+	isResolvedTextEditorModel,
+} from "../../../../editor/common/services/resolverService.js";
+import { IFileService } from "../../../../platform/files/common/files.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { IUndoRedoService } from "../../../../platform/undoRedo/common/undoRedo.js";
+import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
+import { TextResourceEditorModel } from "../../../common/editor/textResourceEditorModel.js";
+import { TextFileEditorModel } from "../../textfile/common/textFileEditorModel.js";
+import {
+	ITextFileService,
+	TextFileResolveReason,
+} from "../../textfile/common/textfiles.js";
+import { UntitledTextEditorModel } from "../../untitled/common/untitledTextEditorModel.js";
 
-class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextEditorModel>> {
-
+class ResourceModelCollection extends ReferenceCollection<
+	Promise<IResolvedTextEditorModel>
+> {
 	private readonly providers = new Map<string, ITextModelContentProvider[]>();
 	private readonly modelsToDispose = new Set<string>();
 
@@ -35,12 +55,16 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 		super();
 	}
 
-	protected createReferencedObject(key: string): Promise<IResolvedTextEditorModel> {
+	protected createReferencedObject(
+		key: string,
+	): Promise<IResolvedTextEditorModel> {
 		return this.doCreateReferencedObject(key);
 	}
 
-	private async doCreateReferencedObject(key: string, skipActivateProvider?: boolean): Promise<IResolvedTextEditorModel> {
-
+	private async doCreateReferencedObject(
+		key: string,
+		skipActivateProvider?: boolean,
+	): Promise<IResolvedTextEditorModel> {
 		// Untrack as being disposed
 		this.modelsToDispose.delete(key);
 
@@ -52,7 +76,10 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 				throw new Error(`Unable to resolve inMemory resource ${key}`);
 			}
 
-			const model = this.instantiationService.createInstance(TextResourceEditorModel, resource);
+			const model = this.instantiationService.createInstance(
+				TextResourceEditorModel,
+				resource,
+			);
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
 			}
@@ -60,7 +87,9 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 
 		// Untitled Schema: go through untitled text service
 		if (resource.scheme === Schemas.untitled) {
-			const model = await this.textFileService.untitled.resolve({ untitledResource: resource });
+			const model = await this.textFileService.untitled.resolve({
+				untitledResource: resource,
+			});
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
 			}
@@ -68,7 +97,9 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 
 		// File or remote file: go through text file service
 		if (this.fileService.hasProvider(resource)) {
-			const model = await this.textFileService.files.resolve(resource, { reason: TextFileResolveReason.REFERENCE });
+			const model = await this.textFileService.files.resolve(resource, {
+				reason: TextFileResolveReason.REFERENCE,
+			});
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
 			}
@@ -78,7 +109,10 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 		if (this.providers.has(resource.scheme)) {
 			await this.resolveTextModelContent(key);
 
-			const model = this.instantiationService.createInstance(TextResourceEditorModel, resource);
+			const model = this.instantiationService.createInstance(
+				TextResourceEditorModel,
+				resource,
+			);
 			if (this.ensureResolvedModel(model, key)) {
 				return model;
 			}
@@ -94,7 +128,10 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 		throw new Error(`Unable to resolve resource ${key}`);
 	}
 
-	private ensureResolvedModel(model: ITextEditorModel, key: string): model is IResolvedTextEditorModel {
+	private ensureResolvedModel(
+		model: ITextEditorModel,
+		key: string,
+	): model is IResolvedTextEditorModel {
 		if (isResolvedTextEditorModel(model)) {
 			return true;
 		}
@@ -102,8 +139,10 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 		throw new Error(`Unable to resolve resource ${key}`);
 	}
 
-	protected destroyReferencedObject(key: string, modelPromise: Promise<ITextEditorModel>): void {
-
+	protected destroyReferencedObject(
+		key: string,
+		modelPromise: Promise<ITextEditorModel>,
+	): void {
 		// inMemory is bound to a different lifecycle
 		const resource = URI.parse(key);
 		if (resource.scheme === Schemas.inMemory) {
@@ -148,7 +187,10 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 		})();
 	}
 
-	registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable {
+	registerTextModelContentProvider(
+		scheme: string,
+		provider: ITextModelContentProvider,
+	): IDisposable {
 		let providers = this.providers.get(scheme);
 		if (!providers) {
 			providers = [];
@@ -191,27 +233,43 @@ class ResourceModelCollection extends ReferenceCollection<Promise<IResolvedTextE
 			}
 		}
 
-		throw new Error(`Unable to resolve text model content for resource ${key}`);
+		throw new Error(
+			`Unable to resolve text model content for resource ${key}`,
+		);
 	}
 }
 
-export class TextModelResolverService extends Disposable implements ITextModelService {
-
+export class TextModelResolverService
+	extends Disposable
+	implements ITextModelService
+{
 	declare readonly _serviceBrand: undefined;
 
-	private _resourceModelCollection: ResourceModelCollection & ReferenceCollection<Promise<IResolvedTextEditorModel>> /* TS Fail */ | undefined = undefined;
+	private _resourceModelCollection:
+		| (ResourceModelCollection &
+				ReferenceCollection<
+					Promise<IResolvedTextEditorModel>
+				>) /* TS Fail */
+		| undefined = undefined;
 	private get resourceModelCollection() {
 		if (!this._resourceModelCollection) {
-			this._resourceModelCollection = this.instantiationService.createInstance(ResourceModelCollection);
+			this._resourceModelCollection =
+				this.instantiationService.createInstance(
+					ResourceModelCollection,
+				);
 		}
 
 		return this._resourceModelCollection;
 	}
 
-	private _asyncModelCollection: AsyncReferenceCollection<IResolvedTextEditorModel> | undefined = undefined;
+	private _asyncModelCollection:
+		| AsyncReferenceCollection<IResolvedTextEditorModel>
+		| undefined = undefined;
 	private get asyncModelCollection() {
 		if (!this._asyncModelCollection) {
-			this._asyncModelCollection = new AsyncReferenceCollection(this.resourceModelCollection);
+			this._asyncModelCollection = new AsyncReferenceCollection(
+				this.resourceModelCollection,
+			);
 		}
 
 		return this._asyncModelCollection;
@@ -237,8 +295,9 @@ export class TextModelResolverService extends Disposable implements ITextModelSe
 		);
 	}
 
-	async createModelReference(resource: URI): Promise<IReference<IResolvedTextEditorModel>> {
-
+	async createModelReference(
+		resource: URI,
+	): Promise<IReference<IResolvedTextEditorModel>> {
 		// From this moment on, only operate on the canonical resource
 		// to ensure we reduce the chance of resolving the same resource
 		// with different resource forms (e.g. path casing on Windows)
@@ -247,17 +306,33 @@ export class TextModelResolverService extends Disposable implements ITextModelSe
 		return await this.asyncModelCollection.acquire(resource.toString());
 	}
 
-	registerTextModelContentProvider(scheme: string, provider: ITextModelContentProvider): IDisposable {
-		return this.resourceModelCollection.registerTextModelContentProvider(scheme, provider);
+	registerTextModelContentProvider(
+		scheme: string,
+		provider: ITextModelContentProvider,
+	): IDisposable {
+		return this.resourceModelCollection.registerTextModelContentProvider(
+			scheme,
+			provider,
+		);
 	}
 
 	canHandleResource(resource: URI): boolean {
-		if (this.fileService.hasProvider(resource) || resource.scheme === Schemas.untitled || resource.scheme === Schemas.inMemory) {
+		if (
+			this.fileService.hasProvider(resource) ||
+			resource.scheme === Schemas.untitled ||
+			resource.scheme === Schemas.inMemory
+		) {
 			return true; // we handle file://, untitled:// and inMemory:// automatically
 		}
 
-		return this.resourceModelCollection.hasTextModelContentProvider(resource.scheme);
+		return this.resourceModelCollection.hasTextModelContentProvider(
+			resource.scheme,
+		);
 	}
 }
 
-registerSingleton(ITextModelService, TextModelResolverService, InstantiationType.Delayed);
+registerSingleton(
+	ITextModelService,
+	TextModelResolverService,
+	InstantiationType.Delayed,
+);

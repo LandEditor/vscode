@@ -3,24 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
-import { IMouseWheelEvent } from '../../../../../base/browser/mouseEvent.js';
-import { IListContextMenuEvent, IListEvent, IListMouseEvent } from '../../../../../base/browser/ui/list/list.js';
-import { IListStyles } from '../../../../../base/browser/ui/list/listWidget.js';
-import { Event } from '../../../../../base/common/event.js';
-import { DisposableStore } from '../../../../../base/common/lifecycle.js';
-import { ScrollEvent } from '../../../../../base/common/scrollable.js';
-import { ICodeEditor } from '../../../../../editor/browser/editorBrowser.js';
-import { Range } from '../../../../../editor/common/core/range.js';
-import { Selection } from '../../../../../editor/common/core/selection.js';
-import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IWorkbenchListOptionsUpdate } from '../../../../../platform/list/browser/listService.js';
-import { CellRevealRangeType, CellRevealType, ICellOutputViewModel, ICellViewModel, INotebookViewZoneChangeAccessor } from '../notebookBrowser.js';
-import { CellPartsCollection } from './cellPart.js';
-import { CellViewModel, NotebookViewModel } from '../viewModel/notebookViewModelImpl.js';
-import { ICellRange } from '../../common/notebookRange.js';
-
+import type { FastDomNode } from "../../../../../base/browser/fastDomNode.js";
+import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";
+import type {
+	IListContextMenuEvent,
+	IListEvent,
+	IListMouseEvent,
+} from "../../../../../base/browser/ui/list/list.js";
+import type { IListStyles } from "../../../../../base/browser/ui/list/listWidget.js";
+import type { Event } from "../../../../../base/common/event.js";
+import type { DisposableStore } from "../../../../../base/common/lifecycle.js";
+import type { ScrollEvent } from "../../../../../base/common/scrollable.js";
+import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js";
+import type { Range } from "../../../../../editor/common/core/range.js";
+import type { Selection } from "../../../../../editor/common/core/selection.js";
+import type { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
+import type { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import type { IWorkbenchListOptionsUpdate } from "../../../../../platform/list/browser/listService.js";
+import type { ICellRange } from "../../common/notebookRange.js";
+import type {
+	CellRevealRangeType,
+	CellRevealType,
+	ICellOutputViewModel,
+	ICellViewModel,
+	INotebookViewZoneChangeAccessor,
+} from "../notebookBrowser.js";
+import type {
+	CellViewModel,
+	NotebookViewModel,
+} from "../viewModel/notebookViewModelImpl.js";
+import type { CellPartsCollection } from "./cellPart.js";
 
 export interface INotebookCellList extends ICoordinatesConverter {
 	isDisposed: boolean;
@@ -61,15 +73,25 @@ export interface INotebookCellList extends ICoordinatesConverter {
 	scrollToBottom(): void;
 	revealCell(cell: ICellViewModel, revealType: CellRevealType): Promise<void>;
 	revealCells(range: ICellRange): void;
-	revealRangeInCell(cell: ICellViewModel, range: Selection | Range, revealType: CellRevealRangeType): Promise<void>;
+	revealRangeInCell(
+		cell: ICellViewModel,
+		range: Selection | Range,
+		revealType: CellRevealRangeType,
+	): Promise<void>;
 	revealCellOffsetInCenter(element: ICellViewModel, offset: number): void;
 	revealOffsetInCenterIfOutsideViewport(offset: number): void;
 	setHiddenAreas(_ranges: ICellRange[], triggerViewUpdate: boolean): boolean;
-	changeViewZones(callback: (accessor: INotebookViewZoneChangeAccessor) => void): void;
+	changeViewZones(
+		callback: (accessor: INotebookViewZoneChangeAccessor) => void,
+	): void;
 	domElementOfElement(element: ICellViewModel): HTMLElement | null;
 	focusView(): void;
 	triggerScrollFromMouseWheelEvent(browserEvent: IMouseWheelEvent): void;
-	updateElementHeight2(element: ICellViewModel, size: number, anchorElementIndex?: number | null): void;
+	updateElementHeight2(
+		element: ICellViewModel,
+		size: number,
+		anchorElementIndex?: number | null,
+	): void;
 	domFocus(): void;
 	focusContainer(clearSelection: boolean): void;
 	setCellEditorSelection(element: ICellViewModel, range: Range): void;

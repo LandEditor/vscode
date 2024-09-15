@@ -206,7 +206,7 @@ function parseIntOptional(value: string | undefined): number | undefined {
 	if (value === undefined) {
 		return value;
 	}
-	return parseInt(value);
+	return Number.parseInt(value);
 }
 
 // This defines valid path characters for a link with a suffix, the first `[]` of the regex includes
@@ -214,7 +214,7 @@ function parseIntOptional(value: string | undefined): number | undefined {
 // allowed at all in the path. If the characters show up in both regexes the link will stop at that
 // character, otherwise it will stop at a space character.
 const linkWithSuffixPathCharacters =
-	/(?<path>(?:file:\/\/\/)?[^\s\|<>\[\({][^\s\|<>]*)$/;
+	/(?<path>(?:file:\/\/\/)?[^\s|<>[({][^\s|<>]*)$/;
 
 export function detectLinks(line: string, os: OperatingSystem) {
 	// 1: Detect all links on line via suffixes first
@@ -296,7 +296,7 @@ function detectLinksViaSuffix(line: string): IParsedLink[] {
 			let path = possiblePathMatch.groups.path;
 			// Extract a path prefix if it exists (not part of the path, but part of the underlined
 			// section)
-			let prefix: ILinkPartialRange | undefined = undefined;
+			let prefix: ILinkPartialRange | undefined;
 			const prefixMatch = path.match(/^(?<prefix>['"]+)/);
 			if (prefixMatch?.groups?.prefix) {
 				prefix = {

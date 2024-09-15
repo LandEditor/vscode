@@ -3,28 +3,33 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDragAndDropData } from '../../dnd.js';
-import { IMouseEvent } from '../../mouseEvent.js';
-import { IListDragAndDrop, IListDragOverReaction, IListRenderer, ListDragOverEffectPosition, ListDragOverEffectType } from '../list/list.js';
-import { ListViewTargetSector } from '../list/listView.js';
-import { Event } from '../../../common/event.js';
+import type { Event } from "../../../common/event.js";
+import type { IDragAndDropData } from "../../dnd.js";
+import type { IMouseEvent } from "../../mouseEvent.js";
+import {
+	type IListDragAndDrop,
+	type IListDragOverReaction,
+	type IListRenderer,
+	ListDragOverEffectPosition,
+	ListDragOverEffectType,
+} from "../list/list.js";
+import type { ListViewTargetSector } from "../list/listView.js";
 
-export const enum TreeVisibility {
-
+export enum TreeVisibility {
 	/**
 	 * The tree node should be hidden.
 	 */
-	Hidden,
+	Hidden = 0,
 
 	/**
 	 * The tree node should be visible.
 	 */
-	Visible,
+	Visible = 1,
 
 	/**
 	 * The tree node should be visible if any of its descendants is visible.
 	 */
-	Recurse
+	Recurse = 2,
 }
 
 /**
@@ -32,7 +37,6 @@ export const enum TreeVisibility {
  * metadata.
  */
 export interface ITreeFilterDataResult<TFilterData> {
-
 	/**
 	 * Whether the node should be visible.
 	 */
@@ -51,14 +55,16 @@ export interface ITreeFilterDataResult<TFilterData> {
  * an object composed of the visibility result as well as additional metadata
  * which gets forwarded to the renderer once the element gets rendered.
  */
-export type TreeFilterResult<TFilterData> = boolean | TreeVisibility | ITreeFilterDataResult<TFilterData>;
+export type TreeFilterResult<TFilterData> =
+	| boolean
+	| TreeVisibility
+	| ITreeFilterDataResult<TFilterData>;
 
 /**
  * A tree filter is responsible for controlling the visibility of
  * elements in a tree.
  */
 export interface ITreeFilter<T, TFilterData = void> {
-
 	/**
 	 * Returns whether this elements should be visible and, if affirmative,
 	 * additional metadata which gets forwarded to the renderer once the element
@@ -66,7 +72,10 @@ export interface ITreeFilter<T, TFilterData = void> {
 	 *
 	 * @param element The tree element.
 	 */
-	filter(element: T, parentVisibility: TreeVisibility): TreeFilterResult<TFilterData>;
+	filter(
+		element: T,
+		parentVisibility: TreeVisibility,
+	): TreeFilterResult<TFilterData>;
 }
 
 export interface ITreeSorter<T> {
@@ -81,18 +90,18 @@ export interface ITreeElement<T> {
 }
 
 export enum ObjectTreeElementCollapseState {
-	Expanded,
-	Collapsed,
+	Expanded = 0,
+	Collapsed = 1,
 
 	/**
 	 * If the element is already in the tree, preserve its current state. Else, expand it.
 	 */
-	PreserveOrExpanded,
+	PreserveOrExpanded = 2,
 
 	/**
 	 * If the element is already in the tree, preserve its current state. Else, collapse it.
 	 */
-	PreserveOrCollapsed,
+	PreserveOrCollapsed = 3,
 }
 
 export interface IObjectTreeElement<T> {
@@ -134,8 +143,12 @@ export interface ITreeModel<T, TFilterData, TRef> {
 	readonly rootRef: TRef;
 
 	readonly onDidSpliceModel: Event<ITreeModelSpliceEvent<T, TFilterData>>;
-	readonly onDidSpliceRenderedNodes: Event<ITreeListSpliceData<T, TFilterData>>;
-	readonly onDidChangeCollapseState: Event<ICollapseStateChangeEvent<T, TFilterData>>;
+	readonly onDidSpliceRenderedNodes: Event<
+		ITreeListSpliceData<T, TFilterData>
+	>;
+	readonly onDidChangeCollapseState: Event<
+		ICollapseStateChangeEvent<T, TFilterData>
+	>;
 	readonly onDidChangeRenderNodeCount: Event<ITreeNode<T, TFilterData>>;
 
 	has(location: TRef): boolean;
@@ -152,14 +165,19 @@ export interface ITreeModel<T, TFilterData, TRef> {
 	isCollapsible(location: TRef): boolean;
 	setCollapsible(location: TRef, collapsible?: boolean): boolean;
 	isCollapsed(location: TRef): boolean;
-	setCollapsed(location: TRef, collapsed?: boolean, recursive?: boolean): boolean;
+	setCollapsed(
+		location: TRef,
+		collapsed?: boolean,
+		recursive?: boolean,
+	): boolean;
 	expandTo(location: TRef): void;
 
 	rerender(location: TRef): void;
 	refilter(): void;
 }
 
-export interface ITreeRenderer<T, TFilterData = void, TTemplateData = void> extends IListRenderer<ITreeNode<T, TFilterData>, TTemplateData> {
+export interface ITreeRenderer<T, TFilterData = void, TTemplateData = void>
+	extends IListRenderer<ITreeNode<T, TFilterData>, TTemplateData> {
 	renderTwistie?(element: T, twistieElement: HTMLElement): boolean;
 	onDidChangeTwistieState?: Event<T>;
 }
@@ -170,10 +188,10 @@ export interface ITreeEvent<T> {
 }
 
 export enum TreeMouseEventTarget {
-	Unknown,
-	Twistie,
-	Element,
-	Filter
+	Unknown = 0,
+	Twistie = 1,
+	Element = 2,
+	Filter = 3,
 }
 
 export interface ITreeMouseEvent<T> {
@@ -208,9 +226,9 @@ export interface IAsyncDataSource<TInput, T> {
 	getParent?(element: T): TInput | T;
 }
 
-export const enum TreeDragOverBubble {
-	Down,
-	Up
+export enum TreeDragOverBubble {
+	Down = 0,
+	Up = 1,
 }
 
 export interface ITreeDragOverReaction extends IListDragOverReaction {
@@ -219,26 +237,53 @@ export interface ITreeDragOverReaction extends IListDragOverReaction {
 }
 
 export const TreeDragOverReactions = {
-	acceptBubbleUp(): ITreeDragOverReaction { return { accept: true, bubble: TreeDragOverBubble.Up }; },
-	acceptBubbleDown(autoExpand = false): ITreeDragOverReaction { return { accept: true, bubble: TreeDragOverBubble.Down, autoExpand }; },
-	acceptCopyBubbleUp(): ITreeDragOverReaction { return { accept: true, bubble: TreeDragOverBubble.Up, effect: { type: ListDragOverEffectType.Copy, position: ListDragOverEffectPosition.Over } }; },
-	acceptCopyBubbleDown(autoExpand = false): ITreeDragOverReaction { return { accept: true, bubble: TreeDragOverBubble.Down, effect: { type: ListDragOverEffectType.Copy, position: ListDragOverEffectPosition.Over }, autoExpand }; }
+	acceptBubbleUp(): ITreeDragOverReaction {
+		return { accept: true, bubble: TreeDragOverBubble.Up };
+	},
+	acceptBubbleDown(autoExpand = false): ITreeDragOverReaction {
+		return { accept: true, bubble: TreeDragOverBubble.Down, autoExpand };
+	},
+	acceptCopyBubbleUp(): ITreeDragOverReaction {
+		return {
+			accept: true,
+			bubble: TreeDragOverBubble.Up,
+			effect: {
+				type: ListDragOverEffectType.Copy,
+				position: ListDragOverEffectPosition.Over,
+			},
+		};
+	},
+	acceptCopyBubbleDown(autoExpand = false): ITreeDragOverReaction {
+		return {
+			accept: true,
+			bubble: TreeDragOverBubble.Down,
+			effect: {
+				type: ListDragOverEffectType.Copy,
+				position: ListDragOverEffectPosition.Over,
+			},
+			autoExpand,
+		};
+	},
 };
 
 export interface ITreeDragAndDrop<T> extends IListDragAndDrop<T> {
-	onDragOver(data: IDragAndDropData, targetElement: T | undefined, targetIndex: number | undefined, targetSector: ListViewTargetSector | undefined, originalEvent: DragEvent): boolean | ITreeDragOverReaction;
+	onDragOver(
+		data: IDragAndDropData,
+		targetElement: T | undefined,
+		targetIndex: number | undefined,
+		targetSector: ListViewTargetSector | undefined,
+		originalEvent: DragEvent,
+	): boolean | ITreeDragOverReaction;
 }
 
 export class TreeError extends Error {
-
 	constructor(user: string, message: string) {
 		super(`TreeError [${user}] ${message}`);
 	}
 }
 
 export class WeakMapper<K extends object, V> {
-
-	constructor(private fn: (k: K) => V) { }
+	constructor(private fn: (k: K) => V) {}
 
 	private _map = new WeakMap<K, V>();
 

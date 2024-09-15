@@ -8,7 +8,7 @@
 	overflow-y: scroll;
 }
 
-.web.issue-reporter-body .monaco-workbench select{
+.web.issue-reporter-body .monaco-workbench select {
 	-webkit-appearance: auto;
 	appearance: auto;
 }
@@ -111,7 +111,7 @@
 }
 
 .issue-reporter html {
-	color: #CCCCCC;
+	color: #cccccc;
 	height: 100%;
 }
 
@@ -127,7 +127,8 @@
 }
 
 .issue-reporter .mac.web:lang(zh-Hans) {
-	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
+		"Hiragino Sans GB", sans-serif;
 }
 
 .issue-reporter .mac.web:lang(zh-Hant) {
@@ -135,11 +136,13 @@
 }
 
 .issue-reporter .mac.web:lang(ja) {
-	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro",
+		sans-serif;
 }
 
 .issue-reporter .mac.web:lang(ko) {
-	font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic",
+		"Apple SD Gothic Neo", "AppleGothic", sans-serif;
 }
 
 .issue-reporter .windows.web {
@@ -155,7 +158,8 @@
 }
 
 .issue-reporter .windows.web:lang(ja) {
-	font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif;
+	font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI",
+		sans-serif;
 }
 
 .issue-reporter .windows.web:lang(ko) {
@@ -167,19 +171,24 @@
 }
 
 .issue-reporter .linux.web:lang(zh-Hans) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC",
+		"Source Han Sans CN", "Source Han Sans", sans-serif;
 }
 
 .issue-reporter .linux.web:lang(zh-Hant) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC",
+		"Source Han Sans TW", "Source Han Sans", sans-serif;
 }
 
 .issue-reporter .linux.web:lang(ja) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J",
+		"Source Han Sans JP", "Source Han Sans", sans-serif;
 }
 
 .issue-reporter .linux.web:lang(ko) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif;
+	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K",
+		"Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim",
+		sans-serif;
 }
 
 .issue-reporter body {
@@ -266,7 +275,6 @@
 	margin-top: 10px;
 }
 
-
 .issue-reporter .validation-error {
 	font-size: 12px;
 	padding: 10px;
@@ -276,7 +284,6 @@
 .issue-reporter .system-info {
 	margin-bottom: 10px;
 }
-
 
 .issue-reporter input[type="checkbox"] {
 	width: auto;
@@ -308,7 +315,7 @@
 
 .issue-reporter .workbenchCommand:disabled {
 	color: #868e96;
-	cursor: default
+	cursor: default;
 }
 
 .issue-reporter .block-extensions .block-info {
@@ -436,7 +443,7 @@
 	width: 77px;
 	padding: 3px 6px;
 	margin-right: 5px;
-	color: #CCCCCC;
+	color: #cccccc;
 	background-color: #3c3c3c;
 	border-radius: 0.25rem;
 }

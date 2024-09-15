@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { HistoryNavigator2 } from '../../../../base/common/history.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { ResourceMap } from '../../../../base/common/map.js';
-import { URI } from '../../../../base/common/uri.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { HistoryNavigator2 } from "../../../../base/common/history.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { ResourceMap } from "../../../../base/common/map.js";
+import type { URI } from "../../../../base/common/uri.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 
-export const IInteractiveHistoryService = createDecorator<IInteractiveHistoryService>('IInteractiveHistoryService');
+export const IInteractiveHistoryService =
+	createDecorator<IInteractiveHistoryService>("IInteractiveHistoryService");
 
 export interface IInteractiveHistoryService {
 	readonly _serviceBrand: undefined;
@@ -23,7 +24,10 @@ export interface IInteractiveHistoryService {
 	has(uri: URI): boolean;
 }
 
-export class InteractiveHistoryService extends Disposable implements IInteractiveHistoryService {
+export class InteractiveHistoryService
+	extends Disposable
+	implements IInteractiveHistoryService
+{
 	declare readonly _serviceBrand: undefined;
 	_history: ResourceMap<HistoryNavigator2<string>>;
 
@@ -66,12 +70,12 @@ export class InteractiveHistoryService extends Disposable implements IInteractiv
 
 	replaceLast(uri: URI, value: string) {
 		const history = this._history.get(uri);
-		if (!history) {
-			this._history.set(uri, new HistoryNavigator2<string>([value], 50));
-			return;
-		} else {
+		if (history) {
 			history.replaceLast(value);
 			history.resetCursor();
+		} else {
+			this._history.set(uri, new HistoryNavigator2<string>([value], 50));
+			return;
 		}
 	}
 
@@ -82,5 +86,4 @@ export class InteractiveHistoryService extends Disposable implements IInteractiv
 	has(uri: URI) {
 		return this._history.has(uri) ? true : false;
 	}
-
 }

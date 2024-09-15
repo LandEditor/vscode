@@ -3,45 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from '../../instantiation/common/instantiation.js';
-import { IKeyboardEvent } from '../../keybinding/common/keybinding.js';
-import { IPickerQuickAccessItem } from '../../quickinput/browser/pickerQuickAccess.js';
-import { Event } from '../../../base/common/event.js';
-import { IAction } from '../../../base/common/actions.js';
-import { IQuickPickItem } from '../../quickinput/common/quickInput.js';
-import { IDisposable, Disposable } from '../../../base/common/lifecycle.js';
+import type { IAction } from "../../../base/common/actions.js";
+import type { Event } from "../../../base/common/event.js";
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../base/common/lifecycle.js";
+import { createDecorator } from "../../instantiation/common/instantiation.js";
+import type { IKeyboardEvent } from "../../keybinding/common/keybinding.js";
+import type { IPickerQuickAccessItem } from "../../quickinput/browser/pickerQuickAccess.js";
+import type { IQuickPickItem } from "../../quickinput/common/quickInput.js";
 
-export const IAccessibleViewService = createDecorator<IAccessibleViewService>('accessibleViewService');
+export const IAccessibleViewService = createDecorator<IAccessibleViewService>(
+	"accessibleViewService",
+);
 
-export const enum AccessibleViewProviderId {
-	Terminal = 'terminal',
-	TerminalChat = 'terminal-chat',
-	TerminalHelp = 'terminal-help',
-	DiffEditor = 'diffEditor',
-	Chat = 'panelChat',
-	InlineChat = 'inlineChat',
-	InlineCompletions = 'inlineCompletions',
-	KeybindingsEditor = 'keybindingsEditor',
-	Notebook = 'notebook',
-	Editor = 'editor',
-	Hover = 'hover',
-	Notification = 'notification',
-	EmptyEditorHint = 'emptyEditorHint',
-	Comments = 'comments',
-	Repl = 'repl',
-	ReplHelp = 'replHelp',
-	RunAndDebug = 'runAndDebug',
-	Walkthrough = 'walkthrough',
+export enum AccessibleViewProviderId {
+	Terminal = "terminal",
+	TerminalChat = "terminal-chat",
+	TerminalHelp = "terminal-help",
+	DiffEditor = "diffEditor",
+	Chat = "panelChat",
+	InlineChat = "inlineChat",
+	InlineCompletions = "inlineCompletions",
+	KeybindingsEditor = "keybindingsEditor",
+	Notebook = "notebook",
+	Editor = "editor",
+	Hover = "hover",
+	Notification = "notification",
+	EmptyEditorHint = "emptyEditorHint",
+	Comments = "comments",
+	Repl = "repl",
+	ReplHelp = "replHelp",
+	RunAndDebug = "runAndDebug",
+	Walkthrough = "walkthrough",
 }
 
-export const enum AccessibleViewType {
-	Help = 'help',
-	View = 'view'
+export enum AccessibleViewType {
+	Help = "help",
+	View = "view",
 }
 
-export const enum NavigationType {
-	Previous = 'previous',
-	Next = 'next'
+export enum NavigationType {
+	Previous = "previous",
+	Next = "next",
 }
 
 export interface IAccessibleViewOptions {
@@ -56,7 +61,7 @@ export interface IAccessibleViewOptions {
 	 * If set to 'initial-bottom', places the cursor on the bottom line of the accessible view and preserves it henceforth.
 	 * If set to 'bottom', places the cursor on the bottom line of the accessible view.
 	 */
-	position?: 'bottom' | 'initial-bottom';
+	position?: "bottom" | "initial-bottom";
 	/**
 	 * @returns a string that will be used as the content of the help dialog
 	 * instead of the one provided by default.
@@ -78,8 +83,9 @@ export interface IAccessibleViewOptions {
 	configuredKeybindingItems?: IQuickPickItem[];
 }
 
-
-export interface IAccessibleViewContentProvider extends IBasicContentProvider, IDisposable {
+export interface IAccessibleViewContentProvider
+	extends IBasicContentProvider,
+		IDisposable {
 	id: AccessibleViewProviderId;
 	verbositySettingKey: string;
 	/**
@@ -96,7 +102,6 @@ export interface IAccessibleViewContentProvider extends IBasicContentProvider, I
 	 */
 	onDidRequestClearLastProvider?: Event<AccessibleViewProviderId>;
 }
-
 
 export interface IAccessibleViewSymbol extends IPickerQuickAccessItem {
 	markdownToParse?: string;
@@ -118,7 +123,7 @@ export interface IAccessibleViewService {
 	showAccessibleViewHelp(): void;
 	next(): void;
 	previous(): void;
-	navigateToCodeBlock(type: 'next' | 'previous'): void;
+	navigateToCodeBlock(type: "next" | "previous"): void;
 	goToSymbol(): void;
 	disableHint(): void;
 	getPosition(id: AccessibleViewProviderId): IPosition | undefined;
@@ -134,7 +139,6 @@ export interface IAccessibleViewService {
 	openHelpLink(): void;
 }
 
-
 export interface ICodeBlockActionContext {
 	code: string;
 	languageId?: string;
@@ -142,10 +146,14 @@ export interface ICodeBlockActionContext {
 	element: unknown;
 }
 
-export type AccesibleViewContentProvider = AccessibleContentProvider | ExtensionContentProvider;
+export type AccesibleViewContentProvider =
+	| AccessibleContentProvider
+	| ExtensionContentProvider;
 
-export class AccessibleContentProvider extends Disposable implements IAccessibleViewContentProvider {
-
+export class AccessibleContentProvider
+	extends Disposable
+	implements IAccessibleViewContentProvider
+{
 	constructor(
 		public id: AccessibleViewProviderId,
 		public options: IAccessibleViewOptions,
@@ -165,8 +173,10 @@ export class AccessibleContentProvider extends Disposable implements IAccessible
 	}
 }
 
-export class ExtensionContentProvider extends Disposable implements IBasicContentProvider {
-
+export class ExtensionContentProvider
+	extends Disposable
+	implements IBasicContentProvider
+{
 	constructor(
 		public readonly id: string,
 		public options: IAccessibleViewOptions,

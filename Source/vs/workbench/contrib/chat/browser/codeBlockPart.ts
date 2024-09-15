@@ -3,72 +3,97 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import './codeBlockPart.css';
+import "./codeBlockPart.css";
 
-import * as dom from '../../../../base/browser/dom.js';
-import { renderFormattedText } from '../../../../base/browser/formattedTextRenderer.js';
-import { Button } from '../../../../base/browser/ui/button/button.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { Codicon } from '../../../../base/common/codicons.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { combinedDisposable, Disposable, DisposableStore, MutableDisposable } from '../../../../base/common/lifecycle.js';
-import { Schemas } from '../../../../base/common/network.js';
-import { isEqual } from '../../../../base/common/resources.js';
-import { assertType } from '../../../../base/common/types.js';
-import { URI, UriComponents } from '../../../../base/common/uri.js';
-import { IEditorConstructionOptions } from '../../../../editor/browser/config/editorConfiguration.js';
-import { TabFocus } from '../../../../editor/browser/config/tabFocus.js';
-import { IDiffEditor } from '../../../../editor/browser/editorBrowser.js';
-import { EditorExtensionsRegistry } from '../../../../editor/browser/editorExtensions.js';
-import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { CodeEditorWidget, ICodeEditorWidgetOptions } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
-import { DiffEditorWidget } from '../../../../editor/browser/widget/diffEditor/diffEditorWidget.js';
-import { EDITOR_FONT_DEFAULTS, EditorOption, IEditorOptions } from '../../../../editor/common/config/editorOptions.js';
-import { IRange, Range } from '../../../../editor/common/core/range.js';
-import { ScrollType } from '../../../../editor/common/editorCommon.js';
-import { TextEdit } from '../../../../editor/common/languages.js';
-import { EndOfLinePreference, ITextModel } from '../../../../editor/common/model.js';
-import { TextModelText } from '../../../../editor/common/model/textModelText.js';
-import { IModelService } from '../../../../editor/common/services/model.js';
-import { DefaultModelSHA1Computer } from '../../../../editor/common/services/modelService.js';
-import { IResolvedTextEditorModel, ITextModelContentProvider, ITextModelService } from '../../../../editor/common/services/resolverService.js';
-import { BracketMatchingController } from '../../../../editor/contrib/bracketMatching/browser/bracketMatching.js';
-import { ColorDetector } from '../../../../editor/contrib/colorPicker/browser/colorDetector.js';
-import { ContextMenuController } from '../../../../editor/contrib/contextmenu/browser/contextmenu.js';
-import { GotoDefinitionAtPositionEditorContribution } from '../../../../editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js';
-import { ContentHoverController } from '../../../../editor/contrib/hover/browser/contentHoverController.js';
-import { GlyphHoverController } from '../../../../editor/contrib/hover/browser/glyphHoverController.js';
-import { LinkDetector } from '../../../../editor/contrib/links/browser/links.js';
-import { MessageController } from '../../../../editor/contrib/message/browser/messageController.js';
-import { ViewportSemanticTokensContribution } from '../../../../editor/contrib/semanticTokens/browser/viewportSemanticTokens.js';
-import { SmartSelectController } from '../../../../editor/contrib/smartSelect/browser/smartSelect.js';
-import { WordHighlighterContribution } from '../../../../editor/contrib/wordHighlighter/browser/wordHighlighter.js';
-import { localize } from '../../../../nls.js';
-import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
-import { MenuWorkbenchToolBar } from '../../../../platform/actions/browser/toolbar.js';
-import { MenuId } from '../../../../platform/actions/common/actions.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { FileKind } from '../../../../platform/files/common/files.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
-import { ILabelService } from '../../../../platform/label/common/label.js';
-import { IOpenerService } from '../../../../platform/opener/common/opener.js';
-import { ResourceLabel } from '../../../browser/labels.js';
-import { ResourceContextKey } from '../../../common/contextkeys.js';
-import { AccessibilityVerbositySettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
-import { InspectEditorTokensController } from '../../codeEditor/browser/inspectEditorTokens/inspectEditorTokens.js';
-import { MenuPreventer } from '../../codeEditor/browser/menuPreventer.js';
-import { SelectionClipboardContributionID } from '../../codeEditor/browser/selectionClipboard.js';
-import { getSimpleEditorOptions } from '../../codeEditor/browser/simpleEditorOptions.js';
-import { IMarkdownVulnerability } from '../common/annotations.js';
-import { CONTEXT_CHAT_EDIT_APPLIED } from '../common/chatContextKeys.js';
-import { IChatResponseModel, IChatTextEditGroup } from '../common/chatModel.js';
-import { IChatResponseViewModel, isResponseVM } from '../common/chatViewModel.js';
-import { ChatTreeItem } from './chat.js';
-import { IChatRendererDelegate } from './chatListRenderer.js';
-import { ChatEditorOptions } from './chatOptions.js';
+import * as dom from "../../../../base/browser/dom.js";
+import { renderFormattedText } from "../../../../base/browser/formattedTextRenderer.js";
+import { Button } from "../../../../base/browser/ui/button/button.js";
+import type { CancellationToken } from "../../../../base/common/cancellation.js";
+import { Codicon } from "../../../../base/common/codicons.js";
+import { Emitter, Event } from "../../../../base/common/event.js";
+import {
+	Disposable,
+	DisposableStore,
+	MutableDisposable,
+	combinedDisposable,
+} from "../../../../base/common/lifecycle.js";
+import { Schemas } from "../../../../base/common/network.js";
+import { isEqual } from "../../../../base/common/resources.js";
+import { assertType } from "../../../../base/common/types.js";
+import { URI, type UriComponents } from "../../../../base/common/uri.js";
+import type { IEditorConstructionOptions } from "../../../../editor/browser/config/editorConfiguration.js";
+import { TabFocus } from "../../../../editor/browser/config/tabFocus.js";
+import type { IDiffEditor } from "../../../../editor/browser/editorBrowser.js";
+import { EditorExtensionsRegistry } from "../../../../editor/browser/editorExtensions.js";
+import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
+import {
+	CodeEditorWidget,
+	type ICodeEditorWidgetOptions,
+} from "../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
+import { DiffEditorWidget } from "../../../../editor/browser/widget/diffEditor/diffEditorWidget.js";
+import {
+	EDITOR_FONT_DEFAULTS,
+	EditorOption,
+	type IEditorOptions,
+} from "../../../../editor/common/config/editorOptions.js";
+import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { ScrollType } from "../../../../editor/common/editorCommon.js";
+import { TextEdit } from "../../../../editor/common/languages.js";
+import {
+	EndOfLinePreference,
+	type ITextModel,
+} from "../../../../editor/common/model.js";
+import { TextModelText } from "../../../../editor/common/model/textModelText.js";
+import { IModelService } from "../../../../editor/common/services/model.js";
+import { DefaultModelSHA1Computer } from "../../../../editor/common/services/modelService.js";
+import {
+	type IResolvedTextEditorModel,
+	type ITextModelContentProvider,
+	ITextModelService,
+} from "../../../../editor/common/services/resolverService.js";
+import { BracketMatchingController } from "../../../../editor/contrib/bracketMatching/browser/bracketMatching.js";
+import { ColorDetector } from "../../../../editor/contrib/colorPicker/browser/colorDetector.js";
+import { ContextMenuController } from "../../../../editor/contrib/contextmenu/browser/contextmenu.js";
+import { GotoDefinitionAtPositionEditorContribution } from "../../../../editor/contrib/gotoSymbol/browser/link/goToDefinitionAtPosition.js";
+import { ContentHoverController } from "../../../../editor/contrib/hover/browser/contentHoverController.js";
+import { GlyphHoverController } from "../../../../editor/contrib/hover/browser/glyphHoverController.js";
+import { LinkDetector } from "../../../../editor/contrib/links/browser/links.js";
+import { MessageController } from "../../../../editor/contrib/message/browser/messageController.js";
+import { ViewportSemanticTokensContribution } from "../../../../editor/contrib/semanticTokens/browser/viewportSemanticTokens.js";
+import { SmartSelectController } from "../../../../editor/contrib/smartSelect/browser/smartSelect.js";
+import { WordHighlighterContribution } from "../../../../editor/contrib/wordHighlighter/browser/wordHighlighter.js";
+import { localize } from "../../../../nls.js";
+import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
+import { MenuWorkbenchToolBar } from "../../../../platform/actions/browser/toolbar.js";
+import type { MenuId } from "../../../../platform/actions/common/actions.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
+import { FileKind } from "../../../../platform/files/common/files.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import { ServiceCollection } from "../../../../platform/instantiation/common/serviceCollection.js";
+import { ILabelService } from "../../../../platform/label/common/label.js";
+import { IOpenerService } from "../../../../platform/opener/common/opener.js";
+import { ResourceLabel } from "../../../browser/labels.js";
+import { ResourceContextKey } from "../../../common/contextkeys.js";
+import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
+import { InspectEditorTokensController } from "../../codeEditor/browser/inspectEditorTokens/inspectEditorTokens.js";
+import { MenuPreventer } from "../../codeEditor/browser/menuPreventer.js";
+import { SelectionClipboardContributionID } from "../../codeEditor/browser/selectionClipboard.js";
+import { getSimpleEditorOptions } from "../../codeEditor/browser/simpleEditorOptions.js";
+import type { IMarkdownVulnerability } from "../common/annotations.js";
+import { CONTEXT_CHAT_EDIT_APPLIED } from "../common/chatContextKeys.js";
+import type {
+	IChatResponseModel,
+	IChatTextEditGroup,
+} from "../common/chatModel.js";
+import {
+	type IChatResponseViewModel,
+	isResponseVM,
+} from "../common/chatViewModel.js";
+import type { ChatTreeItem } from "./chat.js";
+import type { IChatRendererDelegate } from "./chatListRenderer.js";
+import type { ChatEditorOptions } from "./chatOptions.js";
 
 const $ = dom.$;
 
@@ -93,11 +118,9 @@ export interface ICodeBlockData {
  *
  * The text of the code path should be a {@link LocalFileCodeBlockData} json object.
  */
-export const localFileLanguageId = 'vscode-local-file';
-
+export const localFileLanguageId = "vscode-local-file";
 
 export function parseLocalFileData(text: string) {
-
 	interface RawLocalFileCodeBlockData {
 		readonly uri: UriComponents;
 		readonly range?: IRange;
@@ -107,20 +130,25 @@ export function parseLocalFileData(text: string) {
 	try {
 		data = JSON.parse(text);
 	} catch (e) {
-		throw new Error('Could not parse code block local file data');
+		throw new Error("Could not parse code block local file data");
 	}
 
 	let uri: URI;
 	try {
 		uri = URI.revive(data?.uri);
 	} catch (e) {
-		throw new Error('Invalid code block local file data URI');
+		throw new Error("Invalid code block local file data URI");
 	}
 
 	let range: IRange | undefined;
 	if (data.range) {
 		// Note that since this is coming from extensions, position are actually zero based and must be converted.
-		range = new Range(data.range.startLineNumber + 1, data.range.startColumn + 1, data.range.endLineNumber + 1, data.range.endColumn + 1);
+		range = new Range(
+			data.range.startLineNumber + 1,
+			data.range.startColumn + 1,
+			data.range.endLineNumber + 1,
+			data.range.endColumn + 1,
+		);
 	}
 
 	return { uri, range };
@@ -136,8 +164,11 @@ export interface ICodeBlockActionContext {
 
 const defaultCodeblockPadding = 10;
 export class CodeBlockPart extends Disposable {
-	protected readonly _onDidChangeContentHeight = this._register(new Emitter<void>());
-	public readonly onDidChangeContentHeight = this._onDidChangeContentHeight.event;
+	protected readonly _onDidChangeContentHeight = this._register(
+		new Emitter<void>(),
+	);
+	public readonly onDidChangeContentHeight =
+		this._onDidChangeContentHeight.event;
 
 	public readonly editor: CodeEditorWidget;
 	protected readonly toolbar: MenuWorkbenchToolBar;
@@ -368,28 +399,40 @@ export class CodeBlockPart extends Disposable {
 		return this.editor.getModel()?.uri;
 	}
 
-	private createEditor(instantiationService: IInstantiationService, parent: HTMLElement, options: Readonly<IEditorConstructionOptions>): CodeEditorWidget {
-		return this._register(instantiationService.createInstance(CodeEditorWidget, parent, options, {
-			isSimpleWidget: false,
-			contributions: EditorExtensionsRegistry.getSomeEditorContributions([
-				MenuPreventer.ID,
-				SelectionClipboardContributionID,
-				ContextMenuController.ID,
+	private createEditor(
+		instantiationService: IInstantiationService,
+		parent: HTMLElement,
+		options: Readonly<IEditorConstructionOptions>,
+	): CodeEditorWidget {
+		return this._register(
+			instantiationService.createInstance(
+				CodeEditorWidget,
+				parent,
+				options,
+				{
+					isSimpleWidget: false,
+					contributions:
+						EditorExtensionsRegistry.getSomeEditorContributions([
+							MenuPreventer.ID,
+							SelectionClipboardContributionID,
+							ContextMenuController.ID,
 
-				WordHighlighterContribution.ID,
-				ViewportSemanticTokensContribution.ID,
-				BracketMatchingController.ID,
-				SmartSelectController.ID,
-				ContentHoverController.ID,
-				GlyphHoverController.ID,
-				MessageController.ID,
-				GotoDefinitionAtPositionEditorContribution.ID,
-				ColorDetector.ID,
-				LinkDetector.ID,
+							WordHighlighterContribution.ID,
+							ViewportSemanticTokensContribution.ID,
+							BracketMatchingController.ID,
+							SmartSelectController.ID,
+							ContentHoverController.ID,
+							GlyphHoverController.ID,
+							MessageController.ID,
+							GotoDefinitionAtPositionEditorContribution.ID,
+							ColorDetector.ID,
+							LinkDetector.ID,
 
-				InspectEditorTokensController.ID,
-			])
-		}));
+							InspectEditorTokensController.ID,
+						]),
+				},
+			),
+		);
 	}
 
 	focus(): void {
@@ -399,32 +442,46 @@ export class CodeBlockPart extends Disposable {
 	private updatePaddingForLayout() {
 		// scrollWidth = "the width of the content that needs to be scrolled"
 		// contentWidth = "the width of the area where content is displayed"
-		const horizontalScrollbarVisible = this.currentScrollWidth > this.editor.getLayoutInfo().contentWidth;
-		const scrollbarHeight = this.editor.getLayoutInfo().horizontalScrollbarHeight;
-		const bottomPadding = horizontalScrollbarVisible ?
-			Math.max(defaultCodeblockPadding - scrollbarHeight, 2) :
-			defaultCodeblockPadding;
-		this.editor.updateOptions({ padding: { top: defaultCodeblockPadding, bottom: bottomPadding } });
+		const horizontalScrollbarVisible =
+			this.currentScrollWidth > this.editor.getLayoutInfo().contentWidth;
+		const scrollbarHeight =
+			this.editor.getLayoutInfo().horizontalScrollbarHeight;
+		const bottomPadding = horizontalScrollbarVisible
+			? Math.max(defaultCodeblockPadding - scrollbarHeight, 2)
+			: defaultCodeblockPadding;
+		this.editor.updateOptions({
+			padding: { top: defaultCodeblockPadding, bottom: bottomPadding },
+		});
 	}
 
 	private _configureForScreenReader(): void {
 		const toolbarElt = this.toolbar.getElement();
 		if (this.accessibilityService.isScreenReaderOptimized()) {
-			toolbarElt.style.display = 'block';
-			toolbarElt.ariaLabel = this.configurationService.getValue(AccessibilityVerbositySettingId.Chat) ? localize('chat.codeBlock.toolbarVerbose', 'Toolbar for code block which can be reached via tab') : localize('chat.codeBlock.toolbar', 'Code block toolbar');
+			toolbarElt.style.display = "block";
+			toolbarElt.ariaLabel = this.configurationService.getValue(
+				AccessibilityVerbositySettingId.Chat,
+			)
+				? localize(
+						"chat.codeBlock.toolbarVerbose",
+						"Toolbar for code block which can be reached via tab",
+					)
+				: localize("chat.codeBlock.toolbar", "Code block toolbar");
 		} else {
-			toolbarElt.style.display = '';
+			toolbarElt.style.display = "";
 		}
 	}
 
 	private getEditorOptionsFromConfig(): IEditorOptions {
 		return {
 			wordWrap: this.options.configuration.resultEditor.wordWrap,
-			fontLigatures: this.options.configuration.resultEditor.fontLigatures,
-			bracketPairColorization: this.options.configuration.resultEditor.bracketPairColorization,
-			fontFamily: this.options.configuration.resultEditor.fontFamily === 'default' ?
-				EDITOR_FONT_DEFAULTS.fontFamily :
-				this.options.configuration.resultEditor.fontFamily,
+			fontLigatures:
+				this.options.configuration.resultEditor.fontLigatures,
+			bracketPairColorization:
+				this.options.configuration.resultEditor.bracketPairColorization,
+			fontFamily:
+				this.options.configuration.resultEditor.fontFamily === "default"
+					? EDITOR_FONT_DEFAULTS.fontFamily
+					: this.options.configuration.resultEditor.fontFamily,
 			fontSize: this.options.configuration.resultEditor.fontSize,
 			fontWeight: this.options.configuration.resultEditor.fontWeight,
 			lineHeight: this.options.configuration.resultEditor.lineHeight,
@@ -434,26 +491,36 @@ export class CodeBlockPart extends Disposable {
 	layout(width: number): void {
 		const contentHeight = this.getContentHeight();
 		const editorBorder = 2;
-		this.editor.layout({ width: width - editorBorder, height: contentHeight });
+		this.editor.layout({
+			width: width - editorBorder,
+			height: contentHeight,
+		});
 		this.updatePaddingForLayout();
 	}
 
 	private getContentHeight() {
 		if (this.currentCodeBlockData?.range) {
-			const lineCount = this.currentCodeBlockData.range.endLineNumber - this.currentCodeBlockData.range.startLineNumber + 1;
+			const lineCount =
+				this.currentCodeBlockData.range.endLineNumber -
+				this.currentCodeBlockData.range.startLineNumber +
+				1;
 			const lineHeight = this.editor.getOption(EditorOption.lineHeight);
 			return lineCount * lineHeight;
 		}
 		return this.editor.getContentHeight();
 	}
 
-	async render(data: ICodeBlockData, width: number, editable: boolean | undefined) {
+	async render(
+		data: ICodeBlockData,
+		width: number,
+		editable: boolean | undefined,
+	) {
 		this.currentCodeBlockData = data;
 		if (data.parentContextKeyService) {
 			this.contextKeyService.updateParent(data.parentContextKeyService);
 		}
 
-		if (this.options.configuration.resultEditor.wordWrap === 'on') {
+		if (this.options.configuration.resultEditor.wordWrap === "on") {
 			// Initialize the editor with the new proper width so that getContentHeight
 			// will be computed correctly in the next call to layout()
 			this.layout(width);
@@ -467,10 +534,25 @@ export class CodeBlockPart extends Disposable {
 		this.layout(width);
 		if (editable) {
 			this.disposableStore.clear();
-			this.disposableStore.add(this.editor.onDidFocusEditorWidget(() => TabFocus.setTabFocusMode(true)));
-			this.disposableStore.add(this.editor.onDidBlurEditorWidget(() => TabFocus.setTabFocusMode(false)));
+			this.disposableStore.add(
+				this.editor.onDidFocusEditorWidget(() =>
+					TabFocus.setTabFocusMode(true),
+				),
+			);
+			this.disposableStore.add(
+				this.editor.onDidBlurEditorWidget(() =>
+					TabFocus.setTabFocusMode(false),
+				),
+			);
 		}
-		this.editor.updateOptions({ ariaLabel: localize('chat.codeBlockLabel', "Code block {0}", data.codeBlockIndex + 1), readOnly: !editable });
+		this.editor.updateOptions({
+			ariaLabel: localize(
+				"chat.codeBlockLabel",
+				"Code block {0}",
+				data.codeBlockIndex + 1,
+			),
+			readOnly: !editable,
+		});
 
 		if (data.hideToolbar) {
 			dom.hide(this.toolbar.getElement());
@@ -480,12 +562,25 @@ export class CodeBlockPart extends Disposable {
 
 		if (data.vulns?.length && isResponseVM(data.element)) {
 			dom.clearNode(this.vulnsListElement);
-			this.element.classList.remove('no-vulns');
-			this.element.classList.toggle('chat-vulnerabilities-collapsed', !data.element.vulnerabilitiesListExpanded);
-			dom.append(this.vulnsListElement, ...data.vulns.map(v => $('li', undefined, $('span.chat-vuln-title', undefined, v.title), ' ' + v.description)));
+			this.element.classList.remove("no-vulns");
+			this.element.classList.toggle(
+				"chat-vulnerabilities-collapsed",
+				!data.element.vulnerabilitiesListExpanded,
+			);
+			dom.append(
+				this.vulnsListElement,
+				...data.vulns.map((v) =>
+					$(
+						"li",
+						undefined,
+						$("span.chat-vuln-title", undefined, v.title),
+						" " + v.description,
+					),
+				),
+			);
 			this.vulnsButton.label = this.getVulnerabilitiesLabel();
 		} else {
-			this.element.classList.add('no-vulns');
+			this.element.classList.add("no-vulns");
 		}
 	}
 
@@ -507,7 +602,12 @@ export class CodeBlockPart extends Disposable {
 		}
 
 		this.toolbar.context = {
-			code: textModel.getTextBuffer().getValueInRange(data.range ?? textModel.getFullModelRange(), EndOfLinePreference.TextDefined),
+			code: textModel
+				.getTextBuffer()
+				.getValueInRange(
+					data.range ?? textModel.getFullModelRange(),
+					EndOfLinePreference.TextDefined,
+				),
 			codeBlockIndex: data.codeBlockIndex,
 			element: data.element,
 			languageId: textModel.getLanguageId(),
@@ -518,19 +618,29 @@ export class CodeBlockPart extends Disposable {
 
 	private getVulnerabilitiesLabel(): string {
 		if (!this.currentCodeBlockData || !this.currentCodeBlockData.vulns) {
-			return '';
+			return "";
 		}
 
-		const referencesLabel = this.currentCodeBlockData.vulns.length > 1 ?
-			localize('vulnerabilitiesPlural', "{0} vulnerabilities", this.currentCodeBlockData.vulns.length) :
-			localize('vulnerabilitiesSingular', "{0} vulnerability", 1);
-		const icon = (element: IChatResponseViewModel) => element.vulnerabilitiesListExpanded ? Codicon.chevronDown : Codicon.chevronRight;
+		const referencesLabel =
+			this.currentCodeBlockData.vulns.length > 1
+				? localize(
+						"vulnerabilitiesPlural",
+						"{0} vulnerabilities",
+						this.currentCodeBlockData.vulns.length,
+					)
+				: localize("vulnerabilitiesSingular", "{0} vulnerability", 1);
+		const icon = (element: IChatResponseViewModel) =>
+			element.vulnerabilitiesListExpanded
+				? Codicon.chevronDown
+				: Codicon.chevronRight;
 		return `${referencesLabel} $(${icon(this.currentCodeBlockData.element as IChatResponseViewModel).id})`;
 	}
 }
 
-export class ChatCodeBlockContentProvider extends Disposable implements ITextModelContentProvider {
-
+export class ChatCodeBlockContentProvider
+	extends Disposable
+	implements ITextModelContentProvider
+{
 	constructor(
 		@ITextModelService textModelService: ITextModelService,
 		@IModelService private readonly _modelService: IModelService,
@@ -549,7 +659,7 @@ export class ChatCodeBlockContentProvider extends Disposable implements ITextMod
 		if (existing) {
 			return existing;
 		}
-		return this._modelService.createModel('', null, resource);
+		return this._modelService.createModel("", null, resource);
 	}
 }
 
@@ -578,11 +688,13 @@ export interface ICodeCompareBlockData {
 	// readonly hideToolbar?: boolean;
 }
 
-
 // long-lived object that sits in the DiffPool and that gets reused
 export class CodeCompareBlockPart extends Disposable {
-	protected readonly _onDidChangeContentHeight = this._register(new Emitter<void>());
-	public readonly onDidChangeContentHeight = this._onDidChangeContentHeight.event;
+	protected readonly _onDidChangeContentHeight = this._register(
+		new Emitter<void>(),
+	);
+	public readonly onDidChangeContentHeight =
+		this._onDidChangeContentHeight.event;
 
 	private readonly contextKeyService: IContextKeyService;
 	private readonly diffEditor: DiffEditorWidget;
@@ -591,7 +703,9 @@ export class CodeCompareBlockPart extends Disposable {
 	readonly element: HTMLElement;
 	private readonly messageElement: HTMLElement;
 
-	private readonly _lastDiffEditorViewModel = this._store.add(new MutableDisposable());
+	private readonly _lastDiffEditorViewModel = this._store.add(
+		new MutableDisposable(),
+	);
 	private currentScrollWidth = 0;
 
 	constructor(
@@ -766,7 +880,11 @@ export class CodeCompareBlockPart extends Disposable {
 		return this.diffEditor.getModifiedEditor().getModel()?.uri;
 	}
 
-	private createDiffEditor(instantiationService: IInstantiationService, parent: HTMLElement, options: Readonly<IEditorConstructionOptions>): DiffEditorWidget {
+	private createDiffEditor(
+		instantiationService: IInstantiationService,
+		parent: HTMLElement,
+		options: Readonly<IEditorConstructionOptions>,
+	): DiffEditorWidget {
 		const widgetOptions: ICodeEditorWidgetOptions = {
 			isSimpleWidget: false,
 			contributions: EditorExtensionsRegistry.getSomeEditorContributions([
@@ -781,32 +899,49 @@ export class CodeCompareBlockPart extends Disposable {
 				ContentHoverController.ID,
 				GlyphHoverController.ID,
 				GotoDefinitionAtPositionEditorContribution.ID,
-			])
+			]),
 		};
 
-		return this._register(instantiationService.createInstance(DiffEditorWidget, parent, {
-			scrollbar: { useShadows: false, alwaysConsumeMouseWheel: false, ignoreHorizontalScrollbarInContentHeight: true, },
-			renderMarginRevertIcon: false,
-			diffCodeLens: false,
-			scrollBeyondLastLine: false,
-			stickyScroll: { enabled: false },
-			originalAriaLabel: localize('original', 'Original'),
-			modifiedAriaLabel: localize('modified', 'Modified'),
-			diffAlgorithm: 'advanced',
-			readOnly: false,
-			isInEmbeddedEditor: true,
-			useInlineViewWhenSpaceIsLimited: true,
-			experimental: {
-				useTrueInlineView: true,
-			},
-			renderSideBySideInlineBreakpoint: 300,
-			renderOverviewRuler: false,
-			compactMode: true,
-			hideUnchangedRegions: { enabled: true, contextLineCount: 1 },
-			renderGutterMenu: false,
-			lineNumbersMinChars: 1,
-			...options
-		}, { originalEditor: widgetOptions, modifiedEditor: widgetOptions }));
+		return this._register(
+			instantiationService.createInstance(
+				DiffEditorWidget,
+				parent,
+				{
+					scrollbar: {
+						useShadows: false,
+						alwaysConsumeMouseWheel: false,
+						ignoreHorizontalScrollbarInContentHeight: true,
+					},
+					renderMarginRevertIcon: false,
+					diffCodeLens: false,
+					scrollBeyondLastLine: false,
+					stickyScroll: { enabled: false },
+					originalAriaLabel: localize("original", "Original"),
+					modifiedAriaLabel: localize("modified", "Modified"),
+					diffAlgorithm: "advanced",
+					readOnly: false,
+					isInEmbeddedEditor: true,
+					useInlineViewWhenSpaceIsLimited: true,
+					experimental: {
+						useTrueInlineView: true,
+					},
+					renderSideBySideInlineBreakpoint: 300,
+					renderOverviewRuler: false,
+					compactMode: true,
+					hideUnchangedRegions: {
+						enabled: true,
+						contextLineCount: 1,
+					},
+					renderGutterMenu: false,
+					lineNumbersMinChars: 1,
+					...options,
+				},
+				{
+					originalEditor: widgetOptions,
+					modifiedEditor: widgetOptions,
+				},
+			),
+		);
 	}
 
 	focus(): void {
@@ -816,32 +951,48 @@ export class CodeCompareBlockPart extends Disposable {
 	private updatePaddingForLayout() {
 		// scrollWidth = "the width of the content that needs to be scrolled"
 		// contentWidth = "the width of the area where content is displayed"
-		const horizontalScrollbarVisible = this.currentScrollWidth > this.diffEditor.getModifiedEditor().getLayoutInfo().contentWidth;
-		const scrollbarHeight = this.diffEditor.getModifiedEditor().getLayoutInfo().horizontalScrollbarHeight;
-		const bottomPadding = horizontalScrollbarVisible ?
-			Math.max(defaultCodeblockPadding - scrollbarHeight, 2) :
-			defaultCodeblockPadding;
-		this.diffEditor.updateOptions({ padding: { top: defaultCodeblockPadding, bottom: bottomPadding } });
+		const horizontalScrollbarVisible =
+			this.currentScrollWidth >
+			this.diffEditor.getModifiedEditor().getLayoutInfo().contentWidth;
+		const scrollbarHeight = this.diffEditor
+			.getModifiedEditor()
+			.getLayoutInfo().horizontalScrollbarHeight;
+		const bottomPadding = horizontalScrollbarVisible
+			? Math.max(defaultCodeblockPadding - scrollbarHeight, 2)
+			: defaultCodeblockPadding;
+		this.diffEditor.updateOptions({
+			padding: { top: defaultCodeblockPadding, bottom: bottomPadding },
+		});
 	}
 
 	private _configureForScreenReader(): void {
 		const toolbarElt = this.toolbar.getElement();
 		if (this.accessibilityService.isScreenReaderOptimized()) {
-			toolbarElt.style.display = 'block';
-			toolbarElt.ariaLabel = this.configurationService.getValue(AccessibilityVerbositySettingId.Chat) ? localize('chat.codeBlock.toolbarVerbose', 'Toolbar for code block which can be reached via tab') : localize('chat.codeBlock.toolbar', 'Code block toolbar');
+			toolbarElt.style.display = "block";
+			toolbarElt.ariaLabel = this.configurationService.getValue(
+				AccessibilityVerbositySettingId.Chat,
+			)
+				? localize(
+						"chat.codeBlock.toolbarVerbose",
+						"Toolbar for code block which can be reached via tab",
+					)
+				: localize("chat.codeBlock.toolbar", "Code block toolbar");
 		} else {
-			toolbarElt.style.display = '';
+			toolbarElt.style.display = "";
 		}
 	}
 
 	private getEditorOptionsFromConfig(): IEditorOptions {
 		return {
 			wordWrap: this.options.configuration.resultEditor.wordWrap,
-			fontLigatures: this.options.configuration.resultEditor.fontLigatures,
-			bracketPairColorization: this.options.configuration.resultEditor.bracketPairColorization,
-			fontFamily: this.options.configuration.resultEditor.fontFamily === 'default' ?
-				EDITOR_FONT_DEFAULTS.fontFamily :
-				this.options.configuration.resultEditor.fontFamily,
+			fontLigatures:
+				this.options.configuration.resultEditor.fontLigatures,
+			bracketPairColorization:
+				this.options.configuration.resultEditor.bracketPairColorization,
+			fontFamily:
+				this.options.configuration.resultEditor.fontFamily === "default"
+					? EDITOR_FONT_DEFAULTS.fontFamily
+					: this.options.configuration.resultEditor.fontFamily,
 			fontSize: this.options.configuration.resultEditor.fontSize,
 			fontWeight: this.options.configuration.resultEditor.fontWeight,
 			lineHeight: this.options.configuration.resultEditor.lineHeight,
@@ -851,7 +1002,10 @@ export class CodeCompareBlockPart extends Disposable {
 	layout(width: number): void {
 		const contentHeight = this.getContentHeight();
 		const editorBorder = 2;
-		const dimension = { width: width - editorBorder, height: contentHeight };
+		const dimension = {
+			width: width - editorBorder,
+			height: contentHeight,
+		};
 		this.element.style.height = `${dimension.height}px`;
 		this.element.style.width = `${dimension.width}px`;
 		this.diffEditor.layout(dimension);
@@ -864,12 +1018,16 @@ export class CodeCompareBlockPart extends Disposable {
 			: dom.getTotalHeight(this.messageElement);
 	}
 
-	async render(data: ICodeCompareBlockData, width: number, token: CancellationToken) {
+	async render(
+		data: ICodeCompareBlockData,
+		width: number,
+		token: CancellationToken,
+	) {
 		if (data.parentContextKeyService) {
 			this.contextKeyService.updateParent(data.parentContextKeyService);
 		}
 
-		if (this.options.configuration.resultEditor.wordWrap === 'on') {
+		if (this.options.configuration.resultEditor.wordWrap === "on") {
 			// Initialize the editor with the new proper width so that getContentHeight
 			// will be computed correctly in the next call to layout()
 			this.layout(width);
@@ -878,11 +1036,13 @@ export class CodeCompareBlockPart extends Disposable {
 		await this.updateEditor(data, token);
 
 		this.layout(width);
-		this.diffEditor.updateOptions({ ariaLabel: localize('chat.compareCodeBlockLabel', "Code Edits") });
+		this.diffEditor.updateOptions({
+			ariaLabel: localize("chat.compareCodeBlockLabel", "Code Edits"),
+		});
 
 		this.resourceLabel.element.setFile(data.edit.uri, {
 			fileKind: FileKind.FILE,
-			fileDecorations: { colors: true, badges: false }
+			fileDecorations: { colors: true, badges: false },
 		});
 	}
 
@@ -891,46 +1051,77 @@ export class CodeCompareBlockPart extends Disposable {
 	}
 
 	private clearWidgets() {
-		ContentHoverController.get(this.diffEditor.getOriginalEditor())?.hideContentHover();
-		ContentHoverController.get(this.diffEditor.getModifiedEditor())?.hideContentHover();
-		GlyphHoverController.get(this.diffEditor.getOriginalEditor())?.hideContentHover();
-		GlyphHoverController.get(this.diffEditor.getModifiedEditor())?.hideContentHover();
+		ContentHoverController.get(
+			this.diffEditor.getOriginalEditor(),
+		)?.hideContentHover();
+		ContentHoverController.get(
+			this.diffEditor.getModifiedEditor(),
+		)?.hideContentHover();
+		GlyphHoverController.get(
+			this.diffEditor.getOriginalEditor(),
+		)?.hideContentHover();
+		GlyphHoverController.get(
+			this.diffEditor.getModifiedEditor(),
+		)?.hideContentHover();
 	}
 
-	private async updateEditor(data: ICodeCompareBlockData, token: CancellationToken): Promise<void> {
-
+	private async updateEditor(
+		data: ICodeCompareBlockData,
+		token: CancellationToken,
+	): Promise<void> {
 		if (!isResponseVM(data.element)) {
 			return;
 		}
 
 		const isEditApplied = Boolean(data.edit.state?.applied ?? 0);
 
-		CONTEXT_CHAT_EDIT_APPLIED.bindTo(this.contextKeyService).set(isEditApplied);
+		CONTEXT_CHAT_EDIT_APPLIED.bindTo(this.contextKeyService).set(
+			isEditApplied,
+		);
 
-		this.element.classList.toggle('no-diff', isEditApplied);
+		this.element.classList.toggle("no-diff", isEditApplied);
 
 		if (isEditApplied) {
 			assertType(data.edit.state?.applied);
 
-			const uriLabel = this.labelService.getUriLabel(data.edit.uri, { relative: true, noPrefix: true });
+			const uriLabel = this.labelService.getUriLabel(data.edit.uri, {
+				relative: true,
+				noPrefix: true,
+			});
 
 			let template: string;
 			if (data.edit.state.applied === 1) {
-				template = localize('chat.edits.1', "Made 1 change in [[``{0}``]]", uriLabel);
+				template = localize(
+					"chat.edits.1",
+					"Made 1 change in [[``{0}``]]",
+					uriLabel,
+				);
 			} else if (data.edit.state.applied < 0) {
-				template = localize('chat.edits.rejected', "Edits in [[``{0}``]] have been rejected", uriLabel);
+				template = localize(
+					"chat.edits.rejected",
+					"Edits in [[``{0}``]] have been rejected",
+					uriLabel,
+				);
 			} else {
-				template = localize('chat.edits.N', "Made {0} changes in [[``{1}``]]", data.edit.state.applied, uriLabel);
+				template = localize(
+					"chat.edits.N",
+					"Made {0} changes in [[``{1}``]]",
+					data.edit.state.applied,
+					uriLabel,
+				);
 			}
 
 			const message = renderFormattedText(template, {
 				renderCodeSegments: true,
 				actionHandler: {
 					callback: () => {
-						this.openerService.open(data.edit.uri, { fromUserGesture: true, allowCommands: false });
+						this.openerService.open(data.edit.uri, {
+							fromUserGesture: true,
+							allowCommands: false,
+						});
 					},
 					disposables: this._store,
-				}
+				},
 			});
 
 			dom.reset(this.messageElement, message);
@@ -941,7 +1132,7 @@ export class CodeCompareBlockPart extends Disposable {
 		if (!isEditApplied && diffData) {
 			const viewModel = this.diffEditor.createViewModel({
 				original: diffData.original,
-				modified: diffData.modified
+				modified: diffData.modified,
 			});
 
 			await viewModel.waitForDiff();
@@ -950,14 +1141,19 @@ export class CodeCompareBlockPart extends Disposable {
 				return;
 			}
 
-			const listener = Event.any(diffData.original.onWillDispose, diffData.modified.onWillDispose)(() => {
+			const listener = Event.any(
+				diffData.original.onWillDispose,
+				diffData.modified.onWillDispose,
+			)(() => {
 				// this a bit weird and basically duplicates https://github.com/microsoft/vscode/blob/7cbcafcbcc88298cfdcd0238018fbbba8eb6853e/src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts#L328
 				// which cannot call `setModel(null)` without first complaining
 				this.diffEditor.setModel(null);
 			});
 			this.diffEditor.setModel(viewModel);
-			this._lastDiffEditorViewModel.value = combinedDisposable(listener, viewModel);
-
+			this._lastDiffEditorViewModel.value = combinedDisposable(
+				listener,
+				viewModel,
+			);
 		} else {
 			this.diffEditor.setModel(null);
 			this._lastDiffEditorViewModel.value = undefined;
@@ -973,7 +1169,6 @@ export class CodeCompareBlockPart extends Disposable {
 }
 
 export class DefaultChatTextEditor {
-
 	private readonly _sha1 = new DefaultModelSHA1Computer();
 
 	constructor(
@@ -982,8 +1177,11 @@ export class DefaultChatTextEditor {
 		@IDialogService private readonly dialogService: IDialogService,
 	) {}
 
-	async apply(response: IChatResponseModel | IChatResponseViewModel, item: IChatTextEditGroup, diffEditor: IDiffEditor | undefined): Promise<void> {
-
+	async apply(
+		response: IChatResponseModel | IChatResponseViewModel,
+		item: IChatTextEditGroup,
+		diffEditor: IDiffEditor | undefined,
+	): Promise<void> {
 		if (!response.response.value.includes(item)) {
 			// bogous item
 			return;
@@ -1000,7 +1198,12 @@ export class DefaultChatTextEditor {
 					continue;
 				}
 				const model = candidate.getModel();
-				if (!model || !isEqual(model.original.uri, item.uri) || model.modified.uri.scheme !== Schemas.vscodeChatCodeCompareBlock) {
+				if (
+					!model ||
+					!isEqual(model.original.uri, item.uri) ||
+					model.modified.uri.scheme !==
+						Schemas.vscodeChatCodeCompareBlock
+				) {
 					diffEditor = candidate;
 					break;
 				}
@@ -1014,7 +1217,10 @@ export class DefaultChatTextEditor {
 		response.setEditApplied(item, edits);
 	}
 
-	private async _applyWithDiffEditor(diffEditor: IDiffEditor, item: IChatTextEditGroup) {
+	private async _applyWithDiffEditor(
+		diffEditor: IDiffEditor,
+		item: IChatTextEditGroup,
+	) {
 		const model = diffEditor.getModel();
 		if (!model) {
 			return 0;
@@ -1025,13 +1231,14 @@ export class DefaultChatTextEditor {
 			return 0;
 		}
 
-
-		if (!await this._checkSha1(model.original, item)) {
+		if (!(await this._checkSha1(model.original, item))) {
 			return 0;
 		}
 
 		const modified = new TextModelText(model.modified);
-		const edits = diff.changes2.map(i => i.toRangeMapping().toTextEdit(modified).toSingleEditOperation());
+		const edits = diff.changes2.map((i) =>
+			i.toRangeMapping().toTextEdit(modified).toSingleEditOperation(),
+		);
 
 		model.original.pushStackElement();
 		model.original.pushEditOperations(null, edits, () => null);
@@ -1043,8 +1250,7 @@ export class DefaultChatTextEditor {
 	private async _apply(item: IChatTextEditGroup) {
 		const ref = await this.modelService.createModelReference(item.uri);
 		try {
-
-			if (!await this._checkSha1(ref.object.textEditorModel, item)) {
+			if (!(await this._checkSha1(ref.object.textEditorModel, item))) {
 				return 0;
 			}
 
@@ -1052,22 +1258,35 @@ export class DefaultChatTextEditor {
 			let total = 0;
 			for (const group of item.edits) {
 				const edits = group.map(TextEdit.asEditOperation);
-				ref.object.textEditorModel.pushEditOperations(null, edits, () => null);
+				ref.object.textEditorModel.pushEditOperations(
+					null,
+					edits,
+					() => null,
+				);
 				total += edits.length;
 			}
 			ref.object.textEditorModel.pushStackElement();
 			return total;
-
 		} finally {
 			ref.dispose();
 		}
 	}
 
 	private async _checkSha1(model: ITextModel, item: IChatTextEditGroup) {
-		if (item.state?.sha1 && this._sha1.computeSHA1(model) && this._sha1.computeSHA1(model) !== item.state.sha1) {
+		if (
+			item.state?.sha1 &&
+			this._sha1.computeSHA1(model) &&
+			this._sha1.computeSHA1(model) !== item.state.sha1
+		) {
 			const result = await this.dialogService.confirm({
-				message: localize('interactive.compare.apply.confirm', "The original file has been modified."),
-				detail: localize('interactive.compare.apply.confirm.detail', "Do you want to apply the changes anyway?"),
+				message: localize(
+					"interactive.compare.apply.confirm",
+					"The original file has been modified.",
+				),
+				detail: localize(
+					"interactive.compare.apply.confirm.detail",
+					"Do you want to apply the changes anyway?",
+				),
 			});
 
 			if (!result.confirmed) {
@@ -1077,7 +1296,10 @@ export class DefaultChatTextEditor {
 		return true;
 	}
 
-	discard(response: IChatResponseModel | IChatResponseViewModel, item: IChatTextEditGroup) {
+	discard(
+		response: IChatResponseModel | IChatResponseViewModel,
+		item: IChatTextEditGroup,
+	) {
 		if (!response.response.value.includes(item)) {
 			// bogous item
 			return;

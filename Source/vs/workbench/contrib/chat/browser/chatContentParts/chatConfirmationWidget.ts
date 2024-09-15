@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from '../../../../../base/browser/dom.js';
-import './media/chatConfirmationWidget.css';
-import { Button } from '../../../../../base/browser/ui/button/button.js';
-import { Emitter, Event } from '../../../../../base/common/event.js';
-import { MarkdownString } from '../../../../../base/common/htmlContent.js';
-import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { MarkdownRenderer } from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { defaultButtonStyles } from '../../../../../platform/theme/browser/defaultStyles.js';
+import * as dom from "../../../../../base/browser/dom.js";
+import "./media/chatConfirmationWidget.css";
+import { Button } from "../../../../../base/browser/ui/button/button.js";
+import { Emitter, type Event } from "../../../../../base/common/event.js";
+import { MarkdownString } from "../../../../../base/common/htmlContent.js";
+import { Disposable } from "../../../../../base/common/lifecycle.js";
+import { MarkdownRenderer } from "../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import { defaultButtonStyles } from "../../../../../platform/theme/browser/defaultStyles.js";
 
 export interface IChatConfirmationButton {
 	label: string;
@@ -20,8 +20,12 @@ export interface IChatConfirmationButton {
 }
 
 export class ChatConfirmationWidget extends Disposable {
-	private _onDidClick = this._register(new Emitter<IChatConfirmationButton>());
-	get onDidClick(): Event<IChatConfirmationButton> { return this._onDidClick.event; }
+	private _onDidClick = this._register(
+		new Emitter<IChatConfirmationButton>(),
+	);
+	get onDidClick(): Event<IChatConfirmationButton> {
+		return this._onDidClick.event;
+	}
 
 	private _domNode: HTMLElement;
 	get domNode(): HTMLElement {
@@ -29,7 +33,7 @@ export class ChatConfirmationWidget extends Disposable {
 	}
 
 	setShowButtons(showButton: boolean): void {
-		this.domNode.classList.toggle('hideButtons', !showButton);
+		this.domNode.classList.toggle("hideButtons", !showButton);
 	}
 
 	constructor(

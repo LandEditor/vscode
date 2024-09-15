@@ -3,13 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { URI } from '../../../../base/common/uri.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { IAddressProvider } from '../../../../platform/remote/common/remoteAgentConnection.js';
-import { AbstractTunnelService, ITunnelProvider, ITunnelService, RemoteTunnel, isTunnelProvider } from '../../../../platform/tunnel/common/tunnel.js';
-import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
+import type { URI } from "../../../../base/common/uri.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import type { IAddressProvider } from "../../../../platform/remote/common/remoteAgentConnection.js";
+import {
+	AbstractTunnelService,
+	type ITunnelProvider,
+	ITunnelService,
+	type RemoteTunnel,
+	isTunnelProvider,
+} from "../../../../platform/tunnel/common/tunnel.js";
+import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 
 export class TunnelService extends AbstractTunnelService {
 	constructor(
@@ -25,7 +34,16 @@ export class TunnelService extends AbstractTunnelService {
 		return false;
 	}
 
-	protected retainOrCreateTunnel(tunnelProvider: IAddressProvider | ITunnelProvider, remoteHost: string, remotePort: number, _localHost: string, localPort: number | undefined, elevateIfNeeded: boolean, privacy?: string, protocol?: string): Promise<RemoteTunnel | string | undefined> | undefined {
+	protected retainOrCreateTunnel(
+		tunnelProvider: IAddressProvider | ITunnelProvider,
+		remoteHost: string,
+		remotePort: number,
+		_localHost: string,
+		localPort: number | undefined,
+		elevateIfNeeded: boolean,
+		privacy?: string,
+		protocol?: string,
+	): Promise<RemoteTunnel | string | undefined> | undefined {
 		const existing = this.getTunnelFromMap(remoteHost, remotePort);
 		if (existing) {
 			++existing.refcount;
@@ -33,13 +51,23 @@ export class TunnelService extends AbstractTunnelService {
 		}
 
 		if (isTunnelProvider(tunnelProvider)) {
-			return this.createWithProvider(tunnelProvider, remoteHost, remotePort, localPort, elevateIfNeeded, privacy, protocol);
+			return this.createWithProvider(
+				tunnelProvider,
+				remoteHost,
+				remotePort,
+				localPort,
+				elevateIfNeeded,
+				privacy,
+				protocol,
+			);
 		}
 		return undefined;
 	}
 
 	override canTunnel(uri: URI): boolean {
-		return super.canTunnel(uri) && !!this.environmentService.remoteAuthority;
+		return (
+			super.canTunnel(uri) && !!this.environmentService.remoteAuthority
+		);
 	}
 }
 

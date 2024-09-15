@@ -3,73 +3,90 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer } from '../../../../base/common/buffer.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { IDiffResult } from '../../../../base/common/diff/diff.js';
-import { Event } from '../../../../base/common/event.js';
-import * as glob from '../../../../base/common/glob.js';
-import { IMarkdownString } from '../../../../base/common/htmlContent.js';
-import { Iterable } from '../../../../base/common/iterator.js';
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import { Mimes } from '../../../../base/common/mime.js';
-import { Schemas } from '../../../../base/common/network.js';
-import { basename } from '../../../../base/common/path.js';
-import { isWindows } from '../../../../base/common/platform.js';
-import { ISplice } from '../../../../base/common/sequence.js';
-import { ThemeColor } from '../../../../base/common/themables.js';
-import { URI, UriComponents } from '../../../../base/common/uri.js';
-import { Range } from '../../../../editor/common/core/range.js';
-import { ILineChange } from '../../../../editor/common/diff/legacyLinesDiffComputer.js';
-import * as editorCommon from '../../../../editor/common/editorCommon.js';
-import { Command, WorkspaceEditMetadata } from '../../../../editor/common/languages.js';
-import { IReadonlyTextBuffer } from '../../../../editor/common/model.js';
-import { IAccessibilityInformation } from '../../../../platform/accessibility/common/accessibility.js';
-import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
-import { IFileReadLimits } from '../../../../platform/files/common/files.js';
-import { UndoRedoGroup } from '../../../../platform/undoRedo/common/undoRedo.js';
-import { IRevertOptions, ISaveOptions, IUntypedEditorInput } from '../../../common/editor.js';
-import { NotebookTextModel } from './model/notebookTextModel.js';
-import { ICellExecutionError } from './notebookExecutionStateService.js';
-import { INotebookTextModelLike } from './notebookKernelService.js';
-import { ICellRange } from './notebookRange.js';
-import { RegisteredEditorPriority } from '../../../services/editor/common/editorResolverService.js';
-import { generateMetadataUri, generate as generateUri, parseMetadataUri, parse as parseUri } from '../../../services/notebook/common/notebookDocumentService.js';
-import { IWorkingCopyBackupMeta, IWorkingCopySaveEvent } from '../../../services/workingCopy/common/workingCopy.js';
+import { VSBuffer } from "../../../../base/common/buffer.js";
+import type { CancellationToken } from "../../../../base/common/cancellation.js";
+import type { IDiffResult } from "../../../../base/common/diff/diff.js";
+import type { Event } from "../../../../base/common/event.js";
+import * as glob from "../../../../base/common/glob.js";
+import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
+import { Iterable } from "../../../../base/common/iterator.js";
+import type { IDisposable } from "../../../../base/common/lifecycle.js";
+import { Mimes } from "../../../../base/common/mime.js";
+import { Schemas } from "../../../../base/common/network.js";
+import { basename } from "../../../../base/common/path.js";
+import { isWindows } from "../../../../base/common/platform.js";
+import type { ISplice } from "../../../../base/common/sequence.js";
+import type { ThemeColor } from "../../../../base/common/themables.js";
+import type { URI, UriComponents } from "../../../../base/common/uri.js";
+import type { Range } from "../../../../editor/common/core/range.js";
+import type { ILineChange } from "../../../../editor/common/diff/legacyLinesDiffComputer.js";
+import type * as editorCommon from "../../../../editor/common/editorCommon.js";
+import type {
+	Command,
+	WorkspaceEditMetadata,
+} from "../../../../editor/common/languages.js";
+import type { IReadonlyTextBuffer } from "../../../../editor/common/model.js";
+import type { IAccessibilityInformation } from "../../../../platform/accessibility/common/accessibility.js";
+import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
+import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
+import type { IFileReadLimits } from "../../../../platform/files/common/files.js";
+import type { UndoRedoGroup } from "../../../../platform/undoRedo/common/undoRedo.js";
+import type {
+	IRevertOptions,
+	ISaveOptions,
+	IUntypedEditorInput,
+} from "../../../common/editor.js";
+import type { RegisteredEditorPriority } from "../../../services/editor/common/editorResolverService.js";
+import {
+	generateMetadataUri,
+	generate as generateUri,
+	parseMetadataUri,
+	parse as parseUri,
+} from "../../../services/notebook/common/notebookDocumentService.js";
+import type {
+	IWorkingCopyBackupMeta,
+	IWorkingCopySaveEvent,
+} from "../../../services/workingCopy/common/workingCopy.js";
+import type { NotebookTextModel } from "./model/notebookTextModel.js";
+import type { ICellExecutionError } from "./notebookExecutionStateService.js";
+import type { INotebookTextModelLike } from "./notebookKernelService.js";
+import type { ICellRange } from "./notebookRange.js";
 
-export const NOTEBOOK_EDITOR_ID = 'workbench.editor.notebook';
-export const NOTEBOOK_DIFF_EDITOR_ID = 'workbench.editor.notebookTextDiffEditor';
-export const NOTEBOOK_MULTI_DIFF_EDITOR_ID = 'workbench.editor.notebookMultiTextDiffEditor';
-export const INTERACTIVE_WINDOW_EDITOR_ID = 'workbench.editor.interactive';
-export const REPL_EDITOR_ID = 'workbench.editor.repl';
+export const NOTEBOOK_EDITOR_ID = "workbench.editor.notebook";
+export const NOTEBOOK_DIFF_EDITOR_ID =
+	"workbench.editor.notebookTextDiffEditor";
+export const NOTEBOOK_MULTI_DIFF_EDITOR_ID =
+	"workbench.editor.notebookMultiTextDiffEditor";
+export const INTERACTIVE_WINDOW_EDITOR_ID = "workbench.editor.interactive";
+export const REPL_EDITOR_ID = "workbench.editor.repl";
 
-export const EXECUTE_REPL_COMMAND_ID = 'replNotebook.input.execute';
+export const EXECUTE_REPL_COMMAND_ID = "replNotebook.input.execute";
 
 export enum CellKind {
 	Markup = 1,
-	Code = 2
+	Code = 2,
 }
 
 export const NOTEBOOK_DISPLAY_ORDER: readonly string[] = [
-	'application/json',
-	'application/javascript',
-	'text/html',
-	'image/svg+xml',
+	"application/json",
+	"application/javascript",
+	"text/html",
+	"image/svg+xml",
 	Mimes.latex,
 	Mimes.markdown,
-	'image/png',
-	'image/jpeg',
-	Mimes.text
+	"image/png",
+	"image/jpeg",
+	Mimes.text,
 ];
 
 export const ACCESSIBLE_NOTEBOOK_DISPLAY_ORDER: readonly string[] = [
 	Mimes.latex,
 	Mimes.markdown,
-	'application/json',
-	'text/html',
-	'image/svg+xml',
-	'image/png',
-	'image/jpeg',
+	"application/json",
+	"text/html",
+	"image/svg+xml",
+	"image/png",
+	"image/jpeg",
 	Mimes.text,
 ];
 
@@ -79,18 +96,26 @@ export const ACCESSIBLE_NOTEBOOK_DISPLAY_ORDER: readonly string[] = [
  * to prefer the 1st party Jupyter renderers even though they're in a separate
  * extension, for instance. See #136247.
  */
-export const RENDERER_EQUIVALENT_EXTENSIONS: ReadonlyMap<string, ReadonlySet<string>> = new Map([
-	['ms-toolsai.jupyter', new Set(['jupyter-notebook', 'interactive'])],
-	['ms-toolsai.jupyter-renderers', new Set(['jupyter-notebook', 'interactive'])],
+export const RENDERER_EQUIVALENT_EXTENSIONS: ReadonlyMap<
+	string,
+	ReadonlySet<string>
+> = new Map([
+	["ms-toolsai.jupyter", new Set(["jupyter-notebook", "interactive"])],
+	[
+		"ms-toolsai.jupyter-renderers",
+		new Set(["jupyter-notebook", "interactive"]),
+	],
 ]);
 
-export const RENDERER_NOT_AVAILABLE = '_notAvailable';
+export const RENDERER_NOT_AVAILABLE = "_notAvailable";
 
-export type ContributedNotebookRendererEntrypoint = string | { readonly extends: string; readonly path: string };
+export type ContributedNotebookRendererEntrypoint =
+	| string
+	| { readonly extends: string; readonly path: string };
 
 export enum NotebookRunState {
 	Running = 1,
-	Idle = 2
+	Idle = 2,
 }
 
 export type NotebookDocumentMetadata = Record<string, unknown>;
@@ -98,12 +123,12 @@ export type NotebookDocumentMetadata = Record<string, unknown>;
 export enum NotebookCellExecutionState {
 	Unconfirmed = 1,
 	Pending = 2,
-	Executing = 3
+	Executing = 3,
 }
 export enum NotebookExecutionState {
 	Unconfirmed = 1,
 	Pending = 2,
-	Executing = 3
+	Executing = 3,
 }
 
 export interface INotebookCellPreviousExecutionResult {
@@ -140,11 +165,20 @@ export interface NotebookCellDefaultCollapseConfig {
 	markupCell?: NotebookCellCollapseState;
 }
 
-export type InteractiveWindowCollapseCodeCells = 'always' | 'never' | 'fromEditor';
+export type InteractiveWindowCollapseCodeCells =
+	| "always"
+	| "never"
+	| "fromEditor";
 
-export type TransientCellMetadata = { readonly [K in keyof NotebookCellMetadata]?: boolean };
-export type CellContentMetadata = { readonly [K in keyof NotebookCellMetadata]?: boolean };
-export type TransientDocumentMetadata = { readonly [K in keyof NotebookDocumentMetadata]?: boolean };
+export type TransientCellMetadata = {
+	readonly [K in keyof NotebookCellMetadata]?: boolean;
+};
+export type CellContentMetadata = {
+	readonly [K in keyof NotebookCellMetadata]?: boolean;
+};
+export type TransientDocumentMetadata = {
+	readonly [K in keyof NotebookDocumentMetadata]?: boolean;
+};
 
 export interface TransientOptions {
 	readonly transientOutputs: boolean;
@@ -154,7 +188,7 @@ export interface TransientOptions {
 }
 
 /** Note: enum values are used for sorting */
-export const enum NotebookRendererMatch {
+export enum NotebookRendererMatch {
 	/** Renderer has a hard dependency on an available kernel */
 	WithHardKernelDependency = 0,
 	/** Renderer works better with an available kernel */
@@ -171,13 +205,16 @@ export const enum NotebookRendererMatch {
  * activation" of extensions is a very tricky problem, which could allow
  * solving this. But for now, optional is mostly only honored for aznb.
  */
-export const enum RendererMessagingSpec {
-	Always = 'always',
-	Never = 'never',
-	Optional = 'optional',
+export enum RendererMessagingSpec {
+	Always = "always",
+	Never = "never",
+	Optional = "optional",
 }
 
-export type NotebookRendererEntrypoint = { readonly extends: string | undefined; readonly path: URI };
+export type NotebookRendererEntrypoint = {
+	readonly extends: string | undefined;
+	readonly path: URI;
+};
 
 export interface INotebookRendererInfo {
 	readonly id: string;
@@ -192,7 +229,10 @@ export interface INotebookRendererInfo {
 	readonly isBuiltin: boolean;
 
 	matchesWithoutKernel(mimeType: string): NotebookRendererMatch;
-	matches(mimeType: string, kernelProvides: ReadonlyArray<string>): NotebookRendererMatch;
+	matches(
+		mimeType: string,
+		kernelProvides: ReadonlyArray<string>,
+	): NotebookRendererMatch;
 }
 
 export interface INotebookStaticPreloadInfo {
@@ -285,8 +325,19 @@ export interface INotebookTextModel extends INotebookTextModelLike {
 	readonly versionId: number;
 	readonly length: number;
 	readonly cells: readonly ICell[];
-	reset(cells: ICellDto2[], metadata: NotebookDocumentMetadata, transientOptions: TransientOptions): void;
-	applyEdits(rawEdits: ICellEditOperation[], synchronous: boolean, beginSelectionState: ISelectionState | undefined, endSelectionsComputer: () => ISelectionState | undefined, undoRedoGroup: UndoRedoGroup | undefined, computeUndoRedo?: boolean): boolean;
+	reset(
+		cells: ICellDto2[],
+		metadata: NotebookDocumentMetadata,
+		transientOptions: TransientOptions,
+	): void;
+	applyEdits(
+		rawEdits: ICellEditOperation[],
+		synchronous: boolean,
+		beginSelectionState: ISelectionState | undefined,
+		endSelectionsComputer: () => ISelectionState | undefined,
+		undoRedoGroup: UndoRedoGroup | undefined,
+		computeUndoRedo?: boolean,
+	): boolean;
 	onDidChangeContent: Event<NotebookTextModelChangedEvent>;
 	onWillDispose: Event<void>;
 }
@@ -294,7 +345,7 @@ export interface INotebookTextModel extends INotebookTextModelLike {
 export type NotebookCellTextModelSplice<T> = [
 	start: number,
 	deleteCount: number,
-	newItems: T[]
+	newItems: T[],
 ];
 
 export type NotebookCellOutputsSplice = {
@@ -328,7 +379,7 @@ export enum NotebookCellsChangeType {
 	ChangeDocumentMetadata = 11,
 	ChangeCellInternalMetadata = 12,
 	ChangeCellMime = 13,
-	Unknown = 100
+	Unknown = 100,
 }
 
 export interface NotebookCellsInitializeEvent<T> {
@@ -402,18 +453,43 @@ export interface NotebookDocumentUnknownChangeEvent {
 	readonly kind: NotebookCellsChangeType.Unknown;
 }
 
-export type NotebookRawContentEventDto = NotebookCellsInitializeEvent<IMainCellDto> | NotebookDocumentChangeMetadataEvent | NotebookCellContentChangeEvent | NotebookCellsModelChangedEvent<IMainCellDto> | NotebookCellsModelMoveEvent<IMainCellDto> | NotebookOutputChangedEvent | NotebookOutputItemChangedEvent | NotebookCellsChangeLanguageEvent | NotebookCellsChangeMimeEvent | NotebookCellsChangeMetadataEvent | NotebookCellsChangeInternalMetadataEvent | NotebookDocumentUnknownChangeEvent;
+export type NotebookRawContentEventDto =
+	| NotebookCellsInitializeEvent<IMainCellDto>
+	| NotebookDocumentChangeMetadataEvent
+	| NotebookCellContentChangeEvent
+	| NotebookCellsModelChangedEvent<IMainCellDto>
+	| NotebookCellsModelMoveEvent<IMainCellDto>
+	| NotebookOutputChangedEvent
+	| NotebookOutputItemChangedEvent
+	| NotebookCellsChangeLanguageEvent
+	| NotebookCellsChangeMimeEvent
+	| NotebookCellsChangeMetadataEvent
+	| NotebookCellsChangeInternalMetadataEvent
+	| NotebookDocumentUnknownChangeEvent;
 
 export type NotebookCellsChangedEventDto = {
 	readonly rawEvents: NotebookRawContentEventDto[];
 	readonly versionId: number;
 };
 
-export type NotebookRawContentEvent = (NotebookCellsInitializeEvent<ICell> | NotebookDocumentChangeMetadataEvent | NotebookCellContentChangeEvent | NotebookCellsModelChangedEvent<ICell> | NotebookCellsModelMoveEvent<ICell> | NotebookOutputChangedEvent | NotebookOutputItemChangedEvent | NotebookCellsChangeLanguageEvent | NotebookCellsChangeMimeEvent | NotebookCellsChangeMetadataEvent | NotebookCellsChangeInternalMetadataEvent | NotebookDocumentUnknownChangeEvent) & { transient: boolean };
+export type NotebookRawContentEvent = (
+	| NotebookCellsInitializeEvent<ICell>
+	| NotebookDocumentChangeMetadataEvent
+	| NotebookCellContentChangeEvent
+	| NotebookCellsModelChangedEvent<ICell>
+	| NotebookCellsModelMoveEvent<ICell>
+	| NotebookOutputChangedEvent
+	| NotebookOutputItemChangedEvent
+	| NotebookCellsChangeLanguageEvent
+	| NotebookCellsChangeMimeEvent
+	| NotebookCellsChangeMetadataEvent
+	| NotebookCellsChangeInternalMetadataEvent
+	| NotebookDocumentUnknownChangeEvent
+) & { transient: boolean };
 
 export enum SelectionStateType {
 	Handle = 0,
-	Index = 1
+	Index = 1,
 }
 
 export interface ISelectionHandleState {
@@ -441,7 +517,7 @@ export type NotebookTextModelWillAddRemoveEvent = {
 	readonly rawEvent: NotebookCellsModelChangedEvent<ICell>;
 };
 
-export const enum CellEditType {
+export enum CellEditType {
 	Replace = 1,
 	Output = 2,
 	Metadata = 3,
@@ -500,7 +576,9 @@ export interface ICellMetadataEdit {
 
 // These types are nullable because we need to use 'null' on the EH side so it is JSON-stringified
 export type NullablePartialNotebookCellMetadata = {
-	[Key in keyof Partial<NotebookCellMetadata>]: NotebookCellMetadata[Key] | null
+	[Key in keyof Partial<NotebookCellMetadata>]:
+		| NotebookCellMetadata[Key]
+		| null;
 };
 
 export interface ICellPartialMetadataEdit {
@@ -516,7 +594,9 @@ export interface ICellPartialMetadataEditByHandle {
 }
 
 export type NullablePartialNotebookCellInternalMetadata = {
-	[Key in keyof Partial<NotebookCellInternalMetadata>]: NotebookCellInternalMetadata[Key] | null
+	[Key in keyof Partial<NotebookCellInternalMetadata>]:
+		| NotebookCellInternalMetadata[Key]
+		| null;
 };
 export interface ICellPartialInternalMetadataEdit {
 	editType: CellEditType.PartialInternalMetadata;
@@ -548,22 +628,43 @@ export interface ICellMoveEdit {
 	newIdx: number;
 }
 
-export type IImmediateCellEditOperation = ICellOutputEditByHandle | ICellPartialMetadataEditByHandle | ICellOutputItemEdit | ICellPartialInternalMetadataEdit | ICellPartialInternalMetadataEditByHandle | ICellPartialMetadataEdit;
-export type ICellEditOperation = IImmediateCellEditOperation | ICellReplaceEdit | ICellOutputEdit | ICellMetadataEdit | ICellPartialMetadataEdit | ICellPartialInternalMetadataEdit | IDocumentMetadataEdit | ICellMoveEdit | ICellOutputItemEdit | ICellLanguageEdit;
-
+export type IImmediateCellEditOperation =
+	| ICellOutputEditByHandle
+	| ICellPartialMetadataEditByHandle
+	| ICellOutputItemEdit
+	| ICellPartialInternalMetadataEdit
+	| ICellPartialInternalMetadataEditByHandle
+	| ICellPartialMetadataEdit;
+export type ICellEditOperation =
+	| IImmediateCellEditOperation
+	| ICellReplaceEdit
+	| ICellOutputEdit
+	| ICellMetadataEdit
+	| ICellPartialMetadataEdit
+	| ICellPartialInternalMetadataEdit
+	| IDocumentMetadataEdit
+	| ICellMoveEdit
+	| ICellOutputItemEdit
+	| ICellLanguageEdit;
 
 export interface IWorkspaceNotebookCellEdit {
 	metadata?: WorkspaceEditMetadata;
 	resource: URI;
 	notebookVersionId: number | undefined;
-	cellEdit: ICellPartialMetadataEdit | IDocumentMetadataEdit | ICellReplaceEdit;
+	cellEdit:
+		| ICellPartialMetadataEdit
+		| IDocumentMetadataEdit
+		| ICellReplaceEdit;
 }
 
 export interface IWorkspaceNotebookCellEditDto {
 	metadata?: WorkspaceEditMetadata;
 	resource: URI;
 	notebookVersionId: number | undefined;
-	cellEdit: ICellPartialMetadataEdit | IDocumentMetadataEdit | ICellReplaceEdit;
+	cellEdit:
+		| ICellPartialMetadataEdit
+		| IDocumentMetadataEdit
+		| ICellReplaceEdit;
 }
 
 export interface NotebookData {
@@ -571,12 +672,15 @@ export interface NotebookData {
 	readonly metadata: NotebookDocumentMetadata;
 }
 
-
 export interface INotebookContributionData {
 	extension?: ExtensionIdentifier;
 	providerDisplayName: string;
 	displayName: string;
-	filenamePattern: (string | glob.IRelativePattern | INotebookExclusiveDocumentFilter)[];
+	filenamePattern: (
+		| string
+		| glob.IRelativePattern
+		| INotebookExclusiveDocumentFilter
+	)[];
 	priority?: RegisteredEditorPriority;
 }
 
@@ -596,39 +700,50 @@ export namespace CellUri {
 		return generateUri(notebook, handle);
 	}
 
-	export function parse(cell: URI): { notebook: URI; handle: number } | undefined {
+	export function parse(
+		cell: URI,
+	): { notebook: URI; handle: number } | undefined {
 		return parseUri(cell);
 	}
 
 	export function generateCellOutputUri(notebook: URI, outputId?: string) {
 		return notebook.with({
 			scheme: Schemas.vscodeNotebookCellOutput,
-			fragment: `op${outputId ?? ''},${notebook.scheme !== Schemas.file ? notebook.scheme : ''}`
+			fragment: `op${outputId ?? ""},${notebook.scheme !== Schemas.file ? notebook.scheme : ""}`,
 		});
 	}
 
-	export function parseCellOutputUri(uri: URI): { notebook: URI; outputId?: string } | undefined {
+	export function parseCellOutputUri(
+		uri: URI,
+	): { notebook: URI; outputId?: string } | undefined {
 		if (uri.scheme !== Schemas.vscodeNotebookCellOutput) {
 			return;
 		}
 
-		const match = /^op([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?\,(.*)$/i.exec(uri.fragment);
+		const match =
+			/^op([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?,(.*)$/i.exec(
+				uri.fragment,
+			);
 		if (!match) {
 			return undefined;
 		}
 
-		const outputId = (match[1] && match[1] !== '') ? match[1] : undefined;
+		const outputId = match[1] && match[1] !== "" ? match[1] : undefined;
 		const scheme = match[2];
 		return {
 			outputId,
 			notebook: uri.with({
 				scheme: scheme || Schemas.file,
-				fragment: null
-			})
+				fragment: null,
+			}),
 		};
 	}
 
-	export function generateCellPropertyUri(notebook: URI, handle: number, scheme: string): URI {
+	export function generateCellPropertyUri(
+		notebook: URI,
+		handle: number,
+		scheme: string,
+	): URI {
 		return CellUri.generate(notebook, handle).with({ scheme: scheme });
 	}
 
@@ -641,7 +756,8 @@ export namespace CellUri {
 	}
 }
 
-const normalizeSlashes = (str: string) => isWindows ? str.replace(/\//g, '\\') : str;
+const normalizeSlashes = (str: string) =>
+	isWindows ? str.replace(/\//g, "\\") : str;
 
 interface IMimeTypeWithMatcher {
 	pattern: string;
@@ -655,9 +771,9 @@ export class MimeTypeDisplayOrder {
 		initialValue: readonly string[] = [],
 		private readonly defaultOrder = NOTEBOOK_DISPLAY_ORDER,
 	) {
-		this.order = [...new Set(initialValue)].map(pattern => ({
+		this.order = [...new Set(initialValue)].map((pattern) => ({
 			pattern,
-			matches: glob.parse(normalizeSlashes(pattern))
+			matches: glob.parse(normalizeSlashes(pattern)),
 		}));
 	}
 
@@ -665,7 +781,9 @@ export class MimeTypeDisplayOrder {
 	 * Returns a sorted array of the input mimetypes.
 	 */
 	public sort(mimetypes: Iterable<string>): string[] {
-		const remaining = new Map(Iterable.map(mimetypes, m => [m, normalizeSlashes(m)]));
+		const remaining = new Map(
+			Iterable.map(mimetypes, (m) => [m, normalizeSlashes(m)]),
+		);
 		let sorted: string[] = [];
 
 		for (const { matches } of this.order) {
@@ -679,9 +797,13 @@ export class MimeTypeDisplayOrder {
 		}
 
 		if (remaining.size) {
-			sorted = sorted.concat([...remaining.keys()].sort(
-				(a, b) => this.defaultOrder.indexOf(a) - this.defaultOrder.indexOf(b),
-			));
+			sorted = sorted.concat(
+				[...remaining.keys()].sort(
+					(a, b) =>
+						this.defaultOrder.indexOf(a) -
+						this.defaultOrder.indexOf(b),
+				),
+			);
 		}
 
 		return sorted;
@@ -691,20 +813,32 @@ export class MimeTypeDisplayOrder {
 	 * Records that the user selected the given mimetype over the other
 	 * possible mimetypes, prioritizing it for future reference.
 	 */
-	public prioritize(chosenMimetype: string, otherMimetypes: readonly string[]) {
+	public prioritize(
+		chosenMimetype: string,
+		otherMimetypes: readonly string[],
+	) {
 		const chosenIndex = this.findIndex(chosenMimetype);
 		if (chosenIndex === -1) {
 			// always first, nothing more to do
-			this.order.unshift({ pattern: chosenMimetype, matches: glob.parse(normalizeSlashes(chosenMimetype)) });
+			this.order.unshift({
+				pattern: chosenMimetype,
+				matches: glob.parse(normalizeSlashes(chosenMimetype)),
+			});
 			return;
 		}
 
 		// Get the other mimetypes that are before the chosenMimetype. Then, move
 		// them after it, retaining order.
-		const uniqueIndicies = new Set(otherMimetypes.map(m => this.findIndex(m, chosenIndex)));
+		const uniqueIndicies = new Set(
+			otherMimetypes.map((m) => this.findIndex(m, chosenIndex)),
+		);
 		uniqueIndicies.delete(-1);
 		const otherIndices = Array.from(uniqueIndicies).sort();
-		this.order.splice(chosenIndex + 1, 0, ...otherIndices.map(i => this.order[i]));
+		this.order.splice(
+			chosenIndex + 1,
+			0,
+			...otherIndices.map((i) => this.order[i]),
+		);
 
 		for (let oi = otherIndices.length - 1; oi >= 0; oi--) {
 			this.order.splice(otherIndices[oi], 1);
@@ -715,7 +849,7 @@ export class MimeTypeDisplayOrder {
 	 * Gets an array of in-order mimetype preferences.
 	 */
 	public toArray() {
-		return this.order.map(o => o.pattern);
+		return this.order.map((o) => o.pattern);
 	}
 
 	private findIndex(mimeType: string, maxIndex = this.order.length) {
@@ -735,10 +869,19 @@ interface IMutableSplice<T> extends ISplice<T> {
 	deleteCount: number;
 }
 
-export function diff<T>(before: T[], after: T[], contains: (a: T) => boolean, equal: (a: T, b: T) => boolean = (a: T, b: T) => a === b): ISplice<T>[] {
+export function diff<T>(
+	before: T[],
+	after: T[],
+	contains: (a: T) => boolean,
+	equal: (a: T, b: T) => boolean = (a: T, b: T) => a === b,
+): ISplice<T>[] {
 	const result: IMutableSplice<T>[] = [];
 
-	function pushSplice(start: number, deleteCount: number, toInsert: T[]): void {
+	function pushSplice(
+		start: number,
+		deleteCount: number,
+		toInsert: T[],
+	): void {
 		if (deleteCount === 0 && toInsert.length === 0) {
 			return;
 		}
@@ -795,9 +938,13 @@ export interface ICellEditorViewState {
 	selections: editorCommon.ICursorState[];
 }
 
-export const NOTEBOOK_EDITOR_CURSOR_BOUNDARY = new RawContextKey<'none' | 'top' | 'bottom' | 'both'>('notebookEditorCursorAtBoundary', 'none');
+export const NOTEBOOK_EDITOR_CURSOR_BOUNDARY = new RawContextKey<
+	"none" | "top" | "bottom" | "both"
+>("notebookEditorCursorAtBoundary", "none");
 
-export const NOTEBOOK_EDITOR_CURSOR_LINE_BOUNDARY = new RawContextKey<'none' | 'start' | 'end' | 'both'>('notebookEditorCursorAtLineBoundary', 'none');
+export const NOTEBOOK_EDITOR_CURSOR_LINE_BOUNDARY = new RawContextKey<
+	"none" | "start" | "end" | "both"
+>("notebookEditorCursorAtLineBoundary", "none");
 
 export interface INotebookLoadOptions {
 	/**
@@ -854,8 +1001,8 @@ export interface NotebookDocumentBackupData extends IWorkingCopyBackupMeta {
 }
 
 export enum NotebookEditorPriority {
-	default = 'default',
-	option = 'option',
+	default = "default",
+	option = "option",
 }
 
 export interface INotebookFindOptions {
@@ -877,9 +1024,9 @@ export interface INotebookFindScope {
 }
 
 export enum NotebookFindScopeType {
-	Cells = 'cells',
-	Text = 'text',
-	None = 'none'
+	Cells = "cells",
+	Text = "text",
+	None = "none",
 }
 
 export interface INotebookExclusiveDocumentFilter {
@@ -889,23 +1036,44 @@ export interface INotebookExclusiveDocumentFilter {
 
 export interface INotebookDocumentFilter {
 	viewType?: string | string[];
-	filenamePattern?: string | glob.IRelativePattern | INotebookExclusiveDocumentFilter;
+	filenamePattern?:
+		| string
+		| glob.IRelativePattern
+		| INotebookExclusiveDocumentFilter;
 }
 
 //TODO@rebornix test
 
-export function isDocumentExcludePattern(filenamePattern: string | glob.IRelativePattern | INotebookExclusiveDocumentFilter): filenamePattern is { include: string | glob.IRelativePattern; exclude: string | glob.IRelativePattern } {
+export function isDocumentExcludePattern(
+	filenamePattern:
+		| string
+		| glob.IRelativePattern
+		| INotebookExclusiveDocumentFilter,
+): filenamePattern is {
+	include: string | glob.IRelativePattern;
+	exclude: string | glob.IRelativePattern;
+} {
 	const arg = filenamePattern as INotebookExclusiveDocumentFilter;
 
-	if ((typeof arg.include === 'string' || glob.isRelativePattern(arg.include))
-		&& (typeof arg.exclude === 'string' || glob.isRelativePattern(arg.exclude))) {
+	if (
+		(typeof arg.include === "string" ||
+			glob.isRelativePattern(arg.include)) &&
+		(typeof arg.exclude === "string" || glob.isRelativePattern(arg.exclude))
+	) {
 		return true;
 	}
 
 	return false;
 }
-export function notebookDocumentFilterMatch(filter: INotebookDocumentFilter, viewType: string, resource: URI): boolean {
-	if (Array.isArray(filter.viewType) && filter.viewType.indexOf(viewType) >= 0) {
+export function notebookDocumentFilterMatch(
+	filter: INotebookDocumentFilter,
+	viewType: string,
+	resource: URI,
+): boolean {
+	if (
+		Array.isArray(filter.viewType) &&
+		filter.viewType.indexOf(viewType) >= 0
+	) {
 		return true;
 	}
 
@@ -914,12 +1082,25 @@ export function notebookDocumentFilterMatch(filter: INotebookDocumentFilter, vie
 	}
 
 	if (filter.filenamePattern) {
-		const filenamePattern = isDocumentExcludePattern(filter.filenamePattern) ? filter.filenamePattern.include : (filter.filenamePattern as string | glob.IRelativePattern);
-		const excludeFilenamePattern = isDocumentExcludePattern(filter.filenamePattern) ? filter.filenamePattern.exclude : undefined;
+		const filenamePattern = isDocumentExcludePattern(filter.filenamePattern)
+			? filter.filenamePattern.include
+			: (filter.filenamePattern as string | glob.IRelativePattern);
+		const excludeFilenamePattern = isDocumentExcludePattern(
+			filter.filenamePattern,
+		)
+			? filter.filenamePattern.exclude
+			: undefined;
 
-		if (glob.match(filenamePattern, basename(resource.fsPath).toLowerCase())) {
+		if (
+			glob.match(filenamePattern, basename(resource.fsPath).toLowerCase())
+		) {
 			if (excludeFilenamePattern) {
-				if (glob.match(excludeFilenamePattern, basename(resource.fsPath).toLowerCase())) {
+				if (
+					glob.match(
+						excludeFilenamePattern,
+						basename(resource.fsPath).toLowerCase(),
+					)
+				) {
 					// should exclude
 
 					return false;
@@ -934,14 +1115,21 @@ export function notebookDocumentFilterMatch(filter: INotebookDocumentFilter, vie
 export interface INotebookCellStatusBarItemProvider {
 	viewType: string;
 	onDidChangeStatusBarItems?: Event<void>;
-	provideCellStatusBarItems(uri: URI, index: number, token: CancellationToken): Promise<INotebookCellStatusBarItemList | undefined>;
+	provideCellStatusBarItems(
+		uri: URI,
+		index: number,
+		token: CancellationToken,
+	): Promise<INotebookCellStatusBarItemList | undefined>;
 }
-
 
 export interface INotebookDiffResult {
 	cellsDiff: IDiffResult;
 	metadataChanged: boolean;
-	linesDiff?: { originalCellhandle: number; modifiedCellhandle: number; lineChanges: ILineChange[] }[];
+	linesDiff?: {
+		originalCellhandle: number;
+		modifiedCellhandle: number;
+		lineChanges: ILineChange[];
+	}[];
 }
 
 export interface INotebookCellStatusBarItem {
@@ -962,75 +1150,79 @@ export interface INotebookCellStatusBarItemList {
 	dispose?(): void;
 }
 
-export type ShowCellStatusBarType = 'hidden' | 'visible' | 'visibleAfterExecute';
+export type ShowCellStatusBarType =
+	| "hidden"
+	| "visible"
+	| "visibleAfterExecute";
 export const NotebookSetting = {
-	displayOrder: 'notebook.displayOrder',
-	cellToolbarLocation: 'notebook.cellToolbarLocation',
-	cellToolbarVisibility: 'notebook.cellToolbarVisibility',
-	showCellStatusBar: 'notebook.showCellStatusBar',
-	textDiffEditorPreview: 'notebook.diff.enablePreview',
-	diffOverviewRuler: 'notebook.diff.overviewRuler',
-	experimentalInsertToolbarAlignment: 'notebook.experimental.insertToolbarAlignment',
-	compactView: 'notebook.compactView',
-	focusIndicator: 'notebook.cellFocusIndicator',
-	insertToolbarLocation: 'notebook.insertToolbarLocation',
-	globalToolbar: 'notebook.globalToolbar',
-	stickyScrollEnabled: 'notebook.stickyScroll.enabled',
-	stickyScrollMode: 'notebook.stickyScroll.mode',
-	undoRedoPerCell: 'notebook.undoRedoPerCell',
-	consolidatedOutputButton: 'notebook.consolidatedOutputButton',
-	showFoldingControls: 'notebook.showFoldingControls',
-	dragAndDropEnabled: 'notebook.dragAndDropEnabled',
-	cellEditorOptionsCustomizations: 'notebook.editorOptionsCustomizations',
-	consolidatedRunButton: 'notebook.consolidatedRunButton',
-	openGettingStarted: 'notebook.experimental.openGettingStarted',
-	globalToolbarShowLabel: 'notebook.globalToolbarShowLabel',
-	markupFontSize: 'notebook.markup.fontSize',
-	markdownLineHeight: 'notebook.markdown.lineHeight',
-	interactiveWindowCollapseCodeCells: 'interactiveWindow.collapseCellInputCode',
-	outputScrollingDeprecated: 'notebook.experimental.outputScrolling',
-	outputScrolling: 'notebook.output.scrolling',
-	textOutputLineLimit: 'notebook.output.textLineLimit',
-	LinkifyOutputFilePaths: 'notebook.output.linkifyFilePaths',
-	minimalErrorRendering: 'notebook.output.minimalErrorRendering',
-	formatOnSave: 'notebook.formatOnSave.enabled',
-	insertFinalNewline: 'notebook.insertFinalNewline',
-	defaultFormatter: 'notebook.defaultFormatter',
-	formatOnCellExecution: 'notebook.formatOnCellExecution',
-	codeActionsOnSave: 'notebook.codeActionsOnSave',
-	outputWordWrap: 'notebook.output.wordWrap',
-	outputLineHeightDeprecated: 'notebook.outputLineHeight',
-	outputLineHeight: 'notebook.output.lineHeight',
-	outputFontSizeDeprecated: 'notebook.outputFontSize',
-	outputFontSize: 'notebook.output.fontSize',
-	outputFontFamilyDeprecated: 'notebook.outputFontFamily',
-	outputFontFamily: 'notebook.output.fontFamily',
-	findFilters: 'notebook.find.filters',
-	logging: 'notebook.logging',
-	confirmDeleteRunningCell: 'notebook.confirmDeleteRunningCell',
-	remoteSaving: 'notebook.experimental.remoteSave',
-	gotoSymbolsAllSymbols: 'notebook.gotoSymbols.showAllSymbols',
-	outlineShowMarkdownHeadersOnly: 'notebook.outline.showMarkdownHeadersOnly',
-	outlineShowCodeCells: 'notebook.outline.showCodeCells',
-	outlineShowCodeCellSymbols: 'notebook.outline.showCodeCellSymbols',
-	breadcrumbsShowCodeCells: 'notebook.breadcrumbs.showCodeCells',
-	scrollToRevealCell: 'notebook.scrolling.revealNextCellOnExecute',
-	cellChat: 'notebook.experimental.cellChat',
-	cellGenerate: 'notebook.experimental.generate',
-	notebookVariablesView: 'notebook.experimental.variablesView',
-	InteractiveWindowPromptToSave: 'interactiveWindow.promptToSaveOnClose',
-	cellFailureDiagnostics: 'notebook.cellFailureDiagnostics',
-	outputBackupSizeLimit: 'notebook.backup.sizeLimit',
+	displayOrder: "notebook.displayOrder",
+	cellToolbarLocation: "notebook.cellToolbarLocation",
+	cellToolbarVisibility: "notebook.cellToolbarVisibility",
+	showCellStatusBar: "notebook.showCellStatusBar",
+	textDiffEditorPreview: "notebook.diff.enablePreview",
+	diffOverviewRuler: "notebook.diff.overviewRuler",
+	experimentalInsertToolbarAlignment:
+		"notebook.experimental.insertToolbarAlignment",
+	compactView: "notebook.compactView",
+	focusIndicator: "notebook.cellFocusIndicator",
+	insertToolbarLocation: "notebook.insertToolbarLocation",
+	globalToolbar: "notebook.globalToolbar",
+	stickyScrollEnabled: "notebook.stickyScroll.enabled",
+	stickyScrollMode: "notebook.stickyScroll.mode",
+	undoRedoPerCell: "notebook.undoRedoPerCell",
+	consolidatedOutputButton: "notebook.consolidatedOutputButton",
+	showFoldingControls: "notebook.showFoldingControls",
+	dragAndDropEnabled: "notebook.dragAndDropEnabled",
+	cellEditorOptionsCustomizations: "notebook.editorOptionsCustomizations",
+	consolidatedRunButton: "notebook.consolidatedRunButton",
+	openGettingStarted: "notebook.experimental.openGettingStarted",
+	globalToolbarShowLabel: "notebook.globalToolbarShowLabel",
+	markupFontSize: "notebook.markup.fontSize",
+	markdownLineHeight: "notebook.markdown.lineHeight",
+	interactiveWindowCollapseCodeCells:
+		"interactiveWindow.collapseCellInputCode",
+	outputScrollingDeprecated: "notebook.experimental.outputScrolling",
+	outputScrolling: "notebook.output.scrolling",
+	textOutputLineLimit: "notebook.output.textLineLimit",
+	LinkifyOutputFilePaths: "notebook.output.linkifyFilePaths",
+	minimalErrorRendering: "notebook.output.minimalErrorRendering",
+	formatOnSave: "notebook.formatOnSave.enabled",
+	insertFinalNewline: "notebook.insertFinalNewline",
+	defaultFormatter: "notebook.defaultFormatter",
+	formatOnCellExecution: "notebook.formatOnCellExecution",
+	codeActionsOnSave: "notebook.codeActionsOnSave",
+	outputWordWrap: "notebook.output.wordWrap",
+	outputLineHeightDeprecated: "notebook.outputLineHeight",
+	outputLineHeight: "notebook.output.lineHeight",
+	outputFontSizeDeprecated: "notebook.outputFontSize",
+	outputFontSize: "notebook.output.fontSize",
+	outputFontFamilyDeprecated: "notebook.outputFontFamily",
+	outputFontFamily: "notebook.output.fontFamily",
+	findFilters: "notebook.find.filters",
+	logging: "notebook.logging",
+	confirmDeleteRunningCell: "notebook.confirmDeleteRunningCell",
+	remoteSaving: "notebook.experimental.remoteSave",
+	gotoSymbolsAllSymbols: "notebook.gotoSymbols.showAllSymbols",
+	outlineShowMarkdownHeadersOnly: "notebook.outline.showMarkdownHeadersOnly",
+	outlineShowCodeCells: "notebook.outline.showCodeCells",
+	outlineShowCodeCellSymbols: "notebook.outline.showCodeCellSymbols",
+	breadcrumbsShowCodeCells: "notebook.breadcrumbs.showCodeCells",
+	scrollToRevealCell: "notebook.scrolling.revealNextCellOnExecute",
+	cellChat: "notebook.experimental.cellChat",
+	cellGenerate: "notebook.experimental.generate",
+	notebookVariablesView: "notebook.experimental.variablesView",
+	InteractiveWindowPromptToSave: "interactiveWindow.promptToSaveOnClose",
+	cellFailureDiagnostics: "notebook.cellFailureDiagnostics",
+	outputBackupSizeLimit: "notebook.backup.sizeLimit",
 } as const;
 
-export const enum CellStatusbarAlignment {
+export enum CellStatusbarAlignment {
 	Left = 1,
-	Right = 2
+	Right = 2,
 }
 
 export class NotebookWorkingCopyTypeIdentifier {
-
-	private static _prefix = 'notebook/';
+	private static _prefix = "notebook/";
 
 	static create(viewType: string): string {
 		return `${NotebookWorkingCopyTypeIdentifier._prefix}${viewType}`;
@@ -1038,7 +1230,9 @@ export class NotebookWorkingCopyTypeIdentifier {
 
 	static parse(candidate: string): string | undefined {
 		if (candidate.startsWith(NotebookWorkingCopyTypeIdentifier._prefix)) {
-			return candidate.substring(NotebookWorkingCopyTypeIdentifier._prefix.length);
+			return candidate.substring(
+				NotebookWorkingCopyTypeIdentifier._prefix.length,
+			);
 		}
 		return undefined;
 	}
@@ -1053,9 +1247,11 @@ export interface NotebookExtensionDescription {
  * Whether the provided mime type is a text stream like `stdout`, `stderr`.
  */
 export function isTextStreamMime(mimeType: string) {
-	return ['application/vnd.code.notebook.stdout', 'application/vnd.code.notebook.stderr'].includes(mimeType);
+	return [
+		"application/vnd.code.notebook.stdout",
+		"application/vnd.code.notebook.stderr",
+	].includes(mimeType);
 }
-
 
 const textDecoder = new TextDecoder();
 
@@ -1071,21 +1267,26 @@ export function compressOutputItemStreams(outputs: Uint8Array[]) {
 
 	// Pick the first set of outputs with the same mime type.
 	for (const output of outputs) {
-		if ((buffers.length === 0 || startAppending)) {
+		if (buffers.length === 0 || startAppending) {
 			buffers.push(output);
 			startAppending = true;
 		}
 	}
 
 	let didCompression = compressStreamBuffer(buffers);
-	const concatenated = VSBuffer.concat(buffers.map(buffer => VSBuffer.wrap(buffer)));
+	const concatenated = VSBuffer.concat(
+		buffers.map((buffer) => VSBuffer.wrap(buffer)),
+	);
 	const data = formatStreamText(concatenated);
-	didCompression = didCompression || data.byteLength !== concatenated.byteLength;
+	didCompression =
+		didCompression || data.byteLength !== concatenated.byteLength;
 	return { data, didCompression };
 }
 
 export const MOVE_CURSOR_1_LINE_COMMAND = `${String.fromCharCode(27)}[A`;
-const MOVE_CURSOR_1_LINE_COMMAND_BYTES = MOVE_CURSOR_1_LINE_COMMAND.split('').map(c => c.charCodeAt(0));
+const MOVE_CURSOR_1_LINE_COMMAND_BYTES = MOVE_CURSOR_1_LINE_COMMAND.split(
+	"",
+).map((c) => c.charCodeAt(0));
 const LINE_FEED = 10;
 function compressStreamBuffer(streams: Uint8Array[]) {
 	let didCompress = false;
@@ -1098,21 +1299,26 @@ function compressStreamBuffer(streams: Uint8Array[]) {
 
 		// Remove the previous line if required.
 		const command = stream.subarray(0, MOVE_CURSOR_1_LINE_COMMAND.length);
-		if (command[0] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[0] && command[1] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[1] && command[2] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[2]) {
+		if (
+			command[0] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[0] &&
+			command[1] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[1] &&
+			command[2] === MOVE_CURSOR_1_LINE_COMMAND_BYTES[2]
+		) {
 			const lastIndexOfLineFeed = previousStream.lastIndexOf(LINE_FEED);
 			if (lastIndexOfLineFeed === -1) {
 				return;
 			}
 
 			didCompress = true;
-			streams[index - 1] = previousStream.subarray(0, lastIndexOfLineFeed);
+			streams[index - 1] = previousStream.subarray(
+				0,
+				lastIndexOfLineFeed,
+			);
 			streams[index] = stream.subarray(MOVE_CURSOR_1_LINE_COMMAND.length);
 		}
 	});
 	return didCompress;
 }
-
-
 
 /**
  * Took this from jupyter/notebook
@@ -1124,7 +1330,7 @@ function fixBackspace(txt: string) {
 	do {
 		txt = tmp;
 		// Cancel out anything-but-newline followed by backspace
-		tmp = txt.replace(/[^\n]\x08/gm, '');
+		tmp = txt.replace(/[^\n]\x08/gm, "");
 	} while (tmp.length < txt.length);
 	return txt;
 }
@@ -1134,26 +1340,31 @@ function fixBackspace(txt: string) {
  * From https://github.com/jupyter/notebook/blob/master/notebook/static/base/js/utils.js
  */
 function fixCarriageReturn(txt: string) {
-	txt = txt.replace(/\r+\n/gm, '\n'); // \r followed by \n --> newline
+	txt = txt.replace(/\r+\n/gm, "\n"); // \r followed by \n --> newline
 	while (txt.search(/\r[^$]/g) > -1) {
 		const base = txt.match(/^(.*)\r+/m)![1];
 		let insert = txt.match(/\r+(.*)$/m)![1];
 		insert = insert + base.slice(insert.length, base.length);
-		txt = txt.replace(/\r+.*$/m, '\r').replace(/^.*\r/m, insert);
+		txt = txt.replace(/\r+.*$/m, "\r").replace(/^.*\r/m, insert);
 	}
 	return txt;
 }
 
-const BACKSPACE_CHARACTER = '\b'.charCodeAt(0);
-const CARRIAGE_RETURN_CHARACTER = '\r'.charCodeAt(0);
+const BACKSPACE_CHARACTER = "\b".charCodeAt(0);
+const CARRIAGE_RETURN_CHARACTER = "\r".charCodeAt(0);
 function formatStreamText(buffer: VSBuffer): VSBuffer {
 	// We have special handling for backspace and carriage return characters.
 	// Don't unnecessary decode the bytes if we don't need to perform any processing.
-	if (!buffer.buffer.includes(BACKSPACE_CHARACTER) && !buffer.buffer.includes(CARRIAGE_RETURN_CHARACTER)) {
+	if (
+		!buffer.buffer.includes(BACKSPACE_CHARACTER) &&
+		!buffer.buffer.includes(CARRIAGE_RETURN_CHARACTER)
+	) {
 		return buffer;
 	}
 	// Do the same thing jupyter is doing
-	return VSBuffer.fromString(fixCarriageReturn(fixBackspace(textDecoder.decode(buffer.buffer))));
+	return VSBuffer.fromString(
+		fixCarriageReturn(fixBackspace(textDecoder.decode(buffer.buffer))),
+	);
 }
 
 export interface INotebookKernelSourceAction {

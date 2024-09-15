@@ -3,12 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { ILanguagePackService } from '../../../../platform/languagePacks/common/languagePacks.js';
-import { NativeLanguagePackService } from '../../../../platform/languagePacks/node/languagePacks.js';
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { ILanguagePackService } from "../../../../platform/languagePacks/common/languagePacks.js";
+import type { NativeLanguagePackService } from "../../../../platform/languagePacks/node/languagePacks.js";
 
 export class LocalizationsUpdater extends Disposable {
-
 	constructor(
 		@ILanguagePackService private readonly localizationsService: NativeLanguagePackService
 	) {

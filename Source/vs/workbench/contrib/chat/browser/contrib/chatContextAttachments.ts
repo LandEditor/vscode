@@ -3,16 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { IChatWidget } from '../chat.js';
-import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
-import { IChatRequestVariableEntry } from '../../common/chatModel.js';
+import { Disposable } from "../../../../../base/common/lifecycle.js";
+import type { IChatRequestVariableEntry } from "../../common/chatModel.js";
+import type { IChatWidget } from "../chat.js";
+import { ChatWidget, type IChatWidgetContrib } from "../chatWidget.js";
 
-export class ChatContextAttachments extends Disposable implements IChatWidgetContrib {
-
+export class ChatContextAttachments
+	extends Disposable
+	implements IChatWidgetContrib
+{
 	private _attachedContext = new Set<IChatRequestVariableEntry>();
 
-	public static readonly ID = 'chatContextAttachments';
+	public static readonly ID = "chatContextAttachments";
 
 	get id() {
 		return ChatContextAttachments.ID;
@@ -21,15 +23,19 @@ export class ChatContextAttachments extends Disposable implements IChatWidgetCon
 	constructor(readonly widget: IChatWidget) {
 		super();
 
-		this._register(this.widget.onDidChangeContext((e) => {
-			if (e.removed) {
-				this._removeContext(e.removed);
-			}
-		}));
+		this._register(
+			this.widget.onDidChangeContext((e) => {
+				if (e.removed) {
+					this._removeContext(e.removed);
+				}
+			}),
+		);
 
-		this._register(this.widget.onDidSubmitAgent(() => {
-			this._clearAttachedContext();
-		}));
+		this._register(
+			this.widget.onDidSubmitAgent(() => {
+				this._clearAttachedContext();
+			}),
+		);
 	}
 
 	getInputState(): IChatRequestVariableEntry[] {
@@ -53,7 +59,10 @@ export class ChatContextAttachments extends Disposable implements IChatWidgetCon
 		return new Set([...this._attachedContext.values()].map((v) => v.id));
 	}
 
-	setContext(overwrite: boolean, ...attachments: IChatRequestVariableEntry[]) {
+	setContext(
+		overwrite: boolean,
+		...attachments: IChatRequestVariableEntry[]
+	) {
 		if (overwrite) {
 			this._attachedContext.clear();
 		}
@@ -66,7 +75,10 @@ export class ChatContextAttachments extends Disposable implements IChatWidgetCon
 
 	private _removeContext(attachments: IChatRequestVariableEntry[]) {
 		if (attachments.length) {
-			attachments.forEach(this._attachedContext.delete, this._attachedContext);
+			attachments.forEach(
+				this._attachedContext.delete,
+				this._attachedContext,
+			);
 		}
 	}
 

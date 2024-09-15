@@ -3,13 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IDisposable } from '../../../../base/common/lifecycle.js';
-import * as nls from '../../../../nls.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IDialogService } from '../../../../platform/dialogs/common/dialogs.js';
-import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { IDebugConfiguration, IDebugService } from './debug.js';
-import { ILifecycleService, ShutdownReason } from '../../../services/lifecycle/common/lifecycle.js';
+import type { IDisposable } from "../../../../base/common/lifecycle.js";
+import * as nls from "../../../../nls.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
+import type { IWorkbenchContribution } from "../../../common/contributions.js";
+import {
+	ILifecycleService,
+	type ShutdownReason,
+} from "../../../services/lifecycle/common/lifecycle.js";
+import { type IDebugConfiguration, IDebugService } from "./debug.js";
 
 export class DebugLifecycle implements IWorkbenchContribution {
 	private disposable: IDisposable;
@@ -26,14 +29,22 @@ export class DebugLifecycle implements IWorkbenchContribution {
 		);
 	}
 
-	private shouldVetoShutdown(_reason: ShutdownReason): boolean | Promise<boolean> {
-		const rootSessions = this.debugService.getModel().getSessions().filter(s => s.parentSession === undefined);
+	private shouldVetoShutdown(
+		_reason: ShutdownReason,
+	): boolean | Promise<boolean> {
+		const rootSessions = this.debugService
+			.getModel()
+			.getSessions()
+			.filter((s) => s.parentSession === undefined);
 		if (rootSessions.length === 0) {
 			return false;
 		}
 
-		const shouldConfirmOnExit = this.configurationService.getValue<IDebugConfiguration>('debug').confirmOnExit;
-		if (shouldConfirmOnExit === 'never') {
+		const shouldConfirmOnExit =
+			this.configurationService.getValue<IDebugConfiguration>(
+				"debug",
+			).confirmOnExit;
+		if (shouldConfirmOnExit === "never") {
 			return false;
 		}
 
@@ -44,17 +55,28 @@ export class DebugLifecycle implements IWorkbenchContribution {
 		return this.disposable.dispose();
 	}
 
-	private async showWindowCloseConfirmation(numSessions: number): Promise<boolean> {
+	private async showWindowCloseConfirmation(
+		numSessions: number,
+	): Promise<boolean> {
 		let message: string;
 		if (numSessions === 1) {
-			message = nls.localize('debug.debugSessionCloseConfirmationSingular', "There is an active debug session, are you sure you want to stop it?");
+			message = nls.localize(
+				"debug.debugSessionCloseConfirmationSingular",
+				"There is an active debug session, are you sure you want to stop it?",
+			);
 		} else {
-			message = nls.localize('debug.debugSessionCloseConfirmationPlural', "There are active debug sessions, are you sure you want to stop them?");
+			message = nls.localize(
+				"debug.debugSessionCloseConfirmationPlural",
+				"There are active debug sessions, are you sure you want to stop them?",
+			);
 		}
 		const res = await this.dialogService.confirm({
 			message,
-			type: 'warning',
-			primaryButton: nls.localize({ key: 'debug.stop', comment: ['&& denotes a mnemonic'] }, "&&Stop Debugging")
+			type: "warning",
+			primaryButton: nls.localize(
+				{ key: "debug.stop", comment: ["&& denotes a mnemonic"] },
+				"&&Stop Debugging",
+			),
 		});
 		return !res.confirmed;
 	}

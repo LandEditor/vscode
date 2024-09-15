@@ -3,9 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { InstantiationType, registerSingleton } from '../../../../platform/instantiation/common/extensions.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../platform/instantiation/common/extensions.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import {
+	IStorageService,
+	StorageScope,
+	StorageTarget,
+} from "../../../../platform/storage/common/storage.js";
 
 export interface IAccountUsage {
 	extensionId: string;
@@ -13,12 +20,18 @@ export interface IAccountUsage {
 	lastUsed: number;
 }
 
-export const IAuthenticationUsageService = createDecorator<IAuthenticationUsageService>('IAuthenticationUsageService');
+export const IAuthenticationUsageService =
+	createDecorator<IAuthenticationUsageService>("IAuthenticationUsageService");
 export interface IAuthenticationUsageService {
 	readonly _serviceBrand: undefined;
-	readAccountUsages(providerId: string, accountName: string,): IAccountUsage[];
+	readAccountUsages(providerId: string, accountName: string): IAccountUsage[];
 	removeAccountUsage(providerId: string, accountName: string): void;
-	addAccountUsage(providerId: string, accountName: string, extensionId: string, extensionName: string): void;
+	addAccountUsage(
+		providerId: string,
+		accountName: string,
+		extensionId: string,
+		extensionName: string,
+	): void;
 }
 
 export class AuthenticationUsageService implements IAuthenticationUsageService {
@@ -28,9 +41,15 @@ export class AuthenticationUsageService implements IAuthenticationUsageService {
 		@IStorageService private readonly _storageService: IStorageService,
 	) {}
 
-	readAccountUsages(providerId: string, accountName: string): IAccountUsage[] {
+	readAccountUsages(
+		providerId: string,
+		accountName: string,
+	): IAccountUsage[] {
 		const accountKey = `${providerId}-${accountName}-usages`;
-		const storedUsages = this._storageService.get(accountKey, StorageScope.APPLICATION);
+		const storedUsages = this._storageService.get(
+			accountKey,
+			StorageScope.APPLICATION,
+		);
 		let usages: IAccountUsage[] = [];
 		if (storedUsages) {
 			try {
@@ -46,27 +65,43 @@ export class AuthenticationUsageService implements IAuthenticationUsageService {
 		const accountKey = `${providerId}-${accountName}-usages`;
 		this._storageService.remove(accountKey, StorageScope.APPLICATION);
 	}
-	addAccountUsage(providerId: string, accountName: string, extensionId: string, extensionName: string): void {
+	addAccountUsage(
+		providerId: string,
+		accountName: string,
+		extensionId: string,
+		extensionName: string,
+	): void {
 		const accountKey = `${providerId}-${accountName}-usages`;
 		const usages = this.readAccountUsages(providerId, accountName);
 
-		const existingUsageIndex = usages.findIndex(usage => usage.extensionId === extensionId);
+		const existingUsageIndex = usages.findIndex(
+			(usage) => usage.extensionId === extensionId,
+		);
 		if (existingUsageIndex > -1) {
 			usages.splice(existingUsageIndex, 1, {
 				extensionId,
 				extensionName,
-				lastUsed: Date.now()
+				lastUsed: Date.now(),
 			});
 		} else {
 			usages.push({
 				extensionId,
 				extensionName,
-				lastUsed: Date.now()
+				lastUsed: Date.now(),
 			});
 		}
 
-		this._storageService.store(accountKey, JSON.stringify(usages), StorageScope.APPLICATION, StorageTarget.MACHINE);
+		this._storageService.store(
+			accountKey,
+			JSON.stringify(usages),
+			StorageScope.APPLICATION,
+			StorageTarget.MACHINE,
+		);
 	}
 }
 
-registerSingleton(IAuthenticationUsageService, AuthenticationUsageService, InstantiationType.Delayed);
+registerSingleton(
+	IAuthenticationUsageService,
+	AuthenticationUsageService,
+	InstantiationType.Delayed,
+);

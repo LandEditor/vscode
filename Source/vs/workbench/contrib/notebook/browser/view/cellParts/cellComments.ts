@@ -3,23 +3,38 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { coalesce } from '../../../../../../base/common/arrays.js';
-import { DisposableMap, DisposableStore } from '../../../../../../base/common/lifecycle.js';
-import { EDITOR_FONT_DEFAULTS, IEditorOptions } from '../../../../../../editor/common/config/editorOptions.js';
-import * as languages from '../../../../../../editor/common/languages.js';
-import { IConfigurationService } from '../../../../../../platform/configuration/common/configuration.js';
-import { IContextKeyService } from '../../../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../../../platform/instantiation/common/instantiation.js';
-import { IThemeService } from '../../../../../../platform/theme/common/themeService.js';
-import { ICommentService, INotebookCommentInfo } from '../../../../comments/browser/commentService.js';
-import { CommentThreadWidget } from '../../../../comments/browser/commentThreadWidget.js';
-import { ICellViewModel, INotebookEditorDelegate } from '../../notebookBrowser.js';
-import { CellContentPart } from '../cellPart.js';
-import { ICellRange } from '../../../common/notebookRange.js';
+import { coalesce } from "../../../../../../base/common/arrays.js";
+import {
+	DisposableMap,
+	DisposableStore,
+} from "../../../../../../base/common/lifecycle.js";
+import {
+	EDITOR_FONT_DEFAULTS,
+	type IEditorOptions,
+} from "../../../../../../editor/common/config/editorOptions.js";
+import type * as languages from "../../../../../../editor/common/languages.js";
+import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
+import { IContextKeyService } from "../../../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../../../platform/instantiation/common/instantiation.js";
+import { IThemeService } from "../../../../../../platform/theme/common/themeService.js";
+import {
+	ICommentService,
+	type INotebookCommentInfo,
+} from "../../../../comments/browser/commentService.js";
+import { CommentThreadWidget } from "../../../../comments/browser/commentThreadWidget.js";
+import type { ICellRange } from "../../../common/notebookRange.js";
+import type {
+	ICellViewModel,
+	INotebookEditorDelegate,
+} from "../../notebookBrowser.js";
+import { CellContentPart } from "../cellPart.js";
 
 export class CellComments extends CellContentPart {
 	// keyed by threadId
-	private readonly _commentThreadWidgets: DisposableMap<string, { widget: CommentThreadWidget<ICellRange>; dispose: () => void }>;
+	private readonly _commentThreadWidgets: DisposableMap<
+		string,
+		{ widget: CommentThreadWidget<ICellRange>; dispose: () => void }
+	>;
 	private currentElement: ICellViewModel | undefined;
 
 	constructor(
@@ -56,7 +71,10 @@ export class CellComments extends CellContentPart {
 		await this._updateThread();
 	}
 
-	private async _createCommentTheadWidget(owner: string, commentThread: languages.CommentThread<ICellRange>) {
+	private async _createCommentTheadWidget(
+		owner: string,
+		commentThread: languages.CommentThread<ICellRange>,
+	) {
 		const widgetDisposables = new DisposableStore();
 		const widget = this.instantiationService.createInstance(
 			CommentThreadWidget,
@@ -70,32 +88,45 @@ export class CellComments extends CellContentPart {
 			undefined,
 			undefined,
 			{
-				codeBlockFontFamily: this.configurationService.getValue<IEditorOptions>('editor').fontFamily || EDITOR_FONT_DEFAULTS.fontFamily
+				codeBlockFontFamily:
+					this.configurationService.getValue<IEditorOptions>("editor")
+						.fontFamily || EDITOR_FONT_DEFAULTS.fontFamily,
 			},
 			undefined,
 			{
-				actionRunner: () => {
-				},
-				collapse: () => { }
-			}
+				actionRunner: () => {},
+				collapse: () => {},
+			},
 		) as unknown as CommentThreadWidget<ICellRange>;
 		widgetDisposables.add(widget);
-		this._commentThreadWidgets.set(commentThread.threadId, { widget, dispose: () => widgetDisposables.dispose() });
+		this._commentThreadWidgets.set(commentThread.threadId, {
+			widget,
+			dispose: () => widgetDisposables.dispose(),
+		});
 
 		const layoutInfo = this.notebookEditor.getLayoutInfo();
 
 		await widget.display(layoutInfo.fontInfo.lineHeight, true);
 		this._applyTheme();
 
-		widgetDisposables.add(widget.onDidResize(() => {
-			if (this.currentElement) {
-				this.currentElement.commentHeight = this._calculateCommentThreadHeight(widget.getDimensions().height);
-			}
-		}));
+		widgetDisposables.add(
+			widget.onDidResize(() => {
+				if (this.currentElement) {
+					this.currentElement.commentHeight =
+						this._calculateCommentThreadHeight(
+							widget.getDimensions().height,
+						);
+				}
+			}),
+		);
 	}
 
 	private _bindListeners() {
-		this.cellDisposables.add(this.commentService.onDidUpdateCommentThreads(async () => this._updateThread()));
+		this.cellDisposables.add(
+			this.commentService.onDidUpdateCommentThreads(async () =>
+				this._updateThread(),
+			),
+		);
 	}
 
 	private async _updateThread() {
@@ -107,14 +138,21 @@ export class CellComments extends CellContentPart {
 		const layoutInfo = this.currentElement.layoutInfo;
 		this.container.style.top = `${layoutInfo.commentOffset}px`;
 		for (const info of infos) {
-			if (!info) { continue; }
+			if (!info) {
+				continue;
+			}
 			for (const thread of info.threads) {
 				widgetsToDelete.delete(thread.threadId);
-				const widget = this._commentThreadWidgets.get(thread.threadId)?.widget;
+				const widget = this._commentThreadWidgets.get(
+					thread.threadId,
+				)?.widget;
 				if (widget) {
 					await widget.updateCommentThread(thread);
 				} else {
-					await this._createCommentTheadWidget(info.uniqueOwner, thread);
+					await this._createCommentTheadWidget(
+						info.uniqueOwner,
+						thread,
+					);
 				}
 			}
 		}
@@ -122,7 +160,6 @@ export class CellComments extends CellContentPart {
 			this._commentThreadWidgets.deleteAndDispose(threadId);
 		}
 		this._updateHeight();
-
 	}
 
 	private _calculateCommentThreadHeight(bodyHeight: number) {
@@ -133,7 +170,12 @@ export class CellComments extends CellContentPart {
 		const arrowHeight = Math.round(lineHeight / 3);
 		const frameThickness = Math.round(lineHeight / 9) * 2;
 
-		const computedHeight = headHeight + bodyHeight + arrowHeight + frameThickness + 8 /** margin bottom to avoid margin collapse */;
+		const computedHeight =
+			headHeight +
+			bodyHeight +
+			arrowHeight +
+			frameThickness +
+			8 /** margin bottom to avoid margin collapse */;
 		return computedHeight;
 	}
 
@@ -143,14 +185,20 @@ export class CellComments extends CellContentPart {
 		}
 		let height = 0;
 		for (const { widget } of this._commentThreadWidgets.values()) {
-			height += this._calculateCommentThreadHeight(widget.getDimensions().height);
+			height += this._calculateCommentThreadHeight(
+				widget.getDimensions().height,
+			);
 		}
 		this.currentElement.commentHeight = height;
 	}
 
-	private async _getCommentThreadsForCell(element: ICellViewModel): Promise<(INotebookCommentInfo | null)[]> {
+	private async _getCommentThreadsForCell(
+		element: ICellViewModel,
+	): Promise<(INotebookCommentInfo | null)[]> {
 		if (this.notebookEditor.hasModel()) {
-			return coalesce(await this.commentService.getNotebookComments(element.uri));
+			return coalesce(
+				await this.commentService.getNotebookComments(element.uri),
+			);
 		}
 
 		return [];
@@ -179,4 +227,3 @@ export class CellComments extends CellContentPart {
 		}
 	}
 }
-

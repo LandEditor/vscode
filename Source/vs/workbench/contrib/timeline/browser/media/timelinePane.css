@@ -15,13 +15,21 @@
 	z-index: 1;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row .custom-view-tree-node-item .monaco-icon-label {
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row
+	.custom-view-tree-node-item
+	.monaco-icon-label {
 	flex: 1;
 	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row .custom-view-tree-node-item .timeline-timestamp-container {
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row
+	.custom-view-tree-node-item
+	.timeline-timestamp-container {
 	margin-left: 2px;
 	margin-right: 4px;
 	opacity: 0.5;
@@ -29,8 +37,12 @@
 	text-overflow: ellipsis;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate::before {
-	content: ' ';
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate::before {
+	content: " ";
 	position: absolute;
 	right: 10px;
 	border-right: 1px solid currentColor;
@@ -40,24 +52,61 @@
 	opacity: 0.25;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row:hover .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate::before,
-.timeline-tree-view .monaco-list .monaco-list-row.selected .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate::before,
-.timeline-tree-view .monaco-list .monaco-list-row.focused .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate::before {
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row:hover
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate::before,
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row.selected
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate::before,
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row.focused
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate::before {
 	display: none;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row .custom-view-tree-node-item .timeline-timestamp-container .timeline-timestamp {
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row
+	.custom-view-tree-node-item
+	.timeline-timestamp-container
+	.timeline-timestamp {
 	display: inline-block;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate .timeline-timestamp {
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate
+	.timeline-timestamp {
 	visibility: hidden;
 	width: 10px;
 }
 
-.timeline-tree-view .monaco-list .monaco-list-row:hover .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate .timeline-timestamp,
-.timeline-tree-view .monaco-list .monaco-list-row.selected .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate .timeline-timestamp,
-.timeline-tree-view .monaco-list .monaco-list-row.focused .custom-view-tree-node-item .timeline-timestamp-container.timeline-timestamp--duplicate .timeline-timestamp {
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row:hover
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate
+	.timeline-timestamp,
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row.selected
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate
+	.timeline-timestamp,
+.timeline-tree-view
+	.monaco-list
+	.monaco-list-row.focused
+	.custom-view-tree-node-item
+	.timeline-timestamp-container.timeline-timestamp--duplicate
+	.timeline-timestamp {
 	visibility: visible !important;
 	width: initial;
 }

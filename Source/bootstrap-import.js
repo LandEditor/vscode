@@ -12,9 +12,9 @@
 // *                                                                   *
 // *********************************************************************
 
-import { fileURLToPath, pathToFileURL } from 'node:url';
-import { promises } from 'node:fs';
-import { join } from 'node:path';
+import { promises } from "node:fs";
+import { join } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 // SEE https://nodejs.org/docs/latest/api/module.html#initialize
 
@@ -29,30 +29,41 @@ const _specifierToUrl = {};
 export async function initialize(injectPath) {
 	// populate mappings
 
-	const injectPackageJSONPath = fileURLToPath(new URL('../package.json', pathToFileURL(injectPath)));
-	const packageJSON = JSON.parse(String(await promises.readFile(injectPackageJSONPath)));
+	const injectPackageJSONPath = fileURLToPath(
+		new URL("../package.json", pathToFileURL(injectPath)),
+	);
+	const packageJSON = JSON.parse(
+		String(await promises.readFile(injectPackageJSONPath)),
+	);
 
 	for (const [name] of Object.entries(packageJSON.dependencies)) {
 		try {
-			const path = join(injectPackageJSONPath, `../node_modules/${name}/package.json`);
+			const path = join(
+				injectPackageJSONPath,
+				`../node_modules/${name}/package.json`,
+			);
 			let { main } = JSON.parse(String(await promises.readFile(path)));
 
 			if (!main) {
-				main = 'index.js';
+				main = "index.js";
 			}
-			if (!main.endsWith('.js')) {
-				main += '.js';
+			if (!main.endsWith(".js")) {
+				main += ".js";
 			}
-			const mainPath = join(injectPackageJSONPath, `../node_modules/${name}/${main}`);
+			const mainPath = join(
+				injectPackageJSONPath,
+				`../node_modules/${name}/${main}`,
+			);
 			_specifierToUrl[name] = pathToFileURL(mainPath).href;
-
 		} catch (err) {
 			console.error(name);
 			console.error(err);
 		}
 	}
 
-	console.log(`[bootstrap-import] Initialized node_modules redirector for: ${injectPath}`);
+	console.log(
+		`[bootstrap-import] Initialized node_modules redirector for: ${injectPath}`,
+	);
 }
 
 /**
@@ -61,14 +72,13 @@ export async function initialize(injectPath) {
  * @param {(arg0: any, arg1: any) => any} nextResolve
  */
 export async function resolve(specifier, context, nextResolve) {
-
 	const newSpecifier = _specifierToUrl[specifier];
 	if (newSpecifier !== undefined) {
 		// console.log('[HOOKS]', specifier, '--->', newSpecifier);
 		return {
-			format: 'commonjs',
+			format: "commonjs",
 			shortCircuit: true,
-			url: newSpecifier
+			url: newSpecifier,
 		};
 	}
 

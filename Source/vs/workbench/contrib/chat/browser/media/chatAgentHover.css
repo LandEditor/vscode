@@ -34,7 +34,9 @@
 	gap: 4px;
 }
 
-.chat-agent-hover .chat-agent-hover-publisher .codicon.codicon-extensions-verified-publisher {
+.chat-agent-hover
+	.chat-agent-hover-publisher
+	.codicon.codicon-extensions-verified-publisher {
 	color: var(--vscode-extensionIcon-verifiedForeground);
 }
 

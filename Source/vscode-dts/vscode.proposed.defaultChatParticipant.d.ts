@@ -3,13 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export type ChatWelcomeMessageContent = string | MarkdownString;
 
 	export interface ChatWelcomeMessageProvider {
-		provideWelcomeMessage(location: ChatLocation, token: CancellationToken): ProviderResult<ChatWelcomeMessageContent[]>;
-		provideSampleQuestions?(location: ChatLocation, token: CancellationToken): ProviderResult<ChatFollowup[]>;
+		provideWelcomeMessage(
+			location: ChatLocation,
+			token: CancellationToken,
+		): ProviderResult<ChatWelcomeMessageContent[]>;
+		provideSampleQuestions?(
+			location: ChatLocation,
+			token: CancellationToken,
+		): ProviderResult<ChatFollowup[]>;
 	}
 
 	export interface ChatRequesterInformation {
@@ -25,7 +30,10 @@ declare module 'vscode' {
 		/**
 		 * TODO@API Should this take a ChatResult like the followup provider, or just take a new ChatContext that includes the current message as history?
 		 */
-		provideChatTitle(context: ChatContext, token: CancellationToken): ProviderResult<string>;
+		provideChatTitle(
+			context: ChatContext,
+			token: CancellationToken,
+		): ProviderResult<string>;
 	}
 
 	export interface ChatParticipant {

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	LcsDiff,
 	type IDiffChange,
+	LcsDiff,
 } from "../../../../../base/common/diff/diff.js";
 import {
 	commonPrefixLength,

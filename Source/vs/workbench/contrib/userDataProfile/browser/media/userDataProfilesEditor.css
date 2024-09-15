@@ -16,7 +16,11 @@
 }
 
 .profiles-editor .monaco-split-view2 > .sash-container,
-.profiles-editor .monaco-split-view2.separator-border.horizontal > .monaco-scrollable-element > .split-view-container > .split-view-view:not(:first-child)::before {
+.profiles-editor
+	.monaco-split-view2.separator-border.horizontal
+	> .monaco-scrollable-element
+	> .split-view-container
+	> .split-view-view:not(:first-child)::before {
 	top: 55px;
 }
 
@@ -36,7 +40,10 @@
 	height: 40px;
 }
 
-.profiles-editor .sidebar-container .new-profile-button > .monaco-button-dropdown {
+.profiles-editor
+	.sidebar-container
+	.new-profile-button
+	> .monaco-button-dropdown {
 	flex-grow: 1;
 }
 
@@ -71,16 +78,28 @@
 	margin-right: 5px;
 }
 
-.profiles-editor .sidebar-container .profiles-list .profile-list-item > .profile-list-item-label {
+.profiles-editor
+	.sidebar-container
+	.profiles-list
+	.profile-list-item
+	> .profile-list-item-label {
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
 
-.profiles-editor .sidebar-container .profiles-list .profile-list-item > .profile-list-item-label.new-profile {
+.profiles-editor
+	.sidebar-container
+	.profiles-list
+	.profile-list-item
+	> .profile-list-item-label.new-profile {
 	font-style: italic;
 }
 
-.profiles-editor .sidebar-container .profiles-list .profile-list-item > .profile-list-item-description {
+.profiles-editor
+	.sidebar-container
+	.profiles-list
+	.profile-list-item
+	> .profile-list-item-description {
 	margin-left: 2px;
 	display: flex;
 	align-items: center;
@@ -88,7 +107,11 @@
 	opacity: 0.7;
 }
 
-.profiles-editor .sidebar-container .profiles-list .profile-list-item .profile-tree-item-actions-container {
+.profiles-editor
+	.sidebar-container
+	.profiles-list
+	.profile-list-item
+	.profile-tree-item-actions-container {
 	flex: 1;
 	justify-content: flex-end;
 	margin-right: 10px;
@@ -115,68 +138,128 @@
 	flex: 1;
 }
 
-.profiles-editor .contents-container .profile-header .profile-actions-container .actions-container .action-label {
+.profiles-editor
+	.contents-container
+	.profile-header
+	.profile-actions-container
+	.actions-container
+	.action-label {
 	padding: 6px;
 }
 
 .profiles-editor .contents-container .profile-body {
-	margin: 15px 0px 0px 1px
+	margin: 15px 0px 0px 1px;
 }
 
 .profiles-editor .contents-container .profile-body .profile-row-container {
 	padding: 12px 0px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container.no-padding-bottom {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container.no-padding-bottom {
 	padding-bottom: 0px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-label-element {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-label-element {
 	font-weight: 600;
 	padding-bottom: 5px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-description-element {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-description-element {
 	color: var(--vscode-foreground);
 	opacity: 0.9;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-description-element ul,
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-description-element p {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-description-element
+	ul,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-description-element
+	p {
 	margin: 0px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-description-element ul {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-description-element
+	ul {
 	padding-inline-start: 28px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-description-element ul li {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-description-element
+	ul
+	li {
 	padding-left: 2px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .monaco-inputbox {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.monaco-inputbox {
 	width: 400px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-icon-container {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-icon-container {
 	line-height: 22px;
 	display: flex;
 	align-items: center;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-icon-container .codicon {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-icon-container
+	.codicon {
 	cursor: pointer;
 	margin-right: 4px;
 	padding: 2px;
 	border-radius: 5px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-icon-container .codicon:hover {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-icon-container
+	.codicon:hover {
 	background-color: var(--vscode-toolbar-hoverBackground);
 	outline: 1px dashed var(--vscode-toolbar-hoverOutline);
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-icon-container .profile-description-element {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-icon-container
+	.profile-description-element {
 	margin-top: -1px;
 }
 
@@ -187,14 +270,20 @@
 	justify-content: center;
 }
 
-.profiles-editor .contents-container .profile-select-container > .monaco-select-box {
+.profiles-editor
+	.contents-container
+	.profile-select-container
+	> .monaco-select-box {
 	cursor: pointer;
 	line-height: 18px;
 	padding: 0px 23px 0px 8px;
 	border-radius: 2px;
 }
 
-.profiles-editor .contents-container .profile-copy-from-container .profile-select-container {
+.profiles-editor
+	.contents-container
+	.profile-copy-from-container
+	.profile-select-container {
 	margin-top: 5px;
 	width: 250px;
 }
@@ -206,13 +295,29 @@
 	line-height: 22px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-use-as-default-container .profile-description-element,
-.profiles-editor .contents-container .profile-body .profile-row-container .profile-use-for-current-container .profile-description-element {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-use-as-default-container
+	.profile-description-element,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container
+	.profile-use-for-current-container
+	.profile-description-element {
 	margin-top: -1px;
 }
 
-.profiles-editor .contents-container .profile-use-as-default-container .profile-use-as-default-label,
-.profiles-editor .contents-container .profile-use-for-current-container .profile-use-as-default-label {
+.profiles-editor
+	.contents-container
+	.profile-use-as-default-container
+	.profile-use-as-default-label,
+.profiles-editor
+	.contents-container
+	.profile-use-for-current-container
+	.profile-use-as-default-label {
 	margin-left: 2px;
 }
 
@@ -230,23 +335,38 @@
 	font-weight: bold;
 }
 
-.profiles-editor .contents-container .profile-content-tree-header > .actions-header,
-.profiles-editor .contents-container .profile-content-tree-header > .options-header {
+.profiles-editor
+	.contents-container
+	.profile-content-tree-header
+	> .actions-header,
+.profiles-editor
+	.contents-container
+	.profile-content-tree-header
+	> .options-header {
 	display: flex;
 	justify-self: center;
 	align-items: center;
 }
 
-.profiles-editor .contents-container .profile-content-tree-header > .options-header .codicon {
+.profiles-editor
+	.contents-container
+	.profile-content-tree-header
+	> .options-header
+	.codicon {
 	cursor: pointer;
 	padding-left: 2px;
 }
 
-.profiles-editor .contents-container .profile-content-tree-header.default-profile {
+.profiles-editor
+	.contents-container
+	.profile-content-tree-header.default-profile {
 	grid-template-columns: 30px repeat(1, 1fr) 80px;
 }
 
-.profiles-editor .contents-container .profile-content-tree-header.default-profile > .options-header {
+.profiles-editor
+	.contents-container
+	.profile-content-tree-header.default-profile
+	> .options-header {
 	display: none;
 }
 
@@ -256,44 +376,78 @@
 	grid-template-columns: repeat(1, 1fr) 200px 80px;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree-header,
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree-header,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree {
 	margin-right: 1px;
 }
 
-.profiles-editor .contents-container .profile-tree-item-container.default-profile,
-.profiles-editor .contents-container .profile-tree-item-container.profile-resource-child-container {
+.profiles-editor
+	.contents-container
+	.profile-tree-item-container.default-profile,
+.profiles-editor
+	.contents-container
+	.profile-tree-item-container.profile-resource-child-container {
 	grid-template-columns: repeat(1, 1fr) 80px;
 }
 
-.profiles-editor .contents-container .profile-tree-item-container .profile-resource-type-description {
+.profiles-editor
+	.contents-container
+	.profile-tree-item-container
+	.profile-resource-type-description {
 	margin-left: 10px;
 	font-size: 0.9em;
 	opacity: 0.7;
 }
 
-.profiles-editor .contents-container .profile-tree-item-container .profile-resource-options-container {
+.profiles-editor
+	.contents-container
+	.profile-tree-item-container
+	.profile-resource-options-container {
 	height: fit-content;
 	width: fit-content;
 	justify-self: center;
 }
 
-.profiles-editor .contents-container .profile-tree-item-container .monaco-custom-radio .monaco-button {
+.profiles-editor
+	.contents-container
+	.profile-tree-item-container
+	.monaco-custom-radio
+	.monaco-button {
 	outline-offset: -1px !important;
 }
 
-.profiles-editor .contents-container .profile-tree-item-container .profile-resource-actions-container {
+.profiles-editor
+	.contents-container
+	.profile-tree-item-container
+	.profile-resource-actions-container {
 	justify-self: center;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container.profile-button-container {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container.profile-button-container {
 	margin-top: 10px;
 	margin-left: 30px;
 	display: flex;
 	align-items: center;
 }
 
-.profiles-editor .contents-container .profile-body .profile-row-container.profile-button-container .monaco-button {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-row-container.profile-button-container
+	.monaco-button {
 	margin-right: 10px;
 	width: inherit;
 	padding: 4px 10px;
@@ -301,50 +455,148 @@
 
 /* Profile Editor Tree Theming */
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row.focused {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row.focused {
 	background-color: var(--vscode-settings-focusedRowBackground) !important;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row:not(.focused):hover {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row:not(.focused):hover {
 	background-color: var(--vscode-settings-rowHoverBackground) !important;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list:focus .monaco-list-row.focused {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list:focus
+	.monaco-list-row.focused {
 	outline: 1px solid var(--vscode-settings-focusedRowBorder) !important;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row {
 	cursor: default;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row {
 	cursor: default;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row.focused,
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row.selected:not(:focus),
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row.selected:focus {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row.focused,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row.selected:not(:focus),
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row.selected:focus {
 	background-color: inherit !important;
 	color: inherit !important;
 }
 
-.monaco-workbench:not(.hc-black):not(.hc-light) .profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row.selected.focused:hover,
-.monaco-workbench:not(.hc-black):not(.hc-light) .profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row:hover {
+.monaco-workbench:not(.hc-black):not(.hc-light)
+	.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row.selected.focused:hover,
+.monaco-workbench:not(.hc-black):not(.hc-light)
+	.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row:hover {
 	background-color: var(--vscode-list-hoverBackground) !important;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list::before,
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row.selected,
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row.focused,
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row:hover {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list::before,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row.selected,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row.focused,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row:hover {
 	outline: none !important;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row .monaco-tl-twistie.collapsible {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row
+	.monaco-tl-twistie.collapsible {
 	cursor: pointer;
 }
 
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .codicon,
-.profiles-editor .contents-container .profile-body .profile-tree .monaco-list-row .profile-content-tree .monaco-list-row .codicon {
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.codicon,
+.profiles-editor
+	.contents-container
+	.profile-body
+	.profile-tree
+	.monaco-list-row
+	.profile-content-tree
+	.monaco-list-row
+	.codicon {
 	color: inherit !important;
 }

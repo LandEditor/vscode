@@ -3,28 +3,37 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from '../../../../base/browser/dom.js';
-import { status } from '../../../../base/browser/ui/aria/aria.js';
-import { KeybindingLabel } from '../../../../base/browser/ui/keybindingLabel/keybindingLabel.js';
-import { Event } from '../../../../base/common/event.js';
-import { ResolvedKeybinding } from '../../../../base/common/keybindings.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { OS } from '../../../../base/common/platform.js';
-import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from '../../../../editor/browser/editorBrowser.js';
-import { ConfigurationChangedEvent, EditorOption } from '../../../../editor/common/config/editorOptions.js';
-import { localize } from '../../../../nls.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
-import { AccessibilityVerbositySettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
-import { InteractiveWindowSetting } from './interactiveCommon.js';
+import * as dom from "../../../../base/browser/dom.js";
+import { status } from "../../../../base/browser/ui/aria/aria.js";
+import { KeybindingLabel } from "../../../../base/browser/ui/keybindingLabel/keybindingLabel.js";
+import { Event } from "../../../../base/common/event.js";
+import type { ResolvedKeybinding } from "../../../../base/common/keybindings.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { OS } from "../../../../base/common/platform.js";
+import {
+	ContentWidgetPositionPreference,
+	type ICodeEditor,
+	type IContentWidget,
+	type IContentWidgetPosition,
+} from "../../../../editor/browser/editorBrowser.js";
+import {
+	type ConfigurationChangedEvent,
+	EditorOption,
+} from "../../../../editor/common/config/editorOptions.js";
+import { localize } from "../../../../nls.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
+import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
+import { InteractiveWindowSetting } from "./interactiveCommon.js";
 
-
-export class ReplInputHintContentWidget extends Disposable implements IContentWidget {
-
-	private static readonly ID = 'replInput.widget.emptyHint';
+export class ReplInputHintContentWidget
+	extends Disposable
+	implements IContentWidget
+{
+	private static readonly ID = "replInput.widget.emptyHint";
 
 	private domNode: HTMLElement | undefined;
-	private ariaLabel: string = '';
+	private ariaLabel = "";
 
 	constructor(
 		private readonly editor: ICodeEditor,
@@ -83,21 +92,23 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 	getPosition(): IContentWidgetPosition | null {
 		return {
 			position: { lineNumber: 1, column: 1 },
-			preference: [ContentWidgetPositionPreference.EXACT]
+			preference: [ContentWidgetPositionPreference.EXACT],
 		};
 	}
 
 	getDomNode(): HTMLElement {
 		if (!this.domNode) {
-			this.domNode = dom.$('.empty-editor-hint');
-			this.domNode.style.width = 'max-content';
-			this.domNode.style.paddingLeft = '4px';
+			this.domNode = dom.$(".empty-editor-hint");
+			this.domNode.style.width = "max-content";
+			this.domNode.style.paddingLeft = "4px";
 
 			this.setHint();
 
-			this._register(dom.addDisposableListener(this.domNode, 'click', () => {
-				this.editor.focus();
-			}));
+			this._register(
+				dom.addDisposableListener(this.domNode, "click", () => {
+					this.editor.focus();
+				}),
+			);
 
 			this.editor.applyFontInfo(this.domNode);
 		}
@@ -113,58 +124,80 @@ export class ReplInputHintContentWidget extends Disposable implements IContentWi
 			this.domNode.removeChild(this.domNode.firstChild);
 		}
 
-		const hintElement = dom.$('div.empty-hint-text');
-		hintElement.style.cursor = 'text';
-		hintElement.style.whiteSpace = 'nowrap';
+		const hintElement = dom.$("div.empty-hint-text");
+		hintElement.style.cursor = "text";
+		hintElement.style.whiteSpace = "nowrap";
 
 		const keybinding = this.getKeybinding();
 		const keybindingHintLabel = keybinding?.getLabel();
 
 		if (keybinding && keybindingHintLabel) {
-			const actionPart = localize('emptyHintText', 'Press {0} to execute. ', keybindingHintLabel);
+			const actionPart = localize(
+				"emptyHintText",
+				"Press {0} to execute. ",
+				keybindingHintLabel,
+			);
 
-			const [before, after] = actionPart.split(keybindingHintLabel).map((fragment) => {
-				const hintPart = dom.$('span', undefined, fragment);
-				hintPart.style.fontStyle = 'italic';
-				return hintPart;
-			});
+			const [before, after] = actionPart
+				.split(keybindingHintLabel)
+				.map((fragment) => {
+					const hintPart = dom.$("span", undefined, fragment);
+					hintPart.style.fontStyle = "italic";
+					return hintPart;
+				});
 
 			hintElement.appendChild(before);
 
 			const label = new KeybindingLabel(hintElement, OS);
 			label.set(keybinding);
-			label.element.style.width = 'min-content';
-			label.element.style.display = 'inline';
+			label.element.style.width = "min-content";
+			label.element.style.display = "inline";
 
 			hintElement.appendChild(after);
 			this.domNode.append(hintElement);
 
-			this.ariaLabel = actionPart.concat(localize('disableHint', ' Toggle {0} in settings to disable this hint.', AccessibilityVerbositySettingId.ReplInputHint));
+			this.ariaLabel = actionPart.concat(
+				localize(
+					"disableHint",
+					" Toggle {0} in settings to disable this hint.",
+					AccessibilityVerbositySettingId.ReplInputHint,
+				),
+			);
 		}
 	}
 
 	private getKeybinding() {
-		const keybindings = this.keybindingService.lookupKeybindings('interactive.execute');
-		const shiftEnterConfig = this.configurationService.getValue(InteractiveWindowSetting.executeWithShiftEnter);
-		const hasEnterChord = (kb: ResolvedKeybinding, modifier: string = '') => {
+		const keybindings = this.keybindingService.lookupKeybindings(
+			"interactive.execute",
+		);
+		const shiftEnterConfig = this.configurationService.getValue(
+			InteractiveWindowSetting.executeWithShiftEnter,
+		);
+		const hasEnterChord = (kb: ResolvedKeybinding, modifier = "") => {
 			const chords = kb.getDispatchChords();
-			const chord = modifier + 'Enter';
-			const chordAlt = modifier + '[Enter]';
-			return chords.length === 1 && (chords[0] === chord || chords[0] === chordAlt);
+			const chord = modifier + "Enter";
+			const chordAlt = modifier + "[Enter]";
+			return (
+				chords.length === 1 &&
+				(chords[0] === chord || chords[0] === chordAlt)
+			);
 		};
 
 		if (shiftEnterConfig) {
-			const keybinding = keybindings.find(kb => hasEnterChord(kb, 'shift+'));
+			const keybinding = keybindings.find((kb) =>
+				hasEnterChord(kb, "shift+"),
+			);
 			if (keybinding) {
 				return keybinding;
 			}
 		} else {
-			let keybinding = keybindings.find(kb => hasEnterChord(kb));
+			let keybinding = keybindings.find((kb) => hasEnterChord(kb));
 			if (keybinding) {
 				return keybinding;
 			}
-			keybinding = this.keybindingService.lookupKeybindings('python.execInREPLEnter')
-				.find(kb => hasEnterChord(kb));
+			keybinding = this.keybindingService
+				.lookupKeybindings("python.execInREPLEnter")
+				.find((kb) => hasEnterChord(kb));
 			if (keybinding) {
 				return keybinding;
 			}

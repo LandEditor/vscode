@@ -3,8 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../base/common/event.js';
-import { IKeyboardLayoutInfo, IKeyboardMapping } from './keyboardLayout.js';
+import type { Event } from "../../../base/common/event.js";
+import type {
+	IKeyboardLayoutInfo,
+	IKeyboardMapping,
+} from "./keyboardLayout.js";
 
 export interface IKeyboardLayoutData {
 	keyboardLayoutInfo: IKeyboardLayoutInfo;

@@ -3,29 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { DisposableStore, IDisposable, toDisposable } from '../../../base/common/lifecycle.js';
-import { Schemas } from '../../../base/common/network.js';
-import { URI } from '../../../base/common/uri.js';
-import * as pfs from '../../../base/node/pfs.js';
-import { ILogService } from '../../../platform/log/common/log.js';
-import { IExtHostConfiguration } from '../common/extHostConfiguration.js';
-import { IExtHostInitDataService } from '../common/extHostInitDataService.js';
-import { IExtHostRpcService } from '../common/extHostRpcService.js';
-import { ExtHostSearch, reviveQuery } from '../common/extHostSearch.js';
-import { IURITransformerService } from '../common/extHostUriTransformerService.js';
-import { IFileQuery, IRawFileQuery, ISearchCompleteStats, ISerializedSearchProgressItem, isSerializedFileMatch, ITextQuery } from '../../services/search/common/search.js';
-import { TextSearchManager } from '../../services/search/common/textSearchManager.js';
-import { SearchService } from '../../services/search/node/rawSearchService.js';
-import { RipgrepSearchProvider } from '../../services/search/node/ripgrepSearchProvider.js';
-import { OutputChannel } from '../../services/search/node/ripgrepSearchUtils.js';
-import { NativeTextSearchManager } from '../../services/search/node/textSearchManager.js';
-import type * as vscode from 'vscode';
+import type * as vscode from "vscode";
+import {
+	DisposableStore,
+	type IDisposable,
+	toDisposable,
+} from "../../../base/common/lifecycle.js";
+import { Schemas } from "../../../base/common/network.js";
+import { URI } from "../../../base/common/uri.js";
+import * as pfs from "../../../base/node/pfs.js";
+import { ILogService } from "../../../platform/log/common/log.js";
+import {
+	type IFileQuery,
+	type IRawFileQuery,
+	type ISearchCompleteStats,
+	type ISerializedSearchProgressItem,
+	type ITextQuery,
+	isSerializedFileMatch,
+} from "../../services/search/common/search.js";
+import type { TextSearchManager } from "../../services/search/common/textSearchManager.js";
+import { SearchService } from "../../services/search/node/rawSearchService.js";
+import { RipgrepSearchProvider } from "../../services/search/node/ripgrepSearchProvider.js";
+import { OutputChannel } from "../../services/search/node/ripgrepSearchUtils.js";
+import { NativeTextSearchManager } from "../../services/search/node/textSearchManager.js";
+import { IExtHostConfiguration } from "../common/extHostConfiguration.js";
+import { IExtHostInitDataService } from "../common/extHostInitDataService.js";
+import { IExtHostRpcService } from "../common/extHostRpcService.js";
+import { ExtHostSearch, reviveQuery } from "../common/extHostSearch.js";
+import { IURITransformerService } from "../common/extHostUriTransformerService.js";
 
 export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
-
 	protected _pfs: typeof pfs = pfs; // allow extending for tests
 
-	private _internalFileSearchHandle: number = -1;
+	private _internalFileSearchHandle = -1;
 	private _internalFileSearchProvider: SearchService | null = null;
 
 	private _registeredEHSearchProvider = false;
@@ -79,15 +89,18 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
 	}
 
 	private handleConfigurationChanged(event: vscode.ConfigurationChangeEvent) {
-		if (!event.affectsConfiguration('search')) {
+		if (!event.affectsConfiguration("search")) {
 			return;
 		}
 		this._numThreadsPromise = undefined;
 	}
 
 	async getNumThreads(): Promise<number | undefined> {
-		const configProvider = await this.configurationService.getConfigProvider();
-		const numThreads = configProvider.getConfiguration('search').get<number>('ripgrep.maxThreads');
+		const configProvider =
+			await this.configurationService.getConfigProvider();
+		const numThreads = configProvider
+			.getConfiguration("search")
+			.get<number>("ripgrep.maxThreads");
 		return numThreads;
 	}
 
@@ -113,63 +126,125 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
 		}
 
 		this._registeredEHSearchProvider = true;
-		const outputChannel = new OutputChannel('RipgrepSearchEH', this._logService);
-		this._disposables.add(this.registerTextSearchProvider(Schemas.file, new RipgrepSearchProvider(outputChannel, this.getNumThreadsCached)));
-		this._disposables.add(this.registerInternalFileSearchProvider(Schemas.file, new SearchService('fileSearchProvider', this.getNumThreadsCached)));
+		const outputChannel = new OutputChannel(
+			"RipgrepSearchEH",
+			this._logService,
+		);
+		this._disposables.add(
+			this.registerTextSearchProvider(
+				Schemas.file,
+				new RipgrepSearchProvider(
+					outputChannel,
+					this.getNumThreadsCached,
+				),
+			),
+		);
+		this._disposables.add(
+			this.registerInternalFileSearchProvider(
+				Schemas.file,
+				new SearchService(
+					"fileSearchProvider",
+					this.getNumThreadsCached,
+				),
+			),
+		);
 	}
 
-	private registerInternalFileSearchProvider(scheme: string, provider: SearchService): IDisposable {
+	private registerInternalFileSearchProvider(
+		scheme: string,
+		provider: SearchService,
+	): IDisposable {
 		const handle = this._handlePool++;
 		this._internalFileSearchProvider = provider;
 		this._internalFileSearchHandle = handle;
-		this._proxy.$registerFileSearchProvider(handle, this._transformScheme(scheme));
+		this._proxy.$registerFileSearchProvider(
+			handle,
+			this._transformScheme(scheme),
+		);
 		return toDisposable(() => {
 			this._internalFileSearchProvider = null;
 			this._proxy.$unregisterProvider(handle);
 		});
 	}
 
-	override $provideFileSearchResults(handle: number, session: number, rawQuery: IRawFileQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
+	override $provideFileSearchResults(
+		handle: number,
+		session: number,
+		rawQuery: IRawFileQuery,
+		token: vscode.CancellationToken,
+	): Promise<ISearchCompleteStats> {
 		const query = reviveQuery(rawQuery);
 		if (handle === this._internalFileSearchHandle) {
 			const start = Date.now();
-			return this.doInternalFileSearch(handle, session, query, token).then(result => {
+			return this.doInternalFileSearch(
+				handle,
+				session,
+				query,
+				token,
+			).then((result) => {
 				const elapsed = Date.now() - start;
-				this._logService.debug(`Ext host file search time: ${elapsed}ms`);
+				this._logService.debug(
+					`Ext host file search time: ${elapsed}ms`,
+				);
 				return result;
 			});
 		}
 
-		return super.$provideFileSearchResults(handle, session, rawQuery, token);
+		return super.$provideFileSearchResults(
+			handle,
+			session,
+			rawQuery,
+			token,
+		);
 	}
 
-	override async doInternalFileSearchWithCustomCallback(rawQuery: IFileQuery, token: vscode.CancellationToken, handleFileMatch: (data: URI[]) => void): Promise<ISearchCompleteStats> {
+	override async doInternalFileSearchWithCustomCallback(
+		rawQuery: IFileQuery,
+		token: vscode.CancellationToken,
+		handleFileMatch: (data: URI[]) => void,
+	): Promise<ISearchCompleteStats> {
 		const onResult = (ev: ISerializedSearchProgressItem) => {
 			if (isSerializedFileMatch(ev)) {
 				ev = [ev];
 			}
 
 			if (Array.isArray(ev)) {
-				handleFileMatch(ev.map(m => URI.file(m.path)));
+				handleFileMatch(ev.map((m) => URI.file(m.path)));
 				return;
 			}
 
 			if (ev.message) {
-				this._logService.debug('ExtHostSearch', ev.message);
+				this._logService.debug("ExtHostSearch", ev.message);
 			}
 		};
 
 		if (!this._internalFileSearchProvider) {
-			throw new Error('No internal file search handler');
+			throw new Error("No internal file search handler");
 		}
 		const numThreads = await this.getNumThreadsCached();
-		return <Promise<ISearchCompleteStats>>this._internalFileSearchProvider.doFileSearch(rawQuery, numThreads, onResult, token);
+		return <Promise<ISearchCompleteStats>>(
+			this._internalFileSearchProvider.doFileSearch(
+				rawQuery,
+				numThreads,
+				onResult,
+				token,
+			)
+		);
 	}
 
-	private async doInternalFileSearch(handle: number, session: number, rawQuery: IFileQuery, token: vscode.CancellationToken): Promise<ISearchCompleteStats> {
-		return this.doInternalFileSearchWithCustomCallback(rawQuery, token, (data) => {
-			this._proxy.$handleFileMatch(handle, session, data);
-		});
+	private async doInternalFileSearch(
+		handle: number,
+		session: number,
+		rawQuery: IFileQuery,
+		token: vscode.CancellationToken,
+	): Promise<ISearchCompleteStats> {
+		return this.doInternalFileSearchWithCustomCallback(
+			rawQuery,
+			token,
+			(data) => {
+				this._proxy.$handleFileMatch(handle, session, data);
+			},
+		);
 	}
 
 	override $clearCache(cacheKey: string): Promise<void> {
@@ -178,7 +253,15 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
 		return super.$clearCache(cacheKey);
 	}
 
-	protected override createTextSearchManager(query: ITextQuery, provider: vscode.TextSearchProviderNew): TextSearchManager {
-		return new NativeTextSearchManager(query, provider, undefined, 'textSearchProvider');
+	protected override createTextSearchManager(
+		query: ITextQuery,
+		provider: vscode.TextSearchProviderNew,
+	): TextSearchManager {
+		return new NativeTextSearchManager(
+			query,
+			provider,
+			undefined,
+			"textSearchProvider",
+		);
 	}
 }

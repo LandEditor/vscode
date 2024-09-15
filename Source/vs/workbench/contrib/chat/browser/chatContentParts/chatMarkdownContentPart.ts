@@ -3,33 +3,53 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from '../../../../../base/browser/dom.js';
-import { Emitter } from '../../../../../base/common/event.js';
-import { IMarkdownString } from '../../../../../base/common/htmlContent.js';
-import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
-import { equalsIgnoreCase } from '../../../../../base/common/strings.js';
-import { MarkdownRenderer } from '../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js';
-import { Range } from '../../../../../editor/common/core/range.js';
-import { IResolvedTextEditorModel, ITextModelService } from '../../../../../editor/common/services/resolverService.js';
-import { MenuId } from '../../../../../platform/actions/common/actions.js';
-import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { IChatCodeBlockInfo, IChatListItemRendererOptions } from '../chat.js';
-import { IDisposableReference, ResourcePool } from './chatCollections.js';
-import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
-import { IChatRendererDelegate } from '../chatListRenderer.js';
-import { ChatMarkdownDecorationsRenderer } from '../chatMarkdownDecorationsRenderer.js';
-import { ChatEditorOptions } from '../chatOptions.js';
-import { CodeBlockPart, ICodeBlockData, localFileLanguageId, parseLocalFileData } from '../codeBlockPart.js';
-import { IMarkdownVulnerability } from '../../common/annotations.js';
-import { IChatProgressRenderableResponseContent } from '../../common/chatModel.js';
-import { isRequestVM, isResponseVM } from '../../common/chatViewModel.js';
-import { CodeBlockModelCollection } from '../../common/codeBlockModelCollection.js';
-import { URI } from '../../../../../base/common/uri.js';
+import * as dom from "../../../../../base/browser/dom.js";
+import { Emitter } from "../../../../../base/common/event.js";
+import type { IMarkdownString } from "../../../../../base/common/htmlContent.js";
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../../../base/common/lifecycle.js";
+import { equalsIgnoreCase } from "../../../../../base/common/strings.js";
+import type { URI } from "../../../../../base/common/uri.js";
+import type { MarkdownRenderer } from "../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
+import { Range } from "../../../../../editor/common/core/range.js";
+import {
+	type IResolvedTextEditorModel,
+	ITextModelService,
+} from "../../../../../editor/common/services/resolverService.js";
+import { MenuId } from "../../../../../platform/actions/common/actions.js";
+import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import type { IMarkdownVulnerability } from "../../common/annotations.js";
+import type { IChatProgressRenderableResponseContent } from "../../common/chatModel.js";
+import { isRequestVM, isResponseVM } from "../../common/chatViewModel.js";
+import type { CodeBlockModelCollection } from "../../common/codeBlockModelCollection.js";
+import type {
+	IChatCodeBlockInfo,
+	IChatListItemRendererOptions,
+} from "../chat.js";
+import type { IChatRendererDelegate } from "../chatListRenderer.js";
+import { ChatMarkdownDecorationsRenderer } from "../chatMarkdownDecorationsRenderer.js";
+import type { ChatEditorOptions } from "../chatOptions.js";
+import {
+	CodeBlockPart,
+	type ICodeBlockData,
+	localFileLanguageId,
+	parseLocalFileData,
+} from "../codeBlockPart.js";
+import { type IDisposableReference, ResourcePool } from "./chatCollections.js";
+import type {
+	IChatContentPart,
+	IChatContentPartRenderContext,
+} from "./chatContentParts.js";
 
 const $ = dom.$;
 
-export class ChatMarkdownContentPart extends Disposable implements IChatContentPart {
+export class ChatMarkdownContentPart
+	extends Disposable
+	implements IChatContentPart
+{
 	public readonly domNode: HTMLElement;
 	private readonly allRefs: IDisposableReference<CodeBlockPart>[] = [];
 
@@ -164,13 +184,28 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
 		this.domNode = result.element;
 	}
 
-	private renderCodeBlock(data: ICodeBlockData, text: string, currentWidth: number, editableCodeBlock: boolean | undefined): IDisposableReference<CodeBlockPart> {
+	private renderCodeBlock(
+		data: ICodeBlockData,
+		text: string,
+		currentWidth: number,
+		editableCodeBlock: boolean | undefined,
+	): IDisposableReference<CodeBlockPart> {
 		const ref = this.editorPool.get();
 		const editorInfo = ref.object;
 		if (isResponseVM(data.element)) {
-			this.codeBlockModelCollection.update(data.element.sessionId, data.element, data.codeBlockIndex, { text, languageId: data.languageId }).then((e) => {
-				this.codeblocks[data.codeBlockIndex] = { ...this.codeblocks[data.codeBlockIndex]!, codemapperUri: e.codemapperUri };
-			});
+			this.codeBlockModelCollection
+				.update(
+					data.element.sessionId,
+					data.element,
+					data.codeBlockIndex,
+					{ text, languageId: data.languageId },
+				)
+				.then((e) => {
+					this.codeblocks[data.codeBlockIndex] = {
+						...this.codeblocks[data.codeBlockIndex]!,
+						codemapperUri: e.codemapperUri,
+					};
+				});
 		}
 
 		editorInfo.render(data, currentWidth, editableCodeBlock);
@@ -179,11 +214,14 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
 	}
 
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {
-		return other.kind === 'markdownContent' && other.content.value === this.markdown.value;
+		return (
+			other.kind === "markdownContent" &&
+			other.content.value === this.markdown.value
+		);
 	}
 
 	layout(width: number): void {
-		this.allRefs.forEach(ref => ref.object.layout(width));
+		this.allRefs.forEach((ref) => ref.object.layout(width));
 	}
 
 	addDisposable(disposable: IDisposable): void {
@@ -192,7 +230,6 @@ export class ChatMarkdownContentPart extends Disposable implements IChatContentP
 }
 
 export class EditorPool extends Disposable {
-
 	private readonly _pool: ResourcePool<CodeBlockPart>;
 
 	public inUse(): Iterable<CodeBlockPart> {
@@ -206,9 +243,17 @@ export class EditorPool extends Disposable {
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
-		this._pool = this._register(new ResourcePool(() => {
-			return instantiationService.createInstance(CodeBlockPart, options, MenuId.ChatCodeBlock, delegate, overflowWidgetsDomNode);
-		}));
+		this._pool = this._register(
+			new ResourcePool(() => {
+				return instantiationService.createInstance(
+					CodeBlockPart,
+					options,
+					MenuId.ChatCodeBlock,
+					delegate,
+					overflowWidgetsDomNode,
+				);
+			}),
+		);
 	}
 
 	get(): IDisposableReference<CodeBlockPart> {
@@ -221,7 +266,7 @@ export class EditorPool extends Disposable {
 				codeBlock.reset();
 				stale = true;
 				this._pool.release(codeBlock);
-			}
+			},
 		};
 	}
 }

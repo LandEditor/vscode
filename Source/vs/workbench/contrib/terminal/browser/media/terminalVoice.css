@@ -4,7 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 .terminal-voice {
-	background-color: var(--vscode-terminal-background, var(--vscode-panel-background));
+	background-color: var(
+		--vscode-terminal-background,
+		var(--vscode-panel-background)
+	);
 	padding: 2px;
 	border-radius: 8px;
 	display: flex;

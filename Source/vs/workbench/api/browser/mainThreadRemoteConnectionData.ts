@@ -3,15 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { extHostCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { ExtHostContext, ExtHostExtensionServiceShape } from '../common/extHost.protocol.js';
-import { IRemoteAuthorityResolverService } from '../../../platform/remote/common/remoteAuthorityResolver.js';
-import { Disposable } from '../../../base/common/lifecycle.js';
-import { IWorkbenchEnvironmentService } from '../../services/environment/common/environmentService.js';
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { IRemoteAuthorityResolverService } from "../../../platform/remote/common/remoteAuthorityResolver.js";
+import { IWorkbenchEnvironmentService } from "../../services/environment/common/environmentService.js";
+import {
+	type IExtHostContext,
+	extHostCustomer,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
+	ExtHostContext,
+	type ExtHostExtensionServiceShape,
+} from "../common/extHost.protocol.js";
 
 @extHostCustomer
 export class MainThreadRemoteConnectionData extends Disposable {
-
 	private readonly _proxy: ExtHostExtensionServiceShape;
 
 	constructor(

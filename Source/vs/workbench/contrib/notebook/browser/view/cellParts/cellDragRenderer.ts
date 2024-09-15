@@ -7,14 +7,14 @@ import * as DOM from "../../../../../../base/browser/dom.js";
 import { createTrustedTypesPolicy } from "../../../../../../base/browser/trustedTypes.js";
 import { Color } from "../../../../../../base/common/color.js";
 import * as platform from "../../../../../../base/common/platform.js";
-import { ICodeEditor } from "../../../../../../editor/browser/editorBrowser.js";
+import type { ICodeEditor } from "../../../../../../editor/browser/editorBrowser.js";
 import { EditorOption } from "../../../../../../editor/common/config/editorOptions.js";
 import { Range } from "../../../../../../editor/common/core/range.js";
 import { ColorId } from "../../../../../../editor/common/encodedTokenAttributes.js";
 import * as languages from "../../../../../../editor/common/languages.js";
 import { tokenizeLineToHTML } from "../../../../../../editor/common/languages/textToHtmlTokenizer.js";
-import { ITextModel } from "../../../../../../editor/common/model.js";
-import { BaseCellRenderTemplate } from "../notebookRenderingCommon.js";
+import type { ITextModel } from "../../../../../../editor/common/model.js";
+import type { BaseCellRenderTemplate } from "../notebookRenderingCommon.js";
 
 class EditorTextRenderer {
 	private static _ttPolicy = createTrustedTypesPolicy(

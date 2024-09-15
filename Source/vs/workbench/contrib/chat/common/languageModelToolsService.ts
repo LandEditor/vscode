@@ -3,17 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler } from '../../../../base/common/async.js';
-import { CancellationToken } from '../../../../base/common/cancellation.js';
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { Iterable } from '../../../../base/common/iterator.js';
-import { IJSONSchema } from '../../../../base/common/jsonSchema.js';
-import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { ThemeIcon } from '../../../../base/common/themables.js';
-import { URI } from '../../../../base/common/uri.js';
-import { ContextKeyExpression, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IExtensionService } from '../../../services/extensions/common/extensions.js';
+import { RunOnceScheduler } from "../../../../base/common/async.js";
+import type { CancellationToken } from "../../../../base/common/cancellation.js";
+import { Emitter, type Event } from "../../../../base/common/event.js";
+import { Iterable } from "../../../../base/common/iterator.js";
+import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
+import {
+	Disposable,
+	type IDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import type { ThemeIcon } from "../../../../base/common/themables.js";
+import type { URI } from "../../../../base/common/uri.js";
+import {
+	type ContextKeyExpression,
+	IContextKeyService,
+} from "../../../../platform/contextkey/common/contextkey.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 
 export interface IToolData {
 	id: string;
@@ -50,12 +57,20 @@ export interface IToolResult {
 }
 
 export interface IToolImpl {
-	invoke(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult>;
+	invoke(
+		dto: IToolInvocation,
+		countTokens: CountTokensCallback,
+		token: CancellationToken,
+	): Promise<IToolResult>;
 }
 
-export const ILanguageModelToolsService = createDecorator<ILanguageModelToolsService>('ILanguageModelToolsService');
+export const ILanguageModelToolsService =
+	createDecorator<ILanguageModelToolsService>("ILanguageModelToolsService");
 
-export type CountTokensCallback = (input: string, token: CancellationToken) => Promise<number>;
+export type CountTokensCallback = (
+	input: string,
+	token: CancellationToken,
+) => Promise<number>;
 
 export interface ILanguageModelToolsService {
 	_serviceBrand: undefined;
@@ -65,17 +80,27 @@ export interface ILanguageModelToolsService {
 	getTools(): Iterable<Readonly<IToolData>>;
 	getTool(id: string): IToolData | undefined;
 	getToolByName(name: string): IToolData | undefined;
-	invokeTool(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult>;
+	invokeTool(
+		dto: IToolInvocation,
+		countTokens: CountTokensCallback,
+		token: CancellationToken,
+	): Promise<IToolResult>;
 }
 
-export class LanguageModelToolsService extends Disposable implements ILanguageModelToolsService {
+export class LanguageModelToolsService
+	extends Disposable
+	implements ILanguageModelToolsService
+{
 	_serviceBrand: undefined;
 
 	private _onDidChangeTools = new Emitter<void>();
 	readonly onDidChangeTools = this._onDidChangeTools.event;
 
 	/** Throttle tools updates because it sends all tools and runs on context key updates */
-	private _onDidChangeToolsScheduler = new RunOnceScheduler(() => this._onDidChangeTools.fire(), 750);
+	private _onDidChangeToolsScheduler = new RunOnceScheduler(
+		() => this._onDidChangeTools.fire(),
+		750,
+	);
 
 	private _tools = new Map<string, IToolEntry>();
 	private _toolContextKeys = new Set<string>();
@@ -106,7 +131,7 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		this._tools.set(toolData.id, { data: toolData });
 		this._onDidChangeToolsScheduler.schedule();
 
-		toolData.when?.keys().forEach(key => this._toolContextKeys.add(key));
+		toolData.when?.keys().forEach((key) => this._toolContextKeys.add(key));
 
 		return toDisposable(() => {
 			this._tools.delete(toolData.id);
@@ -118,7 +143,9 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 	private _refreshAllToolContextKeys() {
 		this._toolContextKeys.clear();
 		for (const tool of this._tools.values()) {
-			tool.data.when?.keys().forEach(key => this._toolContextKeys.add(key));
+			tool.data.when
+				?.keys()
+				.forEach((key) => this._toolContextKeys.add(key));
 		}
 	}
 
@@ -139,8 +166,13 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 	}
 
 	getTools(): Iterable<Readonly<IToolData>> {
-		const toolDatas = Iterable.map(this._tools.values(), i => i.data);
-		return Iterable.filter(toolDatas, toolData => !toolData.when || this._contextKeyService.contextMatchesRules(toolData.when));
+		const toolDatas = Iterable.map(this._tools.values(), (i) => i.data);
+		return Iterable.filter(
+			toolDatas,
+			(toolData) =>
+				!toolData.when ||
+				this._contextKeyService.contextMatchesRules(toolData.when),
+		);
 	}
 
 	getTool(id: string): IToolData | undefined {
@@ -149,7 +181,11 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 
 	private _getToolEntry(id: string): IToolEntry | undefined {
 		const entry = this._tools.get(id);
-		if (entry && (!entry.data.when || this._contextKeyService.contextMatchesRules(entry.data.when))) {
+		if (
+			entry &&
+			(!entry.data.when ||
+				this._contextKeyService.contextMatchesRules(entry.data.when))
+		) {
 			return entry;
 		} else {
 			return undefined;
@@ -165,7 +201,11 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		return undefined;
 	}
 
-	async invokeTool(dto: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult> {
+	async invokeTool(
+		dto: IToolInvocation,
+		countTokens: CountTokensCallback,
+		token: CancellationToken,
+	): Promise<IToolResult> {
 		// When invoking a tool, don't validate the "when" clause. An extension may have invoked a tool just as it was becoming disabled, and just let it go through rather than throw and break the chat.
 		let tool = this._tools.get(dto.toolId);
 		if (!tool) {
@@ -173,12 +213,16 @@ export class LanguageModelToolsService extends Disposable implements ILanguageMo
 		}
 
 		if (!tool.impl) {
-			await this._extensionService.activateByEvent(`onLanguageModelTool:${dto.toolId}`);
+			await this._extensionService.activateByEvent(
+				`onLanguageModelTool:${dto.toolId}`,
+			);
 
 			// Extension should activate and register the tool implementation
 			tool = this._tools.get(dto.toolId);
 			if (!tool?.impl) {
-				throw new Error(`Tool ${dto.toolId} does not have an implementation registered.`);
+				throw new Error(
+					`Tool ${dto.toolId} does not have an implementation registered.`,
+				);
 			}
 		}
 

@@ -3,15 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IUserDataProfileStorageService, RemoteUserDataProfileStorageService } from '../common/userDataProfileStorageService.js';
-import { InstantiationType, registerSingleton } from '../../instantiation/common/extensions.js';
-import { IStorageService } from '../../storage/common/storage.js';
-import { ILogService } from '../../log/common/log.js';
-import { IUserDataProfilesService } from '../common/userDataProfile.js';
-import { IMainProcessService } from '../../ipc/common/mainProcessService.js';
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../instantiation/common/extensions.js";
+import { IMainProcessService } from "../../ipc/common/mainProcessService.js";
+import { ILogService } from "../../log/common/log.js";
+import { IStorageService } from "../../storage/common/storage.js";
+import { IUserDataProfilesService } from "../common/userDataProfile.js";
+import {
+	IUserDataProfileStorageService,
+	RemoteUserDataProfileStorageService,
+} from "../common/userDataProfileStorageService.js";
 
 export class NativeUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
-
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
 		@IUserDataProfilesService
@@ -19,8 +24,18 @@ export class NativeUserDataProfileStorageService extends RemoteUserDataProfileSt
 		@IStorageService storageService: IStorageService,
 		@ILogService logService: ILogService,
 	) {
-		super(false, mainProcessService, userDataProfilesService, storageService, logService);
+		super(
+			false,
+			mainProcessService,
+			userDataProfilesService,
+			storageService,
+			logService,
+		);
 	}
 }
 
-registerSingleton(IUserDataProfileStorageService, NativeUserDataProfileStorageService, InstantiationType.Delayed);
+registerSingleton(
+	IUserDataProfileStorageService,
+	NativeUserDataProfileStorageService,
+	InstantiationType.Delayed,
+);

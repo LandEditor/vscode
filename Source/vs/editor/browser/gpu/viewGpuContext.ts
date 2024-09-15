@@ -3,20 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from '../../../nls.js';
-import { addDisposableListener, getActiveWindow } from '../../../base/browser/dom.js';
-import { createFastDomNode, type FastDomNode } from '../../../base/browser/fastDomNode.js';
-import { BugIndicatingError } from '../../../base/common/errors.js';
-import { Disposable } from '../../../base/common/lifecycle.js';
-import type { ViewportData } from '../../common/viewLayout/viewLinesViewportData.js';
-import type { ViewLineOptions } from '../viewParts/viewLines/viewLineOptions.js';
-import { observableValue, runOnChange, type IObservable } from '../../../base/common/observable.js';
-import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
-import { TextureAtlas } from './atlas/textureAtlas.js';
-import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
-import { INotificationService, IPromptChoice, Severity } from '../../../platform/notification/common/notification.js';
-import { GPULifecycle } from './gpuDisposable.js';
-import { ensureNonNullable, observeDevicePixelDimensions } from './gpuUtils.js';
+import {
+	addDisposableListener,
+	getActiveWindow,
+} from "../../../base/browser/dom.js";
+import {
+	type FastDomNode,
+	createFastDomNode,
+} from "../../../base/browser/fastDomNode.js";
+import { BugIndicatingError } from "../../../base/common/errors.js";
+import { Disposable } from "../../../base/common/lifecycle.js";
+import {
+	type IObservable,
+	observableValue,
+	runOnChange,
+} from "../../../base/common/observable.js";
+import * as nls from "../../../nls.js";
+import { IConfigurationService } from "../../../platform/configuration/common/configuration.js";
+import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
+import {
+	INotificationService,
+	type IPromptChoice,
+	Severity,
+} from "../../../platform/notification/common/notification.js";
+import type { ViewportData } from "../../common/viewLayout/viewLinesViewportData.js";
+import type { ViewLineOptions } from "../viewParts/viewLines/viewLineOptions.js";
+import { TextureAtlas } from "./atlas/textureAtlas.js";
+import { GPULifecycle } from "./gpuDisposable.js";
+import { ensureNonNullable, observeDevicePixelDimensions } from "./gpuUtils.js";
 
 export class ViewGpuContext extends Disposable {
 	readonly canvas: FastDomNode<HTMLCanvasElement>;
@@ -33,7 +47,9 @@ export class ViewGpuContext extends Disposable {
 	 */
 	static get atlas(): TextureAtlas {
 		if (!ViewGpuContext._atlas) {
-			throw new BugIndicatingError('Cannot call ViewGpuContext.textureAtlas before device is resolved');
+			throw new BugIndicatingError(
+				"Cannot call ViewGpuContext.textureAtlas before device is resolved",
+			);
 		}
 		return ViewGpuContext._atlas;
 	}
@@ -47,7 +63,10 @@ export class ViewGpuContext extends Disposable {
 		return ViewGpuContext.atlas;
 	}
 
-	readonly canvasDevicePixelDimensions: IObservable<{ width: number; height: number }>;
+	readonly canvasDevicePixelDimensions: IObservable<{
+		width: number;
+		height: number;
+	}>;
 	readonly devicePixelRatio: IObservable<number>;
 
 	constructor(
@@ -100,7 +119,11 @@ export class ViewGpuContext extends Disposable {
 	 * renderer. Eventually this should trend all lines, except maybe exceptional cases like
 	 * decorations that use class names.
 	 */
-	public static canRender(options: ViewLineOptions, viewportData: ViewportData, lineNumber: number): boolean {
+	public static canRender(
+		options: ViewLineOptions,
+		viewportData: ViewportData,
+		lineNumber: number,
+	): boolean {
 		const data = viewportData.getViewLineRenderingData(lineNumber);
 		if (
 			data.containsRTL ||

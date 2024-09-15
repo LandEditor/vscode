@@ -3,18 +3,36 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../base/common/event.js';
-import { Disposable, toDisposable, type IDisposable } from '../../../base/common/lifecycle.js';
-import { URI } from '../../../base/common/uri.js';
-import { TerminalCapability, type ITerminalCommand } from '../../../platform/terminal/common/capabilities/capabilities.js';
-import { ExtHostContext, MainContext, type ExtHostTerminalShellIntegrationShape, type MainThreadTerminalShellIntegrationShape } from '../common/extHost.protocol.js';
-import { ITerminalService } from '../../contrib/terminal/browser/terminal.js';
-import { IWorkbenchEnvironmentService } from '../../services/environment/common/environmentService.js';
-import { extHostNamedCustomer, type IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
-import { TerminalShellExecutionCommandLineConfidence } from '../common/extHostTypes.js';
+import { Event } from "../../../base/common/event.js";
+import {
+	Disposable,
+	type IDisposable,
+	toDisposable,
+} from "../../../base/common/lifecycle.js";
+import { URI } from "../../../base/common/uri.js";
+import {
+	type ITerminalCommand,
+	TerminalCapability,
+} from "../../../platform/terminal/common/capabilities/capabilities.js";
+import { ITerminalService } from "../../contrib/terminal/browser/terminal.js";
+import { IWorkbenchEnvironmentService } from "../../services/environment/common/environmentService.js";
+import {
+	type IExtHostContext,
+	extHostNamedCustomer,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
+	ExtHostContext,
+	type ExtHostTerminalShellIntegrationShape,
+	MainContext,
+	type MainThreadTerminalShellIntegrationShape,
+} from "../common/extHost.protocol.js";
+import { TerminalShellExecutionCommandLineConfidence } from "../common/extHostTypes.js";
 
 @extHostNamedCustomer(MainContext.MainThreadTerminalShellIntegration)
-export class MainThreadTerminalShellIntegration extends Disposable implements MainThreadTerminalShellIntegrationShape {
+export class MainThreadTerminalShellIntegration
+	extends Disposable
+	implements MainThreadTerminalShellIntegrationShape
+{
 	private readonly _proxy: ExtHostTerminalShellIntegrationShape;
 
 	constructor(
@@ -153,7 +171,9 @@ export class MainThreadTerminalShellIntegration extends Disposable implements Ma
 	}
 
 	$executeCommand(terminalId: number, commandLine: string): void {
-		this._terminalService.getInstanceFromId(terminalId)?.runCommand(commandLine, true);
+		this._terminalService
+			.getInstanceFromId(terminalId)
+			?.runCommand(commandLine, true);
 	}
 
 	private _convertCwdToUri(cwd: string | undefined): URI | undefined {
@@ -161,13 +181,15 @@ export class MainThreadTerminalShellIntegration extends Disposable implements Ma
 	}
 }
 
-function convertToExtHostCommandLineConfidence(command: ITerminalCommand): TerminalShellExecutionCommandLineConfidence {
+function convertToExtHostCommandLineConfidence(
+	command: ITerminalCommand,
+): TerminalShellExecutionCommandLineConfidence {
 	switch (command.commandLineConfidence) {
-		case 'high':
+		case "high":
 			return TerminalShellExecutionCommandLineConfidence.High;
-		case 'medium':
+		case "medium":
 			return TerminalShellExecutionCommandLineConfidence.Medium;
-		case 'low':
+		case "low":
 		default:
 			return TerminalShellExecutionCommandLineConfidence.Low;
 	}

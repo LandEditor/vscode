@@ -3,30 +3,32 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { IContextViewProvider } from '../../../../base/browser/ui/contextview/contextview.js';
-import { IFindInputOptions } from '../../../../base/browser/ui/findinput/findInput.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
-import { ContextScopedFindInput } from '../../../../platform/history/browser/contextScopedHistoryWidget.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { NotebookFindFilters } from '../../notebook/browser/contrib/find/findFilters.js';
-import { NotebookFindInputFilterButton } from '../../notebook/browser/contrib/find/notebookFindReplaceWidget.js';
-import * as nls from '../../../../nls.js';
-import { IFindInputToggleOpts } from '../../../../base/browser/ui/findinput/findInputToggles.js';
-import { Codicon } from '../../../../base/common/codicons.js';
-import { getDefaultHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
-import { Toggle } from '../../../../base/browser/ui/toggle/toggle.js';
-import { Emitter } from '../../../../base/common/event.js';
+import type { IContextViewProvider } from "../../../../base/browser/ui/contextview/contextview.js";
+import type { IFindInputOptions } from "../../../../base/browser/ui/findinput/findInput.js";
+import type { IFindInputToggleOpts } from "../../../../base/browser/ui/findinput/findInputToggles.js";
+import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
+import { Toggle } from "../../../../base/browser/ui/toggle/toggle.js";
+import { Codicon } from "../../../../base/common/codicons.js";
+import { Emitter } from "../../../../base/common/event.js";
+import * as nls from "../../../../nls.js";
+import type { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import type { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
+import { ContextScopedFindInput } from "../../../../platform/history/browser/contextScopedHistoryWidget.js";
+import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import type { NotebookFindFilters } from "../../notebook/browser/contrib/find/findFilters.js";
+import { NotebookFindInputFilterButton } from "../../notebook/browser/contrib/find/notebookFindReplaceWidget.js";
 
-const NLS_AI_TOGGLE_LABEL = nls.localize('aiDescription', "Use AI");
+const NLS_AI_TOGGLE_LABEL = nls.localize("aiDescription", "Use AI");
 
 export class SearchFindInput extends ContextScopedFindInput {
 	private _findFilter: NotebookFindInputFilterButton;
 	private _aiButton: AIToggle;
-	private _filterChecked: boolean = false;
-	private readonly _onDidChangeAIToggle = this._register(new Emitter<boolean>());
+	private _filterChecked = false;
+	private readonly _onDidChangeAIToggle = this._register(
+		new Emitter<boolean>(),
+	);
 	public readonly onDidChangeAIToggle = this._onDidChangeAIToggle.event;
-	private shouldNotebookFilterBeVisible: boolean = false; // followed, but overriden by the whether aiToggle is visible
+	private shouldNotebookFilterBeVisible = false; // followed, but overriden by the whether aiToggle is visible
 
 	constructor(
 		container: HTMLElement | null,
@@ -37,7 +39,7 @@ export class SearchFindInput extends ContextScopedFindInput {
 		readonly instantiationService: IInstantiationService,
 		readonly filters: NotebookFindFilters,
 		shouldShowAIButton: boolean, // caller responsible for updating this when it changes,
-		filterStartVisiblitity: boolean
+		filterStartVisiblitity: boolean,
 	) {
 		super(container, contextViewProvider, options, contextKeyService);
 		this._findFilter = this._register(
@@ -46,44 +48,50 @@ export class SearchFindInput extends ContextScopedFindInput {
 				contextMenuService,
 				instantiationService,
 				options,
-				nls.localize('searchFindInputNotebookFilter.label', "Notebook Find Filters")
-			));
+				nls.localize(
+					"searchFindInputNotebookFilter.label",
+					"Notebook Find Filters",
+				),
+			),
+		);
 
 		this._aiButton = this._register(
 			new AIToggle({
-				appendTitle: '',
+				appendTitle: "",
 				isChecked: false,
-				...options.toggleStyles
-			}));
+				...options.toggleStyles,
+			}),
+		);
 
 		this.setAdditionalToggles([this._aiButton]);
 
 		this._updatePadding();
 
 		this.controls.appendChild(this._findFilter.container);
-		this._findFilter.container.classList.add('monaco-custom-toggle');
+		this._findFilter.container.classList.add("monaco-custom-toggle");
 		this.filterVisible = filterStartVisiblitity;
 		// ensure that ai button is visible if it should be
 		this.sparkleVisible = shouldShowAIButton;
 
-		this._register(this._aiButton.onChange(() => {
-			if (this.regex) {
-				this.regex.visible = !this._aiButton.checked;
-			}
-			if (this.wholeWords) {
-				this.wholeWords.visible = !this._aiButton.checked;
-			}
-			if (this.caseSensitive) {
-				this.caseSensitive.visible = !this._aiButton.checked;
-			}
-			if (this._aiButton.checked) {
-				this._findFilter.visible = false;
-			} else {
-				this.filterVisible = this.shouldNotebookFilterBeVisible;
-			}
-			this._updatePadding();
-
-		}));
+		this._register(
+			this._aiButton.onChange(() => {
+				if (this.regex) {
+					this.regex.visible = !this._aiButton.checked;
+				}
+				if (this.wholeWords) {
+					this.wholeWords.visible = !this._aiButton.checked;
+				}
+				if (this.caseSensitive) {
+					this.caseSensitive.visible = !this._aiButton.checked;
+				}
+				if (this._aiButton.checked) {
+					this._findFilter.visible = false;
+				} else {
+					this.filterVisible = this.shouldNotebookFilterBeVisible;
+				}
+				this._updatePadding();
+			}),
+		);
 	}
 
 	private _updatePadding() {
@@ -142,10 +150,11 @@ class AIToggle extends Toggle {
 			icon: Codicon.sparkle,
 			title: NLS_AI_TOGGLE_LABEL + opts.appendTitle,
 			isChecked: opts.isChecked,
-			hoverDelegate: opts.hoverDelegate ?? getDefaultHoverDelegate('element'),
+			hoverDelegate:
+				opts.hoverDelegate ?? getDefaultHoverDelegate("element"),
 			inputActiveOptionBorder: opts.inputActiveOptionBorder,
 			inputActiveOptionForeground: opts.inputActiveOptionForeground,
-			inputActiveOptionBackground: opts.inputActiveOptionBackground
+			inputActiveOptionBackground: opts.inputActiveOptionBackground,
 		});
 	}
 }

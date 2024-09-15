@@ -3,23 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../../base/common/event.js';
-import { Disposable } from '../../../../base/common/lifecycle.js';
-import { isWeb } from '../../../../base/common/platform.js';
-import { isEqual } from '../../../../base/common/resources.js';
-import { IUserDataProfilesService } from '../../../../platform/userDataProfile/common/userDataProfile.js';
-import { IUserDataAutoSyncService } from '../../../../platform/userDataSync/common/userDataSync.js';
-import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { EditorInput } from '../../../common/editor/editorInput.js';
-import { IViewsService } from '../../../services/views/common/viewsService.js';
-import { VIEWLET_ID } from '../../extensions/common/extensions.js';
-import { IEditorService } from '../../../services/editor/common/editorService.js';
-import { IHostService } from '../../../services/host/browser/host.js';
-import { KeybindingsEditorInput } from '../../../services/preferences/browser/keybindingsEditorInput.js';
-import { SettingsEditor2Input } from '../../../services/preferences/common/preferencesEditorInput.js';
+import { Event } from "../../../../base/common/event.js";
+import { Disposable } from "../../../../base/common/lifecycle.js";
+import { isWeb } from "../../../../base/common/platform.js";
+import { isEqual } from "../../../../base/common/resources.js";
+import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
+import { IUserDataAutoSyncService } from "../../../../platform/userDataSync/common/userDataSync.js";
+import type { IWorkbenchContribution } from "../../../common/contributions.js";
+import type { EditorInput } from "../../../common/editor/editorInput.js";
+import { IEditorService } from "../../../services/editor/common/editorService.js";
+import { IHostService } from "../../../services/host/browser/host.js";
+import { KeybindingsEditorInput } from "../../../services/preferences/browser/keybindingsEditorInput.js";
+import { SettingsEditor2Input } from "../../../services/preferences/common/preferencesEditorInput.js";
+import { IViewsService } from "../../../services/views/common/viewsService.js";
+import { VIEWLET_ID } from "../../extensions/common/extensions.js";
 
-export class UserDataSyncTrigger extends Disposable implements IWorkbenchContribution {
-
+export class UserDataSyncTrigger
+	extends Disposable
+	implements IWorkbenchContribution
+{
 	constructor(
 		@IEditorService editorService: IEditorService,
 		@IUserDataProfilesService
@@ -72,22 +74,34 @@ export class UserDataSyncTrigger extends Disposable implements IWorkbenchContrib
 		}
 	}
 
-	private getUserDataEditorInputSource(editorInput: EditorInput | undefined): string | undefined {
+	private getUserDataEditorInputSource(
+		editorInput: EditorInput | undefined,
+	): string | undefined {
 		if (!editorInput) {
 			return undefined;
 		}
 		if (editorInput instanceof SettingsEditor2Input) {
-			return 'settingsEditor';
+			return "settingsEditor";
 		}
 		if (editorInput instanceof KeybindingsEditorInput) {
-			return 'keybindingsEditor';
+			return "keybindingsEditor";
 		}
 		const resource = editorInput.resource;
-		if (isEqual(resource, this.userDataProfilesService.defaultProfile.settingsResource)) {
-			return 'settingsEditor';
+		if (
+			isEqual(
+				resource,
+				this.userDataProfilesService.defaultProfile.settingsResource,
+			)
+		) {
+			return "settingsEditor";
 		}
-		if (isEqual(resource, this.userDataProfilesService.defaultProfile.keybindingsResource)) {
-			return 'keybindingsEditor';
+		if (
+			isEqual(
+				resource,
+				this.userDataProfilesService.defaultProfile.keybindingsResource,
+			)
+		) {
+			return "keybindingsEditor";
 		}
 		return undefined;
 	}

@@ -3,16 +3,25 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer, encodeBase64 } from '../../../base/common/buffer.js';
-import { Event } from '../../../base/common/event.js';
-import { Disposable } from '../../../base/common/lifecycle.js';
-import { getMediaOrTextMime } from '../../../base/common/mime.js';
-import { Schemas } from '../../../base/common/network.js';
-import { URI } from '../../../base/common/uri.js';
-import { IServerChannel } from '../../../base/parts/ipc/common/ipc.js';
-import { FileOperationError, FileOperationResult, IFileContent, IFileService } from '../../files/common/files.js';
-import { IMainProcessService } from '../../ipc/common/mainProcessService.js';
-import { NODE_REMOTE_RESOURCE_CHANNEL_NAME, NODE_REMOTE_RESOURCE_IPC_METHOD_NAME, NodeRemoteResourceResponse } from '../common/electronRemoteResources.js';
+import { VSBuffer, encodeBase64 } from "../../../base/common/buffer.js";
+import type { Event } from "../../../base/common/event.js";
+import { Disposable } from "../../../base/common/lifecycle.js";
+import { getMediaOrTextMime } from "../../../base/common/mime.js";
+import { Schemas } from "../../../base/common/network.js";
+import { URI } from "../../../base/common/uri.js";
+import type { IServerChannel } from "../../../base/parts/ipc/common/ipc.js";
+import {
+	FileOperationError,
+	FileOperationResult,
+	type IFileContent,
+	IFileService,
+} from "../../files/common/files.js";
+import { IMainProcessService } from "../../ipc/common/mainProcessService.js";
+import {
+	NODE_REMOTE_RESOURCE_CHANNEL_NAME,
+	NODE_REMOTE_RESOURCE_IPC_METHOD_NAME,
+	type NodeRemoteResourceResponse,
+} from "../common/electronRemoteResources.js";
 
 export class ElectronRemoteResourceLoader extends Disposable {
 	constructor(
@@ -48,14 +57,17 @@ export class ElectronRemoteResourceLoader extends Disposable {
 		try {
 			const params = new URLSearchParams(uri.query);
 			const actual = uri.with({
-				scheme: params.get('scheme')!,
-				authority: params.get('authority')!,
-				query: '',
+				scheme: params.get("scheme")!,
+				authority: params.get("authority")!,
+				query: "",
 			});
 			content = await this.fileService.readFile(actual);
 		} catch (e) {
 			const str = encodeBase64(VSBuffer.fromString(e.message));
-			if (e instanceof FileOperationError && e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND) {
+			if (
+				e instanceof FileOperationError &&
+				e.fileOperationResult === FileOperationResult.FILE_NOT_FOUND
+			) {
 				return { statusCode: 404, body: str };
 			} else {
 				return { statusCode: 500, body: str };
@@ -67,10 +79,14 @@ export class ElectronRemoteResourceLoader extends Disposable {
 	}
 
 	public getResourceUriProvider() {
-		return (uri: URI) => uri.with({
-			scheme: Schemas.vscodeManagedRemoteResource,
-			authority: `window:${this.windowId}`,
-			query: new URLSearchParams({ authority: uri.authority, scheme: uri.scheme }).toString(),
-		});
+		return (uri: URI) =>
+			uri.with({
+				scheme: Schemas.vscodeManagedRemoteResource,
+				authority: `window:${this.windowId}`,
+				query: new URLSearchParams({
+					authority: uri.authority,
+					scheme: uri.scheme,
+				}).toString(),
+			});
 	}
 }

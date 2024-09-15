@@ -3,28 +3,46 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter, Event } from '../../../../base/common/event.js';
-import { IMarkdownString } from '../../../../base/common/htmlContent.js';
-import { Disposable, IReference } from '../../../../base/common/lifecycle.js';
-import { isEqual } from '../../../../base/common/resources.js';
-import { URI } from '../../../../base/common/uri.js';
-import { IResolvedTextEditorModel, ITextModelService } from '../../../../editor/common/services/resolverService.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
-import { IRevertOptions, ISaveOptions } from '../../../common/editor.js';
-import { ICustomEditorModel } from './customEditor.js';
-import { ITextFileEditorModel, ITextFileService, TextFileEditorModelState } from '../../../services/textfile/common/textfiles.js';
+import { Emitter, type Event } from "../../../../base/common/event.js";
+import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
+import {
+	Disposable,
+	type IReference,
+} from "../../../../base/common/lifecycle.js";
+import { isEqual } from "../../../../base/common/resources.js";
+import type { URI } from "../../../../base/common/uri.js";
+import {
+	type IResolvedTextEditorModel,
+	ITextModelService,
+} from "../../../../editor/common/services/resolverService.js";
+import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
+import type { IRevertOptions, ISaveOptions } from "../../../common/editor.js";
+import {
+	type ITextFileEditorModel,
+	ITextFileService,
+	TextFileEditorModelState,
+} from "../../../services/textfile/common/textfiles.js";
+import type { ICustomEditorModel } from "./customEditor.js";
 
-export class CustomTextEditorModel extends Disposable implements ICustomEditorModel {
-
+export class CustomTextEditorModel
+	extends Disposable
+	implements ICustomEditorModel
+{
 	public static async create(
 		instantiationService: IInstantiationService,
 		viewType: string,
-		resource: URI
+		resource: URI,
 	): Promise<CustomTextEditorModel> {
-		return instantiationService.invokeFunction(async accessor => {
+		return instantiationService.invokeFunction(async (accessor) => {
 			const textModelResolverService = accessor.get(ITextModelService);
-			const model = await textModelResolverService.createModelReference(resource);
-			return instantiationService.createInstance(CustomTextEditorModel, viewType, resource, model);
+			const model =
+				await textModelResolverService.createModelReference(resource);
+			return instantiationService.createInstance(
+				CustomTextEditorModel,
+				viewType,
+				resource,
+				model,
+			);
 		});
 	}
 
@@ -94,10 +112,14 @@ export class CustomTextEditorModel extends Disposable implements ICustomEditorMo
 		return !!this._textFileModel?.hasState(TextFileEditorModelState.ORPHAN);
 	}
 
-	private readonly _onDidChangeDirty: Emitter<void> = this._register(new Emitter<void>());
+	private readonly _onDidChangeDirty: Emitter<void> = this._register(
+		new Emitter<void>(),
+	);
 	readonly onDidChangeDirty: Event<void> = this._onDidChangeDirty.event;
 
-	private readonly _onDidChangeContent: Emitter<void> = this._register(new Emitter<void>());
+	private readonly _onDidChangeContent: Emitter<void> = this._register(
+		new Emitter<void>(),
+	);
 	readonly onDidChangeContent: Event<void> = this._onDidChangeContent.event;
 
 	public async revert(options?: IRevertOptions) {
@@ -108,7 +130,15 @@ export class CustomTextEditorModel extends Disposable implements ICustomEditorMo
 		return this.textFileService.save(this.resource, options);
 	}
 
-	public async saveCustomEditorAs(resource: URI, targetResource: URI, options?: ISaveOptions): Promise<boolean> {
-		return !!await this.textFileService.saveAs(resource, targetResource, options);
+	public async saveCustomEditorAs(
+		resource: URI,
+		targetResource: URI,
+		options?: ISaveOptions,
+	): Promise<boolean> {
+		return !!(await this.textFileService.saveAs(
+			resource,
+			targetResource,
+			options,
+		));
 	}
 }

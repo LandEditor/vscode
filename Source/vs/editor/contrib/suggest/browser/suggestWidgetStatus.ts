@@ -3,17 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from '../../../../base/browser/dom.js';
-import { ActionBar, IActionViewItemProvider } from '../../../../base/browser/ui/actionbar/actionbar.js';
-import { IAction } from '../../../../base/common/actions.js';
-import { DisposableStore } from '../../../../base/common/lifecycle.js';
-import { TextOnlyMenuEntryActionViewItem } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
-import { IMenuService, MenuId, MenuItemAction } from '../../../../platform/actions/common/actions.js';
-import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import * as dom from "../../../../base/browser/dom.js";
+import {
+	ActionBar,
+	type IActionViewItemProvider,
+} from "../../../../base/browser/ui/actionbar/actionbar.js";
+import type { IAction } from "../../../../base/common/actions.js";
+import { DisposableStore } from "../../../../base/common/lifecycle.js";
+import { TextOnlyMenuEntryActionViewItem } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
+import {
+	IMenuService,
+	type MenuId,
+	MenuItemAction,
+} from "../../../../platform/actions/common/actions.js";
+import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 
 export class SuggestWidgetStatus {
-
 	readonly element: HTMLElement;
 
 	private readonly _leftActions: ActionBar;
@@ -57,12 +63,15 @@ export class SuggestWidgetStatus {
 	}
 
 	show(): void {
-		const menu = this._menuService.createMenu(this._menuId, this._contextKeyService);
+		const menu = this._menuService.createMenu(
+			this._menuId,
+			this._contextKeyService,
+		);
 		const renderMenu = () => {
 			const left: IAction[] = [];
 			const right: IAction[] = [];
 			for (const [group, actions] of menu.getActions()) {
-				if (group === 'left') {
+				if (group === "left") {
 					left.push(...actions);
 				} else {
 					right.push(...actions);

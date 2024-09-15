@@ -3,16 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable, IDisposable, toDisposable } from '../../../../base/common/lifecycle.js';
-import { autorunWithStore, observableFromEvent } from '../../../../base/common/observable.js';
-import { IAccessibilitySignalService, AccessibilitySignal, AccessibilitySignalService } from '../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
-import { IWorkbenchContribution } from '../../../common/contributions.js';
-import { IDebugService, IDebugSession } from '../../debug/common/debug.js';
+import {
+	Disposable,
+	type IDisposable,
+	toDisposable,
+} from "../../../../base/common/lifecycle.js";
+import {
+	autorunWithStore,
+	observableFromEvent,
+} from "../../../../base/common/observable.js";
+import {
+	AccessibilitySignal,
+	type AccessibilitySignalService,
+	IAccessibilitySignalService,
+} from "../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js";
+import type { IWorkbenchContribution } from "../../../common/contributions.js";
+import { IDebugService, type IDebugSession } from "../../debug/common/debug.js";
 
 export class AccessibilitySignalLineDebuggerContribution
 	extends Disposable
-	implements IWorkbenchContribution {
-
+	implements IWorkbenchContribution
+{
 	constructor(
 		@IDebugService debugService: IDebugService,
 		@IAccessibilitySignalService
@@ -78,11 +89,16 @@ export class AccessibilitySignalLineDebuggerContribution
 	}
 
 	private handleSession(session: IDebugSession): IDisposable {
-		return session.onDidChangeState(e => {
+		return session.onDidChangeState((e) => {
 			const stoppedDetails = session.getStoppedDetails();
-			const BREAKPOINT_STOP_REASON = 'breakpoint';
-			if (stoppedDetails && stoppedDetails.reason === BREAKPOINT_STOP_REASON) {
-				this.accessibilitySignalService.playSignal(AccessibilitySignal.onDebugBreak);
+			const BREAKPOINT_STOP_REASON = "breakpoint";
+			if (
+				stoppedDetails &&
+				stoppedDetails.reason === BREAKPOINT_STOP_REASON
+			) {
+				this.accessibilitySignalService.playSignal(
+					AccessibilitySignal.onDebugBreak,
+				);
 			}
 		});
 	}

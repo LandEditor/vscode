@@ -3,22 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { timeout } from '../../../../base/common/async.js';
-import { VSBuffer } from '../../../../base/common/buffer.js';
-import { joinPath } from '../../../../base/common/resources.js';
-import { generateUuid } from '../../../../base/common/uuid.js';
-import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-import { IFileService } from '../../../../platform/files/common/files.js';
-import { ILogService } from '../../../../platform/log/common/log.js';
-import { INativeHostService } from '../../../../platform/native/common/native.js';
-import { IV8Profile } from '../../../../platform/profiling/common/profiling.js';
-import { IProfileAnalysisWorkerService, ProfilingOutput } from '../../../../platform/profiling/electron-sandbox/profileAnalysisWorkerService.js';
-import { INativeWorkbenchEnvironmentService } from '../../../services/environment/electron-sandbox/environmentService.js';
-import { parseExtensionDevOptions } from '../../../services/extensions/common/extensionDevOptions.js';
-import { ITimerService } from '../../../services/timer/browser/timerService.js';
+import { timeout } from "../../../../base/common/async.js";
+import { VSBuffer } from "../../../../base/common/buffer.js";
+import { joinPath } from "../../../../base/common/resources.js";
+import { generateUuid } from "../../../../base/common/uuid.js";
+import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import { IFileService } from "../../../../platform/files/common/files.js";
+import { ILogService } from "../../../../platform/log/common/log.js";
+import { INativeHostService } from "../../../../platform/native/common/native.js";
+import type { IV8Profile } from "../../../../platform/profiling/common/profiling.js";
+import {
+	IProfileAnalysisWorkerService,
+	ProfilingOutput,
+} from "../../../../platform/profiling/electron-sandbox/profileAnalysisWorkerService.js";
+import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
+import { parseExtensionDevOptions } from "../../../services/extensions/common/extensionDevOptions.js";
+import { ITimerService } from "../../../services/timer/browser/timerService.js";
 
 export class RendererProfiling {
-
 	private _observer?: PerformanceObserver;
 
 	constructor(
@@ -121,10 +123,21 @@ export class RendererProfiling {
 		this._observer?.disconnect();
 	}
 
-
-	private async _store(profile: IV8Profile, sessionId: string): Promise<void> {
-		const path = joinPath(this._environmentService.tmpDir, `renderer-${Math.random().toString(16).slice(2, 8)}.cpuprofile.json`);
-		await this._fileService.writeFile(path, VSBuffer.fromString(JSON.stringify(profile)));
-		this._logService.info(`[perf] stored profile to DISK '${path}'`, sessionId);
+	private async _store(
+		profile: IV8Profile,
+		sessionId: string,
+	): Promise<void> {
+		const path = joinPath(
+			this._environmentService.tmpDir,
+			`renderer-${Math.random().toString(16).slice(2, 8)}.cpuprofile.json`,
+		);
+		await this._fileService.writeFile(
+			path,
+			VSBuffer.fromString(JSON.stringify(profile)),
+		);
+		this._logService.info(
+			`[perf] stored profile to DISK '${path}'`,
+			sessionId,
+		);
 	}
 }

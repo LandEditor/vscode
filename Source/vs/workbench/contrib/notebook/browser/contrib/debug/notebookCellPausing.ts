@@ -3,17 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { RunOnceScheduler } from '../../../../../../base/common/async.js';
-import { Disposable } from '../../../../../../base/common/lifecycle.js';
-import { URI } from '../../../../../../base/common/uri.js';
-import { Registry } from '../../../../../../platform/registry/common/platform.js';
-import { Extensions as WorkbenchExtensions, IWorkbenchContribution, IWorkbenchContributionsRegistry } from '../../../../../common/contributions.js';
-import { IDebugService } from '../../../../debug/common/debug.js';
-import { Thread } from '../../../../debug/common/debugModel.js';
-import { CellUri } from '../../../common/notebookCommon.js';
-import { CellExecutionUpdateType } from '../../../common/notebookExecutionService.js';
-import { INotebookExecutionStateService } from '../../../common/notebookExecutionStateService.js';
-import { LifecyclePhase } from '../../../../../services/lifecycle/common/lifecycle.js';
+import { RunOnceScheduler } from "../../../../../../base/common/async.js";
+import { Disposable } from "../../../../../../base/common/lifecycle.js";
+import { URI } from "../../../../../../base/common/uri.js";
+import { Registry } from "../../../../../../platform/registry/common/platform.js";
+import {
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
+	Extensions as WorkbenchExtensions,
+} from "../../../../../common/contributions.js";
+import { LifecyclePhase } from "../../../../../services/lifecycle/common/lifecycle.js";
+import { IDebugService } from "../../../../debug/common/debug.js";
+import type { Thread } from "../../../../debug/common/debugModel.js";
+import { CellUri } from "../../../common/notebookCommon.js";
+import { CellExecutionUpdateType } from "../../../common/notebookExecutionService.js";
+import { INotebookExecutionStateService } from "../../../common/notebookExecutionStateService.js";
 
 class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 	private readonly _pausedCells = new Set<string>();
@@ -40,7 +44,9 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 		);
 	}
 
-	private async onDidChangeCallStack(fallBackOnStaleCallstack: boolean): Promise<void> {
+	private async onDidChangeCallStack(
+		fallBackOnStaleCallstack: boolean,
+	): Promise<void> {
 		const newPausedCells = new Set<string>();
 
 		for (const session of this._debugService.getModel().getSessions()) {
@@ -50,7 +56,7 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 					callStack = (thread as Thread).getStaleCallStack();
 				}
 
-				callStack.forEach(sf => {
+				callStack.forEach((sf) => {
 					const parsed = CellUri.parse(sf.source.uri);
 					if (parsed) {
 						newPausedCells.add(sf.source.uri.toString());
@@ -67,22 +73,30 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 			}
 		}
 
-		newPausedCells.forEach(cell => this._pausedCells.add(cell));
+		newPausedCells.forEach((cell) => this._pausedCells.add(cell));
 	}
 
 	private editIsPaused(cellUri: URI, isPaused: boolean) {
 		const parsed = CellUri.parse(cellUri);
 		if (parsed) {
-			const exeState = this._notebookExecutionStateService.getCellExecution(cellUri);
-			if (exeState && (exeState.isPaused !== isPaused || !exeState.didPause)) {
-				exeState.update([{
-					editType: CellExecutionUpdateType.ExecutionState,
-					didPause: true,
-					isPaused
-				}]);
+			const exeState =
+				this._notebookExecutionStateService.getCellExecution(cellUri);
+			if (
+				exeState &&
+				(exeState.isPaused !== isPaused || !exeState.didPause)
+			) {
+				exeState.update([
+					{
+						editType: CellExecutionUpdateType.ExecutionState,
+						didPause: true,
+						isPaused,
+					},
+				]);
 			}
 		}
 	}
 }
 
-Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench).registerWorkbenchContribution(NotebookCellPausing, LifecyclePhase.Restored);
+Registry.as<IWorkbenchContributionsRegistry>(
+	WorkbenchExtensions.Workbench,
+).registerWorkbenchContribution(NotebookCellPausing, LifecyclePhase.Restored);

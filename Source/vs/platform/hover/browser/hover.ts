@@ -3,22 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createDecorator } from '../../instantiation/common/instantiation.js';
-import { Disposable, DisposableStore } from '../../../base/common/lifecycle.js';
-import { IHoverDelegate, IHoverDelegateOptions } from '../../../base/browser/ui/hover/hoverDelegate.js';
-import { IConfigurationService } from '../../configuration/common/configuration.js';
-import { addStandardDisposableListener, isHTMLElement } from '../../../base/browser/dom.js';
-import { KeyCode } from '../../../base/common/keyCodes.js';
-import type { IHoverDelegate2, IHoverOptions, IHoverWidget } from '../../../base/browser/ui/hover/hover.js';
+import {
+	addStandardDisposableListener,
+	isHTMLElement,
+} from "../../../base/browser/dom.js";
+import type {
+	IHoverDelegate2,
+	IHoverOptions,
+	IHoverWidget,
+} from "../../../base/browser/ui/hover/hover.js";
+import type {
+	IHoverDelegate,
+	IHoverDelegateOptions,
+} from "../../../base/browser/ui/hover/hoverDelegate.js";
+import { KeyCode } from "../../../base/common/keyCodes.js";
+import { Disposable, DisposableStore } from "../../../base/common/lifecycle.js";
+import { IConfigurationService } from "../../configuration/common/configuration.js";
+import { createDecorator } from "../../instantiation/common/instantiation.js";
 
-export const IHoverService = createDecorator<IHoverService>('hoverService');
+export const IHoverService = createDecorator<IHoverService>("hoverService");
 
 export interface IHoverService extends IHoverDelegate2 {
 	readonly _serviceBrand: undefined;
 }
 
-export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate {
-
+export class WorkbenchHoverDelegate
+	extends Disposable
+	implements IHoverDelegate
+{
 	private lastHoverHideTime = 0;
 	private timeLimit = 200;
 
@@ -61,46 +73,64 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
 		);
 	}
 
-	showHover(options: IHoverDelegateOptions, focus?: boolean): IHoverWidget | undefined {
-		const overrideOptions = typeof this.overrideOptions === 'function' ? this.overrideOptions(options, focus) : this.overrideOptions;
+	showHover(
+		options: IHoverDelegateOptions,
+		focus?: boolean,
+	): IHoverWidget | undefined {
+		const overrideOptions =
+			typeof this.overrideOptions === "function"
+				? this.overrideOptions(options, focus)
+				: this.overrideOptions;
 
 		// close hover on escape
 		this.hoverDisposables.clear();
-		const targets = isHTMLElement(options.target) ? [options.target] : options.target.targetElements;
+		const targets = isHTMLElement(options.target)
+			? [options.target]
+			: options.target.targetElements;
 		for (const target of targets) {
-			this.hoverDisposables.add(addStandardDisposableListener(target, 'keydown', (e) => {
-				if (e.equals(KeyCode.Escape)) {
-					this.hoverService.hideHover();
-				}
-			}));
+			this.hoverDisposables.add(
+				addStandardDisposableListener(target, "keydown", (e) => {
+					if (e.equals(KeyCode.Escape)) {
+						this.hoverService.hideHover();
+					}
+				}),
+			);
 		}
 
-		const id = isHTMLElement(options.content) ? undefined : options.content.toString();
+		const id = isHTMLElement(options.content)
+			? undefined
+			: options.content.toString();
 
-		return this.hoverService.showHover({
-			...options,
-			...overrideOptions,
-			persistence: {
-				hideOnKeyDown: true,
-				...overrideOptions.persistence
+		return this.hoverService.showHover(
+			{
+				...options,
+				...overrideOptions,
+				persistence: {
+					hideOnKeyDown: true,
+					...overrideOptions.persistence,
+				},
+				id,
+				appearance: {
+					...options.appearance,
+					compact: true,
+					skipFadeInAnimation: this.isInstantlyHovering(),
+					...overrideOptions.appearance,
+				},
 			},
-			id,
-			appearance: {
-				...options.appearance,
-				compact: true,
-				skipFadeInAnimation: this.isInstantlyHovering(),
-				...overrideOptions.appearance
-			}
-		}, focus);
+			focus,
+		);
 	}
 
 	private isInstantlyHovering(): boolean {
-		return this.instantHover && Date.now() - this.lastHoverHideTime < this.timeLimit;
+		return (
+			this.instantHover &&
+			Date.now() - this.lastHoverHideTime < this.timeLimit
+		);
 	}
 
 	setInstantHoverTimeLimit(timeLimit: number): void {
 		if (!this.instantHover) {
-			throw new Error('Instant hover is not enabled');
+			throw new Error("Instant hover is not enabled");
 		}
 		this.timeLimit = timeLimit;
 	}
@@ -115,9 +145,9 @@ export class WorkbenchHoverDelegate extends Disposable implements IHoverDelegate
 
 // TODO@benibenj remove this, only temp fix for contextviews
 export const nativeHoverDelegate: IHoverDelegate = {
-	showHover: function (): IHoverWidget | undefined {
-		throw new Error('Native hover function not implemented.');
+	showHover: (): IHoverWidget | undefined => {
+		throw new Error("Native hover function not implemented.");
 	},
 	delay: 0,
-	showNativeHover: true
+	showNativeHover: true,
 };

@@ -47,8 +47,12 @@
 	white-space: nowrap;
 }
 
-.monaco-editor .peekview-widget .head .peekview-title .meta:not(:empty)::before {
-	content: '-';
+.monaco-editor
+	.peekview-widget
+	.head
+	.peekview-title
+	.meta:not(:empty)::before {
+	content: "-";
 	padding: 0 0.3em;
 }
 
@@ -63,7 +67,12 @@
 }
 
 .monaco-editor .peekview-widget .head .peekview-actions > .monaco-action-bar,
-.monaco-editor .peekview-widget .head .peekview-actions > .monaco-action-bar > .actions-container {
+.monaco-editor
+	.peekview-widget
+	.head
+	.peekview-actions
+	> .monaco-action-bar
+	> .actions-container {
 	height: 100%;
 }
 

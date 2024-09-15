@@ -3,17 +3,30 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from '../../../../../base/common/event.js';
-import { Disposable, IDisposable } from '../../../../../base/common/lifecycle.js';
-import { localize } from '../../../../../nls.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { ChatConfirmationWidget } from './chatConfirmationWidget.js';
-import { IChatContentPart, IChatContentPartRenderContext } from './chatContentParts.js';
-import { IChatProgressRenderableResponseContent } from '../../common/chatModel.js';
-import { IChatConfirmation, IChatSendRequestOptions, IChatService } from '../../common/chatService.js';
-import { isResponseVM } from '../../common/chatViewModel.js';
+import { Emitter } from "../../../../../base/common/event.js";
+import {
+	Disposable,
+	type IDisposable,
+} from "../../../../../base/common/lifecycle.js";
+import { localize } from "../../../../../nls.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import type { IChatProgressRenderableResponseContent } from "../../common/chatModel.js";
+import {
+	type IChatConfirmation,
+	type IChatSendRequestOptions,
+	IChatService,
+} from "../../common/chatService.js";
+import { isResponseVM } from "../../common/chatViewModel.js";
+import { ChatConfirmationWidget } from "./chatConfirmationWidget.js";
+import type {
+	IChatContentPart,
+	IChatContentPartRenderContext,
+} from "./chatContentParts.js";
 
-export class ChatConfirmationContentPart extends Disposable implements IChatContentPart {
+export class ChatConfirmationContentPart
+	extends Disposable
+	implements IChatContentPart
+{
 	public readonly domNode: HTMLElement;
 
 	private readonly _onDidChangeHeight = this._register(new Emitter<void>());
@@ -85,7 +98,7 @@ export class ChatConfirmationContentPart extends Disposable implements IChatCont
 
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {
 		// No other change allowed for this content type
-		return other.kind === 'confirmation';
+		return other.kind === "confirmation";
 	}
 
 	addDisposable(disposable: IDisposable): void {

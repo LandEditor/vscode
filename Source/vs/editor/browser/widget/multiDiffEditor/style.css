@@ -44,7 +44,6 @@
 		flex: 1;
 		overflow: hidden;
 
-
 		.collapse-button {
 			margin: 0 5px;
 			cursor: pointer;
@@ -59,7 +58,8 @@
 			background: var(--vscode-editor-background);
 
 			&:not(.collapsed) .header-content {
-				border-bottom: 1px solid var(--vscode-sideBarSectionHeader-border);
+				border-bottom: 1px solid
+					var(--vscode-sideBarSectionHeader-border);
 			}
 
 			.header-content {
@@ -121,8 +121,6 @@
 					padding: 0 8px;
 				}
 			}
-
-
 		}
 
 		.editorParent {

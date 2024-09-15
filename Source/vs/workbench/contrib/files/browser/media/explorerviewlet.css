@@ -13,8 +13,14 @@
 	padding-left: 4px; /* align top level twistie with `Explorer` title label */
 }
 
-.explorer-folders-view .explorer-folders-view.highlight .monaco-list .explorer-item:not(.explorer-item-edited),
-.explorer-folders-view .explorer-folders-view.highlight .monaco-list .monaco-tl-twistie {
+.explorer-folders-view
+	.explorer-folders-view.highlight
+	.monaco-list
+	.explorer-item:not(.explorer-item-edited),
+.explorer-folders-view
+	.explorer-folders-view.highlight
+	.monaco-list
+	.monaco-tl-twistie {
 	opacity: 0.3;
 }
 
@@ -57,16 +63,34 @@
 	line-height: normal;
 }
 
-.explorer-folders-view .explorer-item .monaco-icon-name-container.multiple > .label-name > .monaco-highlighted-label {
+.explorer-folders-view
+	.explorer-item
+	.monaco-icon-name-container.multiple
+	> .label-name
+	> .monaco-highlighted-label {
 	border-radius: 3px;
 }
 
-.explorer-folders-view .explorer-item .monaco-icon-name-container.multiple > .label-name:hover > .monaco-highlighted-label,
-.explorer-folders-view .monaco-list .monaco-list-row.focused .explorer-item .monaco-icon-name-container.multiple > .label-name.active > .monaco-highlighted-label {
+.explorer-folders-view
+	.explorer-item
+	.monaco-icon-name-container.multiple
+	> .label-name:hover
+	> .monaco-highlighted-label,
+.explorer-folders-view
+	.monaco-list
+	.monaco-list-row.focused
+	.explorer-item
+	.monaco-icon-name-container.multiple
+	> .label-name.active
+	> .monaco-highlighted-label {
 	text-decoration: underline;
 }
 
-.explorer-folders-view .explorer-item .monaco-icon-name-container.multiple > .label-name.drop-target > .monaco-highlighted-label {
+.explorer-folders-view
+	.explorer-item
+	.monaco-icon-name-container.multiple
+	> .label-name.drop-target
+	> .monaco-highlighted-label {
 	background-color: var(--vscode-list-dropBackground);
 }
 
@@ -79,7 +103,12 @@
 	height: 22px;
 }
 
-.monaco-workbench .explorer-folders-view .explorer-item .monaco-inputbox > .ibwrapper > .input {
+.monaco-workbench
+	.explorer-folders-view
+	.explorer-item
+	.monaco-inputbox
+	> .ibwrapper
+	> .input {
 	padding: 0;
 	height: 20px;
 }
@@ -90,7 +119,11 @@
 	line-height: 20px;
 }
 
-.monaco-workbench .explorer-folders-view .explorer-item .monaco-inputbox input[type="text"] {
+.monaco-workbench
+	.explorer-folders-view
+	.explorer-item
+	.monaco-inputbox
+	input[type="text"] {
 	outline-width: 1px;
 	outline-style: solid;
 	outline-offset: -1px;
@@ -98,6 +131,8 @@
 	opacity: 1;
 }
 
-.monaco-workbench.context-menu-visible .explorer-folders-view.highlight .monaco-list-row {
+.monaco-workbench.context-menu-visible
+	.explorer-folders-view.highlight
+	.monaco-list-row {
 	outline: none !important;
 }

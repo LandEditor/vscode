@@ -21,58 +21,116 @@
 	position: relative;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-input-part {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-input-part {
 	padding: 4px 8px 0 8px;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-input-part .interactive-execute-toolbar {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-input-part
+	.interactive-execute-toolbar {
 	margin-bottom: 1px;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-input-part .interactive-input-and-execute-toolbar {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-input-part
+	.interactive-input-and-execute-toolbar {
 	width: 100%;
 	border-radius: 2px;
 }
 
-
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-input-part .interactive-input-followups .interactive-session-followups {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-input-part
+	.interactive-input-followups
+	.interactive-session-followups {
 	margin: 2px 0 0 4px;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .monaco-scrollable-element {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.monaco-scrollable-element {
 	border-top-left-radius: 3px;
 	border-top-right-radius: 3px;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .monaco-scrollable-element .shadow.top {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.monaco-scrollable-element
+	.shadow.top {
 	box-shadow: none;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .interactive-item-container.interactive-item-compact {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.interactive-item-container.interactive-item-compact {
 	gap: 8px;
 	padding: 3px 20px 3px 8px;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .interactive-item-container.interactive-item-compact .header .avatar {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.interactive-item-container.interactive-item-compact
+	.header
+	.avatar {
 	outline-offset: -1px;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .interactive-item-container.interactive-item-compact .chat-notification-widget {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.interactive-item-container.interactive-item-compact
+	.chat-notification-widget {
 	margin-bottom: 0;
 	padding: 0;
 	border: none;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .interactive-request {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.interactive-request {
 	border: none;
 }
 
-.monaco-workbench .inline-chat .chat-widget .interactive-session .interactive-list .interactive-item-container.minimal > .header {
+.monaco-workbench
+	.inline-chat
+	.chat-widget
+	.interactive-session
+	.interactive-list
+	.interactive-item-container.minimal
+	> .header {
 	top: 5px;
 	right: 10px;
 	display: none;
 }
-
 
 /* status */
 
@@ -133,15 +191,13 @@
 	line-height: 18px;
 }
 
-
 .monaco-workbench .inline-chat .status .actions,
 .monaco-workbench .inline-chat-diff-overlay {
-
 	display: flex;
 	height: 18px;
 
 	.actions-container {
-		gap: 3px
+		gap: 3px;
 	}
 
 	.monaco-button-dropdown > .monaco-dropdown-button {
@@ -186,7 +242,6 @@
 }
 
 .monaco-workbench .inline-chat-diff-overlay {
-
 	.monaco-button {
 		border-radius: 0;
 	}
@@ -210,7 +265,6 @@
 	}
 }
 
-
 /* TODO@jrieken not needed? */
 .monaco-workbench .inline-chat .status .monaco-toolbar .action-label.checked {
 	color: var(--vscode-inputOption-activeForeground);
@@ -218,8 +272,12 @@
 	outline: 1px solid var(--vscode-inputOption-activeBorder);
 }
 
-
-.monaco-workbench .inline-chat .status .monaco-toolbar .action-item.button-item .action-label:is(:hover, :focus) {
+.monaco-workbench
+	.inline-chat
+	.status
+	.monaco-toolbar
+	.action-item.button-item
+	.action-label:is(:hover, :focus) {
 	background-color: var(--vscode-button-hoverBackground);
 }
 
@@ -271,6 +329,8 @@
 }
 
 .monaco-workbench .glyph-margin-widgets .cgmr.codicon-inline-chat-opaque:hover,
-.monaco-workbench .glyph-margin-widgets .cgmr.codicon-inline-chat-transparent:hover {
+.monaco-workbench
+	.glyph-margin-widgets
+	.cgmr.codicon-inline-chat-transparent:hover {
 	opacity: 1;
 }

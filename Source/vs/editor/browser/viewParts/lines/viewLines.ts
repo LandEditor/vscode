@@ -24,8 +24,8 @@ import { applyFontInfo } from "../../config/domFontInfo.js";
 import {
 	HorizontalPosition,
 	HorizontalRange,
-	LineVisibleRanges,
 	type IViewLines,
+	LineVisibleRanges,
 	type VisibleRanges,
 } from "../../view/renderingContext.js";
 import { VisibleLinesCollection } from "../../view/viewLayer.js";

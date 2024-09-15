@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { INLSConfiguration } from 'vs/nls';
+import type { INLSConfiguration } from "vs/nls";
 
 export interface IResolveNLSConfigurationContext {
-
 	/**
 	 * Location where `nls.messages.json` and `nls.keys.json` are stored.
 	 */
@@ -35,4 +34,6 @@ export interface IResolveNLSConfigurationContext {
 	readonly osLocale: string;
 }
 
-export function resolveNLSConfiguration(context: IResolveNLSConfigurationContext): Promise<INLSConfiguration>;
+export function resolveNLSConfiguration(
+	context: IResolveNLSConfigurationContext,
+): Promise<INLSConfiguration>;

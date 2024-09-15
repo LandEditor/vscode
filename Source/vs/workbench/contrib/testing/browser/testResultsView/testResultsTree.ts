@@ -3,53 +3,96 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from '../../../../../base/browser/dom.js';
-import { ActionBar } from '../../../../../base/browser/ui/actionbar/actionbar.js';
-import { renderLabelWithIcons } from '../../../../../base/browser/ui/iconLabel/iconLabels.js';
-import { IIdentityProvider } from '../../../../../base/browser/ui/list/list.js';
-import { ICompressedTreeElement, ICompressedTreeNode } from '../../../../../base/browser/ui/tree/compressedObjectTreeModel.js';
-import { ICompressibleTreeRenderer } from '../../../../../base/browser/ui/tree/objectTree.js';
-import { ITreeContextMenuEvent, ITreeNode } from '../../../../../base/browser/ui/tree/tree.js';
-import { Action, IAction, Separator } from '../../../../../base/common/actions.js';
-import { RunOnceScheduler } from '../../../../../base/common/async.js';
-import { Codicon } from '../../../../../base/common/codicons.js';
-import { Emitter, Event } from '../../../../../base/common/event.js';
-import { FuzzyScore } from '../../../../../base/common/filters.js';
-import { Iterable } from '../../../../../base/common/iterator.js';
-import { Disposable, DisposableStore } from '../../../../../base/common/lifecycle.js';
-import { MarshalledId } from '../../../../../base/common/marshallingIds.js';
-import { autorun } from '../../../../../base/common/observable.js';
-import { count } from '../../../../../base/common/strings.js';
-import { ThemeIcon } from '../../../../../base/common/themables.js';
-import { isDefined } from '../../../../../base/common/types.js';
-import { URI } from '../../../../../base/common/uri.js';
-import { localize } from '../../../../../nls.js';
-import { MenuEntryActionViewItem, createAndFillInActionBarActions } from '../../../../../platform/actions/browser/menuEntryActionViewItem.js';
-import { IMenuService, MenuId, MenuItemAction } from '../../../../../platform/actions/common/actions.js';
-import { ICommandService } from '../../../../../platform/commands/common/commands.js';
-import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
-import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { WorkbenchCompressibleObjectTree } from '../../../../../platform/list/browser/listService.js';
-import { IProgressService } from '../../../../../platform/progress/common/progress.js';
-import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
-import { widgetClose } from '../../../../../platform/theme/common/iconRegistry.js';
-import { getTestItemContextOverlay } from '../explorerProjections/testItemContextOverlay.js';
-import * as icons from '../icons.js';
-import { renderTestMessageAsText } from '../testMessageColorizer.js';
-import { InspectSubject, MessageSubject, TaskSubject, TestOutputSubject, getMessageArgs, mapFindTestMessage } from './testResultsSubject.js';
-import { TestCommandId, Testing } from '../../common/constants.js';
-import { ITestCoverageService } from '../../common/testCoverageService.js';
-import { ITestExplorerFilterState } from '../../common/testExplorerFilterState.js';
-import { ITestProfileService } from '../../common/testProfileService.js';
-import { ITestResult, ITestRunTaskResults, LiveTestResult, TestResultItemChangeReason, maxCountPriority } from '../../common/testResult.js';
-import { ITestResultService } from '../../common/testResultService.js';
-import { IRichLocation, ITestItemContext, ITestMessage, ITestMessageMenuArgs, InternalTestItem, TestMessageType, TestResultItem, TestResultState, TestRunProfileBitset, testResultStateToContextValues } from '../../common/testTypes.js';
-import { TestingContextKeys } from '../../common/testingContextKeys.js';
-import { cmpPriority } from '../../common/testingStates.js';
-import { TestUriType, buildTestUri } from '../../common/testingUri.js';
-import { IEditorService } from '../../../../services/editor/common/editorService.js';
-
+import * as dom from "../../../../../base/browser/dom.js";
+import { ActionBar } from "../../../../../base/browser/ui/actionbar/actionbar.js";
+import { renderLabelWithIcons } from "../../../../../base/browser/ui/iconLabel/iconLabels.js";
+import type { IIdentityProvider } from "../../../../../base/browser/ui/list/list.js";
+import type {
+	ICompressedTreeElement,
+	ICompressedTreeNode,
+} from "../../../../../base/browser/ui/tree/compressedObjectTreeModel.js";
+import type { ICompressibleTreeRenderer } from "../../../../../base/browser/ui/tree/objectTree.js";
+import type {
+	ITreeContextMenuEvent,
+	ITreeNode,
+} from "../../../../../base/browser/ui/tree/tree.js";
+import {
+	Action,
+	type IAction,
+	Separator,
+} from "../../../../../base/common/actions.js";
+import { RunOnceScheduler } from "../../../../../base/common/async.js";
+import { Codicon } from "../../../../../base/common/codicons.js";
+import { Emitter, Event } from "../../../../../base/common/event.js";
+import type { FuzzyScore } from "../../../../../base/common/filters.js";
+import { Iterable } from "../../../../../base/common/iterator.js";
+import {
+	Disposable,
+	DisposableStore,
+} from "../../../../../base/common/lifecycle.js";
+import { MarshalledId } from "../../../../../base/common/marshallingIds.js";
+import { autorun } from "../../../../../base/common/observable.js";
+import { count } from "../../../../../base/common/strings.js";
+import { ThemeIcon } from "../../../../../base/common/themables.js";
+import { isDefined } from "../../../../../base/common/types.js";
+import type { URI } from "../../../../../base/common/uri.js";
+import { localize } from "../../../../../nls.js";
+import {
+	MenuEntryActionViewItem,
+	createAndFillInActionBarActions,
+} from "../../../../../platform/actions/browser/menuEntryActionViewItem.js";
+import {
+	IMenuService,
+	MenuId,
+	MenuItemAction,
+} from "../../../../../platform/actions/common/actions.js";
+import { ICommandService } from "../../../../../platform/commands/common/commands.js";
+import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
+import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import { WorkbenchCompressibleObjectTree } from "../../../../../platform/list/browser/listService.js";
+import { IProgressService } from "../../../../../platform/progress/common/progress.js";
+import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
+import { widgetClose } from "../../../../../platform/theme/common/iconRegistry.js";
+import { IEditorService } from "../../../../services/editor/common/editorService.js";
+import { TestCommandId, Testing } from "../../common/constants.js";
+import { ITestCoverageService } from "../../common/testCoverageService.js";
+import { ITestExplorerFilterState } from "../../common/testExplorerFilterState.js";
+import { ITestProfileService } from "../../common/testProfileService.js";
+import {
+	type ITestResult,
+	type ITestRunTaskResults,
+	LiveTestResult,
+	TestResultItemChangeReason,
+	maxCountPriority,
+} from "../../common/testResult.js";
+import { ITestResultService } from "../../common/testResultService.js";
+import {
+	type IRichLocation,
+	type ITestItemContext,
+	type ITestMessage,
+	type ITestMessageMenuArgs,
+	InternalTestItem,
+	TestMessageType,
+	type TestResultItem,
+	TestResultState,
+	TestRunProfileBitset,
+	testResultStateToContextValues,
+} from "../../common/testTypes.js";
+import { TestingContextKeys } from "../../common/testingContextKeys.js";
+import { cmpPriority } from "../../common/testingStates.js";
+import { TestUriType, buildTestUri } from "../../common/testingUri.js";
+import { getTestItemContextOverlay } from "../explorerProjections/testItemContextOverlay.js";
+import * as icons from "../icons.js";
+import { renderTestMessageAsText } from "../testMessageColorizer.js";
+import {
+	type InspectSubject,
+	MessageSubject,
+	TaskSubject,
+	TestOutputSubject,
+	getMessageArgs,
+	mapFindTestMessage,
+} from "./testResultsSubject.js";
 
 interface ITreeElement {
 	type: string;
@@ -78,7 +121,7 @@ interface ITreeElement {
 class TestResultElement implements ITreeElement {
 	public readonly changeEmitter = new Emitter<void>();
 	public readonly onDidChange = this.changeEmitter.event;
-	public readonly type = 'result';
+	public readonly type = "result";
 	public readonly context = this.value.id;
 	public readonly id = this.value.id;
 	public readonly label = this.value.name;
@@ -87,18 +130,18 @@ class TestResultElement implements ITreeElement {
 		return icons.testingStatesToIcons.get(
 			this.value.completedAt === undefined
 				? TestResultState.Running
-				: maxCountPriority(this.value.counts)
+				: maxCountPriority(this.value.counts),
 		);
 	}
 
-	constructor(public readonly value: ITestResult) { }
+	constructor(public readonly value: ITestResult) {}
 }
 
-const openCoverageLabel = localize('openTestCoverage', 'View Test Coverage');
-const closeCoverageLabel = localize('closeTestCoverage', 'Close Test Coverage');
+const openCoverageLabel = localize("openTestCoverage", "View Test Coverage");
+const closeCoverageLabel = localize("closeTestCoverage", "Close Test Coverage");
 
 class CoverageElement implements ITreeElement {
-	public readonly type = 'coverage';
+	public readonly type = "coverage";
 	public readonly context: undefined;
 	public readonly id = `coverage-${this.results.id}/${this.task.id}`;
 	public readonly onDidChange: Event<void>;
@@ -125,20 +168,19 @@ class CoverageElement implements ITreeElement {
 }
 
 class OlderResultsElement implements ITreeElement {
-	public readonly type = 'older';
+	public readonly type = "older";
 	public readonly context: undefined;
 	public readonly id = `older-${this.n}`;
 	public readonly onDidChange = Event.None;
 	public readonly label: string;
 
 	constructor(private readonly n: number) {
-		this.label = localize('nOlderResults', '{0} older results', n);
-
+		this.label = localize("nOlderResults", "{0} older results", n);
 	}
 }
 
 class TestCaseElement implements ITreeElement {
-	public readonly type = 'test';
+	public readonly type = "test";
 	public readonly context: ITestItemContext = {
 		$mid: MarshalledId.TestItemContext,
 		tests: [InternalTestItem.serialize(this.test)],
@@ -151,7 +193,10 @@ class TestCaseElement implements ITreeElement {
 			return Event.None;
 		}
 
-		return Event.filter(this.results.onChange, e => e.item.item.extId === this.test.item.extId);
+		return Event.filter(
+			this.results.onChange,
+			(e) => e.item.item.extId === this.test.item.extId,
+		);
 	}
 
 	public get state() {
@@ -174,28 +219,33 @@ class TestCaseElement implements ITreeElement {
 		return new TestOutputSubject(this.results, this.taskIndex, this.test);
 	}
 
-
 	constructor(
 		public readonly results: ITestResult,
 		public readonly test: TestResultItem,
 		public readonly taskIndex: number,
-	) { }
+	) {}
 }
 
 class TaskElement implements ITreeElement {
 	public readonly changeEmitter = new Emitter<void>();
 	public readonly onDidChange = this.changeEmitter.event;
-	public readonly type = 'task';
+	public readonly type = "task";
 	public readonly context: { resultId: string; taskId: string };
 	public readonly id: string;
 	public readonly label: string;
 	public readonly itemsCache = new CreationCache<TestCaseElement>();
 
 	public get icon() {
-		return this.results.tasks[this.index].running ? icons.testingStatesToIcons.get(TestResultState.Running) : undefined;
+		return this.results.tasks[this.index].running
+			? icons.testingStatesToIcons.get(TestResultState.Running)
+			: undefined;
 	}
 
-	constructor(public readonly results: ITestResult, public readonly task: ITestRunTaskResults, public readonly index: number) {
+	constructor(
+		public readonly results: ITestResult,
+		public readonly task: ITestRunTaskResults,
+		public readonly index: number,
+	) {
 		this.id = `${results.id}/${index}`;
 		this.task = results.tasks[index];
 		this.context = { resultId: results.id, taskId: this.task.id };
@@ -204,7 +254,7 @@ class TaskElement implements ITreeElement {
 }
 
 class TestMessageElement implements ITreeElement {
-	public readonly type = 'message';
+	public readonly type = "message";
 	public readonly id: string;
 	public readonly label: string;
 	public readonly uri: URI;
@@ -219,7 +269,10 @@ class TestMessageElement implements ITreeElement {
 		}
 
 		// rerender when the test case changes so it gets retired events
-		return Event.filter(this.result.onChange, e => e.item.item.extId === this.test.item.extId);
+		return Event.filter(
+			this.result.onChange,
+			(e) => e.item.item.extId === this.test.item.extId,
+		);
 	}
 
 	public get context(): ITestMessageMenuArgs {
@@ -236,38 +289,51 @@ class TestMessageElement implements ITreeElement {
 		public readonly taskIndex: number,
 		public readonly messageIndex: number,
 	) {
-		const m = this.message = test.tasks[taskIndex].messages[messageIndex];
+		const m = (this.message = test.tasks[taskIndex].messages[messageIndex]);
 
 		this.location = m.location;
-		this.contextValue = m.type === TestMessageType.Error ? m.contextValue : undefined;
+		this.contextValue =
+			m.type === TestMessageType.Error ? m.contextValue : undefined;
 		this.uri = buildTestUri({
 			type: TestUriType.ResultMessage,
 			messageIndex,
 			resultId: result.id,
 			taskIndex,
-			testExtId: test.item.extId
+			testExtId: test.item.extId,
 		});
 
 		this.id = this.uri.toString();
 
 		const asPlaintext = renderTestMessageAsText(m.message);
-		const lines = count(asPlaintext.trimEnd(), '\n');
+		const lines = count(asPlaintext.trimEnd(), "\n");
 		this.label = firstLine(asPlaintext);
 		if (lines > 0) {
-			this.description = lines > 1
-				? localize('messageMoreLinesN', '+ {0} more lines', lines)
-				: localize('messageMoreLines1', '+ 1 more line');
+			this.description =
+				lines > 1
+					? localize("messageMoreLinesN", "+ {0} more lines", lines)
+					: localize("messageMoreLines1", "+ 1 more line");
 		}
 	}
 }
 
-type TreeElement = TestResultElement | TestCaseElement | TestMessageElement | TaskElement | CoverageElement | OlderResultsElement;
+type TreeElement =
+	| TestResultElement
+	| TestCaseElement
+	| TestMessageElement
+	| TaskElement
+	| CoverageElement
+	| OlderResultsElement;
 
 export class OutputPeekTree extends Disposable {
 	private disposed = false;
-	private readonly tree: WorkbenchCompressibleObjectTree<TreeElement, FuzzyScore>;
+	private readonly tree: WorkbenchCompressibleObjectTree<
+		TreeElement,
+		FuzzyScore
+	>;
 	private readonly treeActions: TreeActionsProvider;
-	private readonly requestReveal = this._register(new Emitter<InspectSubject>());
+	private readonly requestReveal = this._register(
+		new Emitter<InspectSubject>(),
+	);
 
 	public readonly onDidRequestReview = this.requestReveal.event;
 
@@ -749,10 +815,15 @@ export class OutputPeekTree extends Disposable {
 		const actions = this.treeActions.provideActionBar(evt.element);
 		this.contextMenuService.showContextMenu({
 			getAnchor: () => evt.anchor,
-			getActions: () => actions.secondary.length
-				? [...actions.primary, new Separator(), ...actions.secondary]
-				: actions.primary,
-			getActionsContext: () => evt.element?.context
+			getActions: () =>
+				actions.secondary.length
+					? [
+							...actions.primary,
+							new Separator(),
+							...actions.secondary,
+						]
+					: actions.primary,
+			getActionsContext: () => evt.element?.context,
 		});
 	}
 
@@ -770,8 +841,10 @@ interface TemplateData {
 	templateDisposable: DisposableStore;
 }
 
-class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData> {
-	public static readonly ID = 'testRunElementRenderer';
+class TestRunElementRenderer
+	implements ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData>
+{
+	public static readonly ID = "testRunElementRenderer";
 	public readonly templateId = TestRunElementRenderer.ID;
 
 	constructor(
@@ -781,10 +854,18 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 	) {}
 
 	/** @inheritdoc */
-	public renderCompressedElements(node: ITreeNode<ICompressedTreeNode<ITreeElement>, FuzzyScore>, _index: number, templateData: TemplateData): void {
+	public renderCompressedElements(
+		node: ITreeNode<ICompressedTreeNode<ITreeElement>, FuzzyScore>,
+		_index: number,
+		templateData: TemplateData,
+	): void {
 		const chain = node.element.elements;
 		const lastElement = chain[chain.length - 1];
-		if ((lastElement instanceof TaskElement || lastElement instanceof TestMessageElement) && chain.length >= 2) {
+		if (
+			(lastElement instanceof TaskElement ||
+				lastElement instanceof TestMessageElement) &&
+			chain.length >= 2
+		) {
 			this.doRender(chain[chain.length - 2], templateData, lastElement);
 		} else {
 			this.doRender(lastElement, templateData);
@@ -794,15 +875,19 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 	/** @inheritdoc */
 	public renderTemplate(container: HTMLElement): TemplateData {
 		const templateDisposable = new DisposableStore();
-		const wrapper = dom.append(container, dom.$('.test-peek-item'));
-		const icon = dom.append(wrapper, dom.$('.state'));
-		const label = dom.append(wrapper, dom.$('.name'));
+		const wrapper = dom.append(container, dom.$(".test-peek-item"));
+		const icon = dom.append(wrapper, dom.$(".state"));
+		const label = dom.append(wrapper, dom.$(".name"));
 
 		const actionBar = new ActionBar(wrapper, {
 			actionViewItemProvider: (action, options) =>
 				action instanceof MenuItemAction
-					? this.instantiationService.createInstance(MenuEntryActionViewItem, action, { hoverDelegate: options.hoverDelegate })
-					: undefined
+					? this.instantiationService.createInstance(
+							MenuEntryActionViewItem,
+							action,
+							{ hoverDelegate: options.hoverDelegate },
+						)
+					: undefined,
 		});
 
 		const elementDisposable = new DisposableStore();
@@ -819,7 +904,11 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 	}
 
 	/** @inheritdoc */
-	public renderElement(element: ITreeNode<ITreeElement, FuzzyScore>, _index: number, templateData: TemplateData): void {
+	public renderElement(
+		element: ITreeNode<ITreeElement, FuzzyScore>,
+		_index: number,
+		templateData: TemplateData,
+	): void {
 		this.doRender(element.element, templateData);
 	}
 
@@ -829,35 +918,54 @@ class TestRunElementRenderer implements ICompressibleTreeRenderer<ITreeElement, 
 	}
 
 	/** Called to render a new element */
-	private doRender(element: ITreeElement, templateData: TemplateData, subjectElement?: ITreeElement) {
+	private doRender(
+		element: ITreeElement,
+		templateData: TemplateData,
+		subjectElement?: ITreeElement,
+	) {
 		templateData.elementDisposable.clear();
 		templateData.elementDisposable.add(
-			element.onDidChange(() => this.doRender(element, templateData, subjectElement)),
+			element.onDidChange(() =>
+				this.doRender(element, templateData, subjectElement),
+			),
 		);
 		this.doRenderInner(element, templateData, subjectElement);
 	}
 
 	/** Called, and may be re-called, to render or re-render an element */
-	private doRenderInner(element: ITreeElement, templateData: TemplateData, subjectElement: ITreeElement | undefined) {
+	private doRenderInner(
+		element: ITreeElement,
+		templateData: TemplateData,
+		subjectElement: ITreeElement | undefined,
+	) {
 		let { label, labelWithIcons, description } = element;
 		if (subjectElement instanceof TestMessageElement) {
 			description = subjectElement.label;
 		}
 
-		const descriptionElement = description ? dom.$('span.test-label-description', {}, description) : '';
+		const descriptionElement = description
+			? dom.$("span.test-label-description", {}, description)
+			: "";
 		if (labelWithIcons) {
-			dom.reset(templateData.label, ...labelWithIcons, descriptionElement);
+			dom.reset(
+				templateData.label,
+				...labelWithIcons,
+				descriptionElement,
+			);
 		} else {
 			dom.reset(templateData.label, label, descriptionElement);
 		}
 
 		const icon = element.icon;
-		templateData.icon.className = `computed-state ${icon ? ThemeIcon.asClassName(icon) : ''}`;
+		templateData.icon.className = `computed-state ${icon ? ThemeIcon.asClassName(icon) : ""}`;
 
 		const actions = this.treeActions.provideActionBar(element);
 		templateData.actionBar.clear();
 		templateData.actionBar.context = element.context;
-		templateData.actionBar.push(actions.primary, { icon: true, label: false });
+		templateData.actionBar.push(actions.primary, {
+			icon: true,
+			label: false,
+		});
 	}
 }
 
@@ -875,11 +983,14 @@ class TreeActionsProvider {
 	) {}
 
 	public provideActionBar(element: ITreeElement) {
-		const test = element instanceof TestCaseElement ? element.test : undefined;
-		const capabilities = test ? this.testProfileService.capabilitiesForTest(test.item) : 0;
+		const test =
+			element instanceof TestCaseElement ? element.test : undefined;
+		const capabilities = test
+			? this.testProfileService.capabilitiesForTest(test.item)
+			: 0;
 
 		const contextKeys: [string, unknown][] = [
-			['peek', Testing.OutputPeekContributionId],
+			["peek", Testing.OutputPeekContributionId],
 			[TestingContextKeys.peekItemType.key, element.type],
 		];
 
@@ -888,137 +999,225 @@ class TreeActionsProvider {
 		const secondary: IAction[] = [];
 
 		if (element instanceof TaskElement) {
-			primary.push(new Action(
-				'testing.outputPeek.showResultOutput',
-				localize('testing.showResultOutput', "Show Result Output"),
-				ThemeIcon.asClassName(Codicon.terminal),
-				undefined,
-				() => this.requestReveal.fire(new TaskSubject(element.results, element.index)),
-			));
-			if (element.task.running) {
-				primary.push(new Action(
-					'testing.outputPeek.cancel',
-					localize('testing.cancelRun', 'Cancel Test Run'),
-					ThemeIcon.asClassName(icons.testingCancelIcon),
+			primary.push(
+				new Action(
+					"testing.outputPeek.showResultOutput",
+					localize("testing.showResultOutput", "Show Result Output"),
+					ThemeIcon.asClassName(Codicon.terminal),
 					undefined,
-					() => this.commandService.executeCommand(TestCommandId.CancelTestRunAction, element.results.id, element.task.id),
-				));
+					() =>
+						this.requestReveal.fire(
+							new TaskSubject(element.results, element.index),
+						),
+				),
+			);
+			if (element.task.running) {
+				primary.push(
+					new Action(
+						"testing.outputPeek.cancel",
+						localize("testing.cancelRun", "Cancel Test Run"),
+						ThemeIcon.asClassName(icons.testingCancelIcon),
+						undefined,
+						() =>
+							this.commandService.executeCommand(
+								TestCommandId.CancelTestRunAction,
+								element.results.id,
+								element.task.id,
+							),
+					),
+				);
 			}
 		}
 
 		if (element instanceof TestResultElement) {
 			// only show if there are no collapsed test nodes that have more specific choices
 			if (element.value.tasks.length === 1) {
-				primary.push(new Action(
-					'testing.outputPeek.showResultOutput',
-					localize('testing.showResultOutput', "Show Result Output"),
-					ThemeIcon.asClassName(Codicon.terminal),
-					undefined,
-					() => this.requestReveal.fire(new TaskSubject(element.value, 0)),
-				));
+				primary.push(
+					new Action(
+						"testing.outputPeek.showResultOutput",
+						localize(
+							"testing.showResultOutput",
+							"Show Result Output",
+						),
+						ThemeIcon.asClassName(Codicon.terminal),
+						undefined,
+						() =>
+							this.requestReveal.fire(
+								new TaskSubject(element.value, 0),
+							),
+					),
+				);
 			}
 
-			primary.push(new Action(
-				'testing.outputPeek.reRunLastRun',
-				localize('testing.reRunLastRun', "Rerun Test Run"),
-				ThemeIcon.asClassName(icons.testingRunIcon),
-				undefined,
-				() => this.commandService.executeCommand('testing.reRunLastRun', element.value.id),
-			));
+			primary.push(
+				new Action(
+					"testing.outputPeek.reRunLastRun",
+					localize("testing.reRunLastRun", "Rerun Test Run"),
+					ThemeIcon.asClassName(icons.testingRunIcon),
+					undefined,
+					() =>
+						this.commandService.executeCommand(
+							"testing.reRunLastRun",
+							element.value.id,
+						),
+				),
+			);
 
 			if (capabilities & TestRunProfileBitset.Debug) {
-				primary.push(new Action(
-					'testing.outputPeek.debugLastRun',
-					localize('testing.debugLastRun', "Debug Test Run"),
-					ThemeIcon.asClassName(icons.testingDebugIcon),
-					undefined,
-					() => this.commandService.executeCommand('testing.debugLastRun', element.value.id),
-				));
+				primary.push(
+					new Action(
+						"testing.outputPeek.debugLastRun",
+						localize("testing.debugLastRun", "Debug Test Run"),
+						ThemeIcon.asClassName(icons.testingDebugIcon),
+						undefined,
+						() =>
+							this.commandService.executeCommand(
+								"testing.debugLastRun",
+								element.value.id,
+							),
+					),
+				);
 			}
 		}
 
-		if (element instanceof TestCaseElement || element instanceof TestMessageElement) {
+		if (
+			element instanceof TestCaseElement ||
+			element instanceof TestMessageElement
+		) {
 			contextKeys.push(
-				[TestingContextKeys.testResultOutdated.key, element.test.retired],
-				[TestingContextKeys.testResultState.key, testResultStateToContextValues[element.test.ownComputedState]],
+				[
+					TestingContextKeys.testResultOutdated.key,
+					element.test.retired,
+				],
+				[
+					TestingContextKeys.testResultState.key,
+					testResultStateToContextValues[
+						element.test.ownComputedState
+					],
+				],
 				...getTestItemContextOverlay(element.test, capabilities),
 			);
 
 			const extId = element.test.item.extId;
-			if (element.test.tasks[element.taskIndex].messages.some(m => m.type === TestMessageType.Output)) {
-				primary.push(new Action(
-					'testing.outputPeek.showResultOutput',
-					localize('testing.showResultOutput', "Show Result Output"),
-					ThemeIcon.asClassName(Codicon.terminal),
-					undefined,
-					() => this.requestReveal.fire(element.outputSubject),
-				));
+			if (
+				element.test.tasks[element.taskIndex].messages.some(
+					(m) => m.type === TestMessageType.Output,
+				)
+			) {
+				primary.push(
+					new Action(
+						"testing.outputPeek.showResultOutput",
+						localize(
+							"testing.showResultOutput",
+							"Show Result Output",
+						),
+						ThemeIcon.asClassName(Codicon.terminal),
+						undefined,
+						() => this.requestReveal.fire(element.outputSubject),
+					),
+				);
 			}
 
-			secondary.push(new Action(
-				'testing.outputPeek.revealInExplorer',
-				localize('testing.revealInExplorer', "Reveal in Test Explorer"),
-				ThemeIcon.asClassName(Codicon.listTree),
-				undefined,
-				() => this.commandService.executeCommand('_revealTestInExplorer', extId),
-			));
+			secondary.push(
+				new Action(
+					"testing.outputPeek.revealInExplorer",
+					localize(
+						"testing.revealInExplorer",
+						"Reveal in Test Explorer",
+					),
+					ThemeIcon.asClassName(Codicon.listTree),
+					undefined,
+					() =>
+						this.commandService.executeCommand(
+							"_revealTestInExplorer",
+							extId,
+						),
+				),
+			);
 
 			if (capabilities & TestRunProfileBitset.Run) {
-				primary.push(new Action(
-					'testing.outputPeek.runTest',
-					localize('run test', 'Run Test'),
-					ThemeIcon.asClassName(icons.testingRunIcon),
-					undefined,
-					() => this.commandService.executeCommand('vscode.runTestsById', TestRunProfileBitset.Run, extId),
-				));
+				primary.push(
+					new Action(
+						"testing.outputPeek.runTest",
+						localize("run test", "Run Test"),
+						ThemeIcon.asClassName(icons.testingRunIcon),
+						undefined,
+						() =>
+							this.commandService.executeCommand(
+								"vscode.runTestsById",
+								TestRunProfileBitset.Run,
+								extId,
+							),
+					),
+				);
 			}
 
 			if (capabilities & TestRunProfileBitset.Debug) {
-				primary.push(new Action(
-					'testing.outputPeek.debugTest',
-					localize('debug test', 'Debug Test'),
-					ThemeIcon.asClassName(icons.testingDebugIcon),
-					undefined,
-					() => this.commandService.executeCommand('vscode.runTestsById', TestRunProfileBitset.Debug, extId),
-				));
+				primary.push(
+					new Action(
+						"testing.outputPeek.debugTest",
+						localize("debug test", "Debug Test"),
+						ThemeIcon.asClassName(icons.testingDebugIcon),
+						undefined,
+						() =>
+							this.commandService.executeCommand(
+								"vscode.runTestsById",
+								TestRunProfileBitset.Debug,
+								extId,
+							),
+					),
+				);
 			}
-
 		}
 
 		if (element instanceof TestMessageElement) {
 			id = MenuId.TestMessageContext;
-			contextKeys.push([TestingContextKeys.testMessageContext.key, element.contextValue]);
+			contextKeys.push([
+				TestingContextKeys.testMessageContext.key,
+				element.contextValue,
+			]);
 
-			primary.push(new Action(
-				'testing.outputPeek.goToTest',
-				localize('testing.goToTest', "Go to Test"),
-				ThemeIcon.asClassName(Codicon.goToFile),
-				undefined,
-				() => this.commandService.executeCommand('vscode.revealTest', element.test.item.extId),
-			));
-
-			if (this.showRevealLocationOnMessages && element.location) {
-				primary.push(new Action(
-					'testing.outputPeek.goToError',
-					localize('testing.goToError', "Go to Error"),
+			primary.push(
+				new Action(
+					"testing.outputPeek.goToTest",
+					localize("testing.goToTest", "Go to Test"),
 					ThemeIcon.asClassName(Codicon.goToFile),
 					undefined,
-					() => this.editorService.openEditor({
-						resource: element.location!.uri,
-						options: {
-							selection: element.location!.range,
-							preserveFocus: true,
-						}
-					}),
-				));
+					() =>
+						this.commandService.executeCommand(
+							"vscode.revealTest",
+							element.test.item.extId,
+						),
+				),
+			);
+
+			if (this.showRevealLocationOnMessages && element.location) {
+				primary.push(
+					new Action(
+						"testing.outputPeek.goToError",
+						localize("testing.goToError", "Go to Error"),
+						ThemeIcon.asClassName(Codicon.goToFile),
+						undefined,
+						() =>
+							this.editorService.openEditor({
+								resource: element.location!.uri,
+								options: {
+									selection: element.location!.range,
+									preserveFocus: true,
+								},
+							}),
+					),
+				);
 			}
 		}
 
-
-		const contextOverlay = this.contextKeyService.createOverlay(contextKeys);
+		const contextOverlay =
+			this.contextKeyService.createOverlay(contextKeys);
 		const result = { primary, secondary };
-		const menu = this.menuService.getMenuActions(id, contextOverlay, { arg: element.context });
-		createAndFillInActionBarActions(menu, result, 'inline');
+		const menu = this.menuService.getMenuActions(id, contextOverlay, {
+			arg: element.context,
+		});
+		createAndFillInActionBarActions(menu, result, "inline");
 		return result;
 	}
 }
@@ -1043,6 +1242,6 @@ class CreationCache<T> {
 }
 
 const firstLine = (str: string) => {
-	const index = str.indexOf('\n');
+	const index = str.indexOf("\n");
 	return index === -1 ? str : str.slice(0, index);
 };

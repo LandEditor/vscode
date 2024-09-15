@@ -5,8 +5,8 @@
 
 import * as browser from "../../../../base/browser/browser.js";
 import {
-	createFastDomNode,
 	type FastDomNode,
+	createFastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import * as platform from "../../../../base/common/platform.js";
 import { isHighContrast } from "../../../../platform/theme/common/theme.js";
@@ -14,12 +14,12 @@ import { EditorFontLigatures } from "../../../common/config/editorOptions.js";
 import type { StringBuilder } from "../../../common/core/stringBuilder.js";
 import { LineDecoration } from "../../../common/viewLayout/lineDecorations.js";
 import {
+	type CharacterMapping,
 	DomPosition,
 	ForeignElementType,
 	LineRange,
 	RenderLineInput,
 	renderViewLine,
-	type CharacterMapping,
 } from "../../../common/viewLayout/viewLineRenderer.js";
 import type { ViewportData } from "../../../common/viewLayout/viewLinesViewportData.js";
 import { InlineDecorationType } from "../../../common/viewModel.js";

@@ -3,17 +3,23 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from '../../../../../nls.js';
-import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { INotebookLoggingService } from '../../common/notebookLoggingService.js';
-import { ILogger, ILoggerService } from '../../../../../platform/log/common/log.js';
+import { Disposable } from "../../../../../base/common/lifecycle.js";
+import * as nls from "../../../../../nls.js";
+import {
+	type ILogger,
+	ILoggerService,
+} from "../../../../../platform/log/common/log.js";
+import type { INotebookLoggingService } from "../../common/notebookLoggingService.js";
 
-const logChannelId = 'notebook.rendering';
+const logChannelId = "notebook.rendering";
 
-export class NotebookLoggingService extends Disposable implements INotebookLoggingService {
+export class NotebookLoggingService
+	extends Disposable
+	implements INotebookLoggingService
+{
 	_serviceBrand: undefined;
 
-	static ID: string = 'notebook';
+	static ID = "notebook";
 	private readonly _logger: ILogger;
 
 	constructor(@ILoggerService loggerService: ILoggerService) {
@@ -41,4 +47,3 @@ export class NotebookLoggingService extends Disposable implements INotebookLoggi
 		this._logger.error(`[${category}] ${output}`);
 	}
 }
-

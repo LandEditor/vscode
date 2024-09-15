@@ -3,42 +3,71 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import './media/terminalQuickFix.css';
-import { KeyCode, KeyMod } from '../../../../../base/common/keyCodes.js';
-import { DisposableStore } from '../../../../../base/common/lifecycle.js';
-import { localize2 } from '../../../../../nls.js';
-import { InstantiationType, registerSingleton } from '../../../../../platform/instantiation/common/extensions.js';
-import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
-import { KeybindingWeight } from '../../../../../platform/keybinding/common/keybindingsRegistry.js';
-import { ITerminalContribution, ITerminalInstance, IXtermTerminal } from '../../../terminal/browser/terminal.js';
-import { registerActiveInstanceAction } from '../../../terminal/browser/terminalActions.js';
-import { registerTerminalContribution } from '../../../terminal/browser/terminalExtensions.js';
-import { TerminalWidgetManager } from '../../../terminal/browser/widgets/widgetManager.js';
-import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
-import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
-import { ITerminalQuickFixService } from './quickFix.js';
-import { TerminalQuickFixAddon } from './quickFixAddon.js';
-import { freePort, gitCreatePr, gitPull, gitPushSetUpstream, gitSimilar, gitTwoDashes, pwshGeneralError, pwshUnixCommandNotFoundError } from './terminalQuickFixBuiltinActions.js';
-import { TerminalQuickFixService } from './terminalQuickFixService.js';
-import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
+import "./media/terminalQuickFix.css";
+import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
+import { DisposableStore } from "../../../../../base/common/lifecycle.js";
+import { localize2 } from "../../../../../nls.js";
+import {
+	InstantiationType,
+	registerSingleton,
+} from "../../../../../platform/instantiation/common/extensions.js";
+import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
+import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
+import type {
+	ITerminalContribution,
+	ITerminalInstance,
+	IXtermTerminal,
+} from "../../../terminal/browser/terminal.js";
+import { registerActiveInstanceAction } from "../../../terminal/browser/terminalActions.js";
+import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
+import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
+import type { ITerminalProcessManager } from "../../../terminal/common/terminal.js";
+import { TerminalContextKeys } from "../../../terminal/common/terminalContextKey.js";
+import { ITerminalQuickFixService } from "./quickFix.js";
+import { TerminalQuickFixAddon } from "./quickFixAddon.js";
+import {
+	freePort,
+	gitCreatePr,
+	gitPull,
+	gitPushSetUpstream,
+	gitSimilar,
+	gitTwoDashes,
+	pwshGeneralError,
+	pwshUnixCommandNotFoundError,
+} from "./terminalQuickFixBuiltinActions.js";
+import { TerminalQuickFixService } from "./terminalQuickFixService.js";
 
 // #region Services
 
-registerSingleton(ITerminalQuickFixService, TerminalQuickFixService, InstantiationType.Delayed);
+registerSingleton(
+	ITerminalQuickFixService,
+	TerminalQuickFixService,
+	InstantiationType.Delayed,
+);
 
 // #endregion
 
 // #region Contributions
 
-class TerminalQuickFixContribution extends DisposableStore implements ITerminalContribution {
-	static readonly ID = 'quickFix';
+class TerminalQuickFixContribution
+	extends DisposableStore
+	implements ITerminalContribution
+{
+	static readonly ID = "quickFix";
 
-	static get(instance: ITerminalInstance): TerminalQuickFixContribution | null {
-		return instance.getContribution<TerminalQuickFixContribution>(TerminalQuickFixContribution.ID);
+	static get(
+		instance: ITerminalInstance,
+	): TerminalQuickFixContribution | null {
+		return instance.getContribution<TerminalQuickFixContribution>(
+			TerminalQuickFixContribution.ID,
+		);
 	}
 
 	private _addon?: TerminalQuickFixAddon;
-	get addon(): TerminalQuickFixAddon | undefined { return this._addon; }
+	get addon(): TerminalQuickFixAddon | undefined {
+		return this._addon;
+	}
 
 	constructor(
 		private readonly _instance: ITerminalInstance,
@@ -52,46 +81,63 @@ class TerminalQuickFixContribution extends DisposableStore implements ITerminalC
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
 		// Create addon
-		this._addon = this._instantiationService.createInstance(TerminalQuickFixAddon, undefined, this._instance.capabilities);
+		this._addon = this._instantiationService.createInstance(
+			TerminalQuickFixAddon,
+			undefined,
+			this._instance.capabilities,
+		);
 		xterm.raw.loadAddon(this._addon);
 
 		// Hook up listeners
-		this.add(this._addon.onDidRequestRerunCommand((e) => this._instance.runCommand(e.command, e.shouldExecute || false)));
+		this.add(
+			this._addon.onDidRequestRerunCommand((e) =>
+				this._instance.runCommand(e.command, e.shouldExecute || false),
+			),
+		);
 
 		// Register quick fixes
 		for (const actionOption of [
 			gitTwoDashes(),
 			gitPull(),
-			freePort((port: string, command: string) => this._instance.freePortKillProcess(port, command)),
+			freePort((port: string, command: string) =>
+				this._instance.freePortKillProcess(port, command),
+			),
 			gitSimilar(),
 			gitPushSetUpstream(),
 			gitCreatePr(),
 			pwshUnixCommandNotFoundError(),
-			pwshGeneralError()
+			pwshGeneralError(),
 		]) {
 			this._addon.registerCommandFinishedListener(actionOption);
 		}
 	}
 }
-registerTerminalContribution(TerminalQuickFixContribution.ID, TerminalQuickFixContribution);
+registerTerminalContribution(
+	TerminalQuickFixContribution.ID,
+	TerminalQuickFixContribution,
+);
 
 // #endregion
 
 // #region Actions
 
-const enum TerminalQuickFixCommandId {
-	ShowQuickFixes = 'workbench.action.terminal.showQuickFixes',
+enum TerminalQuickFixCommandId {
+	ShowQuickFixes = "workbench.action.terminal.showQuickFixes",
 }
 
 registerActiveInstanceAction({
 	id: TerminalQuickFixCommandId.ShowQuickFixes,
-	title: localize2('workbench.action.terminal.showQuickFixes', 'Show Terminal Quick Fixes'),
+	title: localize2(
+		"workbench.action.terminal.showQuickFixes",
+		"Show Terminal Quick Fixes",
+	),
 	precondition: TerminalContextKeys.focus,
 	keybinding: {
 		primary: KeyMod.CtrlCmd | KeyCode.Period,
-		weight: KeybindingWeight.WorkbenchContrib
+		weight: KeybindingWeight.WorkbenchContrib,
 	},
-	run: (activeInstance) => TerminalQuickFixContribution.get(activeInstance)?.addon?.showMenu()
+	run: (activeInstance) =>
+		TerminalQuickFixContribution.get(activeInstance)?.addon?.showMenu(),
 });
 
 // #endregion

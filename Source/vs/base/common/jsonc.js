@@ -1,19 +1,9 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
-/// <reference path="../../../typings/require.d.ts" />
-
-//@ts-check
-'use strict';
-
 // ESM-uncomment-begin
 /** @type any */
 const module = { exports: {} };
 // ESM-uncomment-end
 
-(function () {
+(() => {
 	// ESM-comment-begin
 	// const isESM = false;
 	// ESM-comment-end
@@ -27,27 +17,27 @@ const module = { exports: {} };
 		// Third group matches a multi line comment
 		// Forth group matches a single line comment
 		// Fifth group matches a trailing comma
-		const regexp = /("[^"\\]*(?:\\.[^"\\]*)*")|('[^'\\]*(?:\\.[^'\\]*)*')|(\/\*[^\/\*]*(?:(?:\*|\/)[^\/\*]*)*?\*\/)|(\/{2,}.*?(?:(?:\r?\n)|$))|(,\s*[}\]])/g;
+		const regexp =
+			/("[^"\\]*(?:\\.[^"\\]*)*")|('[^'\\]*(?:\\.[^'\\]*)*')|(\/\*[^/*]*(?:(?:\*|\/)[^/*]*)*?\*\/)|(\/{2,}.*?(?:(?:\r?\n)|$))|(,\s*[}\]])/g;
 
 		/**
 		 * @param {string} content
 		 * @returns {string}
 		 */
 		function stripComments(content) {
-			return content.replace(regexp, function (match, _m1, _m2, m3, m4, m5) {
+			return content.replace(regexp, (match, _m1, _m2, m3, m4, m5) => {
 				// Only one of m1, m2, m3, m4, m5 matches
 				if (m3) {
 					// A block comment. Replace with nothing
-					return '';
+					return "";
 				} else if (m4) {
 					// Since m4 is a single line comment is is at least of length 2 (e.g. //)
 					// If it ends in \r?\n then keep it.
 					const length = m4.length;
-					if (m4[length - 1] === '\n') {
-						return m4[length - 2] === '\r' ? '\r\n' : '\n';
-					}
-					else {
-						return '';
+					if (m4[length - 1] === "\n") {
+						return m4[length - 2] === "\r" ? "\r\n" : "\n";
+					} else {
+						return "";
 					}
 				} else if (m5) {
 					// Remove the trailing comma
@@ -69,24 +59,32 @@ const module = { exports: {} };
 			try {
 				return JSON.parse(commentsStripped);
 			} catch (error) {
-				const trailingCommasStriped = commentsStripped.replace(/,\s*([}\]])/g, '$1');
+				const trailingCommasStriped = commentsStripped.replace(
+					/,\s*([}\]])/g,
+					"$1",
+				);
 				return JSON.parse(trailingCommasStriped);
 			}
 		}
 		return {
 			stripComments,
-			parse
+			parse,
 		};
 	}
 
-	if (!isESM && typeof define === 'function') {
+	if (!isESM && typeof define === "function") {
 		// amd
-		define([], function () { return factory(); });
-	} else if (typeof module === 'object' && typeof module.exports === 'object') {
+		define([], () => factory());
+	} else if (
+		typeof module === "object" &&
+		typeof module.exports === "object"
+	) {
 		// commonjs
 		module.exports = factory();
 	} else {
-		console.trace('jsonc defined in UNKNOWN context (neither requirejs or commonjs)');
+		console.trace(
+			"jsonc defined in UNKNOWN context (neither requirejs or commonjs)",
+		);
 	}
 })();
 
