@@ -12,8 +12,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type ILanguagePackItem,
 	ILanguagePackService,
+	type ILanguagePackItem,
 } from "../../../../platform/languagePacks/common/languagePacks.js";
 import {
 	IQuickInputService,

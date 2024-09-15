@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as net from "net";
+
 import type { ISocket } from "../../../base/parts/ipc/common/ipc.net.js";
 import { NodeSocket } from "../../../base/parts/ipc/node/ipc.net.js";
 import { makeRawSocketHeaders } from "../common/managedSocket.js";

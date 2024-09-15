@@ -8,20 +8,20 @@ import { CancellationToken } from "../../../../base/common/cancellation.js";
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
-	type ServicesAccessor,
 	registerEditorAction,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import {
-	type ITextModel,
 	shouldSynchronizeModel,
+	type ITextModel,
 } from "../../../../editor/common/model.js";
 import { IEditorWorkerService } from "../../../../editor/common/services/editorWorker.js";
 import { ITextModelService } from "../../../../editor/common/services/resolverService.js";
 import {
-	FormattingMode,
 	formatDocumentRangesWithSelectedProvider,
+	FormattingMode,
 } from "../../../../editor/contrib/format/browser/format.js";
 import * as nls from "../../../../nls.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";

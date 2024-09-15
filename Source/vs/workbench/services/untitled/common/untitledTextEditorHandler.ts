@@ -17,12 +17,12 @@ import { IFilesConfigurationService } from "../../filesConfiguration/common/file
 import { IPathService } from "../../path/common/pathService.js";
 import { ITextEditorService } from "../../textfile/common/textEditorService.js";
 import {
-	type IWorkingCopyIdentifier,
 	NO_TYPE_ID,
+	type IWorkingCopyIdentifier,
 } from "../../workingCopy/common/workingCopy.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../workingCopy/common/workingCopyEditorService.js";
 import { UntitledTextEditorInput } from "./untitledTextEditorInput.js";
 import { IUntitledTextEditorService } from "./untitledTextEditorService.js";
@@ -35,10 +35,12 @@ interface ISerializedUntitledTextEditorInput {
 
 export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 	constructor(
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IPathService private readonly pathService: IPathService
-	) { }
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IPathService private readonly pathService: IPathService,
+	) {}
 
 	canSerialize(editorInput: EditorInput): boolean {
 		return (
@@ -96,14 +98,12 @@ export class UntitledTextEditorInputSerializer implements IEditorSerializer {
 			const languageId = deserialized.modeId;
 			const encoding = deserialized.encoding;
 
-			return accessor
-				.get(ITextEditorService)
-				.createTextEditor({
-					resource,
-					languageId,
-					encoding,
-					forceUntitled: true,
-				}) as UntitledTextEditorInput;
+			return accessor.get(ITextEditorService).createTextEditor({
+				resource,
+				languageId,
+				encoding,
+				forceUntitled: true,
+			}) as UntitledTextEditorInput;
 		});
 	}
 }
@@ -116,11 +116,15 @@ export class UntitledTextEditorWorkingCopyEditorHandler
 		"workbench.contrib.untitledTextEditorWorkingCopyEditorHandler";
 
 	constructor(
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IPathService private readonly pathService: IPathService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService,
-		@IUntitledTextEditorService private readonly untitledTextEditorService: IUntitledTextEditorService
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
+		@IUntitledTextEditorService
+		private readonly untitledTextEditorService: IUntitledTextEditorService,
 	) {
 		super();
 

@@ -6,8 +6,8 @@
 import { coalesce } from "../../../../base/common/arrays.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	type IReadonlyVSDataTransfer,
 	UriList,
+	type IReadonlyVSDataTransfer,
 } from "../../../../base/common/dataTransfer.js";
 import { HierarchicalKind } from "../../../../base/common/hierarchicalKind.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
@@ -20,13 +20,13 @@ import { IWorkspaceContextService } from "../../../../platform/workspace/common/
 import type { IPosition } from "../../../common/core/position.js";
 import type { IRange } from "../../../common/core/range.js";
 import {
+	DocumentPasteTriggerKind,
 	type DocumentDropEditProvider,
 	type DocumentDropEditsSession,
 	type DocumentPasteContext,
 	type DocumentPasteEdit,
 	type DocumentPasteEditProvider,
 	type DocumentPasteEditsSession,
-	DocumentPasteTriggerKind,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
@@ -193,7 +193,8 @@ class RelativePathProvider extends SimplePasteAndDropProvider {
 	readonly pasteMimeTypes = [Mimes.uriList];
 
 	constructor(
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 	}
@@ -300,8 +301,10 @@ async function extractUriList(
 
 export class DefaultDropProvidersFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 
@@ -328,8 +331,10 @@ export class DefaultDropProvidersFeature extends Disposable {
 
 export class DefaultPasteProvidersFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 

@@ -26,8 +26,8 @@ import type { ITextModel } from "../../../../editor/common/model.js";
 import { createTextBufferFactoryFromSnapshot } from "../../../../editor/common/model/textModel.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import * as nls from "../../../../nls.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -48,10 +48,10 @@ import { INotebookEditorModelResolverService } from "../../notebook/common/noteb
 import { IReplaceService } from "./replace.js";
 import {
 	FileMatch,
-	type FileMatchOrMatch,
 	ISearchViewModelWorkbenchService,
 	Match,
 	MatchInNotebook,
+	type FileMatchOrMatch,
 } from "./searchModel.js";
 
 const REPLACE_PREVIEW = "replacePreview";
@@ -78,10 +78,15 @@ export class ReplacePreviewContentProvider
 	static readonly ID = "workbench.contrib.replacePreviewContentProvider";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 	) {
-		this.textModelResolverService.registerTextModelContentProvider(network.Schemas.internal, this);
+		this.textModelResolverService.registerTextModelContentProvider(
+			network.Schemas.internal,
+			this,
+		);
 	}
 
 	provideTextContent(uri: URI): Promise<ITextModel> | null {
@@ -98,9 +103,11 @@ class ReplacePreviewModel extends Disposable {
 	constructor(
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@IReplaceService private readonly replaceService: IReplaceService,
-		@ISearchViewModelWorkbenchService private readonly searchWorkbenchService: ISearchViewModelWorkbenchService
+		@ISearchViewModelWorkbenchService
+		private readonly searchWorkbenchService: ISearchViewModelWorkbenchService,
 	) {
 		super();
 	}
@@ -174,11 +181,13 @@ export class ReplaceService implements IReplaceService {
 	constructor(
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@IBulkEditService private readonly bulkEditorService: IBulkEditService,
 		@ILabelService private readonly labelService: ILabelService,
-		@INotebookEditorModelResolverService private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService
-	) { }
+		@INotebookEditorModelResolverService
+		private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService,
+	) {}
 
 	replace(match: Match): Promise<any>;
 	replace(

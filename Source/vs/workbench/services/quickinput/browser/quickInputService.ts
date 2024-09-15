@@ -26,12 +26,19 @@ export class QuickInputService extends BaseQuickInputService {
 	constructor(
 		@IConfigurationService configurationService: IConfigurationService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@ILayoutService layoutService: ILayoutService,
 	) {
-		super(instantiationService, contextKeyService, themeService, layoutService, configurationService);
+		super(
+			instantiationService,
+			contextKeyService,
+			themeService,
+			layoutService,
+			configurationService,
+		);
 
 		this.registerListeners();
 	}

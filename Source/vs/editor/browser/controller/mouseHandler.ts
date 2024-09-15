@@ -5,8 +5,8 @@
 
 import * as dom from "../../../base/browser/dom.js";
 import {
-	type IMouseWheelEvent,
 	StandardWheelEvent,
+	type IMouseWheelEvent,
 } from "../../../base/browser/mouseEvent.js";
 import { MouseWheelClassifier } from "../../../base/browser/ui/scrollbar/scrollableElement.js";
 import {
@@ -23,19 +23,19 @@ import type * as viewEvents from "../../common/viewEvents.js";
 import type { ViewContext } from "../../common/viewModel/viewContext.js";
 import { NavigationCommandRevealType } from "../coreCommands.js";
 import {
+	MouseTargetType,
 	type IMouseTarget,
 	type IMouseTargetOutsideEditor,
 	type IMouseTargetViewZoneData,
-	MouseTargetType,
 } from "../editorBrowser.js";
 import {
 	ClientCoordinates,
+	createCoordinatesRelativeToEditor,
+	createEditorPagePosition,
 	EditorMouseEvent,
 	EditorMouseEventFactory,
 	GlobalEditorPointerMoveMonitor,
 	PageCoordinates,
-	createCoordinatesRelativeToEditor,
-	createEditorPagePosition,
 } from "../editorDom.js";
 import type { HorizontalPosition } from "../view/renderingContext.js";
 import type { ViewController } from "../view/viewController.js";

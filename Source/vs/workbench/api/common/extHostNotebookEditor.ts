@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { illegalArgument } from "../../../base/common/errors.js";
 import type { MainThreadNotebookEditorsShape } from "./extHost.protocol.js";
 import type { ExtHostNotebookDocument } from "./extHostNotebookDocument.js";

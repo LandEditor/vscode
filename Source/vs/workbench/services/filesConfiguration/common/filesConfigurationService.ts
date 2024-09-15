@@ -9,8 +9,8 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LRUCache, ResourceMap } from "../../../../base/common/map.js";
 import { equals } from "../../../../base/common/objects.js";
@@ -28,13 +28,13 @@ import {
 	AutoSaveConfiguration,
 	FILES_READONLY_EXCLUDE_CONFIG,
 	FILES_READONLY_INCLUDE_CONFIG,
+	hasReadonlyCapability,
 	HotExitConfiguration,
-	type IBaseFileStat,
 	IFileService,
-	type IFileStatWithMetadata,
+	type IBaseFileStat,
 	type IFilesConfiguration,
 	type IFilesConfigurationNode,
-	hasReadonlyCapability,
+	type IFileStatWithMetadata,
 } from "../../../../platform/files/common/files.js";
 import {
 	InstantiationType,
@@ -285,22 +285,32 @@ export class FilesConfigurationService
 	);
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
 		@IMarkerService private readonly markerService: IMarkerService,
-		@ITextResourceConfigurationService private readonly textResourceConfigurationService: ITextResourceConfigurationService
+		@ITextResourceConfigurationService
+		private readonly textResourceConfigurationService: ITextResourceConfigurationService,
 	) {
 		super();
 
-		const configuration = configurationService.getValue<IFilesConfiguration>();
+		const configuration =
+			configurationService.getValue<IFilesConfiguration>();
 
-		this.currentGlobalAutoSaveConfiguration = this.computeAutoSaveConfiguration(undefined, configuration.files);
-		this.currentFilesAssociationConfiguration = configuration?.files?.associations;
-		this.currentHotExitConfiguration = configuration?.files?.hotExit || HotExitConfiguration.ON_EXIT;
+		this.currentGlobalAutoSaveConfiguration =
+			this.computeAutoSaveConfiguration(undefined, configuration.files);
+		this.currentFilesAssociationConfiguration =
+			configuration?.files?.associations;
+		this.currentHotExitConfiguration =
+			configuration?.files?.hotExit || HotExitConfiguration.ON_EXIT;
 
 		this.onFilesConfigurationChange(configuration, false);
 

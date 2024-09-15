@@ -5,7 +5,9 @@
 import { safeInnerHtml } from "../../../../base/browser/dom.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import Severity from "../../../../base/common/severity.js";
+
 import "./media/issueReporter.css";
+
 import { localize } from "../../../../nls.js";
 import {
 	IMenuService,
@@ -49,14 +51,17 @@ export class IssueFormService implements IIssueFormService {
 	protected type = "";
 
 	constructor(
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IAuxiliaryWindowService protected readonly auxiliaryWindowService: IAuxiliaryWindowService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IAuxiliaryWindowService
+		protected readonly auxiliaryWindowService: IAuxiliaryWindowService,
 		@IMenuService protected readonly menuService: IMenuService,
-		@IContextKeyService protected readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		protected readonly contextKeyService: IContextKeyService,
 		@ILogService protected readonly logService: ILogService,
 		@IDialogService protected readonly dialogService: IDialogService,
-		@IHostService protected readonly hostService: IHostService
-	) { }
+		@IHostService protected readonly hostService: IHostService,
+	) {}
 
 	async openReporter(data: IssueReporterData): Promise<void> {
 		if (this.hasToReload(data)) {

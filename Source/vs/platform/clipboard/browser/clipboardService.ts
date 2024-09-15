@@ -37,7 +37,7 @@ export class BrowserClipboardService
 
 	constructor(
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
@@ -49,9 +49,19 @@ export class BrowserClipboardService
 		// copied resources: since we keep resources in memory
 		// and not in the clipboard, we have to invalidate
 		// that state when the user copies other data.
-		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
-			disposables.add(addDisposableListener(window.document, 'copy', () => this.clearResourcesState()));
-		}, { window: mainWindow, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				onDidRegisterWindow,
+				({ window, disposables }) => {
+					disposables.add(
+						addDisposableListener(window.document, "copy", () =>
+							this.clearResourcesState(),
+						),
+					);
+				},
+				{ window: mainWindow, disposables: this._store },
+			),
+		);
 	}
 
 	private webKitPendingClipboardWritePromise:

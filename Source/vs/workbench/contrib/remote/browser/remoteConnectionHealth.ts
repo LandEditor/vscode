@@ -35,9 +35,12 @@ export class InitialRemoteConnectionHealthContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@IBannerService private readonly bannerService: IBannerService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IOpenerService private readonly openerService: IOpenerService,

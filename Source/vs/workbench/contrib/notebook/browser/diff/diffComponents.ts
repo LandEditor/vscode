@@ -36,16 +36,16 @@ import { IAccessibilityService } from "../../../../../platform/accessibility/com
 import { createAndFillInActionBarActions } from "../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import { WorkbenchToolBar } from "../../../../../platform/actions/browser/toolbar.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
+	type IMenu,
 } from "../../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
@@ -72,29 +72,29 @@ import {
 } from "./diffCellEditorOptions.js";
 import { OutputContainer } from "./diffElementOutputs.js";
 import {
-	type DiffElementCellViewModelBase,
-	type DiffElementPlaceholderViewModel,
+	getFormattedOutputJSON,
 	OUTPUT_EDITOR_HEIGHT_MAGIC,
 	OutputComparison,
+	outputEqual,
 	PropertyFoldingState,
 	SideBySideDiffElementViewModel,
+	type DiffElementCellViewModelBase,
+	type DiffElementPlaceholderViewModel,
 	type SingleSideDiffElementViewModel,
-	getFormattedOutputJSON,
-	outputEqual,
 } from "./diffElementViewModel.js";
 import type { DiffNestedCellViewModel } from "./diffNestedCellViewModel.js";
 import {
-	type CellDiffPlaceholderRenderTemplate,
-	type CellDiffSideBySideRenderTemplate,
-	type CellDiffSingleSideRenderTemplate,
 	DIFF_CELL_MARGIN,
 	DiffSide,
-	type IDiffCellMarginOverlay,
-	type INotebookTextDiffEditor,
 	NOTEBOOK_DIFF_CELL_IGNORE_WHITESPACE,
 	NOTEBOOK_DIFF_CELL_INPUT,
 	NOTEBOOK_DIFF_CELL_PROPERTY,
 	NOTEBOOK_DIFF_CELL_PROPERTY_EXPANDED,
+	type CellDiffPlaceholderRenderTemplate,
+	type CellDiffSideBySideRenderTemplate,
+	type CellDiffSingleSideRenderTemplate,
+	type IDiffCellMarginOverlay,
+	type INotebookTextDiffEditor,
 } from "./notebookDiffEditorBrowser.js";
 
 export function getOptimizedNestedCodeEditorWidgetOptions(): ICodeEditorWidgetOptions {
@@ -177,15 +177,20 @@ class PropertyHeader extends Disposable {
 			prefix: string;
 			menuId: MenuId;
 		},
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@ICommandService private readonly commandService: ICommandService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IThemeService private readonly themeService: IThemeService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 	) {
 		super();
 	}
@@ -1458,7 +1463,8 @@ export class DeletedElement extends SingleSideDiffElement {
 		@IMenuService menuService: IMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textConfigurationService: ITextResourceConfigurationService,
 	) {
 		super(
 			notebookEditor,
@@ -1648,7 +1654,8 @@ export class InsertElement extends SingleSideDiffElement {
 		@IMenuService menuService: IMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textConfigurationService: ITextResourceConfigurationService,
 	) {
 		super(
 			notebookEditor,
@@ -1841,7 +1848,8 @@ export class ModifiedElement extends AbstractElementRenderer {
 		@IMenuService menuService: IMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textConfigurationService: ITextResourceConfigurationService,
 	) {
 		super(
 			notebookEditor,

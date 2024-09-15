@@ -10,8 +10,8 @@ import { MessageType } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import type { IIdentityProvider } from "../../../../base/browser/ui/list/list.js";
 import type { ICompressedTreeElement } from "../../../../base/browser/ui/tree/compressedObjectTreeModel.js";
 import {
-	type ITreeContextMenuEvent,
 	ObjectTreeElementCollapseState,
+	type ITreeContextMenuEvent,
 } from "../../../../base/browser/ui/tree/tree.js";
 import { Delayer, RunOnceScheduler } from "../../../../base/common/async.js";
 import * as errors from "../../../../base/common/errors.js";
@@ -27,7 +27,9 @@ import * as network from "../../../../base/common/network.js";
 import * as env from "../../../../base/common/platform.js";
 import * as strings from "../../../../base/common/strings.js";
 import { URI } from "../../../../base/common/uri.js";
+
 import "./media/searchview.css";
+
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import {
@@ -51,33 +53,33 @@ import {
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
 	IContextViewService,
 } from "../../../../platform/contextview/browser/contextView.js";
 import {
-	type IConfirmation,
 	IDialogService,
+	type IConfirmation,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	IFileService,
+	type FileChangesEvent,
 } from "../../../../platform/files/common/files.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ServiceCollection } from "../../../../platform/instantiation/common/serviceCollection.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	WorkbenchCompressibleObjectTree,
 	getSelectionKeyboardEvent,
+	WorkbenchCompressibleObjectTree,
 } from "../../../../platform/list/browser/listService.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
@@ -86,8 +88,8 @@ import {
 	withSelection,
 } from "../../../../platform/opener/common/opener.js";
 import {
-	type IProgress,
 	IProgressService,
+	type IProgress,
 	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import {
@@ -101,8 +103,8 @@ import {
 	defaultToggleStyles,
 } from "../../../../platform/theme/browser/defaultStyles.js";
 import {
-	type IFileIconTheme,
 	IThemeService,
+	type IFileIconTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import {
 	IWorkspaceContextService,
@@ -115,8 +117,8 @@ import {
 import { ResourceListDnDHandler } from "../../../browser/dnd.js";
 import { ResourceLabels } from "../../../browser/labels.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import type { IEditorPane } from "../../../common/editor.js";
 import { Memento, type MementoObject } from "../../../common/memento.js";
@@ -131,20 +133,20 @@ import {
 	type ISettingsEditorOptions,
 } from "../../../services/preferences/common/preferences.js";
 import {
-	type ITextQueryBuilderOptions,
 	QueryBuilder,
+	type ITextQueryBuilderOptions,
 } from "../../../services/search/common/queryBuilder.js";
 import {
-	type IPatternInfo,
-	type ISearchComplete,
-	type ISearchConfiguration,
-	type ISearchConfigurationProperties,
-	type ITextQuery,
 	QueryType,
 	SearchCompletionExitCode,
 	SearchSortOrder,
 	TextSearchCompleteMessageType,
 	ViewMode,
+	type IPatternInfo,
+	type ISearchComplete,
+	type ISearchConfiguration,
+	type ISearchConfigurationProperties,
+	type ITextQuery,
 } from "../../../services/search/common/search.js";
 import type { TextSearchCompleteMessage } from "../../../services/search/common/searchExtTypes.js";
 import { ITextFileService } from "../../../services/textfile/common/textfiles.js";
@@ -153,14 +155,14 @@ import { INotebookService } from "../../notebook/common/notebookService.js";
 import { createEditorFromSearchResult } from "../../searchEditor/browser/searchEditorActions.js";
 import * as Constants from "../common/constants.js";
 import {
+	getOutOfWorkspaceEditorResources,
 	SearchStateKey,
 	SearchUIState,
-	getOutOfWorkspaceEditorResources,
 } from "../common/search.js";
 import {
 	ISearchHistoryService,
-	type ISearchHistoryValues,
 	SearchHistoryService,
+	type ISearchHistoryValues,
 } from "../common/searchHistoryService.js";
 import {
 	ExcludePatternInputWidget,
@@ -173,18 +175,18 @@ import { searchDetailsIcon } from "./searchIcons.js";
 import { renderSearchMessage } from "./searchMessage.js";
 import {
 	FileMatch,
-	type FileMatchOrMatch,
 	FolderMatch,
 	FolderMatchWithResource,
-	type IChangeEvent,
 	ISearchViewModelWorkbenchService,
 	Match,
 	MatchInNotebook,
-	type RenderableMatch,
-	type SearchModel,
+	searchMatchComparer,
 	SearchModelLocation,
 	SearchResult,
-	searchMatchComparer,
+	type FileMatchOrMatch,
+	type IChangeEvent,
+	type RenderableMatch,
+	type SearchModel,
 } from "./searchModel.js";
 import {
 	FileMatchRenderer,
@@ -287,25 +289,33 @@ export class SearchView extends ViewPane {
 		options: IViewPaneOptions,
 		@IFileService private readonly fileService: IFileService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@IProgressService private readonly progressService: IProgressService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@ISearchViewModelWorkbenchService private readonly searchViewModelWorkbenchService: ISearchViewModelWorkbenchService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@ISearchViewModelWorkbenchService
+		private readonly searchViewModelWorkbenchService: ISearchViewModelWorkbenchService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IReplaceService private readonly replaceService: IReplaceService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@IThemeService themeService: IThemeService,
-		@ISearchHistoryService private readonly searchHistoryService: ISearchHistoryService,
+		@ISearchHistoryService
+		private readonly searchHistoryService: ISearchHistoryService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IOpenerService openerService: IOpenerService,
@@ -313,106 +323,239 @@ export class SearchView extends ViewPane {
 		@IHoverService hoverService: IHoverService,
 		@INotebookService private readonly notebookService: INotebookService,
 		@ILogService private readonly logService: ILogService,
-		@IAccessibilitySignalService private readonly accessibilitySignalService: IAccessibilitySignalService
+		@IAccessibilitySignalService
+		private readonly accessibilitySignalService: IAccessibilitySignalService,
 	) {
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
-
-		this.container = dom.$('.search-view');
+		this.container = dom.$(".search-view");
 
 		// globals
-		this.viewletVisible = Constants.SearchContext.SearchViewVisibleKey.bindTo(this.contextKeyService);
-		this.firstMatchFocused = Constants.SearchContext.FirstMatchFocusKey.bindTo(this.contextKeyService);
-		this.fileMatchOrMatchFocused = Constants.SearchContext.FileMatchOrMatchFocusKey.bindTo(this.contextKeyService);
-		this.fileMatchOrFolderMatchFocus = Constants.SearchContext.FileMatchOrFolderMatchFocusKey.bindTo(this.contextKeyService);
-		this.fileMatchOrFolderMatchWithResourceFocus = Constants.SearchContext.FileMatchOrFolderMatchWithResourceFocusKey.bindTo(this.contextKeyService);
-		this.fileMatchFocused = Constants.SearchContext.FileFocusKey.bindTo(this.contextKeyService);
-		this.folderMatchFocused = Constants.SearchContext.FolderFocusKey.bindTo(this.contextKeyService);
-		this.folderMatchWithResourceFocused = Constants.SearchContext.ResourceFolderFocusKey.bindTo(this.contextKeyService);
-		this.hasSearchResultsKey = Constants.SearchContext.HasSearchResults.bindTo(this.contextKeyService);
-		this.matchFocused = Constants.SearchContext.MatchFocusKey.bindTo(this.contextKeyService);
+		this.viewletVisible =
+			Constants.SearchContext.SearchViewVisibleKey.bindTo(
+				this.contextKeyService,
+			);
+		this.firstMatchFocused =
+			Constants.SearchContext.FirstMatchFocusKey.bindTo(
+				this.contextKeyService,
+			);
+		this.fileMatchOrMatchFocused =
+			Constants.SearchContext.FileMatchOrMatchFocusKey.bindTo(
+				this.contextKeyService,
+			);
+		this.fileMatchOrFolderMatchFocus =
+			Constants.SearchContext.FileMatchOrFolderMatchFocusKey.bindTo(
+				this.contextKeyService,
+			);
+		this.fileMatchOrFolderMatchWithResourceFocus =
+			Constants.SearchContext.FileMatchOrFolderMatchWithResourceFocusKey.bindTo(
+				this.contextKeyService,
+			);
+		this.fileMatchFocused = Constants.SearchContext.FileFocusKey.bindTo(
+			this.contextKeyService,
+		);
+		this.folderMatchFocused = Constants.SearchContext.FolderFocusKey.bindTo(
+			this.contextKeyService,
+		);
+		this.folderMatchWithResourceFocused =
+			Constants.SearchContext.ResourceFolderFocusKey.bindTo(
+				this.contextKeyService,
+			);
+		this.hasSearchResultsKey =
+			Constants.SearchContext.HasSearchResults.bindTo(
+				this.contextKeyService,
+			);
+		this.matchFocused = Constants.SearchContext.MatchFocusKey.bindTo(
+			this.contextKeyService,
+		);
 		this.searchStateKey = SearchStateKey.bindTo(this.contextKeyService);
-		this.hasSearchPatternKey = Constants.SearchContext.ViewHasSearchPatternKey.bindTo(this.contextKeyService);
-		this.hasReplacePatternKey = Constants.SearchContext.ViewHasReplacePatternKey.bindTo(this.contextKeyService);
-		this.hasFilePatternKey = Constants.SearchContext.ViewHasFilePatternKey.bindTo(this.contextKeyService);
-		this.hasSomeCollapsibleResultKey = Constants.SearchContext.ViewHasSomeCollapsibleKey.bindTo(this.contextKeyService);
-		this.treeViewKey = Constants.SearchContext.InTreeViewKey.bindTo(this.contextKeyService);
-		this.aiResultsVisibleKey = Constants.SearchContext.AIResultsVisibleKey.bindTo(this.contextKeyService);
+		this.hasSearchPatternKey =
+			Constants.SearchContext.ViewHasSearchPatternKey.bindTo(
+				this.contextKeyService,
+			);
+		this.hasReplacePatternKey =
+			Constants.SearchContext.ViewHasReplacePatternKey.bindTo(
+				this.contextKeyService,
+			);
+		this.hasFilePatternKey =
+			Constants.SearchContext.ViewHasFilePatternKey.bindTo(
+				this.contextKeyService,
+			);
+		this.hasSomeCollapsibleResultKey =
+			Constants.SearchContext.ViewHasSomeCollapsibleKey.bindTo(
+				this.contextKeyService,
+			);
+		this.treeViewKey = Constants.SearchContext.InTreeViewKey.bindTo(
+			this.contextKeyService,
+		);
+		this.aiResultsVisibleKey =
+			Constants.SearchContext.AIResultsVisibleKey.bindTo(
+				this.contextKeyService,
+			);
 
-		this._register(this.contextKeyService.onDidChangeContext(e => {
-			const keys = Constants.SearchContext.hasAIResultProvider.keys();
-			if (e.affectsSome(new Set(keys))) {
-				this.refreshHasAISetting();
-			}
-		}));
+		this._register(
+			this.contextKeyService.onDidChangeContext((e) => {
+				const keys = Constants.SearchContext.hasAIResultProvider.keys();
+				if (e.affectsSome(new Set(keys))) {
+					this.refreshHasAISetting();
+				}
+			}),
+		);
 
 		// scoped
-		this.contextKeyService = this._register(this.contextKeyService.createScoped(this.container));
-		Constants.SearchContext.SearchViewFocusedKey.bindTo(this.contextKeyService).set(true);
-		this.inputBoxFocused = Constants.SearchContext.InputBoxFocusedKey.bindTo(this.contextKeyService);
-		this.inputPatternIncludesFocused = Constants.SearchContext.PatternIncludesFocusedKey.bindTo(this.contextKeyService);
-		this.inputPatternExclusionsFocused = Constants.SearchContext.PatternExcludesFocusedKey.bindTo(this.contextKeyService);
-		this.isEditableItem = Constants.SearchContext.IsEditableItemKey.bindTo(this.contextKeyService);
+		this.contextKeyService = this._register(
+			this.contextKeyService.createScoped(this.container),
+		);
+		Constants.SearchContext.SearchViewFocusedKey.bindTo(
+			this.contextKeyService,
+		).set(true);
+		this.inputBoxFocused =
+			Constants.SearchContext.InputBoxFocusedKey.bindTo(
+				this.contextKeyService,
+			);
+		this.inputPatternIncludesFocused =
+			Constants.SearchContext.PatternIncludesFocusedKey.bindTo(
+				this.contextKeyService,
+			);
+		this.inputPatternExclusionsFocused =
+			Constants.SearchContext.PatternExcludesFocusedKey.bindTo(
+				this.contextKeyService,
+			);
+		this.isEditableItem = Constants.SearchContext.IsEditableItemKey.bindTo(
+			this.contextKeyService,
+		);
 
-		this.instantiationService = this._register(this.instantiationService.createChild(
-			new ServiceCollection([IContextKeyService, this.contextKeyService])));
+		this.instantiationService = this._register(
+			this.instantiationService.createChild(
+				new ServiceCollection([
+					IContextKeyService,
+					this.contextKeyService,
+				]),
+			),
+		);
 
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('search.sortOrder')) {
-				if (this.searchConfig.sortOrder === SearchSortOrder.Modified) {
-					// If changing away from modified, remove all fileStats
-					// so that updated files are re-retrieved next time.
-					this.removeFileStats();
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("search.sortOrder")) {
+					if (
+						this.searchConfig.sortOrder === SearchSortOrder.Modified
+					) {
+						// If changing away from modified, remove all fileStats
+						// so that updated files are re-retrieved next time.
+						this.removeFileStats();
+					}
+					this.refreshTree();
+				} else if (e.affectsConfiguration("search.aiResults")) {
+					this.refreshHasAISetting();
 				}
-				this.refreshTree();
-			} else if (e.affectsConfiguration('search.aiResults')) {
-				this.refreshHasAISetting();
-			}
-		}));
+			}),
+		);
 
 		this.viewModel = this.searchViewModelWorkbenchService.searchModel;
-		this.queryBuilder = this.instantiationService.createInstance(QueryBuilder);
+		this.queryBuilder =
+			this.instantiationService.createInstance(QueryBuilder);
 		this.memento = new Memento(this.id, storageService);
-		this.viewletState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		this.viewletState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		);
 
-		this._register(this.fileService.onDidFilesChange(e => this.onFilesChanged(e)));
-		this._register(this.textFileService.untitled.onWillDispose(model => this.onUntitledDidDispose(model.resource)));
-		this._register(this.contextService.onDidChangeWorkbenchState(() => this.onDidChangeWorkbenchState()));
-		this._register(this.searchHistoryService.onDidClearHistory(() => this.clearHistory()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationUpdated(e)));
+		this._register(
+			this.fileService.onDidFilesChange((e) => this.onFilesChanged(e)),
+		);
+		this._register(
+			this.textFileService.untitled.onWillDispose((model) =>
+				this.onUntitledDidDispose(model.resource),
+			),
+		);
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(() =>
+				this.onDidChangeWorkbenchState(),
+			),
+		);
+		this._register(
+			this.searchHistoryService.onDidClearHistory(() =>
+				this.clearHistory(),
+			),
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.onConfigurationUpdated(e),
+			),
+		);
 
 		this.delayedRefresh = this._register(new Delayer<void>(250));
 
-		this.addToSearchHistoryDelayer = this._register(new Delayer<void>(2000));
-		this.toggleCollapseStateDelayer = this._register(new Delayer<void>(100));
+		this.addToSearchHistoryDelayer = this._register(
+			new Delayer<void>(2000),
+		);
+		this.toggleCollapseStateDelayer = this._register(
+			new Delayer<void>(100),
+		);
 		this.triggerQueryDelayer = this._register(new Delayer<void>(0));
 
-		this.treeAccessibilityProvider = this.instantiationService.createInstance(SearchAccessibilityProvider, this);
-		this.isTreeLayoutViewVisible = this.viewletState['view.treeLayout'] ?? (this.searchConfig.defaultViewMode === ViewMode.Tree);
+		this.treeAccessibilityProvider =
+			this.instantiationService.createInstance(
+				SearchAccessibilityProvider,
+				this,
+			);
+		this.isTreeLayoutViewVisible =
+			this.viewletState["view.treeLayout"] ??
+			this.searchConfig.defaultViewMode === ViewMode.Tree;
 
-		this._refreshResultsScheduler = this._register(new RunOnceScheduler(this._updateResults.bind(this), 80));
+		this._refreshResultsScheduler = this._register(
+			new RunOnceScheduler(this._updateResults.bind(this), 80),
+		);
 
 		// storage service listener for for roaming changes
-		this._register(this.storageService.onWillSaveState(() => {
-			this._saveSearchHistoryService();
-		}));
+		this._register(
+			this.storageService.onWillSaveState(() => {
+				this._saveSearchHistoryService();
+			}),
+		);
 
-		this._register(this.storageService.onDidChangeValue(StorageScope.WORKSPACE, SearchHistoryService.SEARCH_HISTORY_KEY, this._register(new DisposableStore()))(() => {
-			const restoredHistory = this.searchHistoryService.load();
+		this._register(
+			this.storageService.onDidChangeValue(
+				StorageScope.WORKSPACE,
+				SearchHistoryService.SEARCH_HISTORY_KEY,
+				this._register(new DisposableStore()),
+			)(() => {
+				const restoredHistory = this.searchHistoryService.load();
 
-			if (restoredHistory.include) {
-				this.inputPatternIncludes.prependHistory(restoredHistory.include);
-			}
-			if (restoredHistory.exclude) {
-				this.inputPatternExcludes.prependHistory(restoredHistory.exclude);
-			}
-			if (restoredHistory.search) {
-				this.searchWidget.prependSearchHistory(restoredHistory.search);
-			}
-			if (restoredHistory.replace) {
-				this.searchWidget.prependReplaceHistory(restoredHistory.replace);
-			}
-		}));
+				if (restoredHistory.include) {
+					this.inputPatternIncludes.prependHistory(
+						restoredHistory.include,
+					);
+				}
+				if (restoredHistory.exclude) {
+					this.inputPatternExcludes.prependHistory(
+						restoredHistory.exclude,
+					);
+				}
+				if (restoredHistory.search) {
+					this.searchWidget.prependSearchHistory(
+						restoredHistory.search,
+					);
+				}
+				if (restoredHistory.replace) {
+					this.searchWidget.prependReplaceHistory(
+						restoredHistory.replace,
+					);
+				}
+			}),
+		);
 
 		this.changedWhileHidden = this.hasSearchResults();
 	}

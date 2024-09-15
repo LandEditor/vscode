@@ -96,8 +96,10 @@ export class LinkDetector implements ILinkDetector {
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IPathService private readonly pathService: IPathService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		// noop

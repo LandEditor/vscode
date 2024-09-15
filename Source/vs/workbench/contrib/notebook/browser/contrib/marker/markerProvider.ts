@@ -11,9 +11,9 @@ import {
 import { isEqual } from "../../../../../../base/common/resources.js";
 import type { URI } from "../../../../../../base/common/uri.js";
 import {
-	type IMarkerListProvider,
 	IMarkerNavigationService,
 	MarkerList,
+	type IMarkerListProvider,
 } from "../../../../../../editor/contrib/gotoError/browser/markerNavigationService.js";
 import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
 import {
@@ -25,15 +25,15 @@ import {
 	editorWarningForeground,
 } from "../../../../../../platform/theme/common/colorRegistry.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../../../common/contributions.js";
 import { CellUri } from "../../../common/notebookCommon.js";
 import {
+	NotebookOverviewRulerLane,
 	type INotebookDeltaDecoration,
 	type INotebookEditor,
 	type INotebookEditorContribution,
-	NotebookOverviewRulerLane,
 } from "../../notebookBrowser.js";
 import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 
@@ -45,7 +45,8 @@ class MarkerListProvider implements IMarkerListProvider {
 	constructor(
 		@IMarkerService private readonly _markerService: IMarkerService,
 		@IMarkerNavigationService markerNavigation: IMarkerNavigationService,
-		@IConfigurationService private readonly _configService: IConfigurationService
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 	) {
 		this._dispoables = markerNavigation.registerProvider(this);
 	}
@@ -83,17 +84,27 @@ class NotebookMarkerDecorationContribution
 	private _markersOverviewRulerDecorations: string[] = [];
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		@IMarkerService private readonly _markerService: IMarkerService
+		@IMarkerService private readonly _markerService: IMarkerService,
 	) {
 		super();
 
 		this._update();
-		this._register(this._notebookEditor.onDidChangeModel(() => this._update()));
-		this._register(this._markerService.onMarkerChanged(e => {
-			if (e.some(uri => this._notebookEditor.getCellsInRange().some(cell => isEqual(cell.uri, uri)))) {
-				this._update();
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidChangeModel(() => this._update()),
+		);
+		this._register(
+			this._markerService.onMarkerChanged((e) => {
+				if (
+					e.some((uri) =>
+						this._notebookEditor
+							.getCellsInRange()
+							.some((cell) => isEqual(cell.uri, uri)),
+					)
+				) {
+					this._update();
+				}
+			}),
+		);
 	}
 
 	@throttle(100)

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Emitter } from "../../../base/common/event.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import type {
@@ -28,7 +29,7 @@ export class ExtHostNotebookEditors implements ExtHostNotebookEditorsShape {
 	constructor(
 		@ILogService private readonly _logService: ILogService,
 		private readonly _notebooksAndEditors: ExtHostNotebookController,
-	) { }
+	) {}
 
 	$acceptEditorPropertiesChanged(
 		id: string,

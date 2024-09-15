@@ -9,8 +9,8 @@ import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import type Severity from "../../../../base/common/severity.js";
 import { compare } from "../../../../base/common/strings.js";
 import { LanguageFeatureRegistry } from "../../../../editor/common/languageFeatureRegistry.js";
-import type { LanguageSelector } from "../../../../editor/common/languageSelector.js";
 import type { Command } from "../../../../editor/common/languages.js";
+import type { LanguageSelector } from "../../../../editor/common/languageSelector.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import type { IAccessibilityInformation } from "../../../../platform/accessibility/common/accessibility.js";
 import {

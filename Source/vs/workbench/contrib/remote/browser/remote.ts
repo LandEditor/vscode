@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/remoteViewlet.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import type { IListVirtualDelegate } from "../../../../base/browser/ui/list/list.js";
 import type {
@@ -37,10 +38,10 @@ import { WorkbenchAsyncDataTree } from "../../../../platform/list/browser/listSe
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import { IQuickInputService } from "../../../../platform/quickinput/common/quickInput.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
@@ -56,18 +57,18 @@ import { getVirtualWorkspaceLocation } from "../../../../platform/workspace/comm
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import { ReloadWindowAction } from "../../../browser/actions/windowActions.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { FilterViewPaneContainer } from "../../../browser/parts/views/viewsViewlet.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
 	Extensions,
+	IViewDescriptorService,
+	ViewContainerLocation,
 	type IViewContainersRegistry,
 	type IViewDescriptor,
-	IViewDescriptorService,
 	type IViewsRegistry,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
@@ -78,8 +79,8 @@ import type { IExtensionPointUser } from "../../../services/extensions/common/ex
 import { IWorkbenchLayoutService } from "../../../services/layout/browser/layoutService.js";
 import { IRemoteAgentService } from "../../../services/remote/common/remoteAgentService.js";
 import {
-	type HelpInformation,
 	IRemoteExplorerService,
+	type HelpInformation,
 } from "../../../services/remote/common/remoteExplorerService.js";
 import { ITimerService } from "../../../services/timer/browser/timerService.js";
 import { IWalkthroughsService } from "../../welcomeGettingStarted/browser/gettingStartedService.js";
@@ -653,15 +654,31 @@ class HelpPanel extends ViewPane {
 		@IOpenerService openerService: IOpenerService,
 		@IQuickInputService protected quickInputService: IQuickInputService,
 		@ICommandService protected commandService: ICommandService,
-		@IRemoteExplorerService protected readonly remoteExplorerService: IRemoteExplorerService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IRemoteExplorerService
+		protected readonly remoteExplorerService: IRemoteExplorerService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWalkthroughsService private readonly walkthroughsService: IWalkthroughsService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWalkthroughsService
+		private readonly walkthroughsService: IWalkthroughsService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
@@ -759,36 +776,61 @@ class RemoteViewPaneContainer
 		@IThemeService themeService: IThemeService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IExtensionService extensionService: IExtensionService,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
-		@IViewDescriptorService viewDescriptorService: IViewDescriptorService
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
+		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 	) {
-		super(VIEWLET_ID, remoteExplorerService.onDidChangeTargetType, configurationService, layoutService, telemetryService, storageService, instantiationService, themeService, contextMenuService, extensionService, contextService, viewDescriptorService);
+		super(
+			VIEWLET_ID,
+			remoteExplorerService.onDidChangeTargetType,
+			configurationService,
+			layoutService,
+			telemetryService,
+			storageService,
+			instantiationService,
+			themeService,
+			contextMenuService,
+			extensionService,
+			contextService,
+			viewDescriptorService,
+		);
 		this.addConstantViewDescriptors([this.helpPanelDescriptor]);
-		this._register(this.remoteSwitcher = this.instantiationService.createInstance(SwitchRemoteViewItem));
-		this.remoteExplorerService.onDidChangeHelpInformation(extensions => {
+		this._register(
+			(this.remoteSwitcher =
+				this.instantiationService.createInstance(SwitchRemoteViewItem)),
+		);
+		this.remoteExplorerService.onDidChangeHelpInformation((extensions) => {
 			this._setHelpInformation(extensions);
 		});
 
 		this._setHelpInformation(this.remoteExplorerService.helpInformation);
-		const viewsRegistry = Registry.as<IViewsRegistry>(Extensions.ViewsRegistry);
+		const viewsRegistry = Registry.as<IViewsRegistry>(
+			Extensions.ViewsRegistry,
+		);
 
-		this.remoteSwitcher.createOptionItems(viewsRegistry.getViews(this.viewContainer));
-		this._register(viewsRegistry.onViewsRegistered(e => {
-			const remoteViews: IViewDescriptor[] = [];
-			for (const view of e) {
-				if (view.viewContainer.id === VIEWLET_ID) {
-					remoteViews.push(...view.views);
+		this.remoteSwitcher.createOptionItems(
+			viewsRegistry.getViews(this.viewContainer),
+		);
+		this._register(
+			viewsRegistry.onViewsRegistered((e) => {
+				const remoteViews: IViewDescriptor[] = [];
+				for (const view of e) {
+					if (view.viewContainer.id === VIEWLET_ID) {
+						remoteViews.push(...view.views);
+					}
 				}
-			}
-			if (remoteViews.length > 0) {
-				this.remoteSwitcher!.createOptionItems(remoteViews);
-			}
-		}));
-		this._register(viewsRegistry.onViewsDeregistered(e => {
-			if (e.viewContainer.id === VIEWLET_ID) {
-				this.remoteSwitcher!.removeOptionItems(e.views);
-			}
-		}));
+				if (remoteViews.length > 0) {
+					this.remoteSwitcher!.createOptionItems(remoteViews);
+				}
+			}),
+		);
+		this._register(
+			viewsRegistry.onViewsDeregistered((e) => {
+				if (e.viewContainer.id === VIEWLET_ID) {
+					this.remoteSwitcher!.removeOptionItems(e.views);
+				}
+			}),
+		);
 	}
 
 	private _setHelpInformation(
@@ -1071,7 +1113,8 @@ export class RemoteAgentConnectionStatusListener
 		@ICommandService commandService: ICommandService,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@ILogService logService: ILogService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super();

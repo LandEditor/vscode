@@ -28,9 +28,9 @@ import {
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { applicationConfigurationNodeBase } from "../../../common/configuration.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
@@ -47,7 +47,8 @@ class WelcomeDialogContribution
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextKeyService contextService: IContextKeyService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,

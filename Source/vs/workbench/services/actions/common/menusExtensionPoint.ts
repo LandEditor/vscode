@@ -19,10 +19,10 @@ import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import type { ILocalizedString } from "../../../../platform/action/common/action.js";
 import {
-	type IMenuItem,
-	type ISubmenuItem,
 	MenuId,
 	MenuRegistry,
+	type IMenuItem,
+	type ISubmenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import type {
@@ -35,16 +35,16 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
 	Extensions as ExtensionFeaturesExtensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,
 } from "../../extensionManagement/common/extensionFeatures.js";
 import { isProposedApiEnabled } from "../../extensions/common/extensions.js";
 import {
-	type ExtensionMessageCollector,
 	ExtensionsRegistry,
+	type ExtensionMessageCollector,
 	type IExtensionPointUser,
 } from "../../extensions/common/extensionsRegistry.js";
 
@@ -1637,8 +1637,11 @@ class CommandsTableRenderer
 	readonly type = "table";
 
 	constructor(
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
-	) { super(); }
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+	) {
+		super();
+	}
 
 	shouldRender(manifest: IExtensionManifest): boolean {
 		return !!manifest.contributes?.commands;

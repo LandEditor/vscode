@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	KeyCodeChord,
 	Keybinding,
+	KeyCodeChord,
 	type ResolvedKeybinding,
 } from "../../../../base/common/keybindings.js";
 import type { OperatingSystem } from "../../../../base/common/platform.js";

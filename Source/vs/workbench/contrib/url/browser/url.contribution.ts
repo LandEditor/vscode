@@ -28,18 +28,18 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IURLService } from "../../../../platform/url/common/url.js";
 import { workbenchConfigurationNodeBase } from "../../../common/configuration.js";
 import {
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { ExternalUriResolverContribution } from "./externalUriResolver.js";
+import { manageTrustedDomainSettingsCommand } from "./trustedDomains.js";
 import {
 	ITrustedDomainService,
 	TrustedDomainService,
 } from "./trustedDomainService.js";
-import { manageTrustedDomainSettingsCommand } from "./trustedDomains.js";
 import { TrustedDomainsFileSystemProvider } from "./trustedDomainsFileSystemProvider.js";
 import { OpenerValidatorContributions } from "./trustedDomainsValidator.js";
 

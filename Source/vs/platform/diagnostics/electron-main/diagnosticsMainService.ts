@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { BrowserWindow, type Event as IpcEvent, app } from "electron";
+import { app, BrowserWindow, type Event as IpcEvent } from "electron";
+
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { assertIsDefined } from "../../../base/common/types.js";
 import type { URI } from "../../../base/common/uri.js";
@@ -49,10 +50,12 @@ export class DiagnosticsMainService implements IDiagnosticsMainService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
-		@ILogService private readonly logService: ILogService
-	) { }
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@ILogService private readonly logService: ILogService,
+	) {}
 
 	async getRemoteDiagnostics(
 		options: IRemoteDiagnosticOptions,

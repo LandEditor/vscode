@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/keybindingsEditor.css";
+
 import * as DOM from "../../../../base/browser/dom.js";
 import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
-import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { HighlightedLabel } from "../../../../base/browser/ui/highlightedlabel/highlightedLabel.js";
 import type { IManagedHover } from "../../../../base/browser/ui/hover/hover.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
@@ -22,8 +23,8 @@ import { ToggleActionViewItem } from "../../../../base/browser/ui/toggle/toggle.
 import { ToolBar } from "../../../../base/browser/ui/toolbar/toolbar.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { Delayer } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
@@ -32,10 +33,10 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
-import { OS, isIOS } from "../../../../base/common/platform.js";
+import { isIOS, OS } from "../../../../base/common/platform.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { isString } from "../../../../base/common/types.js";
 import { EditorExtensionsRegistry } from "../../../../editor/browser/editorExtensions.js";
@@ -43,16 +44,16 @@ import { CompletionItemKind } from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import {
+	isIMenuItem,
 	MenuId,
 	MenuRegistry,
-	isIMenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
@@ -94,10 +95,10 @@ import {
 	tableOddRowsBackgroundColor,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
-	type ICssStyleCollector,
 	IThemeService,
 	registerThemingParticipant,
+	type IColorTheme,
+	type ICssStyleCollector,
 } from "../../../../platform/theme/common/themeService.js";
 import { registerNavigableContainer } from "../../../browser/actions/widgetNavigationCommands.js";
 import { EditorPane } from "../../../browser/parts/editor/editorPane.js";
@@ -119,9 +120,9 @@ import { AccessibilityVerbositySettingId } from "../../accessibility/browser/acc
 import { SuggestEnabledInput } from "../../codeEditor/browser/suggestEnabledInput/suggestEnabledInput.js";
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
 import {
+	CONTEXT_KEYBINDING_FOCUS,
 	CONTEXT_KEYBINDINGS_EDITOR,
 	CONTEXT_KEYBINDINGS_SEARCH_FOCUS,
-	CONTEXT_KEYBINDING_FOCUS,
 	CONTEXT_WHEN_FOCUS,
 	KEYBINDINGS_EDITOR_COMMAND_ADD,
 	KEYBINDINGS_EDITOR_COMMAND_CLEAR_SEARCH_RESULTS,
@@ -208,33 +209,70 @@ export class KeybindingsEditor
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IKeybindingService private readonly keybindingsService: IKeybindingService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IKeybindingEditingService private readonly keybindingEditingService: IKeybindingEditingService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IKeybindingService
+		private readonly keybindingsService: IKeybindingService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IKeybindingEditingService
+		private readonly keybindingEditingService: IKeybindingEditingService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IClipboardService private readonly clipboardService: IClipboardService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 	) {
-		super(KeybindingsEditor.ID, group, telemetryService, themeService, storageService);
+		super(
+			KeybindingsEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 		this.delayedFiltering = new Delayer<void>(300);
-		this._register(keybindingsService.onDidUpdateKeybindings(() => this.render(!!this.keybindingFocusContextKey.get())));
+		this._register(
+			keybindingsService.onDidUpdateKeybindings(() =>
+				this.render(!!this.keybindingFocusContextKey.get()),
+			),
+		);
 
-		this.keybindingsEditorContextKey = CONTEXT_KEYBINDINGS_EDITOR.bindTo(this.contextKeyService);
-		this.searchFocusContextKey = CONTEXT_KEYBINDINGS_SEARCH_FOCUS.bindTo(this.contextKeyService);
-		this.keybindingFocusContextKey = CONTEXT_KEYBINDING_FOCUS.bindTo(this.contextKeyService);
+		this.keybindingsEditorContextKey = CONTEXT_KEYBINDINGS_EDITOR.bindTo(
+			this.contextKeyService,
+		);
+		this.searchFocusContextKey = CONTEXT_KEYBINDINGS_SEARCH_FOCUS.bindTo(
+			this.contextKeyService,
+		);
+		this.keybindingFocusContextKey = CONTEXT_KEYBINDING_FOCUS.bindTo(
+			this.contextKeyService,
+		);
 		this.searchHistoryDelayer = new Delayer<void>(500);
 
-		this.recordKeysAction = new Action(KEYBINDINGS_EDITOR_COMMAND_RECORD_SEARCH_KEYS, localize('recordKeysLabel', "Record Keys"), ThemeIcon.asClassName(keybindingsRecordKeysIcon));
+		this.recordKeysAction = new Action(
+			KEYBINDINGS_EDITOR_COMMAND_RECORD_SEARCH_KEYS,
+			localize("recordKeysLabel", "Record Keys"),
+			ThemeIcon.asClassName(keybindingsRecordKeysIcon),
+		);
 		this.recordKeysAction.checked = false;
 
-		this.sortByPrecedenceAction = new Action(KEYBINDINGS_EDITOR_COMMAND_SORTBY_PRECEDENCE, localize('sortByPrecedeneLabel', "Sort by Precedence (Highest first)"), ThemeIcon.asClassName(keybindingsSortIcon));
+		this.sortByPrecedenceAction = new Action(
+			KEYBINDINGS_EDITOR_COMMAND_SORTBY_PRECEDENCE,
+			localize(
+				"sortByPrecedeneLabel",
+				"Sort by Precedence (Highest first)",
+			),
+			ThemeIcon.asClassName(keybindingsSortIcon),
+		);
 		this.sortByPrecedenceAction.checked = false;
-		this.overflowWidgetsDomNode = $('.keybindings-overflow-widgets-container.monaco-editor');
+		this.overflowWidgetsDomNode = $(
+			".keybindings-overflow-widgets-container.monaco-editor",
+		);
 	}
 
 	override create(parent: HTMLElement): void {
@@ -1001,7 +1039,7 @@ export class KeybindingsEditor
 		const tableHeight =
 			this.dimension.height -
 			(DOM.getDomNodePagePosition(this.headerContainer).height +
-				12) /*padding*/;
+				12); /*padding*/
 		this.keybindingsTableContainer.style.height = `${tableHeight}px`;
 		this.keybindingsTable.layout(tableHeight);
 	}
@@ -1274,9 +1312,9 @@ class ActionsColumnRenderer
 
 	constructor(
 		private readonly keybindingsEditor: KeybindingsEditor,
-		@IKeybindingService private readonly keybindingsService: IKeybindingService
-	) {
-	}
+		@IKeybindingService
+		private readonly keybindingsService: IKeybindingService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IActionsColumnTemplateData {
 		const element = DOM.append(container, $(".actions"));
@@ -1373,10 +1411,7 @@ class CommandColumnRenderer
 
 	readonly templateId: string = CommandColumnRenderer.TEMPLATE_ID;
 
-	constructor(
-		@IHoverService private readonly _hoverService: IHoverService
-	) {
-	}
+	constructor(@IHoverService private readonly _hoverService: IHoverService) {}
 
 	renderTemplate(container: HTMLElement): ICommandColumnTemplateData {
 		const commandColumn = DOM.append(container, $(".command"));
@@ -1575,9 +1610,10 @@ class SourceColumnRenderer
 	readonly templateId: string = SourceColumnRenderer.TEMPLATE_ID;
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IHoverService private readonly hoverService: IHoverService,
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement): ISourceColumnTemplateData {
 		const sourceColumn = DOM.append(container, $(".source"));
@@ -1763,8 +1799,9 @@ class WhenColumnRenderer
 	constructor(
 		private readonly keybindingsEditor: KeybindingsEditor,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IWhenColumnTemplateData {
 		const element = DOM.append(container, $(".when"));

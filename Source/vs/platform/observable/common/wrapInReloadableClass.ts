@@ -7,9 +7,9 @@ import { readHotReloadableExport } from "../../../base/common/hotReloadHelpers.j
 import type { IDisposable } from "../../../base/common/lifecycle.js";
 import { autorunWithStore } from "../../../base/common/observable.js";
 import {
+	IInstantiationService,
 	type BrandedService,
 	type GetLeadingNonServiceArgs,
-	IInstantiationService,
 } from "../../instantiation/common/instantiation.js";
 
 /**
@@ -59,7 +59,10 @@ function createWrapper<T extends any[]>(
 }
 
 class BaseClass0 extends BaseClass {
-	constructor(@IInstantiationService i: IInstantiationService) { super(i); this.init(); }
+	constructor(@IInstantiationService i: IInstantiationService) {
+		super(i);
+		this.init();
+	}
 }
 
 /**

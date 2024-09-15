@@ -15,8 +15,8 @@ import type { IUriIdentityService } from "../../../../platform/uriIdentity/commo
 import type { IEditorPane } from "../../../common/editor.js";
 import {
 	ACTIVE_GROUP,
-	type IEditorService,
 	SIDE_GROUP,
+	type IEditorService,
 } from "../../../services/editor/common/editorService.js";
 import { DEBUG_SCHEME } from "./debug.js";
 import { isUri } from "./debugUtils.js";

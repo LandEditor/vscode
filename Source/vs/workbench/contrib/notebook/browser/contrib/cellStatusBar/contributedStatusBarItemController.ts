@@ -32,15 +32,33 @@ export class ContributedStatusBarItemController
 
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		@INotebookCellStatusBarService private readonly _notebookCellStatusBarService: INotebookCellStatusBarService
+		@INotebookCellStatusBarService
+		private readonly _notebookCellStatusBarService: INotebookCellStatusBarService,
 	) {
 		super();
-		this._observer = this._register(new NotebookVisibleCellObserver(this._notebookEditor));
-		this._register(this._observer.onDidChangeVisibleCells(this._updateVisibleCells, this));
+		this._observer = this._register(
+			new NotebookVisibleCellObserver(this._notebookEditor),
+		);
+		this._register(
+			this._observer.onDidChangeVisibleCells(
+				this._updateVisibleCells,
+				this,
+			),
+		);
 
 		this._updateEverything();
-		this._register(this._notebookCellStatusBarService.onDidChangeProviders(this._updateEverything, this));
-		this._register(this._notebookCellStatusBarService.onDidChangeItems(this._updateEverything, this));
+		this._register(
+			this._notebookCellStatusBarService.onDidChangeProviders(
+				this._updateEverything,
+				this,
+			),
+		);
+		this._register(
+			this._notebookCellStatusBarService.onDidChangeItems(
+				this._updateEverything,
+				this,
+			),
+		);
 	}
 
 	private _updateEverything(): void {

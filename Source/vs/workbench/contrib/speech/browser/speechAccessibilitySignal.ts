@@ -18,12 +18,25 @@ export class SpeechAccessibilitySignalContribution
 	static readonly ID = "workbench.contrib.speechAccessibilitySignal";
 
 	constructor(
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 		@ISpeechService private readonly _speechService: ISpeechService,
 	) {
 		super();
 
-		this._register(this._speechService.onDidStartSpeechToTextSession(() => this._accessibilitySignalService.playSignal(AccessibilitySignal.voiceRecordingStarted)));
-		this._register(this._speechService.onDidEndSpeechToTextSession(() => this._accessibilitySignalService.playSignal(AccessibilitySignal.voiceRecordingStopped)));
+		this._register(
+			this._speechService.onDidStartSpeechToTextSession(() =>
+				this._accessibilitySignalService.playSignal(
+					AccessibilitySignal.voiceRecordingStarted,
+				),
+			),
+		);
+		this._register(
+			this._speechService.onDidEndSpeechToTextSession(() =>
+				this._accessibilitySignalService.playSignal(
+					AccessibilitySignal.voiceRecordingStopped,
+				),
+			),
+		);
 	}
 }

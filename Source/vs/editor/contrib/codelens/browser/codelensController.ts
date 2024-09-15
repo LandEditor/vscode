@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	RunOnceScheduler,
 	createCancelablePromise,
 	disposableTimeout,
+	RunOnceScheduler,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import {
 	onUnexpectedError,
@@ -22,17 +22,17 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import { IQuickInputService } from "../../../../platform/quickinput/common/quickInput.js";
 import {
+	MouseTargetType,
 	type IActiveCodeEditor,
 	type ICodeEditor,
 	type IViewZoneChangeAccessor,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { StableEditorScrollState } from "../../../browser/stableEditorScroll.js";
 import {
@@ -44,16 +44,16 @@ import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import type { CodeLens, Command } from "../../../common/languages.js";
 import type { IModelDecorationsChangeAccessor } from "../../../common/model.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
-import { ICodeLensCache } from "./codeLensCache.js";
 import {
+	getCodeLensModel,
 	type CodeLensItem,
 	type CodeLensModel,
-	getCodeLensModel,
 } from "./codelens.js";
+import { ICodeLensCache } from "./codeLensCache.js";
 import { CodeLensHelper, CodeLensWidget } from "./codelensWidget.js";
 
 export class CodeLensContribution implements IEditorContribution {
@@ -77,27 +77,56 @@ export class CodeLensContribution implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService debounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		debounceService: ILanguageFeatureDebounceService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@ICodeLensCache private readonly _codeLensCache: ICodeLensCache
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@ICodeLensCache private readonly _codeLensCache: ICodeLensCache,
 	) {
-		this._provideCodeLensDebounce = debounceService.for(_languageFeaturesService.codeLensProvider, 'CodeLensProvide', { min: 250 });
-		this._resolveCodeLensesDebounce = debounceService.for(_languageFeaturesService.codeLensProvider, 'CodeLensResolve', { min: 250, salt: 'resolve' });
-		this._resolveCodeLensesScheduler = new RunOnceScheduler(() => this._resolveCodeLensesInViewport(), this._resolveCodeLensesDebounce.default());
+		this._provideCodeLensDebounce = debounceService.for(
+			_languageFeaturesService.codeLensProvider,
+			"CodeLensProvide",
+			{ min: 250 },
+		);
+		this._resolveCodeLensesDebounce = debounceService.for(
+			_languageFeaturesService.codeLensProvider,
+			"CodeLensResolve",
+			{ min: 250, salt: "resolve" },
+		);
+		this._resolveCodeLensesScheduler = new RunOnceScheduler(
+			() => this._resolveCodeLensesInViewport(),
+			this._resolveCodeLensesDebounce.default(),
+		);
 
-		this._disposables.add(this._editor.onDidChangeModel(() => this._onModelChange()));
-		this._disposables.add(this._editor.onDidChangeModelLanguage(() => this._onModelChange()));
-		this._disposables.add(this._editor.onDidChangeConfiguration((e) => {
-			if (e.hasChanged(EditorOption.fontInfo) || e.hasChanged(EditorOption.codeLensFontSize) || e.hasChanged(EditorOption.codeLensFontFamily)) {
-				this._updateLensStyle();
-			}
-			if (e.hasChanged(EditorOption.codeLens)) {
-				this._onModelChange();
-			}
-		}));
-		this._disposables.add(_languageFeaturesService.codeLensProvider.onDidChange(this._onModelChange, this));
+		this._disposables.add(
+			this._editor.onDidChangeModel(() => this._onModelChange()),
+		);
+		this._disposables.add(
+			this._editor.onDidChangeModelLanguage(() => this._onModelChange()),
+		);
+		this._disposables.add(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (
+					e.hasChanged(EditorOption.fontInfo) ||
+					e.hasChanged(EditorOption.codeLensFontSize) ||
+					e.hasChanged(EditorOption.codeLensFontFamily)
+				) {
+					this._updateLensStyle();
+				}
+				if (e.hasChanged(EditorOption.codeLens)) {
+					this._onModelChange();
+				}
+			}),
+		);
+		this._disposables.add(
+			_languageFeaturesService.codeLensProvider.onDidChange(
+				this._onModelChange,
+				this,
+			),
+		);
 		this._onModelChange();
 
 		this._updateLensStyle();

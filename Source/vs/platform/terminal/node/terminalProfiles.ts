@@ -6,6 +6,7 @@
 import * as cp from "child_process";
 import * as fs from "fs";
 import { dirname, resolve } from "path";
+
 import { Codicon } from "../../../base/common/codicons.js";
 import { basename, delimiter, normalize } from "../../../base/common/path.js";
 import { isLinux, isWindows } from "../../../base/common/platform.js";
@@ -17,14 +18,14 @@ import { enumeratePowerShellInstallations } from "../../../base/node/powershell.
 import type { IConfigurationService } from "../../configuration/common/configuration.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
+	ProfileSource,
+	TerminalSettingId,
 	type ITerminalEnvironment,
 	type ITerminalExecutable,
 	type ITerminalProfile,
 	type ITerminalProfileSource,
 	type ITerminalUnsafePath,
-	ProfileSource,
 	type TerminalIcon,
-	TerminalSettingId,
 } from "../common/terminal.js";
 import {
 	findExecutable,

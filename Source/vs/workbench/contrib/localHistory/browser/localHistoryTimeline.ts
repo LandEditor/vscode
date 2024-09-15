@@ -23,8 +23,8 @@ import { SaveSourceRegistry } from "../../../common/editor.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import { IPathService } from "../../../services/path/common/pathService.js";
 import {
-	type IWorkingCopyHistoryEntry,
 	IWorkingCopyHistoryService,
+	type IWorkingCopyHistoryEntry,
 } from "../../../services/workingCopy/common/workingCopyHistory.js";
 import {
 	ITimelineService,
@@ -35,9 +35,9 @@ import {
 	type TimelineProvider,
 } from "../../timeline/common/timeline.js";
 import {
+	getLocalHistoryDateFormatter,
 	LOCAL_HISTORY_ICON_ENTRY,
 	LOCAL_HISTORY_MENU_CONTEXT_VALUE,
-	getLocalHistoryDateFormatter,
 } from "./localHistory.js";
 import {
 	COMPARE_WITH_FILE_LABEL,
@@ -71,12 +71,16 @@ export class LocalHistoryTimeline
 
 	constructor(
 		@ITimelineService private readonly timelineService: ITimelineService,
-		@IWorkingCopyHistoryService private readonly workingCopyHistoryService: IWorkingCopyHistoryService,
+		@IWorkingCopyHistoryService
+		private readonly workingCopyHistoryService: IWorkingCopyHistoryService,
 		@IPathService private readonly pathService: IPathService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 	) {
 		super();
 

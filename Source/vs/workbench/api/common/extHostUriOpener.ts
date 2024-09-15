@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { toDisposable } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
@@ -11,9 +12,9 @@ import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type * as languages from "../../../editor/common/languages.js";
 import type { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostUriOpenersShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadUriOpenersShape,
 } from "./extHost.protocol.js";
 

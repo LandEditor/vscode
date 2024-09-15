@@ -31,11 +31,11 @@ import { isRemoteDiagnosticError } from "../../../../platform/diagnostics/common
 import {
 	IIssueMainService,
 	IProcessMainService,
+	OldIssueType,
 	type OldIssueReporterData,
 	type OldIssueReporterExtensionData,
 	type OldIssueReporterStyles,
 	type OldIssueReporterWindowConfiguration,
-	OldIssueType,
 } from "../../../../platform/issue/common/issue.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import { getIconsStyleSheet } from "../../../../platform/theme/browser/iconsStyleSheet.js";
@@ -45,8 +45,8 @@ import {
 	zoomOut,
 } from "../../../../platform/window/electron-sandbox/window.js";
 import {
-	type IssueReporterData,
 	IssueReporterModel,
+	type IssueReporterData,
 	type IssueReporterData as IssueReporterModelData,
 } from "../browser/issueReporterModel.js";
 import { normalizeGitHubUrl } from "../common/issueReporterUtil.js";
@@ -84,42 +84,58 @@ export class IssueReporter extends Disposable {
 
 	constructor(
 		private readonly configuration: OldIssueReporterWindowConfiguration,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IIssueMainService private readonly issueMainService: IIssueMainService,
-		@IProcessMainService private readonly processMainService: IProcessMainService
+		@IProcessMainService
+		private readonly processMainService: IProcessMainService,
 	) {
 		super();
-		const targetExtension = configuration.data.extensionId ? configuration.data.enabledExtensions.find(extension => extension.id.toLocaleLowerCase() === configuration.data.extensionId?.toLocaleLowerCase()) : undefined;
+		const targetExtension = configuration.data.extensionId
+			? configuration.data.enabledExtensions.find(
+					(extension) =>
+						extension.id.toLocaleLowerCase() ===
+						configuration.data.extensionId?.toLocaleLowerCase(),
+				)
+			: undefined;
 		this.issueReporterModel = new IssueReporterModel({
 			...configuration.data,
 			issueType: configuration.data.issueType || OldIssueType.Bug,
 			versionInfo: {
-				vscodeVersion: `${configuration.product.nameShort} ${!!configuration.product.darwinUniversalAssetId ? `${configuration.product.version} (Universal)` : configuration.product.version} (${configuration.product.commit || 'Commit unknown'}, ${configuration.product.date || 'Date unknown'})`,
-				os: `${this.configuration.os.type} ${this.configuration.os.arch} ${this.configuration.os.release}${isLinuxSnap ? ' snap' : ''}`
+				vscodeVersion: `${configuration.product.nameShort} ${!!configuration.product.darwinUniversalAssetId ? `${configuration.product.version} (Universal)` : configuration.product.version} (${configuration.product.commit || "Commit unknown"}, ${configuration.product.date || "Date unknown"})`,
+				os: `${this.configuration.os.type} ${this.configuration.os.arch} ${this.configuration.os.release}${isLinuxSnap ? " snap" : ""}`,
 			},
 			extensionsDisabled: !!configuration.disableExtensions,
-			fileOnExtension: configuration.data.extensionId ? !targetExtension?.isBuiltin : undefined,
-			selectedExtension: targetExtension
+			fileOnExtension: configuration.data.extensionId
+				? !targetExtension?.isBuiltin
+				: undefined,
+			selectedExtension: targetExtension,
 		});
 
-		const fileOnMarketplace = configuration.data.issueSource === IssueSource.Marketplace;
-		const fileOnProduct = configuration.data.issueSource === IssueSource.VSCode;
+		const fileOnMarketplace =
+			configuration.data.issueSource === IssueSource.Marketplace;
+		const fileOnProduct =
+			configuration.data.issueSource === IssueSource.VSCode;
 		this.issueReporterModel.update({ fileOnMarketplace, fileOnProduct });
 
 		//TODO: Handle case where extension is not activated
-		const issueReporterElement = this.getElementById('issue-reporter');
+		const issueReporterElement = this.getElementById("issue-reporter");
 		if (issueReporterElement) {
-			this.previewButton = new Button(issueReporterElement, unthemedButtonStyles);
-			const issueRepoName = document.createElement('a');
+			this.previewButton = new Button(
+				issueReporterElement,
+				unthemedButtonStyles,
+			);
+			const issueRepoName = document.createElement("a");
 			issueReporterElement.appendChild(issueRepoName);
-			issueRepoName.id = 'show-repo-name';
-			issueRepoName.classList.add('hidden');
+			issueRepoName.id = "show-repo-name";
+			issueRepoName.classList.add("hidden");
 			this.updatePreviewButtonState();
 		}
 
 		const issueTitle = configuration.data.issueTitle;
 		if (issueTitle) {
-			const issueTitleElement = this.getElementById<HTMLInputElement>('issue-title');
+			const issueTitleElement =
+				this.getElementById<HTMLInputElement>("issue-title");
 			if (issueTitleElement) {
 				issueTitleElement.value = issueTitle;
 			}
@@ -127,14 +143,15 @@ export class IssueReporter extends Disposable {
 
 		const issueBody = configuration.data.issueBody;
 		if (issueBody) {
-			const description = this.getElementById<HTMLTextAreaElement>('description');
+			const description =
+				this.getElementById<HTMLTextAreaElement>("description");
 			if (description) {
 				description.value = issueBody;
 				this.issueReporterModel.update({ issueDescription: issueBody });
 			}
 		}
 
-		this.processMainService.$getSystemInfo().then(info => {
+		this.processMainService.$getSystemInfo().then((info) => {
 			this.issueReporterModel.update({ systemInfo: info });
 			this.receivedSystemInfo = true;
 
@@ -142,17 +159,17 @@ export class IssueReporter extends Disposable {
 			this.updatePreviewButtonState();
 		});
 		if (configuration.data.issueType === OldIssueType.PerformanceIssue) {
-			this.processMainService.$getPerformanceInfo().then(info => {
+			this.processMainService.$getPerformanceInfo().then((info) => {
 				this.updatePerformanceInfo(info as Partial<IssueReporterData>);
 			});
 		}
 
-		if (mainWindow.document.documentElement.lang !== 'en') {
-			show(this.getElementById('english'));
+		if (mainWindow.document.documentElement.lang !== "en") {
+			show(this.getElementById("english"));
 		}
 
 		const codiconStyleSheet = createStyleSheet();
-		codiconStyleSheet.id = 'codiconStyles';
+		codiconStyleSheet.id = "codiconStyles";
 
 		// TODO: Is there a way to use the IThemeService here instead
 		const iconsStyleSheet = this._register(getIconsStyleSheet(undefined));
@@ -174,7 +191,10 @@ export class IssueReporter extends Disposable {
 		this.updateUnsupportedMode(configuration.data.isUnsupported);
 
 		// Handle case where extension is pre-selected through the command
-		if ((configuration.data.data || configuration.data.uri) && targetExtension) {
+		if (
+			(configuration.data.data || configuration.data.uri) &&
+			targetExtension
+		) {
 			this.updateExtensionStatus(targetExtension);
 		}
 	}

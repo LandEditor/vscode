@@ -13,8 +13,8 @@ import {
 import type { URI } from "../../../../base/common/uri.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	IFileService,
+	type FileChangesEvent,
 } from "../../../../platform/files/common/files.js";
 import type { IRevertOptions, ISaveOptions } from "../../../common/editor.js";
 import type {
@@ -56,11 +56,13 @@ export abstract class ResourceWorkingCopy
 {
 	constructor(
 		readonly resource: URI,
-		@IFileService protected readonly fileService: IFileService
+		@IFileService protected readonly fileService: IFileService,
 	) {
 		super();
 
-		this._register(this.fileService.onDidFilesChange(e => this.onDidFilesChange(e)));
+		this._register(
+			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e)),
+		);
 	}
 
 	//#region Orphaned Tracking

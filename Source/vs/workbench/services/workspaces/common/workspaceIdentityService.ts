@@ -43,9 +43,11 @@ export class WorkspaceIdentityService implements IWorkspaceIdentityService {
 	declare _serviceBrand: undefined;
 
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IEditSessionIdentityService private readonly editSessionIdentityService: IEditSessionIdentityService
-	) { }
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IEditSessionIdentityService
+		private readonly editSessionIdentityService: IEditSessionIdentityService,
+	) {}
 
 	async getWorkspaceStateFolders(
 		cancellationToken: CancellationToken,

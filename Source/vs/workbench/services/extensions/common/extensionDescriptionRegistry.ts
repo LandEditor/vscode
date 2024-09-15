@@ -7,8 +7,8 @@ import { promiseWithResolvers } from "../../../../base/common/async.js";
 import { Emitter } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as path from "../../../../base/common/path.js";
 import {

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type Dimension, getWindowById } from "../../../../base/browser/dom.js";
+import { getWindowById, type Dimension } from "../../../../base/browser/dom.js";
 import { FastDomNode } from "../../../../base/browser/fastDomNode.js";
 import type { IMouseWheelEvent } from "../../../../base/browser/mouseEvent.js";
 import type { CodeWindow } from "../../../../base/browser/window.js";
@@ -16,19 +16,19 @@ import {
 import type { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 	type IScopedContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import { IWorkbenchLayoutService } from "../../../services/layout/browser/layoutService.js";
 import {
-	type IOverlayWebview,
-	type IWebview,
-	type IWebviewElement,
 	IWebviewService,
 	KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED,
 	KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE,
+	type IOverlayWebview,
+	type IWebview,
+	type IWebviewElement,
 	type WebviewContentOptions,
 	type WebviewExtensionDescription,
 	type WebviewInitInfo,
@@ -82,9 +82,11 @@ export class OverlayWebview extends Disposable implements IOverlayWebview {
 
 	public constructor(
 		initInfo: WebviewInitInfo,
-		@IWorkbenchLayoutService private readonly _layoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly _layoutService: IWorkbenchLayoutService,
 		@IWebviewService private readonly _webviewService: IWebviewService,
-		@IContextKeyService private readonly _baseContextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly _baseContextKeyService: IContextKeyService,
 	) {
 		super();
 

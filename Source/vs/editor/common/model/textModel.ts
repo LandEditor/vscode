@@ -17,10 +17,10 @@ import {
 import { Emitter, type Event } from "../../../base/common/event.js";
 import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
-	Disposable,
-	type IDisposable,
-	MutableDisposable,
 	combinedDisposable,
+	Disposable,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { listenStream } from "../../../base/common/stream.js";
 import * as strings from "../../../base/common/strings.js";
@@ -37,34 +37,34 @@ import {
 import type { ISingleEditOperation } from "../core/editOperation.js";
 import { countEOL } from "../core/eolCounter.js";
 import { normalizeIndentation } from "../core/indentation.js";
-import { type IPosition, Position } from "../core/position.js";
-import { type IRange, Range } from "../core/range.js";
+import { Position, type IPosition } from "../core/position.js";
+import { Range, type IRange } from "../core/range.js";
 import { Selection } from "../core/selection.js";
 import type { TextChange } from "../core/textChange.js";
 import { EDITOR_MODEL_DEFAULTS } from "../core/textModelDefaults.js";
 import type { IWordAtPosition } from "../core/wordHelper.js";
 import type { FormattingOptions } from "../languages.js";
 import {
-	type ILanguageSelection,
 	ILanguageService,
+	type ILanguageSelection,
 } from "../languages/language.js";
 import { ILanguageConfigurationService } from "../languages/languageConfigurationRegistry.js";
 import * as model from "../model.js";
 import type { IBracketPairsTextModelPart } from "../textModelBracketPairs.js";
 import {
-	type IModelContentChangedEvent,
-	type IModelDecorationsChangedEvent,
-	type IModelOptionsChangedEvent,
 	InternalModelContentChangeEvent,
 	LineInjectedText,
 	ModelInjectedTextChangedEvent,
-	type ModelRawChange,
 	ModelRawContentChangedEvent,
 	ModelRawEOLChanged,
 	ModelRawFlush,
 	ModelRawLineChanged,
 	ModelRawLinesDeleted,
 	ModelRawLinesInserted,
+	type IModelContentChangedEvent,
+	type IModelDecorationsChangedEvent,
+	type IModelOptionsChangedEvent,
+	type ModelRawChange,
 } from "../textModelEvents.js";
 import type { IGuidesTextModelPart } from "../textModelGuides.js";
 import type { ITokenizationTextModelPart } from "../tokenizationTextModelPart.js";
@@ -404,62 +404,99 @@ export class TextModel
 		associatedResource: URI | null = null,
 		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
 		// Generate a new unique model id
 		MODEL_ID++;
-		this.id = '$model' + MODEL_ID;
+		this.id = "$model" + MODEL_ID;
 		this.isForSimpleWidget = creationOptions.isForSimpleWidget;
-		if (typeof associatedResource === 'undefined' || associatedResource === null) {
-			this._associatedResource = URI.parse('inmemory://model/' + MODEL_ID);
+		if (
+			typeof associatedResource === "undefined" ||
+			associatedResource === null
+		) {
+			this._associatedResource = URI.parse(
+				"inmemory://model/" + MODEL_ID,
+			);
 		} else {
 			this._associatedResource = associatedResource;
 		}
 		this._attachedEditorCount = 0;
 
-		const { textBuffer, disposable } = createTextBuffer(source, creationOptions.defaultEOL);
+		const { textBuffer, disposable } = createTextBuffer(
+			source,
+			creationOptions.defaultEOL,
+		);
 		this._buffer = textBuffer;
 		this._bufferDisposable = disposable;
 
 		this._options = TextModel.resolveOptions(this._buffer, creationOptions);
 
-		const languageId = (typeof languageIdOrSelection === 'string' ? languageIdOrSelection : languageIdOrSelection.languageId);
-		if (typeof languageIdOrSelection !== 'string') {
-			this._languageSelectionListener.value = languageIdOrSelection.onDidChange(() => this._setLanguage(languageIdOrSelection.languageId));
+		const languageId =
+			typeof languageIdOrSelection === "string"
+				? languageIdOrSelection
+				: languageIdOrSelection.languageId;
+		if (typeof languageIdOrSelection !== "string") {
+			this._languageSelectionListener.value =
+				languageIdOrSelection.onDidChange(() =>
+					this._setLanguage(languageIdOrSelection.languageId),
+				);
 		}
 
-		this._bracketPairs = this._register(new BracketPairsTextModelPart(this, this._languageConfigurationService));
-		this._guidesTextModelPart = this._register(new GuidesTextModelPart(this, this._languageConfigurationService));
-		this._decorationProvider = this._register(new ColorizedBracketPairsDecorationProvider(this));
-		this._tokenizationTextModelPart = this.instantiationService.createInstance(TokenizationTextModelPart,
-			this,
-			this._bracketPairs,
-			languageId,
-			this._attachedViews
+		this._bracketPairs = this._register(
+			new BracketPairsTextModelPart(
+				this,
+				this._languageConfigurationService,
+			),
 		);
+		this._guidesTextModelPart = this._register(
+			new GuidesTextModelPart(this, this._languageConfigurationService),
+		);
+		this._decorationProvider = this._register(
+			new ColorizedBracketPairsDecorationProvider(this),
+		);
+		this._tokenizationTextModelPart =
+			this.instantiationService.createInstance(
+				TokenizationTextModelPart,
+				this,
+				this._bracketPairs,
+				languageId,
+				this._attachedViews,
+			);
 
 		const bufferLineCount = this._buffer.getLineCount();
-		const bufferTextLength = this._buffer.getValueLengthInRange(new Range(1, 1, bufferLineCount, this._buffer.getLineLength(bufferLineCount) + 1), model.EndOfLinePreference.TextDefined);
+		const bufferTextLength = this._buffer.getValueLengthInRange(
+			new Range(
+				1,
+				1,
+				bufferLineCount,
+				this._buffer.getLineLength(bufferLineCount) + 1,
+			),
+			model.EndOfLinePreference.TextDefined,
+		);
 
 		// !!! Make a decision in the ctor and permanently respect this decision !!!
 		// If a model is too large at construction time, it will never get tokenized,
 		// under no circumstances.
 		if (creationOptions.largeFileOptimizations) {
-			this._isTooLargeForTokenization = (
-				(bufferTextLength > TextModel.LARGE_FILE_SIZE_THRESHOLD)
-				|| (bufferLineCount > TextModel.LARGE_FILE_LINE_COUNT_THRESHOLD)
-			);
+			this._isTooLargeForTokenization =
+				bufferTextLength > TextModel.LARGE_FILE_SIZE_THRESHOLD ||
+				bufferLineCount > TextModel.LARGE_FILE_LINE_COUNT_THRESHOLD;
 
-			this._isTooLargeForHeapOperation = bufferTextLength > TextModel.LARGE_FILE_HEAP_OPERATION_THRESHOLD;
+			this._isTooLargeForHeapOperation =
+				bufferTextLength >
+				TextModel.LARGE_FILE_HEAP_OPERATION_THRESHOLD;
 		} else {
 			this._isTooLargeForTokenization = false;
 			this._isTooLargeForHeapOperation = false;
 		}
 
-		this._isTooLargeForSyncing = (bufferTextLength > TextModel._MODEL_SYNC_LIMIT);
+		this._isTooLargeForSyncing =
+			bufferTextLength > TextModel._MODEL_SYNC_LIMIT;
 
 		this._versionId = 1;
 		this._alternativeVersionId = 1;
@@ -478,19 +515,24 @@ export class TextModel
 		this._isRedoing = false;
 		this._trimAutoWhitespaceLines = null;
 
-
-		this._register(this._decorationProvider.onDidChange(() => {
-			this._onDidChangeDecorations.beginDeferredEmit();
-			this._onDidChangeDecorations.fire();
-			this._onDidChangeDecorations.endDeferredEmit();
-		}));
+		this._register(
+			this._decorationProvider.onDidChange(() => {
+				this._onDidChangeDecorations.beginDeferredEmit();
+				this._onDidChangeDecorations.fire();
+				this._onDidChangeDecorations.endDeferredEmit();
+			}),
+		);
 
 		this._languageService.requestRichLanguageFeatures(languageId);
 
-		this._register(this._languageConfigurationService.onDidChange(e => {
-			this._bracketPairs.handleLanguageConfigurationServiceChange(e);
-			this._tokenizationTextModelPart.handleLanguageConfigurationServiceChange(e);
-		}));
+		this._register(
+			this._languageConfigurationService.onDidChange((e) => {
+				this._bracketPairs.handleLanguageConfigurationServiceChange(e);
+				this._tokenizationTextModelPart.handleLanguageConfigurationServiceChange(
+					e,
+				);
+			}),
+		);
 	}
 
 	public override dispose(): void {

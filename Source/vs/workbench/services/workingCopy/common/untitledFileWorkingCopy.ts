@@ -13,15 +13,15 @@ import type { URI } from "../../../../base/common/uri.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import type { ISaveOptions } from "../../../common/editor.js";
 import {
+	SnapshotContext,
 	type IFileWorkingCopy,
 	type IFileWorkingCopyModel,
 	type IFileWorkingCopyModelFactory,
-	SnapshotContext,
 } from "./fileWorkingCopy.js";
 import {
+	WorkingCopyCapabilities,
 	type IWorkingCopyBackup,
 	type IWorkingCopySaveEvent,
-	WorkingCopyCapabilities,
 } from "./workingCopy.js";
 import { IWorkingCopyBackupService } from "./workingCopyBackup.js";
 import { IWorkingCopyService } from "./workingCopyService.js";
@@ -144,12 +144,15 @@ export class UntitledFileWorkingCopy<M extends IUntitledFileWorkingCopyModel>
 		readonly name: string,
 		readonly hasAssociatedFilePath: boolean,
 		private readonly isScratchpad: boolean,
-		private readonly initialContents: IUntitledFileWorkingCopyInitialContents | undefined,
+		private readonly initialContents:
+			| IUntitledFileWorkingCopyInitialContents
+			| undefined,
 		private readonly modelFactory: IUntitledFileWorkingCopyModelFactory<M>,
 		private readonly saveDelegate: IUntitledFileWorkingCopySaveDelegate<M>,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
-		@ILogService private readonly logService: ILogService
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 

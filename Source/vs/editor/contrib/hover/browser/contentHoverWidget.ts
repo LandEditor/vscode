@@ -5,15 +5,15 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	HoverWidget,
 	getHoverAccessibleViewHint,
+	HoverWidget,
 } from "../../../../base/browser/ui/hover/hoverWidget.js";
 import { Emitter } from "../../../../base/common/event.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
@@ -22,8 +22,8 @@ import {
 	type IContentWidgetPosition,
 } from "../../../browser/editorBrowser.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../common/config/editorOptions.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import { PositionAffinity } from "../../../common/model.js";
@@ -65,9 +65,12 @@ export class ContentHoverWidget extends ResizableContentWidget {
 	constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		const minimumHeight = editor.getOption(EditorOption.lineHeight) + 8;
 		const minimumWidth = 150;
@@ -75,29 +78,43 @@ export class ContentHoverWidget extends ResizableContentWidget {
 		super(editor, minimumSize);
 
 		this._minimumSize = minimumSize;
-		this._hoverVisibleKey = EditorContextKeys.hoverVisible.bindTo(contextKeyService);
-		this._hoverFocusedKey = EditorContextKeys.hoverFocused.bindTo(contextKeyService);
+		this._hoverVisibleKey =
+			EditorContextKeys.hoverVisible.bindTo(contextKeyService);
+		this._hoverFocusedKey =
+			EditorContextKeys.hoverFocused.bindTo(contextKeyService);
 
 		dom.append(this._resizableNode.domNode, this._hover.containerDomNode);
-		this._resizableNode.domNode.style.zIndex = '50';
+		this._resizableNode.domNode.style.zIndex = "50";
 
-		this._register(this._editor.onDidLayoutChange(() => {
-			if (this.isVisible) {
-				this._updateMaxDimensions();
-			}
-		}));
-		this._register(this._editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.fontInfo)) {
-				this._updateFont();
-			}
-		}));
-		const focusTracker = this._register(dom.trackFocus(this._resizableNode.domNode));
-		this._register(focusTracker.onDidFocus(() => {
-			this._hoverFocusedKey.set(true);
-		}));
-		this._register(focusTracker.onDidBlur(() => {
-			this._hoverFocusedKey.set(false);
-		}));
+		this._register(
+			this._editor.onDidLayoutChange(() => {
+				if (this.isVisible) {
+					this._updateMaxDimensions();
+				}
+			}),
+		);
+		this._register(
+			this._editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (e.hasChanged(EditorOption.fontInfo)) {
+						this._updateFont();
+					}
+				},
+			),
+		);
+		const focusTracker = this._register(
+			dom.trackFocus(this._resizableNode.domNode),
+		);
+		this._register(
+			focusTracker.onDidFocus(() => {
+				this._hoverFocusedKey.set(true);
+			}),
+		);
+		this._register(
+			focusTracker.onDidBlur(() => {
+				this._hoverFocusedKey.set(false);
+			}),
+		);
 		this._setRenderedHover(undefined);
 		this._editor.addContentWidget(this);
 	}

@@ -6,8 +6,8 @@
 import { ReentrancyBarrier } from "../../../../../base/common/controlFlow.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorunWithStore,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type { CodeEditorWidget } from "../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
 import { ScrollType } from "../../../../../editor/common/editorCommon.js";

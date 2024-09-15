@@ -8,21 +8,21 @@ import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import { joinPath } from "../../../base/common/resources.js";
 import {
-	type IStorage,
 	Storage,
+	type IStorage,
 } from "../../../base/parts/storage/common/storage.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
 import type { IRemoteService } from "../../ipc/common/services.js";
 import {
-	type IUserDataProfile,
 	isUserDataProfile,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import type { IAnyWorkspaceIdentifier } from "../../workspace/common/workspace.js";
 import {
 	AbstractStorageService,
+	isProfileUsingDefaultStorage,
 	StorageScope,
 	WillSaveStateReason,
-	isProfileUsingDefaultStorage,
 } from "./storage.js";
 import {
 	ApplicationStorageDatabaseClient,

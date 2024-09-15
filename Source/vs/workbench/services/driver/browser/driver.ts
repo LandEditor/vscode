@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as XtermTerminal } from "@xterm/xterm";
+
 import {
 	getClientArea,
 	getTopLeftOffset,
@@ -16,14 +17,14 @@ import { IFileService } from "../../../../platform/files/common/files.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import localizedStrings from "../../../../platform/languagePacks/common/localizedStrings.js";
 import {
-	type ILogFile,
 	getLogs,
+	type ILogFile,
 } from "../../../../platform/log/browser/log.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	ILifecycleService,
@@ -39,11 +40,11 @@ import type {
 export class BrowserWindowDriver implements IWindowDriver {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@ILogService private readonly logService: ILogService
-	) {
-	}
+		@ILogService private readonly logService: ILogService,
+	) {}
 
 	async getLogs(): Promise<ILogFile[]> {
 		return getLogs(this.fileService, this.environmentService);

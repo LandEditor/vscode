@@ -26,8 +26,8 @@ import { localize } from "../../../../nls.js";
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
 	IExtensionRecommendationNotificationService,
-	RecommendationSource,
 	RecommendationsNotificationResult,
+	RecommendationSource,
 } from "../../../../platform/extensionRecommendations/common/extensionRecommendations.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
@@ -43,8 +43,8 @@ import {
 } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import { CellUri } from "../../notebook/common/notebookCommon.js";
 import {
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../common/extensions.js";
 import {
 	ExtensionRecommendations,
@@ -118,21 +118,28 @@ export class FileBasedRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IProductService productService: IProductService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IExtensionRecommendationNotificationService private readonly extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
-		@IExtensionIgnoredRecommendationsService private readonly extensionIgnoredRecommendationsService: IExtensionIgnoredRecommendationsService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IExtensionRecommendationNotificationService
+		private readonly extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionIgnoredRecommendationsService: IExtensionIgnoredRecommendationsService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 		this.fileOpenRecommendations = {};
 		if (productService.extensionRecommendations) {
-			for (const [extensionId, recommendation] of Object.entries(productService.extensionRecommendations)) {
+			for (const [extensionId, recommendation] of Object.entries(
+				productService.extensionRecommendations,
+			)) {
 				if (recommendation.onFileOpen) {
-					this.fileOpenRecommendations[extensionId.toLowerCase()] = recommendation.onFileOpen;
+					this.fileOpenRecommendations[extensionId.toLowerCase()] =
+						recommendation.onFileOpen;
 				}
 			}
 		}

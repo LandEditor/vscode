@@ -17,25 +17,25 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { assertIsDefined } from "../../../../base/common/types.js";
 import {
+	InMemoryStorageDatabase,
+	isStorageItemsChangeEvent,
+	Storage,
 	type IStorage,
 	type IStorageDatabase,
 	type IStorageItemsChangeEvent,
 	type IUpdateRequest,
-	InMemoryStorageDatabase,
-	Storage,
-	isStorageItemsChangeEvent,
 } from "../../../../base/parts/storage/common/storage.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
 	AbstractStorageService,
 	IS_NEW_KEY,
+	isProfileUsingDefaultStorage,
 	StorageScope,
 	StorageTarget,
-	isProfileUsingDefaultStorage,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IUserDataProfile,
 	isUserDataProfile,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import type { IAnyWorkspaceIdentifier } from "../../../../platform/workspace/common/workspace.js";
 import type { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
@@ -73,7 +73,9 @@ export class BrowserStorageService extends AbstractStorageService {
 		private readonly userDataProfileService: IUserDataProfileService,
 		@ILogService private readonly logService: ILogService,
 	) {
-		super({ flushInterval: BrowserStorageService.BROWSER_DEFAULT_FLUSH_INTERVAL });
+		super({
+			flushInterval: BrowserStorageService.BROWSER_DEFAULT_FLUSH_INTERVAL,
+		});
 
 		this.registerListeners();
 	}

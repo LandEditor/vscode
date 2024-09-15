@@ -7,9 +7,9 @@ import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import { AsyncIterableObject } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	type IMarkdownString,
-	MarkdownString,
 	isEmptyMarkdownString,
+	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import * as platform from "../../../../base/common/platform.js";
 import { localize } from "../../../../nls.js";
@@ -19,9 +19,9 @@ import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
@@ -32,8 +32,8 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import { ITextModelService } from "../../../common/services/resolverService.js";
 import { getHoverProviderResultsAsAsyncIterable } from "../../hover/browser/getHover.js";
 import {
-	type HoverAnchor,
 	HoverForeignElementAnchor,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 } from "../../hover/browser/hoverTypes.js";
 import {
@@ -78,10 +78,20 @@ export class InlayHintsHover
 		@IHoverService hoverService: IHoverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITextModelService private readonly _resolverService: ITextModelService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@ICommandService commandService: ICommandService
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@ICommandService commandService: ICommandService,
 	) {
-		super(editor, languageService, openerService, configurationService, languageFeaturesService, keybindingService, hoverService, commandService);
+		super(
+			editor,
+			languageService,
+			openerService,
+			configurationService,
+			languageFeaturesService,
+			keybindingService,
+			hoverService,
+			commandService,
+		);
 	}
 
 	suggestHoverAnchor(mouseEvent: IEditorMouseEvent): HoverAnchor | null {

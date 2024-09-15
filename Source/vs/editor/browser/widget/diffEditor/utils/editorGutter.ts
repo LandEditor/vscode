@@ -6,19 +6,19 @@
 import { h, reset } from "../../../../../base/browser/dom.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ISettableObservable,
 	autorun,
 	observableFromEvent,
 	observableSignal,
 	observableSignalFromEvent,
 	observableValue,
 	transaction,
+	type IObservable,
+	type IReader,
+	type ISettableObservable,
 } from "../../../../../base/common/observable.js";
 import { LineRange } from "../../../../common/core/lineRange.js";
 import { OffsetRange } from "../../../../common/core/offsetRange.js";

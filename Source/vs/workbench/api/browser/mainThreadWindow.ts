@@ -8,16 +8,16 @@ import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { IOpenerService } from "../../../platform/opener/common/opener.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import { IHostService } from "../../services/host/browser/host.js";
 import { IUserActivityService } from "../../services/userActivity/common/userActivityService.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostWindowShape,
 	type IOpenUriOptions,
-	MainContext,
 	type MainThreadWindowShape,
 } from "../common/extHost.protocol.js";
 
@@ -30,13 +30,21 @@ export class MainThreadWindow implements MainThreadWindowShape {
 		extHostContext: IExtHostContext,
 		@IHostService private readonly hostService: IHostService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IUserActivityService private readonly userActivityService: IUserActivityService,
+		@IUserActivityService
+		private readonly userActivityService: IUserActivityService,
 	) {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostWindow);
 
-		Event.latch(hostService.onDidChangeFocus)
-			(this.proxy.$onDidChangeWindowFocus, this.proxy, this.disposables);
-		userActivityService.onDidChangeIsActive(this.proxy.$onDidChangeWindowActive, this.proxy, this.disposables);
+		Event.latch(hostService.onDidChangeFocus)(
+			this.proxy.$onDidChangeWindowFocus,
+			this.proxy,
+			this.disposables,
+		);
+		userActivityService.onDidChangeIsActive(
+			this.proxy.$onDidChangeWindowActive,
+			this.proxy,
+			this.disposables,
+		);
 	}
 
 	dispose(): void {

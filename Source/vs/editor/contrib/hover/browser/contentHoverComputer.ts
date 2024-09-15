@@ -13,8 +13,8 @@ import type {
 import type { IModelDecoration } from "../../../common/model.js";
 import type { HoverStartSource, IHoverComputer } from "./hoverOperation.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IHoverPart,
 } from "./hoverTypes.js";

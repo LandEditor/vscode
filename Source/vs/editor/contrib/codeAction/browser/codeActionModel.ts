@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	TimeoutTimer,
 	createCancelablePromise,
+	TimeoutTimer,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { isCancellationError } from "../../../../base/common/errors.js";
 import { Emitter } from "../../../../base/common/event.js";
@@ -20,14 +20,14 @@ import { StopWatch } from "../../../../base/common/stopwatch.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
+	RawContextKey,
 	type IContextKey,
 	type IContextKeyService,
-	RawContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IMarkerService } from "../../../../platform/markers/common/markers.js";
 import {
-	type IEditorProgressService,
 	Progress,
+	type IEditorProgressService,
 } from "../../../../platform/progress/common/progress.js";
 import type { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
@@ -39,14 +39,14 @@ import { Position } from "../../../common/core/position.js";
 import { Selection } from "../../../common/core/selection.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import {
-	type CodeActionProvider,
 	CodeActionTriggerType,
+	type CodeActionProvider,
 } from "../../../common/languages.js";
 import {
 	CodeActionKind,
+	CodeActionTriggerSource,
 	type CodeActionSet,
 	type CodeActionTrigger,
-	CodeActionTriggerSource,
 } from "../common/types.js";
 import { getCodeActions } from "./codeAction.js";
 

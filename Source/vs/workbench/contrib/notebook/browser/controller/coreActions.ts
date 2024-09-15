@@ -16,9 +16,9 @@ import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js
 import { localize, localize2 } from "../../../../../nls.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
 	MenuRegistry,
+	type IAction2Options,
 } from "../../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
@@ -34,13 +34,13 @@ import {
 	NOTEBOOK_KERNEL_COUNT,
 	NOTEBOOK_KERNEL_SOURCE_COUNT,
 } from "../../common/notebookContextKeys.js";
-import { type ICellRange, isICellRange } from "../../common/notebookRange.js";
+import { isICellRange, type ICellRange } from "../../common/notebookRange.js";
 import {
+	cellRangeToViewCells,
+	getNotebookEditorFromEditorPane,
 	type IActiveNotebookEditor,
 	type ICellOutputViewModel,
 	type ICellViewModel,
-	cellRangeToViewCells,
-	getNotebookEditorFromEditorPane,
 } from "../notebookBrowser.js";
 import { INotebookEditorService } from "../services/notebookEditorService.js";
 

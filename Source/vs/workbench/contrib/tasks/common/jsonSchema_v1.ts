@@ -6,10 +6,8 @@
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import * as Objects from "../../../../base/common/objects.js";
 import * as nls from "../../../../nls.js";
-
-import { ProblemMatcherRegistry } from "./problemMatcher.js";
-
 import commonSchema from "./jsonSchemaCommon.js";
+import { ProblemMatcherRegistry } from "./problemMatcher.js";
 
 const schema: IJSONSchema = {
 	oneOf: [
@@ -124,8 +122,9 @@ ProblemMatcherRegistry.onReady().then(() => {
 			(key) => "$" + key,
 		);
 		definitions.problemMatcherType1.oneOf![0].enum = matcherIds;
-		(definitions.problemMatcherType1.oneOf![2].items as IJSONSchema)
-			.anyOf![1].enum = matcherIds;
+		(
+			definitions.problemMatcherType1.oneOf![2].items as IJSONSchema
+		).anyOf![1].enum = matcherIds;
 	} catch (err) {
 		console.log("Installing problem matcher ids failed");
 	}

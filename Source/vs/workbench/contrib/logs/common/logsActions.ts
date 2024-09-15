@@ -17,13 +17,13 @@ import * as nls from "../../../../nls.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import {
 	ILoggerService,
+	isLogLevel,
 	LogLevel,
 	LogLevelToLocalizedString,
-	isLogLevel,
 } from "../../../../platform/log/common/log.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPickItem,
 	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
@@ -34,8 +34,8 @@ import {
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
-	type IOutputChannelDescriptor,
 	IOutputService,
+	type IOutputChannelDescriptor,
 } from "../../../services/output/common/output.js";
 import { IDefaultLogLevelsService } from "./defaultLogLevels.js";
 
@@ -50,11 +50,15 @@ export class SetLogLevelAction extends Action {
 	static readonly ID = "workbench.action.setLogLevel";
 	static readonly TITLE = nls.localize2("setLogLevel", "Set Log Level...");
 
-	constructor(id: string, label: string,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+	constructor(
+		id: string,
+		label: string,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@ILoggerService private readonly loggerService: ILoggerService,
 		@IOutputService private readonly outputService: IOutputService,
-		@IDefaultLogLevelsService private readonly defaultLogLevelsService: IDefaultLogLevelsService,
+		@IDefaultLogLevelsService
+		private readonly defaultLogLevelsService: IDefaultLogLevelsService,
 	) {
 		super(id, label);
 	}
@@ -349,10 +353,14 @@ export class OpenWindowSessionLogFileAction extends Action {
 		"Open Window Log File (Session)...",
 	);
 
-	constructor(id: string, label: string,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+	constructor(
+		id: string,
+		label: string,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IEditorService private readonly editorService: IEditorService,
 	) {
 		super(id, label);

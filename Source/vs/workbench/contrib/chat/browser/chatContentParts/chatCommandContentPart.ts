@@ -28,21 +28,38 @@ export class ChatCommandButtonContentPart
 	constructor(
 		commandButton: IChatCommandButton,
 		context: IChatContentPartRenderContext,
-		@ICommandService private readonly commandService: ICommandService
+		@ICommandService private readonly commandService: ICommandService,
 	) {
 		super();
 
-		this.domNode = $('.chat-command-button');
-		const enabled = !isResponseVM(context.element) || !context.element.isStale;
-		const tooltip = enabled ?
-			commandButton.command.tooltip :
-			localize('commandButtonDisabled', "Button not available in restored chat");
-		const button = this._register(new Button(this.domNode, { ...defaultButtonStyles, supportIcons: true, title: tooltip }));
+		this.domNode = $(".chat-command-button");
+		const enabled =
+			!isResponseVM(context.element) || !context.element.isStale;
+		const tooltip = enabled
+			? commandButton.command.tooltip
+			: localize(
+					"commandButtonDisabled",
+					"Button not available in restored chat",
+				);
+		const button = this._register(
+			new Button(this.domNode, {
+				...defaultButtonStyles,
+				supportIcons: true,
+				title: tooltip,
+			}),
+		);
 		button.label = commandButton.command.title;
 		button.enabled = enabled;
 
 		// TODO still need telemetry for command buttons
-		this._register(button.onDidClick(() => this.commandService.executeCommand(commandButton.command.id, ...(commandButton.command.arguments ?? []))));
+		this._register(
+			button.onDidClick(() =>
+				this.commandService.executeCommand(
+					commandButton.command.id,
+					...(commandButton.command.arguments ?? []),
+				),
+			),
+		);
 	}
 
 	hasSameContent(other: IChatProgressRenderableResponseContent): boolean {

@@ -13,15 +13,20 @@ import { isCancellationError } from "../../base/common/errors.js";
 import { Emitter, Event } from "../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../base/common/lifecycle.js";
 import {
-	type LinkedText,
 	parseLinkedText,
+	type LinkedText,
 } from "../../base/common/linkedText.js";
 import { mapsStrictEqualIgnoreOrder } from "../../base/common/map.js";
 import {
+	isNotificationSource,
+	NoOpNotification,
+	NotificationPriority,
+	NotificationsFilter,
+	Severity,
 	type INotification,
 	type INotificationActions,
 	type INotificationHandle,
@@ -31,12 +36,7 @@ import {
 	type IPromptChoice,
 	type IPromptChoiceWithMenu,
 	type IStatusMessageOptions,
-	NoOpNotification,
 	type NotificationMessage,
-	NotificationPriority,
-	NotificationsFilter,
-	Severity,
-	isNotificationSource,
 } from "../../platform/notification/common/notification.js";
 
 export interface INotificationsModel {

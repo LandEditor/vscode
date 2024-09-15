@@ -14,8 +14,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { wrapInReloadableClass0 } from "../../../../platform/observable/common/wrapInReloadableClass.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import { AccessibilitySignalLineDebuggerContribution } from "./accessibilitySignalDebuggerContribution.js";
 import {

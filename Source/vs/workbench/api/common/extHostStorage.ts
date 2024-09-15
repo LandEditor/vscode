@@ -8,8 +8,8 @@ import type { IExtensionIdWithVersion } from "../../../platform/extensionManagem
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import type { ILogService } from "../../../platform/log/common/log.js";
 import {
-	type ExtHostStorageShape,
 	MainContext,
+	type ExtHostStorageShape,
 	type MainThreadStorageShape,
 } from "./extHost.protocol.js";
 import type { IExtHostRpcService } from "./extHostRpcService.js";

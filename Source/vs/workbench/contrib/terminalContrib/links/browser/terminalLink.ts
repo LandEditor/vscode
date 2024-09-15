@@ -10,6 +10,7 @@ import type {
 	IViewportRange,
 	Terminal,
 } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import type { IHoverAction } from "../../../../../base/browser/ui/hover/hover.js";
 import { RunOnceScheduler } from "../../../../../base/common/async.js";
@@ -46,17 +47,26 @@ export class TerminalLink extends DisposableStore implements ILink {
 		readonly parsedLink: IParsedLink | undefined,
 		readonly actions: IHoverAction[] | undefined,
 		private readonly _viewportY: number,
-		private readonly _activateCallback: (event: MouseEvent | undefined, uri: string) => Promise<void>,
-		private readonly _tooltipCallback: (link: TerminalLink, viewportRange: IViewportRange, modifierDownCallback?: () => void, modifierUpCallback?: () => void) => void,
+		private readonly _activateCallback: (
+			event: MouseEvent | undefined,
+			uri: string,
+		) => Promise<void>,
+		private readonly _tooltipCallback: (
+			link: TerminalLink,
+			viewportRange: IViewportRange,
+			modifierDownCallback?: () => void,
+			modifierUpCallback?: () => void,
+		) => void,
 		private readonly _isHighConfidenceLink: boolean,
 		readonly label: string | undefined,
 		private readonly _type: TerminalLinkType,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 		this.decorations = {
 			pointerCursor: false,
-			underline: this._isHighConfidenceLink
+			underline: this._isHighConfidenceLink,
 		};
 	}
 

@@ -13,9 +13,9 @@ import { canceled, onUnexpectedError } from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import { Disposable, toDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type AppResourcePath,
 	COI,
 	FileAccess,
+	type AppResourcePath,
 } from "../../../../base/common/network.js";
 import * as platform from "../../../../base/common/platform.js";
 import { joinPath } from "../../../../base/common/resources.js";
@@ -26,8 +26,8 @@ import { getNLSLanguage, getNLSMessages } from "../../../../nls.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILayoutService } from "../../../../platform/layout/browser/layoutService.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
@@ -44,17 +44,17 @@ import {
 } from "../../../../platform/workspace/common/workspace.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
 import {
+	createMessageOfType,
 	ExtensionHostExitCode,
-	type IExtensionHostInitData,
+	isMessageOfType,
 	MessageType,
 	UIKind,
-	createMessageOfType,
-	isMessageOfType,
+	type IExtensionHostInitData,
 } from "../common/extensionHostProtocol.js";
 import type { LocalWebWorkerRunningLocation } from "../common/extensionRunningLocation.js";
 import {
-	type ExtensionHostExtensions,
 	ExtensionHostStartup,
+	type ExtensionHostExtensions,
 	type IExtensionHost,
 } from "../common/extensions.js";
 
@@ -90,13 +90,17 @@ export class WebWorkerExtensionHost
 		public readonly runningLocation: LocalWebWorkerRunningLocation,
 		public readonly startup: ExtensionHostStartup,
 		private readonly _initDataProvider: IWebWorkerExtensionHostDataProvider,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
 		@ILabelService private readonly _labelService: ILabelService,
 		@ILogService private readonly _logService: ILogService,
 		@ILoggerService private readonly _loggerService: ILoggerService,
-		@IBrowserWorkbenchEnvironmentService private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
-		@IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
+		@IUserDataProfilesService
+		private readonly _userDataProfilesService: IUserDataProfilesService,
 		@IProductService private readonly _productService: IProductService,
 		@ILayoutService private readonly _layoutService: ILayoutService,
 		@IStorageService private readonly _storageService: IStorageService,
@@ -105,7 +109,10 @@ export class WebWorkerExtensionHost
 		this._isTerminating = false;
 		this._protocolPromise = null;
 		this._protocol = null;
-		this._extensionHostLogsLocation = joinPath(this._environmentService.extHostLogsPath, 'webWorker');
+		this._extensionHostLogsLocation = joinPath(
+			this._environmentService.extHostLogsPath,
+			"webWorker",
+		);
 	}
 
 	private async _getWebWorkerExtensionHostIframeSrc(): Promise<string> {

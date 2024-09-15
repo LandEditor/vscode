@@ -7,22 +7,24 @@ import { renderMarkdown } from "../../../../base/browser/markdownRenderer.js";
 import { alert } from "../../../../base/browser/ui/aria/aria.js";
 import { Event } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
 	isMarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
+
 import "./messageController.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
@@ -42,8 +44,8 @@ import { openLinkFromMarkdown } from "../../../browser/widget/markdownRenderer/b
 import type { IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import {
-	type IEditorContribution,
 	ScrollType,
+	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import { PositionAffinity } from "../../../common/model.js";
 
@@ -73,11 +75,11 @@ export class MessageController implements IEditorContribution {
 	constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IOpenerService private readonly _openerService: IOpenerService
+		@IOpenerService private readonly _openerService: IOpenerService,
 	) {
-
 		this._editor = editor;
-		this._visible = MessageController.MESSAGE_VISIBLE.bindTo(contextKeyService);
+		this._visible =
+			MessageController.MESSAGE_VISIBLE.bindTo(contextKeyService);
 	}
 
 	dispose(): void {

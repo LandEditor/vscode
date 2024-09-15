@@ -7,9 +7,9 @@ import type { Event } from "../../../../base/common/event.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import type { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import {
+	isLinux,
 	type IProcessEnvironment,
 	type OperatingSystem,
-	isLinux,
 } from "../../../../base/common/platform.js";
 import type Severity from "../../../../base/common/severity.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
@@ -44,13 +44,12 @@ import type {
 } from "../../../../platform/terminal/common/terminal.js";
 import type { IExtensionPointDescriptor } from "../../../services/extensions/common/extensionsRegistry.js";
 import { AccessibilityCommandId } from "../../accessibility/common/accessibilityCommands.js";
-import type { IEnvironmentVariableInfo } from "./environmentVariable.js";
-
 // Import commands to skip shell from terminalContrib - this is an exception to the eslint rule
 // since they need to be included in the terminal module
 import { defaultTerminalAccessibilityCommandsToSkipShell } from "../../terminalContrib/accessibility/common/terminal.accessibility.js"; // eslint-disable-line local/code-import-patterns
 import { defaultTerminalFindCommandToSkipShell } from "../../terminalContrib/find/common/terminal.find.js"; // eslint-disable-line local/code-import-patterns
 import { defaultTerminalSuggestCommandsToSkipShell } from "../../terminalContrib/suggest/common/terminal.suggest.js"; // eslint-disable-line local/code-import-patterns
+import type { IEnvironmentVariableInfo } from "./environmentVariable.js";
 
 export const TERMINAL_VIEW_ID = "terminal";
 

@@ -9,20 +9,20 @@ import {
 } from "../../../../base/browser/dom.js";
 import { coalesce } from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
-	DeferredPromise,
 	createCancelablePromise,
+	DeferredPromise,
 	raceCancellation,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import {
-	UriList,
-	type VSDataTransfer,
 	createStringDataTransferItem,
 	matchesMimeType,
+	UriList,
+	type VSDataTransfer,
 } from "../../../../base/common/dataTransfer.js";
 import {
 	CancellationError,
@@ -59,17 +59,17 @@ import type {
 } from "../../../browser/editorBrowser.js";
 import { IBulkEditService } from "../../../browser/services/bulkEditService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { Selection } from "../../../common/core/selection.js";
 import {
 	Handler,
 	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import {
+	DocumentPasteTriggerKind,
 	type DocumentPasteContext,
 	type DocumentPasteEdit,
 	type DocumentPasteEditProvider,
-	DocumentPasteTriggerKind,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
@@ -147,9 +147,12 @@ export class CopyPasteController
 		editor: ICodeEditor,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@IProgressService private readonly _progressService: IProgressService,
 	) {
 		super();
@@ -157,13 +160,44 @@ export class CopyPasteController
 		this._editor = editor;
 
 		const container = editor.getContainerDomNode();
-		this._register(addDisposableListener(container, 'copy', e => this.handleCopy(e)));
-		this._register(addDisposableListener(container, 'cut', e => this.handleCopy(e)));
-		this._register(addDisposableListener(container, 'paste', e => this.handlePaste(e), true));
+		this._register(
+			addDisposableListener(container, "copy", (e) => this.handleCopy(e)),
+		);
+		this._register(
+			addDisposableListener(container, "cut", (e) => this.handleCopy(e)),
+		);
+		this._register(
+			addDisposableListener(
+				container,
+				"paste",
+				(e) => this.handlePaste(e),
+				true,
+			),
+		);
 
-		this._pasteProgressManager = this._register(new InlineProgressManager('pasteIntoEditor', editor, instantiationService));
+		this._pasteProgressManager = this._register(
+			new InlineProgressManager(
+				"pasteIntoEditor",
+				editor,
+				instantiationService,
+			),
+		);
 
-		this._postPasteWidgetManager = this._register(instantiationService.createInstance(PostEditWidgetManager, 'pasteIntoEditor', editor, pasteWidgetVisibleCtx, { id: changePasteTypeCommandId, label: localize('postPasteWidgetTitle', "Show paste options...") }));
+		this._postPasteWidgetManager = this._register(
+			instantiationService.createInstance(
+				PostEditWidgetManager,
+				"pasteIntoEditor",
+				editor,
+				pasteWidgetVisibleCtx,
+				{
+					id: changePasteTypeCommandId,
+					label: localize(
+						"postPasteWidgetTitle",
+						"Show paste options...",
+					),
+				},
+			),
+		);
 	}
 
 	public changePasteType() {

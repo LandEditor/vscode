@@ -60,20 +60,29 @@ export class CodeLensCache implements ICodeLensCache {
 	private readonly _cache = new LRUCache<string, CacheItem>(20, 0.75);
 
 	constructor(@IStorageService storageService: IStorageService) {
-
 		// remove old data
-		const oldkey = 'codelens/cache';
-		runWhenWindowIdle(mainWindow, () => storageService.remove(oldkey, StorageScope.WORKSPACE));
+		const oldkey = "codelens/cache";
+		runWhenWindowIdle(mainWindow, () =>
+			storageService.remove(oldkey, StorageScope.WORKSPACE),
+		);
 
 		// restore lens data on start
-		const key = 'codelens/cache2';
-		const raw = storageService.get(key, StorageScope.WORKSPACE, '{}');
+		const key = "codelens/cache2";
+		const raw = storageService.get(key, StorageScope.WORKSPACE, "{}");
 		this._deserialize(raw);
 
 		// store lens data on shutdown
-		const onWillSaveStateBecauseOfShutdown = Event.filter(storageService.onWillSaveState, e => e.reason === WillSaveStateReason.SHUTDOWN);
-		Event.once(onWillSaveStateBecauseOfShutdown)(e => {
-			storageService.store(key, this._serialize(), StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		const onWillSaveStateBecauseOfShutdown = Event.filter(
+			storageService.onWillSaveState,
+			(e) => e.reason === WillSaveStateReason.SHUTDOWN,
+		);
+		Event.once(onWillSaveStateBecauseOfShutdown)((e) => {
+			storageService.store(
+				key,
+				this._serialize(),
+				StorageScope.WORKSPACE,
+				StorageTarget.MACHINE,
+			);
 		});
 	}
 

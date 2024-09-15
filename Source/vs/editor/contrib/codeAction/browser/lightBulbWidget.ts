@@ -9,7 +9,9 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
+
 import "./lightBulbWidget.css";
+
 import * as nls from "../../../../nls.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js";
@@ -25,8 +27,8 @@ import type { IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import {
 	GlyphMarginLane,
-	type IModelDecorationsChangeAccessor,
 	TrackedRangeStickiness,
+	type IModelDecorationsChangeAccessor,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import { computeIndentLevel } from "../../../common/model/utils.js";
@@ -144,101 +146,159 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
-		this._domNode = dom.$('div.lightBulbWidget');
-		this._domNode.role = 'listbox';
+		this._domNode = dom.$("div.lightBulbWidget");
+		this._domNode.role = "listbox";
 		this._register(Gesture.ignoreTarget(this._domNode));
 
 		this._editor.addContentWidget(this);
 
-		this._register(this._editor.onDidChangeModelContent(_ => {
-			// cancel when the line in question has been removed
-			const editorModel = this._editor.getModel();
-			if (this.state.type !== LightBulbState.Type.Showing || !editorModel || this.state.editorPosition.lineNumber >= editorModel.getLineCount()) {
-				this.hide();
-			}
+		this._register(
+			this._editor.onDidChangeModelContent((_) => {
+				// cancel when the line in question has been removed
+				const editorModel = this._editor.getModel();
+				if (
+					this.state.type !== LightBulbState.Type.Showing ||
+					!editorModel ||
+					this.state.editorPosition.lineNumber >=
+						editorModel.getLineCount()
+				) {
+					this.hide();
+				}
 
-			if (this.gutterState.type !== LightBulbState.Type.Showing || !editorModel || this.gutterState.editorPosition.lineNumber >= editorModel.getLineCount()) {
-				this.gutterHide();
-			}
-		}));
+				if (
+					this.gutterState.type !== LightBulbState.Type.Showing ||
+					!editorModel ||
+					this.gutterState.editorPosition.lineNumber >=
+						editorModel.getLineCount()
+				) {
+					this.gutterHide();
+				}
+			}),
+		);
 
-		this._register(dom.addStandardDisposableGenericMouseDownListener(this._domNode, e => {
-			if (this.state.type !== LightBulbState.Type.Showing) {
-				return;
-			}
+		this._register(
+			dom.addStandardDisposableGenericMouseDownListener(
+				this._domNode,
+				(e) => {
+					if (this.state.type !== LightBulbState.Type.Showing) {
+						return;
+					}
 
-			// Make sure that focus / cursor location is not lost when clicking widget icon
-			this._editor.focus();
-			e.preventDefault();
+					// Make sure that focus / cursor location is not lost when clicking widget icon
+					this._editor.focus();
+					e.preventDefault();
 
-			// a bit of extra work to make sure the menu
-			// doesn't cover the line-text
-			const { top, height } = dom.getDomNodePagePosition(this._domNode);
-			const lineHeight = this._editor.getOption(EditorOption.lineHeight);
+					// a bit of extra work to make sure the menu
+					// doesn't cover the line-text
+					const { top, height } = dom.getDomNodePagePosition(
+						this._domNode,
+					);
+					const lineHeight = this._editor.getOption(
+						EditorOption.lineHeight,
+					);
 
-			let pad = Math.floor(lineHeight / 3);
-			if (this.state.widgetPosition.position !== null && this.state.widgetPosition.position.lineNumber < this.state.editorPosition.lineNumber) {
-				pad += lineHeight;
-			}
+					let pad = Math.floor(lineHeight / 3);
+					if (
+						this.state.widgetPosition.position !== null &&
+						this.state.widgetPosition.position.lineNumber <
+							this.state.editorPosition.lineNumber
+					) {
+						pad += lineHeight;
+					}
 
-			this._onClick.fire({
-				x: e.posx,
-				y: top + height + pad,
-				actions: this.state.actions,
-				trigger: this.state.trigger,
-			});
-		}));
+					this._onClick.fire({
+						x: e.posx,
+						y: top + height + pad,
+						actions: this.state.actions,
+						trigger: this.state.trigger,
+					});
+				},
+			),
+		);
 
-		this._register(dom.addDisposableListener(this._domNode, 'mouseenter', (e: MouseEvent) => {
-			if ((e.buttons & 1) !== 1) {
-				return;
-			}
-			// mouse enters lightbulb while the primary/left button
-			// is being pressed -> hide the lightbulb
-			this.hide();
-		}));
+		this._register(
+			dom.addDisposableListener(
+				this._domNode,
+				"mouseenter",
+				(e: MouseEvent) => {
+					if ((e.buttons & 1) !== 1) {
+						return;
+					}
+					// mouse enters lightbulb while the primary/left button
+					// is being pressed -> hide the lightbulb
+					this.hide();
+				},
+			),
+		);
 
+		this._register(
+			Event.runAndSubscribe(
+				this._keybindingService.onDidUpdateKeybindings,
+				() => {
+					this._preferredKbLabel =
+						this._keybindingService
+							.lookupKeybinding(autoFixCommandId)
+							?.getLabel() ?? undefined;
+					this._quickFixKbLabel =
+						this._keybindingService
+							.lookupKeybinding(quickFixCommandId)
+							?.getLabel() ?? undefined;
+					this._updateLightBulbTitleAndIcon();
+				},
+			),
+		);
 
-		this._register(Event.runAndSubscribe(this._keybindingService.onDidUpdateKeybindings, () => {
-			this._preferredKbLabel = this._keybindingService.lookupKeybinding(autoFixCommandId)?.getLabel() ?? undefined;
-			this._quickFixKbLabel = this._keybindingService.lookupKeybinding(quickFixCommandId)?.getLabel() ?? undefined;
-			this._updateLightBulbTitleAndIcon();
-		}));
+		this._register(
+			this._editor.onMouseDown(async (e: IEditorMouseEvent) => {
+				if (
+					!e.target.element ||
+					!this.lightbulbClasses.some(
+						(cls) =>
+							e.target.element &&
+							e.target.element.classList.contains(cls),
+					)
+				) {
+					return;
+				}
 
-		this._register(this._editor.onMouseDown(async (e: IEditorMouseEvent) => {
+				if (this.gutterState.type !== LightBulbState.Type.Showing) {
+					return;
+				}
 
-			if (!e.target.element || !this.lightbulbClasses.some(cls => e.target.element && e.target.element.classList.contains(cls))) {
-				return;
-			}
+				// Make sure that focus / cursor location is not lost when clicking widget icon
+				this._editor.focus();
 
-			if (this.gutterState.type !== LightBulbState.Type.Showing) {
-				return;
-			}
+				// a bit of extra work to make sure the menu
+				// doesn't cover the line-text
+				const { top, height } = dom.getDomNodePagePosition(
+					e.target.element,
+				);
+				const lineHeight = this._editor.getOption(
+					EditorOption.lineHeight,
+				);
 
-			// Make sure that focus / cursor location is not lost when clicking widget icon
-			this._editor.focus();
+				let pad = Math.floor(lineHeight / 3);
+				if (
+					this.gutterState.widgetPosition.position !== null &&
+					this.gutterState.widgetPosition.position.lineNumber <
+						this.gutterState.editorPosition.lineNumber
+				) {
+					pad += lineHeight;
+				}
 
-			// a bit of extra work to make sure the menu
-			// doesn't cover the line-text
-			const { top, height } = dom.getDomNodePagePosition(e.target.element);
-			const lineHeight = this._editor.getOption(EditorOption.lineHeight);
-
-			let pad = Math.floor(lineHeight / 3);
-			if (this.gutterState.widgetPosition.position !== null && this.gutterState.widgetPosition.position.lineNumber < this.gutterState.editorPosition.lineNumber) {
-				pad += lineHeight;
-			}
-
-			this._onClick.fire({
-				x: e.event.posx,
-				y: top + height + pad,
-				actions: this.gutterState.actions,
-				trigger: this.gutterState.trigger,
-			});
-		}));
+				this._onClick.fire({
+					x: e.event.posx,
+					y: top + height + pad,
+					actions: this.gutterState.actions,
+					trigger: this.gutterState.trigger,
+				});
+			}),
+		);
 	}
 
 	override dispose(): void {

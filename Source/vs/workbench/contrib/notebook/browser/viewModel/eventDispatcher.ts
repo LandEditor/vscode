@@ -6,11 +6,11 @@
 import { Emitter } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
+	NotebookViewEventType,
 	type NotebookCellStateChangedEvent,
 	type NotebookLayoutChangedEvent,
 	type NotebookMetadataChangedEvent,
 	type NotebookViewEvent,
-	NotebookViewEventType,
 } from "../notebookViewEvents.js";
 
 export class NotebookEventDispatcher extends Disposable {

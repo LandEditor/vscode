@@ -20,7 +20,8 @@ import type { IPtyHostConnection, IPtyHostStarter } from "./ptyHost.js";
 export class NodePtyHostStarter extends Disposable implements IPtyHostStarter {
 	constructor(
 		private readonly _reconnectConstants: IReconnectConstants,
-		@IEnvironmentService private readonly _environmentService: INativeEnvironmentService
+		@IEnvironmentService
+		private readonly _environmentService: INativeEnvironmentService,
 	) {
 		super();
 	}

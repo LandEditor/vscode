@@ -20,8 +20,8 @@ import { LoggerService } from "../../log/node/loggerService.js";
 import product from "../../product/common/product.js";
 import type { IProductService } from "../../product/common/productService.js";
 import {
-	type IReconnectConstants,
 	TerminalIpcChannels,
+	type IReconnectConstants,
 } from "../common/terminal.js";
 import { HeartbeatService } from "./heartbeatService.js";
 import { PtyService } from "./ptyService.js";

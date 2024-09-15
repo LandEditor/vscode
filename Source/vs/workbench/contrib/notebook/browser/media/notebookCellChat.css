@@ -579,7 +579,7 @@
 	.cgmr.codicon-inline-chat-transparent {
 	display: block;
 	cursor: pointer;
-	transition: opacity .2s ease-in-out;
+	transition: opacity 0.2s ease-in-out;
 }
 
 .monaco-workbench

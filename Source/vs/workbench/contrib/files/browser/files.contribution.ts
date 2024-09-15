@@ -47,9 +47,9 @@ import {
 	type IEditorPaneRegistry,
 } from "../../../browser/editor.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -64,10 +64,10 @@ import { DirtyFilesIndicator } from "../common/dirtyFilesIndicator.js";
 import {
 	BINARY_TEXT_FILE_MODE,
 	FILE_EDITOR_INPUT_ID,
-	type IFilesConfiguration,
 	LexicographicOptions,
 	SortOrder,
 	UndoConfirmLevel,
+	type IFilesConfiguration,
 } from "../common/files.js";
 import { BinaryFileEditor } from "./editors/binaryFileEditor.js";
 import {
@@ -90,13 +90,13 @@ class FileUriLabelContribution implements IWorkbenchContribution {
 		labelService.registerFormatter({
 			scheme: Schemas.file,
 			formatting: {
-				label: '${authority}${path}',
+				label: "${authority}${path}",
 				separator: sep,
 				tildify: !isWindows,
 				normalizeDriveLetter: isWindows,
 				authorityPrefix: sep + sep,
-				workspaceSuffix: ''
-			}
+				workspaceSuffix: "",
+			},
 		});
 	}
 }
@@ -297,7 +297,8 @@ configurationRegistry.registerConfiguration({
 				},
 				...(isWeb
 					? {
-							"**/*.crswap": true /* filter out swap files used for local file access */,
+							"**/*.crswap":
+								true /* filter out swap files used for local file access */,
 						}
 					: undefined),
 			},

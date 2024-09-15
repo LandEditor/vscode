@@ -10,8 +10,8 @@ import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import { localize, localize2 } from "../../../../nls.js";
@@ -22,9 +22,9 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import {
@@ -36,8 +36,8 @@ import {
 	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type ILogger,
 	ILoggerService,
+	type ILogger,
 } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -52,23 +52,23 @@ import {
 	ViewsSubMenu,
 } from "../../../browser/parts/views/viewPaneContainer.js";
 import {
-	type IViewContainersRegistry,
-	type IViewDescriptor,
+	defaultViewIcon,
 	IViewDescriptorService,
-	type IViewsRegistry,
-	VIEWS_LOG_ID,
-	VIEWS_LOG_NAME,
-	type ViewContainer,
 	ViewContainerLocation,
 	ViewContainerLocationToString,
 	Extensions as ViewExtensions,
+	VIEWS_LOG_ID,
+	VIEWS_LOG_NAME,
 	ViewVisibilityState,
-	defaultViewIcon,
+	type IViewContainersRegistry,
+	type IViewDescriptor,
+	type IViewsRegistry,
+	type ViewContainer,
 } from "../../../common/views.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import {
-	ViewContainerModel,
 	getViewsStateStorageId,
+	ViewContainerModel,
 } from "../common/viewContainerModel.js";
 
 interface IViewsCustomizations {
@@ -193,8 +193,10 @@ export class ViewDescriptorService
 	private readonly logger: Lazy<ILogger>;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
@@ -202,43 +204,111 @@ export class ViewDescriptorService
 	) {
 		super();
 
-		this.logger = new Lazy(() => loggerService.createLogger(VIEWS_LOG_ID, { name: VIEWS_LOG_NAME, hidden: true }));
+		this.logger = new Lazy(() =>
+			loggerService.createLogger(VIEWS_LOG_ID, {
+				name: VIEWS_LOG_NAME,
+				hidden: true,
+			}),
+		);
 
 		this.activeViewContextKeys = new Map<string, IContextKey<boolean>>();
 		this.movableViewContextKeys = new Map<string, IContextKey<boolean>>();
-		this.defaultViewLocationContextKeys = new Map<string, IContextKey<boolean>>();
-		this.defaultViewContainerLocationContextKeys = new Map<string, IContextKey<boolean>>();
+		this.defaultViewLocationContextKeys = new Map<
+			string,
+			IContextKey<boolean>
+		>();
+		this.defaultViewContainerLocationContextKeys = new Map<
+			string,
+			IContextKey<boolean>
+		>();
 
-		this.viewContainersRegistry = Registry.as<IViewContainersRegistry>(ViewExtensions.ViewContainersRegistry);
-		this.viewsRegistry = Registry.as<IViewsRegistry>(ViewExtensions.ViewsRegistry);
+		this.viewContainersRegistry = Registry.as<IViewContainersRegistry>(
+			ViewExtensions.ViewContainersRegistry,
+		);
+		this.viewsRegistry = Registry.as<IViewsRegistry>(
+			ViewExtensions.ViewsRegistry,
+		);
 
 		this.migrateToViewsCustomizationsStorage();
-		this.viewContainersCustomLocations = new Map<string, ViewContainerLocation>(Object.entries(this.viewCustomizations.viewContainerLocations));
-		this.viewDescriptorsCustomLocations = new Map<string, string>(Object.entries(this.viewCustomizations.viewLocations));
-		this.viewContainerBadgeEnablementStates = new Map<string, boolean>(Object.entries(this.viewCustomizations.viewContainerBadgeEnablementStates));
+		this.viewContainersCustomLocations = new Map<
+			string,
+			ViewContainerLocation
+		>(Object.entries(this.viewCustomizations.viewContainerLocations));
+		this.viewDescriptorsCustomLocations = new Map<string, string>(
+			Object.entries(this.viewCustomizations.viewLocations),
+		);
+		this.viewContainerBadgeEnablementStates = new Map<string, boolean>(
+			Object.entries(
+				this.viewCustomizations.viewContainerBadgeEnablementStates,
+			),
+		);
 
 		// Register all containers that were registered before this ctor
-		this.viewContainers.forEach(viewContainer => this.onDidRegisterViewContainer(viewContainer));
+		this.viewContainers.forEach((viewContainer) =>
+			this.onDidRegisterViewContainer(viewContainer),
+		);
 
-		this._register(this.viewsRegistry.onViewsRegistered(views => this.onDidRegisterViews(views)));
-		this._register(this.viewsRegistry.onViewsDeregistered(({ views, viewContainer }) => this.onDidDeregisterViews(views, viewContainer)));
+		this._register(
+			this.viewsRegistry.onViewsRegistered((views) =>
+				this.onDidRegisterViews(views),
+			),
+		);
+		this._register(
+			this.viewsRegistry.onViewsDeregistered(({ views, viewContainer }) =>
+				this.onDidDeregisterViews(views, viewContainer),
+			),
+		);
 
-		this._register(this.viewsRegistry.onDidChangeContainer(({ views, from, to }) => this.onDidChangeDefaultContainer(views, from, to)));
+		this._register(
+			this.viewsRegistry.onDidChangeContainer(({ views, from, to }) =>
+				this.onDidChangeDefaultContainer(views, from, to),
+			),
+		);
 
-		this._register(this.viewContainersRegistry.onDidRegister(({ viewContainer }) => {
-			this.onDidRegisterViewContainer(viewContainer);
-			this._onDidChangeViewContainers.fire({ added: [{ container: viewContainer, location: this.getViewContainerLocation(viewContainer) }], removed: [] });
-		}));
+		this._register(
+			this.viewContainersRegistry.onDidRegister(({ viewContainer }) => {
+				this.onDidRegisterViewContainer(viewContainer);
+				this._onDidChangeViewContainers.fire({
+					added: [
+						{
+							container: viewContainer,
+							location:
+								this.getViewContainerLocation(viewContainer),
+						},
+					],
+					removed: [],
+				});
+			}),
+		);
 
-		this._register(this.viewContainersRegistry.onDidDeregister(({ viewContainer, viewContainerLocation }) => {
-			this.onDidDeregisterViewContainer(viewContainer);
-			this._onDidChangeViewContainers.fire({ removed: [{ container: viewContainer, location: viewContainerLocation }], added: [] });
-		}));
+		this._register(
+			this.viewContainersRegistry.onDidDeregister(
+				({ viewContainer, viewContainerLocation }) => {
+					this.onDidDeregisterViewContainer(viewContainer);
+					this._onDidChangeViewContainers.fire({
+						removed: [
+							{
+								container: viewContainer,
+								location: viewContainerLocation,
+							},
+						],
+						added: [],
+					});
+				},
+			),
+		);
 
-		this._register(this.storageService.onDidChangeValue(StorageScope.PROFILE, ViewDescriptorService.VIEWS_CUSTOMIZATIONS, this._register(new DisposableStore()))(() => this.onDidStorageChange()));
+		this._register(
+			this.storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				ViewDescriptorService.VIEWS_CUSTOMIZATIONS,
+				this._register(new DisposableStore()),
+			)(() => this.onDidStorageChange()),
+		);
 
-		this.extensionService.whenInstalledExtensionsRegistered().then(() => this.whenExtensionsRegistered());
-
+		this.extensionService
+			.whenInstalledExtensionsRegistered()
+			.then(() => this.whenExtensionsRegistered());
 	}
 
 	private migrateToViewsCustomizationsStorage(): void {
@@ -1287,7 +1357,10 @@ export class ViewDescriptorService
 	private onDidChangeVisibleViews({
 		added,
 		removed,
-	}: { added: IViewDescriptor[]; removed: IViewDescriptor[] }): void {
+	}: {
+		added: IViewDescriptor[];
+		removed: IViewDescriptor[];
+	}): void {
 		this.contextKeyService.bufferChangeEvents(() => {
 			added.forEach((viewDescriptor) =>
 				this.getOrCreateVisibleViewContextKey(viewDescriptor).set(true),

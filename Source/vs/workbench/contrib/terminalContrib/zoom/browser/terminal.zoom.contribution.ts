@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";
 import { MouseWheelClassifier } from "../../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import { Event } from "../../../../../base/common/event.js";
@@ -62,7 +63,8 @@ class TerminalMouseWheelZoomContribution
 		instance: ITerminalInstance | IDetachedTerminalInstance,
 		processManager: ITerminalProcessManager | ITerminalProcessInfo,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 	}

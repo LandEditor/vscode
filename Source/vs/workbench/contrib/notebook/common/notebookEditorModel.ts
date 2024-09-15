@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type VSBufferReadableStream,
 	bufferToStream,
 	streamToBuffer,
+	type VSBufferReadableStream,
 } from "../../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { CancellationError } from "../../../../base/common/errors.js";
@@ -34,17 +34,17 @@ import type {
 import { EditorModel } from "../../../common/editor/editorModel.js";
 import { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
 import {
-	type IFileWorkingCopyModelConfiguration,
 	SnapshotContext,
+	type IFileWorkingCopyModelConfiguration,
 } from "../../../services/workingCopy/common/fileWorkingCopy.js";
 import type { IFileWorkingCopyManager } from "../../../services/workingCopy/common/fileWorkingCopyManager.js";
 import {
+	StoredFileWorkingCopyState,
 	type IStoredFileWorkingCopy,
 	type IStoredFileWorkingCopyModel,
 	type IStoredFileWorkingCopyModelContentChangedEvent,
 	type IStoredFileWorkingCopyModelFactory,
 	type IStoredFileWorkingCopySaveEvent,
-	StoredFileWorkingCopyState,
 } from "../../../services/workingCopy/common/storedFileWorkingCopy.js";
 import type {
 	IUntitledFileWorkingCopy,
@@ -55,19 +55,19 @@ import type {
 import { WorkingCopyCapabilities } from "../../../services/workingCopy/common/workingCopy.js";
 import type { NotebookTextModel } from "./model/notebookTextModel.js";
 import {
+	NotebookCellsChangeType,
+	NotebookSetting,
 	type ICellDto2,
 	type INotebookEditorModel,
 	type INotebookLoadOptions,
 	type IResolvedNotebookEditorModel,
-	NotebookCellsChangeType,
 	type NotebookData,
-	NotebookSetting,
 } from "./notebookCommon.js";
 import { INotebookLoggingService } from "./notebookLoggingService.js";
 import {
-	type INotebookSerializer,
 	INotebookService,
 	SimpleNotebookProviderInfo,
+	type INotebookSerializer,
 } from "./notebookService.js";
 
 //#region --- simple content provider
@@ -103,9 +103,13 @@ export class SimpleNotebookEditorModel
 		readonly resource: URI,
 		private readonly _hasAssociatedFilePath: boolean,
 		readonly viewType: string,
-		private readonly _workingCopyManager: IFileWorkingCopyManager<NotebookFileWorkingCopyModel, NotebookFileWorkingCopyModel>,
+		private readonly _workingCopyManager: IFileWorkingCopyManager<
+			NotebookFileWorkingCopyModel,
+			NotebookFileWorkingCopyModel
+		>,
 		scratchpad: boolean,
-		@IFilesConfigurationService private readonly _filesConfigurationService: IFilesConfigurationService
+		@IFilesConfigurationService
+		private readonly _filesConfigurationService: IFilesConfigurationService,
 	) {
 		super();
 
@@ -553,10 +557,13 @@ export class NotebookFileWorkingCopyModelFactory
 	constructor(
 		private readonly _viewType: string,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@INotebookLoggingService private readonly _notebookLogService: INotebookLoggingService
-	) { }
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@INotebookLoggingService
+		private readonly _notebookLogService: INotebookLoggingService,
+	) {}
 
 	async createModel(
 		resource: URI,

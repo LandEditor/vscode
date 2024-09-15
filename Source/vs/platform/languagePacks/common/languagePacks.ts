@@ -44,7 +44,10 @@ export abstract class LanguagePackBaseService
 {
 	declare readonly _serviceBrand: undefined;
 
-	constructor(@IExtensionGalleryService protected readonly extensionGalleryService: IExtensionGalleryService) {
+	constructor(
+		@IExtensionGalleryService
+		protected readonly extensionGalleryService: IExtensionGalleryService,
+	) {
 		super();
 	}
 

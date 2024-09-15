@@ -5,8 +5,8 @@
 
 import { isLinux, isWindows } from "../../../../base/common/platform.js";
 import {
-	type IKeyboardLayoutInfo,
 	getKeyboardLayoutId,
+	type IKeyboardLayoutInfo,
 } from "../../../../platform/keyboardLayout/common/keyboardLayout.js";
 
 function deserializeMapping(serializedMapping: ISerializedMapping) {

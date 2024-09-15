@@ -10,11 +10,11 @@ import type { URI } from "../../../../base/common/uri.js";
 import type { IMainThreadTestCollection } from "./testService.js";
 import {
 	AbstractIncrementalTestCollection,
-	type ITestUriCanonicalizer,
+	TestDiffOpType,
 	type IncrementalChangeCollector,
 	type IncrementalTestCollectionItem,
 	type InternalTestItem,
-	TestDiffOpType,
+	type ITestUriCanonicalizer,
 	type TestsDiff,
 } from "./testTypes.js";
 

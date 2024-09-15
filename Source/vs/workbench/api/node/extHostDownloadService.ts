@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { tmpdir } from "os";
+
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { join } from "../../../base/common/path.js";
 import { URI } from "../../../base/common/uri.js";

@@ -27,29 +27,42 @@ import { ILifecycleService } from "../../lifecycle/common/lifecycle.js";
 import { IPaneCompositePartService } from "../../panecomposite/browser/panecomposite.js";
 import {
 	AbstractTimerService,
-	type IStartupMetrics,
 	ITimerService,
+	type IStartupMetrics,
 	type Writeable,
 } from "../browser/timerService.js";
 
 export class TimerService extends AbstractTimerService {
 	constructor(
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IExtensionService extensionService: IExtensionService,
 		@IUpdateService updateService: IUpdateService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
 		@IEditorService editorService: IEditorService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IProductService private readonly _productService: IProductService,
-		@IStorageService private readonly _storageService: IStorageService
+		@IStorageService private readonly _storageService: IStorageService,
 	) {
-		super(lifecycleService, contextService, extensionService, updateService, paneCompositeService, editorService, accessibilityService, telemetryService, layoutService);
-		this.setPerformanceMarks('main', _environmentService.window.perfMarks);
+		super(
+			lifecycleService,
+			contextService,
+			extensionService,
+			updateService,
+			paneCompositeService,
+			editorService,
+			accessibilityService,
+			telemetryService,
+			layoutService,
+		);
+		this.setPerformanceMarks("main", _environmentService.window.perfMarks);
 	}
 
 	protected _isInitialStartup(): boolean {

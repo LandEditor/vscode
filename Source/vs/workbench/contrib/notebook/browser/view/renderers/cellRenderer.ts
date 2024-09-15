@@ -46,8 +46,8 @@ import { CellComments } from "../cellParts/cellComments.js";
 import { CellContextKeyPart } from "../cellParts/cellContextKeys.js";
 import { CellDecorations } from "../cellParts/cellDecorations.js";
 import {
-	type CellDragAndDropController,
 	CellDragAndDropPart,
+	type CellDragAndDropController,
 } from "../cellParts/cellDnd.js";
 import { CodeCellDragImageRenderer } from "../cellParts/cellDragRenderer.js";
 import { CellEditorOptions } from "../cellParts/cellEditorOptions.js";
@@ -83,12 +83,17 @@ export class NotebookCellListDelegate
 
 	constructor(
 		targetWindow: Window,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
-		const editorOptions = this.configurationService.getValue<IEditorOptions>('editor');
-		this.lineHeight = BareFontInfo.createFromRawSettings(editorOptions, PixelRatio.getInstance(targetWindow).value).lineHeight;
+		const editorOptions =
+			this.configurationService.getValue<IEditorOptions>("editor");
+		this.lineHeight = BareFontInfo.createFromRawSettings(
+			editorOptions,
+			PixelRatio.getInstance(targetWindow).value,
+		).lineHeight;
 	}
 
 	getHeight(element: CellViewModel): number {
@@ -159,7 +164,8 @@ export class MarkupCellRenderer
 		@IMenuService menuService: IMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@INotificationService notificationService: INotificationService,
-		@INotebookExecutionStateService notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super(
 			instantiationService,

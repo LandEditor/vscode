@@ -9,8 +9,8 @@ import { Position } from "../../../../editor/common/core/position.js";
 import {
 	AccessibleViewProviderId,
 	AccessibleViewType,
-	type IAccessibleViewContentProvider,
 	IAccessibleViewService,
+	type IAccessibleViewContentProvider,
 } from "../../../../platform/accessibility/browser/accessibleView.js";
 import type { IAccessibleViewImplentation } from "../../../../platform/accessibility/browser/accessibleViewRegistry.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
@@ -18,7 +18,7 @@ import type { ServicesAccessor } from "../../../../platform/instantiation/common
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
 import type { IReplElement } from "../common/debug.js";
-import { type Repl, getReplView } from "./repl.js";
+import { getReplView, type Repl } from "./repl.js";
 
 export class ReplAccessibleView implements IAccessibleViewImplentation {
 	priority = 70;
@@ -73,7 +73,9 @@ class ReplOutputAccessibleViewProvider
 	constructor(
 		private readonly _replView: Repl,
 		private readonly _focusedElement: IReplElement | undefined,
-		@IAccessibleViewService private readonly _accessibleViewService: IAccessibleViewService) {
+		@IAccessibleViewService
+		private readonly _accessibleViewService: IAccessibleViewService,
+	) {
 		super();
 		this._treeHadFocus = !!_focusedElement;
 	}

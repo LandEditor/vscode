@@ -24,14 +24,14 @@ import { RunOnceScheduler } from "../../../../base/common/async.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Event } from "../../../../base/common/event.js";
 import {
+	createMatches,
 	type FuzzyScore,
 	type IMatch,
-	createMatches,
 } from "../../../../base/common/filters.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { posix } from "../../../../base/common/path.js";
 import { commonSuffixLength } from "../../../../base/common/strings.js";
@@ -42,24 +42,24 @@ import type {
 	Icon,
 } from "../../../../platform/action/common/action.js";
 import {
-	MenuEntryActionViewItem,
-	SubmenuEntryActionViewItem,
 	createAndFillInActionBarActions,
 	createAndFillInContextMenuActions,
+	MenuEntryActionViewItem,
+	SubmenuEntryActionViewItem,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
-	SubmenuItemAction,
 	registerAction2,
+	SubmenuItemAction,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -90,15 +90,15 @@ import {
 	CONTEXT_DEBUG_STATE,
 	CONTEXT_FOCUSED_SESSION_IS_NO_DEBUG,
 	CONTEXT_STACK_FRAME_SUPPORTS_RESTART,
-	type IDebugModel,
+	getStateLabel,
 	IDebugService,
+	isFrameDeemphasized,
+	State,
+	type IDebugModel,
 	type IDebugSession,
 	type IRawStoppedDetails,
 	type IStackFrame,
 	type IThread,
-	State,
-	getStateLabel,
-	isFrameDeemphasized,
 } from "../common/debug.js";
 import {
 	StackFrame,
@@ -276,57 +276,96 @@ export class CallStackView extends ViewPane {
 		@IHoverService hoverService: IHoverService,
 		@IMenuService private readonly menuService: IMenuService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
 		// Create scheduler to prevent unnecessary flashing of tree when reacting to changes
-		this.onCallStackChangeScheduler = this._register(new RunOnceScheduler(async () => {
-			// Only show the global pause message if we do not display threads.
-			// Otherwise there will be a pause message per thread and there is no need for a global one.
-			const sessions = this.debugService.getModel().getSessions();
-			if (sessions.length === 0) {
-				this.autoExpandedSessions.clear();
-			}
-
-			const thread = sessions.length === 1 && sessions[0].getAllThreads().length === 1 ? sessions[0].getAllThreads()[0] : undefined;
-			const stoppedDetails = sessions.length === 1 ? sessions[0].getStoppedDetails() : undefined;
-			if (stoppedDetails && (thread || typeof stoppedDetails.threadId !== 'number')) {
-				this.stateMessageLabel.textContent = stoppedDescription(stoppedDetails);
-				this.stateMessageLabelHover.update(stoppedText(stoppedDetails));
-				this.stateMessageLabel.classList.toggle('exception', stoppedDetails.reason === 'exception');
-				this.stateMessage.hidden = false;
-			} else if (sessions.length === 1 && sessions[0].state === State.Running) {
-				this.stateMessageLabel.textContent = localize({ key: 'running', comment: ['indicates state'] }, "Running");
-				this.stateMessageLabelHover.update(sessions[0].getLabel());
-				this.stateMessageLabel.classList.remove('exception');
-				this.stateMessage.hidden = false;
-			} else {
-				this.stateMessage.hidden = true;
-			}
-			this.updateActions();
-
-			this.needsRefresh = false;
-			this.dataSource.deemphasizedStackFramesToShow = [];
-			await this.tree.updateChildren();
-			try {
-				const toExpand = new Set<IDebugSession>();
-				sessions.forEach(s => {
-					// Automatically expand sessions that have children, but only do this once.
-					if (s.parentSession && !this.autoExpandedSessions.has(s.parentSession)) {
-						toExpand.add(s.parentSession);
-					}
-				});
-				for (const session of toExpand) {
-					await expandTo(session, this.tree);
-					this.autoExpandedSessions.add(session);
+		this.onCallStackChangeScheduler = this._register(
+			new RunOnceScheduler(async () => {
+				// Only show the global pause message if we do not display threads.
+				// Otherwise there will be a pause message per thread and there is no need for a global one.
+				const sessions = this.debugService.getModel().getSessions();
+				if (sessions.length === 0) {
+					this.autoExpandedSessions.clear();
 				}
-			} catch (e) {
-				// Ignore tree expand errors if element no longer present
-			}
-			if (this.selectionNeedsUpdate) {
-				this.selectionNeedsUpdate = false;
-				await this.updateTreeSelection();
-			}
-		}, 50));
+
+				const thread =
+					sessions.length === 1 &&
+					sessions[0].getAllThreads().length === 1
+						? sessions[0].getAllThreads()[0]
+						: undefined;
+				const stoppedDetails =
+					sessions.length === 1
+						? sessions[0].getStoppedDetails()
+						: undefined;
+				if (
+					stoppedDetails &&
+					(thread || typeof stoppedDetails.threadId !== "number")
+				) {
+					this.stateMessageLabel.textContent =
+						stoppedDescription(stoppedDetails);
+					this.stateMessageLabelHover.update(
+						stoppedText(stoppedDetails),
+					);
+					this.stateMessageLabel.classList.toggle(
+						"exception",
+						stoppedDetails.reason === "exception",
+					);
+					this.stateMessage.hidden = false;
+				} else if (
+					sessions.length === 1 &&
+					sessions[0].state === State.Running
+				) {
+					this.stateMessageLabel.textContent = localize(
+						{ key: "running", comment: ["indicates state"] },
+						"Running",
+					);
+					this.stateMessageLabelHover.update(sessions[0].getLabel());
+					this.stateMessageLabel.classList.remove("exception");
+					this.stateMessage.hidden = false;
+				} else {
+					this.stateMessage.hidden = true;
+				}
+				this.updateActions();
+
+				this.needsRefresh = false;
+				this.dataSource.deemphasizedStackFramesToShow = [];
+				await this.tree.updateChildren();
+				try {
+					const toExpand = new Set<IDebugSession>();
+					sessions.forEach((s) => {
+						// Automatically expand sessions that have children, but only do this once.
+						if (
+							s.parentSession &&
+							!this.autoExpandedSessions.has(s.parentSession)
+						) {
+							toExpand.add(s.parentSession);
+						}
+					});
+					for (const session of toExpand) {
+						await expandTo(session, this.tree);
+						this.autoExpandedSessions.add(session);
+					}
+				} catch (e) {
+					// Ignore tree expand errors if element no longer present
+				}
+				if (this.selectionNeedsUpdate) {
+					this.selectionNeedsUpdate = false;
+					await this.updateTreeSelection();
+				}
+			}, 50),
+		);
 	}
 
 	protected override renderHeaderTitle(container: HTMLElement): void {
@@ -735,11 +774,13 @@ class SessionsRenderer
 	static readonly ID = "session";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@IMenuService private readonly menuService: IMenuService,
-	) { }
+	) {}
 
 	get templateId(): string {
 		return SessionsRenderer.ID;
@@ -959,10 +1000,11 @@ class ThreadsRenderer
 	static readonly ID = "thread";
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@IMenuService private readonly menuService: IMenuService,
-	) { }
+	) {}
 
 	get templateId(): string {
 		return ThreadsRenderer.ID;
@@ -1090,8 +1132,9 @@ class StackFramesRenderer
 	constructor(
 		@IHoverService private readonly hoverService: IHoverService,
 		@ILabelService private readonly labelService: ILabelService,
-		@INotificationService private readonly notificationService: INotificationService,
-	) { }
+		@INotificationService
+		private readonly notificationService: INotificationService,
+	) {}
 
 	get templateId(): string {
 		return StackFramesRenderer.ID;
@@ -1211,7 +1254,8 @@ class StackFramesRenderer
 }
 
 class ErrorsRenderer
-	implements ICompressibleTreeRenderer<string, FuzzyScore, IErrorTemplateData>
+	implements
+		ICompressibleTreeRenderer<string, FuzzyScore, IErrorTemplateData>
 {
 	static readonly ID = "error";
 
@@ -1219,10 +1263,7 @@ class ErrorsRenderer
 		return ErrorsRenderer.ID;
 	}
 
-	constructor(
-		@IHoverService private readonly hoverService: IHoverService
-	) {
-	}
+	constructor(@IHoverService private readonly hoverService: IHoverService) {}
 
 	renderTemplate(container: HTMLElement): IErrorTemplateData {
 		const label = dom.append(container, $(".error"));
@@ -1310,7 +1351,11 @@ class LoadMoreRenderer
 
 class ShowMoreRenderer
 	implements
-		ICompressibleTreeRenderer<IStackFrame[], FuzzyScore, ILabelTemplateData>
+		ICompressibleTreeRenderer<
+			IStackFrame[],
+			FuzzyScore,
+			ILabelTemplateData
+		>
 {
 	static readonly ID = "showMore";
 

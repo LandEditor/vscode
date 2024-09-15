@@ -13,8 +13,8 @@ import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { TextOnlyMenuEntryActionViewItem } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	IMenuService,
-	type MenuId,
 	MenuItemAction,
+	type MenuId,
 } from "../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -33,16 +33,26 @@ export class SuggestWidgetStatus {
 		@IMenuService private _menuService: IMenuService,
 		@IContextKeyService private _contextKeyService: IContextKeyService,
 	) {
-		this.element = dom.append(container, dom.$('.suggest-status-bar'));
+		this.element = dom.append(container, dom.$(".suggest-status-bar"));
 
-		const actionViewItemProvider = <IActionViewItemProvider>(action => {
-			return action instanceof MenuItemAction ? instantiationService.createInstance(TextOnlyMenuEntryActionViewItem, action, { useComma: true }) : undefined;
+		const actionViewItemProvider = <IActionViewItemProvider>((action) => {
+			return action instanceof MenuItemAction
+				? instantiationService.createInstance(
+						TextOnlyMenuEntryActionViewItem,
+						action,
+						{ useComma: true },
+					)
+				: undefined;
 		});
-		this._leftActions = new ActionBar(this.element, { actionViewItemProvider });
-		this._rightActions = new ActionBar(this.element, { actionViewItemProvider });
+		this._leftActions = new ActionBar(this.element, {
+			actionViewItemProvider,
+		});
+		this._rightActions = new ActionBar(this.element, {
+			actionViewItemProvider,
+		});
 
-		this._leftActions.domNode.classList.add('left');
-		this._rightActions.domNode.classList.add('right');
+		this._leftActions.domNode.classList.add("left");
+		this._rightActions.domNode.classList.add("right");
 	}
 
 	dispose(): void {

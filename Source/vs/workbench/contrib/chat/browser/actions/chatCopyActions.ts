@@ -13,10 +13,10 @@ import {
 import { IClipboardService } from "../../../../../platform/clipboard/common/clipboardService.js";
 import { CONTEXT_RESPONSE_FILTERED } from "../../common/chatContextKeys.js";
 import {
-	type IChatRequestViewModel,
-	type IChatResponseViewModel,
 	isRequestVM,
 	isResponseVM,
+	type IChatRequestViewModel,
+	type IChatResponseViewModel,
 } from "../../common/chatViewModel.js";
 import { IChatWidgetService } from "../chat.js";
 import { CHAT_CATEGORY, stringifyItem } from "./chatActions.js";

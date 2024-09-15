@@ -18,9 +18,9 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	IUserDataProfilesService,
 	type DidChangeProfilesEvent,
 	type IUserDataProfile,
-	IUserDataProfilesService,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { UserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfileIpc.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
@@ -50,10 +50,14 @@ class RemoteUserDataProfilesService
 	private remoteUserDataProfilesService: IUserDataProfilesService | undefined;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
 	) {

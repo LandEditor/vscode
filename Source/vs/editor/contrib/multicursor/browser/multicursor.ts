@@ -20,9 +20,9 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Range } from "../../../common/core/range.js";
@@ -34,9 +34,9 @@ import {
 	type ICursorSelectionChangedEvent,
 } from "../../../common/cursorEvents.js";
 import {
+	ScrollType,
 	type IEditorContribution,
 	type IEditorDecorationsCollection,
-	ScrollType,
 } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import type { FindMatch, ITextModel } from "../../../common/model.js";
@@ -1239,53 +1239,69 @@ export class SelectionHighlighter
 
 	constructor(
 		editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this.editor = editor;
 		this._isEnabled = editor.getOption(EditorOption.selectionHighlight);
 		this._decorations = editor.createDecorationsCollection();
-		this.updateSoon = this._register(new RunOnceScheduler(() => this._update(), 300));
+		this.updateSoon = this._register(
+			new RunOnceScheduler(() => this._update(), 300),
+		);
 		this.state = null;
 
-		this._register(editor.onDidChangeConfiguration((e) => {
-			this._isEnabled = editor.getOption(EditorOption.selectionHighlight);
-		}));
-		this._register(editor.onDidChangeCursorSelection((e: ICursorSelectionChangedEvent) => {
-
-			if (!this._isEnabled) {
-				// Early exit if nothing needs to be done!
-				// Leave some form of early exit check here if you wish to continue being a cursor position change listener ;)
-				return;
-			}
-
-			if (e.selection.isEmpty()) {
-				if (e.reason === CursorChangeReason.Explicit) {
-					if (this.state) {
-						// no longer valid
-						this._setState(null);
+		this._register(
+			editor.onDidChangeConfiguration((e) => {
+				this._isEnabled = editor.getOption(
+					EditorOption.selectionHighlight,
+				);
+			}),
+		);
+		this._register(
+			editor.onDidChangeCursorSelection(
+				(e: ICursorSelectionChangedEvent) => {
+					if (!this._isEnabled) {
+						// Early exit if nothing needs to be done!
+						// Leave some form of early exit check here if you wish to continue being a cursor position change listener ;)
+						return;
 					}
+
+					if (e.selection.isEmpty()) {
+						if (e.reason === CursorChangeReason.Explicit) {
+							if (this.state) {
+								// no longer valid
+								this._setState(null);
+							}
+							this.updateSoon.schedule();
+						} else {
+							this._setState(null);
+						}
+					} else {
+						this._update();
+					}
+				},
+			),
+		);
+		this._register(
+			editor.onDidChangeModel((e) => {
+				this._setState(null);
+			}),
+		);
+		this._register(
+			editor.onDidChangeModelContent((e) => {
+				if (this._isEnabled) {
 					this.updateSoon.schedule();
-				} else {
-					this._setState(null);
 				}
-			} else {
-				this._update();
-			}
-		}));
-		this._register(editor.onDidChangeModel((e) => {
-			this._setState(null);
-		}));
-		this._register(editor.onDidChangeModelContent((e) => {
-			if (this._isEnabled) {
-				this.updateSoon.schedule();
-			}
-		}));
+			}),
+		);
 		const findController = CommonFindController.get(editor);
 		if (findController) {
-			this._register(findController.getState().onFindReplaceStateChange((e) => {
-				this._update();
-			}));
+			this._register(
+				findController.getState().onFindReplaceStateChange((e) => {
+					this._update();
+				}),
+			);
 		}
 		this.updateSoon.schedule();
 	}
@@ -1424,6 +1440,7 @@ export class SelectionHighlighter
 		for (
 			let i = 0, j = 0, len = allMatches.length, lenJ = selections.length;
 			i < len;
+
 		) {
 			const match = allMatches[i];
 

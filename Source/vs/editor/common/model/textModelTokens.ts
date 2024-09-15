@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IdleDeadline,
 	runWhenGlobalIdle,
+	type IdleDeadline,
 } from "../../../base/common/async.js";
 import {
 	BugIndicatingError,

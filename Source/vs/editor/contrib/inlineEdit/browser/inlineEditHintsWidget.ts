@@ -8,25 +8,27 @@ import {
 	KeybindingLabel,
 	unthemedKeybindingLabelOptions,
 } from "../../../../base/browser/ui/keybindingLabel/keybindingLabel.js";
-import { type IAction, Separator } from "../../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../../base/common/actions.js";
 import { equals } from "../../../../base/common/arrays.js";
 import { Disposable, toDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	autorunWithStore,
 	derived,
 	observableFromEvent,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { OS } from "../../../../base/common/platform.js";
+
 import "./inlineEditHintsWidget.css";
+
 import {
-	MenuEntryActionViewItem,
 	createAndFillInActionBarActions,
+	MenuEntryActionViewItem,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenuWorkbenchToolBarOptions,
 	WorkbenchToolBar,
+	type IMenuWorkbenchToolBarOptions,
 } from "../../../../platform/actions/browser/toolbar.js";
 import {
 	IMenuService,
@@ -95,26 +97,35 @@ export class InlineEditHintsWidget extends Disposable {
 	constructor(
 		private readonly editor: ICodeEditor,
 		private readonly model: IObservable<GhostTextWidget | undefined>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._register(autorunWithStore((reader, store) => {
-			/** @description setup content widget */
-			const model = this.model.read(reader);
-			if (!model || !this.alwaysShowToolbar.read(reader)) {
-				return;
-			}
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description setup content widget */
+				const model = this.model.read(reader);
+				if (!model || !this.alwaysShowToolbar.read(reader)) {
+					return;
+				}
 
-			const contentWidget = store.add(this.instantiationService.createInstance(
-				InlineEditHintsContentWidget,
-				this.editor,
-				true,
-				this.position,
-			));
-			editor.addContentWidget(contentWidget);
-			store.add(toDisposable(() => editor.removeContentWidget(contentWidget)));
-		}));
+				const contentWidget = store.add(
+					this.instantiationService.createInstance(
+						InlineEditHintsContentWidget,
+						this.editor,
+						true,
+						this.position,
+					),
+				);
+				editor.addContentWidget(contentWidget);
+				store.add(
+					toDisposable(() =>
+						editor.removeContentWidget(contentWidget),
+					),
+				);
+			}),
+		);
 	}
 }
 
@@ -129,8 +140,7 @@ export class InlineEditHintsContentWidget
 
 	private static id = 0;
 
-	private readonly id =
-		`InlineEditHintsContentWidget${InlineEditHintsContentWidget.id++}`;
+	private readonly id = `InlineEditHintsContentWidget${InlineEditHintsContentWidget.id++}`;
 	public readonly allowEditorOverflow = true;
 	public readonly suppressMouseDown = false;
 
@@ -155,54 +165,76 @@ export class InlineEditHintsContentWidget
 		private readonly _position: IObservable<Position | null>,
 
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IMenuService private readonly _menuService: IMenuService,
 	) {
 		super();
 
-		this.toolBar = this._register(instantiationService.createInstance(CustomizedMenuWorkbenchToolBar, this.nodes.toolBar, this.editor, MenuId.InlineEditToolbar, {
-			menuOptions: { renderShortTitle: true },
-			toolbarOptions: { primaryGroup: g => g.startsWith('primary') },
-			actionViewItemProvider: (action, options) => {
-				if (action instanceof MenuItemAction) {
-					return instantiationService.createInstance(StatusBarViewItem, action, undefined);
-				}
-				return undefined;
-			},
-			telemetrySource: 'InlineEditToolbar',
-		}));
+		this.toolBar = this._register(
+			instantiationService.createInstance(
+				CustomizedMenuWorkbenchToolBar,
+				this.nodes.toolBar,
+				this.editor,
+				MenuId.InlineEditToolbar,
+				{
+					menuOptions: { renderShortTitle: true },
+					toolbarOptions: {
+						primaryGroup: (g) => g.startsWith("primary"),
+					},
+					actionViewItemProvider: (action, options) => {
+						if (action instanceof MenuItemAction) {
+							return instantiationService.createInstance(
+								StatusBarViewItem,
+								action,
+								undefined,
+							);
+						}
+						return undefined;
+					},
+					telemetrySource: "InlineEditToolbar",
+				},
+			),
+		);
 
-		this._register(this.toolBar.onDidChangeDropdownVisibility(e => {
-			InlineEditHintsContentWidget._dropDownVisible = e;
-		}));
+		this._register(
+			this.toolBar.onDidChangeDropdownVisibility((e) => {
+				InlineEditHintsContentWidget._dropDownVisible = e;
+			}),
+		);
 
-		this._register(autorun(reader => {
-			/** @description update position */
-			this._position.read(reader);
-			this.editor.layoutContentWidget(this);
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description update position */
+				this._position.read(reader);
+				this.editor.layoutContentWidget(this);
+			}),
+		);
 
-		this._register(autorun(reader => {
-			/** @description actions menu */
+		this._register(
+			autorun((reader) => {
+				/** @description actions menu */
 
-			const extraActions = [];
+				const extraActions = [];
 
-			for (const [_, group] of this.inlineCompletionsActionsMenus.getActions()) {
-				for (const action of group) {
-					if (action instanceof MenuItemAction) {
-						extraActions.push(action);
+				for (const [
+					_,
+					group,
+				] of this.inlineCompletionsActionsMenus.getActions()) {
+					for (const action of group) {
+						if (action instanceof MenuItemAction) {
+							extraActions.push(action);
+						}
 					}
 				}
-			}
 
-			if (extraActions.length > 0) {
-				extraActions.unshift(new Separator());
-			}
+				if (extraActions.length > 0) {
+					extraActions.unshift(new Separator());
+				}
 
-			this.toolBar.setAdditionalSecondaryActions(extraActions);
-		}));
-
-
+				this.toolBar.setAdditionalSecondaryActions(extraActions);
+			}),
+		);
 	}
 
 	getId(): string {
@@ -270,16 +302,28 @@ export class CustomizedMenuWorkbenchToolBar extends WorkbenchToolBar {
 		private readonly menuId: MenuId,
 		private readonly options2: IMenuWorkbenchToolBarOptions | undefined,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@ICommandService commandService: ICommandService,
 		@ITelemetryService telemetryService: ITelemetryService,
 	) {
-		super(container, { resetMenu: menuId, ...options2 }, menuService, contextKeyService, contextMenuService, keybindingService, commandService, telemetryService);
+		super(
+			container,
+			{ resetMenu: menuId, ...options2 },
+			menuService,
+			contextKeyService,
+			contextMenuService,
+			keybindingService,
+			commandService,
+			telemetryService,
+		);
 
 		this._store.add(this.menu.onDidChange(() => this.updateToolbar()));
-		this._store.add(this.editor.onDidChangeCursorPosition(() => this.updateToolbar()));
+		this._store.add(
+			this.editor.onDidChangeCursorPosition(() => this.updateToolbar()),
+		);
 		this.updateToolbar();
 	}
 

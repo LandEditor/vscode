@@ -5,17 +5,19 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type IHorizontalSashLayoutProvider,
-	type ISashEvent,
 	Orientation,
 	Sash,
 	SashState,
+	type IHorizontalSashLayoutProvider,
+	type ISashEvent,
 } from "../../../../base/browser/ui/sash/sash.js";
 import { Color, RGBA } from "../../../../base/common/color.js";
 import { IdGenerator } from "../../../../base/common/idGenerator.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import * as objects from "../../../../base/common/objects.js";
+
 import "./zoneWidget.css";
+
 import type {
 	ICodeEditor,
 	IOverlayWidget,
@@ -24,14 +26,14 @@ import type {
 	IViewZoneChangeAccessor,
 } from "../../../browser/editorBrowser.js";
 import {
-	type EditorLayoutInfo,
 	EditorOption,
+	type EditorLayoutInfo,
 } from "../../../common/config/editorOptions.js";
 import type { IPosition, Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import {
-	type IEditorDecorationsCollection,
 	ScrollType,
+	type IEditorDecorationsCollection,
 } from "../../../common/editorCommon.js";
 import { TrackedRangeStickiness } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";

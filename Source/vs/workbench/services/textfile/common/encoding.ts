@@ -13,10 +13,10 @@ import {
 } from "../../../../base/common/buffer.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import {
-	type Readable,
-	type ReadableStream,
 	listenStream,
 	newWriteableStream,
+	type Readable,
+	type ReadableStream,
 } from "../../../../base/common/stream.js";
 
 export const UTF8 = "utf8";

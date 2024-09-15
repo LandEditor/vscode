@@ -6,9 +6,9 @@
 import { insertInto } from "../../../../base/common/arrays.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import {
+	combinedDisposable,
 	DisposableStore,
 	type IDisposable,
-	combinedDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import * as resources from "../../../../base/common/resources.js";
@@ -34,8 +34,8 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IWorkspace,
 	IWorkspaceContextService,
+	type IWorkspace,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
 	ExtensionsRegistry,
@@ -50,7 +50,7 @@ import { ITextFileService } from "../../../services/textfile/common/textfiles.js
 import { IUserDataProfileService } from "../../../services/userDataProfile/common/userDataProfile.js";
 import { SnippetCompletionProvider } from "./snippetCompletionProvider.js";
 import type { ISnippetGetOptions, ISnippetsService } from "./snippets.js";
-import { type Snippet, SnippetFile, SnippetSource } from "./snippetsFile.js";
+import { SnippetFile, SnippetSource, type Snippet } from "./snippetsFile.js";
 
 namespace snippetExt {
 	export interface ISnippetsExtensionPoint {
@@ -202,12 +202,15 @@ class SnippetEnablement {
 	constructor(
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
-
-		const raw = _storageService.get(SnippetEnablement._key, StorageScope.PROFILE, '');
+		const raw = _storageService.get(
+			SnippetEnablement._key,
+			StorageScope.PROFILE,
+			"",
+		);
 		let data: string[] | undefined;
 		try {
 			data = JSON.parse(raw);
-		} catch { }
+		} catch {}
 
 		this._ignored = isStringArray(data) ? new Set(data) : new Set();
 	}
@@ -244,8 +247,11 @@ class SnippetUsageTimestamps {
 	constructor(
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
-
-		const raw = _storageService.get(SnippetUsageTimestamps._key, StorageScope.PROFILE, '');
+		const raw = _storageService.get(
+			SnippetUsageTimestamps._key,
+			StorageScope.PROFILE,
+			"",
+		);
 		let data: [string, number][] | undefined;
 		try {
 			data = JSON.parse(raw);
@@ -286,28 +292,46 @@ export class SnippetsService implements ISnippetsService {
 	private readonly _usageTimestamps: SnippetUsageTimestamps;
 
 	constructor(
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@IUserDataProfileService
+		private readonly _userDataProfileService: IUserDataProfileService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ILogService private readonly _logService: ILogService,
 		@IFileService private readonly _fileService: IFileService,
 		@ITextFileService private readonly _textfileService: ITextFileService,
-		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
 	) {
-		this._pendingWork.push(Promise.resolve(lifecycleService.when(LifecyclePhase.Restored).then(() => {
-			this._initExtensionSnippets();
-			this._initUserSnippets();
-			this._initWorkspaceSnippets();
-		})));
+		this._pendingWork.push(
+			Promise.resolve(
+				lifecycleService.when(LifecyclePhase.Restored).then(() => {
+					this._initExtensionSnippets();
+					this._initUserSnippets();
+					this._initWorkspaceSnippets();
+				}),
+			),
+		);
 
-		setSnippetSuggestSupport(new SnippetCompletionProvider(this._languageService, this, languageConfigurationService));
+		setSnippetSuggestSupport(
+			new SnippetCompletionProvider(
+				this._languageService,
+				this,
+				languageConfigurationService,
+			),
+		);
 
-		this._enablement = instantiationService.createInstance(SnippetEnablement);
-		this._usageTimestamps = instantiationService.createInstance(SnippetUsageTimestamps);
+		this._enablement =
+			instantiationService.createInstance(SnippetEnablement);
+		this._usageTimestamps = instantiationService.createInstance(
+			SnippetUsageTimestamps,
+		);
 	}
 
 	dispose(): void {

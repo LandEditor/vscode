@@ -14,14 +14,14 @@ import type {
 	IProgressStep,
 } from "../../../platform/progress/common/progress.js";
 import {
-	type IExtHostContext,
 	extHostCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
+	ITextFileService,
 	type ITextFileEditorModel,
 	type ITextFileSaveParticipant,
 	type ITextFileSaveParticipantContext,
-	ITextFileService,
 } from "../../services/textfile/common/textfiles.js";
 import {
 	ExtHostContext,
@@ -88,9 +88,15 @@ export class SaveParticipant {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ITextFileService private readonly _textFileService: ITextFileService
+		@ITextFileService private readonly _textFileService: ITextFileService,
 	) {
-		this._saveParticipantDisposable = this._textFileService.files.addSaveParticipant(instantiationService.createInstance(ExtHostSaveParticipant, extHostContext));
+		this._saveParticipantDisposable =
+			this._textFileService.files.addSaveParticipant(
+				instantiationService.createInstance(
+					ExtHostSaveParticipant,
+					extHostContext,
+				),
+			);
 	}
 
 	dispose(): void {

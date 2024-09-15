@@ -25,7 +25,9 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { isIOS } from "../../../../base/common/platform.js";
 import { isDefined, isUndefinedOrNull } from "../../../../base/common/types.js";
+
 import "./media/settingsWidgets.css";
+
 import type { IManagedHoverTooltipMarkdownString } from "../../../../base/browser/ui/hover/hover.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import { MarkdownString } from "../../../../base/common/htmlContent.js";
@@ -210,31 +212,52 @@ export abstract class AbstractListSettingWidget<
 	constructor(
 		private container: HTMLElement,
 		@IThemeService protected readonly themeService: IThemeService,
-		@IContextViewService protected readonly contextViewService: IContextViewService
+		@IContextViewService
+		protected readonly contextViewService: IContextViewService,
 	) {
 		super();
 
-		this.listElement = DOM.append(container, $('div'));
-		this.listElement.setAttribute('role', 'list');
-		this.getContainerClasses().forEach(c => this.listElement.classList.add(c));
+		this.listElement = DOM.append(container, $("div"));
+		this.listElement.setAttribute("role", "list");
+		this.getContainerClasses().forEach((c) =>
+			this.listElement.classList.add(c),
+		);
 		DOM.append(container, this.renderAddButton());
 		this.renderList();
 
-		this._register(DOM.addDisposableListener(this.listElement, DOM.EventType.POINTER_DOWN, e => this.onListClick(e)));
-		this._register(DOM.addDisposableListener(this.listElement, DOM.EventType.DBLCLICK, e => this.onListDoubleClick(e)));
+		this._register(
+			DOM.addDisposableListener(
+				this.listElement,
+				DOM.EventType.POINTER_DOWN,
+				(e) => this.onListClick(e),
+			),
+		);
+		this._register(
+			DOM.addDisposableListener(
+				this.listElement,
+				DOM.EventType.DBLCLICK,
+				(e) => this.onListDoubleClick(e),
+			),
+		);
 
-		this._register(DOM.addStandardDisposableListener(this.listElement, 'keydown', (e: StandardKeyboardEvent) => {
-			if (e.equals(KeyCode.UpArrow)) {
-				this.selectPreviousRow();
-			} else if (e.equals(KeyCode.DownArrow)) {
-				this.selectNextRow();
-			} else {
-				return;
-			}
+		this._register(
+			DOM.addStandardDisposableListener(
+				this.listElement,
+				"keydown",
+				(e: StandardKeyboardEvent) => {
+					if (e.equals(KeyCode.UpArrow)) {
+						this.selectPreviousRow();
+					} else if (e.equals(KeyCode.DownArrow)) {
+						this.selectNextRow();
+					} else {
+						return;
+					}
 
-			e.preventDefault();
-			e.stopPropagation();
-		}));
+					e.preventDefault();
+					e.stopPropagation();
+				},
+			),
+		);
 	}
 
 	setValue(listData: TDataItem[]): void {
@@ -557,7 +580,7 @@ export class ListSettingWidget<
 		container: HTMLElement,
 		@IThemeService themeService: IThemeService,
 		@IContextViewService contextViewService: IContextViewService,
-		@IHoverService protected readonly hoverService: IHoverService
+		@IHoverService protected readonly hoverService: IHoverService,
 	) {
 		super(container, themeService, contextViewService);
 	}

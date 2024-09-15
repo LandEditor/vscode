@@ -19,13 +19,14 @@ import {
 	extUriIgnorePathCase,
 } from "../../../base/common/resources.js";
 import {
-	type ReadableStreamEvents,
 	newWriteableStream,
+	type ReadableStreamEvents,
 } from "../../../base/common/stream.js";
 import { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
+	createFileSystemProviderError,
 	FileSystemProviderCapabilities,
 	FileSystemProviderError,
 	FileSystemProviderErrorCode,
@@ -38,7 +39,6 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	createFileSystemProviderError,
 } from "../common/files.js";
 import { WebFileSystemAccess } from "./webFileSystemAccess.js";
 

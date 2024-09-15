@@ -5,8 +5,8 @@
 
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type ICodeEditor,
 	MouseTargetType,
+	type ICodeEditor,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorContributionInstantiation,

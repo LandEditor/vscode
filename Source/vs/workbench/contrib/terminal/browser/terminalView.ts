@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../../base/browser/dom.js";
+import type { IActionViewItem } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import {
 	ActionViewItem,
-	type IBaseActionViewItemOptions,
 	SelectActionViewItem,
+	type IBaseActionViewItemOptions,
 } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
-import type { IActionViewItem } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import type {
 	IHoverDelegate,
 	IHoverDelegateOptions,
@@ -20,10 +20,10 @@ import { Action, type IAction } from "../../../../base/common/actions.js";
 import { Event } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { MicrotaskDelay } from "../../../../base/common/symbols.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -33,20 +33,20 @@ import * as nls from "../../../../nls.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { DropdownWithPrimaryActionViewItem } from "../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js";
 import {
-	MenuEntryActionViewItem,
 	createAndFillInContextMenuActions,
+	MenuEntryActionViewItem,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -57,16 +57,16 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
 	INotificationService,
-	type IPromptChoice,
 	Severity,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { TerminalCapability } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
-	type ITerminalProfile,
 	TerminalLocation,
 	TerminalSettingId,
+	type ITerminalProfile,
 } from "../../../../platform/terminal/common/terminal.js";
 import { defaultSelectBoxStyles } from "../../../../platform/theme/browser/defaultStyles.js";
 import {
@@ -79,8 +79,8 @@ import {
 	Themable,
 } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { IViewDescriptorService } from "../../../common/views.js";
 import {
@@ -90,13 +90,13 @@ import {
 } from "../common/terminal.js";
 import { TerminalContextKeys } from "../common/terminalContextKey.js";
 import {
-	type ICreateTerminalOptions,
 	ITerminalConfigurationService,
 	ITerminalGroupService,
-	type ITerminalInstance,
 	ITerminalService,
 	TerminalConnectionState,
 	TerminalDataTransfers,
+	type ICreateTerminalOptions,
+	type ITerminalInstance,
 } from "./terminal.js";
 import {
 	switchTerminalActionViewItemSeparator,
@@ -129,68 +129,138 @@ export class TerminalViewPane extends ViewPane {
 	constructor(
 		options: IViewPaneOptions,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IOpenerService openerService: IOpenerService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 	) {
-		super(options, keybindingService, _contextMenuService, _configurationService, _contextKeyService, viewDescriptorService, _instantiationService, openerService, themeService, telemetryService, hoverService);
-		this._register(this._terminalService.onDidRegisterProcessSupport(() => {
-			this._onDidChangeViewWelcomeState.fire();
-		}));
-
-		this._register(this._terminalService.onDidChangeInstances(() => {
-			// If the first terminal is opened, hide the welcome view
-			// and if the last one is closed, show it again
-			if (this._hasWelcomeScreen() && this._terminalGroupService.instances.length <= 1) {
+		super(
+			options,
+			keybindingService,
+			_contextMenuService,
+			_configurationService,
+			_contextKeyService,
+			viewDescriptorService,
+			_instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
+		this._register(
+			this._terminalService.onDidRegisterProcessSupport(() => {
 				this._onDidChangeViewWelcomeState.fire();
-			}
-			if (!this._parentDomElement) { return; }
-			// If we do not have the tab view yet, create it now.
-			if (!this._terminalTabbedView) {
-				this._createTabsView();
-			}
-			// If we just opened our first terminal, layout
-			if (this._terminalGroupService.instances.length === 1) {
-				this.layoutBody(this._parentDomElement.offsetHeight, this._parentDomElement.offsetWidth);
-			}
-		}));
-		this._dropdownMenu = this._register(this._menuService.createMenu(MenuId.TerminalNewDropdownContext, this._contextKeyService));
-		this._singleTabMenu = this._register(this._menuService.createMenu(MenuId.TerminalTabContext, this._contextKeyService));
-		this._register(this._terminalProfileService.onDidChangeAvailableProfiles(profiles => this._updateTabActionBar(profiles)));
-		this._viewShowing = TerminalContextKeys.viewShowing.bindTo(this._contextKeyService);
-		this._register(this.onDidChangeBodyVisibility(e => {
-			if (e) {
-				this._terminalTabbedView?.rerenderTabs();
-			}
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (this._parentDomElement && (e.affectsConfiguration(TerminalSettingId.ShellIntegrationDecorationsEnabled) || e.affectsConfiguration(TerminalSettingId.ShellIntegrationEnabled))) {
-				this._updateForShellIntegration(this._parentDomElement);
-			}
-		}));
-		this._register(this._terminalService.onDidCreateInstance((i) => {
-			i.capabilities.onDidAddCapabilityType(c => {
-				if (c === TerminalCapability.CommandDetection && this._gutterDecorationsEnabled()) {
-					this._parentDomElement?.classList.add('shell-integration');
+			}),
+		);
+
+		this._register(
+			this._terminalService.onDidChangeInstances(() => {
+				// If the first terminal is opened, hide the welcome view
+				// and if the last one is closed, show it again
+				if (
+					this._hasWelcomeScreen() &&
+					this._terminalGroupService.instances.length <= 1
+				) {
+					this._onDidChangeViewWelcomeState.fire();
 				}
-			});
-		}));
+				if (!this._parentDomElement) {
+					return;
+				}
+				// If we do not have the tab view yet, create it now.
+				if (!this._terminalTabbedView) {
+					this._createTabsView();
+				}
+				// If we just opened our first terminal, layout
+				if (this._terminalGroupService.instances.length === 1) {
+					this.layoutBody(
+						this._parentDomElement.offsetHeight,
+						this._parentDomElement.offsetWidth,
+					);
+				}
+			}),
+		);
+		this._dropdownMenu = this._register(
+			this._menuService.createMenu(
+				MenuId.TerminalNewDropdownContext,
+				this._contextKeyService,
+			),
+		);
+		this._singleTabMenu = this._register(
+			this._menuService.createMenu(
+				MenuId.TerminalTabContext,
+				this._contextKeyService,
+			),
+		);
+		this._register(
+			this._terminalProfileService.onDidChangeAvailableProfiles(
+				(profiles) => this._updateTabActionBar(profiles),
+			),
+		);
+		this._viewShowing = TerminalContextKeys.viewShowing.bindTo(
+			this._contextKeyService,
+		);
+		this._register(
+			this.onDidChangeBodyVisibility((e) => {
+				if (e) {
+					this._terminalTabbedView?.rerenderTabs();
+				}
+			}),
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					this._parentDomElement &&
+					(e.affectsConfiguration(
+						TerminalSettingId.ShellIntegrationDecorationsEnabled,
+					) ||
+						e.affectsConfiguration(
+							TerminalSettingId.ShellIntegrationEnabled,
+						))
+				) {
+					this._updateForShellIntegration(this._parentDomElement);
+				}
+			}),
+		);
+		this._register(
+			this._terminalService.onDidCreateInstance((i) => {
+				i.capabilities.onDidAddCapabilityType((c) => {
+					if (
+						c === TerminalCapability.CommandDetection &&
+						this._gutterDecorationsEnabled()
+					) {
+						this._parentDomElement?.classList.add(
+							"shell-integration",
+						);
+					}
+				});
+			}),
+		);
 	}
 
 	private _updateForShellIntegration(container: HTMLElement) {
@@ -567,19 +637,72 @@ class SwitchTerminalActionViewItem extends SelectActionViewItem {
 	constructor(
 		action: IAction,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IContextViewService contextViewService: IContextViewService,
-		@ITerminalProfileService terminalProfileService: ITerminalProfileService
+		@ITerminalProfileService
+		terminalProfileService: ITerminalProfileService,
 	) {
-		super(null, action, getTerminalSelectOpenItems(_terminalService, _terminalGroupService), _terminalGroupService.activeGroupIndex, contextViewService, defaultSelectBoxStyles, { ariaLabel: nls.localize('terminals', 'Open Terminals.'), optionsAsChildren: true });
-		this._register(_terminalService.onDidChangeInstances(() => this._updateItems(), this));
-		this._register(_terminalService.onDidChangeActiveGroup(() => this._updateItems(), this));
-		this._register(_terminalService.onDidChangeActiveInstance(() => this._updateItems(), this));
-		this._register(_terminalService.onAnyInstanceTitleChange(() => this._updateItems(), this));
-		this._register(_terminalGroupService.onDidChangeGroups(() => this._updateItems(), this));
-		this._register(_terminalService.onDidChangeConnectionState(() => this._updateItems(), this));
-		this._register(terminalProfileService.onDidChangeAvailableProfiles(() => this._updateItems(), this));
-		this._register(_terminalService.onAnyInstancePrimaryStatusChange(() => this._updateItems(), this));
+		super(
+			null,
+			action,
+			getTerminalSelectOpenItems(_terminalService, _terminalGroupService),
+			_terminalGroupService.activeGroupIndex,
+			contextViewService,
+			defaultSelectBoxStyles,
+			{
+				ariaLabel: nls.localize("terminals", "Open Terminals."),
+				optionsAsChildren: true,
+			},
+		);
+		this._register(
+			_terminalService.onDidChangeInstances(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			_terminalService.onDidChangeActiveGroup(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			_terminalService.onDidChangeActiveInstance(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			_terminalService.onAnyInstanceTitleChange(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			_terminalGroupService.onDidChangeGroups(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			_terminalService.onDidChangeConnectionState(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			terminalProfileService.onDidChangeAvailableProfiles(
+				() => this._updateItems(),
+				this,
+			),
+		);
+		this._register(
+			_terminalService.onAnyInstancePrimaryStatusChange(
+				() => this._updateItems(),
+				this,
+			),
+		);
 	}
 
 	override render(container: HTMLElement): void {
@@ -633,38 +756,64 @@ class SingleTerminalTabActionViewItem extends MenuEntryActionViewItem {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalConfigurationService private readonly _terminaConfigurationService: ITerminalConfigurationService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalConfigurationService
+		private readonly _terminaConfigurationService: ITerminalConfigurationService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IAccessibilityService _accessibilityService: IAccessibilityService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IAccessibilityService _accessibilityService: IAccessibilityService,
 	) {
-		super(action, {
-			draggable: true,
-			hoverDelegate: _instantiationService.createInstance(SingleTabHoverDelegate)
-		}, keybindingService, notificationService, contextKeyService, themeService, contextMenuService, _accessibilityService);
+		super(
+			action,
+			{
+				draggable: true,
+				hoverDelegate: _instantiationService.createInstance(
+					SingleTabHoverDelegate,
+				),
+			},
+			keybindingService,
+			notificationService,
+			contextKeyService,
+			themeService,
+			contextMenuService,
+			_accessibilityService,
+		);
 
 		// Register listeners to update the tab
-		this._register(Event.debounce<ITerminalInstance | undefined, Set<ITerminalInstance>>(Event.any(
-			this._terminalService.onAnyInstancePrimaryStatusChange,
-			this._terminalGroupService.onDidChangeActiveInstance,
-			Event.map(this._terminalService.onAnyInstanceIconChange, e => e.instance),
-			this._terminalService.onAnyInstanceTitleChange,
-			this._terminalService.onDidChangeInstanceCapability,
-		), (last, e) => {
-			if (!last) {
-				last = new Set();
-			}
-			if (e) {
-				last.add(e);
-			}
-			return last;
-		}, MicrotaskDelay)(merged => {
-			for (const e of merged) {
-				this.updateLabel(e);
-			}
-		}));
+		this._register(
+			Event.debounce<
+				ITerminalInstance | undefined,
+				Set<ITerminalInstance>
+			>(
+				Event.any(
+					this._terminalService.onAnyInstancePrimaryStatusChange,
+					this._terminalGroupService.onDidChangeActiveInstance,
+					Event.map(
+						this._terminalService.onAnyInstanceIconChange,
+						(e) => e.instance,
+					),
+					this._terminalService.onAnyInstanceTitleChange,
+					this._terminalService.onDidChangeInstanceCapability,
+				),
+				(last, e) => {
+					if (!last) {
+						last = new Set();
+					}
+					if (e) {
+						last.add(e);
+					}
+					return last;
+				},
+				MicrotaskDelay,
+			)((merged) => {
+				for (const e of merged) {
+					this.updateLabel(e);
+				}
+			}),
+		);
 
 		// Clean up on dispose
 		this._register(toDisposable(() => dispose(this._elementDisposables)));
@@ -867,7 +1016,8 @@ class TerminalThemeIconStyle extends Themable {
 		container: HTMLElement,
 		@IThemeService private readonly _themeService: IThemeService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 	) {
 		super(_themeService);
 		this._registerListeners();
@@ -953,11 +1103,12 @@ class SingleTabHoverDelegate implements IHoverDelegate {
 	readonly placement = "element";
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IHoverService private readonly _hoverService: IHoverService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService
-	) {
-	}
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
+	) {}
 
 	get delay(): number {
 		return Date.now() - this._lastHoverHideTime < 200

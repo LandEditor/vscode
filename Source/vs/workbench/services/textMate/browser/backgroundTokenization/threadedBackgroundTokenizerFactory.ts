@@ -4,18 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IRawTheme } from "vscode-textmate";
+
 import { createWebWorker } from "../../../../../base/browser/defaultWorkerFactory.js";
 import { canASAR } from "../../../../../base/common/amd.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type AppResourcePath,
 	FileAccess,
 	nodeModulesAsarPath,
 	nodeModulesPath,
+	type AppResourcePath,
 } from "../../../../../base/common/network.js";
 import type { IObservable } from "../../../../../base/common/observable.js";
 import { isWeb } from "../../../../../base/common/platform.js";
@@ -61,16 +62,26 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 	private _grammarDefinitions: IValidGrammarDefinition[] = [];
 
 	constructor(
-		private readonly _reportTokenizationTime: (timeMs: number, languageId: string, sourceExtensionId: string | undefined, lineLength: number, isRandomSample: boolean) => void,
+		private readonly _reportTokenizationTime: (
+			timeMs: number,
+			languageId: string,
+			sourceExtensionId: string | undefined,
+			lineLength: number,
+			isRandomSample: boolean,
+		) => void,
 		private readonly _shouldTokenizeAsync: () => boolean,
-		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-	) {
-	}
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+	) {}
 
 	public dispose(): void {
 		this._disposeWorker();
@@ -154,7 +165,8 @@ export class ThreadedBackgroundTokenizerFactory implements IDisposable {
 				) {
 					return;
 				}
-				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens = true;
+				ThreadedBackgroundTokenizerFactory._reportedMismatchingTokens =
+					true;
 
 				this._notificationService.error({
 					message:

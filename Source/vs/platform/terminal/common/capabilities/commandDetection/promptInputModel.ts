@@ -3,12 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { throttle } from "../../../../../base/common/decorators.js";
-import { Emitter, Event } from "../../../../../base/common/event.js";
-import { Disposable } from "../../../../../base/common/lifecycle.js";
-import { ILogService, LogLevel } from "../../../../log/common/log.js";
-import type { ITerminalCommand } from "../capabilities.js";
-
 import type {
 	IBuffer,
 	IBufferCell,
@@ -16,6 +10,12 @@ import type {
 	IMarker,
 	Terminal,
 } from "@xterm/headless";
+
+import { throttle } from "../../../../../base/common/decorators.js";
+import { Emitter, Event } from "../../../../../base/common/event.js";
+import { Disposable } from "../../../../../base/common/lifecycle.js";
+import { ILogService, LogLevel } from "../../../../log/common/log.js";
+import type { ITerminalCommand } from "../capabilities.js";
 
 enum PromptInputState {
 	Unknown = 0,
@@ -130,24 +130,54 @@ export class PromptInputModel extends Disposable implements IPromptInputModel {
 		private readonly _xterm: Terminal,
 		onCommandStart: Event<ITerminalCommand>,
 		onCommandExecuted: Event<ITerminalCommand>,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 
-		this._register(Event.any(
-			this._xterm.onCursorMove,
-			this._xterm.onData,
-			this._xterm.onWriteParsed,
-		)(() => this._sync()));
-		this._register(this._xterm.onData(e => this._handleUserInput(e)));
+		this._register(
+			Event.any(
+				this._xterm.onCursorMove,
+				this._xterm.onData,
+				this._xterm.onWriteParsed,
+			)(() => this._sync()),
+		);
+		this._register(this._xterm.onData((e) => this._handleUserInput(e)));
 
-		this._register(onCommandStart(e => this._handleCommandStart(e as { marker: IMarker })));
+		this._register(
+			onCommandStart((e) =>
+				this._handleCommandStart(e as { marker: IMarker }),
+			),
+		);
 		this._register(onCommandExecuted(() => this._handleCommandExecuted()));
 
-		this._register(this.onDidStartInput(() => this._logCombinedStringIfTrace('PromptInputModel#onDidStartInput')));
-		this._register(this.onDidChangeInput(() => this._logCombinedStringIfTrace('PromptInputModel#onDidChangeInput')));
-		this._register(this.onDidFinishInput(() => this._logCombinedStringIfTrace('PromptInputModel#onDidFinishInput')));
-		this._register(this.onDidInterrupt(() => this._logCombinedStringIfTrace('PromptInputModel#onDidInterrupt')));
+		this._register(
+			this.onDidStartInput(() =>
+				this._logCombinedStringIfTrace(
+					"PromptInputModel#onDidStartInput",
+				),
+			),
+		);
+		this._register(
+			this.onDidChangeInput(() =>
+				this._logCombinedStringIfTrace(
+					"PromptInputModel#onDidChangeInput",
+				),
+			),
+		);
+		this._register(
+			this.onDidFinishInput(() =>
+				this._logCombinedStringIfTrace(
+					"PromptInputModel#onDidFinishInput",
+				),
+			),
+		);
+		this._register(
+			this.onDidInterrupt(() =>
+				this._logCombinedStringIfTrace(
+					"PromptInputModel#onDidInterrupt",
+				),
+			),
+		);
 	}
 
 	private _logCombinedStringIfTrace(message: string) {

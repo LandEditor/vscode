@@ -5,12 +5,12 @@
 
 import { canASAR, isESM } from "./base/common/amd.js";
 import {
-	type AppResourcePath,
 	FileAccess,
-	Schemas,
-	VSCODE_AUTHORITY,
 	nodeModulesAsarPath,
 	nodeModulesPath,
+	Schemas,
+	VSCODE_AUTHORITY,
+	type AppResourcePath,
 } from "./base/common/network.js";
 import * as platform from "./base/common/platform.js";
 import type { IProductConfiguration } from "./base/common/product.js";

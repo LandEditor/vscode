@@ -5,8 +5,8 @@
 
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isEqual } from "../../../../base/common/resources.js";
 import * as nls from "../../../../nls.js";
@@ -54,24 +54,45 @@ export class PreferencesContribution
 
 	constructor(
 		@IFileService fileService: IFileService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
 	) {
 		super();
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(USE_SPLIT_JSON_SETTING) || e.affectsConfiguration(DEFAULT_SETTINGS_EDITOR_SETTING)) {
-				this.handleSettingsEditorRegistration();
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(USE_SPLIT_JSON_SETTING) ||
+					e.affectsConfiguration(DEFAULT_SETTINGS_EDITOR_SETTING)
+				) {
+					this.handleSettingsEditorRegistration();
+				}
+			}),
+		);
 		this.handleSettingsEditorRegistration();
 
-		const fileSystemProvider = this._register(this.instantiationService.createInstance(SettingsFileSystemProvider));
-		this._register(fileService.registerProvider(SettingsFileSystemProvider.SCHEMA, fileSystemProvider));
+		const fileSystemProvider = this._register(
+			this.instantiationService.createInstance(
+				SettingsFileSystemProvider,
+			),
+		);
+		this._register(
+			fileService.registerProvider(
+				SettingsFileSystemProvider.SCHEMA,
+				fileSystemProvider,
+			),
+		);
 	}
 
 	private handleSettingsEditorRegistration(): void {

@@ -6,8 +6,8 @@
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -25,7 +25,8 @@ export class WorkingCopyFileOperationParticipant extends Disposable {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 	}

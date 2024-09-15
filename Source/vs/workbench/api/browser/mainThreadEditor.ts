@@ -8,20 +8,20 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import type { ICodeEditor } from "../../../editor/browser/editorBrowser.js";
 import {
+	cursorStyleToString,
 	EditorOption,
 	RenderLineNumbersType,
 	TextEditorCursorStyle,
-	cursorStyleToString,
 } from "../../../editor/common/config/editorOptions.js";
 import type { ISingleEditOperation } from "../../../editor/common/core/editOperation.js";
-import { type IRange, Range } from "../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../editor/common/core/range.js";
 import {
-	type ISelection,
 	Selection,
+	type ISelection,
 } from "../../../editor/common/core/selection.js";
 import {
-	type IDecorationOptions,
 	ScrollType,
+	type IDecorationOptions,
 } from "../../../editor/common/editorCommon.js";
 import type {
 	ITextModel,
@@ -38,12 +38,12 @@ import type { ISnippetEdit } from "../../../editor/contrib/snippet/browser/snipp
 import type { IClipboardService } from "../../../platform/clipboard/common/clipboardService.js";
 import type { IEditorPane } from "../../common/editor.js";
 import {
+	TextEditorRevealType,
 	type IApplyEditsOptions,
 	type IEditorPropertiesChangeData,
 	type IResolvedTextEditorConfiguration,
 	type ITextEditorConfigurationUpdate,
 	type IUndoStopOptions,
-	TextEditorRevealType,
 } from "../common/extHost.protocol.js";
 import type { MainThreadDocuments } from "./mainThreadDocuments.js";
 

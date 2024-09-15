@@ -6,10 +6,10 @@
 import type { Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import {
-	type ILogService,
-	type ILogger,
-	type LogLevel,
 	MultiplexLogger,
+	type ILogger,
+	type ILogService,
+	type LogLevel,
 } from "./log.js";
 
 export class LogService extends Disposable implements ILogService {

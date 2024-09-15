@@ -36,9 +36,12 @@ export class ChatAccessibilityService
 	private _requestId = 0;
 
 	constructor(
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 	}

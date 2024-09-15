@@ -4,8 +4,8 @@ import { Sequencer } from "../../../../../base/common/async.js";
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../../base/common/codicons.js";
 import { Event } from "../../../../../base/common/event.js";
@@ -28,27 +28,27 @@ import type { ITextEditorSelection } from "../../../../../platform/editor/common
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { ILabelService } from "../../../../../platform/label/common/label.js";
 import {
-	type WorkbenchCompressibleObjectTree,
 	getSelectionKeyboardEvent,
+	type WorkbenchCompressibleObjectTree,
 } from "../../../../../platform/list/browser/listService.js";
 import {
+	PickerQuickAccessProvider,
+	TriggerAction,
 	type FastAndSlowPicks,
 	type IPickerQuickAccessItem,
 	type IPickerQuickAccessSeparator,
-	PickerQuickAccessProvider,
 	type Picks,
-	TriggerAction,
 } from "../../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import {
 	DefaultQuickAccessFilterValue,
 	type IQuickAccessProviderRunOptions,
 } from "../../../../../platform/quickinput/common/quickAccess.js";
 import {
+	QuickInputButtonLocation,
+	QuickInputHideReason,
 	type IKeyMods,
 	type IQuickPick,
 	type IQuickPickItem,
-	QuickInputButtonLocation,
-	QuickInputHideReason,
 } from "../../../../../platform/quickinput/common/quickInput.js";
 import {
 	IWorkspaceContextService,
@@ -62,19 +62,19 @@ import {
 	SIDE_GROUP,
 } from "../../../../services/editor/common/editorService.js";
 import {
-	type ITextQueryBuilderOptions,
 	QueryBuilder,
+	type ITextQueryBuilderOptions,
 } from "../../../../services/search/common/queryBuilder.js";
 import {
+	VIEW_ID,
 	type IPatternInfo,
 	type ISearchComplete,
 	type ITextQuery,
-	VIEW_ID,
 } from "../../../../services/search/common/search.js";
 import { IViewsService } from "../../../../services/views/common/viewsService.js";
 import {
-	type IWorkbenchSearchConfiguration,
 	getOutOfWorkspaceEditorResources,
+	type IWorkbenchSearchConfiguration,
 } from "../../common/search.js";
 import {
 	searchActivityBarIcon,
@@ -82,14 +82,14 @@ import {
 	searchOpenInFileIcon,
 } from "../searchIcons.js";
 import {
+	searchComparer,
+	SearchModel,
+	SearchModelLocation,
 	type FileMatch,
 	type Match,
 	type RenderableMatch,
-	SearchModel,
-	SearchModelLocation,
-	searchComparer,
 } from "../searchModel.js";
-import { type SearchView, getEditorSelectionFromMatch } from "../searchView.js";
+import { getEditorSelectionFromMatch, type SearchView } from "../searchView.js";
 
 export const TEXT_SEARCH_QUICK_ACCESS_PREFIX = "%";
 
@@ -139,18 +139,29 @@ export class TextSearchQuickAccess extends PickerQuickAccessProvider<ITextSearch
 	}
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILabelService private readonly _labelService: ILabelService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
-		super(TEXT_SEARCH_QUICK_ACCESS_PREFIX, { canAcceptInBackground: true, shouldSkipTrimPickFilter: true });
+		super(TEXT_SEARCH_QUICK_ACCESS_PREFIX, {
+			canAcceptInBackground: true,
+			shouldSkipTrimPickFilter: true,
+		});
 
-		this.queryBuilder = this._instantiationService.createInstance(QueryBuilder);
-		this.searchModel = this._register(this._instantiationService.createInstance(SearchModel));
-		this.editorViewState = this._register(this._instantiationService.createInstance(PickerEditorState));
+		this.queryBuilder =
+			this._instantiationService.createInstance(QueryBuilder);
+		this.searchModel = this._register(
+			this._instantiationService.createInstance(SearchModel),
+		);
+		this.editorViewState = this._register(
+			this._instantiationService.createInstance(PickerEditorState),
+		);
 		this.searchModel.location = SearchModelLocation.QUICK_ACCESS;
 		this.editorSequencer = new Sequencer();
 	}

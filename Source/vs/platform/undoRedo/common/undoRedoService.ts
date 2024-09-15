@@ -6,8 +6,8 @@
 import { onUnexpectedError } from "../../../base/common/errors.js";
 import {
 	Disposable,
-	type IDisposable,
 	isDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import Severity from "../../../base/common/severity.js";
@@ -20,15 +20,15 @@ import {
 } from "../../instantiation/common/extensions.js";
 import { INotificationService } from "../../notification/common/notification.js";
 import {
-	type IPastFutureElements,
-	type IResourceUndoRedoElement,
-	type IUndoRedoElement,
 	IUndoRedoService,
-	type IWorkspaceUndoRedoElement,
 	ResourceEditStackSnapshot,
 	UndoRedoElementType,
 	UndoRedoGroup,
 	UndoRedoSource,
+	type IPastFutureElements,
+	type IResourceUndoRedoElement,
+	type IUndoRedoElement,
+	type IWorkspaceUndoRedoElement,
 	type UriComparisonKeyComputer,
 } from "./undoRedo.js";
 
@@ -570,7 +570,8 @@ export class UndoRedoService implements IUndoRedoService {
 
 	constructor(
 		@IDialogService private readonly _dialogService: IDialogService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 	) {
 		this._editStacks = new Map<string, ResourceEditStack>();
 		this._uriComparisonKeyComputers = [];

@@ -36,16 +36,16 @@ import { localize } from "../../../../nls.js";
 import {
 	ConfigurationTarget,
 	ConfigurationTargetToString,
+	IConfigurationService,
+	isConfigurationOverrides,
+	isConfigurationUpdateOverrides,
 	type IConfigurationChange,
 	type IConfigurationChangeEvent,
 	type IConfigurationData,
 	type IConfigurationOverrides,
-	IConfigurationService,
 	type IConfigurationUpdateOptions,
 	type IConfigurationUpdateOverrides,
 	type IConfigurationValue,
-	isConfigurationOverrides,
-	isConfigurationUpdateOverrides,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ConfigurationChangeEvent,
@@ -53,36 +53,36 @@ import {
 	mergeChanges,
 } from "../../../../platform/configuration/common/configurationModels.js";
 import {
-	ConfigurationScope,
-	Extensions,
-	type IConfigurationPropertySchema,
-	type IConfigurationRegistry,
-	OVERRIDE_PROPERTY_PATTERN,
 	allSettings,
 	applicationSettings,
 	configurationDefaultsSchemaId,
+	ConfigurationScope,
+	Extensions,
 	keyFromOverrideIdentifiers,
 	machineOverridableSettings,
 	machineSettings,
+	OVERRIDE_PROPERTY_PATTERN,
 	resourceLanguageSettingsSchemaId,
 	resourceSettings,
 	windowSettings,
+	type IConfigurationPropertySchema,
+	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
-	type IPolicyConfiguration,
 	NullPolicyConfiguration,
 	PolicyConfiguration,
+	type IPolicyConfiguration,
 } from "../../../../platform/configuration/common/configurations.js";
 import type { IFileService } from "../../../../platform/files/common/files.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IPolicyService,
 	NullPolicyService,
+	type IPolicyService,
 } from "../../../../platform/policy/common/policy.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import type { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
@@ -92,36 +92,36 @@ import type {
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	Workspace as BaseWorkspace,
+	isSingleFolderWorkspaceIdentifier,
+	isWorkspaceFolder,
+	isWorkspaceIdentifier,
+	IWorkspaceContextService,
+	toWorkspaceFolder,
+	WorkbenchState,
 	type IAnyWorkspaceIdentifier,
 	type IEmptyWorkspaceIdentifier,
 	type ISingleFolderWorkspaceIdentifier,
-	IWorkspaceContextService,
 	type IWorkspaceFolder,
 	type IWorkspaceFoldersChangeEvent,
 	type IWorkspaceFoldersWillChangeEvent,
 	type IWorkspaceIdentifier,
-	WorkbenchState,
 	type WorkspaceFolder,
-	isSingleFolderWorkspaceIdentifier,
-	isWorkspaceFolder,
-	isWorkspaceIdentifier,
-	toWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import {
-	type IStoredWorkspaceFolder,
-	type IWorkspaceFolderCreationData,
 	getStoredWorkspaceFolder,
 	isStoredWorkspaceFolder,
 	toWorkspaceFolders,
+	type IStoredWorkspaceFolder,
+	type IWorkspaceFolderCreationData,
 } from "../../../../platform/workspaces/common/workspaces.js";
 import { workbenchConfigurationNodeBase } from "../../../common/configuration.js";
 import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { IWorkbenchAssignmentService } from "../../assignment/common/assignmentService.js";
 import type { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
@@ -138,19 +138,19 @@ import type {
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	APPLY_ALL_PROFILES_SETTING,
+	defaultSettingsSchemaId,
 	FOLDER_CONFIG_FOLDER_NAME,
-	type IConfigurationCache,
-	type IWorkbenchConfigurationService,
+	folderSettingsSchemaId,
 	LOCAL_MACHINE_PROFILE_SCOPES,
 	LOCAL_MACHINE_SCOPES,
-	PROFILE_SCOPES,
-	type RestrictedSettings,
-	defaultSettingsSchemaId,
-	folderSettingsSchemaId,
 	machineSettingsSchemaId,
+	PROFILE_SCOPES,
 	profileSettingsSchemaId,
 	userSettingsSchemaId,
 	workspaceSettingsSchemaId,
+	type IConfigurationCache,
+	type IWorkbenchConfigurationService,
+	type RestrictedSettings,
 } from "../common/configuration.js";
 import {
 	ConfigurationEditing,
@@ -1581,7 +1581,7 @@ export class WorkspaceService
 				if (added.length || removed.length || changed.length) {
 					newFolders = await this.toValidWorkspaceFolders(newFolders);
 				} else {
-				/* Otherwise use existing */
+					/* Otherwise use existing */
 					newFolders = this.workspace.folders;
 				}
 			}
@@ -2006,7 +2006,9 @@ export class WorkspaceService
 		this.configurationEditing =
 			this.configurationEditing ??
 			this.createConfigurationEditingService(this.instantiationService);
-		await (await this.configurationEditing).writeConfiguration(
+		await (
+			await this.configurationEditing
+		).writeConfiguration(
 			editableConfigurationTarget,
 			{ key, value },
 			{ scopes: overrides, ...options },
@@ -2197,9 +2199,12 @@ class RegisterConfigurationSchemasContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IExtensionService extensionService: IExtensionService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 	) {
@@ -2208,10 +2213,24 @@ class RegisterConfigurationSchemasContribution
 		extensionService.whenInstalledExtensionsRegistered().then(() => {
 			this.registerConfigurationSchemas();
 
-			const configurationRegistry = Registry.as<IConfigurationRegistry>(Extensions.Configuration);
+			const configurationRegistry = Registry.as<IConfigurationRegistry>(
+				Extensions.Configuration,
+			);
 			const delayer = this._register(new Delayer<void>(50));
-			this._register(Event.any(configurationRegistry.onDidUpdateConfiguration, configurationRegistry.onDidSchemaChange, workspaceTrustManagementService.onDidChangeTrust)(() =>
-				delayer.trigger(() => this.registerConfigurationSchemas(), lifecycleService.phase === LifecyclePhase.Eventually ? undefined : 2500 /* delay longer in early phases */)));
+			this._register(
+				Event.any(
+					configurationRegistry.onDidUpdateConfiguration,
+					configurationRegistry.onDidSchemaChange,
+					workspaceTrustManagementService.onDidChangeTrust,
+				)(() =>
+					delayer.trigger(
+						() => this.registerConfigurationSchemas(),
+						lifecycleService.phase === LifecyclePhase.Eventually
+							? undefined
+							: 2500 /* delay longer in early phases */,
+					),
+				),
+			);
 		});
 	}
 
@@ -2472,11 +2491,21 @@ class UpdateExperimentalSettingsDefaults
 		Registry.as<IConfigurationRegistry>(Extensions.Configuration);
 
 	constructor(
-		@IWorkbenchAssignmentService private readonly workbenchAssignmentService: IWorkbenchAssignmentService
+		@IWorkbenchAssignmentService
+		private readonly workbenchAssignmentService: IWorkbenchAssignmentService,
 	) {
 		super();
-		this.processExperimentalSettings(Object.keys(this.configurationRegistry.getConfigurationProperties()));
-		this._register(this.configurationRegistry.onDidUpdateConfiguration(({ properties }) => this.processExperimentalSettings(properties)));
+		this.processExperimentalSettings(
+			Object.keys(
+				this.configurationRegistry.getConfigurationProperties(),
+			),
+		);
+		this._register(
+			this.configurationRegistry.onDidUpdateConfiguration(
+				({ properties }) =>
+					this.processExperimentalSettings(properties),
+			),
+		);
 	}
 
 	private async processExperimentalSettings(

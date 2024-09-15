@@ -17,7 +17,9 @@ import { Emitter } from "../../../../base/common/event.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import * as objects from "../../../../base/common/objects.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
+
 import "./media/peekViewWidget.css";
+
 import * as nls from "../../../../nls.js";
 import { createActionViewItem } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
@@ -29,9 +31,9 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
+	createDecorator,
 	IInstantiationService,
 	type ServicesAccessor,
-	createDecorator,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	activeContrastBorder,
@@ -50,9 +52,9 @@ import { EmbeddedCodeEditorWidget } from "../../../browser/widget/codeEditor/emb
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";
 import {
+	ZoneWidget,
 	type IOptions,
 	type IStyles,
-	ZoneWidget,
 } from "../../zoneWidget/browser/zoneWidget.js";
 
 export const IPeekViewService =
@@ -170,7 +172,8 @@ export abstract class PeekViewWidget extends ZoneWidget {
 	constructor(
 		editor: ICodeEditor,
 		options: IPeekViewOptions,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
 	) {
 		super(editor, options);
 		objects.mixin(this.options, defaultOptions, false);

@@ -19,7 +19,8 @@ import {
 export class NativeUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
 		@ILogService logService: ILogService,
 	) {

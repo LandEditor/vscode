@@ -9,8 +9,8 @@ import { joinPath } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
+	type FileOperationError,
 	type IFileService,
 } from "../../../../platform/files/common/files.js";
 import type { ConfigurationKey, IConfigurationCache } from "./configuration.js";

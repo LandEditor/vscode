@@ -4,8 +4,8 @@ import type { VSBuffer } from "../../../../../base/common/buffer.js";
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import {
-	type ISequence,
 	LcsDiff,
+	type ISequence,
 } from "../../../../../base/common/diff/diff.js";
 import { doHash, hash, numberHash } from "../../../../../base/common/hash.js";
 import type { IDisposable } from "../../../../../base/common/lifecycle.js";
@@ -22,15 +22,15 @@ import { SearchParams } from "../../../../../editor/common/model/textModelSearch
 import { MirrorModel } from "../../../../../editor/common/services/textModelSync/textModelSync.impl.js";
 import {
 	CellKind,
+	NotebookCellsChangeType,
 	type ICellDto2,
 	type IMainCellDto,
 	type INotebookDiffResult,
 	type IOutputDto,
 	type NotebookCellInternalMetadata,
 	type NotebookCellMetadata,
-	type NotebookCellTextModelSplice,
-	NotebookCellsChangeType,
 	type NotebookCellsChangedEventDto,
+	type NotebookCellTextModelSplice,
 	type NotebookDocumentMetadata,
 } from "../notebookCommon.js";
 

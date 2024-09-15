@@ -5,43 +5,43 @@
 
 import { getWindow } from "../../../../base/browser/dom.js";
 import {
-	type IView,
 	Orientation,
 	Sizing,
 	SplitView,
+	type IView,
 } from "../../../../base/browser/ui/splitview/splitview.js";
 import { asArray } from "../../../../base/common/arrays.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
+	TerminalLocation,
 	type IShellLaunchConfig,
 	type ITerminalTabLayoutInfoById,
-	TerminalLocation,
 } from "../../../../platform/terminal/common/terminal.js";
 import {
 	IViewDescriptorService,
 	ViewContainerLocation,
 } from "../../../common/views.js";
 import {
+	isHorizontal,
 	IWorkbenchLayoutService,
 	Position,
-	isHorizontal,
 } from "../../../services/layout/browser/layoutService.js";
 import { getPartByLocation } from "../../../services/views/browser/viewsService.js";
 import { TERMINAL_VIEW_ID } from "../common/terminal.js";
 import {
 	Direction,
 	ITerminalConfigurationService,
+	ITerminalInstanceService,
 	type ITerminalGroup,
 	type ITerminalInstance,
-	ITerminalInstanceService,
 } from "./terminal.js";
 import { TerminalStatus } from "./terminalStatusList.js";
 
@@ -348,12 +348,20 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 
 	constructor(
 		private _container: HTMLElement | undefined,
-		shellLaunchConfigOrInstance: IShellLaunchConfig | ITerminalInstance | undefined,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@IWorkbenchLayoutService private readonly _layoutService: IWorkbenchLayoutService,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		shellLaunchConfigOrInstance:
+			| IShellLaunchConfig
+			| ITerminalInstance
+			| undefined,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@IWorkbenchLayoutService
+		private readonly _layoutService: IWorkbenchLayoutService,
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 		if (shellLaunchConfigOrInstance) {
@@ -362,13 +370,20 @@ export class TerminalGroup extends Disposable implements ITerminalGroup {
 		if (this._container) {
 			this.attachToElement(this._container);
 		}
-		this._onPanelOrientationChanged.fire(this._terminalLocation === ViewContainerLocation.Panel && isHorizontal(this._panelPosition) ? Orientation.HORIZONTAL : Orientation.VERTICAL);
-		this._register(toDisposable(() => {
-			if (this._container && this._groupElement) {
-				this._groupElement.remove();
-				this._groupElement = undefined;
-			}
-		}));
+		this._onPanelOrientationChanged.fire(
+			this._terminalLocation === ViewContainerLocation.Panel &&
+				isHorizontal(this._panelPosition)
+				? Orientation.HORIZONTAL
+				: Orientation.VERTICAL,
+		);
+		this._register(
+			toDisposable(() => {
+				if (this._container && this._groupElement) {
+					this._groupElement.remove();
+					this._groupElement = undefined;
+				}
+			}),
+		);
 	}
 
 	addInstance(

@@ -41,14 +41,17 @@ export class TerminalMainContribution
 
 	constructor(
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@IEmbedderTerminalService embedderTerminalService: IEmbedderTerminalService,
-		@IWorkbenchEnvironmentService workbenchEnvironmentService: IWorkbenchEnvironmentService,
+		@IEmbedderTerminalService
+		embedderTerminalService: IEmbedderTerminalService,
+		@IWorkbenchEnvironmentService
+		workbenchEnvironmentService: IWorkbenchEnvironmentService,
 		@ILabelService labelService: ILabelService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@ITerminalService terminalService: ITerminalService,
 		@ITerminalEditorService terminalEditorService: ITerminalEditorService,
 		@ITerminalGroupService terminalGroupService: ITerminalGroupService,
-		@ITerminalInstanceService terminalInstanceService: ITerminalInstanceService,
+		@ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		super();
 

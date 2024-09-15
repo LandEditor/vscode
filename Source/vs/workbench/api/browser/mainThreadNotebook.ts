@@ -10,8 +10,8 @@ import { Emitter } from "../../../base/common/event.js";
 import type { IRelativePattern } from "../../../base/common/glob.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { revive } from "../../../base/common/marshalling.js";
 import { StopWatch } from "../../../base/common/stopwatch.js";
@@ -35,14 +35,14 @@ import {
 import type { NotebookPriorityInfo } from "../../contrib/search/common/search.js";
 import type { INotebookFileMatchNoModel } from "../../contrib/search/common/searchNotebookHelpers.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
 	ExtHostContext,
-	type ExtHostNotebookShape,
 	MainContext,
+	type ExtHostNotebookShape,
 	type MainThreadNotebookShape,
 } from "../common/extHost.protocol.js";
 import { NotebookDto } from "./mainThreadNotebookDto.js";
@@ -61,7 +61,8 @@ export class MainThreadNotebooks implements MainThreadNotebookShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookCellStatusBarService private readonly _cellStatusBarService: INotebookCellStatusBarService,
+		@INotebookCellStatusBarService
+		private readonly _cellStatusBarService: INotebookCellStatusBarService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebook);

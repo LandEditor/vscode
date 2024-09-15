@@ -26,23 +26,25 @@ import type {
 	ProgressBar,
 } from "../../../base/browser/ui/progressbar/progressbar.js";
 import {
-	type IToggleStyles,
 	Toggle,
+	type IToggleStyles,
 } from "../../../base/browser/ui/toggle/toggle.js";
 import { equals } from "../../../base/common/arrays.js";
 import { TimeoutTimer } from "../../../base/common/async.js";
 import { Codicon } from "../../../base/common/codicons.js";
 import {
 	Emitter,
-	type Event,
 	EventBufferer,
+	type Event,
 } from "../../../base/common/event.js";
 import { KeyCode } from "../../../base/common/keyCodes.js";
 import { Disposable, DisposableStore } from "../../../base/common/lifecycle.js";
 import { isIOS } from "../../../base/common/platform.js";
 import Severity from "../../../base/common/severity.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
+
 import "./media/quickInput.css";
+
 import type { IHoverOptions } from "../../../base/browser/ui/hover/hover.js";
 import { localize } from "../../../nls.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
@@ -55,6 +57,12 @@ import {
 	WorkbenchHoverDelegate,
 } from "../../hover/browser/hover.js";
 import {
+	ItemActivation,
+	NO_KEY_MODS,
+	QuickInputButtonLocation,
+	QuickInputHideReason,
+	QuickInputType,
+	QuickPickFocus,
 	type IInputBox,
 	type IKeyMods,
 	type IQuickInput,
@@ -70,12 +78,6 @@ import {
 	type IQuickPickSeparatorButtonEvent,
 	type IQuickPickWillAcceptEvent,
 	type IQuickWidget,
-	ItemActivation,
-	NO_KEY_MODS,
-	QuickInputButtonLocation,
-	QuickInputHideReason,
-	QuickInputType,
-	QuickPickFocus,
 } from "../common/quickInput.js";
 import type { QuickInputBox } from "./quickInputBox.js";
 import type { QuickInputTree } from "./quickInputTree.js";
@@ -782,9 +784,11 @@ export class QuickPick<
 		this.ui.list.scrollTop = scrollTop;
 	}
 
-	set items(items: O extends { useSeparators: true }
-		? Array<T | IQuickPickSeparator>
-		: Array<T>) {
+	set items(
+		items: O extends { useSeparators: true }
+			? Array<T | IQuickPickSeparator>
+			: Array<T>,
+	) {
 		this._items = items;
 		this.itemsUpdated = true;
 		this.update();

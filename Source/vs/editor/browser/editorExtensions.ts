@@ -21,19 +21,19 @@ import {
 } from "../../platform/commands/common/commands.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../platform/contextkey/common/contextkey.js";
 import {
+	IInstantiationService,
 	type BrandedService,
 	type IConstructorSignature,
-	IInstantiationService,
 	type ServicesAccessor as InstantiationServicesAccessor,
 } from "../../platform/instantiation/common/instantiation.js";
 import {
-	type IKeybindings,
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
+	type IKeybindings,
 } from "../../platform/keybinding/common/keybindingsRegistry.js";
 import { ILogService } from "../../platform/log/common/log.js";
 import { Registry } from "../../platform/registry/common/platform.js";
@@ -275,9 +275,8 @@ export class MultiCommand extends Command {
 		);
 		for (const impl of this._implementations) {
 			if (impl.when) {
-				const context = contextKeyService.getContext(
-					getActiveElement(),
-				);
+				const context =
+					contextKeyService.getContext(getActiveElement());
 				const value = impl.when.evaluate(context);
 				if (!value) {
 					continue;

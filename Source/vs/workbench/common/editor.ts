@@ -3,24 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, toAction } from "../../base/common/actions.js";
+import { toAction, type IAction } from "../../base/common/actions.js";
 import {
-	type IErrorWithActions,
 	createErrorWithActions,
 	isErrorWithActions,
+	type IErrorWithActions,
 } from "../../base/common/errorMessage.js";
 import type { Event } from "../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../base/common/lifecycle.js";
 import { Schemas } from "../../base/common/network.js";
 import type { IExtUri } from "../../base/common/resources.js";
 import Severity from "../../base/common/severity.js";
 import {
-	type DeepRequiredNonNullable,
 	assertIsDefined,
+	type DeepRequiredNonNullable,
 } from "../../base/common/types.js";
 import { URI } from "../../base/common/uri.js";
 import type {
@@ -46,9 +46,9 @@ import {
 	type IFileService,
 } from "../../platform/files/common/files.js";
 import {
+	IInstantiationService,
 	type BrandedService,
 	type IConstructorSignature,
-	IInstantiationService,
 	type ServicesAccessor,
 } from "../../platform/instantiation/common/instantiation.js";
 import type { ILogService } from "../../platform/log/common/log.js";

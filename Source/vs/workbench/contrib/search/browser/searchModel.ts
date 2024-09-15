@@ -35,11 +35,11 @@ import { URI } from "../../../../base/common/uri.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import {
 	FindMatch,
-	type IModelDeltaDecoration,
-	type ITextModel,
 	MinimapPosition,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
+	type ITextModel,
 } from "../../../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../../../editor/common/model/textModel.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
@@ -49,16 +49,16 @@ import type {
 	IFileStatWithPartialMetadata,
 } from "../../../../platform/files/common/files.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
@@ -70,6 +70,12 @@ import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uri
 import { ReplacePattern } from "../../../services/search/common/replace.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
+	ISearchService,
+	OneLineRange,
+	QueryType,
+	resultIsMatch,
+	SearchCompletionExitCode,
+	SearchSortOrder,
 	type IAITextQuery,
 	type IFileMatch,
 	type IPatternInfo,
@@ -77,18 +83,12 @@ import {
 	type ISearchConfigurationProperties,
 	type ISearchProgressItem,
 	type ISearchRange,
-	ISearchService,
 	type ITextQuery,
 	type ITextSearchContext,
 	type ITextSearchMatch,
 	type ITextSearchPreviewOptions,
 	type ITextSearchResult,
 	type ITextSearchStats,
-	OneLineRange,
-	QueryType,
-	SearchCompletionExitCode,
-	SearchSortOrder,
-	resultIsMatch,
 } from "../../../services/search/common/search.js";
 import {
 	editorMatchesToTextSearchResults,
@@ -107,17 +107,17 @@ import { NotebookCellsChangeType } from "../../notebook/common/notebookCommon.js
 import { CellSearchModel } from "../common/cellSearchModel.js";
 import { INotebookSearchService } from "../common/notebookSearch.js";
 import {
-	type INotebookCellMatchNoModel,
 	isINotebookFileMatchNoModel,
 	rawCellPrefix,
+	type INotebookCellMatchNoModel,
 } from "../common/searchNotebookHelpers.js";
 import {
-	type INotebookCellMatchWithModel,
 	contentMatchesToTextSearchMatches,
 	getIDFromINotebookCellMatch,
 	isINotebookCellMatchWithModel,
 	isINotebookFileMatchWithModel,
 	webviewMatchesToTextSearchMatches,
+	type INotebookCellMatchWithModel,
 } from "./notebookSearch/searchNotebookHelpers.js";
 import { IReplaceService } from "./replace.js";
 
@@ -595,16 +595,25 @@ export class FileMatch extends Disposable implements IFileMatch {
 		@IModelService private readonly modelService: IModelService,
 		@IReplaceService private readonly replaceService: IReplaceService,
 		@ILabelService labelService: ILabelService,
-		@INotebookEditorService private readonly notebookEditorService: INotebookEditorService,
+		@INotebookEditorService
+		private readonly notebookEditorService: INotebookEditorService,
 	) {
 		super();
 		this._resource = this.rawMatch.resource;
 		this._textMatches = new Map<string, Match>();
 		this._removedTextMatches = new Set<string>();
-		this._updateScheduler = new RunOnceScheduler(this.updateMatchesForModel.bind(this), 250);
-		this._name = new Lazy(() => labelService.getUriBasenameLabel(this.resource));
+		this._updateScheduler = new RunOnceScheduler(
+			this.updateMatchesForModel.bind(this),
+			250,
+		);
+		this._name = new Lazy(() =>
+			labelService.getUriBasenameLabel(this.resource),
+		);
 		this._cellMatches = new Map<string, CellMatch>();
-		this._notebookUpdateScheduler = new RunOnceScheduler(this.updateMatchesForEditorWidget.bind(this), 250);
+		this._notebookUpdateScheduler = new RunOnceScheduler(
+			this.updateMatchesForEditorWidget.bind(this),
+			250,
+		);
 	}
 
 	addWebviewMatchesToCell(
@@ -1310,17 +1319,27 @@ export class FolderMatch extends Disposable {
 		private _searchResult: SearchResult,
 		private _closestRoot: FolderMatchWorkspaceRoot | null,
 		@IReplaceService private readonly replaceService: IReplaceService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
 		@ILabelService labelService: ILabelService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 		this._fileMatches = new ResourceMap<FileMatch>();
 		this._folderMatches = new ResourceMap<FolderMatchWithResource>();
-		this._folderMatchesMap = TernarySearchTree.forUris<FolderMatchWithResource>(key => this.uriIdentityService.extUri.ignorePathCasing(key));
+		this._folderMatchesMap =
+			TernarySearchTree.forUris<FolderMatchWithResource>((key) =>
+				this.uriIdentityService.extUri.ignorePathCasing(key),
+			);
 		this._unDisposedFileMatches = new ResourceMap<FileMatch>();
-		this._unDisposedFolderMatches = new ResourceMap<FolderMatchWithResource>();
-		this._name = new Lazy(() => this.resource ? labelService.getUriBasenameLabel(this.resource) : '');
+		this._unDisposedFolderMatches =
+			new ResourceMap<FolderMatchWithResource>();
+		this._name = new Lazy(() =>
+			this.resource
+				? labelService.getUriBasenameLabel(this.resource)
+				: "",
+		);
 	}
 
 	get searchModel(): SearchModel {
@@ -2200,27 +2219,41 @@ export class SearchResult extends Disposable {
 	constructor(
 		public readonly searchModel: SearchModel,
 		@IReplaceService private readonly replaceService: IReplaceService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IModelService private readonly modelService: IModelService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@INotebookEditorService private readonly notebookEditorService: INotebookEditorService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@INotebookEditorService
+		private readonly notebookEditorService: INotebookEditorService,
 	) {
 		super();
-		this._rangeHighlightDecorations = this.instantiationService.createInstance(RangeHighlightDecorations);
-		this.modelService.getModels().forEach(model => this.onModelAdded(model));
-		this._register(this.modelService.onModelAdded(model => this.onModelAdded(model)));
+		this._rangeHighlightDecorations =
+			this.instantiationService.createInstance(RangeHighlightDecorations);
+		this.modelService
+			.getModels()
+			.forEach((model) => this.onModelAdded(model));
+		this._register(
+			this.modelService.onModelAdded((model) => this.onModelAdded(model)),
+		);
 
-		this._register(this.notebookEditorService.onDidAddNotebookEditor(widget => {
-			if (widget instanceof NotebookEditorWidget) {
-				this.onDidAddNotebookEditorWidget(<NotebookEditorWidget>widget);
-			}
-		}));
+		this._register(
+			this.notebookEditorService.onDidAddNotebookEditor((widget) => {
+				if (widget instanceof NotebookEditorWidget) {
+					this.onDidAddNotebookEditorWidget(
+						<NotebookEditorWidget>widget,
+					);
+				}
+			}),
+		);
 
-		this._register(this.onChange(e => {
-			if (e.removed) {
-				this._isDirty = !this.isEmpty() || !this.isEmpty(true);
-			}
-		}));
+		this._register(
+			this.onChange((e) => {
+				if (e.removed) {
+					this._isDirty = !this.isEmpty() || !this.isEmpty(true);
+				}
+			}),
+		);
 	}
 
 	async batchReplace(elementsToReplace: RenderableMatch[]) {
@@ -2742,15 +2775,25 @@ export class SearchModel extends Disposable {
 	constructor(
 		@ISearchService private readonly searchService: ISearchService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILogService private readonly logService: ILogService,
-		@INotebookSearchService private readonly notebookSearchService: INotebookSearchService,
+		@INotebookSearchService
+		private readonly notebookSearchService: INotebookSearchService,
 		@IProgressService private readonly progressService: IProgressService,
 	) {
 		super();
-		this._searchResult = this.instantiationService.createInstance(SearchResult, this);
-		this._register(this._searchResult.onChange((e) => this._onSearchResultChanged.fire(e)));
+		this._searchResult = this.instantiationService.createInstance(
+			SearchResult,
+			this,
+		);
+		this._register(
+			this._searchResult.onChange((e) =>
+				this._onSearchResultChanged.fire(e),
+			),
+		);
 	}
 
 	isReplaceActive(): boolean {
@@ -3220,8 +3263,10 @@ export class SearchViewModelWorkbenchService
 	declare readonly _serviceBrand: undefined;
 	private _searchModel: SearchModel | null = null;
 
-	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
-	}
+	constructor(
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	get searchModel(): SearchModel {
 		if (!this._searchModel) {
@@ -3257,10 +3302,7 @@ export class RangeHighlightDecorations implements IDisposable {
 	private _model: ITextModel | null = null;
 	private readonly _modelDisposables = new DisposableStore();
 
-	constructor(
-		@IModelService private readonly _modelService: IModelService
-	) {
-	}
+	constructor(@IModelService private readonly _modelService: IModelService) {}
 
 	removeHighlightRange() {
 		if (this._model && this._decorationId) {

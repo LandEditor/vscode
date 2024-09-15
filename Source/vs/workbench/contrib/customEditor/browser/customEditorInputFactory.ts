@@ -16,25 +16,25 @@ import type {
 } from "../../../services/workingCopy/common/workingCopy.js";
 import { IWorkingCopyBackupService } from "../../../services/workingCopy/common/workingCopyBackup.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../../services/workingCopy/common/workingCopyEditorService.js";
 import { NotebookEditorInput } from "../../notebook/common/notebookEditorInput.js";
 import {
 	IWebviewService,
-	type WebviewContentOptions,
 	WebviewContentPurpose,
+	type WebviewContentOptions,
 	type WebviewExtensionDescription,
 	type WebviewOptions,
 } from "../../webview/browser/webview.js";
 import {
-	type DeserializedWebview,
-	type SerializedWebview,
-	type SerializedWebviewOptions,
-	WebviewEditorInputSerializer,
 	restoreWebviewContentOptions,
 	restoreWebviewOptions,
 	reviveWebviewExtensionDescription,
+	WebviewEditorInputSerializer,
+	type DeserializedWebview,
+	type SerializedWebview,
+	type SerializedWebviewOptions,
 } from "../../webviewPanel/browser/webviewEditorInputSerializer.js";
 import { IWebviewWorkbenchService } from "../../webviewPanel/browser/webviewWorkbenchService.js";
 import { ICustomEditorService } from "../common/customEditor.js";
@@ -75,8 +75,10 @@ export class CustomEditorInputSerializer extends WebviewEditorInputSerializer {
 	public static override readonly ID = CustomEditorInput.typeId;
 
 	public constructor(
-		@IWebviewWorkbenchService webviewWorkbenchService: IWebviewWorkbenchService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IWebviewWorkbenchService
+		webviewWorkbenchService: IWebviewWorkbenchService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IWebviewService private readonly _webviewService: IWebviewService,
 	) {
 		super(webviewWorkbenchService);
@@ -164,11 +166,14 @@ export class ComplexCustomWorkingCopyEditorHandler
 		"workbench.contrib.complexCustomWorkingCopyEditorHandler";
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWorkingCopyEditorService _workingCopyEditorService: IWorkingCopyEditorService,
-		@IWorkingCopyBackupService private readonly _workingCopyBackupService: IWorkingCopyBackupService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWorkingCopyEditorService
+		_workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkingCopyBackupService
+		private readonly _workingCopyBackupService: IWorkingCopyBackupService,
 		@IWebviewService private readonly _webviewService: IWebviewService,
-		@ICustomEditorService _customEditorService: ICustomEditorService // DO NOT REMOVE (needed on startup to register overrides properly)
+		@ICustomEditorService _customEditorService: ICustomEditorService, // DO NOT REMOVE (needed on startup to register overrides properly)
 	) {
 		super();
 

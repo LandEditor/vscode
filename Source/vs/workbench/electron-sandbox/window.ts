@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/window.css";
+
 import {
 	getZoomFactor,
 	getZoomLevel,
@@ -11,15 +12,15 @@ import {
 	setFullscreen,
 } from "../../base/browser/browser.js";
 import {
+	addDisposableListener,
 	EventHelper,
 	EventType,
-	ModifierKeyEmitter,
-	addDisposableListener,
 	getActiveElement,
 	getWindow,
 	getWindowById,
 	getWindows,
 	hasWindow,
+	ModifierKeyEmitter,
 } from "../../base/browser/dom.js";
 import { ActionBar } from "../../base/browser/ui/actionbar/actionbar.js";
 import { mainWindow } from "../../base/browser/window.js";
@@ -63,11 +64,11 @@ import {
 import type { ICommandAction } from "../../platform/action/common/action.js";
 import { createAndFillInActionBarActions } from "../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
+	type IMenu,
 } from "../../platform/actions/common/actions.js";
 import {
 	CommandsRegistry,
@@ -115,24 +116,24 @@ import {
 } from "../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../platform/telemetry/common/telemetry.js";
 import {
-	ITunnelService,
-	type RemoteTunnel,
 	extractLocalHostUriMetaDataForPortMapping,
 	extractQueryLocalHostUriMetaDataForPortMapping,
+	ITunnelService,
+	type RemoteTunnel,
 } from "../../platform/tunnel/common/tunnel.js";
 import { IUriIdentityService } from "../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	hasNativeTitlebar,
+	WindowMinimumSize,
 	type IAddFoldersRequest,
 	type INativeOpenFileRequest,
 	type INativeRunActionInWindowRequest,
 	type INativeRunKeybindingInWindowRequest,
 	type IOpenFileRequest,
-	WindowMinimumSize,
-	hasNativeTitlebar,
 } from "../../platform/window/common/window.js";
 import {
-	ApplyZoomTarget,
 	applyZoom,
+	ApplyZoomTarget,
 } from "../../platform/window/electron-sandbox/window.js";
 import {
 	IWorkspaceContextService,
@@ -145,14 +146,14 @@ import { DynamicWorkbenchSecurityConfiguration } from "../common/configuration.j
 import { getWorkbenchContribution } from "../common/contributions.js";
 import {
 	EditorResourceAccessor,
+	isResourceEditorInput,
+	pathsToEditors,
+	SideBySideEditor,
 	type IEditorPane,
 	type IResourceDiffEditorInput,
 	type IResourceMergeEditorInput,
 	type IUntitledTextResourceEditorInput,
 	type IUntypedEditorInput,
-	SideBySideEditor,
-	isResourceEditorInput,
-	pathsToEditors,
 } from "../common/editor.js";
 import { IBannerService } from "../services/banner/browser/bannerService.js";
 import { registerWindowDriver } from "../services/driver/electron-sandbox/driver.js";
@@ -172,11 +173,11 @@ import {
 	positionFromString,
 } from "../services/layout/browser/layoutService.js";
 import {
-	type BeforeShutdownErrorEvent,
-	type BeforeShutdownEvent,
 	ILifecycleService,
 	LifecyclePhase,
 	ShutdownReason,
+	type BeforeShutdownErrorEvent,
+	type BeforeShutdownEvent,
 	type WillShutdownEvent,
 } from "../services/lifecycle/common/lifecycle.js";
 import { IPreferencesService } from "../services/preferences/common/preferences.js";
@@ -206,42 +207,60 @@ export class NativeWindow extends BaseWindow {
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITitleService private readonly titleService: ITitleService,
 		@IWorkbenchThemeService protected themeService: IWorkbenchThemeService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceEditingService private readonly workspaceEditingService: IWorkspaceEditingService,
+		@IWorkspaceEditingService
+		private readonly workspaceEditingService: IWorkspaceEditingService,
 		@IFileService private readonly fileService: IFileService,
 		@IMenuService private readonly menuService: IMenuService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IIntegrityService private readonly integrityService: IIntegrityService,
-		@INativeWorkbenchEnvironmentService private readonly nativeEnvironmentService: INativeWorkbenchEnvironmentService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@INativeWorkbenchEnvironmentService
+		private readonly nativeEnvironmentService: INativeWorkbenchEnvironmentService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 		@IProductService private readonly productService: IProductService,
-		@IRemoteAuthorityResolverService private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAuthorityResolverService
+		private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ISharedProcessService private readonly sharedProcessService: ISharedProcessService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ISharedProcessService
+		private readonly sharedProcessService: ISharedProcessService,
 		@IProgressService private readonly progressService: IProgressService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IBannerService private readonly bannerService: IBannerService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IUtilityProcessWorkerWorkbenchService private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService,
-		@IHostService hostService: IHostService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IUtilityProcessWorkerWorkbenchService
+		private readonly utilityProcessWorkerWorkbenchService: IUtilityProcessWorkerWorkbenchService,
+		@IHostService hostService: IHostService,
 	) {
 		super(mainWindow, undefined, hostService, nativeEnvironmentService);
 
@@ -1881,7 +1900,8 @@ class ZoomStatusEntry extends Disposable {
 	constructor(
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
 	}

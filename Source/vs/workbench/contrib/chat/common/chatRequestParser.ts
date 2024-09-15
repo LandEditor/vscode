@@ -5,16 +5,17 @@
 
 import { OffsetRange } from "../../../../editor/common/core/offsetRange.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import {
 	ChatAgentLocation,
-	type IChatAgentData,
 	IChatAgentService,
+	type IChatAgentData,
 } from "./chatAgents.js";
 import {
+	chatAgentLeader,
 	ChatRequestAgentPart,
 	ChatRequestAgentSubcommandPart,
 	ChatRequestDynamicVariablePart,
@@ -22,11 +23,10 @@ import {
 	ChatRequestTextPart,
 	ChatRequestToolPart,
 	ChatRequestVariablePart,
-	type IParsedChatRequest,
-	type IParsedChatRequestPart,
-	chatAgentLeader,
 	chatSubcommandLeader,
 	chatVariableLeader,
+	type IParsedChatRequest,
+	type IParsedChatRequestPart,
 } from "./chatParserTypes.js";
 import { IChatSlashCommandService } from "./chatSlashCommands.js";
 import {
@@ -47,10 +47,13 @@ export interface IChatParserContext {
 export class ChatRequestParser {
 	constructor(
 		@IChatAgentService private readonly agentService: IChatAgentService,
-		@IChatVariablesService private readonly variableService: IChatVariablesService,
-		@IChatSlashCommandService private readonly slashCommandService: IChatSlashCommandService,
-		@ILanguageModelToolsService private readonly toolsService: ILanguageModelToolsService,
-	) { }
+		@IChatVariablesService
+		private readonly variableService: IChatVariablesService,
+		@IChatSlashCommandService
+		private readonly slashCommandService: IChatSlashCommandService,
+		@ILanguageModelToolsService
+		private readonly toolsService: ILanguageModelToolsService,
+	) {}
 
 	parseChatRequest(
 		sessionId: string,

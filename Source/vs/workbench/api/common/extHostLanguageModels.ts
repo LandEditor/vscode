@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	AsyncIterableObject,
 	AsyncIterableSource,
@@ -12,15 +13,15 @@ import { CancellationToken } from "../../../base/common/cancellation.js";
 import { toErrorMessage } from "../../../base/common/errorMessage.js";
 import {
 	CancellationError,
-	type SerializedError,
 	transformErrorForSerialization,
 	transformErrorFromSerialization,
+	type SerializedError,
 } from "../../../base/common/errors.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import { Iterable } from "../../../base/common/iterator.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";
 import {
@@ -41,8 +42,8 @@ import type {
 import { INTERNAL_AUTH_PROVIDER_PREFIX } from "../../services/authentication/common/authentication.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
-	type ExtHostLanguageModelsShape,
 	MainContext,
+	type ExtHostLanguageModelsShape,
 	type MainThreadLanguageModelsShape,
 } from "./extHost.protocol.js";
 import { IExtHostAuthentication } from "./extHostAuthentication.js";
@@ -210,7 +211,8 @@ export class ExtHostLanguageModels implements ExtHostLanguageModelsShape {
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
 		@ILogService private readonly _logService: ILogService,
-		@IExtHostAuthentication private readonly _extHostAuthentication: IExtHostAuthentication,
+		@IExtHostAuthentication
+		private readonly _extHostAuthentication: IExtHostAuthentication,
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadLanguageModels);
 	}

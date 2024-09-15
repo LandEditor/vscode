@@ -19,11 +19,11 @@ import { IEnvironmentService } from "../../../../platform/environment/common/env
 import { IFileService } from "../../../../platform/files/common/files.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IKeyboardLayoutInfo,
-	IKeyboardLayoutService,
 	areKeyboardLayoutsEqual,
 	getKeyboardLayoutId,
+	IKeyboardLayoutService,
 	parseKeyboardLayoutDescription,
+	type IKeyboardLayoutInfo,
 } from "../../../../platform/keyboardLayout/common/keyboardLayout.js";
 import {
 	IQuickInputService,
@@ -31,16 +31,16 @@ import {
 	type QuickPickInput,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import type { IEditorPane } from "../../../common/editor.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { KEYBOARD_LAYOUT_OPEN_PICKER } from "../common/preferences.js";
 
@@ -55,56 +55,75 @@ export class KeyboardLayoutPickerContribution
 	);
 
 	constructor(
-		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService,
+		@IKeyboardLayoutService
+		private readonly keyboardLayoutService: IKeyboardLayoutService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 	) {
 		super();
 
-		const name = nls.localize('status.workbench.keyboardLayout', "Keyboard Layout");
+		const name = nls.localize(
+			"status.workbench.keyboardLayout",
+			"Keyboard Layout",
+		);
 
 		const layout = this.keyboardLayoutService.getCurrentKeyboardLayout();
 		if (layout) {
 			const layoutInfo = parseKeyboardLayoutDescription(layout);
-			const text = nls.localize('keyboardLayout', "Layout: {0}", layoutInfo.label);
+			const text = nls.localize(
+				"keyboardLayout",
+				"Layout: {0}",
+				layoutInfo.label,
+			);
 
 			this.pickerElement.value = this.statusbarService.addEntry(
 				{
 					name,
 					text,
 					ariaLabel: text,
-					command: KEYBOARD_LAYOUT_OPEN_PICKER
+					command: KEYBOARD_LAYOUT_OPEN_PICKER,
 				},
-				'status.workbench.keyboardLayout',
-				StatusbarAlignment.RIGHT
+				"status.workbench.keyboardLayout",
+				StatusbarAlignment.RIGHT,
 			);
 		}
 
-		this._register(this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
-			const layout = this.keyboardLayoutService.getCurrentKeyboardLayout();
-			const layoutInfo = parseKeyboardLayoutDescription(layout);
+		this._register(
+			this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
+				const layout =
+					this.keyboardLayoutService.getCurrentKeyboardLayout();
+				const layoutInfo = parseKeyboardLayoutDescription(layout);
 
-			if (this.pickerElement.value) {
-				const text = nls.localize('keyboardLayout', "Layout: {0}", layoutInfo.label);
-				this.pickerElement.value.update({
-					name,
-					text,
-					ariaLabel: text,
-					command: KEYBOARD_LAYOUT_OPEN_PICKER
-				});
-			} else {
-				const text = nls.localize('keyboardLayout', "Layout: {0}", layoutInfo.label);
-				this.pickerElement.value = this.statusbarService.addEntry(
-					{
+				if (this.pickerElement.value) {
+					const text = nls.localize(
+						"keyboardLayout",
+						"Layout: {0}",
+						layoutInfo.label,
+					);
+					this.pickerElement.value.update({
 						name,
 						text,
 						ariaLabel: text,
-						command: KEYBOARD_LAYOUT_OPEN_PICKER
-					},
-					'status.workbench.keyboardLayout',
-					StatusbarAlignment.RIGHT
-				);
-			}
-		}));
+						command: KEYBOARD_LAYOUT_OPEN_PICKER,
+					});
+				} else {
+					const text = nls.localize(
+						"keyboardLayout",
+						"Layout: {0}",
+						layoutInfo.label,
+					);
+					this.pickerElement.value = this.statusbarService.addEntry(
+						{
+							name,
+							text,
+							ariaLabel: text,
+							command: KEYBOARD_LAYOUT_OPEN_PICKER,
+						},
+						"status.workbench.keyboardLayout",
+						StatusbarAlignment.RIGHT,
+					);
+				}
+			}),
+		);
 	}
 }
 

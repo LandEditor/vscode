@@ -5,15 +5,15 @@
 
 import { DeferredPromise } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -25,17 +25,17 @@ import { ExtensionsRegistry } from "../../../services/extensions/common/extensio
 import { IHostService } from "../../../services/host/browser/host.js";
 import {
 	HasSpeechProvider,
-	type ISpeechProvider,
-	type ISpeechService,
-	type ISpeechToTextSession,
-	type ITextToSpeechSession,
 	KeywordRecognitionStatus,
 	SPEECH_LANGUAGE_CONFIG,
+	speechLanguageConfigToLanguage,
 	SpeechToTextInProgress,
 	SpeechToTextStatus,
 	TextToSpeechInProgress,
 	TextToSpeechStatus,
-	speechLanguageConfigToLanguage,
+	type ISpeechProvider,
+	type ISpeechService,
+	type ISpeechToTextSession,
+	type ITextToSpeechSession,
 } from "../common/speechService.js";
 
 export interface ISpeechProviderDescriptor {
@@ -103,11 +103,13 @@ export class SpeechService extends Disposable implements ISpeechService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IHostService private readonly hostService: IHostService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionService private readonly extensionService: IExtensionService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super();
 

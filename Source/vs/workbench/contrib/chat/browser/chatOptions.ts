@@ -79,23 +79,35 @@ export class ChatEditorOptions extends Disposable {
 		private readonly foreground: string,
 		private readonly inputEditorBackgroundColor: string,
 		private readonly resultEditorBackgroundColor: string,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
 	) {
 		super();
 
-		this._register(this.themeService.onDidColorThemeChange(e => this.update()));
-		this._register(this.viewDescriptorService.onDidChangeLocation(e => {
-			if (e.views.some(v => v.id === viewId)) {
-				this.update();
-			}
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (ChatEditorOptions.relevantSettingIds.some(id => e.affectsConfiguration(id))) {
-				this.update();
-			}
-		}));
+		this._register(
+			this.themeService.onDidColorThemeChange((e) => this.update()),
+		);
+		this._register(
+			this.viewDescriptorService.onDidChangeLocation((e) => {
+				if (e.views.some((v) => v.id === viewId)) {
+					this.update();
+				}
+			}),
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					ChatEditorOptions.relevantSettingIds.some((id) =>
+						e.affectsConfiguration(id),
+					)
+				) {
+					this.update();
+				}
+			}),
+		);
 		this.update();
 	}
 

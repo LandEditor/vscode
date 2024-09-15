@@ -3,8 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
+import { isWeb } from "../../../../base/common/platform.js";
 import * as types from "../../../../base/common/types.js";
 import * as nls from "../../../../nls.js";
+import {
+	ConfigurationTarget,
+	type IConfigurationService,
+} from "../../../../platform/configuration/common/configuration.js";
 import {
 	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
@@ -13,13 +19,6 @@ import {
 	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
-
-import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
-import { isWeb } from "../../../../base/common/platform.js";
-import {
-	ConfigurationTarget,
-	type IConfigurationService,
-} from "../../../../platform/configuration/common/configuration.js";
 import { workbenchColorsSchemaId } from "../../../../platform/theme/common/colorRegistry.js";
 import { ColorScheme } from "../../../../platform/theme/common/theme.js";
 import { tokenStylingSchemaId } from "../../../../platform/theme/common/tokenClassificationRegistry.js";
@@ -29,15 +28,15 @@ import {
 } from "./colorThemeSchema.js";
 import type { IHostColorSchemeService } from "./hostColorSchemeService.js";
 import {
+	ThemeSettingDefaults,
+	ThemeSettings,
 	type IColorCustomizations,
 	type ISemanticTokenColorCustomizations,
 	type ITokenColorCustomizations,
 	type IWorkbenchColorTheme,
 	type IWorkbenchFileIconTheme,
 	type IWorkbenchProductIconTheme,
-	ThemeSettingDefaults,
 	type ThemeSettingTarget,
-	ThemeSettings,
 } from "./workbenchThemeService.js";
 
 // Configuration: Themes

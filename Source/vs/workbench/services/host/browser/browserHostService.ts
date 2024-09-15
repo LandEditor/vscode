@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
-	ModifierKeyEmitter,
 	addDisposableListener,
 	addDisposableThrottledListener,
 	detectFullscreen,
 	disposableWindowInterval,
+	EventType,
 	getActiveDocument,
 	getWindowId,
+	ModifierKeyEmitter,
 	onDidRegisterWindow,
 	trackFocus,
 } from "../../../../base/browser/dom.js";
@@ -48,19 +48,19 @@ import { ILayoutService } from "../../../../platform/layout/browser/layoutServic
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
+	isFileToOpen,
+	isFolderToOpen,
+	isWorkspaceToOpen,
 	type IFileToOpen,
 	type IOpenEmptyWindowOptions,
 	type IOpenWindowOptions,
 	type IPathData,
 	type IWindowOpenable,
 	type IWindowSettings,
-	isFileToOpen,
-	isFolderToOpen,
-	isWorkspaceToOpen,
 } from "../../../../platform/window/common/window.js";
 import {
-	IWorkspaceContextService,
 	isTemporaryWorkspace,
+	IWorkspaceContextService,
 } from "../../../../platform/workspace/common/workspace.js";
 import type { IWorkspaceFolderCreationData } from "../../../../platform/workspaces/common/workspaces.js";
 import { whenEditorClosed } from "../../../browser/editor.js";
@@ -76,9 +76,9 @@ import { IEditorService } from "../../editor/common/editorService.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
 import type { BrowserLifecycleService } from "../../lifecycle/browser/lifecycleService.js";
 import {
-	type BeforeShutdownEvent,
 	ILifecycleService,
 	ShutdownReason,
+	type BeforeShutdownEvent,
 } from "../../lifecycle/common/lifecycle.js";
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
 import { getWorkspaceIdentifier } from "../../workspaces/browser/workspaces.js";
@@ -111,28 +111,38 @@ export class BrowserHostService extends Disposable implements IHostService {
 
 	constructor(
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IFileService private readonly fileService: IFileService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILifecycleService private readonly lifecycleService: BrowserLifecycleService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ILifecycleService
+		private readonly lifecycleService: BrowserLifecycleService,
 		@ILogService private readonly logService: ILogService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
 
 		if (environmentService.options?.workspaceProvider) {
-			this.workspaceProvider = environmentService.options.workspaceProvider;
+			this.workspaceProvider =
+				environmentService.options.workspaceProvider;
 		} else {
-			this.workspaceProvider = new class implements IWorkspaceProvider {
+			this.workspaceProvider = new (class implements IWorkspaceProvider {
 				readonly workspace = undefined;
 				readonly trusted = undefined;
-				async open() { return true; }
-			};
+				async open() {
+					return true;
+				}
+			})();
 		}
 
 		this.registerListeners();
@@ -314,7 +324,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 					const viewport =
 						isIOS && window.visualViewport
 							? window.visualViewport /** Visual viewport */
-							: window /** Layout viewport */;
+							: window; /** Layout viewport */
 
 					// Fullscreen (Browser)
 					for (const event of [
@@ -705,7 +715,7 @@ export class BrowserHostService extends Disposable implements IHostService {
 		>("window");
 		const openInNewWindowConfig = isFile
 			? windowConfig?.openFilesInNewWindow || "off" /* default */
-			: windowConfig?.openFoldersInNewWindow || "default" /* default */;
+			: windowConfig?.openFoldersInNewWindow || "default"; /* default */
 
 		let openInNewWindow =
 			(options.preferNewWindow || !!options.forceNewWindow) &&

@@ -19,12 +19,12 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	ILogService,
-	ILoggerService,
-	type LogLevel,
-	LogLevelToString,
 	getLogLevel,
+	ILoggerService,
+	ILogService,
+	LogLevelToString,
 	parseLogLevel,
+	type LogLevel,
 } from "../../../../platform/log/common/log.js";
 import { IJSONEditingService } from "../../../services/configuration/common/jsonEditing.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
@@ -67,9 +67,11 @@ class DefaultLogLevelsService
 		this._onDidChangeDefaultLogLevels.event;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
 		@ILogService private readonly logService: ILogService,
 		@ILoggerService private readonly loggerService: ILoggerService,
 	) {

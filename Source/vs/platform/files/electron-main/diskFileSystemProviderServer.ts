@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { shell } from "electron";
+
 import { toErrorMessage } from "../../../base/common/errorMessage.js";
 import type { Emitter } from "../../../base/common/event.js";
 import type { IDisposable } from "../../../base/common/lifecycle.js";
@@ -18,11 +19,11 @@ import { localize } from "../../../nls.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
+	createFileSystemProviderError,
 	FileSystemProviderErrorCode,
 	type IFileChange,
 	type IFileDeleteOptions,
 	type IWatchOptions,
-	createFileSystemProviderError,
 } from "../common/files.js";
 import type { DiskFileSystemProvider } from "../node/diskFileSystemProvider.js";
 import {

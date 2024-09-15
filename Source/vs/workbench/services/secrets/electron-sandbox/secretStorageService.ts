@@ -10,10 +10,10 @@ import { localize } from "../../../../nls.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import {
 	IEncryptionService,
-	KnownStorageProvider,
-	PasswordStoreCLIOption,
 	isGnome,
 	isKwallet,
+	KnownStorageProvider,
+	PasswordStoreCLIOption,
 } from "../../../../platform/encryption/common/encryptionService.js";
 import { INativeEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import {
@@ -35,20 +35,23 @@ import { IJSONEditingService } from "../../configuration/common/jsonEditing.js";
 
 export class NativeSecretStorageService extends BaseSecretStorageService {
 	constructor(
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IJSONEditingService private readonly _jsonEditingService: IJSONEditingService,
-		@INativeEnvironmentService private readonly _environmentService: INativeEnvironmentService,
+		@IJSONEditingService
+		private readonly _jsonEditingService: IJSONEditingService,
+		@INativeEnvironmentService
+		private readonly _environmentService: INativeEnvironmentService,
 		@IStorageService storageService: IStorageService,
 		@IEncryptionService encryptionService: IEncryptionService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(
 			!!_environmentService.useInMemorySecretStorage,
 			storageService,
 			encryptionService,
-			logService
+			logService,
 		);
 	}
 

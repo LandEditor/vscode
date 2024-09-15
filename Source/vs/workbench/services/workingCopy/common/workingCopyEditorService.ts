@@ -6,8 +6,8 @@
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	InstantiationType,
@@ -77,7 +77,9 @@ export class WorkingCopyEditorService
 
 	private readonly handlers = new Set<IWorkingCopyEditorHandler>();
 
-	constructor(@IEditorService private readonly editorService: IEditorService) {
+	constructor(
+		@IEditorService private readonly editorService: IEditorService,
+	) {
 		super();
 	}
 

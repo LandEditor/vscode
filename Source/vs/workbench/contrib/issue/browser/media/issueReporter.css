@@ -45,15 +45,15 @@
 }
 
 .issue-reporter .block-settingsSearchResults-details {
-	padding-bottom: .5rem;
+	padding-bottom: 0.5rem;
 }
 
 .issue-reporter .block-settingsSearchResults-details > div {
-	padding: .5rem .75rem;
+	padding: 0.5rem 0.75rem;
 }
 
 .issue-reporter .section {
-	margin-bottom: .5em;
+	margin-bottom: 0.5em;
 }
 
 /**
@@ -63,7 +63,7 @@
 .issue-reporter textarea {
 	display: block;
 	width: 100%;
-	padding: .375rem .75rem;
+	padding: 0.375rem 0.75rem;
 	font-size: 1rem;
 	line-height: 1.5;
 	color: #495057;
@@ -304,7 +304,7 @@
 
 .issue-reporter .instructions {
 	font-size: 12px;
-	margin-top: .5em;
+	margin-top: 0.5em;
 }
 
 .issue-reporter a,
@@ -416,7 +416,7 @@
 
 .issue-reporter .issues-container {
 	margin-left: 1.5em;
-	margin-top: .5em;
+	margin-top: 0.5em;
 	max-height: 92px;
 	overflow-y: auto;
 }
@@ -445,7 +445,7 @@
 	margin-right: 5px;
 	color: #cccccc;
 	background-color: #3c3c3c;
-	border-radius: .25rem;
+	border-radius: 0.25rem;
 }
 
 .issue-reporter .issues-container > .issue .label {

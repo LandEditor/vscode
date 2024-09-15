@@ -6,8 +6,8 @@
 import { sha1Hex } from "../../../../base/browser/hash.js";
 import { encodeBase64 } from "../../../../base/common/buffer.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { CancellationError } from "../../../../base/common/errors.js";
@@ -31,10 +31,10 @@ import { localize, localize2 } from "../../../../nls.js";
 import type { ILocalizedString } from "../../../../platform/action/common/action.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
 	MenuRegistry,
 	registerAction2,
+	type IAction2Options,
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -44,15 +44,15 @@ import {
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
 	ContextKeyExpr,
+	IContextKeyService,
 	type ContextKeyExpression,
 	type IContextKey,
-	IContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IsWebContext } from "../../../../platform/contextkey/common/contextkeys.js";
 import {
+	getFileNamesMessage,
 	IDialogService,
 	IFileDialogService,
-	getFileNamesMessage,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
@@ -69,14 +69,14 @@ import {
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPickItem,
 	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
@@ -91,9 +91,9 @@ import { ITelemetryService } from "../../../../platform/telemetry/common/telemet
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
-	type IUserDataSynchroniser,
 	UserDataSyncErrorCode,
 	UserDataSyncStoreError,
+	type IUserDataSynchroniser,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import {
 	EditSessionIdentityMatch,
@@ -102,8 +102,8 @@ import {
 import { getVirtualWorkspaceLocation } from "../../../../platform/workspace/common/virtualWorkspace.js";
 import {
 	IWorkspaceContextService,
-	type IWorkspaceFolder,
 	WorkbenchState,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import { workbenchConfigurationNodeBase } from "../../../common/configuration.js";
@@ -112,14 +112,14 @@ import {
 	WorkspaceFolderCountContext,
 } from "../../../common/contextkeys.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import {
-	type IViewContainersRegistry,
 	ViewContainerLocation,
 	Extensions as ViewExtensions,
+	type IViewContainersRegistry,
 } from "../../../common/views.js";
 import {
 	IActivityService,
@@ -141,26 +141,26 @@ import { IRemoteAgentService } from "../../../services/remote/common/remoteAgent
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { IWorkspaceIdentityService } from "../../../services/workspaces/common/workspaceIdentityService.js";
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
-import { type ISCMRepository, ISCMService } from "../../scm/common/scm.js";
+import { ISCMService, type ISCMRepository } from "../../scm/common/scm.js";
 import {
-	type Change,
 	ChangeType,
+	decodeEditSessionFileContent,
+	EDIT_SESSION_SYNC_CATEGORY,
 	EDIT_SESSIONS_CONTAINER_ID,
 	EDIT_SESSIONS_DATA_VIEW_ID,
 	EDIT_SESSIONS_PENDING,
 	EDIT_SESSIONS_SHOW_VIEW,
 	EDIT_SESSIONS_TITLE,
 	EDIT_SESSIONS_VIEW_ICON,
-	EDIT_SESSION_SYNC_CATEGORY,
-	type EditSession,
 	EditSessionSchemaVersion,
+	editSessionsLogId,
 	FileType,
-	type Folder,
+	hashedEditSessionId,
 	IEditSessionsLogService,
 	IEditSessionsStorageService,
-	decodeEditSessionFileContent,
-	editSessionsLogId,
-	hashedEditSessionId,
+	type Change,
+	type EditSession,
+	type Folder,
 } from "../common/editSessions.js";
 import { EditSessionsLogService } from "../common/editSessionsLogService.js";
 import { EditSessionsStoreClient } from "../common/editSessionsStorageClient.js";
@@ -253,49 +253,90 @@ export class EditSessionsContribution
 	private editSessionsStorageClient: EditSessionsStoreClient | undefined;
 
 	constructor(
-		@IEditSessionsStorageService private readonly editSessionsStorageService: IEditSessionsStorageService,
+		@IEditSessionsStorageService
+		private readonly editSessionsStorageService: IEditSessionsStorageService,
 		@IFileService private readonly fileService: IFileService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ISCMService private readonly scmService: ISCMService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IEditSessionsLogService private readonly logService: IEditSessionsLogService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditSessionsLogService
+		private readonly logService: IEditSessionsLogService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IProductService private readonly productService: IProductService,
-		@IConfigurationService private configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IEditSessionIdentityService private readonly editSessionIdentityService: IEditSessionIdentityService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IEditSessionIdentityService
+		private readonly editSessionIdentityService: IEditSessionIdentityService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@ICommandService private commandService: ICommandService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IActivityService private readonly activityService: IActivityService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IRequestService private readonly requestService: IRequestService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IWorkspaceIdentityService private readonly workspaceIdentityService: IWorkspaceIdentityService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IWorkspaceIdentityService
+		private readonly workspaceIdentityService: IWorkspaceIdentityService,
 	) {
 		super();
 
-		this.shouldShowViewsContext = EDIT_SESSIONS_SHOW_VIEW.bindTo(this.contextKeyService);
-		this.pendingEditSessionsContext = EDIT_SESSIONS_PENDING.bindTo(this.contextKeyService);
+		this.shouldShowViewsContext = EDIT_SESSIONS_SHOW_VIEW.bindTo(
+			this.contextKeyService,
+		);
+		this.pendingEditSessionsContext = EDIT_SESSIONS_PENDING.bindTo(
+			this.contextKeyService,
+		);
 		this.pendingEditSessionsContext.set(false);
 
-		if (!this.productService['editSessions.store']?.url) {
+		if (!this.productService["editSessions.store"]?.url) {
 			return;
 		}
 
-		this.editSessionsStorageClient = new EditSessionsStoreClient(URI.parse(this.productService['editSessions.store'].url), this.productService, this.requestService, this.logService, this.environmentService, this.fileService, this.storageService);
-		this.editSessionsStorageService.storeClient = this.editSessionsStorageClient;
-		this.workspaceStateSynchronizer = new WorkspaceStateSynchroniser(this.userDataProfilesService.defaultProfile, undefined, this.editSessionsStorageClient, this.logService, this.fileService, this.environmentService, this.telemetryService, this.configurationService, this.storageService, this.uriIdentityService, this.workspaceIdentityService, this.editSessionsStorageService);
+		this.editSessionsStorageClient = new EditSessionsStoreClient(
+			URI.parse(this.productService["editSessions.store"].url),
+			this.productService,
+			this.requestService,
+			this.logService,
+			this.environmentService,
+			this.fileService,
+			this.storageService,
+		);
+		this.editSessionsStorageService.storeClient =
+			this.editSessionsStorageClient;
+		this.workspaceStateSynchronizer = new WorkspaceStateSynchroniser(
+			this.userDataProfilesService.defaultProfile,
+			undefined,
+			this.editSessionsStorageClient,
+			this.logService,
+			this.fileService,
+			this.environmentService,
+			this.telemetryService,
+			this.configurationService,
+			this.storageService,
+			this.uriIdentityService,
+			this.workspaceIdentityService,
+			this.editSessionsStorageService,
+		);
 
 		this.autoResumeEditSession();
 
@@ -303,14 +344,42 @@ export class EditSessionsContribution
 		this.registerViews();
 		this.registerContributedEditSessionOptions();
 
-		this._register(this.fileService.registerProvider(EditSessionsFileSystemProvider.SCHEMA, new EditSessionsFileSystemProvider(this.editSessionsStorageService)));
+		this._register(
+			this.fileService.registerProvider(
+				EditSessionsFileSystemProvider.SCHEMA,
+				new EditSessionsFileSystemProvider(
+					this.editSessionsStorageService,
+				),
+			),
+		);
 		this.lifecycleService.onWillShutdown((e) => {
-			if (e.reason !== ShutdownReason.RELOAD && this.editSessionsStorageService.isSignedIn && this.configurationService.getValue('workbench.experimental.cloudChanges.autoStore') === 'onShutdown' && !isWeb) {
-				e.join(this.autoStoreEditSession(), { id: 'autoStoreWorkingChanges', label: localize('autoStoreWorkingChanges', 'Storing current working changes...') });
+			if (
+				e.reason !== ShutdownReason.RELOAD &&
+				this.editSessionsStorageService.isSignedIn &&
+				this.configurationService.getValue(
+					"workbench.experimental.cloudChanges.autoStore",
+				) === "onShutdown" &&
+				!isWeb
+			) {
+				e.join(this.autoStoreEditSession(), {
+					id: "autoStoreWorkingChanges",
+					label: localize(
+						"autoStoreWorkingChanges",
+						"Storing current working changes...",
+					),
+				});
 			}
 		});
-		this._register(this.editSessionsStorageService.onDidSignIn(() => this.updateAccountsMenuBadge()));
-		this._register(this.editSessionsStorageService.onDidSignOut(() => this.updateAccountsMenuBadge()));
+		this._register(
+			this.editSessionsStorageService.onDidSignIn(() =>
+				this.updateAccountsMenuBadge(),
+			),
+		);
+		this._register(
+			this.editSessionsStorageService.onDidSignOut(() =>
+				this.updateAccountsMenuBadge(),
+			),
+		);
 	}
 
 	private async autoResumeEditSession() {

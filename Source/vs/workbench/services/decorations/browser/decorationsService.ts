@@ -21,8 +21,8 @@ import {
 import { hash } from "../../../../base/common/hash.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import { isFalsyOrWhitespace } from "../../../../base/common/strings.js";
@@ -35,17 +35,17 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ColorIdentifier,
 	asCssVariable,
+	type ColorIdentifier,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import { getIconRegistry } from "../../../../platform/theme/common/iconRegistry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	IDecorationsService,
 	type IDecoration,
 	type IDecorationData,
 	type IDecorationsProvider,
-	IDecorationsService,
 	type IResourceDecorationChangeEvent,
 } from "../common/decorations.js";
 

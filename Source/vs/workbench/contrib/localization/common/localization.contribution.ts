@@ -12,8 +12,8 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
 	Extensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,

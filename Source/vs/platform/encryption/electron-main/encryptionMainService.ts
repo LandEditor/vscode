@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { app, safeStorage as safeStorageElectron } from "electron";
+
 import { isMacintosh, isWindows } from "../../../base/common/platform.js";
 import { ILogService } from "../../log/common/log.js";
 import {
-	type IEncryptionMainService,
 	KnownStorageProvider,
 	PasswordStoreCLIOption,
+	type IEncryptionMainService,
 } from "../common/encryptionService.js";
 
 // These APIs are currently only supported in our custom build of electron so
@@ -25,14 +26,19 @@ const safeStorage: typeof import("electron").safeStorage &
 export class EncryptionMainService implements IEncryptionMainService {
 	_serviceBrand: undefined;
 
-	constructor(
-		@ILogService private readonly logService: ILogService
-	) {
+	constructor(@ILogService private readonly logService: ILogService) {
 		// if this commandLine switch is set, the user has opted in to using basic text encryption
-		if (app.commandLine.getSwitchValue('password-store') === PasswordStoreCLIOption.basic) {
-			this.logService.trace('[EncryptionMainService] setting usePlainTextEncryption to true...');
+		if (
+			app.commandLine.getSwitchValue("password-store") ===
+			PasswordStoreCLIOption.basic
+		) {
+			this.logService.trace(
+				"[EncryptionMainService] setting usePlainTextEncryption to true...",
+			);
 			safeStorage.setUsePlainTextEncryption?.(true);
-			this.logService.trace('[EncryptionMainService] set usePlainTextEncryption to true');
+			this.logService.trace(
+				"[EncryptionMainService] set usePlainTextEncryption to true",
+			);
 		}
 	}
 

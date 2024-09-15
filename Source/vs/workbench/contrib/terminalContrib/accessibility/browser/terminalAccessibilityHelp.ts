@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal } from "@xterm/xterm";
+
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { localize } from "../../../../../nls.js";
 import {
@@ -75,15 +76,27 @@ export class TerminalAccessibilityHelpProvider
 	verbositySettingKey = AccessibilityVerbositySettingId.Terminal;
 
 	constructor(
-		private readonly _instance: Pick<ITerminalInstance, 'shellType' | 'capabilities' | 'onDidRequestFocus' | 'resource' | 'focus'>,
-		_xterm: Pick<IXtermTerminal, 'getFont' | 'shellIntegration'> & { raw: Terminal },
+		private readonly _instance: Pick<
+			ITerminalInstance,
+			| "shellType"
+			| "capabilities"
+			| "onDidRequestFocus"
+			| "resource"
+			| "focus"
+		>,
+		_xterm: Pick<IXtermTerminal, "getFont" | "shellIntegration"> & {
+			raw: Terminal;
+		},
 		@IInstantiationService _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
-		this._hasShellIntegration = _xterm.shellIntegration.status === ShellIntegrationStatus.VSCode;
+		this._hasShellIntegration =
+			_xterm.shellIntegration.status === ShellIntegrationStatus.VSCode;
 	}
 	provideContent(): string {
 		const content = [

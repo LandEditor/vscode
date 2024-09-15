@@ -15,8 +15,8 @@ import type {
 	IEmptyWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 	type WillCreateProfileEvent,
 	type WillRemoveProfileEvent,
 } from "../common/userDataProfile.js";
@@ -46,7 +46,8 @@ export class UserDataProfilesMainService
 	constructor(
 		@IStateService stateService: IStateService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 	) {

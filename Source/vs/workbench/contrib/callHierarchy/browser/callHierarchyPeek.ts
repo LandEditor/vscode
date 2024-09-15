@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/callHierarchy.css";
+
 import { Dimension, isKeyboardEvent } from "../../../../base/browser/dom.js";
 import {
 	Orientation,
@@ -12,8 +13,8 @@ import {
 } from "../../../../base/browser/ui/splitview/splitview.js";
 import type { IAsyncDataTreeViewState } from "../../../../base/browser/ui/tree/asyncDataTree.js";
 import {
-	type ITreeNode,
 	TreeMouseEventTarget,
+	type ITreeNode,
 } from "../../../../base/browser/ui/tree/tree.js";
 import type { IAction } from "../../../../base/common/actions.js";
 import { Color } from "../../../../base/common/color.js";
@@ -28,13 +29,13 @@ import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import { EmbeddedCodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js";
 import type { IEditorOptions } from "../../../../editor/common/config/editorOptions.js";
 import type { IPosition } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { ScrollType } from "../../../../editor/common/editorCommon.js";
 import {
-	type IModelDecorationOptions,
-	type IModelDeltaDecoration,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type IModelDecorationOptions,
+	type IModelDeltaDecoration,
 } from "../../../../editor/common/model.js";
 import { ITextModelService } from "../../../../editor/common/services/resolverService.js";
 import * as peekView from "../../../../editor/contrib/peekView/browser/peekView.js";
@@ -47,8 +48,8 @@ import {
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IWorkbenchAsyncDataTreeOptions,
 	WorkbenchAsyncDataTree,
+	type IWorkbenchAsyncDataTreeOptions,
 } from "../../../../platform/list/browser/listService.js";
 import {
 	IStorageService,
@@ -56,9 +57,9 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IColorTheme,
 	IThemeService,
 	themeColorFromId,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
@@ -131,19 +132,34 @@ export class CallHierarchyTreePeekWidget extends peekView.PeekViewWidget {
 		private readonly _where: IPosition,
 		private _direction: CallHierarchyDirection,
 		@IThemeService themeService: IThemeService,
-		@peekView.IPeekViewService private readonly _peekViewService: peekView.IPeekViewService,
+		@peekView.IPeekViewService
+		private readonly _peekViewService: peekView.IPeekViewService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
-		super(editor, { showFrame: true, showArrow: true, isResizeable: true, isAccessible: true }, _instantiationService);
+		super(
+			editor,
+			{
+				showFrame: true,
+				showArrow: true,
+				isResizeable: true,
+				isAccessible: true,
+			},
+			_instantiationService,
+		);
 		this.create();
 		this._peekViewService.addExclusiveWidget(editor, this);
 		this._applyTheme(themeService.getColorTheme());
-		this._disposables.add(themeService.onDidColorThemeChange(this._applyTheme, this));
+		this._disposables.add(
+			themeService.onDidColorThemeChange(this._applyTheme, this),
+		);
 		this._disposables.add(this._previewDisposable);
 	}
 

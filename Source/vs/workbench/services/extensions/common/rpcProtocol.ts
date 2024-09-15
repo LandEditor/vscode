@@ -20,17 +20,17 @@ import {
 import type { MarshalledObject } from "../../../../base/common/marshalling.js";
 import { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import {
-	type IURITransformer,
 	transformIncomingURIs,
+	type IURITransformer,
 } from "../../../../base/common/uriIpc.js";
 import type { IMessagePassingProtocol } from "../../../../base/parts/ipc/common/ipc.js";
 import { CanceledLazyPromise, LazyPromise } from "./lazyPromise.js";
 import {
-	type IRPCProtocol,
-	type Proxied,
+	getStringIdentifierForProxy,
 	ProxyIdentifier,
 	SerializableObjectWithBuffers,
-	getStringIdentifierForProxy,
+	type IRPCProtocol,
+	type Proxied,
 } from "./proxyIdentifier.js";
 
 export interface JSONStringifyReplacer {

@@ -9,15 +9,17 @@ import { IExtensionGalleryService } from "../../extensionManagement/common/exten
 import { IExtensionResourceLoaderService } from "../../extensionResourceLoader/common/extensionResourceLoader.js";
 import { ILogService } from "../../log/common/log.js";
 import {
-	type ILanguagePackItem,
 	LanguagePackBaseService,
+	type ILanguagePackItem,
 } from "../common/languagePacks.js";
 
 export class WebLanguagePacksService extends LanguagePackBaseService {
 	constructor(
-		@IExtensionResourceLoaderService private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@ILogService private readonly logService: ILogService
+		@IExtensionResourceLoaderService
+		private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super(extensionGalleryService);
 	}

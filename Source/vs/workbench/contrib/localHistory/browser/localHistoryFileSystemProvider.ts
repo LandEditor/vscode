@@ -14,6 +14,7 @@ import { URI } from "../../../../base/common/uri.js";
 import {
 	FileSystemProviderCapabilities,
 	FileType,
+	hasReadWriteCapability,
 	type IFileDeleteOptions,
 	type IFileOverwriteOptions,
 	type IFileService,
@@ -22,7 +23,6 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	hasReadWriteCapability,
 } from "../../../../platform/files/common/files.js";
 
 interface ILocalHistoryResource {

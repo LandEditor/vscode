@@ -5,16 +5,16 @@
 
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
-	type ParsedPattern,
 	parse as parseGlob,
+	type ParsedPattern,
 } from "../../../../base/common/glob.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { MRUCache } from "../../../../base/common/map.js";
 import {
-	type ParsedPath,
 	dirname,
 	isAbsolute,
 	parse as parsePath,
+	type ParsedPath,
 } from "../../../../base/common/path.js";
 import {
 	relativePath as getRelativePath,
@@ -61,8 +61,10 @@ export class CustomEditorLabelService
 	private cache = new MRUCache<string, string | null>(1000);
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 

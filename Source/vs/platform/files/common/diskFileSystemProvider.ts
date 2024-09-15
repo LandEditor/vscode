@@ -10,26 +10,26 @@ import { Emitter } from "../../../base/common/event.js";
 import { removeTrailingPathSeparator } from "../../../base/common/extpath.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { normalize } from "../../../base/common/path.js";
 import type { URI } from "../../../base/common/uri.js";
-import { type ILogService, LogLevel } from "../../log/common/log.js";
+import { LogLevel, type ILogService } from "../../log/common/log.js";
 import type {
 	IFileChange,
 	IFileSystemProvider,
 	IWatchOptions,
 } from "./files.js";
 import {
+	isRecursiveWatchRequest,
+	reviveFileChanges,
 	type AbstractNonRecursiveWatcherClient,
 	type AbstractUniversalWatcherClient,
 	type ILogMessage,
 	type INonRecursiveWatchRequest,
 	type IRecursiveWatcherOptions,
 	type IUniversalWatchRequest,
-	isRecursiveWatchRequest,
-	reviveFileChanges,
 } from "./watcher.js";
 
 export interface IDiskFileSystemProviderOptions {

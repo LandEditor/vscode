@@ -7,17 +7,17 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable, DisposableStore } from "../../../base/common/lifecycle.js";
 import { isUndefinedOrNull } from "../../../base/common/types.js";
 import {
-	type IProfileStorageValueChangeEvent,
 	IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IProfileStorageValueChangeEvent,
 } from "../../storage/common/storage.js";
 import {
 	DISABLED_EXTENSIONS_STORAGE_PATH,
-	type IExtensionIdentifier,
 	IExtensionManagementService,
-	type IGlobalExtensionEnablementService,
 	InstallOperation,
+	type IExtensionIdentifier,
+	type IGlobalExtensionEnablementService,
 } from "./extensionManagement.js";
 import { areSameExtensions } from "./extensionManagementUtil.js";
 
@@ -39,7 +39,8 @@ export class GlobalExtensionEnablementService
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
 	) {
 		super();
 		this.storageManager = this._register(

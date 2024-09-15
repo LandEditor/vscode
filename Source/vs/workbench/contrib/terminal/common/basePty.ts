@@ -12,12 +12,12 @@ import type {
 	ISerializedCommandDetectionCapability,
 } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
+	ProcessPropertyType,
 	type IProcessDataEvent,
 	type IProcessProperty,
 	type IProcessPropertyMap,
 	type IProcessReadyEvent,
 	type ITerminalChildProcess,
-	ProcessPropertyType,
 } from "../../../../platform/terminal/common/terminal.js";
 
 /**

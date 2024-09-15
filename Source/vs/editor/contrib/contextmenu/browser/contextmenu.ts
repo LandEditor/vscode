@@ -12,19 +12,19 @@ import type {
 import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IAnchor } from "../../../../base/browser/ui/contextview/contextview.js";
 import {
-	type IAction,
 	Separator,
 	SubmenuAction,
+	type IAction,
 } from "../../../../base/common/actions.js";
-import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import type { ResolvedKeybinding } from "../../../../base/common/keybindings.js";
+import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { isIOS } from "../../../../base/common/platform.js";
 import * as nls from "../../../../nls.js";
 import {
 	IMenuService,
-	type MenuId,
 	SubmenuItemAction,
+	type MenuId,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
@@ -35,25 +35,25 @@ import {
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	IWorkspaceContextService,
 	isStandaloneEditorWorkspace,
+	IWorkspaceContextService,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import {
-	type IEditorContribution,
 	ScrollType,
+	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import type { ITextModel } from "../../../common/model.js";
@@ -73,40 +73,60 @@ export class ContextMenuController implements IEditorContribution {
 
 	constructor(
 		editor: ICodeEditor,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IContextViewService private readonly _contextViewService: IContextViewService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 	) {
 		this._editor = editor;
 
-		this._toDispose.add(this._editor.onContextMenu((e: IEditorMouseEvent) => this._onContextMenu(e)));
-		this._toDispose.add(this._editor.onMouseWheel((e: IMouseWheelEvent) => {
-			if (this._contextMenuIsBeingShownCount > 0) {
-				const view = this._contextViewService.getContextViewElement();
-				const target = e.srcElement as HTMLElement;
+		this._toDispose.add(
+			this._editor.onContextMenu((e: IEditorMouseEvent) =>
+				this._onContextMenu(e),
+			),
+		);
+		this._toDispose.add(
+			this._editor.onMouseWheel((e: IMouseWheelEvent) => {
+				if (this._contextMenuIsBeingShownCount > 0) {
+					const view =
+						this._contextViewService.getContextViewElement();
+					const target = e.srcElement as HTMLElement;
 
-				// Event triggers on shadow root host first
-				// Check if the context view is under this host before hiding it #103169
-				if (!(target.shadowRoot && dom.getShadowRoot(view) === target.shadowRoot)) {
-					this._contextViewService.hideContextView();
+					// Event triggers on shadow root host first
+					// Check if the context view is under this host before hiding it #103169
+					if (
+						!(
+							target.shadowRoot &&
+							dom.getShadowRoot(view) === target.shadowRoot
+						)
+					) {
+						this._contextViewService.hideContextView();
+					}
 				}
-			}
-		}));
-		this._toDispose.add(this._editor.onKeyDown((e: IKeyboardEvent) => {
-			if (!this._editor.getOption(EditorOption.contextmenu)) {
-				return; // Context menu is turned off through configuration
-			}
-			if (e.keyCode === KeyCode.ContextMenu) {
-				// Chrome is funny like that
-				e.preventDefault();
-				e.stopPropagation();
-				this.showContextMenu();
-			}
-		}));
+			}),
+		);
+		this._toDispose.add(
+			this._editor.onKeyDown((e: IKeyboardEvent) => {
+				if (!this._editor.getOption(EditorOption.contextmenu)) {
+					return; // Context menu is turned off through configuration
+				}
+				if (e.keyCode === KeyCode.ContextMenu) {
+					// Chrome is funny like that
+					e.preventDefault();
+					e.stopPropagation();
+					this.showContextMenu();
+				}
+			}),
+		);
 	}
 
 	private _onContextMenu(e: IEditorMouseEvent): void {

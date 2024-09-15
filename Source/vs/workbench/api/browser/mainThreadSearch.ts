@@ -6,8 +6,8 @@
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { revive } from "../../../base/common/marshalling.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
@@ -16,10 +16,13 @@ import { IContextKeyService } from "../../../platform/contextkey/common/contextk
 import { ITelemetryService } from "../../../platform/telemetry/common/telemetry.js";
 import * as Constants from "../../contrib/search/common/constants.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
+	ISearchService,
+	QueryType,
+	SearchProviderType,
 	type IFileMatch,
 	type IFileQuery,
 	type IRawFileMatch2,
@@ -28,15 +31,12 @@ import {
 	type ISearchProgressItem,
 	type ISearchQuery,
 	type ISearchResultProvider,
-	ISearchService,
 	type ITextQuery,
-	QueryType,
-	SearchProviderType,
 } from "../../services/search/common/search.js";
 import {
 	ExtHostContext,
-	type ExtHostSearchShape,
 	MainContext,
+	type ExtHostSearchShape,
 	type MainThreadSearchShape,
 } from "../common/extHost.protocol.js";
 
@@ -48,7 +48,8 @@ export class MainThreadSearch implements MainThreadSearchShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ISearchService private readonly _searchService: ISearchService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@IConfigurationService _configurationService: IConfigurationService,
 		@IContextKeyService protected contextKeyService: IContextKeyService,
 	) {

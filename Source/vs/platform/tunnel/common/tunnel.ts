@@ -312,8 +312,11 @@ export abstract class AbstractTunnelService
 
 	public constructor(
 		@ILogService protected readonly logService: ILogService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService
-	) { super(); }
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
+	) {
+		super();
+	}
 
 	get hasTunnelProvider(): boolean {
 		return !!this._tunnelProvider;

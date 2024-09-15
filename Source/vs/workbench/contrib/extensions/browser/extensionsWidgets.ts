@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/extensionsWidgets.css";
+
 import {
 	$,
-	EventType,
 	addDisposableListener,
 	append,
+	EventType,
 	finalHandler,
 	reset,
 } from "../../../../base/browser/dom.js";
@@ -27,9 +28,9 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as platform from "../../../../base/common/platform.js";
 import * as semver from "../../../../base/common/semver/semver.js";
@@ -68,13 +69,13 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 import {
 	ExtensionEditorTab,
 	ExtensionState,
+	IExtensionsWorkbenchService,
 	type IExtension,
 	type IExtensionContainer,
-	IExtensionsWorkbenchService,
 } from "../common/extensions.js";
 import {
-	type ExtensionStatusAction,
 	extensionButtonProminentBackground,
+	type ExtensionStatusAction,
 } from "./extensionsActions.js";
 import {
 	activationTimeIcon,
@@ -298,7 +299,13 @@ export class VerifiedPublisherWidget extends ExtensionWidget {
 		@IOpenerService private readonly openerService: IOpenerService,
 	) {
 		super();
-		this.containerHover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), container, ''));
+		this.containerHover = this._register(
+			hoverService.setupManagedHover(
+				getDefaultHoverDelegate("mouse"),
+				container,
+				"",
+			),
+		);
 		this.render();
 	}
 
@@ -419,12 +426,17 @@ export class RecommendationWidget extends ExtensionWidget {
 
 	constructor(
 		private parent: HTMLElement,
-		@IExtensionRecommendationsService private readonly extensionRecommendationsService: IExtensionRecommendationsService
+		@IExtensionRecommendationsService
+		private readonly extensionRecommendationsService: IExtensionRecommendationsService,
 	) {
 		super();
 		this.render();
 		this._register(toDisposable(() => this.clear()));
-		this._register(this.extensionRecommendationsService.onDidChangeRecommendations(() => this.render()));
+		this._register(
+			this.extensionRecommendationsService.onDidChangeRecommendations(
+				() => this.render(),
+			),
+		);
 	}
 
 	private clear(): void {
@@ -498,11 +510,13 @@ export class RemoteBadgeWidget extends ExtensionWidget {
 	constructor(
 		parent: HTMLElement,
 		private readonly tooltip: boolean,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		this.element = append(parent, $('.extension-remote-badge-container'));
+		this.element = append(parent, $(".extension-remote-badge-container"));
 		this.render();
 		this._register(toDisposable(() => this.clear()));
 	}
@@ -547,11 +561,18 @@ class RemoteBadge extends Disposable {
 		@IHoverService hoverService: IHoverService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
 	) {
 		super();
-		this.element = $('div.extension-badge.extension-remote-badge');
-		this.elementHover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.element, ''));
+		this.element = $("div.extension-badge.extension-remote-badge");
+		this.elementHover = this._register(
+			hoverService.setupManagedHover(
+				getDefaultHoverDelegate("mouse"),
+				this.element,
+				"",
+			),
+		);
 		this.render();
 	}
 
@@ -645,14 +666,26 @@ export class SyncIgnoredWidget extends ExtensionWidget {
 
 	constructor(
 		private readonly container: HTMLElement,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
 	) {
 		super();
-		this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('settingsSync.ignoredExtensions'))(() => this.render()));
-		this._register(userDataSyncEnablementService.onDidChangeEnablement(() => this.update()));
+		this._register(
+			Event.filter(
+				this.configurationService.onDidChangeConfiguration,
+				(e) => e.affectsConfiguration("settingsSync.ignoredExtensions"),
+			)(() => this.render()),
+		);
+		this._register(
+			userDataSyncEnablementService.onDidChangeEnablement(() =>
+				this.update(),
+			),
+		);
 		this.render();
 	}
 
@@ -697,14 +730,25 @@ export class ExtensionActivationStatusWidget extends ExtensionWidget {
 		private readonly container: HTMLElement,
 		private readonly small: boolean,
 		@IExtensionService extensionService: IExtensionService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		super();
-		this._register(extensionService.onDidChangeExtensionsStatus(extensions => {
-			if (this.extension && extensions.some(e => areSameExtensions({ id: e.value }, this.extension!.identifier))) {
-				this.update();
-			}
-		}));
+		this._register(
+			extensionService.onDidChangeExtensionsStatus((extensions) => {
+				if (
+					this.extension &&
+					extensions.some((e) =>
+						areSameExtensions(
+							{ id: e.value },
+							this.extension!.identifier,
+						),
+					)
+				) {
+					this.update();
+				}
+			}),
+		);
 	}
 
 	render(): void {
@@ -758,12 +802,16 @@ export class ExtensionHoverWidget extends ExtensionWidget {
 	constructor(
 		private readonly options: ExtensionHoverOptions,
 		private readonly extensionStatusAction: ExtensionStatusAction,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionRecommendationsService private readonly extensionRecommendationsService: IExtensionRecommendationsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionRecommendationsService
+		private readonly extensionRecommendationsService: IExtensionRecommendationsService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 	) {
 		super();
 	}
@@ -1073,7 +1121,9 @@ export class ExtensionStatusWidget extends ExtensionWidget {
 	) {
 		super();
 		this.render();
-		this._register(extensionStatusAction.onDidChangeStatus(() => this.render()));
+		this._register(
+			extensionStatusAction.onDidChangeStatus(() => this.render()),
+		);
 	}
 
 	render(): void {
@@ -1121,12 +1171,18 @@ export class ExtensionRecommendationWidget extends ExtensionWidget {
 
 	constructor(
 		private readonly container: HTMLElement,
-		@IExtensionRecommendationsService private readonly extensionRecommendationsService: IExtensionRecommendationsService,
-		@IExtensionIgnoredRecommendationsService private readonly extensionIgnoredRecommendationsService: IExtensionIgnoredRecommendationsService,
+		@IExtensionRecommendationsService
+		private readonly extensionRecommendationsService: IExtensionRecommendationsService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionIgnoredRecommendationsService: IExtensionIgnoredRecommendationsService,
 	) {
 		super();
 		this.render();
-		this._register(this.extensionRecommendationsService.onDidChangeRecommendations(() => this.render()));
+		this._register(
+			this.extensionRecommendationsService.onDidChangeRecommendations(
+				() => this.render(),
+			),
+		);
 	}
 
 	render(): void {

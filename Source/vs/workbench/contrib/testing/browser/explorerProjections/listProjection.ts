@@ -13,26 +13,26 @@ import { TestResultItemChangeReason } from "../../common/testResult.js";
 import { ITestResultService } from "../../common/testResultService.js";
 import { ITestService } from "../../common/testService.js";
 import {
-	type ITestItemUpdate,
-	type InternalTestItem,
+	applyTestItemUpdate,
 	TestDiffOpType,
 	TestItemExpandState,
 	TestResultState,
+	type InternalTestItem,
+	type ITestItemUpdate,
 	type TestsDiff,
-	applyTestItemUpdate,
 } from "../../common/testTypes.js";
 import { flatTestItemDelimiter } from "./display.js";
 import {
-	type ITestTreeProjection,
-	type TestExplorerTreeElement,
-	TestItemTreeElement,
-	TestTreeErrorMessage,
 	getChildrenForParent,
 	testIdentityProvider,
+	TestItemTreeElement,
+	TestTreeErrorMessage,
+	type ITestTreeProjection,
+	type TestExplorerTreeElement,
 } from "./index.js";
 import {
-	type ISerializedTestTreeCollapseState,
 	isCollapsedInSerializedTestTree,
+	type ISerializedTestTreeCollapseState,
 } from "./testingViewState.js";
 
 /**
@@ -113,51 +113,63 @@ export class ListProjection extends Disposable implements ITestTreeProjection {
 		@ITestResultService private readonly results: ITestResultService,
 	) {
 		super();
-		this._register(testService.onDidProcessDiff((diff) => this.applyDiff(diff)));
+		this._register(
+			testService.onDidProcessDiff((diff) => this.applyDiff(diff)),
+		);
 
 		// when test results are cleared, recalculate all state
-		this._register(results.onResultsChanged((evt) => {
-			if (!('removed' in evt)) {
-				return;
-			}
+		this._register(
+			results.onResultsChanged((evt) => {
+				if (!("removed" in evt)) {
+					return;
+				}
 
-			for (const inTree of this.items.values()) {
-				// Simple logic here, because we know in this projection states
-				// are never inherited.
-				const lookup = this.results.getStateById(inTree.test.item.extId)?.[1];
-				inTree.duration = lookup?.ownDuration;
-				inTree.state = lookup?.ownComputedState || TestResultState.Unset;
-				inTree.fireChange();
-			}
-		}));
+				for (const inTree of this.items.values()) {
+					// Simple logic here, because we know in this projection states
+					// are never inherited.
+					const lookup = this.results.getStateById(
+						inTree.test.item.extId,
+					)?.[1];
+					inTree.duration = lookup?.ownDuration;
+					inTree.state =
+						lookup?.ownComputedState || TestResultState.Unset;
+					inTree.fireChange();
+				}
+			}),
+		);
 
 		// when test states change, reflect in the tree
-		this._register(results.onTestChanged(ev => {
-			if (ev.reason === TestResultItemChangeReason.NewMessage) {
-				return; // no effect in the tree
-			}
-
-			let result = ev.item;
-			// if the state is unset, or the latest run is not making the change,
-			// double check that it's valid. Retire calls might cause previous
-			// emit a state change for a test run that's already long completed.
-			if (result.ownComputedState === TestResultState.Unset || ev.result !== results.results[0]) {
-				const fallback = results.getStateById(result.item.extId);
-				if (fallback) {
-					result = fallback[1];
+		this._register(
+			results.onTestChanged((ev) => {
+				if (ev.reason === TestResultItemChangeReason.NewMessage) {
+					return; // no effect in the tree
 				}
-			}
 
-			const item = this.items.get(result.item.extId);
-			if (!item) {
-				return;
-			}
+				let result = ev.item;
+				// if the state is unset, or the latest run is not making the change,
+				// double check that it's valid. Retire calls might cause previous
+				// emit a state change for a test run that's already long completed.
+				if (
+					result.ownComputedState === TestResultState.Unset ||
+					ev.result !== results.results[0]
+				) {
+					const fallback = results.getStateById(result.item.extId);
+					if (fallback) {
+						result = fallback[1];
+					}
+				}
 
-			item.retired = !!result.retired;
-			item.state = result.computedState;
-			item.duration = result.ownDuration;
-			item.fireChange();
-		}));
+				const item = this.items.get(result.item.extId);
+				if (!item) {
+					return;
+				}
+
+				item.retired = !!result.retired;
+				item.state = result.computedState;
+				item.duration = result.ownDuration;
+				item.fireChange();
+			}),
+		);
 
 		for (const test of testService.collection.all) {
 			this.storeItem(test);

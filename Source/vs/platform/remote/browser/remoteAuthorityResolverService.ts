@@ -15,14 +15,14 @@ import type { URI } from "../../../base/common/uri.js";
 import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
+	getRemoteAuthorityPrefix,
+	RemoteConnectionType,
+	WebSocketRemoteConnection,
 	type IRemoteAuthorityResolverService,
 	type IRemoteConnectionData,
-	RemoteConnectionType,
 	type ResolvedAuthority,
 	type ResolvedOptions,
 	type ResolverResult,
-	WebSocketRemoteConnection,
-	getRemoteAuthorityPrefix,
 } from "../common/remoteAuthorityResolver.js";
 import { parseAuthorityWithOptionalPort } from "../common/remoteHosts.js";
 
@@ -58,7 +58,8 @@ export class RemoteAuthorityResolverService
 		super();
 		this._connectionToken = connectionToken;
 		this._connectionTokens = new Map<string, string>();
-		this._isWorkbenchOptionsBasedResolution = isWorkbenchOptionsBasedResolution;
+		this._isWorkbenchOptionsBasedResolution =
+			isWorkbenchOptionsBasedResolution;
 		if (resourceUriProvider) {
 			RemoteAuthorities.setDelegate(resourceUriProvider);
 		}

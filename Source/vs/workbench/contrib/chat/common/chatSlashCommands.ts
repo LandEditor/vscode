@@ -7,8 +7,8 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import type { IProgress } from "../../../../platform/progress/common/progress.js";
@@ -86,7 +86,10 @@ export class ChatSlashCommandService
 	private readonly _onDidChangeCommands = this._register(new Emitter<void>());
 	readonly onDidChangeCommands: Event<void> = this._onDidChangeCommands.event;
 
-	constructor(@IExtensionService private readonly _extensionService: IExtensionService) {
+	constructor(
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+	) {
 		super();
 	}
 

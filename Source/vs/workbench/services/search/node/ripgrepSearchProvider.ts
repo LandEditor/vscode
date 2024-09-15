@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { Progress } from "../../../../platform/progress/common/progress.js";

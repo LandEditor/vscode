@@ -5,22 +5,22 @@
 
 import {
 	Dimension,
-	type IFocusTracker,
-	WindowIntervalTimer,
 	getWindow,
 	scheduleAtNextAnimationFrame,
 	trackFocus,
+	WindowIntervalTimer,
+	type IFocusTracker,
 } from "../../../../../../base/browser/dom.js";
 import {
-	type CancelablePromise,
-	DeferredPromise,
-	Queue,
 	createCancelablePromise,
+	DeferredPromise,
 	disposableTimeout,
+	Queue,
+	type CancelablePromise,
 } from "../../../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../../base/common/cancellation.js";
 import { Emitter } from "../../../../../../base/common/event.js";
 import {
@@ -51,8 +51,8 @@ import { IEditorWorkerService } from "../../../../../../editor/common/services/e
 import { IModelService } from "../../../../../../editor/common/services/model.js";
 import { localize } from "../../../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../../platform/instantiation/common/instantiation.js";
 import {
@@ -391,24 +391,43 @@ export class NotebookChatController
 	);
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@INotebookExecutionStateService private _executionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private _executionStateService: INotebookExecutionStateService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IChatService private readonly _chatService: IChatService
+		@IChatService private readonly _chatService: IChatService,
 	) {
 		super();
-		this._ctxHasActiveRequest = CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST.bindTo(this._contextKeyService);
-		this._ctxCellWidgetFocused = CTX_NOTEBOOK_CELL_CHAT_FOCUSED.bindTo(this._contextKeyService);
-		this._ctxUserDidEdit = CTX_NOTEBOOK_CHAT_USER_DID_EDIT.bindTo(this._contextKeyService);
-		this._ctxOuterFocusPosition = CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION.bindTo(this._contextKeyService);
+		this._ctxHasActiveRequest = CTX_NOTEBOOK_CHAT_HAS_ACTIVE_REQUEST.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxCellWidgetFocused = CTX_NOTEBOOK_CELL_CHAT_FOCUSED.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxUserDidEdit = CTX_NOTEBOOK_CHAT_USER_DID_EDIT.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxOuterFocusPosition =
+			CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION.bindTo(
+				this._contextKeyService,
+			);
 
 		this._registerFocusTracker();
 
-		NotebookChatController._promptHistory = JSON.parse(this._storageService.get(NotebookChatController._storageKey, StorageScope.PROFILE, '[]'));
+		NotebookChatController._promptHistory = JSON.parse(
+			this._storageService.get(
+				NotebookChatController._storageKey,
+				StorageScope.PROFILE,
+				"[]",
+			),
+		);
 		this._historyUpdate = (prompt: string) => {
 			const idx = NotebookChatController._promptHistory.indexOf(prompt);
 			if (idx >= 0) {
@@ -416,8 +435,13 @@ export class NotebookChatController
 			}
 			NotebookChatController._promptHistory.unshift(prompt);
 			this._historyOffset = -1;
-			this._historyCandidate = '';
-			this._storageService.store(NotebookChatController._storageKey, JSON.stringify(NotebookChatController._promptHistory), StorageScope.PROFILE, StorageTarget.USER);
+			this._historyCandidate = "";
+			this._storageService.store(
+				NotebookChatController._storageKey,
+				JSON.stringify(NotebookChatController._promptHistory),
+				StorageScope.PROFILE,
+				StorageTarget.USER,
+			);
 		};
 	}
 

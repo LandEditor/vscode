@@ -9,17 +9,17 @@ import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
+	TimelinePaneId,
 	type ITimelineService,
 	type TimelineChangeEvent,
 	type TimelineOptions,
-	TimelinePaneId,
 	type TimelineProvider,
 	type TimelineProvidersChangeEvent,
 } from "./timeline.js";
@@ -50,10 +50,13 @@ export class TimelineService implements ITimelineService {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@IViewsService protected viewsService: IViewsService,
-		@IConfigurationService protected configurationService: IConfigurationService,
+		@IConfigurationService
+		protected configurationService: IConfigurationService,
 		@IContextKeyService protected contextKeyService: IContextKeyService,
 	) {
-		this.hasProviderContext = TimelineHasProviderContext.bindTo(this.contextKeyService);
+		this.hasProviderContext = TimelineHasProviderContext.bindTo(
+			this.contextKeyService,
+		);
 		this.updateHasProviderContext();
 	}
 

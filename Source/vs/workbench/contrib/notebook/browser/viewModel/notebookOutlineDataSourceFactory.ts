@@ -4,18 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IReference,
 	ReferenceCollection,
+	type IReference,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../../platform/instantiation/common/instantiation.js";
 import type { INotebookEditor } from "../notebookBrowser.js";
 import { NotebookCellOutlineDataSource } from "./notebookOutlineDataSource.js";
 
 class NotebookCellOutlineDataSourceReferenceCollection extends ReferenceCollection<NotebookCellOutlineDataSource> {
-	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
+	constructor(
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {
 		super();
 	}
 	protected override createReferencedObject(
@@ -50,8 +53,12 @@ export class NotebookCellOutlineDataSourceFactory
 	implements INotebookCellOutlineDataSourceFactory
 {
 	private readonly _data: NotebookCellOutlineDataSourceReferenceCollection;
-	constructor(@IInstantiationService instantiationService: IInstantiationService) {
-		this._data = instantiationService.createInstance(NotebookCellOutlineDataSourceReferenceCollection);
+	constructor(
+		@IInstantiationService instantiationService: IInstantiationService,
+	) {
+		this._data = instantiationService.createInstance(
+			NotebookCellOutlineDataSourceReferenceCollection,
+		);
 	}
 
 	getOrCreate(

@@ -9,9 +9,9 @@ import { TwoKeyMap } from "../../../../base/common/map.js";
 import { ensureNonNullable } from "../gpuUtils.js";
 import type { IRasterizedGlyph } from "../raster/raster.js";
 import {
+	UsagePreviewColors,
 	type ITextureAtlasAllocator,
 	type ITextureAtlasPageGlyph,
-	UsagePreviewColors,
 } from "./atlas.js";
 
 export interface TextureAtlasSlabAllocatorOptions {

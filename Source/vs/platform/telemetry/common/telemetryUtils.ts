@@ -12,15 +12,15 @@ import type { IProductService } from "../../product/common/productService.js";
 import { getRemoteName } from "../../remote/common/remoteHosts.js";
 import { verifyMicrosoftInternalDomain } from "./commonProperties.js";
 import {
-	type ICustomEndpointTelemetryService,
-	type ITelemetryData,
-	type ITelemetryEndpoint,
-	type ITelemetryService,
 	TELEMETRY_CRASH_REPORTER_SETTING_ID,
 	TELEMETRY_OLD_SETTING_ID,
 	TELEMETRY_SETTING_ID,
 	TelemetryConfiguration,
 	TelemetryLevel,
+	type ICustomEndpointTelemetryService,
+	type ITelemetryData,
+	type ITelemetryEndpoint,
+	type ITelemetryService,
 } from "./telemetry.js";
 
 /**

@@ -9,12 +9,12 @@ import type {
 	WorkbenchActionExecutedClassification,
 	WorkbenchActionExecutedEvent,
 } from "../../../../base/common/actions.js";
-import { RunOnceScheduler, retry } from "../../../../base/common/async.js";
+import { retry, RunOnceScheduler } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { getCodiconAriaLabel } from "../../../../base/common/iconLabels.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
@@ -24,10 +24,10 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import {
-	type PlatformName,
-	PlatformToString,
 	isWeb,
 	platform,
+	PlatformToString,
+	type PlatformName,
 } from "../../../../base/common/platform.js";
 import { truncate } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -39,8 +39,8 @@ import {
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
-	type SubmenuItemAction,
 	registerAction2,
+	type SubmenuItemAction,
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -66,8 +66,8 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type QuickPickItem,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
@@ -92,10 +92,10 @@ import {
 	remoteConnectionLatencyMeasurer,
 } from "../../../services/remote/common/remoteAgentService.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { infoIcon } from "../../extensions/browser/extensionsIcons.js";
 import {
@@ -222,30 +222,38 @@ export class RemoteStatusIndicator
 
 	constructor(
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IContextKeyService private contextKeyService: IContextKeyService,
 		@IMenuService private menuService: IMenuService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IRemoteAuthorityResolverService private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IRemoteAuthorityResolverService
+		private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@IHostService private readonly hostService: IHostService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@ILogService private readonly logService: ILogService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
 		// Set initial connection state
 		if (this.remoteAuthority) {
-			this.connectionState = 'initializing';
+			this.connectionState = "initializing";
 			this.connectionStateContextKey.set(this.connectionState);
 		} else {
 			this.updateVirtualWorkspaceLocation();

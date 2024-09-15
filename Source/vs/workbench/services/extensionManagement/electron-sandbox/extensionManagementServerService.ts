@@ -18,8 +18,8 @@ import { ILabelService } from "../../../../platform/label/common/label.js";
 import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
 import {
 	ExtensionInstallLocation,
-	type IExtensionManagementServer,
 	IExtensionManagementServerService,
+	type IExtensionManagementServer,
 } from "../common/extensionManagement.js";
 import { NativeExtensionManagementService } from "./nativeExtensionManagementService.js";
 import { NativeRemoteExtensionManagementService } from "./remoteExtensionManagementService.js";

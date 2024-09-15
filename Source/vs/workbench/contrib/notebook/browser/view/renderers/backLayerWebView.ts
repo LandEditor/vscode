@@ -21,9 +21,9 @@ import type { IDisposable } from "../../../../../../base/common/lifecycle.js";
 import { getExtensionForMimeType } from "../../../../../../base/common/mime.js";
 import {
 	FileAccess,
-	Schemas,
 	matchesScheme,
 	matchesSomeScheme,
+	Schemas,
 } from "../../../../../../base/common/network.js";
 import { equals } from "../../../../../../base/common/objects.js";
 import * as osPath from "../../../../../../base/common/path.js";
@@ -66,16 +66,16 @@ import { IWorkspaceContextService } from "../../../../../../platform/workspace/c
 import { IWorkspaceTrustManagementService } from "../../../../../../platform/workspace/common/workspaceTrust.js";
 import type { EditorInput } from "../../../../../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../../../services/editor/common/editorGroupsService.js";
 import { IWorkbenchEnvironmentService } from "../../../../../services/environment/common/environmentService.js";
 import { IPathService } from "../../../../../services/path/common/pathService.js";
 import {
-	type IWebviewElement,
 	IWebviewService,
 	WebviewContentPurpose,
 	WebviewOriginStore,
+	type IWebviewElement,
 } from "../../../../webview/browser/webview.js";
 import { WebviewWindowDragMonitor } from "../../../../webview/browser/webviewWindowDragMonitor.js";
 import {
@@ -84,9 +84,9 @@ import {
 } from "../../../../webview/common/webview.js";
 import {
 	CellUri,
+	RendererMessagingSpec,
 	type ICellOutput,
 	type INotebookRendererInfo,
-	RendererMessagingSpec,
 } from "../../../common/notebookCommon.js";
 import type { INotebookKernel } from "../../../common/notebookKernelService.js";
 import { INotebookLoggingService } from "../../../common/notebookLoggingService.js";
@@ -94,6 +94,7 @@ import type { IScopedRendererMessaging } from "../../../common/notebookRendererM
 import { INotebookService } from "../../../common/notebookService.js";
 import {
 	CellEditState,
+	RenderOutputType,
 	type ICellOutputViewModel,
 	type ICellViewModel,
 	type ICommonCellInfo,
@@ -104,7 +105,6 @@ import {
 	type IInsetRenderOutput,
 	type INotebookEditorCreationOptions,
 	type INotebookWebviewMessage,
-	RenderOutputType,
 } from "../../notebookBrowser.js";
 import { MarkupCellViewModel } from "../../viewModel/markupCellViewModel.js";
 import { NOTEBOOK_WEBVIEW_BOUNDARY } from "../notebookCellList.js";
@@ -287,35 +287,49 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 		public readonly notebookViewType: string,
 		public readonly documentUri: URI,
 		private options: BacklayerWebviewOptions,
-		private readonly rendererMessaging: IScopedRendererMessaging | undefined,
+		private readonly rendererMessaging:
+			| IScopedRendererMessaging
+			| undefined,
 		@IWebviewService private readonly webviewService: IWebviewService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@INotebookService private readonly notebookService: INotebookService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@IFileService private readonly fileService: IFileService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IPathService private readonly pathService: IPathService,
-		@INotebookLoggingService private readonly notebookLogService: INotebookLoggingService,
+		@INotebookLoggingService
+		private readonly notebookLogService: INotebookLoggingService,
 		@IThemeService themeService: IThemeService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super(themeService);
 
-		this._logRendererDebugMessage('Creating backlayer webview for notebook');
+		this._logRendererDebugMessage(
+			"Creating backlayer webview for notebook",
+		);
 
-		this.element = document.createElement('div');
+		this.element = document.createElement("div");
 
-		this.element.style.height = '1400px';
-		this.element.style.position = 'absolute';
+		this.element.style.height = "1400px";
+		this.element.style.position = "absolute";
 
 		if (rendererMessaging) {
 			this._register(rendererMessaging);
@@ -326,27 +340,34 @@ export class BackLayerWebView<T extends ICommonCellInfo> extends Themable {
 
 				this._sendMessageToWebview({
 					__vscode_notebook_message: true,
-					type: 'customRendererMessage',
+					type: "customRendererMessage",
 					rendererId: rendererId,
-					message: message
+					message: message,
 				});
 
 				return Promise.resolve(true);
 			};
 		}
 
-		this._register(workspaceTrustManagementService.onDidChangeTrust(e => {
-			const baseUrl = this.asWebviewUri(this.getNotebookBaseUri(), undefined);
-			const htmlContent = this.generateContent(baseUrl.toString());
-			this.webview?.setHtml(htmlContent);
-		}));
+		this._register(
+			workspaceTrustManagementService.onDidChangeTrust((e) => {
+				const baseUrl = this.asWebviewUri(
+					this.getNotebookBaseUri(),
+					undefined,
+				);
+				const htmlContent = this.generateContent(baseUrl.toString());
+				this.webview?.setHtml(htmlContent);
+			}),
+		);
 
-		this._register(TokenizationRegistry.onDidChange(() => {
-			this._sendMessageToWebview({
-				type: 'tokenizedStylesChanged',
-				css: getTokenizationCss(),
-			});
-		}));
+		this._register(
+			TokenizationRegistry.onDidChange(() => {
+				this._sendMessageToWebview({
+					type: "tokenizedStylesChanged",
+					css: getTokenizationCss(),
+				});
+			}),
+		);
 	}
 
 	updateOptions(options: BacklayerWebviewOptions) {

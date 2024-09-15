@@ -17,10 +17,14 @@ export class UnsupportedExtensionsMigrationContrib
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@IExtensionStorageService extensionStorageService: IExtensionStorageService,
-		@IGlobalExtensionEnablementService extensionEnablementService: IGlobalExtensionEnablementService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@IExtensionStorageService
+		extensionStorageService: IExtensionStorageService,
+		@IGlobalExtensionEnablementService
+		extensionEnablementService: IGlobalExtensionEnablementService,
 		@ILogService logService: ILogService,
 	) {
 		// Unsupported extensions are not migrated for local extension management server, because it is done in shared process

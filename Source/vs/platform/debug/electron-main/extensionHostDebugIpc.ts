@@ -3,11 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type AddressInfo, createServer } from "net";
+import { createServer, type AddressInfo } from "net";
+
 import { OPTIONS, parseArgs } from "../../environment/node/argv.js";
 import {
-	type IWindowsMainService,
 	OpenContext,
+	type IWindowsMainService,
 } from "../../windows/electron-main/windows.js";
 import type { IOpenExtensionWindowResult } from "../common/extensionHostDebug.js";
 import { ExtensionHostDebugBroadcastChannel } from "../common/extensionHostDebugIpc.js";

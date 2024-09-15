@@ -16,8 +16,8 @@ import {
 import type { IEditorContribution } from "../../../../editor/common/editorCommon.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import {
-	type InlayHintItem,
 	asCommandLink,
+	type InlayHintItem,
 } from "../../../../editor/contrib/inlayHints/browser/inlayHints.js";
 import { InlayHintsController } from "../../../../editor/contrib/inlayHints/browser/inlayHintsController.js";
 import { localize, localize2 } from "../../../../nls.js";
@@ -27,9 +27,9 @@ import {
 } from "../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js";
 import { registerAction2 } from "../../../../platform/actions/common/actions.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IInstantiationService,
@@ -69,16 +69,22 @@ export class InlayHintsAccessibility implements IEditorContribution {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 	) {
-		this._ariaElement = document.createElement('span');
-		this._ariaElement.style.position = 'fixed';
-		this._ariaElement.className = 'inlayhint-accessibility-element';
+		this._ariaElement = document.createElement("span");
+		this._ariaElement.style.position = "fixed";
+		this._ariaElement.className = "inlayhint-accessibility-element";
 		this._ariaElement.tabIndex = 0;
-		this._ariaElement.setAttribute('aria-description', localize('description', "Code with Inlay Hint Information"));
+		this._ariaElement.setAttribute(
+			"aria-description",
+			localize("description", "Code with Inlay Hint Information"),
+		);
 
-		this._ctxIsReading = InlayHintsAccessibility.IsReading.bindTo(contextKeyService);
+		this._ctxIsReading =
+			InlayHintsAccessibility.IsReading.bindTo(contextKeyService);
 	}
 
 	dispose(): void {

@@ -14,11 +14,11 @@ import type {
 import type { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import {
+	createFileSystemProviderError,
+	ensureFileSystemProviderError,
 	FileSystemProviderErrorCode,
 	type IFileReadStreamOptions,
 	type IFileSystemProviderWithOpenReadWriteCloseCapability,
-	createFileSystemProviderError,
-	ensureFileSystemProviderError,
 } from "./files.js";
 
 export interface ICreateReadStreamOptions extends IFileReadStreamOptions {

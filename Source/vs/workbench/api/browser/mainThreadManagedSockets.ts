@@ -10,30 +10,30 @@ import {
 	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
-	type ISocket,
 	SocketCloseEventType,
+	type ISocket,
 } from "../../../base/parts/ipc/common/ipc.net.js";
 import {
+	connectManagedSocket,
 	ManagedSocket,
 	type RemoteSocketHalf,
-	connectManagedSocket,
 } from "../../../platform/remote/common/managedSocket.js";
 import {
-	type ManagedRemoteConnection,
 	RemoteConnectionType,
+	type ManagedRemoteConnection,
 } from "../../../platform/remote/common/remoteAuthorityResolver.js";
 import {
 	IRemoteSocketFactoryService,
 	type ISocketFactory,
 } from "../../../platform/remote/common/remoteSocketFactoryService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostManagedSocketsShape,
 	MainContext,
+	type ExtHostManagedSocketsShape,
 	type MainThreadManagedSocketsShape,
 } from "../common/extHost.protocol.js";
 
@@ -48,10 +48,13 @@ export class MainThreadManagedSockets
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IRemoteSocketFactoryService private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService,
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostManagedSockets);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostManagedSockets,
+		);
 	}
 
 	async $registerSocketFactory(socketFactoryId: number): Promise<void> {

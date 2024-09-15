@@ -7,8 +7,8 @@ import { distinct } from "../../../base/common/arrays.js";
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	VSDataTransfer,
 	createStringDataTransferItem,
+	VSDataTransfer,
 } from "../../../base/common/dataTransfer.js";
 import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
@@ -22,6 +22,8 @@ import { INotificationService } from "../../../platform/notification/common/noti
 import { Registry } from "../../../platform/registry/common/platform.js";
 import {
 	Extensions,
+	NoTreeViewError,
+	ResolvableTreeItem,
 	type IRevealOptions,
 	type ITreeItem,
 	type ITreeView,
@@ -30,20 +32,18 @@ import {
 	type ITreeViewDragAndDropController,
 	type IViewBadge,
 	type IViewsRegistry,
-	NoTreeViewError,
-	ResolvableTreeItem,
 } from "../../common/views.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
+import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
 import { IViewsService } from "../../services/views/common/viewsService.js";
 import {
-	type CheckboxUpdate,
 	ExtHostContext,
-	type ExtHostTreeViewsShape,
 	MainContext,
+	type CheckboxUpdate,
+	type ExtHostTreeViewsShape,
 	type MainThreadTreeViewsShape,
 } from "../common/extHost.protocol.js";
 import * as typeConvert from "../common/extHostTypeConverters.js";
@@ -72,9 +72,10 @@ export class MainThreadTreeViews
 	constructor(
 		extHostContext: IExtHostContext,
 		@IViewsService private readonly viewsService: IViewsService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTreeViews);

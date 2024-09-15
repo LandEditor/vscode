@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	addDisposableListener,
 	Dimension,
 	EventType,
-	addDisposableListener,
 	findParentWithClass,
 	getWindow,
 } from "../../../../base/browser/dom.js";
@@ -14,9 +14,9 @@ import { CancellationTokenSource } from "../../../../base/common/cancellation.js
 import { Emitter } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -42,8 +42,8 @@ import {
 import type { IViewletViewOptions } from "../../../browser/parts/views/viewsViewlet.js";
 import { Memento, type MementoObject } from "../../../common/memento.js";
 import {
-	type IViewBadge,
 	IViewDescriptorService,
+	type IViewBadge,
 } from "../../../common/views.js";
 import {
 	IActivityService,
@@ -53,9 +53,9 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	ExtensionKeyedWebviewOriginStore,
-	type IOverlayWebview,
 	IWebviewService,
 	WebviewContentPurpose,
+	type IOverlayWebview,
 } from "../../webview/browser/webview.js";
 import { WebviewWindowDragMonitor } from "../../webview/browser/webviewWindowDragMonitor.js";
 import { IWebviewViewService, type WebviewView } from "./webviewViewService.js";
@@ -123,23 +123,47 @@ export class WebviewViewPane extends ViewPane {
 		@IStorageService private readonly storageService: IStorageService,
 		@IViewsService private readonly viewService: IViewsService,
 		@IWebviewService private readonly webviewService: IWebviewService,
-		@IWebviewViewService private readonly webviewViewService: IWebviewViewService,
+		@IWebviewViewService
+		private readonly webviewViewService: IWebviewViewService,
 	) {
-		super({ ...options, titleMenuId: MenuId.ViewTitle, showActions: ViewPaneShowActions.WhenExpanded }, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			{
+				...options,
+				titleMenuId: MenuId.ViewTitle,
+				showActions: ViewPaneShowActions.WhenExpanded,
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 		this.extensionId = options.fromExtensionId;
 		this.defaultTitle = this.title;
 
 		this.memento = new Memento(`webviewView.${this.id}`, storageService);
-		this.viewState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		this.viewState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		);
 
-		this._register(this.onDidChangeBodyVisibility(() => this.updateTreeVisibility()));
+		this._register(
+			this.onDidChangeBodyVisibility(() => this.updateTreeVisibility()),
+		);
 
-		this._register(this.webviewViewService.onNewResolverRegistered(e => {
-			if (e.viewType === this.id) {
-				// Potentially re-activate if we have a new resolver
-				this.updateTreeVisibility();
-			}
-		}));
+		this._register(
+			this.webviewViewService.onNewResolverRegistered((e) => {
+				if (e.viewType === this.id) {
+					// Potentially re-activate if we have a new resolver
+					this.updateTreeVisibility();
+				}
+			}),
+		);
 
 		this.updateTreeVisibility();
 	}

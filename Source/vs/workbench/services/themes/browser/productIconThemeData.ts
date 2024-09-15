@@ -14,16 +14,16 @@ import * as nls from "../../../../nls.js";
 import type { IExtensionResourceLoaderService } from "../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	getIconRegistry,
+	IconFontDefinition,
 	type IconContribution,
 	type IconDefinition,
-	IconFontDefinition,
 	type IconFontSource,
-	getIconRegistry,
 } from "../../../../platform/theme/common/iconRegistry.js";
 import {
 	fontFormatRegex,
@@ -33,9 +33,9 @@ import {
 } from "../common/productIconThemeSchema.js";
 import {
 	ExtensionData,
+	ThemeSettingDefaults,
 	type IThemeExtensionPoint,
 	type IWorkbenchProductIconTheme,
-	ThemeSettingDefaults,
 } from "../common/workbenchThemeService.js";
 
 export const DEFAULT_PRODUCT_ICON_THEME_ID = ""; // TODO

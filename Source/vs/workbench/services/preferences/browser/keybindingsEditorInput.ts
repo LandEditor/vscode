@@ -36,10 +36,15 @@ export class KeybindingsEditorInput extends EditorInput {
 
 	readonly resource = undefined;
 
-	constructor(@IInstantiationService instantiationService: IInstantiationService) {
+	constructor(
+		@IInstantiationService instantiationService: IInstantiationService,
+	) {
 		super();
 
-		this.keybindingsModel = instantiationService.createInstance(KeybindingsEditorModel, OS);
+		this.keybindingsModel = instantiationService.createInstance(
+			KeybindingsEditorModel,
+			OS,
+		);
 	}
 
 	override get typeId(): string {

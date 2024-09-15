@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as WindowsProcessTreeType from "@vscode/windows-process-tree";
+
 import { timeout } from "../../../base/common/async.js";
 import { debounce } from "../../../base/common/decorators.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
@@ -14,8 +15,8 @@ import {
 import { isWindows, platform } from "../../../base/common/platform.js";
 import {
 	GeneralShellType,
-	type TerminalShellType,
 	WindowsShellType,
+	type TerminalShellType,
 } from "../common/terminal.js";
 
 export interface IWindowsShellHelper extends IDisposable {

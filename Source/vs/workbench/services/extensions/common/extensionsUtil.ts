@@ -46,9 +46,8 @@ export function dedupExtensions(
 					return;
 				}
 				// Overwriting a builtin extension inherits the `isBuiltin` property and it doesn't show a warning
-				(<Mutable<IExtensionDescription>>(
-					userExtension
-				)).isBuiltin = true;
+				(<Mutable<IExtensionDescription>>userExtension).isBuiltin =
+					true;
 			} else {
 				logService.warn(
 					localize(
@@ -93,9 +92,8 @@ export function dedupExtensions(
 		if (extension) {
 			if (extension.isBuiltin) {
 				// Overwriting a builtin extension inherits the `isBuiltin` property
-				(<Mutable<IExtensionDescription>>(
-					developedExtension
-				)).isBuiltin = true;
+				(<Mutable<IExtensionDescription>>developedExtension).isBuiltin =
+					true;
 			}
 		}
 		result.set(developedExtension.identifier, developedExtension);

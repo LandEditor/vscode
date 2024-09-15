@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from "os";
+
 import { FileAccess } from "../../../base/common/network.js";
 import { getCaseInsensitive } from "../../../base/common/objects.js";
 import * as path from "../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
 	isMacintosh,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import * as process from "../../../base/common/process.js";
 import { format } from "../../../base/common/strings.js";

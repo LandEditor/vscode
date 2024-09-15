@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ITerminalAddon, Terminal } from "@xterm/headless";
+
 import { Emitter } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { removeAnsiEscapeCodesFromPrompt } from "../../../../base/common/strings.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -17,17 +18,17 @@ import type { ILogService } from "../../../log/common/log.js";
 import type { ITelemetryService } from "../../../telemetry/common/telemetry.js";
 import { BufferMarkCapability } from "../capabilities/bufferMarkCapability.js";
 import {
+	TerminalCapability,
 	type IBufferMarkCapability,
 	type ICommandDetectionCapability,
 	type ICwdDetectionCapability,
 	type ISerializedCommandDetectionCapability,
-	TerminalCapability,
 } from "../capabilities/capabilities.js";
 import { CommandDetectionCapability } from "../capabilities/commandDetectionCapability.js";
 import { CwdDetectionCapability } from "../capabilities/cwdDetectionCapability.js";
 import { PartialCommandDetectionCapability } from "../capabilities/partialCommandDetectionCapability.js";
 import { TerminalCapabilityStore } from "../capabilities/terminalCapabilityStore.js";
-import { type IShellIntegration, ShellIntegrationStatus } from "../terminal.js";
+import { ShellIntegrationStatus, type IShellIntegration } from "../terminal.js";
 import { sanitizeCwd } from "../terminalEnvironment.js";
 
 /**

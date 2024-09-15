@@ -13,11 +13,11 @@ import type { ICommandMetadata } from "../../platform/commands/common/commands.j
 import { ContextKeyExpr } from "../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../platform/keybinding/common/keybindingsRegistry.js";
 import { EditorOption } from "../common/config/editorOptions.js";
-import { type IPosition, Position } from "../common/core/position.js";
+import { Position, type IPosition } from "../common/core/position.js";
 import { Range } from "../common/core/range.js";
 import type { ISelection } from "../common/core/selection.js";
 import {
@@ -26,8 +26,8 @@ import {
 } from "../common/cursor/cursorColumnSelection.js";
 import { DeleteOperations } from "../common/cursor/cursorDeleteOperations.js";
 import {
-	CursorMoveCommands,
 	CursorMove as CursorMove_,
+	CursorMoveCommands,
 } from "../common/cursor/cursorMoveCommands.js";
 import { EnterOperation } from "../common/cursor/cursorTypeEditOperations.js";
 import { TypeOperations } from "../common/cursor/cursorTypeOperations.js";
@@ -46,12 +46,12 @@ import type { ICodeEditor } from "./editorBrowser.js";
 import {
 	Command,
 	EditorCommand,
-	type ICommandOptions,
-	type MultiCommand,
 	RedoCommand,
+	registerEditorCommand,
 	SelectAllCommand,
 	UndoCommand,
-	registerEditorCommand,
+	type ICommandOptions,
+	type MultiCommand,
 } from "./editorExtensions.js";
 import { ICodeEditorService } from "./services/codeEditorService.js";
 

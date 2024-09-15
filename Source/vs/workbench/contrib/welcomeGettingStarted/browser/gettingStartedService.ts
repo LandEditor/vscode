@@ -8,9 +8,9 @@ import { CancellationTokenSource } from "../../../../base/common/cancellation.js
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
+	parseLinkedText,
 	type ILink,
 	type LinkedText,
-	parseLinkedText,
 } from "../../../../base/common/linkedText.js";
 import { FileAccess } from "../../../../base/common/network.js";
 import { dirname } from "../../../../base/common/path.js";
@@ -26,9 +26,9 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
 	RawContextKey,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	EXTENSION_INSTALL_DEP_PACK_CONTEXT,
@@ -41,9 +41,9 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
+	createDecorator,
 	IInstantiationService,
 	type ServicesAccessor,
-	createDecorator,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	IStorageService,
@@ -197,31 +197,48 @@ export class WalkthroughsService
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IContextKeyService private readonly contextService: IContextKeyService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IHostService private readonly hostService: IHostService,
 		@IViewsService private readonly viewsService: IViewsService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkbenchAssignmentService private readonly tasExperimentService: IWorkbenchAssignmentService
+		@IWorkbenchAssignmentService
+		private readonly tasExperimentService: IWorkbenchAssignmentService,
 	) {
 		super();
 
 		this.metadata = new Map(
 			JSON.parse(
-				this.storageService.get(walkthroughMetadataConfigurationKey, StorageScope.PROFILE, '[]')));
+				this.storageService.get(
+					walkthroughMetadataConfigurationKey,
+					StorageScope.PROFILE,
+					"[]",
+				),
+			),
+		);
 
-		this.memento = new Memento('gettingStartedService', this.storageService);
-		this.stepProgress = this.memento.getMemento(StorageScope.PROFILE, StorageTarget.USER);
+		this.memento = new Memento(
+			"gettingStartedService",
+			this.storageService,
+		);
+		this.stepProgress = this.memento.getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.USER,
+		);
 
 		this.initCompletionEventListeners();
 
 		HasMultipleNewFileEntries.bindTo(this.contextService).set(false);
 		this.registerWalkthroughs();
-
 	}
 
 	private registerWalkthroughs() {

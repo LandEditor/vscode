@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./placeholderText.css";
+
 import { localize } from "../../../../nls.js";
 import { wrapInReloadableClass1 } from "../../../../platform/observable/common/wrapInReloadableClass.js";
 import { registerColor } from "../../../../platform/theme/common/colorUtils.js";

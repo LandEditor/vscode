@@ -43,19 +43,19 @@ import {
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	CONTEXT_LOG_LEVEL,
-	ILogService,
-	type ILoggerResource,
 	ILoggerService,
-	type LogLevel,
-	LogLevelToString,
+	ILogService,
 	isLogLevel,
+	LogLevelToString,
+	type ILoggerResource,
+	type LogLevel,
 } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
@@ -64,8 +64,8 @@ import {
 } from "../../../services/log/common/logConstants.js";
 import {
 	Extensions,
-	type IOutputChannelRegistry,
 	IOutputService,
+	type IOutputChannelRegistry,
 } from "../../../services/output/common/output.js";
 import { IDefaultLogLevelsService } from "./defaultLogLevels.js";
 import { SetLogLevelAction } from "./logsActions.js";
@@ -126,36 +126,50 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILoggerService private readonly loggerService: ILoggerService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 		const contextKey = CONTEXT_LOG_LEVEL.bindTo(contextKeyService);
 		contextKey.set(LogLevelToString(loggerService.getLogLevel()));
-		this._register(loggerService.onDidChangeLogLevel(e => {
-			if (isLogLevel(e)) {
-				contextKey.set(LogLevelToString(loggerService.getLogLevel()));
-			}
-		}));
+		this._register(
+			loggerService.onDidChangeLogLevel((e) => {
+				if (isLogLevel(e)) {
+					contextKey.set(
+						LogLevelToString(loggerService.getLogLevel()),
+					);
+				}
+			}),
+		);
 
 		this.onDidAddLoggers(loggerService.getRegisteredLoggers());
-		this._register(loggerService.onDidChangeLoggers(({ added, removed }) => {
-			this.onDidAddLoggers(added);
-			this.onDidRemoveLoggers(removed);
-		}));
-		this._register(loggerService.onDidChangeVisibility(([resource, visibility]) => {
-			const logger = loggerService.getRegisteredLogger(resource);
-			if (logger) {
-				if (visibility) {
-					this.registerLogChannel(logger);
-				} else {
-					this.deregisterLogChannel(logger);
+		this._register(
+			loggerService.onDidChangeLoggers(({ added, removed }) => {
+				this.onDidAddLoggers(added);
+				this.onDidRemoveLoggers(removed);
+			}),
+		);
+		this._register(
+			loggerService.onDidChangeVisibility(([resource, visibility]) => {
+				const logger = loggerService.getRegisteredLogger(resource);
+				if (logger) {
+					if (visibility) {
+						this.registerLogChannel(logger);
+					} else {
+						this.deregisterLogChannel(logger);
+					}
 				}
-			}
-		}));
+			}),
+		);
 		this.registerShowWindowLogAction();
-		this._register(Event.filter(contextKeyService.onDidChangeContext, e => e.affectsSome(this.contextKeys))(() => this.onDidChangeContext()));
+		this._register(
+			Event.filter(contextKeyService.onDidChangeContext, (e) =>
+				e.affectsSome(this.contextKeys),
+			)(() => this.onDidChangeContext()),
+		);
 	}
 
 	private onDidAddLoggers(loggers: Iterable<ILoggerResource>): void {
@@ -339,7 +353,8 @@ class LogOutputChannels extends Disposable implements IWorkbenchContribution {
 
 class LogLevelMigration implements IWorkbenchContribution {
 	constructor(
-		@IDefaultLogLevelsService defaultLogLevelsService: IDefaultLogLevelsService
+		@IDefaultLogLevelsService
+		defaultLogLevelsService: IDefaultLogLevelsService,
 	) {
 		defaultLogLevelsService.migrateLogLevels();
 	}

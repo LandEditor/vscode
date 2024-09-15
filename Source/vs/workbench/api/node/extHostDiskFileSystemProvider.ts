@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Schemas } from "../../../base/common/network.js";
 import { isLinux } from "../../../base/common/platform.js";
 import { FilePermission } from "../../../platform/files/common/files.js";
@@ -13,7 +14,8 @@ import { IExtHostConsumerFileSystem } from "../common/extHostFileSystemConsumer.
 
 export class ExtHostDiskFileSystemProvider {
 	constructor(
-		@IExtHostConsumerFileSystem extHostConsumerFileSystem: IExtHostConsumerFileSystem,
+		@IExtHostConsumerFileSystem
+		extHostConsumerFileSystem: IExtHostConsumerFileSystem,
 		@ILogService logService: ILogService,
 	) {
 		// Register disk file system provider so that certain

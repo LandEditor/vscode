@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type Severity from "../../../base/common/severity.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
-	type IMainContext,
 	MainContext,
+	type IMainContext,
 	type MainThreadMessageOptions,
 	type MainThreadMessageServiceShape,
 } from "./extHost.protocol.js";
@@ -24,9 +25,11 @@ export class ExtHostMessageService {
 
 	constructor(
 		mainContext: IMainContext,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
-		this._proxy = mainContext.getProxy(MainContext.MainThreadMessageService);
+		this._proxy = mainContext.getProxy(
+			MainContext.MainThreadMessageService,
+		);
 	}
 
 	showMessage(

@@ -21,8 +21,8 @@ import {
 import { IAuthenticationAccessService } from "../../../../services/authentication/browser/authenticationAccessService.js";
 import { IAuthenticationUsageService } from "../../../../services/authentication/browser/authenticationUsageService.js";
 import {
-	type AllowedExtension,
 	IAuthenticationService,
+	type AllowedExtension,
 } from "../../../../services/authentication/common/authentication.js";
 import { IExtensionService } from "../../../../services/extensions/common/extensions.js";
 
@@ -58,13 +58,18 @@ interface TrustedExtensionsQuickPickItem extends IQuickPickItem {
 class ManageTrustedExtensionsForAccountActionImpl {
 	constructor(
 		@IProductService private readonly _productService: IProductService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
-		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
-		@IAuthenticationUsageService private readonly _authenticationUsageService: IAuthenticationUsageService,
-		@IAuthenticationAccessService private readonly _authenticationAccessService: IAuthenticationAccessService
-	) { }
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
+		@IAuthenticationService
+		private readonly _authenticationService: IAuthenticationService,
+		@IAuthenticationUsageService
+		private readonly _authenticationUsageService: IAuthenticationUsageService,
+		@IAuthenticationAccessService
+		private readonly _authenticationAccessService: IAuthenticationAccessService,
+	) {}
 
 	async run(options?: { providerId: string; accountLabel: string }) {
 		const { providerId, accountLabel } =

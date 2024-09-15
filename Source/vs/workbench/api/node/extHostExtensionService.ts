@@ -5,6 +5,7 @@
 
 // ESM-uncomment-begin
 import { createRequire } from "node:module";
+
 import { Schemas } from "../../../base/common/network.js";
 import * as performance from "../../../base/common/performance.js";
 import { URI } from "../../../base/common/uri.js";
@@ -20,6 +21,7 @@ import { ExtHostConsoleForwarder } from "./extHostConsoleForwarder.js";
 import { ExtHostDiskFileSystemProvider } from "./extHostDiskFileSystemProvider.js";
 import { ExtHostDownloadService } from "./extHostDownloadService.js";
 import { connectProxyResolver } from "./proxyResolver.js";
+
 const require = createRequire(import.meta.url);
 // ESM-uncomment-end
 
@@ -183,9 +185,9 @@ export class ExtHostExtensionService extends AbstractExtHostExtensionService {
 				);
 			}
 			r = <T>(
-				(
-					require.__$__nodeRequire ?? require
-				) /* TODO@esm drop the first */(module.fsPath)
+				(require.__$__nodeRequire ?? require)(
+					/* TODO@esm drop the first */ module.fsPath,
+				)
 			);
 		} finally {
 			if (extensionId) {

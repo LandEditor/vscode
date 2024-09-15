@@ -8,23 +8,25 @@ import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js
 import { Button } from "../../../../base/browser/ui/button/button.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import {
-	type ISelectOptionItem,
 	SelectBox,
+	type ISelectOptionItem,
 } from "../../../../base/browser/ui/selectBox/selectBox.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import * as lifecycle from "../../../../base/common/lifecycle.js";
 import { URI as uri } from "../../../../base/common/uri.js";
+
 import "./media/breakpointWidget.css";
+
 import type {
 	IActiveCodeEditor,
 	ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorCommand,
-	type ServicesAccessor,
 	registerEditorCommand,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import { CodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
@@ -33,15 +35,15 @@ import {
 	type IEditorOptions,
 } from "../../../../editor/common/config/editorOptions.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type { IDecorationOptions } from "../../../../editor/common/editorCommon.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import {
-	type CompletionContext,
 	CompletionItemKind,
+	type CompletionContext,
 	type CompletionList,
 } from "../../../../editor/common/languages.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../../editor/common/languages/modesRegistry.js";
@@ -60,8 +62,8 @@ import { IContextKeyService } from "../../../../platform/contextkey/common/conte
 import { IContextViewService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ServiceCollection } from "../../../../platform/instantiation/common/serviceCollection.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
@@ -73,8 +75,8 @@ import {
 } from "../../../../platform/theme/browser/defaultStyles.js";
 import { editorForeground } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import {
 	getSimpleCodeEditorWidgetOptions,
@@ -82,14 +84,14 @@ import {
 } from "../../codeEditor/browser/simpleEditorOptions.js";
 import {
 	BREAKPOINT_EDITOR_CONTRIBUTION_ID,
+	BreakpointWidgetContext as Context,
 	CONTEXT_BREAKPOINT_WIDGET_VISIBLE,
 	CONTEXT_IN_BREAKPOINT_WIDGET,
-	BreakpointWidgetContext as Context,
 	DEBUG_SCHEME,
+	IDebugService,
 	type IBreakpoint,
 	type IBreakpointEditorContribution,
 	type IBreakpointUpdateData,
-	IDebugService,
 } from "../common/debug.js";
 
 const $ = dom.$;
@@ -160,35 +162,66 @@ export class BreakpointWidget
 	private heightInPx: number | undefined;
 	private triggeredByBreakpointInput: IBreakpoint | undefined;
 
-	constructor(editor: ICodeEditor, private lineNumber: number, private column: number | undefined, context: Context | undefined,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+	constructor(
+		editor: ICodeEditor,
+		private lineNumber: number,
+		private column: number | undefined,
+		context: Context | undefined,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@IDebugService private readonly debugService: IDebugService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IModelService private readonly modelService: IModelService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@ILabelService private readonly labelService: ILabelService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@IHoverService private readonly hoverService: IHoverService
+		@IHoverService private readonly hoverService: IHoverService,
 	) {
-		super(editor, { showFrame: true, showArrow: false, frameWidth: 1, isAccessible: true });
+		super(editor, {
+			showFrame: true,
+			showArrow: false,
+			frameWidth: 1,
+			isAccessible: true,
+		});
 
 		this.toDispose = [];
 		const model = this.editor.getModel();
 		if (model) {
 			const uri = model.uri;
-			const breakpoints = this.debugService.getModel().getBreakpoints({ lineNumber: this.lineNumber, column: this.column, uri });
+			const breakpoints = this.debugService
+				.getModel()
+				.getBreakpoints({
+					lineNumber: this.lineNumber,
+					column: this.column,
+					uri,
+				});
 			this.breakpoint = breakpoints.length ? breakpoints[0] : undefined;
 		}
 
 		if (context === undefined) {
-			if (this.breakpoint && !this.breakpoint.condition && !this.breakpoint.hitCondition && this.breakpoint.logMessage) {
+			if (
+				this.breakpoint &&
+				!this.breakpoint.condition &&
+				!this.breakpoint.hitCondition &&
+				this.breakpoint.logMessage
+			) {
 				this.context = Context.LOG_MESSAGE;
-			} else if (this.breakpoint && !this.breakpoint.condition && this.breakpoint.hitCondition) {
+			} else if (
+				this.breakpoint &&
+				!this.breakpoint.condition &&
+				this.breakpoint.hitCondition
+			) {
 				this.context = Context.HIT_COUNT;
 			} else if (this.breakpoint && this.breakpoint.triggeredBy) {
 				this.context = Context.TRIGGER_POINT;
@@ -199,12 +232,23 @@ export class BreakpointWidget
 			this.context = context;
 		}
 
-		this.toDispose.push(this.debugService.getModel().onDidChangeBreakpoints(e => {
-			if (this.breakpoint && e && e.removed && e.removed.indexOf(this.breakpoint) >= 0) {
-				this.dispose();
-			}
-		}));
-		this.codeEditorService.registerDecorationType('breakpoint-widget', DECORATION_KEY, {});
+		this.toDispose.push(
+			this.debugService.getModel().onDidChangeBreakpoints((e) => {
+				if (
+					this.breakpoint &&
+					e &&
+					e.removed &&
+					e.removed.indexOf(this.breakpoint) >= 0
+				) {
+					this.dispose();
+				}
+			}),
+		);
+		this.codeEditorService.registerDecorationType(
+			"breakpoint-widget",
+			DECORATION_KEY,
+			{},
+		);
 
 		this.create();
 	}

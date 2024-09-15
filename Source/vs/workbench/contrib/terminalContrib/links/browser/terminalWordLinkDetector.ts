@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBufferLine, Terminal } from "@xterm/xterm";
+
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { matchesScheme } from "../../../../../base/common/network.js";
 import { escapeRegExpCharacters } from "../../../../../base/common/strings.js";
@@ -12,13 +13,13 @@ import { IConfigurationService } from "../../../../../platform/configuration/com
 import { IProductService } from "../../../../../platform/product/common/productService.js";
 import { TerminalSettingId } from "../../../../../platform/terminal/common/terminal.js";
 import {
-	type ITerminalConfiguration,
 	TERMINAL_CONFIG_SECTION,
+	type ITerminalConfiguration,
 } from "../../../terminal/common/terminal.js";
 import {
+	TerminalBuiltinLinkType,
 	type ITerminalLinkDetector,
 	type ITerminalSimpleLink,
-	TerminalBuiltinLinkType,
 } from "./links.js";
 import {
 	convertLinkRangeToBuffer,
@@ -52,17 +53,20 @@ export class TerminalWordLinkDetector
 
 	constructor(
 		readonly xterm: Terminal,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IProductService private readonly _productService: IProductService,
 	) {
 		super();
 
 		this._refreshSeparatorCodes();
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
-				this._refreshSeparatorCodes();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TerminalSettingId.WordSeparators)) {
+					this._refreshSeparatorCodes();
+				}
+			}),
+		);
 	}
 
 	detect(

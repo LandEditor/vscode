@@ -37,21 +37,30 @@ export class NativeHostColorSchemeService
 	public highContrast: boolean;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
-		@IStorageService private storageService: IStorageService
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
+		@IStorageService private storageService: IStorageService,
 	) {
 		super();
 
 		// register listener with the OS
-		this._register(this.nativeHostService.onDidChangeColorScheme(scheme => this.update(scheme)));
+		this._register(
+			this.nativeHostService.onDidChangeColorScheme((scheme) =>
+				this.update(scheme),
+			),
+		);
 
-		const initial = this.getStoredValue() ?? environmentService.window.colorScheme;
+		const initial =
+			this.getStoredValue() ?? environmentService.window.colorScheme;
 		this.dark = initial.dark;
 		this.highContrast = initial.highContrast;
 
 		// fetch the actual value from the OS
-		this.nativeHostService.getOSColorScheme().then(scheme => this.update(scheme));
+		this.nativeHostService
+			.getOSColorScheme()
+			.then((scheme) => this.update(scheme));
 	}
 
 	private getStoredValue(): IColorScheme | undefined {

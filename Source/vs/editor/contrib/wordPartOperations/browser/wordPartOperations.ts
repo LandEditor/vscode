@@ -11,9 +11,9 @@ import type { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import type { WordCharacterClassifier } from "../../../common/core/wordCharacterClassifier.js";
 import {
-	type DeleteWordContext,
 	WordNavigationType,
 	WordPartOperations,
+	type DeleteWordContext,
 } from "../../../common/cursor/cursorWordOperations.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import type { ITextModel } from "../../../common/model.js";

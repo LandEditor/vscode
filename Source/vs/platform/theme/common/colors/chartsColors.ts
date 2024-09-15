@@ -5,7 +5,6 @@
 
 import * as nls from "../../../../nls.js";
 import { registerColor, transparent } from "../colorUtils.js";
-
 import { foreground } from "./baseColors.js";
 import {
 	editorErrorForeground,

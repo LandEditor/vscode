@@ -10,13 +10,10 @@ import { cancelOnDispose } from "../../../../../base/common/cancellation.js";
 import { readHotReloadableExport } from "../../../../../base/common/hotReloadHelpers.js";
 import {
 	Disposable,
-	type DisposableStore,
 	toDisposable,
+	type DisposableStore,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ISettableObservable,
-	type ITransaction,
 	autorun,
 	constObservable,
 	derived,
@@ -30,6 +27,9 @@ import {
 	runOnChangeWithStore,
 	transaction,
 	waitForState,
+	type IObservable,
+	type ISettableObservable,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import { isUndefined } from "../../../../../base/common/types.js";
 import { localize } from "../../../../../nls.js";
@@ -213,80 +213,123 @@ export class InlineCompletionsController extends Disposable {
 
 	constructor(
 		public readonly editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@ILanguageFeatureDebounceService private readonly _debounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
+		@ILanguageFeatureDebounceService
+		private readonly _debounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 	) {
 		super();
 
-		this._register(new InlineCompletionContextKeys(this._contextKeyService, this.model));
+		this._register(
+			new InlineCompletionContextKeys(
+				this._contextKeyService,
+				this.model,
+			),
+		);
 
-		this._register(runOnChange(this._editorObs.onDidType, (_value, _changes) => {
-			if (this._enabled.get()) {
-				this.model.get()?.trigger();
-			}
-		}));
-
-		this._register(this._commandService.onDidExecuteCommand((e) => {
-			// These commands don't trigger onDidType.
-			const commands = new Set([
-				CoreEditingCommands.Tab.id,
-				CoreEditingCommands.DeleteLeft.id,
-				CoreEditingCommands.DeleteRight.id,
-				inlineSuggestCommitId,
-				'acceptSelectedSuggestion',
-			]);
-			if (commands.has(e.commandId) && editor.hasTextFocus() && this._enabled.get()) {
-				this._editorObs.forceUpdate(tx => {
-					/** @description onDidExecuteCommand */
-					this.model.get()?.trigger(tx);
-				});
-			}
-		}));
-
-		this._register(runOnChange(this._editorObs.selections, (_value, _, changes) => {
-			if (changes.some(e => e.reason === CursorChangeReason.Explicit || e.source === 'api')) {
-				this.model.get()?.stop();
-			}
-		}));
-
-		this._register(this.editor.onDidBlurEditorWidget(() => {
-			// This is a hidden setting very useful for debugging
-			if (this._contextKeyService.getContextKeyValue<boolean>('accessibleViewIsShown')
-				|| this._configurationService.getValue('editor.inlineSuggest.keepOnBlur')
-				|| editor.getOption(EditorOption.inlineSuggest).keepOnBlur
-				|| InlineSuggestionHintsContentWidget.dropDownVisible) {
-				return;
-			}
-
-			transaction(tx => {
-				/** @description InlineCompletionsController.onDidBlurEditorWidget */
-				this.model.get()?.stop(tx);
-			});
-		}));
-
-		this._register(autorun(reader => {
-			/** @description InlineCompletionsController.forceRenderingAbove */
-			const state = this.model.read(reader)?.state.read(reader);
-			if (state?.suggestItem) {
-				if (state.primaryGhostText.lineCount >= 2) {
-					this._suggestWidgetAdaptor.forceRenderingAbove();
+		this._register(
+			runOnChange(this._editorObs.onDidType, (_value, _changes) => {
+				if (this._enabled.get()) {
+					this.model.get()?.trigger();
 				}
-			} else {
-				this._suggestWidgetAdaptor.stopForceRenderingAbove();
-			}
-		}));
-		this._register(toDisposable(() => {
-			this._suggestWidgetAdaptor.stopForceRenderingAbove();
-		}));
+			}),
+		);
 
-		const currentInlineCompletionBySemanticId = derivedObservableWithCache<string | undefined>(this, (reader, last) => {
+		this._register(
+			this._commandService.onDidExecuteCommand((e) => {
+				// These commands don't trigger onDidType.
+				const commands = new Set([
+					CoreEditingCommands.Tab.id,
+					CoreEditingCommands.DeleteLeft.id,
+					CoreEditingCommands.DeleteRight.id,
+					inlineSuggestCommitId,
+					"acceptSelectedSuggestion",
+				]);
+				if (
+					commands.has(e.commandId) &&
+					editor.hasTextFocus() &&
+					this._enabled.get()
+				) {
+					this._editorObs.forceUpdate((tx) => {
+						/** @description onDidExecuteCommand */
+						this.model.get()?.trigger(tx);
+					});
+				}
+			}),
+		);
+
+		this._register(
+			runOnChange(this._editorObs.selections, (_value, _, changes) => {
+				if (
+					changes.some(
+						(e) =>
+							e.reason === CursorChangeReason.Explicit ||
+							e.source === "api",
+					)
+				) {
+					this.model.get()?.stop();
+				}
+			}),
+		);
+
+		this._register(
+			this.editor.onDidBlurEditorWidget(() => {
+				// This is a hidden setting very useful for debugging
+				if (
+					this._contextKeyService.getContextKeyValue<boolean>(
+						"accessibleViewIsShown",
+					) ||
+					this._configurationService.getValue(
+						"editor.inlineSuggest.keepOnBlur",
+					) ||
+					editor.getOption(EditorOption.inlineSuggest).keepOnBlur ||
+					InlineSuggestionHintsContentWidget.dropDownVisible
+				) {
+					return;
+				}
+
+				transaction((tx) => {
+					/** @description InlineCompletionsController.onDidBlurEditorWidget */
+					this.model.get()?.stop(tx);
+				});
+			}),
+		);
+
+		this._register(
+			autorun((reader) => {
+				/** @description InlineCompletionsController.forceRenderingAbove */
+				const state = this.model.read(reader)?.state.read(reader);
+				if (state?.suggestItem) {
+					if (state.primaryGhostText.lineCount >= 2) {
+						this._suggestWidgetAdaptor.forceRenderingAbove();
+					}
+				} else {
+					this._suggestWidgetAdaptor.stopForceRenderingAbove();
+				}
+			}),
+		);
+		this._register(
+			toDisposable(() => {
+				this._suggestWidgetAdaptor.stopForceRenderingAbove();
+			}),
+		);
+
+		const currentInlineCompletionBySemanticId = derivedObservableWithCache<
+			string | undefined
+		>(this, (reader, last) => {
 			const model = this.model.read(reader);
 			const state = model?.state.read(reader);
 			if (this._suggestWidgetSelectedItem.get()) {
@@ -294,46 +337,98 @@ export class InlineCompletionsController extends Disposable {
 			}
 			return state?.inlineCompletion?.semanticId;
 		});
-		this._register(runOnChangeWithStore(derived(reader => {
-			this._playAccessibilitySignal.read(reader);
-			currentInlineCompletionBySemanticId.read(reader);
-			return {};
-		}), async (_value, _, _deltas, store) => {
-			/** @description InlineCompletionsController.playAccessibilitySignalAndReadSuggestion */
-			const model = this.model.get();
-			const state = model?.state.get();
-			if (!state || !model) { return; }
-			const lineText = model.textModel.getLineContent(state.primaryGhostText.lineNumber);
+		this._register(
+			runOnChangeWithStore(
+				derived((reader) => {
+					this._playAccessibilitySignal.read(reader);
+					currentInlineCompletionBySemanticId.read(reader);
+					return {};
+				}),
+				async (_value, _, _deltas, store) => {
+					/** @description InlineCompletionsController.playAccessibilitySignalAndReadSuggestion */
+					const model = this.model.get();
+					const state = model?.state.get();
+					if (!state || !model) {
+						return;
+					}
+					const lineText = model.textModel.getLineContent(
+						state.primaryGhostText.lineNumber,
+					);
 
-			await timeout(50, cancelOnDispose(store));
-			await waitForState(this._suggestWidgetSelectedItem, isUndefined, () => false, cancelOnDispose(store));
+					await timeout(50, cancelOnDispose(store));
+					await waitForState(
+						this._suggestWidgetSelectedItem,
+						isUndefined,
+						() => false,
+						cancelOnDispose(store),
+					);
 
-			await this._accessibilitySignalService.playSignal(AccessibilitySignal.inlineSuggestion);
-			if (this.editor.getOption(EditorOption.screenReaderAnnounceInlineSuggestion)) {
-				this._provideScreenReaderUpdate(state.primaryGhostText.renderForScreenReader(lineText));
-			}
-		}));
+					await this._accessibilitySignalService.playSignal(
+						AccessibilitySignal.inlineSuggestion,
+					);
+					if (
+						this.editor.getOption(
+							EditorOption.screenReaderAnnounceInlineSuggestion,
+						)
+					) {
+						this._provideScreenReaderUpdate(
+							state.primaryGhostText.renderForScreenReader(
+								lineText,
+							),
+						);
+					}
+				},
+			),
+		);
 
-		this._register(new InlineCompletionsHintsWidget(this.editor, this.model, this._instantiationService));
+		this._register(
+			new InlineCompletionsHintsWidget(
+				this.editor,
+				this.model,
+				this._instantiationService,
+			),
+		);
 
-		this._register(createStyleSheetFromObservable(derived(reader => {
-			const fontFamily = this._fontFamily.read(reader);
-			if (fontFamily === '' || fontFamily === 'default') { return ''; }
-			return `
+		this._register(
+			createStyleSheetFromObservable(
+				derived((reader) => {
+					const fontFamily = this._fontFamily.read(reader);
+					if (fontFamily === "" || fontFamily === "default") {
+						return "";
+					}
+					return `
 .monaco-editor .ghost-text-decoration,
 .monaco-editor .ghost-text-decoration-preview,
 .monaco-editor .ghost-text {
 	font-family: ${fontFamily};
 }`;
-		})));
+				}),
+			),
+		);
 
 		// TODO@hediet
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('accessibility.verbosity.inlineCompletions')) {
-				this.editor.updateOptions({ inlineCompletionsAccessibilityVerbose: this._configurationService.getValue('accessibility.verbosity.inlineCompletions') });
-			}
-		}));
-		this.editor.updateOptions({ inlineCompletionsAccessibilityVerbose: this._configurationService.getValue('accessibility.verbosity.inlineCompletions') });
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						"accessibility.verbosity.inlineCompletions",
+					)
+				) {
+					this.editor.updateOptions({
+						inlineCompletionsAccessibilityVerbose:
+							this._configurationService.getValue(
+								"accessibility.verbosity.inlineCompletions",
+							),
+					});
+				}
+			}),
+		);
+		this.editor.updateOptions({
+			inlineCompletionsAccessibilityVerbose:
+				this._configurationService.getValue(
+					"accessibility.verbosity.inlineCompletions",
+				),
+		});
 	}
 
 	public playAccessibilitySignal(tx: ITransaction) {

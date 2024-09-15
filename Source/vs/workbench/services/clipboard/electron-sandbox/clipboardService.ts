@@ -19,8 +19,9 @@ export class NativeClipboardService implements IClipboardService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService
-	) { }
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+	) {}
 
 	async writeText(
 		text: string,

@@ -12,12 +12,12 @@ import type {
 	IExtensionDescription,
 } from "../../../../platform/extensions/common/extensions.js";
 import {
+	NotebookRendererMatch,
+	RendererMessagingSpec,
 	type ContributedNotebookRendererEntrypoint,
 	type INotebookRendererInfo,
 	type INotebookStaticPreloadInfo,
 	type NotebookRendererEntrypoint,
-	NotebookRendererMatch,
-	RendererMessagingSpec,
 } from "./notebookCommon.js";
 
 class DependencyList {

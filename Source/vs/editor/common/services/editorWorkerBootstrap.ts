@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IWorkerServer,
 	SimpleWorkerServer,
+	type IWorkerServer,
 } from "../../../base/common/worker/simpleWorker.js";
 import { EditorSimpleWorker } from "./editorSimpleWorker.js";
 import { EditorWorkerHost } from "./editorWorkerHost.js";

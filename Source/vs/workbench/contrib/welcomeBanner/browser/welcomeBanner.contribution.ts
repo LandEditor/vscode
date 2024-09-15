@@ -12,8 +12,8 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { IBannerService } from "../../../services/banner/browser/bannerService.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
@@ -26,7 +26,8 @@ class WelcomeBannerContribution {
 	constructor(
 		@IBannerService bannerService: IBannerService,
 		@IStorageService storageService: IStorageService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		const welcomeBanner = environmentService.options?.welcomeBanner;
 		if (!welcomeBanner) {

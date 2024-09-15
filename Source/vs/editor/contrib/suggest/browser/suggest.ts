@@ -12,8 +12,8 @@ import {
 import { FuzzyScore } from "../../../../base/common/filters.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	isDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { assertType } from "../../../../base/common/types.js";
@@ -29,7 +29,7 @@ import type {
 	InternalQuickSuggestionsOptions,
 	QuickSuggestionsValue,
 } from "../../../common/config/editorOptions.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";
 import { StandardTokenType } from "../../../common/encodedTokenAttributes.js";

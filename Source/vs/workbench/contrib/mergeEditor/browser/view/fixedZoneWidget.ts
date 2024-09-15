@@ -14,8 +14,7 @@ import type {
 
 export abstract class FixedZoneWidget extends Disposable {
 	private static counter = 0;
-	private readonly overlayWidgetId =
-		`fixedZoneWidget-${FixedZoneWidget.counter++}`;
+	private readonly overlayWidgetId = `fixedZoneWidget-${FixedZoneWidget.counter++}`;
 	private readonly viewZoneId: string;
 
 	protected readonly widgetDomNode = h("div.fixed-zone-widget").root;

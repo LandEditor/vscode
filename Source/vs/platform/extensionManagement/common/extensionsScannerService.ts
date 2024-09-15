@@ -10,9 +10,9 @@ import type { IStringDictionary } from "../../../base/common/collections.js";
 import { getErrorMessage } from "../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
-	type ParseError,
 	getNodeType,
 	parse,
+	type ParseError,
 } from "../../../base/common/json.js";
 import { getParseErrorMessage } from "../../../base/common/jsonErrorMessages.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
@@ -28,42 +28,42 @@ import { isEmptyObject } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
-import { validateExtensionManifest } from "../../extensions/common/extensionValidator.js";
 import {
 	BUILTIN_MANIFEST_CACHE_FILE,
 	ExtensionIdentifier,
 	ExtensionIdentifierMap,
 	ExtensionType,
+	parseEnabledApiProposalNames,
+	TargetPlatform,
+	UNDEFINED_PUBLISHER,
+	USER_MANIFEST_CACHE_FILE,
 	type IExtensionDescription,
 	type IExtensionIdentifier,
 	type IExtensionManifest,
 	type IRelaxedExtensionManifest,
-	TargetPlatform,
-	UNDEFINED_PUBLISHER,
-	USER_MANIFEST_CACHE_FILE,
-	parseEnabledApiProposalNames,
 } from "../../extensions/common/extensions.js";
+import { validateExtensionManifest } from "../../extensions/common/extensionValidator.js";
 import {
 	FileOperationResult,
 	IFileService,
 	toFileOperationResult,
 } from "../../files/common/files.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../instantiation/common/instantiation.js";
 import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import type { IProductVersion, Metadata } from "./extensionManagement.js";
 import {
-	ExtensionKey,
 	areSameExtensions,
 	computeTargetPlatform,
+	ExtensionKey,
 	getExtensionId,
 	getGalleryExtensionId,
 } from "./extensionManagementUtil.js";
@@ -246,19 +246,32 @@ export abstract class AbstractExtensionsScannerService
 		readonly userExtensionsLocation: URI,
 		private readonly extensionsControlLocation: URI,
 		private readonly currentProfile: IUserDataProfile,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsProfileScannerService
+		protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IFileService protected readonly fileService: IFileService,
 		@ILogService protected readonly logService: ILogService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IProductService private readonly productService: IProductService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._register(this.systemExtensionsCachedScanner.onDidChangeCache(() => this._onDidChangeCache.fire(ExtensionType.System)));
-		this._register(this.userExtensionsCachedScanner.onDidChangeCache(() => this._onDidChangeCache.fire(ExtensionType.User)));
+		this._register(
+			this.systemExtensionsCachedScanner.onDidChangeCache(() =>
+				this._onDidChangeCache.fire(ExtensionType.System),
+			),
+		);
+		this._register(
+			this.userExtensionsCachedScanner.onDidChangeCache(() =>
+				this._onDidChangeCache.fire(ExtensionType.User),
+			),
+		);
 	}
 
 	private _targetPlatformPromise: Promise<TargetPlatform> | undefined;
@@ -983,15 +996,21 @@ class ExtensionsScanner extends Disposable {
 
 	constructor(
 		private readonly obsoleteFile: URI,
-		@IExtensionsProfileScannerService protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
+		@IExtensionsProfileScannerService
+		protected readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
 		@IFileService protected readonly fileService: IFileService,
 		@IProductService productService: IProductService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@ILogService protected readonly logService: ILogService
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@ILogService protected readonly logService: ILogService,
 	) {
 		super();
-		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
+		this.extensionsEnabledWithApiProposalVersion =
+			productService.extensionsEnabledWithApiProposalVersion?.map((id) =>
+				id.toLowerCase(),
+			) ?? [];
 	}
 
 	async scanExtensions(
@@ -1600,15 +1619,25 @@ class CachedExtensionsScanner extends ExtensionsScanner {
 	constructor(
 		private readonly currentProfile: IUserDataProfile,
 		obsoleteFile: URI,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsProfileScannerService
+		extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@IFileService fileService: IFileService,
 		@IProductService productService: IProductService,
 		@IEnvironmentService environmentService: IEnvironmentService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
-		super(obsoleteFile, extensionsProfileScannerService, uriIdentityService, fileService, productService, environmentService, logService);
+		super(
+			obsoleteFile,
+			extensionsProfileScannerService,
+			uriIdentityService,
+			fileService,
+			productService,
+			environmentService,
+			logService,
+		);
 	}
 
 	override async scanExtensions(

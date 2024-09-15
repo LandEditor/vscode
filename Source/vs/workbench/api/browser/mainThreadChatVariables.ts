@@ -6,20 +6,20 @@
 import { DisposableMap } from "../../../base/common/lifecycle.js";
 import { revive } from "../../../base/common/marshalling.js";
 import {
+	IChatVariablesService,
 	type IChatRequestVariableValue,
 	type IChatVariableData,
 	type IChatVariableResolverProgress,
-	IChatVariablesService,
 } from "../../contrib/chat/common/chatVariables.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type ExtHostChatVariablesShape,
 	ExtHostContext,
-	type IChatVariableResolverProgressDto,
 	MainContext,
+	type ExtHostChatVariablesShape,
+	type IChatVariableResolverProgressDto,
 	type MainThreadChatVariablesShape,
 } from "../common/extHost.protocol.js";
 
@@ -34,9 +34,12 @@ export class MainThreadChatVariables implements MainThreadChatVariablesShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IChatVariablesService private readonly _chatVariablesService: IChatVariablesService,
+		@IChatVariablesService
+		private readonly _chatVariablesService: IChatVariablesService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostChatVariables);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostChatVariables,
+		);
 	}
 
 	dispose(): void {

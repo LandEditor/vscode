@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type ISequence,
 	LcsDiff,
+	type ISequence,
 } from "../../../../../base/common/diff/diff.js";
 import {
 	Emitter,
-	type Event,
 	PauseableEmitter,
+	type Event,
 } from "../../../../../base/common/event.js";
 import { hash } from "../../../../../base/common/hash.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { isEqual } from "../../../../../base/common/resources.js";
@@ -33,11 +33,11 @@ import { TextModel } from "../../../../../editor/common/model/textModel.js";
 import { SearchParams } from "../../../../../editor/common/model/textModelSearch.js";
 import { IModelService } from "../../../../../editor/common/services/model.js";
 import {
+	IUndoRedoService,
+	UndoRedoElementType,
 	type IResourceUndoRedoElement,
 	type IUndoRedoElement,
-	IUndoRedoService,
 	type IWorkspaceUndoRedoElement,
-	UndoRedoElementType,
 	type UndoRedoGroup,
 } from "../../../../../platform/undoRedo/common/undoRedo.js";
 import { ILanguageDetectionService } from "../../../../services/languageDetection/common/languageDetectionWorkerService.js";
@@ -45,6 +45,8 @@ import {
 	CellEditType,
 	CellKind,
 	CellUri,
+	diff,
+	NotebookCellsChangeType,
 	type ICell,
 	type ICellDto2,
 	type ICellEditOperation,
@@ -59,14 +61,12 @@ import {
 	type NotebookCellMetadata,
 	type NotebookCellOutputsSplice,
 	type NotebookCellTextModelSplice,
-	NotebookCellsChangeType,
 	type NotebookDocumentMetadata,
 	type NotebookTextModelChangedEvent,
 	type NotebookTextModelWillAddRemoveEvent,
 	type NullablePartialNotebookCellInternalMetadata,
 	type NullablePartialNotebookCellMetadata,
 	type TransientOptions,
-	diff,
 } from "../notebookCommon.js";
 import { CellMetadataEdit, MoveCellEdit, SpliceCellsEdit } from "./cellEdit.js";
 import { NotebookCellOutputTextModel } from "./notebookCellOutputTextModel.js";
@@ -345,7 +345,8 @@ export class NotebookTextModel
 		@IUndoRedoService private readonly _undoService: IUndoRedoService,
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@ILanguageDetectionService private readonly _languageDetectionService: ILanguageDetectionService
+		@ILanguageDetectionService
+		private readonly _languageDetectionService: ILanguageDetectionService,
 	) {
 		super();
 		this.transientOptions = options;
@@ -353,7 +354,10 @@ export class NotebookTextModel
 		this._initialize(cells);
 
 		const maybeUpdateCellTextModel = (textModel: ITextModel) => {
-			if (textModel.uri.scheme === Schemas.vscodeNotebookCell && textModel instanceof TextModel) {
+			if (
+				textModel.uri.scheme === Schemas.vscodeNotebookCell &&
+				textModel instanceof TextModel
+			) {
 				const cellUri = CellUri.parse(textModel.uri);
 				if (cellUri && isEqual(cellUri.notebook, this.uri)) {
 					const cellIdx = this._getCellIndexByHandle(cellUri.handle);
@@ -366,7 +370,9 @@ export class NotebookTextModel
 				}
 			}
 		};
-		this._register(_modelService.onModelAdded(e => maybeUpdateCellTextModel(e)));
+		this._register(
+			_modelService.onModelAdded((e) => maybeUpdateCellTextModel(e)),
+		);
 
 		this._pauseableEmitter = new NotebookEventEmitter({
 			merge: (events: NotebookTextModelChangedEvent[]) => {
@@ -380,19 +386,27 @@ export class NotebookTextModel
 				for (let i = 1; i < events.length; i++) {
 					rawEvents.push(...events[i].rawEvents);
 					versionId = events[i].versionId;
-					endSelectionState = events[i].endSelectionState !== undefined ? events[i].endSelectionState : endSelectionState;
-					synchronous = events[i].synchronous !== undefined ? events[i].synchronous : synchronous;
+					endSelectionState =
+						events[i].endSelectionState !== undefined
+							? events[i].endSelectionState
+							: endSelectionState;
+					synchronous =
+						events[i].synchronous !== undefined
+							? events[i].synchronous
+							: synchronous;
 				}
 
 				return { rawEvents, versionId, endSelectionState, synchronous };
-			}
+			},
 		});
 
-		this._register(this._pauseableEmitter.event(e => {
-			if (e.rawEvents.length) {
-				this._onDidChangeContent.fire(e);
-			}
-		}));
+		this._register(
+			this._pauseableEmitter.event((e) => {
+				if (e.rawEvents.length) {
+					this._onDidChangeContent.fire(e);
+				}
+			}),
+		);
 
 		this._operationManager = new NotebookOperationManager(
 			this,
@@ -401,7 +415,7 @@ export class NotebookTextModel
 			(alternativeVersionId: string) => {
 				this._increaseVersionId(true);
 				this._overwriteAlternativeVersionId(alternativeVersionId);
-			}
+			},
 		);
 	}
 

@@ -26,13 +26,17 @@ import { PerfviewContrib } from "../browser/perfviewEditor.js";
 export class StartupProfiler implements IWorkbenchContribution {
 	constructor(
 		@IDialogService private readonly _dialogService: IDialogService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IExtensionService extensionService: IExtensionService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IProductService private readonly _productService: IProductService,
 		@IFileService private readonly _fileService: IFileService,
 		@ILabelService private readonly _labelService: ILabelService,
@@ -40,7 +44,7 @@ export class StartupProfiler implements IWorkbenchContribution {
 		// wait for everything to be ready
 		Promise.all([
 			lifecycleService.when(LifecyclePhase.Eventually),
-			extensionService.whenInstalledExtensionsRegistered()
+			extensionService.whenInstalledExtensionsRegistered(),
 		]).then(() => {
 			this._stopProfiling();
 		});

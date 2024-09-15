@@ -5,22 +5,22 @@
 
 import {
 	$,
-	type Dimension,
-	EventHelper,
-	EventType,
 	addDisposableListener,
 	addStandardDisposableListener,
 	append,
 	clearNode,
+	EventHelper,
+	EventType,
 	isAncestorOfActiveElement,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { ButtonBar } from "../../../../base/browser/ui/button/button.js";
 import {
-	type IMessage,
 	InputBox,
 	MessageType,
+	type IMessage,
 } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import { DomScrollableElement } from "../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import type {
@@ -33,8 +33,8 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { debounce } from "../../../../base/common/decorators.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { hasDriveLetter, toSlashes } from "../../../../base/common/extpath.js";
-import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import type { ResolvedKeybinding } from "../../../../base/common/keybindings.js";
+import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { normalizeDriveLetter } from "../../../../base/common/labels.js";
 import {
 	Disposable,
@@ -85,10 +85,10 @@ import {
 	isVirtualWorkspace,
 } from "../../../../platform/workspace/common/virtualWorkspace.js";
 import {
-	type ISingleFolderWorkspaceIdentifier,
 	IWorkspaceContextService,
-	WorkbenchState,
 	toWorkspaceIdentifier,
+	WorkbenchState,
+	type ISingleFolderWorkspaceIdentifier,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { EditorPane } from "../../../browser/parts/editor/editorPane.js";
@@ -183,53 +183,76 @@ class WorkspaceTrustedUrisTable extends Disposable {
 
 	constructor(
 		private readonly container: HTMLElement,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IUriIdentityService private readonly uriService: IUriIdentityService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 	) {
 		super();
 
-		this.descriptionElement = container.appendChild($('.workspace-trusted-folders-description'));
-		const tableElement = container.appendChild($('.trusted-uris-table'));
-		const addButtonBarElement = container.appendChild($('.trusted-uris-button-bar'));
+		this.descriptionElement = container.appendChild(
+			$(".workspace-trusted-folders-description"),
+		);
+		const tableElement = container.appendChild($(".trusted-uris-table"));
+		const addButtonBarElement = container.appendChild(
+			$(".trusted-uris-button-bar"),
+		);
 
 		this.table = this.instantiationService.createInstance(
 			WorkbenchTable,
-			'WorkspaceTrust',
+			"WorkspaceTrust",
 			tableElement,
 			new TrustedUriTableVirtualDelegate(),
 			[
 				{
-					label: localize('hostColumnLabel', "Host"),
-					tooltip: '',
+					label: localize("hostColumnLabel", "Host"),
+					tooltip: "",
 					weight: 1,
 					templateId: TrustedUriHostColumnRenderer.TEMPLATE_ID,
-					project(row: ITrustedUriItem): ITrustedUriItem { return row; }
+					project(row: ITrustedUriItem): ITrustedUriItem {
+						return row;
+					},
 				},
 				{
-					label: localize('pathColumnLabel', "Path"),
-					tooltip: '',
+					label: localize("pathColumnLabel", "Path"),
+					tooltip: "",
 					weight: 8,
 					templateId: TrustedUriPathColumnRenderer.TEMPLATE_ID,
-					project(row: ITrustedUriItem): ITrustedUriItem { return row; }
+					project(row: ITrustedUriItem): ITrustedUriItem {
+						return row;
+					},
 				},
 				{
-					label: '',
-					tooltip: '',
+					label: "",
+					tooltip: "",
 					weight: 1,
 					minimumWidth: 75,
 					maximumWidth: 75,
 					templateId: TrustedUriActionsColumnRenderer.TEMPLATE_ID,
-					project(row: ITrustedUriItem): ITrustedUriItem { return row; }
+					project(row: ITrustedUriItem): ITrustedUriItem {
+						return row;
+					},
 				},
 			],
 			[
-				this.instantiationService.createInstance(TrustedUriHostColumnRenderer),
-				this.instantiationService.createInstance(TrustedUriPathColumnRenderer, this),
-				this.instantiationService.createInstance(TrustedUriActionsColumnRenderer, this, this.currentWorkspaceUri),
+				this.instantiationService.createInstance(
+					TrustedUriHostColumnRenderer,
+				),
+				this.instantiationService.createInstance(
+					TrustedUriPathColumnRenderer,
+					this,
+				),
+				this.instantiationService.createInstance(
+					TrustedUriActionsColumnRenderer,
+					this,
+					this.currentWorkspaceUri,
+				),
 			],
 			{
 				horizontalScrolling: false,
@@ -240,50 +263,86 @@ class WorkspaceTrustedUrisTable extends Disposable {
 					getAriaLabel: (item: ITrustedUriItem) => {
 						const hostLabel = getHostLabel(this.labelService, item);
 						if (hostLabel === undefined || hostLabel.length === 0) {
-							return localize('trustedFolderAriaLabel', "{0}, trusted", this.labelService.getUriLabel(item.uri));
+							return localize(
+								"trustedFolderAriaLabel",
+								"{0}, trusted",
+								this.labelService.getUriLabel(item.uri),
+							);
 						}
 
-						return localize('trustedFolderWithHostAriaLabel', "{0} on {1}, trusted", this.labelService.getUriLabel(item.uri), hostLabel);
+						return localize(
+							"trustedFolderWithHostAriaLabel",
+							"{0} on {1}, trusted",
+							this.labelService.getUriLabel(item.uri),
+							hostLabel,
+						);
 					},
-					getWidgetAriaLabel: () => localize('trustedFoldersAndWorkspaces', "Trusted Folders & Workspaces")
+					getWidgetAriaLabel: () =>
+						localize(
+							"trustedFoldersAndWorkspaces",
+							"Trusted Folders & Workspaces",
+						),
 				},
 				identityProvider: {
 					getId(element: ITrustedUriItem) {
 						return element.uri.toString();
 					},
-				}
-			}
+				},
+			},
 		) as WorkbenchTable<ITrustedUriItem>;
 
-		this._register(this.table.onDidOpen(item => {
-			// default prevented when input box is double clicked #125052
-			if (item && item.element && !item.browserEvent?.defaultPrevented) {
-				this.edit(item.element, true);
-			}
-		}));
+		this._register(
+			this.table.onDidOpen((item) => {
+				// default prevented when input box is double clicked #125052
+				if (
+					item &&
+					item.element &&
+					!item.browserEvent?.defaultPrevented
+				) {
+					this.edit(item.element, true);
+				}
+			}),
+		);
 
 		const buttonBar = this._register(new ButtonBar(addButtonBarElement));
-		const addButton = this._register(buttonBar.addButton({ title: localize('addButton', "Add Folder"), ...defaultButtonStyles }));
-		addButton.label = localize('addButton', "Add Folder");
+		const addButton = this._register(
+			buttonBar.addButton({
+				title: localize("addButton", "Add Folder"),
+				...defaultButtonStyles,
+			}),
+		);
+		addButton.label = localize("addButton", "Add Folder");
 
-		this._register(addButton.onDidClick(async () => {
-			const uri = await this.fileDialogService.showOpenDialog({
-				canSelectFiles: false,
-				canSelectFolders: true,
-				canSelectMany: false,
-				defaultUri: this.currentWorkspaceUri,
-				openLabel: localize('trustUri', "Trust Folder"),
-				title: localize('selectTrustedUri', "Select Folder To Trust")
-			});
+		this._register(
+			addButton.onDidClick(async () => {
+				const uri = await this.fileDialogService.showOpenDialog({
+					canSelectFiles: false,
+					canSelectFolders: true,
+					canSelectMany: false,
+					defaultUri: this.currentWorkspaceUri,
+					openLabel: localize("trustUri", "Trust Folder"),
+					title: localize(
+						"selectTrustedUri",
+						"Select Folder To Trust",
+					),
+				});
 
-			if (uri) {
-				this.workspaceTrustManagementService.setUrisTrust(uri, true);
-			}
-		}));
+				if (uri) {
+					this.workspaceTrustManagementService.setUrisTrust(
+						uri,
+						true,
+					);
+				}
+			}),
+		);
 
-		this._register(this.workspaceTrustManagementService.onDidChangeTrustedFolders(() => {
-			this.updateTable();
-		}));
+		this._register(
+			this.workspaceTrustManagementService.onDidChangeTrustedFolders(
+				() => {
+					this.updateTable();
+				},
+			),
+		);
 	}
 
 	private getIndexOfTrustedUriEntry(item: ITrustedUriItem): number {
@@ -550,7 +609,8 @@ class TrustedUriActionsColumnRenderer
 	constructor(
 		private readonly table: WorkspaceTrustedUrisTable,
 		private readonly currentWorkspaceUri: URI,
-		@IUriIdentityService private readonly uriService: IUriIdentityService) { }
+		@IUriIdentityService private readonly uriService: IUriIdentityService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IActionsColumnTemplateData {
 		const element = container.appendChild($(".actions"));
@@ -647,9 +707,9 @@ class TrustedUriPathColumnRenderer
 
 	constructor(
 		private readonly table: WorkspaceTrustedUrisTable,
-		@IContextViewService private readonly contextViewService: IContextViewService
-	) {
-	}
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+	) {}
 
 	renderTemplate(container: HTMLElement): ITrustedUriPathColumnTemplateData {
 		const element = container.appendChild($(".path"));
@@ -827,9 +887,7 @@ class TrustedUriHostColumnRenderer
 
 	readonly templateId: string = TrustedUriHostColumnRenderer.TEMPLATE_ID;
 
-	constructor(
-		@ILabelService private readonly labelService: ILabelService,
-	) { }
+	constructor(@ILabelService private readonly labelService: ILabelService) {}
 
 	renderTemplate(container: HTMLElement): ITrustedUriHostColumnTemplateData {
 		const disposables = new DisposableStore();
@@ -906,16 +964,32 @@ export class WorkspaceTrustEditor extends EditorPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
-		@IExtensionsWorkbenchService private readonly extensionWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkbenchConfigurationService private readonly configurationService: IWorkbenchConfigurationService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
+		@IExtensionsWorkbenchService
+		private readonly extensionWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchConfigurationService
+		private readonly configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IProductService private readonly productService: IProductService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-	) { super(WorkspaceTrustEditor.ID, group, telemetryService, themeService, storageService); }
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+	) {
+		super(
+			WorkspaceTrustEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
+	}
 
 	protected createEditor(parent: HTMLElement): void {
 		this.rootElement = append(

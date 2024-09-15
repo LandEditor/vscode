@@ -7,30 +7,43 @@ import { RunOnceScheduler } from "../../../base/common/async.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { ILifecycleMainService } from "../../lifecycle/electron-main/lifecycleMainService.js";
 import {
-	type ICodeWindow,
 	LoadReason,
+	type ICodeWindow,
 } from "../../window/electron-main/window.js";
 import { IWindowsMainService } from "../../windows/electron-main/windows.js";
 import {
-	type IAnyWorkspaceIdentifier,
 	toWorkspaceIdentifier,
+	type IAnyWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import { IUserDataProfilesMainService } from "./userDataProfile.js";
 
 export class UserDataProfilesHandler extends Disposable {
 	constructor(
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
-		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesService: IUserDataProfilesMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 	) {
 		super();
-		this._register(lifecycleMainService.onWillLoadWindow(e => {
-			if (e.reason === LoadReason.LOAD) {
-				this.unsetProfileForWorkspace(e.window);
-			}
-		}));
-		this._register(lifecycleMainService.onBeforeCloseWindow(window => this.unsetProfileForWorkspace(window)));
-		this._register(new RunOnceScheduler(() => this.cleanUpEmptyWindowAssociations(), 30 * 1000 /* after 30s */)).schedule();
+		this._register(
+			lifecycleMainService.onWillLoadWindow((e) => {
+				if (e.reason === LoadReason.LOAD) {
+					this.unsetProfileForWorkspace(e.window);
+				}
+			}),
+		);
+		this._register(
+			lifecycleMainService.onBeforeCloseWindow((window) =>
+				this.unsetProfileForWorkspace(window),
+			),
+		);
+		this._register(
+			new RunOnceScheduler(
+				() => this.cleanUpEmptyWindowAssociations(),
+				30 * 1000 /* after 30s */,
+			),
+		).schedule();
 	}
 
 	private async unsetProfileForWorkspace(window: ICodeWindow): Promise<void> {

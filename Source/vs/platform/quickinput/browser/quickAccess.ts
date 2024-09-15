@@ -9,8 +9,8 @@ import { Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { IInstantiationService } from "../../instantiation/common/instantiation.js";
 import { Registry } from "../../registry/common/platform.js";
@@ -25,9 +25,9 @@ import {
 } from "../common/quickAccess.js";
 import {
 	IQuickInputService,
+	ItemActivation,
 	type IQuickPick,
 	type IQuickPickItem,
-	ItemActivation,
 } from "../common/quickInput.js";
 
 export class QuickAccessController
@@ -59,8 +59,10 @@ export class QuickAccessController
 		| undefined = undefined;
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}

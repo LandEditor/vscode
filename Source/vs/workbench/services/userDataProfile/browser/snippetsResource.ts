@@ -17,20 +17,20 @@ import {
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	ProfileResourceType,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { API_OPEN_EDITOR_COMMAND_ID } from "../../../browser/parts/editor/editorCommands.js";
 import {
-	type ITreeItemCheckboxState,
 	TreeItemCollapsibleState,
+	type ITreeItemCheckboxState,
 } from "../../../common/views.js";
 import {
+	IUserDataProfileService,
 	type IProfileResource,
 	type IProfileResourceChildTreeItem,
 	type IProfileResourceInitializer,
 	type IProfileResourceTreeItem,
-	IUserDataProfileService,
 } from "../common/userDataProfile.js";
 
 interface ISnippetsContent {
@@ -41,11 +41,12 @@ export class SnippetsResourceInitializer
 	implements IProfileResourceInitializer
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) {
-	}
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const snippetsContent: ISnippetsContent = JSON.parse(content);
@@ -65,9 +66,9 @@ export class SnippetsResourceInitializer
 export class SnippetsResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) {
-	}
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {}
 
 	async getContent(
 		profile: IUserDataProfile,
@@ -154,9 +155,11 @@ export class SnippetsResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[] | undefined> {
 		const snippetsResources = await this.instantiationService

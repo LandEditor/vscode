@@ -6,8 +6,8 @@
 import { BugIndicatingError } from "../../../../base/common/errors.js";
 import type { IValueWithChangeEvent } from "../../../../base/common/event.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { ContextKeyValue } from "../../../../platform/contextkey/common/contextkey.js";

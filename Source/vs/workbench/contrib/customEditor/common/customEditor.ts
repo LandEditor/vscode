@@ -16,9 +16,9 @@ import { RawContextKey } from "../../../../platform/contextkey/common/contextkey
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import type { IRevertOptions, ISaveOptions } from "../../../common/editor.js";
 import {
-	RegisteredEditorPriority,
 	globMatchesResource,
 	priorityToRank,
+	RegisteredEditorPriority,
 } from "../../../services/editor/common/editorResolverService.js";
 
 export const ICustomEditorService = createDecorator<ICustomEditorService>(

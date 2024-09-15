@@ -5,6 +5,7 @@
 
 import { createHash } from "crypto";
 import * as fs from "fs";
+
 import { equals } from "../../../base/common/arrays.js";
 import { Queue } from "../../../base/common/async.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
@@ -15,16 +16,16 @@ import { Promises } from "../../../base/node/pfs.js";
 import { INativeEnvironmentService } from "../../environment/common/environment.js";
 import {
 	IExtensionGalleryService,
-	type IExtensionIdentifier,
 	IExtensionManagementService,
+	type IExtensionIdentifier,
 	type ILocalExtension,
 } from "../../extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../extensionManagement/common/extensionManagementUtil.js";
 import type { ILocalizationContribution } from "../../extensions/common/extensions.js";
 import { ILogService } from "../../log/common/log.js";
 import {
-	type ILanguagePackItem,
 	LanguagePackBaseService,
+	type ILanguagePackItem,
 } from "../common/languagePacks.js";
 
 interface ILanguagePack {
@@ -41,20 +42,27 @@ export class NativeLanguagePackService extends LanguagePackBaseService {
 	private readonly cache: LanguagePacksCache;
 
 	constructor(
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@ILogService private readonly logService: ILogService
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super(extensionGalleryService);
-		this.cache = this._register(new LanguagePacksCache(environmentService, logService));
+		this.cache = this._register(
+			new LanguagePacksCache(environmentService, logService),
+		);
 		this.extensionManagementService.registerParticipant({
 			postInstall: async (extension: ILocalExtension): Promise<void> => {
 				return this.postInstallExtension(extension);
 			},
-			postUninstall: async (extension: ILocalExtension): Promise<void> => {
+			postUninstall: async (
+				extension: ILocalExtension,
+			): Promise<void> => {
 				return this.postUninstallExtension(extension);
-			}
+			},
 		});
 	}
 
@@ -153,11 +161,15 @@ class LanguagePacksCache extends Disposable {
 	private initializedCache: boolean | undefined;
 
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
-		@ILogService private readonly logService: ILogService
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this.languagePacksFilePath = join(environmentService.userDataPath, 'languagepacks.json');
+		this.languagePacksFilePath = join(
+			environmentService.userDataPath,
+			"languagepacks.json",
+		);
 		this.languagePacksFileLimiter = new Queue();
 	}
 

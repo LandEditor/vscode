@@ -10,8 +10,8 @@ import type { IServerChannel } from "../../../base/parts/ipc/common/ipc.js";
 import type { ILogService } from "../../log/common/log.js";
 import type { IUserDataProfile } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type IAnyWorkspaceIdentifier,
 	reviveIdentifier,
+	type IAnyWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import type {
 	IBaseSerializableStorageRequest,

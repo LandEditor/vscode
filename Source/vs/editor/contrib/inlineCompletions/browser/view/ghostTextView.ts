@@ -10,14 +10,16 @@ import {
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	derived,
 	observableSignalFromEvent,
 	observableValue,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import * as strings from "../../../../../base/common/strings.js";
+
 import "./ghostTextView.css";
+
 import { applyFontInfo } from "../../../../browser/config/domFontInfo.js";
 import type { ICodeEditor } from "../../../../browser/editorBrowser.js";
 import { observableCodeEditor } from "../../../../browser/observableCodeEditor.js";
@@ -35,10 +37,10 @@ import { Range } from "../../../../common/core/range.js";
 import { StringBuilder } from "../../../../common/core/stringBuilder.js";
 import { ILanguageService } from "../../../../common/languages/language.js";
 import {
-	type IModelDeltaDecoration,
-	type ITextModel,
 	InjectedTextCursorStops,
 	PositionAffinity,
+	type IModelDeltaDecoration,
+	type ITextModel,
 } from "../../../../common/model.js";
 import { LineEditWithAdditionalLines } from "../../../../common/tokenizationTextModelPart.js";
 import { LineTokens } from "../../../../common/tokens/lineTokens.js";
@@ -48,7 +50,7 @@ import {
 	renderViewLine,
 } from "../../../../common/viewLayout/viewLineRenderer.js";
 import { InlineDecorationType } from "../../../../common/viewModel.js";
-import { type GhostText, GhostTextReplacement } from "../model/ghostText.js";
+import { GhostTextReplacement, type GhostText } from "../model/ghostText.js";
 import { ColumnRange } from "../utils.js";
 
 export interface IGhostTextWidgetModel {
@@ -70,7 +72,11 @@ export class GhostTextView extends Disposable {
 	) {
 		super();
 
-		this._register(toDisposable(() => { this._isDisposed.set(true, undefined); }));
+		this._register(
+			toDisposable(() => {
+				this._isDisposed.set(true, undefined);
+			}),
+		);
 		this._register(this._editorObs.setDecorations(this.decorations));
 	}
 

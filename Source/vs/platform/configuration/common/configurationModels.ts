@@ -8,7 +8,7 @@ import type { IStringDictionary } from "../../../base/common/collections.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import * as json from "../../../base/common/json.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
-import { ResourceMap, getOrSet } from "../../../base/common/map.js";
+import { getOrSet, ResourceMap } from "../../../base/common/map.js";
 import * as objects from "../../../base/common/objects.js";
 import type { IExtUri } from "../../../base/common/resources.js";
 import * as types from "../../../base/common/types.js";
@@ -18,6 +18,10 @@ import type { ILogService } from "../../log/common/log.js";
 import { Registry } from "../../registry/common/platform.js";
 import type { Workspace } from "../../workspace/common/workspace.js";
 import {
+	addToValueTree,
+	getConfigurationValue,
+	removeFromValueTree,
+	toValuesTree,
 	type ConfigurationTarget,
 	type IConfigurationChange,
 	type IConfigurationChangeEvent,
@@ -29,18 +33,14 @@ import {
 	type IConfigurationValue,
 	type IInspectValue,
 	type IOverrides,
-	addToValueTree,
-	getConfigurationValue,
-	removeFromValueTree,
-	toValuesTree,
 } from "./configuration.js";
 import {
 	ConfigurationScope,
 	Extensions,
-	type IConfigurationPropertySchema,
-	type IConfigurationRegistry,
 	OVERRIDE_PROPERTY_REGEX,
 	overrideIdentifiersFromKey,
+	type IConfigurationPropertySchema,
+	type IConfigurationRegistry,
 } from "./configurationRegistry.js";
 
 function freeze<T>(data: T): T {

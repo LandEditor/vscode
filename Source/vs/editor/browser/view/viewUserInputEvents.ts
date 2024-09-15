@@ -8,11 +8,11 @@ import type { IMouseWheelEvent } from "../../../base/browser/mouseEvent.js";
 import { Position } from "../../common/core/position.js";
 import type { ICoordinatesConverter } from "../../common/viewModel.js";
 import {
+	MouseTargetType,
 	type IEditorMouseEvent,
 	type IMouseTarget,
 	type IMouseTargetViewZoneData,
 	type IPartialEditorMouseEvent,
-	MouseTargetType,
 } from "../editorBrowser.js";
 
 export interface EventCallback<T> {

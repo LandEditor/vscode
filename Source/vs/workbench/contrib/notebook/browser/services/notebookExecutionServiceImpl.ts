@@ -5,8 +5,8 @@
 
 import type { CancellationTokenSource } from "../../../../../base/common/cancellation.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import * as nls from "../../../../../nls.js";
 import { ICommandService } from "../../../../../platform/commands/common/commands.js";
@@ -15,16 +15,16 @@ import { IWorkspaceTrustRequestService } from "../../../../../platform/workspace
 import type { NotebookCellTextModel } from "../../common/model/notebookCellTextModel.js";
 import {
 	CellKind,
-	type INotebookTextModel,
 	NotebookCellExecutionState,
+	type INotebookTextModel,
 } from "../../common/notebookCommon.js";
 import type {
 	ICellExecutionParticipant,
 	INotebookExecutionService,
 } from "../../common/notebookExecutionService.js";
 import {
-	type INotebookCellExecution,
 	INotebookExecutionStateService,
+	type INotebookCellExecution,
 } from "../../common/notebookExecutionStateService.js";
 import {
 	INotebookKernelHistoryService,
@@ -43,13 +43,17 @@ export class NotebookExecutionService
 
 	constructor(
 		@ICommandService private readonly _commandService: ICommandService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookKernelHistoryService private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
-		@IWorkspaceTrustRequestService private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@INotebookLoggingService private readonly _logService: INotebookLoggingService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
-	) {
-	}
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookKernelHistoryService
+		private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
+		@IWorkspaceTrustRequestService
+		private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@INotebookLoggingService
+		private readonly _logService: INotebookLoggingService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+	) {}
 
 	async executeNotebookCells(
 		notebook: INotebookTextModel,

@@ -5,8 +5,8 @@
 
 import { promiseWithResolvers } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import * as errors from "../../../../base/common/errors.js";
 import * as resources from "../../../../base/common/resources.js";

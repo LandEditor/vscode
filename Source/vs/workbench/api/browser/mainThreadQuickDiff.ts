@@ -14,14 +14,14 @@ import {
 	type QuickDiffProvider,
 } from "../../contrib/scm/common/quickDiff.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostQuickDiffShape,
 	type IDocumentFilterDto,
-	MainContext,
 	type MainThreadQuickDiffShape,
 } from "../common/extHost.protocol.js";
 
@@ -32,7 +32,7 @@ export class MainThreadQuickDiff implements MainThreadQuickDiffShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IQuickDiffService private readonly quickDiffService: IQuickDiffService
+		@IQuickDiffService private readonly quickDiffService: IQuickDiffService,
 	) {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostQuickDiff);
 	}

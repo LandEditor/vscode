@@ -6,9 +6,9 @@
 import { Emitter } from "../../base/common/event.js";
 import { getDriveLetter } from "../../base/common/extpath.js";
 import {
+	parse,
 	type IExpression,
 	type ParsedExpression,
-	parse,
 } from "../../base/common/glob.js";
 import { Disposable } from "../../base/common/lifecycle.js";
 import { ResourceSet } from "../../base/common/map.js";
@@ -18,8 +18,8 @@ import { isAbsolute } from "../../base/common/path.js";
 import { relativePath } from "../../base/common/resources.js";
 import { URI } from "../../base/common/uri.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../platform/configuration/common/configuration.js";
 import { IWorkspaceContextService } from "../../platform/workspace/common/workspace.js";
 
@@ -46,8 +46,10 @@ export class ResourceGlobMatcher extends Disposable {
 	constructor(
 		private getExpression: (folder?: URI) => IExpression | undefined,
 		private shouldUpdate: (event: IConfigurationChangeEvent) => boolean,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 

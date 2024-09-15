@@ -36,11 +36,11 @@ import { IExtensionsWorkbenchService } from "../../../../extensions/common/exten
 import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
 import {
 	CellUri,
-	type IOrderedMimeType,
-	NotebookCellExecutionState,
-	type NotebookCellOutputsSplice,
-	RENDERER_NOT_AVAILABLE,
 	isTextStreamMime,
+	NotebookCellExecutionState,
+	RENDERER_NOT_AVAILABLE,
+	type IOrderedMimeType,
+	type NotebookCellOutputsSplice,
 } from "../../../common/notebookCommon.js";
 import {
 	NOTEBOOK_CELL_HAS_HIDDEN_OUTPUTS,
@@ -52,12 +52,12 @@ import { INotebookService } from "../../../common/notebookService.js";
 import { TEXT_BASED_MIMETYPES } from "../../contrib/clipboard/cellOutputClipboard.js";
 import { COPY_OUTPUT_COMMAND_ID } from "../../controller/cellOutputActions.js";
 import {
+	JUPYTER_EXTENSION_ID,
+	RenderOutputType,
 	type ICellOutputViewModel,
 	type ICellViewModel,
 	type IInsetRenderOutput,
 	type INotebookEditorDelegate,
-	JUPYTER_EXTENSION_ID,
-	RenderOutputType,
 } from "../../notebookBrowser.js";
 import { mimetypeIcon } from "../../notebookIcons.js";
 import type { CodeCellViewModel } from "../../viewModel/codeCellViewModel.js";
@@ -104,23 +104,30 @@ class CellOutputElement extends Disposable {
 		private outputContainer: FastDomNode<HTMLElement>,
 		readonly output: ICellOutputViewModel,
 		@INotebookService private readonly notebookService: INotebookService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IContextKeyService parentContextKeyService: IContextKeyService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
 		this.contextKeyService = parentContextKeyService;
 
-		this._register(this.output.model.onDidChangeData(() => {
-			this.rerender();
-		}));
+		this._register(
+			this.output.model.onDidChangeData(() => {
+				this.rerender();
+			}),
+		);
 
-		this._register(this.output.onDidResetRenderer(() => {
-			this.rerender();
-		}));
+		this._register(
+			this.output.onDidResetRenderer(() => {
+				this.rerender();
+			}),
+		);
 	}
 
 	detach() {
@@ -773,28 +780,45 @@ export class CellOutputContainer extends CellContentPart {
 		private readonly templateData: CodeCellRenderTemplate,
 		private options: { limit: number },
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._register(viewCell.onDidStartExecution(() => {
-			viewCell.updateOutputMinHeight(viewCell.layoutInfo.outputTotalHeight);
-		}));
+		this._register(
+			viewCell.onDidStartExecution(() => {
+				viewCell.updateOutputMinHeight(
+					viewCell.layoutInfo.outputTotalHeight,
+				);
+			}),
+		);
 
-		this._register(viewCell.onDidStopExecution(() => {
-			this._validateFinalOutputHeight(false);
-		}));
+		this._register(
+			viewCell.onDidStopExecution(() => {
+				this._validateFinalOutputHeight(false);
+			}),
+		);
 
-		this._register(viewCell.onDidChangeOutputs(splice => {
-			const executionState = this._notebookExecutionStateService.getCellExecution(viewCell.uri);
-			const context = executionState ? CellOutputUpdateContext.Execution : CellOutputUpdateContext.Other;
-			this._updateOutputs(splice, context);
-		}));
+		this._register(
+			viewCell.onDidChangeOutputs((splice) => {
+				const executionState =
+					this._notebookExecutionStateService.getCellExecution(
+						viewCell.uri,
+					);
+				const context = executionState
+					? CellOutputUpdateContext.Execution
+					: CellOutputUpdateContext.Other;
+				this._updateOutputs(splice, context);
+			}),
+		);
 
-		this._register(viewCell.onDidChangeLayout(() => {
-			this.updateInternalLayoutNow(viewCell);
-		}));
+		this._register(
+			viewCell.onDidChangeLayout(() => {
+				this.updateInternalLayoutNow(viewCell);
+			}),
+		);
 	}
 
 	override updateInternalLayoutNow(viewCell: CodeCellViewModel) {

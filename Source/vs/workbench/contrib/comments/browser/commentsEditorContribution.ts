@@ -4,18 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
+
 import "./media/review.css";
+
 import {
-	type IActiveCodeEditor,
 	isCodeEditor,
 	isDiffEditor,
+	type IActiveCodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorContributionInstantiation,
 	registerEditorContribution,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import * as nls from "../../../../nls.js";
 import { AccessibleViewProviderId } from "../../../../platform/accessibility/browser/accessibleView.js";
@@ -28,13 +30,13 @@ import { CommandsRegistry } from "../../../../platform/commands/common/commands.
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
@@ -43,12 +45,12 @@ import {
 } from "../../accessibility/browser/accessibilityConfiguration.js";
 import { CommentCommandId } from "../common/commentCommandIds.js";
 import { CommentContextKeys } from "../common/commentContextKeys.js";
-import { ICommentService } from "./commentService.js";
 import { CommentController, ID } from "./commentsController.js";
+import { ICommentService } from "./commentService.js";
 import { CommentsInputContentProvider } from "./commentsInputContentProvider.js";
 import {
-	SimpleCommentEditor,
 	ctxCommentEditorFocused,
+	SimpleCommentEditor,
 } from "./simpleCommentEditor.js";
 
 registerEditorContribution(

@@ -8,7 +8,9 @@ import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "../../../../base/browser/ui/mo
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import * as platform from "../../../../base/common/platform.js";
 import { Constants } from "../../../../base/common/uint.js";
+
 import "./viewLines.css";
+
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
@@ -22,8 +24,8 @@ import { applyFontInfo } from "../../config/domFontInfo.js";
 import {
 	HorizontalPosition,
 	HorizontalRange,
-	type IViewLines,
 	LineVisibleRanges,
+	type IViewLines,
 	type VisibleRanges,
 } from "../../view/renderingContext.js";
 import { VisibleLinesCollection } from "../../view/viewLayer.js";

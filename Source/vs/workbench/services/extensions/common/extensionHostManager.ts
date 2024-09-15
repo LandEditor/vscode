@@ -30,19 +30,15 @@ import {
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	RemoteAuthorityResolverErrorCode,
 	getRemoteAuthorityPrefix,
+	RemoteAuthorityResolverErrorCode,
 } from "../../../../platform/remote/common/remoteAuthorityResolver.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IEditorService } from "../../editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import {
-	ExtHostCustomersRegistry,
-	type IInternalExtHostContext,
-} from "./extHostCustomers.js";
-import {
-	type ExtensionHostKind,
 	extensionHostKindToString,
+	type ExtensionHostKind,
 } from "./extensionHostKind.js";
 import type { IExtensionHostManager } from "./extensionHostManagers.js";
 import type { IExtensionDescriptionDelta } from "./extensionHostProtocol.js";
@@ -58,11 +54,15 @@ import {
 	type IExtensionHost,
 	type IInternalExtensionService,
 } from "./extensions.js";
+import {
+	ExtHostCustomersRegistry,
+	type IInternalExtHostContext,
+} from "./extHostCustomers.js";
 import type { Proxied, ProxyIdentifier } from "./proxyIdentifier.js";
 import {
-	type IRPCProtocolLogger,
-	RPCProtocol,
 	RequestInitiator,
+	RPCProtocol,
+	type IRPCProtocolLogger,
 	type ResponsiveState,
 } from "./rpcProtocol.js";
 
@@ -156,9 +156,12 @@ export class ExtensionHostManager
 		extensionHost: IExtensionHost,
 		initialActivationEvents: string[],
 		private readonly _internalExtensionService: IInternalExtensionService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
@@ -172,10 +175,13 @@ export class ExtensionHostManager
 
 		const startingTelemetryEvent: ExtensionHostStartupEvent = {
 			time: Date.now(),
-			action: 'starting',
-			kind: extensionHostKindToString(this.kind)
+			action: "starting",
+			kind: extensionHostKindToString(this.kind),
 		};
-		this._telemetryService.publicLog2<ExtensionHostStartupEvent, ExtensionHostStartupClassification>('extensionHostStartup', startingTelemetryEvent);
+		this._telemetryService.publicLog2<
+			ExtensionHostStartupEvent,
+			ExtensionHostStartupClassification
+		>("extensionHostStartup", startingTelemetryEvent);
 
 		this._proxy = this._extensionHost.start().then(
 			(protocol) => {
@@ -184,22 +190,27 @@ export class ExtensionHostManager
 				// Track healthy extension host startup
 				const successTelemetryEvent: ExtensionHostStartupEvent = {
 					time: Date.now(),
-					action: 'success',
-					kind: extensionHostKindToString(this.kind)
+					action: "success",
+					kind: extensionHostKindToString(this.kind),
 				};
-				this._telemetryService.publicLog2<ExtensionHostStartupEvent, ExtensionHostStartupClassification>('extensionHostStartup', successTelemetryEvent);
+				this._telemetryService.publicLog2<
+					ExtensionHostStartupEvent,
+					ExtensionHostStartupClassification
+				>("extensionHostStartup", successTelemetryEvent);
 
 				return this._createExtensionHostCustomers(this.kind, protocol);
 			},
 			(err) => {
-				this._logService.error(`Error received from starting extension host (kind: ${extensionHostKindToString(this.kind)})`);
+				this._logService.error(
+					`Error received from starting extension host (kind: ${extensionHostKindToString(this.kind)})`,
+				);
 				this._logService.error(err);
 
 				// Track errors during extension host startup
 				const failureTelemetryEvent: ExtensionHostStartupEvent = {
 					time: Date.now(),
-					action: 'error',
-					kind: extensionHostKindToString(this.kind)
+					action: "error",
+					kind: extensionHostKindToString(this.kind),
 				};
 
 				if (err && err.name) {
@@ -211,16 +222,23 @@ export class ExtensionHostManager
 				if (err && err.stack) {
 					failureTelemetryEvent.errorStack = err.stack;
 				}
-				this._telemetryService.publicLog2<ExtensionHostStartupEvent, ExtensionHostStartupClassification>('extensionHostStartup', failureTelemetryEvent);
+				this._telemetryService.publicLog2<
+					ExtensionHostStartupEvent,
+					ExtensionHostStartupClassification
+				>("extensionHostStartup", failureTelemetryEvent);
 
 				return null;
-			}
+			},
 		);
 		this._proxy.then(() => {
-			initialActivationEvents.forEach((activationEvent) => this.activateByEvent(activationEvent, ActivationKind.Normal));
-			this._register(registerLatencyTestProvider({
-				measure: () => this.measure()
-			}));
+			initialActivationEvents.forEach((activationEvent) =>
+				this.activateByEvent(activationEvent, ActivationKind.Normal),
+			);
+			this._register(
+				registerLatencyTestProvider({
+					measure: () => this.measure(),
+				}),
+			);
 		});
 	}
 
@@ -751,7 +769,10 @@ class TelemetryRPCLogger implements IRPCProtocolLogger {
 
 	private readonly _pendingRequests = new Map<number, string>();
 
-	constructor(@ITelemetryService private readonly _telemetryService: ITelemetryService) { }
+	constructor(
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+	) {}
 
 	logIncoming(
 		msgLength: number,

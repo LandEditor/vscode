@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { hash } from "../../../base/common/hash.js";
@@ -20,9 +21,9 @@ import type { IExtensionStoragePaths } from "./extHostStoragePaths.js";
 import * as typeConverters from "./extHostTypeConverters.js";
 import * as extHostTypes from "./extHostTypes.js";
 import {
-	type ExtHostWebviews,
 	shouldSerializeBuffersForPostMessage,
 	toExtensionData,
+	type ExtHostWebviews,
 } from "./extHostWebview.js";
 import type { ExtHostWebviewPanels } from "./extHostWebviewPanels.js";
 

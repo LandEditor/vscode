@@ -15,11 +15,13 @@ import {
 	MutableDisposable,
 	toDisposable,
 } from "../../../../base/common/lifecycle.js";
+
 import "./postEditWidget.css";
+
 import { localize } from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 	type RawContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -33,8 +35,8 @@ import {
 	type IContentWidgetPosition,
 } from "../../../browser/editorBrowser.js";
 import {
-	type IBulkEditResult,
 	IBulkEditService,
+	type IBulkEditResult,
 } from "../../../browser/services/bulkEditService.js";
 import type { Range } from "../../../common/core/range.js";
 import type {
@@ -76,9 +78,11 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit>
 		private readonly range: Range,
 		private readonly edits: EditSet<T>,
 		private readonly onSelectNewEdit: (editIndex: number) => void,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
@@ -91,17 +95,26 @@ class PostEditWidget<T extends DocumentPasteEdit | DocumentDropEdit>
 		this.editor.addContentWidget(this);
 		this.editor.layoutContentWidget(this);
 
-		this._register(toDisposable((() => this.editor.removeContentWidget(this))));
+		this._register(
+			toDisposable(() => this.editor.removeContentWidget(this)),
+		);
 
-		this._register(this.editor.onDidChangeCursorPosition(e => {
-			if (!range.containsPosition(e.position)) {
-				this.dispose();
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeCursorPosition((e) => {
+				if (!range.containsPosition(e.position)) {
+					this.dispose();
+				}
+			}),
+		);
 
-		this._register(Event.runAndSubscribe(_keybindingService.onDidUpdateKeybindings, () => {
-			this._updateButtonTitle();
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				_keybindingService.onDidUpdateKeybindings,
+				() => {
+					this._updateButtonTitle();
+				},
+			),
+		);
 	}
 
 	private _updateButtonTitle() {
@@ -180,16 +193,20 @@ export class PostEditWidgetManager<
 		private readonly _editor: ICodeEditor,
 		private readonly _visibleContext: RawContextKey<boolean>,
 		private readonly _showCommand: ShowCommand,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 	) {
 		super();
 
-		this._register(Event.any(
-			_editor.onDidChangeModel,
-			_editor.onDidChangeModelContent,
-		)(() => this.clear()));
+		this._register(
+			Event.any(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelContent,
+			)(() => this.clear()),
+		);
 	}
 
 	public async applyEditAndShowIfNeeded(

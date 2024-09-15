@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/interactive.css";
+
 import * as DOM from "../../../../base/browser/dom.js";
 import { ToolBar } from "../../../../base/browser/ui/toolbar/toolbar.js";
 import type { IAction } from "../../../../base/common/actions.js";
@@ -39,8 +40,8 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
-	type ITextEditorOptions,
 	TextEditorSelectionSource,
+	type ITextEditorOptions,
 } from "../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
@@ -59,8 +60,8 @@ import {
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { MenuPreventer } from "../../codeEditor/browser/menuPreventer.js";
@@ -80,8 +81,8 @@ import { NotebookEditorExtensionsRegistry } from "../../notebook/browser/noteboo
 import type { NotebookEditorWidget } from "../../notebook/browser/notebookEditorWidget.js";
 import { NotebookOptions } from "../../notebook/browser/notebookOptions.js";
 import {
-	type IBorrowValue,
 	INotebookEditorService,
+	type IBorrowValue,
 } from "../../notebook/browser/services/notebookEditorService.js";
 import { INTERACTIVE_WINDOW_EDITOR_ID } from "../../notebook/common/notebookCommon.js";
 import { NOTEBOOK_KERNEL } from "../../notebook/common/notebookContextKeys.js";
@@ -96,7 +97,9 @@ import {
 	InteractiveWindowSetting,
 } from "./interactiveCommon.js";
 import { InteractiveEditorInput } from "./interactiveEditorInput.js";
+
 import "./interactiveEditor.css";
+
 import { deepClone } from "../../../../base/common/objects.js";
 import type { IEditorOptions } from "../../../../editor/common/config/editorOptions.js";
 import { ContentHoverController } from "../../../../editor/contrib/hover/browser/contentHoverController.js";
@@ -189,8 +192,10 @@ export class InteractiveEditor
 		@IMenuService menuService: IMenuService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@INotebookExecutionStateService notebookExecutionStateService: INotebookExecutionStateService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@INotebookExecutionStateService
+		notebookExecutionStateService: INotebookExecutionStateService,
 		@IExtensionService extensionService: IExtensionService,
 	) {
 		super(

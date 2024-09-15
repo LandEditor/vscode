@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/style.css";
+
 import { isSafari, isStandalone } from "../../base/browser/browser.js";
 import { createMetaElement } from "../../base/browser/dom.js";
 import { mainWindow } from "../../base/browser/window.js";

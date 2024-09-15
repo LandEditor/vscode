@@ -8,9 +8,9 @@ import { Disposable } from "../../../../base/common/lifecycle.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
+	IDialogService,
 	type IDialogHandler,
 	type IDialogResult,
-	IDialogService,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
@@ -20,13 +20,13 @@ import { INativeHostService } from "../../../../platform/native/common/native.js
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { BrowserDialogHandler } from "../../../browser/parts/dialogs/dialogHandler.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import type {
-	IDialogViewItem,
 	IDialogsModel,
+	IDialogViewItem,
 } from "../../../common/dialogs.js";
 import type { DialogService } from "../../../services/dialogs/common/dialogService.js";
 import { NativeDialogHandler } from "./dialogHandler.js";
@@ -44,7 +44,8 @@ export class DialogHandlerContribution
 	private currentDialog: IDialogViewItem | undefined;
 
 	constructor(
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
 		@IDialogService private dialogService: IDialogService,
 		@ILogService logService: ILogService,
 		@ILayoutService layoutService: ILayoutService,
@@ -52,20 +53,40 @@ export class DialogHandlerContribution
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IProductService productService: IProductService,
 		@IClipboardService clipboardService: IClipboardService,
-		@INativeHostService nativeHostService: INativeHostService
+		@INativeHostService nativeHostService: INativeHostService,
 	) {
 		super();
 
-		this.browserImpl = new Lazy(() => new BrowserDialogHandler(logService, layoutService, keybindingService, instantiationService, productService, clipboardService));
-		this.nativeImpl = new Lazy(() => new NativeDialogHandler(logService, nativeHostService, productService, clipboardService));
+		this.browserImpl = new Lazy(
+			() =>
+				new BrowserDialogHandler(
+					logService,
+					layoutService,
+					keybindingService,
+					instantiationService,
+					productService,
+					clipboardService,
+				),
+		);
+		this.nativeImpl = new Lazy(
+			() =>
+				new NativeDialogHandler(
+					logService,
+					nativeHostService,
+					productService,
+					clipboardService,
+				),
+		);
 
 		this.model = (this.dialogService as DialogService).model;
 
-		this._register(this.model.onWillShowDialog(() => {
-			if (!this.currentDialog) {
-				this.processDialogs();
-			}
-		}));
+		this._register(
+			this.model.onWillShowDialog(() => {
+				if (!this.currentDialog) {
+					this.processDialogs();
+				}
+			}),
+		);
 
 		this.processDialogs();
 	}

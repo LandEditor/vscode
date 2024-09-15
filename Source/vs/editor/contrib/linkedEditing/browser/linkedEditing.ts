@@ -27,9 +27,9 @@ import { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { registerColor } from "../../../../platform/theme/common/colorRegistry.js";
@@ -38,17 +38,17 @@ import {
 	EditorAction,
 	EditorCommand,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
 	registerModelAndPositionCommand,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../browser/services/codeEditorService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { ISingleEditOperation } from "../../../common/core/editOperation.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type {
 	IEditorContribution,
 	IEditorDecorationsCollection,
@@ -61,16 +61,17 @@ import type {
 } from "../../../common/languages.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
 import {
+	TrackedRangeStickiness,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	TrackedRangeStickiness,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
+
 import "./linkedEditing.css";
 
 export const CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE = new RawContextKey<boolean>(
@@ -126,16 +127,24 @@ export class LinkedEditingContribution
 	constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
 	) {
 		super();
 		this._editor = editor;
 		this._providers = languageFeaturesService.linkedEditingRangeProvider;
 		this._enabled = false;
-		this._visibleContextKey = CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
-		this._debounceInformation = languageFeatureDebounceService.for(this._providers, 'Linked Editing', { max: 200 });
+		this._visibleContextKey =
+			CONTEXT_ONTYPE_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
+		this._debounceInformation = languageFeatureDebounceService.for(
+			this._providers,
+			"Linked Editing",
+			{ max: 200 },
+		);
 
 		this._currentDecorations = this._editor.createDecorationsCollection();
 		this._languageWordPattern = null;
@@ -150,15 +159,28 @@ export class LinkedEditingContribution
 		this._currentRequestPosition = null;
 		this._currentRequestModelVersion = null;
 
-		this._register(this._editor.onDidChangeModel(() => this.reinitialize(true)));
+		this._register(
+			this._editor.onDidChangeModel(() => this.reinitialize(true)),
+		);
 
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.linkedEditing) || e.hasChanged(EditorOption.renameOnType)) {
-				this.reinitialize(false);
-			}
-		}));
-		this._register(this._providers.onDidChange(() => this.reinitialize(false)));
-		this._register(this._editor.onDidChangeModelLanguage(() => this.reinitialize(true)));
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (
+					e.hasChanged(EditorOption.linkedEditing) ||
+					e.hasChanged(EditorOption.renameOnType)
+				) {
+					this.reinitialize(false);
+				}
+			}),
+		);
+		this._register(
+			this._providers.onDidChange(() => this.reinitialize(false)),
+		);
+		this._register(
+			this._editor.onDidChangeModelLanguage(() =>
+				this.reinitialize(true),
+			),
+		);
 
 		this.reinitialize(true);
 	}

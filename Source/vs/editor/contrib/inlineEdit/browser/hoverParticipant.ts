@@ -9,23 +9,23 @@ import * as nls from "../../../../nls.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { Range } from "../../../common/core/range.js";
 import type { IModelDecoration } from "../../../common/model.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
 	HoverForeignElementAnchor,
+	RenderedHoverParts,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "../../hover/browser/hoverTypes.js";
 import { InlineEditController } from "./inlineEditController.js";
 import { InlineEditHintsContentWidget } from "./inlineEditHintsWidget.js";
@@ -53,10 +53,11 @@ export class InlineEditHoverParticipant
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-	) {
-	}
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+	) {}
 
 	suggestHoverAnchor(mouseEvent: IEditorMouseEvent): HoverAnchor | null {
 		const controller = InlineEditController.get(this._editor);

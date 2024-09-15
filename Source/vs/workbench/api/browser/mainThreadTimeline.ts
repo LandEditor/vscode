@@ -16,13 +16,13 @@ import {
 	type TimelineProviderDescriptor,
 } from "../../contrib/timeline/common/timeline.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostTimelineShape,
 	MainContext,
+	type ExtHostTimelineShape,
 	type MainThreadTimelineShape,
 } from "../common/extHost.protocol.js";
 
@@ -37,7 +37,7 @@ export class MainThreadTimeline implements MainThreadTimelineShape {
 	constructor(
 		context: IExtHostContext,
 		@ILogService private readonly logService: ILogService,
-		@ITimelineService private readonly _timelineService: ITimelineService
+		@ITimelineService private readonly _timelineService: ITimelineService,
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostTimeline);
 	}

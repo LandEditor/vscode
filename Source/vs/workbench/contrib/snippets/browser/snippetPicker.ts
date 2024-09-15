@@ -15,7 +15,7 @@ import {
 	type QuickPickInput,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { ISnippetsService } from "./snippets.js";
-import { type Snippet, SnippetSource } from "./snippetsFile.js";
+import { SnippetSource, type Snippet } from "./snippetsFile.js";
 
 export async function pickSnippet(
 	accessor: ServicesAccessor,

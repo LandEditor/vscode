@@ -6,18 +6,19 @@
 import { arch, release, type } from "os";
 import {
 	BrowserWindow,
+	screen,
 	type BrowserWindowConstructorOptions,
 	type Display,
-	screen,
 } from "electron";
+
 import { isESM } from "../../../base/common/amd.js";
 import { raceTimeout } from "../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../base/common/cancellation.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { FileAccess } from "../../../base/common/network.js";
 import {
-	type IProcessEnvironment,
 	isMacintosh,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import { validatedIpcMain } from "../../../base/parts/ipc/electron-main/ipcMain.js";
 import { getNLSLanguage, getNLSMessages, localize } from "../../../nls.js";
@@ -28,8 +29,8 @@ import { ILogService } from "../../log/common/log.js";
 import { INativeHostMainService } from "../../native/electron-main/nativeHostMainService.js";
 import product from "../../product/common/product.js";
 import {
-	type IIPCObjectUrl,
 	IProtocolMainService,
+	type IIPCObjectUrl,
 } from "../../protocol/electron-main/protocol.js";
 import { zoomLevelToZoomFactor } from "../../window/common/window.js";
 import type {
@@ -64,14 +65,20 @@ export class IssueMainService implements IIssueMainService {
 
 	constructor(
 		private userEnv: IProcessEnvironment,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@ILogService private readonly logService: ILogService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
-		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@ICSSDevelopmentService private readonly cssDevelopmentService: ICSSDevelopmentService,
-	) { }
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
+		@IProtocolMainService
+		private readonly protocolMainService: IProtocolMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@ICSSDevelopmentService
+		private readonly cssDevelopmentService: ICSSDevelopmentService,
+	) {}
 
 	//#region Used by renderer
 

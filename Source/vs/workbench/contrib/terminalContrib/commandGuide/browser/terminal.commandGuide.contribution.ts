@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import { addDisposableListener } from "../../../../../base/browser/dom.js";
 import {
+	combinedDisposable,
 	Disposable,
 	MutableDisposable,
-	combinedDisposable,
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { localize } from "../../../../../nls.js";
@@ -33,9 +34,9 @@ import type {
 	ITerminalProcessManager,
 } from "../../../terminal/common/terminal.js";
 import {
-	type ITerminalCommandGuideConfiguration,
-	TerminalCommandGuideSettingId,
 	terminalCommandGuideConfigSection,
+	TerminalCommandGuideSettingId,
+	type ITerminalCommandGuideConfiguration,
 } from "../common/terminalCommandGuideConfiguration.js";
 
 // #region Terminal Contributions
@@ -60,10 +61,13 @@ class TerminalCommandGuideContribution
 	);
 
 	constructor(
-		private readonly _instance: ITerminalInstance | IDetachedTerminalInstance,
+		private readonly _instance:
+			| ITerminalInstance
+			| IDetachedTerminalInstance,
 		processManager: ITerminalProcessManager | ITerminalProcessInfo,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 	}

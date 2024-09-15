@@ -17,19 +17,22 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	IUserDataSyncUtilService,
 	getDefaultIgnoredSettings,
+	IUserDataSyncUtilService,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 
 class UserDataSyncUtilService implements IUserDataSyncUtilService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IKeybindingService private readonly keybindingsService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingsService: IKeybindingService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ITextResourcePropertiesService private readonly textResourcePropertiesService: ITextResourcePropertiesService,
-		@ITextResourceConfigurationService private readonly textResourceConfigurationService: ITextResourceConfigurationService,
-	) { }
+		@ITextResourcePropertiesService
+		private readonly textResourcePropertiesService: ITextResourcePropertiesService,
+		@ITextResourceConfigurationService
+		private readonly textResourceConfigurationService: ITextResourceConfigurationService,
+	) {}
 
 	async resolveDefaultCoreIgnoredSettings(): Promise<string[]> {
 		return getDefaultIgnoredSettings(true);

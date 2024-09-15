@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ProfilingSession } from "v8-inspect-profiler";
+
 import { generateUuid } from "../../../base/common/uuid.js";
 import type {
 	IV8InspectProfilingService,

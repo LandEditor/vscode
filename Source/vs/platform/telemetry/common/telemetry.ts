@@ -49,7 +49,10 @@ export interface ITelemetryService {
 	publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
-	>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
+	>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>,
+	): void;
 
 	/**
 	 * @deprecated Use publicLogError2 and the typescript GDPR annotation where possible
@@ -59,7 +62,10 @@ export interface ITelemetryService {
 	publicLogError2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
-	>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
+	>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>,
+	): void;
 
 	setExperimentProperty(name: string, value: string): void;
 }

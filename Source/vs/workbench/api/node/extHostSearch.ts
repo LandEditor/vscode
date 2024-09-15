@@ -4,22 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 import * as pfs from "../../../base/node/pfs.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
+	isSerializedFileMatch,
 	type IFileQuery,
 	type IRawFileQuery,
 	type ISearchCompleteStats,
 	type ISerializedSearchProgressItem,
 	type ITextQuery,
-	isSerializedFileMatch,
 } from "../../services/search/common/search.js";
 import type { TextSearchManager } from "../../services/search/common/textSearchManager.js";
 import { SearchService } from "../../services/search/node/rawSearchService.js";
@@ -50,24 +51,41 @@ export class NativeExtHostSearch extends ExtHostSearch implements IDisposable {
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
 		@IExtHostInitDataService initData: IExtHostInitDataService,
 		@IURITransformerService _uriTransformer: IURITransformerService,
-		@IExtHostConfiguration private readonly configurationService: IExtHostConfiguration,
+		@IExtHostConfiguration
+		private readonly configurationService: IExtHostConfiguration,
 		@ILogService _logService: ILogService,
 	) {
 		super(extHostRpc, _uriTransformer, _logService);
 		this.getNumThreads = this.getNumThreads.bind(this);
 		this.getNumThreadsCached = this.getNumThreadsCached.bind(this);
-		this.handleConfigurationChanged = this.handleConfigurationChanged.bind(this);
-		const outputChannel = new OutputChannel('RipgrepSearchUD', this._logService);
-		this._disposables.add(this.registerTextSearchProvider(Schemas.vscodeUserData, new RipgrepSearchProvider(outputChannel, this.getNumThreadsCached)));
+		this.handleConfigurationChanged =
+			this.handleConfigurationChanged.bind(this);
+		const outputChannel = new OutputChannel(
+			"RipgrepSearchUD",
+			this._logService,
+		);
+		this._disposables.add(
+			this.registerTextSearchProvider(
+				Schemas.vscodeUserData,
+				new RipgrepSearchProvider(
+					outputChannel,
+					this.getNumThreadsCached,
+				),
+			),
+		);
 		if (initData.remote.isRemote && initData.remote.authority) {
 			this._registerEHSearchProviders();
 		}
 
-		configurationService.getConfigProvider().then(provider => {
+		configurationService.getConfigProvider().then((provider) => {
 			if (this.isDisposed) {
 				return;
 			}
-			this._disposables.add(provider.onDidChangeConfiguration(this.handleConfigurationChanged));
+			this._disposables.add(
+				provider.onDidChangeConfiguration(
+					this.handleConfigurationChanged,
+				),
+			);
 		});
 	}
 

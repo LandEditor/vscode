@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { disposableTimeout } from "../../../base/common/async.js";
 import {
 	DisposableStore,
@@ -14,9 +15,9 @@ import type { IURITransformer } from "../../../base/common/uriIpc.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostLanguagesShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadLanguagesShape,
 } from "./extHost.protocol.js";
 import type { CommandsConverter } from "./extHostCommands.js";
@@ -24,9 +25,9 @@ import type { ExtHostDocuments } from "./extHostDocuments.js";
 import * as typeConvert from "./extHostTypeConverters.js";
 import {
 	LanguageStatusSeverity,
-	type Position,
 	Range,
 	StandardTokenType,
+	type Position,
 } from "./extHostTypes.js";
 
 export class ExtHostLanguages implements ExtHostLanguagesShape {

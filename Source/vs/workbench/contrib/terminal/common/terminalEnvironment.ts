@@ -9,22 +9,22 @@
 
 import * as path from "../../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
-	OperatingSystem,
 	isMacintosh,
 	isWindows,
 	language,
+	OperatingSystem,
+	type IProcessEnvironment,
 } from "../../../../base/common/platform.js";
 import { sanitizeProcessEnvironment } from "../../../../base/common/processes.js";
 import { isString } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
 import {
+	WindowsShellType,
 	type IShellLaunchConfig,
 	type ITerminalBackend,
 	type ITerminalEnvironment,
 	type TerminalShellType,
-	WindowsShellType,
 } from "../../../../platform/terminal/common/terminal.js";
 import {
 	escapeNonWindowsPath,

@@ -8,6 +8,7 @@ import type {
 	ITerminalAddon,
 	Terminal as XTermTerminal,
 } from "@xterm/xterm";
+
 import { Emitter } from "../../../../../base/common/event.js";
 import {
 	Disposable,

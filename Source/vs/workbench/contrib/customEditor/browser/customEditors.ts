@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/customEditor.css";
+
 import { coalesce } from "../../../../base/common/arrays.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { extname, isEqual } from "../../../../base/common/resources.js";
@@ -39,23 +40,23 @@ import {
 import { DiffEditorInput } from "../../../common/editor/diffEditorInput.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
+	IEditorGroupsService,
 	type IEditorGroup,
 	type IEditorGroupContextKeyProvider,
-	IEditorGroupsService,
 } from "../../../services/editor/common/editorGroupsService.js";
 import {
 	IEditorResolverService,
-	type IEditorType,
 	RegisteredEditorPriority,
+	type IEditorType,
 } from "../../../services/editor/common/editorResolverService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { ContributedCustomEditors } from "../common/contributedCustomEditors.js";
 import {
 	CONTEXT_ACTIVE_CUSTOM_EDITOR_ID,
 	CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE,
+	CustomEditorInfoCollection,
 	type CustomEditorCapabilities,
 	type CustomEditorInfo,
-	CustomEditorInfoCollection,
 	type ICustomEditorService,
 } from "../common/customEditor.js";
 import { CustomEditorModelManager } from "../common/customEditorModelManager.js";
@@ -93,53 +94,88 @@ export class CustomEditorService
 		@IFileService fileService: IFileService,
 		@IStorageService storageService: IStorageService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
 	) {
 		super();
 
-		this._contributedEditors = this._register(new ContributedCustomEditors(storageService));
+		this._contributedEditors = this._register(
+			new ContributedCustomEditors(storageService),
+		);
 		// Register the contribution points only emitting one change from the resolver
-		this.editorResolverService.bufferChangeEvents(this.registerContributionPoints.bind(this));
+		this.editorResolverService.bufferChangeEvents(
+			this.registerContributionPoints.bind(this),
+		);
 
-		this._register(this._contributedEditors.onChange(() => {
-			// Register the contribution points only emitting one change from the resolver
-			this.editorResolverService.bufferChangeEvents(this.registerContributionPoints.bind(this));
-			this._onDidChangeEditorTypes.fire();
-		}));
+		this._register(
+			this._contributedEditors.onChange(() => {
+				// Register the contribution points only emitting one change from the resolver
+				this.editorResolverService.bufferChangeEvents(
+					this.registerContributionPoints.bind(this),
+				);
+				this._onDidChangeEditorTypes.fire();
+			}),
+		);
 
 		// Register group context key providers.
 		// These set the context keys for each editor group and the global context
-		const activeCustomEditorContextKeyProvider: IEditorGroupContextKeyProvider<string> = {
-			contextKey: CONTEXT_ACTIVE_CUSTOM_EDITOR_ID,
-			getGroupContextKeyValue: group => this.getActiveCustomEditorId(group),
-			onDidChange: this.onDidChangeEditorTypes
-		};
+		const activeCustomEditorContextKeyProvider: IEditorGroupContextKeyProvider<string> =
+			{
+				contextKey: CONTEXT_ACTIVE_CUSTOM_EDITOR_ID,
+				getGroupContextKeyValue: (group) =>
+					this.getActiveCustomEditorId(group),
+				onDidChange: this.onDidChangeEditorTypes,
+			};
 
-		const customEditorIsEditableContextKeyProvider: IEditorGroupContextKeyProvider<boolean> = {
-			contextKey: CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE,
-			getGroupContextKeyValue: group => this.getCustomEditorIsEditable(group),
-			onDidChange: this.onDidChangeEditorTypes
-		};
+		const customEditorIsEditableContextKeyProvider: IEditorGroupContextKeyProvider<boolean> =
+			{
+				contextKey: CONTEXT_FOCUSED_CUSTOM_EDITOR_IS_EDITABLE,
+				getGroupContextKeyValue: (group) =>
+					this.getCustomEditorIsEditable(group),
+				onDidChange: this.onDidChangeEditorTypes,
+			};
 
-		this._register(this.editorGroupService.registerContextKeyProvider(activeCustomEditorContextKeyProvider));
-		this._register(this.editorGroupService.registerContextKeyProvider(customEditorIsEditableContextKeyProvider));
+		this._register(
+			this.editorGroupService.registerContextKeyProvider(
+				activeCustomEditorContextKeyProvider,
+			),
+		);
+		this._register(
+			this.editorGroupService.registerContextKeyProvider(
+				customEditorIsEditableContextKeyProvider,
+			),
+		);
 
-		this._register(fileService.onDidRunOperation(e => {
-			if (e.isOperation(FileOperation.MOVE)) {
-				this.handleMovedFileInOpenedFileEditors(e.resource, this.uriIdentityService.asCanonicalUri(e.target.resource));
-			}
-		}));
+		this._register(
+			fileService.onDidRunOperation((e) => {
+				if (e.isOperation(FileOperation.MOVE)) {
+					this.handleMovedFileInOpenedFileEditors(
+						e.resource,
+						this.uriIdentityService.asCanonicalUri(
+							e.target.resource,
+						),
+					);
+				}
+			}),
+		);
 
 		const PRIORITY = 105;
-		this._register(UndoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
-			return this.withActiveCustomEditor(editor => editor.undo());
-		}));
-		this._register(RedoCommand.addImplementation(PRIORITY, 'custom-editor', () => {
-			return this.withActiveCustomEditor(editor => editor.redo());
-		}));
+		this._register(
+			UndoCommand.addImplementation(PRIORITY, "custom-editor", () => {
+				return this.withActiveCustomEditor((editor) => editor.undo());
+			}),
+		);
+		this._register(
+			RedoCommand.addImplementation(PRIORITY, "custom-editor", () => {
+				return this.withActiveCustomEditor((editor) => editor.redo());
+			}),
+		);
 	}
 
 	getEditorTypes(): IEditorType[] {

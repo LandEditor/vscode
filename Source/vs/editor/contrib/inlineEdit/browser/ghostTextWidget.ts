@@ -5,32 +5,34 @@
 
 import { Disposable, toDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	derived,
 	observableFromEvent,
 	observableValue,
+	type IObservable,
 } from "../../../../base/common/observable.js";
+
 import "./inlineEdit.css";
+
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	diffDeleteDecoration,
 	diffLineDeleteDecorationBackgroundWithIndicator,
 } from "../../../browser/widget/diffEditor/registrations.contribution.js";
 import { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import { ILanguageService } from "../../../common/languages/language.js";
 import {
+	InjectedTextCursorStops,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	InjectedTextCursorStops,
 } from "../../../common/model.js";
 import { LineTokens } from "../../../common/tokens/lineTokens.js";
 import { LineDecoration } from "../../../common/viewLayout/lineDecorations.js";
 import { InlineDecorationType } from "../../../common/viewModel.js";
 import type { GhostText } from "../../inlineCompletions/browser/model/ghostText.js";
 import {
-	ColumnRange,
 	applyObservableDecorations,
+	ColumnRange,
 } from "../../inlineCompletions/browser/utils.js";
 import {
 	AdditionalLinesWidget,
@@ -60,8 +62,14 @@ export class GhostTextWidget extends Disposable {
 	) {
 		super();
 
-		this._register(toDisposable(() => { this.isDisposed.set(true, undefined); }));
-		this._register(applyObservableDecorations(this.editor, this.decorations));
+		this._register(
+			toDisposable(() => {
+				this.isDisposed.set(true, undefined);
+			}),
+		);
+		this._register(
+			applyObservableDecorations(this.editor, this.decorations),
+		);
 	}
 
 	private readonly uiState = derived(this, (reader) => {

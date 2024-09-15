@@ -9,8 +9,8 @@ import {
 } from "../../../../base/browser/dom.js";
 import { DomEmitter } from "../../../../base/browser/event.js";
 import {
-	type IKeyboardEvent,
 	StandardKeyboardEvent,
+	type IKeyboardEvent,
 } from "../../../../base/browser/keyboardEvent.js";
 import type { IMouseEvent } from "../../../../base/browser/mouseEvent.js";
 import { RunOnceScheduler } from "../../../../base/common/async.js";
@@ -29,10 +29,10 @@ import { setProperty } from "../../../../base/common/jsonEdit.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { clamp } from "../../../../base/common/numbers.js";
 import { basename } from "../../../../base/common/path.js";
@@ -43,10 +43,10 @@ import { Constants } from "../../../../base/common/uint.js";
 import { URI } from "../../../../base/common/uri.js";
 import { CoreEditingCommands } from "../../../../editor/browser/coreCommands.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
 	type IPartialEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorOption,
@@ -54,7 +54,7 @@ import {
 } from "../../../../editor/common/config/editorOptions.js";
 import { EditOperation } from "../../../../editor/common/core/editOperation.js";
 import { Position } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { DEFAULT_WORD_REGEXP } from "../../../../editor/common/core/wordHelper.js";
 import { ScrollType } from "../../../../editor/common/editorCommon.js";
 import { StandardTokenType } from "../../../../editor/common/encodedTokenAttributes.js";
@@ -63,13 +63,13 @@ import type {
 	InlineValueContext,
 } from "../../../../editor/common/languages.js";
 import {
+	InjectedTextCursorStops,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	InjectedTextCursorStops,
 } from "../../../../editor/common/model.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../../editor/common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
@@ -85,8 +85,8 @@ import {
 } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IInstantiationService,
@@ -98,14 +98,14 @@ import type { FloatingEditorClickWidget } from "../../../browser/codeeditor.js";
 import { IHostService } from "../../../services/host/browser/host.js";
 import {
 	CONTEXT_EXCEPTION_WIDGET_VISIBLE,
+	IDebugService,
+	State,
 	type IDebugConfiguration,
 	type IDebugEditorContribution,
-	IDebugService,
 	type IDebugSession,
 	type IExceptionInfo,
 	type IExpression,
 	type IStackFrame,
-	State,
 } from "../common/debug.js";
 import { Expression } from "../common/debugModel.js";
 import { DebugHoverWidget, ShowDebugHoverResult } from "./debugHover.js";
@@ -321,20 +321,37 @@ export class DebugEditorContribution implements IDebugEditorContribution {
 	constructor(
 		private editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHostService private readonly hostService: IHostService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService featureDebounceService: ILanguageFeatureDebounceService
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		featureDebounceService: ILanguageFeatureDebounceService,
 	) {
-		this.debounceInfo = featureDebounceService.for(languageFeaturesService.inlineValuesProvider, 'InlineValues', { min: DEAFULT_INLINE_DEBOUNCE_DELAY });
-		this.hoverWidget = this.instantiationService.createInstance(DebugHoverWidget, this.editor);
-		this.toDispose = [this.defaultHoverLockout, this.altListener, this.displayedStore];
+		this.debounceInfo = featureDebounceService.for(
+			languageFeaturesService.inlineValuesProvider,
+			"InlineValues",
+			{ min: DEAFULT_INLINE_DEBOUNCE_DELAY },
+		);
+		this.hoverWidget = this.instantiationService.createInstance(
+			DebugHoverWidget,
+			this.editor,
+		);
+		this.toDispose = [
+			this.defaultHoverLockout,
+			this.altListener,
+			this.displayedStore,
+		];
 		this.registerListeners();
-		this.exceptionWidgetVisible = CONTEXT_EXCEPTION_WIDGET_VISIBLE.bindTo(contextKeyService);
+		this.exceptionWidgetVisible =
+			CONTEXT_EXCEPTION_WIDGET_VISIBLE.bindTo(contextKeyService);
 		this.toggleExceptionWidget();
 	}
 

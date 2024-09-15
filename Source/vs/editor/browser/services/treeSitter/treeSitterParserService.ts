@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Parser } from "@vscode/tree-sitter-wasm";
+
 import { importAMDNodeModule } from "../../../../amdX.js";
 import { canASAR } from "../../../../base/common/amd.js";
 import {
-	type CancellationToken,
 	cancelOnDispose,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import {
 	CancellationError,
@@ -19,14 +20,14 @@ import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type AppResourcePath,
 	FileAccess,
 	nodeModulesAsarUnpackedPath,
 	nodeModulesPath,
+	type AppResourcePath,
 } from "../../../../base/common/network.js";
 import { PromiseResult } from "../../../../base/common/observable.js";
 import { setTimeout0 } from "../../../../base/common/platform.js";
@@ -176,7 +177,7 @@ export class TreeSitterParseResult
 	private _isDisposed = false;
 	constructor(
 		public readonly parser: Parser,
-		public /** exposed for tests **/ readonly language: Parser.Language,
+		public readonly /** exposed for tests **/ language: Parser.Language,
 		private readonly _logService: ILogService,
 		private readonly _telemetryService: ITelemetryService,
 	) {
@@ -350,7 +351,7 @@ export class TreeSitterParseResult
 export class TreeSitterLanguages extends Disposable {
 	private _languages: AsyncCache<string, Parser.Language | undefined> =
 		new AsyncCache();
-	public /*exposed for tests*/ readonly _onDidAddLanguage: Emitter<{
+	public readonly /*exposed for tests*/ _onDidAddLanguage: Emitter<{
 		id: string;
 		language: Parser.Language;
 	}> = this._register(new Emitter());
@@ -462,21 +463,38 @@ export class TreeSitterTextModelService
 		language: Parser.Language;
 	}>;
 
-	constructor(@IModelService private readonly _modelService: IModelService,
+	constructor(
+		@IModelService private readonly _modelService: IModelService,
 		@IFileService fileService: IFileService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
 	) {
 		super();
-		this._treeSitterLanguages = this._register(new TreeSitterLanguages(this._treeSitterImporter, fileService, this._environmentService, this._registeredLanguages));
+		this._treeSitterLanguages = this._register(
+			new TreeSitterLanguages(
+				this._treeSitterImporter,
+				fileService,
+				this._environmentService,
+				this._registeredLanguages,
+			),
+		);
 		this.onDidAddLanguage = this._treeSitterLanguages.onDidAddLanguage;
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(EDITOR_EXPERIMENTAL_PREFER_TREESITTER)) {
-				this._supportedLanguagesChanged();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						EDITOR_EXPERIMENTAL_PREFER_TREESITTER,
+					)
+				) {
+					this._supportedLanguagesChanged();
+				}
+			}),
+		);
 		this._supportedLanguagesChanged();
 	}
 

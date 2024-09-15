@@ -31,29 +31,37 @@ import { INativeWorkbenchEnvironmentService } from "../../environment/electron-s
 import { IExtensionManifestPropertiesService } from "../../extensions/common/extensionManifestPropertiesService.js";
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type IExtensionManagementServer,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionManagementService,
+	type IExtensionManagementServer,
 } from "../common/extensionManagement.js";
 import { ExtensionManagementService as BaseExtensionManagementService } from "../common/extensionManagementService.js";
 
 export class ExtensionManagementService extends BaseExtensionManagementService {
 	constructor(
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IProductService productService: IProductService,
 		@IDownloadService downloadService: IDownloadService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IDialogService dialogService: IDialogService,
-		@IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkspaceTrustRequestService
+		workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IExtensionsScannerService extensionsScannerService: IExtensionsScannerService,
+		@IExtensionsScannerService
+		extensionsScannerService: IExtensionsScannerService,
 		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super(
@@ -71,7 +79,7 @@ export class ExtensionManagementService extends BaseExtensionManagementService {
 			logService,
 			instantiationService,
 			extensionsScannerService,
-			telemetryService
+			telemetryService,
 		);
 	}
 

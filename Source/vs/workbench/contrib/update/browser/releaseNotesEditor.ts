@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/releasenoteseditor.css";
+
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import { escapeMarkdownSyntaxTokens } from "../../../../base/common/htmlContent.js";
@@ -19,8 +20,8 @@ import { ILanguageService } from "../../../../editor/common/languages/language.j
 import { generateTokensCSSForColorMap } from "../../../../editor/common/languages/supports/tokenization.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -28,8 +29,8 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	IRequestService,
 	asTextOrError,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import { TelemetryLevel } from "../../../../platform/telemetry/common/telemetry.js";
 import {
@@ -59,27 +60,45 @@ export class ReleaseNotesManager {
 	private readonly disposables = new DisposableStore();
 
 	public constructor(
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IRequestService private readonly _requestService: IRequestService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IProductService private readonly _productService: IProductService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		TokenizationRegistry.onDidChange(() => {
 			return this.updateHtml();
 		});
 
-		_configurationService.onDidChangeConfiguration(this.onDidChangeConfiguration, this, this.disposables);
-		_webviewWorkbenchService.onDidChangeActiveWebviewEditor(this.onDidChangeActiveWebviewEditor, this, this.disposables);
-		this._simpleSettingRenderer = this._instantiationService.createInstance(SimpleSettingRenderer);
+		_configurationService.onDidChangeConfiguration(
+			this.onDidChangeConfiguration,
+			this,
+			this.disposables,
+		);
+		_webviewWorkbenchService.onDidChangeActiveWebviewEditor(
+			this.onDidChangeActiveWebviewEditor,
+			this,
+			this.disposables,
+		);
+		this._simpleSettingRenderer = this._instantiationService.createInstance(
+			SimpleSettingRenderer,
+		);
 	}
 
 	private async updateHtml() {

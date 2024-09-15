@@ -10,8 +10,8 @@ import { isEqual, joinPath } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../../editor/common/languages/modesRegistry.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { IFileDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -25,12 +25,12 @@ import {
 } from "../../../common/editor.js";
 import { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IResolvedNotebookEditorModel,
 	NotebookSetting,
+	type IResolvedNotebookEditorModel,
 } from "../../notebook/common/notebookCommon.js";
 import {
-	type ICompositeNotebookEditorInput,
 	NotebookEditorInput,
+	type ICompositeNotebookEditorInput,
 } from "../../notebook/common/notebookEditorInput.js";
 import { INotebookService } from "../../notebook/common/notebookService.js";
 import { IInteractiveDocumentService } from "./interactiveDocumentService.js";
@@ -124,18 +124,32 @@ export class InteractiveEditorInput
 		languageId: string | undefined,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ITextModelService textModelService: ITextModelService,
-		@IInteractiveDocumentService interactiveDocumentService: IInteractiveDocumentService,
+		@IInteractiveDocumentService
+		interactiveDocumentService: IInteractiveDocumentService,
 		@IInteractiveHistoryService historyService: IInteractiveHistoryService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IFileDialogService private readonly _fileDialogService: IFileDialogService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IFileDialogService
+		private readonly _fileDialogService: IFileDialogService,
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
-		const input = NotebookEditorInput.getOrCreate(instantiationService, resource, undefined, 'interactive', {});
+		const input = NotebookEditorInput.getOrCreate(
+			instantiationService,
+			resource,
+			undefined,
+			"interactive",
+			{},
+		);
 		super();
-		this.isScratchpad = configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
+		this.isScratchpad =
+			configurationService.getValue<boolean>(
+				NotebookSetting.InteractiveWindowPromptToSave,
+			) !== true;
 		this._notebookEditorInput = input;
 		this._register(this._notebookEditorInput);
-		this.name = title ?? InteractiveEditorInput.windowNames[resource.path] ?? paths.basename(resource.path, paths.extname(resource.path));
+		this.name =
+			title ??
+			InteractiveEditorInput.windowNames[resource.path] ??
+			paths.basename(resource.path, paths.extname(resource.path));
 		this._initLanguage = languageId;
 		this._resource = resource;
 		this._inputResource = inputResource;

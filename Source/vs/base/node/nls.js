@@ -6,6 +6,7 @@
 import * as fs from "fs";
 // ESM-uncomment-begin
 import * as path from "path";
+
 import * as perf from "../common/performance.js";
 
 /** @type any */

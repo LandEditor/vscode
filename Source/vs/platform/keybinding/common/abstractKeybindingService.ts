@@ -12,19 +12,18 @@ import { IntervalTimer, TimeoutTimer } from "../../../base/common/async.js";
 import { illegalState } from "../../../base/common/errors.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import { IME } from "../../../base/common/ime.js";
-import { KeyCode } from "../../../base/common/keyCodes.js";
 import type {
 	Keybinding,
 	ResolvedChord,
 	ResolvedKeybinding,
 	SingleModifierChord,
 } from "../../../base/common/keybindings.js";
+import { KeyCode } from "../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import * as nls from "../../../nls.js";
-
 import type { ICommandService } from "../../commands/common/commands.js";
 import type {
 	IContextKeyService,
@@ -39,10 +38,10 @@ import type {
 	KeybindingsSchemaContribution,
 } from "./keybinding.js";
 import {
-	type KeybindingResolver,
 	NoMatchingKb,
-	type ResolutionResult,
 	ResultKind,
+	type KeybindingResolver,
+	type ResolutionResult,
 } from "./keybindingResolver.js";
 import type { ResolvedKeybindingItem } from "./resolvedKeybindingItem.js";
 

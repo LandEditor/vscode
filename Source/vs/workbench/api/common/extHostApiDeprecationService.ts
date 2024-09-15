@@ -36,7 +36,9 @@ export class ExtHostApiDeprecationService
 		@IExtHostRpcService rpc: IExtHostRpcService,
 		@ILogService private readonly _extHostLogService: ILogService,
 	) {
-		this._telemetryShape = rpc.getProxy(extHostProtocol.MainContext.MainThreadTelemetry);
+		this._telemetryShape = rpc.getProxy(
+			extHostProtocol.MainContext.MainThreadTelemetry,
+		);
 	}
 
 	public report(

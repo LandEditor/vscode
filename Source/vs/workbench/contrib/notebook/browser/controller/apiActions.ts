@@ -7,9 +7,9 @@ import * as glob from "../../../../../base/common/glob.js";
 import { URI, type UriComponents } from "../../../../../base/common/uri.js";
 import { CommandsRegistry } from "../../../../../platform/commands/common/commands.js";
 import {
+	isDocumentExcludePattern,
 	type TransientCellMetadata,
 	type TransientDocumentMetadata,
-	isDocumentExcludePattern,
 } from "../../common/notebookCommon.js";
 import { INotebookKernelService } from "../../common/notebookKernelService.js";
 import { INotebookService } from "../../common/notebookService.js";

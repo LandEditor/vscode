@@ -12,7 +12,7 @@ import {
 	ILifecycleService,
 	type ShutdownReason,
 } from "../../../services/lifecycle/common/lifecycle.js";
-import { type IDebugConfiguration, IDebugService } from "./debug.js";
+import { IDebugService, type IDebugConfiguration } from "./debug.js";
 
 export class DebugLifecycle implements IWorkbenchContribution {
 	private disposable: IDisposable;
@@ -20,10 +20,13 @@ export class DebugLifecycle implements IWorkbenchContribution {
 	constructor(
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IDebugService private readonly debugService: IDebugService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IDialogService private readonly dialogService: IDialogService,
 	) {
-		this.disposable = lifecycleService.onBeforeShutdown(async e => e.veto(this.shouldVetoShutdown(e.reason), 'veto.debug'));
+		this.disposable = lifecycleService.onBeforeShutdown(async (e) =>
+			e.veto(this.shouldVetoShutdown(e.reason), "veto.debug"),
+		);
 	}
 
 	private shouldVetoShutdown(

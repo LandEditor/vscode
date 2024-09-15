@@ -4,12 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "../../../../base/browser/ui/codicons/codiconStyles.js"; // The codicon symbol styles are defined here and must be loaded
+
 import { Codicon } from "../../../../base/common/codicons.js";
 import type { ResolvedKeybinding } from "../../../../base/common/keybindings.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
 import type { CodeAction } from "../../../common/languages.js";
-import { type CodeActionItem, CodeActionKind } from "../common/types.js";
+import { CodeActionKind, type CodeActionItem } from "../common/types.js";
+
 import "../../symbolIcons/browser/symbolIcons.js"; // The codicon symbol colors are defined here and must be loaded to get colors
+
 import { HierarchicalKind } from "../../../../base/common/hierarchicalKind.js";
 import { localize } from "../../../../nls.js";
 import {

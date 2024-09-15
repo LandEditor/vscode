@@ -6,8 +6,8 @@
 import { distinct, isNonEmptyArray } from "../../../base/common/arrays.js";
 import {
 	Barrier,
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import {
@@ -22,21 +22,19 @@ import { isWeb } from "../../../base/common/platform.js";
 import { isDefined } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import * as nls from "../../../nls.js";
-import { areApiProposalsCompatible } from "../../extensions/common/extensionValidator.js";
 import {
 	ExtensionType,
+	isApplicationScopedExtension,
 	type IExtensionManifest,
 	type TargetPlatform,
-	isApplicationScopedExtension,
 } from "../../extensions/common/extensions.js";
+import { areApiProposalsCompatible } from "../../extensions/common/extensionValidator.js";
 import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import { IUserDataProfilesService } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type DidUninstallExtensionEvent,
-	type DidUpdateExtensionMetadata,
 	EXTENSION_INSTALL_DEP_PACK_CONTEXT,
 	EXTENSION_INSTALL_SOURCE_CONTEXT,
 	ExtensionGalleryError,
@@ -44,29 +42,31 @@ import {
 	ExtensionManagementError,
 	ExtensionManagementErrorCode,
 	IExtensionGalleryService,
+	InstallOperation,
+	isTargetPlatformCompatible,
+	StatisticType,
+	TargetPlatformToString,
+	type DidUninstallExtensionEvent,
+	type DidUpdateExtensionMetadata,
 	type IExtensionIdentifier,
 	type IExtensionManagementParticipant,
 	type IExtensionManagementService,
 	type IExtensionsControlManifest,
 	type IGalleryExtension,
 	type ILocalExtension,
-	type IProductVersion,
 	type InstallExtensionEvent,
 	type InstallExtensionInfo,
 	type InstallExtensionResult,
-	InstallOperation,
 	type InstallOptions,
+	type IProductVersion,
 	type Metadata,
-	StatisticType,
-	TargetPlatformToString,
 	type UninstallExtensionEvent,
 	type UninstallExtensionInfo,
 	type UninstallOptions,
-	isTargetPlatformCompatible,
 } from "./extensionManagement.js";
 import {
-	ExtensionKey,
 	areSameExtensions,
+	ExtensionKey,
 	getGalleryExtensionId,
 	getGalleryExtensionTelemetryData,
 	getLocalExtensionTelemetryData,
@@ -163,20 +163,28 @@ export abstract class AbstractExtensionManagementService
 	private readonly participants: IExtensionManagementParticipant[] = [];
 
 	constructor(
-		@IExtensionGalleryService protected readonly galleryService: IExtensionGalleryService,
-		@ITelemetryService protected readonly telemetryService: ITelemetryService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
+		@IExtensionGalleryService
+		protected readonly galleryService: IExtensionGalleryService,
+		@ITelemetryService
+		protected readonly telemetryService: ITelemetryService,
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
 		@ILogService protected readonly logService: ILogService,
 		@IProductService protected readonly productService: IProductService,
-		@IUserDataProfilesService protected readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		protected readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
-		this._register(toDisposable(() => {
-			this.installingExtensions.forEach(({ task }) => task.cancel());
-			this.uninstallingExtensions.forEach(promise => promise.cancel());
-			this.installingExtensions.clear();
-			this.uninstallingExtensions.clear();
-		}));
+		this._register(
+			toDisposable(() => {
+				this.installingExtensions.forEach(({ task }) => task.cancel());
+				this.uninstallingExtensions.forEach((promise) =>
+					promise.cancel(),
+				);
+				this.installingExtensions.clear();
+				this.uninstallingExtensions.clear();
+			}),
+		);
 	}
 
 	async canInstall(extension: IGalleryExtension): Promise<boolean> {
@@ -1021,7 +1029,7 @@ export abstract class AbstractExtensionManagementService
 					? `${error.message}, ${current.message}`
 					: current.message,
 				current.code !== ExtensionManagementErrorCode.Unknown &&
-					current.code !== ExtensionManagementErrorCode.Internal
+				current.code !== ExtensionManagementErrorCode.Internal
 					? current.code
 					: error.code,
 			);

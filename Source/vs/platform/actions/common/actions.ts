@@ -3,21 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, SubmenuAction } from "../../../base/common/actions.js";
-import { type Event, MicrotaskEmitter } from "../../../base/common/event.js";
+import { SubmenuAction, type IAction } from "../../../base/common/actions.js";
+import { MicrotaskEmitter, type Event } from "../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../base/common/linkedList.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
 import type {
 	ICommandAction,
 	ICommandActionTitle,
-	ILocalizedString,
 	Icon,
+	ILocalizedString,
 } from "../../action/common/action.js";
 import type { Categories } from "../../action/common/actionCommonCategories.js";
 import {
@@ -26,16 +26,16 @@ import {
 } from "../../commands/common/commands.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../contextkey/common/contextkey.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../instantiation/common/instantiation.js";
 import {
-	type IKeybindingRule,
 	KeybindingsRegistry,
+	type IKeybindingRule,
 } from "../../keybinding/common/keybindingsRegistry.js";
 
 export interface IMenuItem {
@@ -657,23 +657,40 @@ export class MenuItemAction implements IAction {
 		readonly hideActions: IMenuItemHide | undefined,
 		readonly menuKeybinding: IAction | undefined,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ICommandService private _commandService: ICommandService
+		@ICommandService private _commandService: ICommandService,
 	) {
 		this.id = item.id;
 		this.label = MenuItemAction.label(item, options);
-		this.tooltip = (typeof item.tooltip === 'string' ? item.tooltip : item.tooltip?.value) ?? '';
-		this.enabled = !item.precondition || contextKeyService.contextMatchesRules(item.precondition);
+		this.tooltip =
+			(typeof item.tooltip === "string"
+				? item.tooltip
+				: item.tooltip?.value) ?? "";
+		this.enabled =
+			!item.precondition ||
+			contextKeyService.contextMatchesRules(item.precondition);
 		this.checked = undefined;
 
 		let icon: ThemeIcon | undefined;
 
 		if (item.toggled) {
-			const toggled = ((item.toggled as { condition: ContextKeyExpression }).condition ? item.toggled : { condition: item.toggled }) as {
-				condition: ContextKeyExpression; icon?: Icon; tooltip?: string | ILocalizedString; title?: string | ILocalizedString;
+			const toggled = (
+				(item.toggled as { condition: ContextKeyExpression }).condition
+					? item.toggled
+					: { condition: item.toggled }
+			) as {
+				condition: ContextKeyExpression;
+				icon?: Icon;
+				tooltip?: string | ILocalizedString;
+				title?: string | ILocalizedString;
 			};
-			this.checked = contextKeyService.contextMatchesRules(toggled.condition);
+			this.checked = contextKeyService.contextMatchesRules(
+				toggled.condition,
+			);
 			if (this.checked && toggled.tooltip) {
-				this.tooltip = typeof toggled.tooltip === 'string' ? toggled.tooltip : toggled.tooltip.value;
+				this.tooltip =
+					typeof toggled.tooltip === "string"
+						? toggled.tooltip
+						: toggled.tooltip.value;
 			}
 
 			if (this.checked && ThemeIcon.isThemeIcon(toggled.icon)) {
@@ -681,7 +698,10 @@ export class MenuItemAction implements IAction {
 			}
 
 			if (this.checked && toggled.title) {
-				this.label = typeof toggled.title === 'string' ? toggled.title : toggled.title.value;
+				this.label =
+					typeof toggled.title === "string"
+						? toggled.title
+						: toggled.title.value;
 			}
 		}
 
@@ -690,10 +710,19 @@ export class MenuItemAction implements IAction {
 		}
 
 		this.item = item;
-		this.alt = alt ? new MenuItemAction(alt, undefined, options, hideActions, undefined, contextKeyService, _commandService) : undefined;
+		this.alt = alt
+			? new MenuItemAction(
+					alt,
+					undefined,
+					options,
+					hideActions,
+					undefined,
+					contextKeyService,
+					_commandService,
+				)
+			: undefined;
 		this._options = options;
 		this.class = icon && ThemeIcon.asClassName(icon);
-
 	}
 
 	run(...args: any[]): Promise<void> {

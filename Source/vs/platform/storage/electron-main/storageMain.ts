@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
+
 import { top } from "../../../base/common/arrays.js";
 import { DeferredPromise } from "../../../base/common/async.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
@@ -17,19 +18,19 @@ import { StopWatch } from "../../../base/common/stopwatch.js";
 import { URI } from "../../../base/common/uri.js";
 import { Promises } from "../../../base/node/pfs.js";
 import {
-	type IStorage,
 	InMemoryStorageDatabase,
 	Storage,
 	StorageHint,
 	StorageState,
+	type IStorage,
 } from "../../../base/parts/storage/common/storage.js";
 import {
-	type ISQLiteStorageDatabaseLoggingOptions,
 	SQLiteStorageDatabase,
+	type ISQLiteStorageDatabaseLoggingOptions,
 } from "../../../base/parts/storage/node/storage.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
 import type { IFileService } from "../../files/common/files.js";
-import { type ILogService, LogLevel } from "../../log/common/log.js";
+import { LogLevel, type ILogService } from "../../log/common/log.js";
 import {
 	currentSessionDateStorageKey,
 	firstSessionDateStorageKey,
@@ -40,9 +41,9 @@ import type {
 	IUserDataProfilesService,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type IAnyWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
+	type IAnyWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import { IS_NEW_KEY } from "../common/storage.js";
 

@@ -12,8 +12,8 @@ import { MarkdownString } from "../../../../base/common/htmlContent.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import {
-	type ChatAgentLocation,
 	IChatAgentService,
+	type ChatAgentLocation,
 } from "../common/chatAgents.js";
 import { formatChatQuestion } from "../common/chatParserTypes.js";
 import type { IChatFollowup } from "../common/chatService.js";
@@ -27,12 +27,17 @@ export class ChatFollowups<T extends IChatFollowup> extends Disposable {
 		private readonly location: ChatAgentLocation,
 		private readonly options: IButtonStyles | undefined,
 		private readonly clickHandler: (followup: T) => void,
-		@IChatAgentService private readonly chatAgentService: IChatAgentService
+		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
 
-		const followupsContainer = dom.append(container, $('.interactive-session-followups'));
-		followups.forEach(followup => this.renderFollowup(followupsContainer, followup));
+		const followupsContainer = dom.append(
+			container,
+			$(".interactive-session-followups"),
+		);
+		followups.forEach((followup) =>
+			this.renderFollowup(followupsContainer, followup),
+		);
 	}
 
 	private renderFollowup(container: HTMLElement, followup: T): void {

@@ -8,8 +8,8 @@ import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { URI } from "../../../../base/common/uri.js";

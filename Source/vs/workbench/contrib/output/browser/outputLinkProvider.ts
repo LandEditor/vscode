@@ -7,8 +7,8 @@ import { createWebWorker } from "../../../../base/browser/defaultWorkerFactory.j
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { IWorkerClient } from "../../../../base/common/worker/simpleWorker.js";
@@ -31,13 +31,18 @@ export class OutputLinkProvider extends Disposable {
 	private linkProviderRegistration: IDisposable | undefined;
 
 	constructor(
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IModelService private readonly modelService: IModelService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 
-		this.disposeWorkerScheduler = new RunOnceScheduler(() => this.disposeWorker(), OutputLinkProvider.DISPOSE_WORKER_TIME);
+		this.disposeWorkerScheduler = new RunOnceScheduler(
+			() => this.disposeWorker(),
+			OutputLinkProvider.DISPOSE_WORKER_TIME,
+		);
 
 		this.registerListeners();
 		this.updateLinkProviderWorker();
@@ -114,15 +119,21 @@ class OutputLinkWorkerClient extends Disposable {
 	private readonly _initializeBarrier: Promise<void>;
 
 	constructor(
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IModelService modelService: IModelService,
 	) {
 		super();
-		this._workerClient = this._register(createWebWorker<OutputLinkComputer>(
-			'vs/workbench/contrib/output/common/outputLinkComputer',
-			'OutputLinkDetectionWorker'
-		));
-		this._workerTextModelSyncClient = WorkerTextModelSyncClient.create(this._workerClient, modelService);
+		this._workerClient = this._register(
+			createWebWorker<OutputLinkComputer>(
+				"vs/workbench/contrib/output/common/outputLinkComputer",
+				"OutputLinkDetectionWorker",
+			),
+		);
+		this._workerTextModelSyncClient = WorkerTextModelSyncClient.create(
+			this._workerClient,
+			modelService,
+		);
 		this._initializeBarrier = this._ensureWorkspaceFolders();
 	}
 

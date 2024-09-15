@@ -6,22 +6,22 @@
 import { assertNever } from "../../../../base/common/assert.js";
 import {
 	Barrier,
-	RunOnceScheduler,
 	isThenable,
+	RunOnceScheduler,
 } from "../../../../base/common/async.js";
 import { Emitter } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { TestId } from "./testId.js";
 import {
-	type ITestItem,
-	type ITestTag,
-	TestDiffOpType,
-	TestItemExpandState,
-	type TestsDiff,
-	type TestsDiffOp,
 	applyTestItemUpdate,
 	namespaceTestTag,
+	TestDiffOpType,
+	TestItemExpandState,
+	type ITestItem,
+	type ITestTag,
+	type TestsDiff,
+	type TestsDiffOp,
 } from "./testTypes.js";
 
 /**
@@ -214,9 +214,9 @@ export class TestItemCollection<T extends ITestItemLike> extends Disposable {
 	/**
 	 * Handler used for expanding test items.
 	 */
-	public set resolveHandler(handler:
-		| undefined
-		| ((item: T | undefined) => void)) {
+	public set resolveHandler(
+		handler: undefined | ((item: T | undefined) => void),
+	) {
 		this._resolveHandler = handler;
 		for (const test of this.tree.values()) {
 			this.updateExpandability(test);

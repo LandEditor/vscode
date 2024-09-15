@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { net } from "electron";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import type {
 	IRequestContext,
 	IRequestOptions,
 } from "../../../base/parts/request/common/request.js";
 import {
-	type IRawRequestFunction,
 	RequestService as NodeRequestService,
+	type IRawRequestFunction,
 } from "../node/requestService.js";
 
 function getRawRequest(options: IRequestOptions): IRawRequestFunction {

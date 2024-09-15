@@ -16,22 +16,22 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
+	INotificationService,
+	isNotificationSource,
+	NeverShowAgainScope,
+	NoOpNotification,
+	NotificationsFilter,
+	Severity,
 	type INeverShowAgainOptions,
 	type INotification,
 	type INotificationActions,
 	type INotificationHandle,
-	INotificationService,
 	type INotificationSource,
 	type INotificationSourceFilter,
 	type IPromptChoice,
 	type IPromptOptions,
 	type IStatusMessageOptions,
-	NeverShowAgainScope,
-	NoOpNotification,
 	type NotificationMessage,
-	NotificationsFilter,
-	Severity,
-	isNotificationSource,
 } from "../../../../platform/notification/common/notification.js";
 import {
 	IStorageService,
@@ -63,7 +63,7 @@ export class NotificationService
 	readonly onDidRemoveNotification = this._onDidRemoveNotification.event;
 
 	constructor(
-		@IStorageService private readonly storageService: IStorageService
+		@IStorageService private readonly storageService: IStorageService,
 	) {
 		super();
 

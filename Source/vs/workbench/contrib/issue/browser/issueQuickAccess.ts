@@ -18,11 +18,11 @@ import { IContextKeyService } from "../../../../platform/contextkey/common/conte
 import type { IExtensionDescription } from "../../../../platform/extensions/common/extensions.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
+	PickerQuickAccessProvider,
+	TriggerAction,
 	type FastAndSlowPicks,
 	type IPickerQuickAccessItem,
-	PickerQuickAccessProvider,
 	type Picks,
-	TriggerAction,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import type { IQuickPickSeparator } from "../../../../platform/quickinput/common/quickInput.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
@@ -33,10 +33,11 @@ export class IssueQuickAccess extends PickerQuickAccessProvider<IPickerQuickAcce
 
 	constructor(
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IProductService private readonly productService: IProductService
+		@IProductService private readonly productService: IProductService,
 	) {
 		super(IssueQuickAccess.PREFIX, { canAcceptInBackground: true });
 	}

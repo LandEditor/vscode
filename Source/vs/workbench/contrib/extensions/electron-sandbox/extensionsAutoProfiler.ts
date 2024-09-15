@@ -35,8 +35,8 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
 import { ExtensionHostKind } from "../../../services/extensions/common/extensionHostKind.js";
 import {
-	type IExtensionHostProfile,
 	IExtensionService,
+	type IExtensionHostProfile,
 	type IResponsiveStateChangeEvent,
 	type ProfileSession,
 } from "../../../services/extensions/common/extensions.js";
@@ -54,26 +54,37 @@ export class ExtensionsAutoProfiler implements IWorkbenchContribution {
 	private _perfBaseline = -1;
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IExtensionHostProfileService private readonly _extensionProfileService: IExtensionHostProfileService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IExtensionHostProfileService
+		private readonly _extensionProfileService: IExtensionHostProfileService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentServie: INativeWorkbenchEnvironmentService,
-		@IProfileAnalysisWorkerService private readonly _profileAnalysisService: IProfileAnalysisWorkerService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentServie: INativeWorkbenchEnvironmentService,
+		@IProfileAnalysisWorkerService
+		private readonly _profileAnalysisService: IProfileAnalysisWorkerService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 		@IFileService private readonly _fileService: IFileService,
-		@ITimerService timerService: ITimerService
+		@ITimerService timerService: ITimerService,
 	) {
-
-		timerService.perfBaseline.then(value => {
+		timerService.perfBaseline.then((value) => {
 			if (value < 0) {
 				return; // too slow for profiling
 			}
 			this._perfBaseline = value;
-			this._unresponsiveListener = _extensionService.onDidChangeResponsiveChange(this._onDidChangeResponsiveChange, this);
+			this._unresponsiveListener =
+				_extensionService.onDidChangeResponsiveChange(
+					this._onDidChangeResponsiveChange,
+					this,
+				);
 		});
 	}
 

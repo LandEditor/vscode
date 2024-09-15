@@ -3,13 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { StateStack, applyStateStackDiff } from "vscode-textmate";
+import type { applyStateStackDiff, StateStack } from "vscode-textmate";
+
 import { importAMDNodeModule } from "../../../../../amdX.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	keepObserved,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type { Proxied } from "../../../../../base/common/worker/simpleWorker.js";
 import { countEOL } from "../../../../../editor/common/core/eolCounter.js";

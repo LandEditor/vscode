@@ -16,46 +16,48 @@ import type { FuzzyScore } from "../../../../../base/common/filters.js";
 import { KeyCode } from "../../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
+	dispose,
 	type IDisposable,
 	type IReference,
-	dispose,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import {
 	basenameOrAuthority,
 	dirname,
 } from "../../../../../base/common/resources.js";
+
 import "./referencesWidget.css";
+
 import * as nls from "../../../../../nls.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
 import { ILabelService } from "../../../../../platform/label/common/label.js";
 import {
-	type IWorkbenchAsyncDataTreeOptions,
 	WorkbenchAsyncDataTree,
+	type IWorkbenchAsyncDataTreeOptions,
 } from "../../../../../platform/list/browser/listService.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../../platform/theme/common/themeService.js";
 import type { ICodeEditor } from "../../../../browser/editorBrowser.js";
 import { EmbeddedCodeEditorWidget } from "../../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js";
 import type { IEditorOptions } from "../../../../common/config/editorOptions.js";
-import { type IRange, Range } from "../../../../common/core/range.js";
+import { Range, type IRange } from "../../../../common/core/range.js";
 import { ScrollType } from "../../../../common/editorCommon.js";
 import type { Location } from "../../../../common/languages.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../../common/languages/modesRegistry.js";
 import {
-	type IModelDeltaDecoration,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
 } from "../../../../common/model.js";
 import {
 	ModelDecorationOptions,
 	TextModel,
 } from "../../../../common/model/textModel.js";
 import {
-	type ITextEditorModel,
 	ITextModelService,
+	type ITextEditorModel,
 } from "../../../../common/services/resolverService.js";
 import * as peekView from "../../../peekView/browser/peekView.js";
 import {
@@ -277,16 +279,32 @@ export class ReferenceWidget extends peekView.PeekViewWidget {
 		private _defaultTreeKeyboardSupport: boolean,
 		public layoutData: LayoutData,
 		@IThemeService themeService: IThemeService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@peekView.IPeekViewService private readonly _peekViewService: peekView.IPeekViewService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@peekView.IPeekViewService
+		private readonly _peekViewService: peekView.IPeekViewService,
 		@ILabelService private readonly _uriLabel: ILabelService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
-		super(editor, { showFrame: false, showArrow: true, isResizeable: true, isAccessible: true, supportOnTitleClick: true }, _instantiationService);
+		super(
+			editor,
+			{
+				showFrame: false,
+				showArrow: true,
+				isResizeable: true,
+				isAccessible: true,
+				supportOnTitleClick: true,
+			},
+			_instantiationService,
+		);
 
 		this._applyTheme(themeService.getColorTheme());
-		this._callOnDispose.add(themeService.onDidColorThemeChange(this._applyTheme.bind(this)));
+		this._callOnDispose.add(
+			themeService.onDidColorThemeChange(this._applyTheme.bind(this)),
+		);
 		this._peekViewService.addExclusiveWidget(editor, this);
 		this.create();
 	}

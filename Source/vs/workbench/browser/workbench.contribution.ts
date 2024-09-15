@@ -19,19 +19,19 @@ import {
 } from "../../platform/configuration/common/configurationRegistry.js";
 import { Registry } from "../../platform/registry/common/platform.js";
 import {
-	type ConfigurationKeyValuePairs,
 	ConfigurationMigrationWorkbenchContribution,
 	DynamicWindowConfiguration,
 	DynamicWorkbenchSecurityConfiguration,
 	Extensions,
-	type IConfigurationMigrationRegistry,
 	problemsConfigurationNodeBase,
 	windowConfigurationNodeBase,
 	workbenchConfigurationNodeBase,
+	type ConfigurationKeyValuePairs,
+	type IConfigurationMigrationRegistry,
 } from "../common/configuration.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../common/contributions.js";
 import { CustomEditorLabelService } from "../services/editor/common/customEditorLabelService.js";
 import {

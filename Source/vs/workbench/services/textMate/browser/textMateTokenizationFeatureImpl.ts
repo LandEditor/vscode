@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IGrammar, IOnigLib, IRawTheme } from "vscode-textmate";
+
 import {
 	importAMDNodeModule,
 	resolveAmdNodeModulePath,
@@ -24,8 +25,8 @@ import {
 	nodeModulesPath,
 } from "../../../../base/common/network.js";
 import {
-	type IObservable,
 	observableFromEvent,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { isWeb } from "../../../../base/common/platform.js";
 import * as resources from "../../../../base/common/resources.js";
@@ -33,9 +34,9 @@ import * as types from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { StandardTokenType } from "../../../../editor/common/encodedTokenAttributes.js";
 import {
-	type ITokenizationSupport,
 	LazyTokenizationSupport,
 	TokenizationRegistry,
+	type ITokenizationSupport,
 } from "../../../../editor/common/languages.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { generateTokensCSSForColorMap } from "../../../../editor/common/languages/supports/tokenization.js";
@@ -56,17 +57,17 @@ import type {
 	IExtensionPointUser,
 } from "../../extensions/common/extensionsRegistry.js";
 import {
+	IWorkbenchThemeService,
 	type ITextMateThemingRule,
 	type IWorkbenchColorTheme,
-	IWorkbenchThemeService,
 } from "../../themes/common/workbenchThemeService.js";
 import {
-	TMGrammarFactory,
 	missingTMGrammarErrorMessage,
+	TMGrammarFactory,
 } from "../common/TMGrammarFactory.js";
 import {
-	type ITMSyntaxExtensionPoint,
 	grammarsExtPoint,
+	type ITMSyntaxExtensionPoint,
 } from "../common/TMGrammars.js";
 import type {
 	IValidEmbeddedLanguagesMap,
@@ -120,31 +121,46 @@ export class TextMateTokenizationFeature
 
 	constructor(
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IWorkbenchThemeService private readonly _themeService: IWorkbenchThemeService,
-		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IWorkbenchThemeService
+		private readonly _themeService: IWorkbenchThemeService,
+		@IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@ILogService private readonly _logService: ILogService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IProgressService private readonly _progressService: IProgressService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		super();
 
 		this._styleElement = dom.createStyleSheet();
-		this._styleElement.className = 'vscode-tokens-styles';
+		this._styleElement.className = "vscode-tokens-styles";
 
-		grammarsExtPoint.setHandler((extensions) => this._handleGrammarsExtPoint(extensions));
+		grammarsExtPoint.setHandler((extensions) =>
+			this._handleGrammarsExtPoint(extensions),
+		);
 
 		this._updateTheme(this._themeService.getColorTheme(), true);
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._updateTheme(this._themeService.getColorTheme(), false);
-		}));
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
+				this._updateTheme(this._themeService.getColorTheme(), false);
+			}),
+		);
 
-		this._register(this._languageService.onDidRequestRichLanguageFeatures((languageId) => {
-			this._createdModes.push(languageId);
-		}));
+		this._register(
+			this._languageService.onDidRequestRichLanguageFeatures(
+				(languageId) => {
+					this._createdModes.push(languageId);
+				},
+			),
+		);
 	}
 
 	private getAsyncTokenizationEnabled(): boolean {

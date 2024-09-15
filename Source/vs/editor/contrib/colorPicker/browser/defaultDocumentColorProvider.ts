@@ -18,8 +18,9 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 
 export class DefaultDocumentColorProvider implements DocumentColorProvider {
 	constructor(
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
-	) { }
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
+	) {}
 
 	async provideDocumentColors(
 		model: ITextModel,
@@ -76,7 +77,8 @@ export class DefaultDocumentColorProvider implements DocumentColorProvider {
 
 export class DefaultDocumentColorProviderFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		_languageFeaturesService: ILanguageFeaturesService,
 		@IEditorWorkerService editorWorkerService: IEditorWorkerService,
 	) {
 		super();

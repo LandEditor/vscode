@@ -31,9 +31,9 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../browser/services/codeEditorService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
@@ -44,9 +44,9 @@ import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import { IEditorWorkerService } from "../../../common/services/editorWorker.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import {
-	FormattingMode,
 	formatDocumentRangesWithSelectedProvider,
 	formatDocumentWithSelectedProvider,
+	FormattingMode,
 	getOnTypeFormattingEdits,
 } from "./format.js";
 import { FormattingEdit } from "./formattingEdit.js";
@@ -59,18 +59,30 @@ export class FormatOnType implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IEditorWorkerService private readonly _workerService: IEditorWorkerService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IEditorWorkerService
+		private readonly _workerService: IEditorWorkerService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
-		this._disposables.add(_languageFeaturesService.onTypeFormattingEditProvider.onDidChange(this._update, this));
+		this._disposables.add(
+			_languageFeaturesService.onTypeFormattingEditProvider.onDidChange(
+				this._update,
+				this,
+			),
+		);
 		this._disposables.add(_editor.onDidChangeModel(() => this._update()));
-		this._disposables.add(_editor.onDidChangeModelLanguage(() => this._update()));
-		this._disposables.add(_editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.formatOnType)) {
-				this._update();
-			}
-		}));
+		this._disposables.add(
+			_editor.onDidChangeModelLanguage(() => this._update()),
+		);
+		this._disposables.add(
+			_editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.formatOnType)) {
+					this._update();
+				}
+			}),
+		);
 		this._update();
 	}
 
@@ -193,13 +205,24 @@ class FormatOnPaste implements IEditorContribution {
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
-		this._callOnDispose.add(editor.onDidChangeConfiguration(() => this._update()));
+		this._callOnDispose.add(
+			editor.onDidChangeConfiguration(() => this._update()),
+		);
 		this._callOnDispose.add(editor.onDidChangeModel(() => this._update()));
-		this._callOnDispose.add(editor.onDidChangeModelLanguage(() => this._update()));
-		this._callOnDispose.add(_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(this._update, this));
+		this._callOnDispose.add(
+			editor.onDidChangeModelLanguage(() => this._update()),
+		);
+		this._callOnDispose.add(
+			_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(
+				this._update,
+				this,
+			),
+		);
 	}
 
 	dispose(): void {

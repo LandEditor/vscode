@@ -21,13 +21,13 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ConfirmResult,
-	type FileFilter,
+	getFileNamesMessage,
 	IDialogService,
+	type FileFilter,
 	type IFileDialogService,
 	type IOpenDialogOptions,
 	type IPickAndOpenOptions,
 	type ISaveDialogOptions,
-	getFileNamesMessage,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { EditorOpenSource } from "../../../../platform/editor/common/editor.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
@@ -36,16 +36,16 @@ import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
-	type IWindowOpenable,
 	isFileToOpen,
 	isWorkspaceToOpen,
+	type IWindowOpenable,
 } from "../../../../platform/window/common/window.js";
 import {
-	IWorkspaceContextService,
-	WORKSPACE_EXTENSION,
-	WorkbenchState,
 	isSavedWorkspace,
 	isTemporaryWorkspace,
+	IWorkspaceContextService,
+	WorkbenchState,
+	WORKSPACE_EXTENSION,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspacesService } from "../../../../platform/workspaces/common/workspaces.js";
 import { IEditorService } from "../../editor/common/editorService.js";
@@ -54,8 +54,8 @@ import { IHistoryService } from "../../history/common/history.js";
 import { IHostService } from "../../host/browser/host.js";
 import { IPathService } from "../../path/common/pathService.js";
 import {
-	type ISimpleFileDialog,
 	SimpleFileDialog,
+	type ISimpleFileDialog,
 } from "./simpleFileDialog.js";
 
 export abstract class AbstractFileDialogService implements IFileDialogService {
@@ -63,23 +63,29 @@ export abstract class AbstractFileDialogService implements IFileDialogService {
 
 	constructor(
 		@IHostService protected readonly hostService: IHostService,
-		@IWorkspaceContextService protected readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		protected readonly contextService: IWorkspaceContextService,
 		@IHistoryService protected readonly historyService: IHistoryService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IFileService protected readonly fileService: IFileService,
 		@IOpenerService protected readonly openerService: IOpenerService,
 		@IDialogService protected readonly dialogService: IDialogService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkspacesService private readonly workspacesService: IWorkspacesService,
+		@IWorkspacesService
+		private readonly workspacesService: IWorkspacesService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IPathService private readonly pathService: IPathService,
 		@ICommandService protected readonly commandService: ICommandService,
 		@IEditorService protected readonly editorService: IEditorService,
-		@ICodeEditorService protected readonly codeEditorService: ICodeEditorService,
-		@ILogService private readonly logService: ILogService
-	) { }
+		@ICodeEditorService
+		protected readonly codeEditorService: ICodeEditorService,
+		@ILogService private readonly logService: ILogService,
+	) {}
 
 	async defaultFilePath(
 		schemeFilter = this.getSchemeFilterForWindow(),

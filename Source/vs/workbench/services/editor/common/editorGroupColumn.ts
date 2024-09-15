@@ -7,14 +7,14 @@ import type { IConfigurationService } from "../../../../platform/configuration/c
 import type { GroupIdentifier } from "../../../common/editor.js";
 import {
 	GroupsOrder,
+	preferredSideBySideGroupDirection,
 	type IEditorGroup,
 	type IEditorGroupsService,
-	preferredSideBySideGroupDirection,
 } from "./editorGroupsService.js";
 import {
 	ACTIVE_GROUP,
-	type ACTIVE_GROUP_TYPE,
 	SIDE_GROUP,
+	type ACTIVE_GROUP_TYPE,
 	type SIDE_GROUP_TYPE,
 } from "./editorService.js";
 

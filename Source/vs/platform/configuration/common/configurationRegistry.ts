@@ -10,8 +10,8 @@ import type { IJSONSchema } from "../../../base/common/jsonSchema.js";
 import * as types from "../../../base/common/types.js";
 import * as nls from "../../../nls.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../jsonschemas/common/jsonContributionRegistry.js";
 import type { PolicyName } from "../../policy/common/policy.js";
 import { Registry } from "../../registry/common/platform.js";
@@ -418,7 +418,10 @@ class ConfigurationRegistry implements IConfigurationRegistry {
 	public updateConfigurations({
 		add,
 		remove,
-	}: { add: IConfigurationNode[]; remove: IConfigurationNode[] }): void {
+	}: {
+		add: IConfigurationNode[];
+		remove: IConfigurationNode[];
+	}): void {
 		const properties = new Set<string>();
 		this.doDeregisterConfigurations(remove, properties);
 		this.doRegisterConfigurations(add, false, properties);

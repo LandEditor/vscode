@@ -33,15 +33,15 @@ import { localize, localize2 } from "../../../../nls.js";
 import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
+	type IAction2Options,
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	ContextKeyGreaterExpr,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
@@ -66,46 +66,46 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
 import {
-	TestingConfigKeys,
 	getTestingConfiguration,
+	TestingConfigKeys,
 } from "../common/configuration.js";
 import {
 	TestCommandId,
+	testConfigurationGroupNames,
 	TestExplorerViewMode,
 	TestExplorerViewSorting,
 	Testing,
-	testConfigurationGroupNames,
 } from "../common/constants.js";
 import { ITestCoverageService } from "../common/testCoverageService.js";
 import { TestId } from "../common/testId.js";
-import {
-	ITestProfileService,
-	canUseProfileWithTest,
-} from "../common/testProfileService.js";
-import type { ITestResult } from "../common/testResult.js";
-import { ITestResultService } from "../common/testResultService.js";
-import {
-	type IMainThreadTestCollection,
-	type IMainThreadTestController,
-	ITestService,
-	expandAndGetTestById,
-	testsInFile,
-	testsUnderUri,
-} from "../common/testService.js";
-import {
-	ExtTestRunProfileKind,
-	type ITestRunProfile,
-	type InternalTestItem,
-	TestItemExpandState,
-	TestRunProfileBitset,
-} from "../common/testTypes.js";
 import { TestingContextKeys } from "../common/testingContextKeys.js";
 import { ITestingContinuousRunService } from "../common/testingContinuousRunService.js";
 import { ITestingPeekOpener } from "../common/testingPeekOpener.js";
 import { isFailedState } from "../common/testingStates.js";
 import {
-	type TestExplorerTreeElement,
+	canUseProfileWithTest,
+	ITestProfileService,
+} from "../common/testProfileService.js";
+import type { ITestResult } from "../common/testResult.js";
+import { ITestResultService } from "../common/testResultService.js";
+import {
+	expandAndGetTestById,
+	ITestService,
+	testsInFile,
+	testsUnderUri,
+	type IMainThreadTestCollection,
+	type IMainThreadTestController,
+} from "../common/testService.js";
+import {
+	ExtTestRunProfileKind,
+	TestItemExpandState,
+	TestRunProfileBitset,
+	type InternalTestItem,
+	type ITestRunProfile,
+} from "../common/testTypes.js";
+import {
 	TestItemTreeElement,
+	type TestExplorerTreeElement,
 } from "./explorerProjections/index.js";
 import * as icons from "./icons.js";
 import type { TestingExplorerView } from "./testingExplorerView.js";

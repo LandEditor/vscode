@@ -20,7 +20,7 @@ import {
 import { isFalsyOrWhitespace } from "../../../base/common/strings.js";
 import { localize } from "../../../nls.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
-import { type LexingError, Scanner, type Token, TokenType } from "./scanner.js";
+import { Scanner, TokenType, type LexingError, type Token } from "./scanner.js";
 
 const CONSTANT_VALUES = new Map<string, boolean>();
 CONSTANT_VALUES.set("false", false);

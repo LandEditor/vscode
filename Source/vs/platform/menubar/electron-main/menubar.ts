@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	app,
 	BrowserWindow,
-	type KeyboardEvent,
 	Menu,
 	MenuItem,
+	type KeyboardEvent,
 	type MenuItemConstructorOptions,
 	type WebContents,
-	app,
 } from "electron";
+
 import type {
 	WorkbenchActionExecutedClassification,
 	WorkbenchActionExecutedEvent,
@@ -34,27 +35,27 @@ import { IStateService } from "../../state/node/state.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUpdateService, StateType } from "../../update/common/update.js";
 import {
+	hasNativeTitlebar,
 	type INativeRunActionInWindowRequest,
 	type INativeRunKeybindingInWindowRequest,
 	type IWindowOpenable,
-	hasNativeTitlebar,
 } from "../../window/common/window.js";
 import {
-	type IWindowsCountChangedEvent,
 	IWindowsMainService,
 	OpenContext,
+	type IWindowsCountChangedEvent,
 } from "../../windows/electron-main/windows.js";
 import { IWorkspacesHistoryMainService } from "../../workspaces/electron-main/workspacesHistoryMainService.js";
 import {
+	isMenubarMenuItemAction,
+	isMenubarMenuItemRecentAction,
+	isMenubarMenuItemSeparator,
+	isMenubarMenuItemSubmenu,
 	type IMenubarData,
 	type IMenubarKeybinding,
 	type IMenubarMenu,
 	type IMenubarMenuRecentItemAction,
 	type MenubarMenuItem,
-	isMenubarMenuItemAction,
-	isMenubarMenuItemRecentAction,
-	isMenubarMenuItemSeparator,
-	isMenubarMenuItemSubmenu,
 } from "../common/menubar.js";
 
 const telemetryFrom = "menu";
@@ -101,23 +102,32 @@ export class Menubar extends Disposable {
 
 	constructor(
 		@IUpdateService private readonly updateService: IUpdateService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspacesHistoryMainService private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
+		@IWorkspacesHistoryMainService
+		private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
 		@IStateService private readonly stateService: IStateService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@ILogService private readonly logService: ILogService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
 		@IProductService private readonly productService: IProductService,
-		@IAuxiliaryWindowsMainService private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService
+		@IAuxiliaryWindowsMainService
+		private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
 	) {
 		super();
 
 		this.menuUpdater = new RunOnceScheduler(() => this.doUpdateMenu(), 0);
 
-		this.menuGC = new RunOnceScheduler(() => { this.oldMenus = []; }, 10000);
+		this.menuGC = new RunOnceScheduler(() => {
+			this.oldMenus = [];
+		}, 10000);
 
 		this.menubarMenus = Object.create(null);
 		this.keybindings = Object.create(null);

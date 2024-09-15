@@ -7,19 +7,19 @@ import type { URI } from "../../../../../base/common/uri.js";
 import { Range } from "../../../../../editor/common/core/range.js";
 import type { FindMatch } from "../../../../../editor/common/model.js";
 import {
+	TextSearchMatch,
 	type IFileMatch,
 	type ITextSearchMatch,
-	TextSearchMatch,
 } from "../../../../services/search/common/search.js";
 import type {
 	CellWebviewFindMatch,
 	ICellViewModel,
 } from "../../../notebook/browser/notebookBrowser.js";
 import {
-	type INotebookCellMatchNoModel,
-	type INotebookFileMatchNoModel,
 	genericCellMatchesToTextSearchMatches,
 	rawCellPrefix,
+	type INotebookCellMatchNoModel,
+	type INotebookFileMatchNoModel,
 } from "../../common/searchNotebookHelpers.js";
 
 export type INotebookCellMatch =

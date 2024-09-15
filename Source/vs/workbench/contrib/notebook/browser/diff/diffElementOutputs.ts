@@ -20,14 +20,14 @@ import type { NotebookTextModel } from "../../common/model/notebookTextModel.js"
 import type { NotebookCellOutputsSplice } from "../../common/notebookCommon.js";
 import { INotebookService } from "../../common/notebookService.js";
 import {
+	RenderOutputType,
 	type ICellOutputViewModel,
 	type IInsetRenderOutput,
-	RenderOutputType,
 } from "../notebookBrowser.js";
 import { mimetypeIcon } from "../notebookIcons.js";
 import {
-	type DiffElementCellViewModelBase,
 	SideBySideDiffElementViewModel,
+	type DiffElementCellViewModelBase,
 } from "./diffElementViewModel.js";
 import type { DiffNestedCellViewModel } from "./diffNestedCellViewModel.js";
 import {
@@ -376,22 +376,33 @@ export class OutputContainer extends Disposable {
 		private _diffSide: DiffSide,
 		private _outputContainer: HTMLElement,
 		@INotebookService private _notebookService: INotebookService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
-		this._register(this._diffElementViewModel.onDidLayoutChange(() => {
-			this._outputEntries.forEach((value, key) => {
-				const index = _nestedCellViewModel.outputs.indexOf(key.model);
-				if (index >= 0) {
-					const top = this._diffElementViewModel.getOutputOffsetInContainer(this._diffSide, index);
-					value.domNode.style.top = `${top}px`;
-				}
-			});
-		}));
+		this._register(
+			this._diffElementViewModel.onDidLayoutChange(() => {
+				this._outputEntries.forEach((value, key) => {
+					const index = _nestedCellViewModel.outputs.indexOf(
+						key.model,
+					);
+					if (index >= 0) {
+						const top =
+							this._diffElementViewModel.getOutputOffsetInContainer(
+								this._diffSide,
+								index,
+							);
+						value.domNode.style.top = `${top}px`;
+					}
+				});
+			}),
+		);
 
-		this._register(this._nestedCellViewModel.textModel.onDidChangeOutputs(splice => {
-			this._updateOutputs(splice);
-		}));
+		this._register(
+			this._nestedCellViewModel.textModel.onDidChangeOutputs((splice) => {
+				this._updateOutputs(splice);
+			}),
+		);
 	}
 
 	private _updateOutputs(splice: NotebookCellOutputsSplice) {

@@ -47,8 +47,8 @@ import {
 	textLinkForeground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { SIDE_BAR_BACKGROUND } from "../../../common/theme.js";
@@ -73,26 +73,41 @@ export class NativeIssueService implements IWorkbenchIssueService {
 		@IIssueMainService private readonly issueMainService: IIssueMainService,
 		@IIssueFormService private readonly issueFormService: IIssueFormService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkbenchAssignmentService private readonly experimentService: IWorkbenchAssignmentService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchAssignmentService
+		private readonly experimentService: IWorkbenchAssignmentService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
 		@IIntegrityService private readonly integrityService: IIntegrityService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
-		ipcRenderer.on('vscode:triggerReporterMenu', async (event, arg) => {
+		ipcRenderer.on("vscode:triggerReporterMenu", async (event, arg) => {
 			const extensionId = arg.extensionId;
 
 			// gets menu from contributed
-			const actions = this.menuService.getMenuActions(MenuId.IssueReporter, this.contextKeyService, { renderShortTitle: true }).flatMap(entry => entry[1]);
+			const actions = this.menuService
+				.getMenuActions(MenuId.IssueReporter, this.contextKeyService, {
+					renderShortTitle: true,
+				})
+				.flatMap((entry) => entry[1]);
 
 			// render menu and dispose
-			actions.forEach(async action => {
+			actions.forEach(async (action) => {
 				try {
-					if (action.item && 'source' in action.item && action.item.source?.id === extensionId) {
+					if (
+						action.item &&
+						"source" in action.item &&
+						action.item.source?.id === extensionId
+					) {
 						this.extensionIdentifierSet.add(extensionId);
 						await action.run();
 					}
@@ -103,7 +118,10 @@ export class NativeIssueService implements IWorkbenchIssueService {
 
 			if (!this.extensionIdentifierSet.has(extensionId)) {
 				// send undefined to indicate no action was taken
-				ipcRenderer.send(`vscode:triggerReporterMenuResponse:${extensionId}`, undefined);
+				ipcRenderer.send(
+					`vscode:triggerReporterMenuResponse:${extensionId}`,
+					undefined,
+				);
 			}
 		});
 	}

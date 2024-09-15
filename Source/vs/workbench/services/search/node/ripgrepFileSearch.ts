@@ -5,6 +5,7 @@
 
 import * as cp from "child_process";
 import { rgPath } from "@vscode/ripgrep";
+
 import * as extpath from "../../../../base/common/extpath.js";
 import type * as glob from "../../../../base/common/glob.js";
 import { normalizeNFD } from "../../../../base/common/normalization.js";

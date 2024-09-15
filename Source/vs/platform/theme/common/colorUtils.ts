@@ -13,8 +13,8 @@ import type {
 } from "../../../base/common/jsonSchema.js";
 import * as nls from "../../../nls.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../jsonschemas/common/jsonContributionRegistry.js";
 import * as platform from "../../registry/common/platform.js";
 import type { IColorTheme } from "./themeService.js";

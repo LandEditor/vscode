@@ -8,9 +8,9 @@ import { Disposable } from "../../../../../../base/common/lifecycle.js";
 import { URI } from "../../../../../../base/common/uri.js";
 import { Registry } from "../../../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../../../common/contributions.js";
 import { LifecyclePhase } from "../../../../../services/lifecycle/common/lifecycle.js";
 import { IDebugService } from "../../../../debug/common/debug.js";
@@ -26,17 +26,22 @@ class NotebookCellPausing extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
 
-		this._register(_debugService.getModel().onDidChangeCallStack(() => {
-			// First update using the stale callstack if the real callstack is empty, to reduce blinking while stepping.
-			// After not pausing for 2s, update again with the latest callstack.
-			this.onDidChangeCallStack(true);
-			this._scheduler.schedule();
-		}));
-		this._scheduler = this._register(new RunOnceScheduler(() => this.onDidChangeCallStack(false), 2000));
+		this._register(
+			_debugService.getModel().onDidChangeCallStack(() => {
+				// First update using the stale callstack if the real callstack is empty, to reduce blinking while stepping.
+				// After not pausing for 2s, update again with the latest callstack.
+				this.onDidChangeCallStack(true);
+				this._scheduler.schedule();
+			}),
+		);
+		this._scheduler = this._register(
+			new RunOnceScheduler(() => this.onDidChangeCallStack(false), 2000),
+		);
 	}
 
 	private async onDidChangeCallStack(

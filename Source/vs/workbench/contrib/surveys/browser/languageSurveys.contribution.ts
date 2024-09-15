@@ -25,15 +25,15 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
-	type ITextFileEditorModel,
 	ITextFileService,
+	type ITextFileEditorModel,
 } from "../../../services/textfile/common/textfiles.js";
 
 class LanguageSurvey extends Disposable {
@@ -260,13 +260,14 @@ class LanguageSurvey extends Disposable {
 class LanguageSurveysContribution implements IWorkbenchContribution {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IProductService private readonly productService: IProductService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IExtensionService private readonly extensionService: IExtensionService
+		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		this.handleSurveys();
 	}

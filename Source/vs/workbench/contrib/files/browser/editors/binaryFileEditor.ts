@@ -18,8 +18,8 @@ import type { EditorInput } from "../../../../common/editor/editorInput.js";
 import type { IEditorGroup } from "../../../../services/editor/common/editorGroupsService.js";
 import {
 	IEditorResolverService,
-	type ResolvedEditor,
 	ResolvedStatus,
+	type ResolvedEditor,
 } from "../../../../services/editor/common/editorResolverService.js";
 import {
 	BINARY_FILE_EDITOR_ID,
@@ -37,18 +37,20 @@ export class BinaryFileEditor extends BaseBinaryResourceEditor {
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
-		@IStorageService storageService: IStorageService
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
+		@IStorageService storageService: IStorageService,
 	) {
 		super(
 			BinaryFileEditor.ID,
 			group,
 			{
-				openInternal: (input, options) => this.openInternal(input, options)
+				openInternal: (input, options) =>
+					this.openInternal(input, options),
 			},
 			telemetryService,
 			themeService,
-			storageService
+			storageService,
 		);
 	}
 

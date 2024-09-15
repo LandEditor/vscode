@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IRelativePattern,
 	match as matchGlobPattern,
+	type IRelativePattern,
 } from "../../base/common/glob.js";
 import { normalize } from "../../base/common/path.js";
 import type { URI } from "../../base/common/uri.js";

@@ -5,9 +5,9 @@
 
 import { isMacintosh } from "../../../base/common/platform.js";
 import {
+	getdevDeviceId,
 	getMachineId,
 	getSqmMachineId,
-	getdevDeviceId,
 } from "../../../base/node/id.js";
 import type { ILogService } from "../../log/common/log.js";
 import type { IStateReadService } from "../../state/node/state.js";

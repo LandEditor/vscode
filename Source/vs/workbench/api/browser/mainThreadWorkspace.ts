@@ -23,18 +23,18 @@ import { IInstantiationService } from "../../../platform/instantiation/common/in
 import { ILabelService } from "../../../platform/label/common/label.js";
 import { INotificationService } from "../../../platform/notification/common/notification.js";
 import {
+	IRequestService,
 	type AuthInfo,
 	type Credentials,
-	IRequestService,
 } from "../../../platform/request/common/request.js";
 import { ICanonicalUriService } from "../../../platform/workspace/common/canonicalUri.js";
 import { IEditSessionIdentityService } from "../../../platform/workspace/common/editSessions.js";
 import {
-	type IWorkspace,
+	isUntitledWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState,
+	type IWorkspace,
 	type WorkspaceFolder,
-	isUntitledWorkspace,
 } from "../../../platform/workspace/common/workspace.js";
 import {
 	IWorkspaceTrustManagementService,
@@ -51,28 +51,28 @@ import {
 	type ISaveEditorsResult,
 } from "../../services/editor/common/editorService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import { checkGlobFileExists } from "../../services/extensions/common/workspaceContains.js";
 import {
+	QueryBuilder,
 	type IFileQueryBuilderOptions,
 	type ITextQueryBuilderOptions,
-	QueryBuilder,
 } from "../../services/search/common/queryBuilder.js";
 import {
+	ISearchService,
 	type IFileMatch,
 	type IPatternInfo,
 	type ISearchProgressItem,
-	ISearchService,
 } from "../../services/search/common/search.js";
 import { IWorkspaceEditingService } from "../../services/workspaces/common/workspaceEditing.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostWorkspaceShape,
 	type ITextSearchComplete,
 	type IWorkspaceData,
-	MainContext,
 	type MainThreadWorkspaceShape,
 } from "../common/extHost.protocol.js";
 
@@ -89,32 +89,67 @@ export class MainThreadWorkspace implements MainThreadWorkspaceShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ISearchService private readonly _searchService: ISearchService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@IEditSessionIdentityService private readonly _editSessionIdentityService: IEditSessionIdentityService,
-		@ICanonicalUriService private readonly _canonicalUriService: ICanonicalUriService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@IEditSessionIdentityService
+		private readonly _editSessionIdentityService: IEditSessionIdentityService,
+		@ICanonicalUriService
+		private readonly _canonicalUriService: ICanonicalUriService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IWorkspaceEditingService private readonly _workspaceEditingService: IWorkspaceEditingService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IWorkspaceEditingService
+		private readonly _workspaceEditingService: IWorkspaceEditingService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IRequestService private readonly _requestService: IRequestService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkspaceTrustRequestService private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustRequestService
+		private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostWorkspace);
 		const workspace = this._contextService.getWorkspace();
 		// The workspace file is provided be a unknown file system provider. It might come
 		// from the extension host. So initialize now knowing that `rootPath` is undefined.
-		if (workspace.configuration && !isNative && !fileService.hasProvider(workspace.configuration)) {
-			this._proxy.$initializeWorkspace(this.getWorkspaceData(workspace), this.isWorkspaceTrusted());
+		if (
+			workspace.configuration &&
+			!isNative &&
+			!fileService.hasProvider(workspace.configuration)
+		) {
+			this._proxy.$initializeWorkspace(
+				this.getWorkspaceData(workspace),
+				this.isWorkspaceTrusted(),
+			);
 		} else {
-			this._contextService.getCompleteWorkspace().then(workspace => this._proxy.$initializeWorkspace(this.getWorkspaceData(workspace), this.isWorkspaceTrusted()));
+			this._contextService
+				.getCompleteWorkspace()
+				.then((workspace) =>
+					this._proxy.$initializeWorkspace(
+						this.getWorkspaceData(workspace),
+						this.isWorkspaceTrusted(),
+					),
+				);
 		}
-		this._contextService.onDidChangeWorkspaceFolders(this._onDidChangeWorkspace, this, this._toDispose);
-		this._contextService.onDidChangeWorkbenchState(this._onDidChangeWorkspace, this, this._toDispose);
-		this._workspaceTrustManagementService.onDidChangeTrust(this._onDidGrantWorkspaceTrust, this, this._toDispose);
+		this._contextService.onDidChangeWorkspaceFolders(
+			this._onDidChangeWorkspace,
+			this,
+			this._toDispose,
+		);
+		this._contextService.onDidChangeWorkbenchState(
+			this._onDidChangeWorkspace,
+			this,
+			this._toDispose,
+		);
+		this._workspaceTrustManagementService.onDidChangeTrust(
+			this._onDidGrantWorkspaceTrust,
+			this,
+			this._toDispose,
+		);
 	}
 
 	dispose(): void {

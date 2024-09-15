@@ -4,10 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { safeInnerHtml } from "../../../../base/browser/dom.js";
+
 import "../../../../base/browser/ui/codicons/codiconStyles.js"; // make sure codicon css is loaded
+
 import { mainWindow } from "../../../../base/browser/window.js";
 import { isLinux, isWindows } from "../../../../base/common/platform.js";
+
 import "./media/issueReporter.css";
+
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { getSingletonServiceDescriptors } from "../../../../platform/instantiation/common/extensions.js";
 import { InstantiationService } from "../../../../platform/instantiation/common/instantiationService.js";

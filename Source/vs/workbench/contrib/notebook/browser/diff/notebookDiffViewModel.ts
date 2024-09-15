@@ -32,18 +32,18 @@ import {
 import type { INotebookService } from "../../common/notebookService.js";
 import type { INotebookEditorWorkerService } from "../../common/services/notebookWorkerService.js";
 import {
-	type DiffElementCellViewModelBase,
 	DiffElementPlaceholderViewModel,
-	type IDiffElementViewModelBase,
 	SideBySideDiffElementViewModel,
 	SingleSideDiffElementViewModel,
+	type DiffElementCellViewModelBase,
+	type IDiffElementViewModelBase,
 } from "./diffElementViewModel.js";
 import type { NotebookDiffEditorEventDispatcher } from "./eventDispatcher.js";
 import {
-	type INotebookDiffViewModel,
-	type INotebookDiffViewModelUpdateEvent,
 	NOTEBOOK_DIFF_ITEM_DIFF_STATE,
 	NOTEBOOK_DIFF_ITEM_KIND,
+	type INotebookDiffViewModel,
+	type INotebookDiffViewModelUpdateEvent,
 } from "./notebookDiffEditorBrowser.js";
 import type { IUnchangedEditorRegionsService } from "./unchangedEditorRegions.js";
 

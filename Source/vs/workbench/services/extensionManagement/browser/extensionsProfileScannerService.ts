@@ -20,9 +20,11 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 
 export class ExtensionsProfileScannerService extends AbstractExtensionsProfileScannerService {
 	constructor(
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILogService logService: ILogService,

@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../nls.js";
-
 import { memoize } from "../../base/common/decorators.js";
 import type { URI } from "../../base/common/uri.js";
+import * as nls from "../../nls.js";
 import {
 	IEnvironmentService,
 	type INativeEnvironmentService,

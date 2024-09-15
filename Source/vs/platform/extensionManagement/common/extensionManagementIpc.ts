@@ -9,8 +9,8 @@ import { cloneAndChange } from "../../../base/common/objects.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
 	DefaultURITransformer,
-	type IURITransformer,
 	transformAndReviveIncomingURIs,
+	type IURITransformer,
 } from "../../../base/common/uriIpc.js";
 import type {
 	IChannel,
@@ -22,25 +22,25 @@ import type {
 	TargetPlatform,
 } from "../../extensions/common/extensions.js";
 import {
+	isTargetPlatformCompatible,
 	type DidUninstallExtensionEvent,
 	type DidUpdateExtensionMetadata,
 	type IExtensionIdentifier,
 	type IExtensionManagementService,
-	type IExtensionTipsService,
 	type IExtensionsControlManifest,
+	type IExtensionTipsService,
 	type IGalleryExtension,
 	type ILocalExtension,
-	type IProductVersion,
 	type InstallExtensionEvent,
 	type InstallExtensionInfo,
 	type InstallExtensionResult,
 	type InstallOperation,
 	type InstallOptions,
+	type IProductVersion,
 	type Metadata,
 	type UninstallExtensionEvent,
 	type UninstallExtensionInfo,
 	type UninstallOptions,
-	isTargetPlatformCompatible,
 } from "./extensionManagement.js";
 
 function transformIncomingURI(

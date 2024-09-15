@@ -25,9 +25,9 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 import { ILogService } from "../../log/common/log.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IAnyWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
+	type IAnyWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 
 export enum ProfileResourceType {
@@ -310,14 +310,22 @@ export class UserDataProfilesService
 		};
 
 	constructor(
-		@IEnvironmentService protected readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		protected readonly environmentService: IEnvironmentService,
 		@IFileService protected readonly fileService: IFileService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
-		@ILogService protected readonly logService: ILogService
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
+		@ILogService protected readonly logService: ILogService,
 	) {
 		super();
-		this.profilesHome = joinPath(this.environmentService.userRoamingDataHome, 'profiles');
-		this.profilesCacheHome = joinPath(this.environmentService.cacheHome, 'CachedProfilesData');
+		this.profilesHome = joinPath(
+			this.environmentService.userRoamingDataHome,
+			"profiles",
+		);
+		this.profilesCacheHome = joinPath(
+			this.environmentService.cacheHome,
+			"CachedProfilesData",
+		);
 	}
 
 	init(): void {

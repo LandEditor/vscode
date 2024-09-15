@@ -13,8 +13,8 @@ import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { defaultInputBoxStyles } from "../../../../platform/theme/browser/defaultStyles.js";
 import {
-	type IconContribution,
 	getIconRegistry,
+	type IconContribution,
 } from "../../../../platform/theme/common/iconRegistry.js";
 import { WorkbenchIconSelectBox } from "../../../services/userDataProfile/browser/iconSelectBox.js";
 
@@ -42,15 +42,18 @@ export class TerminalIconPicker extends Disposable {
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IHoverService private readonly _hoverService: IHoverService
+		@IHoverService private readonly _hoverService: IHoverService,
 	) {
 		super();
 
-		this._iconSelectBox = instantiationService.createInstance(WorkbenchIconSelectBox, {
-			icons: icons.value,
-			inputBoxStyles: defaultInputBoxStyles,
-			showIconInfo: true
-		});
+		this._iconSelectBox = instantiationService.createInstance(
+			WorkbenchIconSelectBox,
+			{
+				icons: icons.value,
+				inputBoxStyles: defaultInputBoxStyles,
+				showIconInfo: true,
+			},
+		);
 	}
 
 	async pickIcons(): Promise<ThemeIcon | undefined> {

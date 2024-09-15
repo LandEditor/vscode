@@ -6,22 +6,23 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import * as objects from "../../../base/common/objects.js";
 import { URI } from "../../../base/common/uri.js";
+import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
 	normalizeVersion,
 	parseVersion,
 } from "../../../platform/extensions/common/extensionValidator.js";
-import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import type { ILogService } from "../../../platform/log/common/log.js";
 import {
-	type WebviewRemoteInfo,
 	asWebviewUri,
 	webviewGenericCspSource,
+	type WebviewRemoteInfo,
 } from "../../contrib/webview/common/webview.js";
 import type { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import * as extHostProtocol from "./extHost.protocol.js";

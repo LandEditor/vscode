@@ -21,32 +21,32 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IQuickAccessRegistry,
 	Extensions as QuickAccessExtensions,
+	type IQuickAccessRegistry,
 } from "../../../../platform/quickinput/common/quickAccess.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import { defaultQuickAccessContextKeyValue } from "../../../browser/quickaccess.js";
 import {
+	ViewContainerLocation,
+	Extensions as ViewExtensions,
 	type IViewContainersRegistry,
 	type IViewDescriptor,
 	type IViewsRegistry,
-	ViewContainerLocation,
-	Extensions as ViewExtensions,
 } from "../../../common/views.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
 	SEARCH_EXCLUDE_CONFIG,
 	SearchSortOrder,
-	VIEWLET_ID,
 	VIEW_ID,
+	VIEWLET_ID,
 	ViewMode,
 } from "../../../services/search/common/search.js";
 import { GotoSymbolQuickAccessProvider } from "../../codeEditor/browser/quickaccess/gotoSymbolQuickAccess.js";
 import * as Constants from "../common/constants.js";
 import {
-	type IWorkspaceSymbol,
 	getWorkspaceSymbols,
+	type IWorkspaceSymbol,
 } from "../common/search.js";
 import {
 	ISearchHistoryService,
@@ -71,6 +71,7 @@ import "./searchActionsRemoveReplace.js";
 import "./searchActionsSymbol.js";
 import "./searchActionsTopBar.js";
 import "./searchActionsTextQuickAccess.js";
+
 import {
 	Extensions,
 	type IConfigurationMigrationRegistry,

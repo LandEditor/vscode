@@ -14,9 +14,9 @@ import type { IAction } from "../../../../../../base/common/actions.js";
 import { ThemeIcon } from "../../../../../../base/common/themables.js";
 import * as types from "../../../../../../base/common/types.js";
 import {
-	type IMenuEntryActionViewItemOptions,
 	MenuEntryActionViewItem,
 	SubmenuEntryActionViewItem,
+	type IMenuEntryActionViewItemOptions,
 } from "../../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	MenuItemAction,
@@ -70,9 +70,20 @@ export class UnifiedSubmenuActionView extends SubmenuEntryActionViewItem {
 		@IKeybindingService _keybindingService: IKeybindingService,
 		@IContextMenuService _contextMenuService: IContextMenuService,
 		@IThemeService _themeService: IThemeService,
-		@IHoverService private readonly _hoverService: IHoverService
+		@IHoverService private readonly _hoverService: IHoverService,
 	) {
-		super(action, { ...options, hoverDelegate: options?.hoverDelegate ?? getDefaultHoverDelegate('element') }, _keybindingService, _contextMenuService, _themeService);
+		super(
+			action,
+			{
+				...options,
+				hoverDelegate:
+					options?.hoverDelegate ??
+					getDefaultHoverDelegate("element"),
+			},
+			_keybindingService,
+			_contextMenuService,
+			_themeService,
+		);
 	}
 
 	override render(container: HTMLElement): void {

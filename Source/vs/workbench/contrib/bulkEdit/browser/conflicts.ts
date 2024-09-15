@@ -8,9 +8,9 @@ import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ResourceEdit,
 	ResourceFileEdit,
 	ResourceTextEdit,
+	type ResourceEdit,
 } from "../../../../editor/browser/services/bulkEditService.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";

@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	isESM,
 	LoaderEventType,
 	LoaderStats,
-	isESM,
 } from "../../../../base/common/amd.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type * as perf from "../../../../base/common/performance.js";
 import { isWeb } from "../../../../base/common/platform.js";
@@ -20,8 +20,8 @@ import { ILanguageService } from "../../../../editor/common/languages/language.j
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { ITextResourceConfigurationService } from "../../../../editor/common/services/textResourceConfiguration.js";
 import { localize } from "../../../../nls.js";
@@ -34,9 +34,9 @@ import { ILabelService } from "../../../../platform/label/common/label.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 	getWorkbenchContribution,
+	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { TextResourceEditorInput } from "../../../common/editor/textResourceEditorInput.js";
 import { ICustomEditorLabelService } from "../../../services/editor/common/customEditorLabelService.js";
@@ -67,10 +67,15 @@ export class PerfviewContrib {
 	private readonly _registration: IDisposable;
 
 	constructor(
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@ITextModelService textModelResolverService: ITextModelService
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@ITextModelService textModelResolverService: ITextModelService,
 	) {
-		this._registration = textModelResolverService.registerTextModelContentProvider('perf', _instaService.createInstance(PerfModelContentProvider));
+		this._registration =
+			textModelResolverService.registerTextModelContentProvider(
+				"perf",
+				_instaService.createInstance(PerfModelContentProvider),
+			);
 	}
 
 	dispose(): void {
@@ -99,9 +104,12 @@ export class PerfviewInput extends TextResourceEditorInput {
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
 		@ILabelService labelService: ILabelService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
 		super(
 			PerfviewContrib.get().getInputUri(),
@@ -129,12 +137,14 @@ class PerfModelContentProvider implements ITextModelContentProvider {
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@ITimerService private readonly _timerService: ITimerService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IProductService private readonly _productService: IProductService,
-		@ITerminalService private readonly _terminalService: ITerminalService
-	) { }
+		@ITerminalService private readonly _terminalService: ITerminalService,
+	) {}
 
 	provideTextContent(resource: URI): Promise<ITextModel> {
 		if (!this._model || this._model.isDisposed()) {

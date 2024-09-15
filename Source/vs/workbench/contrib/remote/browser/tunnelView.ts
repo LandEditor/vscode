@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/tunnelView.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import type { IKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
-import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { Button } from "../../../../base/browser/ui/button/button.js";
 import type { IHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegate.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
@@ -30,16 +31,16 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { Event } from "../../../../base/common/event.js";
 import { createSingleCallFunction } from "../../../../base/common/functional.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -58,8 +59,8 @@ import {
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import {
 	CommandsRegistry,
-	type ICommandHandler,
 	ICommandService,
+	type ICommandHandler,
 } from "../../../../platform/commands/common/commands.js";
 import {
 	ConfigurationTarget,
@@ -67,9 +68,9 @@ import {
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -80,8 +81,8 @@ import { SyncDescriptor } from "../../../../platform/instantiation/common/descri
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { WorkbenchTable } from "../../../../platform/list/browser/listService.js";
 import {
@@ -103,50 +104,50 @@ import {
 import { registerColor } from "../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
-	ITunnelService,
-	type RemoteTunnel,
-	TunnelPrivacyId,
-	TunnelProtocol,
 	isAllInterfaces,
 	isLocalhost,
+	ITunnelService,
+	TunnelPrivacyId,
+	TunnelProtocol,
+	type RemoteTunnel,
 } from "../../../../platform/tunnel/common/tunnel.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { STATUS_BAR_REMOTE_ITEM_BACKGROUND } from "../../../common/theme.js";
 import {
+	IViewDescriptorService,
 	type IEditableData,
 	type IViewDescriptor,
-	IViewDescriptorService,
 } from "../../../common/views.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
 	IRemoteExplorerService,
-	type ITunnelItem,
 	TUNNEL_VIEW_ID,
 	TunnelEditId,
 	TunnelType,
+	type ITunnelItem,
 } from "../../../services/remote/common/remoteExplorerService.js";
 import {
-	type Attributes,
-	type CandidatePort,
-	type Tunnel,
-	TunnelCloseReason,
-	type TunnelModel,
-	TunnelSource,
 	forwardedPortsViewEnabled,
 	makeAddress,
 	mapHasAddressLocalhostOrAllInterfaces,
 	parseAddress,
+	TunnelCloseReason,
+	TunnelSource,
+	type Attributes,
+	type CandidatePort,
+	type Tunnel,
+	type TunnelModel,
 } from "../../../services/remote/common/tunnelModel.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { IExternalUriOpenerService } from "../../externalUriOpener/common/externalUriOpenerService.js";
 import {
 	copyAddressIcon,
-	forwardPortIcon,
-	forwardedPortWithProcessIcon,
 	forwardedPortWithoutProcessIcon,
+	forwardedPortWithProcessIcon,
+	forwardPortIcon,
 	labelPortIcon,
 	openBrowserIcon,
 	openPreviewIcon,
@@ -212,11 +213,17 @@ export class TunnelViewModel implements ITunnelViewModel {
 	};
 
 	constructor(
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
-		@ITunnelService private readonly tunnelService: ITunnelService
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
+		@ITunnelService private readonly tunnelService: ITunnelService,
 	) {
 		this.model = remoteExplorerService.tunnelModel;
-		this.onForwardedPortsChanged = Event.any(this.model.onForwardPort, this.model.onClosePort, this.model.onPortName, this.model.onCandidatesChanged);
+		this.onForwardedPortsChanged = Event.any(
+			this.model.onForwardPort,
+			this.model.onClosePort,
+			this.model.onPortName,
+			this.model.onCandidatesChanged,
+		);
 	}
 
 	get all(): TunnelItem[] {
@@ -549,17 +556,22 @@ class ActionBarRenderer
 	private readonly _hoverDelegate: IHoverDelegate;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
-		this._hoverDelegate = getDefaultHoverDelegate('mouse');
+		this._hoverDelegate = getDefaultHoverDelegate("mouse");
 	}
 
 	set actionRunner(actionRunner: ActionRunner) {
@@ -1149,59 +1161,101 @@ export class TunnelPanel extends ViewPane {
 		@ICommandService protected commandService: ICommandService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IThemeService themeService: IThemeService,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 		this.tunnelTypeContext = TunnelTypeContextKey.bindTo(contextKeyService);
-		this.tunnelCloseableContext = TunnelCloseableContextKey.bindTo(contextKeyService);
-		this.tunnelPrivacyContext = TunnelPrivacyContextKey.bindTo(contextKeyService);
-		this.tunnelPrivacyEnabledContext = TunnelPrivacyEnabledContextKey.bindTo(contextKeyService);
+		this.tunnelCloseableContext =
+			TunnelCloseableContextKey.bindTo(contextKeyService);
+		this.tunnelPrivacyContext =
+			TunnelPrivacyContextKey.bindTo(contextKeyService);
+		this.tunnelPrivacyEnabledContext =
+			TunnelPrivacyEnabledContextKey.bindTo(contextKeyService);
 		this.tunnelPrivacyEnabledContext.set(tunnelService.canChangePrivacy);
-		this.protocolChangableContextKey = ProtocolChangeableContextKey.bindTo(contextKeyService);
+		this.protocolChangableContextKey =
+			ProtocolChangeableContextKey.bindTo(contextKeyService);
 		this.protocolChangableContextKey.set(tunnelService.canChangeProtocol);
-		this.tunnelProtocolContext = TunnelProtocolContextKey.bindTo(contextKeyService);
-		this.tunnelViewFocusContext = TunnelViewFocusContextKey.bindTo(contextKeyService);
-		this.tunnelViewSelectionContext = TunnelViewSelectionContextKey.bindTo(contextKeyService);
-		this.tunnelViewMultiSelectionContext = TunnelViewMultiSelectionContextKey.bindTo(contextKeyService);
-		this.portChangableContextKey = PortChangableContextKey.bindTo(contextKeyService);
+		this.tunnelProtocolContext =
+			TunnelProtocolContextKey.bindTo(contextKeyService);
+		this.tunnelViewFocusContext =
+			TunnelViewFocusContextKey.bindTo(contextKeyService);
+		this.tunnelViewSelectionContext =
+			TunnelViewSelectionContextKey.bindTo(contextKeyService);
+		this.tunnelViewMultiSelectionContext =
+			TunnelViewMultiSelectionContextKey.bindTo(contextKeyService);
+		this.portChangableContextKey =
+			PortChangableContextKey.bindTo(contextKeyService);
 
-		const overlayContextKeyService = this.contextKeyService.createOverlay([['view', TunnelPanel.ID]]);
-		const titleMenu = this._register(this.menuService.createMenu(MenuId.TunnelTitle, overlayContextKeyService));
+		const overlayContextKeyService = this.contextKeyService.createOverlay([
+			["view", TunnelPanel.ID],
+		]);
+		const titleMenu = this._register(
+			this.menuService.createMenu(
+				MenuId.TunnelTitle,
+				overlayContextKeyService,
+			),
+		);
 		const updateActions = () => {
 			this.titleActions = [];
-			createAndFillInActionBarActions(titleMenu, undefined, this.titleActions);
+			createAndFillInActionBarActions(
+				titleMenu,
+				undefined,
+				this.titleActions,
+			);
 			this.updateActions();
 		};
 
 		this._register(titleMenu.onDidChange(updateActions));
 		updateActions();
 
-		this._register(toDisposable(() => {
-			this.titleActions = [];
-		}));
+		this._register(
+			toDisposable(() => {
+				this.titleActions = [];
+			}),
+		);
 
 		this.registerPrivacyActions();
-		this._register(Event.once(this.tunnelService.onAddedTunnelProvider)(() => {
-			let updated = false;
-			if (this.tunnelPrivacyEnabledContext.get() === false) {
-				this.tunnelPrivacyEnabledContext.set(tunnelService.canChangePrivacy);
-				updated = true;
-			}
-			if (this.protocolChangableContextKey.get() === true) {
-				this.protocolChangableContextKey.set(tunnelService.canChangeProtocol);
-				updated = true;
-			}
-			if (updated) {
-				updateActions();
-				this.registerPrivacyActions();
-				this.createTable();
-				this.table?.layout(this.height, this.width);
-			}
-		}));
+		this._register(
+			Event.once(this.tunnelService.onAddedTunnelProvider)(() => {
+				let updated = false;
+				if (this.tunnelPrivacyEnabledContext.get() === false) {
+					this.tunnelPrivacyEnabledContext.set(
+						tunnelService.canChangePrivacy,
+					);
+					updated = true;
+				}
+				if (this.protocolChangableContextKey.get() === true) {
+					this.protocolChangableContextKey.set(
+						tunnelService.canChangeProtocol,
+					);
+					updated = true;
+				}
+				if (updated) {
+					updateActions();
+					this.registerPrivacyActions();
+					this.createTable();
+					this.table?.layout(this.height, this.width);
+				}
+			}),
+		);
 	}
 
 	private registerPrivacyActions() {
@@ -1606,9 +1660,9 @@ namespace LabelTunnelAction {
 			} else {
 				const context = accessor
 					.get(IContextKeyService)
-					.getContextKeyValue<string | undefined>(
-						TunnelViewSelectionKeyName,
-					);
+					.getContextKeyValue<
+						string | undefined
+					>(TunnelViewSelectionKeyName);
 				const tunnel = context
 					? remoteExplorerService.tunnelModel.forwarded.get(context)
 					: undefined;
@@ -2174,9 +2228,9 @@ namespace CopyAddressAction {
 			} else {
 				const context = accessor
 					.get(IContextKeyService)
-					.getContextKeyValue<string | undefined>(
-						TunnelViewSelectionKeyName,
-					);
+					.getContextKeyValue<
+						string | undefined
+					>(TunnelViewSelectionKeyName);
 				tunnelItem = context
 					? remoteExplorerService.tunnelModel.forwarded.get(context)
 					: undefined;
@@ -2273,9 +2327,9 @@ namespace ChangeLocalPortAction {
 			} else {
 				const context = accessor
 					.get(IContextKeyService)
-					.getContextKeyValue<string | undefined>(
-						TunnelViewSelectionKeyName,
-					);
+					.getContextKeyValue<
+						string | undefined
+					>(TunnelViewSelectionKeyName);
 				const tunnel = context
 					? remoteExplorerService.tunnelModel.forwarded.get(context)
 					: undefined;

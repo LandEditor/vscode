@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import * as assert from "../../../base/common/assert.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { Iterable } from "../../../base/common/iterator.js";
@@ -15,9 +16,9 @@ import { URI } from "../../../base/common/uri.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
+	MainContext,
 	type ExtHostDocumentsAndEditorsShape,
 	type IDocumentsAndEditorsDelta,
-	MainContext,
 } from "./extHost.protocol.js";
 import { ExtHostDocumentData } from "./extHostDocumentData.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -72,8 +73,8 @@ export class ExtHostDocumentsAndEditors
 
 	constructor(
 		@IExtHostRpcService private readonly _extHostRpc: IExtHostRpcService,
-		@ILogService private readonly _logService: ILogService
-	) { }
+		@ILogService private readonly _logService: ILogService,
+	) {}
 
 	$acceptDocumentsAndEditorsDelta(delta: IDocumentsAndEditorsDelta): void {
 		this.acceptDocumentsAndEditorsDelta(delta);

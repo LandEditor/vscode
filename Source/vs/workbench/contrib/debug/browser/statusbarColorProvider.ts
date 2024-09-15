@@ -25,10 +25,10 @@ import {
 } from "../../../common/theme.js";
 import { IStatusbarService } from "../../../services/statusbar/browser/statusbar.js";
 import {
-	type IDebugConfiguration,
 	IDebugService,
-	type IDebugSession,
 	State,
+	type IDebugConfiguration,
+	type IDebugSession,
 } from "../common/debug.js";
 
 // colors for theming
@@ -104,18 +104,31 @@ export class StatusBarColorProvider implements IWorkbenchContribution {
 
 	constructor(
 		@IDebugService private readonly debugService: IDebugService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		this.debugService.onDidChangeState(this.update, this, this.disposables);
-		this.contextService.onDidChangeWorkbenchState(this.update, this, this.disposables);
-		this.configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('debug.enableStatusBarColor') || e.affectsConfiguration('debug.toolBarLocation')) {
-				this.update();
-			}
-		}, undefined, this.disposables);
+		this.contextService.onDidChangeWorkbenchState(
+			this.update,
+			this,
+			this.disposables,
+		);
+		this.configurationService.onDidChangeConfiguration(
+			(e) => {
+				if (
+					e.affectsConfiguration("debug.enableStatusBarColor") ||
+					e.affectsConfiguration("debug.toolBarLocation")
+				) {
+					this.update();
+				}
+			},
+			undefined,
+			this.disposables,
+		);
 		this.update();
 	}
 

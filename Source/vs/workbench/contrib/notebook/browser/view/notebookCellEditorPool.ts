@@ -5,8 +5,8 @@
 
 import * as DOM from "../../../../../base/browser/dom.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../../base/common/async.js";
 import {
 	Disposable,
@@ -43,18 +43,24 @@ export class NotebookCellEditorPool extends Disposable {
 
 	constructor(
 		readonly notebookEditor: INotebookEditorDelegate,
-		private readonly contextKeyServiceProvider: (container: HTMLElement) => IScopedContextKeyService,
+		private readonly contextKeyServiceProvider: (
+			container: HTMLElement,
+		) => IScopedContextKeyService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._focusedEditorDOM = this.notebookEditor.getDomNode().appendChild(DOM.$('.cell-editor-part-cache'));
-		this._focusedEditorDOM.style.position = 'absolute';
-		this._focusedEditorDOM.style.top = '-50000px';
-		this._focusedEditorDOM.style.width = '1px';
-		this._focusedEditorDOM.style.height = '1px';
+		this._focusedEditorDOM = this.notebookEditor
+			.getDomNode()
+			.appendChild(DOM.$(".cell-editor-part-cache"));
+		this._focusedEditorDOM.style.position = "absolute";
+		this._focusedEditorDOM.style.top = "-50000px";
+		this._focusedEditorDOM.style.width = "1px";
+		this._focusedEditorDOM.style.height = "1px";
 	}
 
 	private _initializeEditor(cell: ICellViewModel) {

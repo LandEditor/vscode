@@ -23,9 +23,10 @@ import { IProductService } from "../../../../platform/product/common/productServ
 export class NativeDialogHandler extends AbstractDialogHandler {
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IProductService private readonly productService: IProductService,
-		@IClipboardService private readonly clipboardService: IClipboardService
+		@IClipboardService private readonly clipboardService: IClipboardService,
 	) {
 		super();
 	}

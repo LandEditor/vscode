@@ -23,13 +23,13 @@ import { acquirePort } from "../../../../base/parts/ipc/electron-sandbox/ipc.mp.
 import * as nls from "../../../../nls.js";
 import { IExtensionHostDebugService } from "../../../../platform/debug/common/extensionHostDebug.js";
 import {
-	type IExtensionHostProcessOptions,
 	IExtensionHostStarter,
+	type IExtensionHostProcessOptions,
 } from "../../../../platform/extensions/common/extensionHostStarter.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 } from "../../../../platform/log/common/log.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import {
@@ -42,9 +42,9 @@ import { ITelemetryService } from "../../../../platform/telemetry/common/telemet
 import { isLoggingOnly } from "../../../../platform/telemetry/common/telemetryUtils.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
+	isUntitledWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState,
-	isUntitledWorkspace,
 } from "../../../../platform/workspace/common/workspace.js";
 import { INativeWorkbenchEnvironmentService } from "../../environment/electron-sandbox/environmentService.js";
 import { IShellEnvironmentService } from "../../environment/electron-sandbox/shellEnvironmentService.js";
@@ -59,16 +59,16 @@ import {
 	writeExtHostConnection,
 } from "../common/extensionHostEnv.js";
 import {
-	type IExtensionHostInitData,
+	isMessageOfType,
 	MessageType,
 	NativeLogMarkers,
 	UIKind,
-	isMessageOfType,
+	type IExtensionHostInitData,
 } from "../common/extensionHostProtocol.js";
 import type { LocalProcessRunningLocation } from "../common/extensionRunningLocation.js";
 import {
-	type ExtensionHostExtensions,
 	ExtensionHostStartup,
+	type ExtensionHostExtensions,
 	type IExtensionHost,
 } from "../common/extensions.js";
 
@@ -150,23 +150,35 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 
 	constructor(
 		public readonly runningLocation: LocalProcessRunningLocation,
-		public readonly startup: ExtensionHostStartup.EagerAutoStart | ExtensionHostStartup.EagerManualStart,
+		public readonly startup:
+			| ExtensionHostStartup.EagerAutoStart
+			| ExtensionHostStartup.EagerManualStart,
 		private readonly _initDataProvider: ILocalProcessExtensionHostDataProvider,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
-		@IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@IUserDataProfilesService
+		private readonly _userDataProfilesService: IUserDataProfilesService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
 		@ILoggerService private readonly _loggerService: ILoggerService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IExtensionHostDebugService private readonly _extensionHostDebugService: IExtensionHostDebugService,
+		@IExtensionHostDebugService
+		private readonly _extensionHostDebugService: IExtensionHostDebugService,
 		@IHostService private readonly _hostService: IHostService,
 		@IProductService private readonly _productService: IProductService,
-		@IShellEnvironmentService private readonly _shellEnvironmentService: IShellEnvironmentService,
-		@IExtensionHostStarter private readonly _extensionHostStarter: IExtensionHostStarter,
+		@IShellEnvironmentService
+		private readonly _shellEnvironmentService: IShellEnvironmentService,
+		@IExtensionHostStarter
+		private readonly _extensionHostStarter: IExtensionHostStarter,
 	) {
 		const devOpts = parseExtensionDevOptions(this._environmentService);
 		this._isExtensionDevHost = devOpts.isExtensionDevHost;
@@ -181,17 +193,33 @@ export class NativeLocalProcessExtensionHost implements IExtensionHost {
 		this._messageProtocol = null;
 
 		this._toDispose.add(this._onExit);
-		this._toDispose.add(this._lifecycleService.onWillShutdown(e => this._onWillShutdown(e)));
-		this._toDispose.add(this._extensionHostDebugService.onClose(event => {
-			if (this._isExtensionDevHost && this._environmentService.debugExtensionHost.debugId === event.sessionId) {
-				this._nativeHostService.closeWindow();
-			}
-		}));
-		this._toDispose.add(this._extensionHostDebugService.onReload(event => {
-			if (this._isExtensionDevHost && this._environmentService.debugExtensionHost.debugId === event.sessionId) {
-				this._hostService.reload();
-			}
-		}));
+		this._toDispose.add(
+			this._lifecycleService.onWillShutdown((e) =>
+				this._onWillShutdown(e),
+			),
+		);
+		this._toDispose.add(
+			this._extensionHostDebugService.onClose((event) => {
+				if (
+					this._isExtensionDevHost &&
+					this._environmentService.debugExtensionHost.debugId ===
+						event.sessionId
+				) {
+					this._nativeHostService.closeWindow();
+				}
+			}),
+		);
+		this._toDispose.add(
+			this._extensionHostDebugService.onReload((event) => {
+				if (
+					this._isExtensionDevHost &&
+					this._environmentService.debugExtensionHost.debugId ===
+						event.sessionId
+				) {
+					this._hostService.reload();
+				}
+			}),
+		);
 	}
 
 	public dispose(): void {

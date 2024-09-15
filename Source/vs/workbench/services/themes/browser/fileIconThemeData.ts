@@ -14,9 +14,9 @@ import type { ILanguageService } from "../../../../editor/common/languages/langu
 import * as nls from "../../../../nls.js";
 import type { IExtensionResourceLoaderService } from "../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import {
 	ExtensionData,

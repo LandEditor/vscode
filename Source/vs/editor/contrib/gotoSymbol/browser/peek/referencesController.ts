@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../../base/common/async.js";
 import { onUnexpectedError } from "../../../../../base/common/errors.js";
 import {
@@ -19,9 +19,9 @@ import { CommandsRegistry } from "../../../../../platform/commands/common/comman
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { InputFocusedContext } from "../../../../../platform/contextkey/common/contextkeys.js";
 import { TextEditorSelectionSource } from "../../../../../platform/editor/common/editor.js";
@@ -30,8 +30,8 @@ import {
 	type ServicesAccessor,
 } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
 	IListService,
@@ -54,8 +54,8 @@ import type { IEditorContribution } from "../../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../../common/editorContextKeys.js";
 import type { Location } from "../../../../common/languages.js";
 import {
-	PeekContext,
 	getOuterEditor,
+	PeekContext,
 } from "../../../peekView/browser/peekView.js";
 import { OneReference, type ReferencesModel } from "../referencesModel.js";
 import { LayoutData, ReferenceWidget } from "./referencesWidget.js";
@@ -93,13 +93,16 @@ export abstract class ReferencesController implements IEditorContribution {
 		private readonly _editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
-
-		this._referenceSearchVisible = ctxReferenceSearchVisible.bindTo(contextKeyService);
+		this._referenceSearchVisible =
+			ctxReferenceSearchVisible.bindTo(contextKeyService);
 	}
 
 	dispose(): void {

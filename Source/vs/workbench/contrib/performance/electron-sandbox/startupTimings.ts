@@ -47,17 +47,28 @@ export class NativeStartupTimings
 	constructor(
 		@IFileService private readonly _fileService: IFileService,
 		@ITimerService private readonly _timerService: ITimerService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IEditorService editorService: IEditorService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IUpdateService updateService: IUpdateService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@IProductService private readonly _productService: IProductService,
-		@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService
+		@IWorkspaceTrustManagementService
+		workspaceTrustService: IWorkspaceTrustManagementService,
 	) {
-		super(editorService, paneCompositeService, lifecycleService, updateService, workspaceTrustService);
+		super(
+			editorService,
+			paneCompositeService,
+			lifecycleService,
+			updateService,
+			workspaceTrustService,
+		);
 
 		this._report().catch(onUnexpectedError);
 	}

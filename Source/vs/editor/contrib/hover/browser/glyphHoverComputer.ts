@@ -5,8 +5,8 @@
 
 import { asArray } from "../../../../base/common/arrays.js";
 import {
-	type IMarkdownString,
 	isEmptyMarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import { GlyphMarginLane } from "../../../common/model.js";

@@ -48,8 +48,8 @@ var AMDLoader;
 			this._isElectronNodeIntegrationWebWorker =
 				this._isWebWorker &&
 				typeof process !== "undefined" &&
-					typeof process.versions !== "undefined" &&
-					typeof process.versions.electron !== "undefined" &&
+				typeof process.versions !== "undefined" &&
+				typeof process.versions.electron !== "undefined" &&
 				process.type === "worker";
 		}
 		static _isWindows() {
@@ -1165,45 +1165,48 @@ var AMDLoader;
 			let iteration = 0;
 			let hashData;
 			const createLoop = () => {
-				setTimeout(() => {
-					if (!hashData) {
-						hashData = this._crypto
-							.createHash("md5")
-							.update(scriptSource, "utf8")
-							.digest();
-					}
-					const cachedData = script.createCachedData();
-					if (
-						cachedData.length === 0 ||
-						cachedData.length === lastSize ||
-						iteration >= 5
-					) {
-						// done
-						return;
-					}
-					if (cachedData.length < lastSize) {
-						// less data than before: skip, try again next round
-						createLoop();
-						return;
-					}
-					lastSize = cachedData.length;
-					this._fs.writeFile(
-						cachedDataPath,
-						Buffer.concat([hashData, cachedData]),
-						(err) => {
-							if (err) {
-								moduleManager.getConfig().onError(err);
-							}
-							moduleManager
-								.getRecorder()
-								.record(
-									63 /* LoaderEventType.CachedDataCreated */,
-									cachedDataPath,
-								);
+				setTimeout(
+					() => {
+						if (!hashData) {
+							hashData = this._crypto
+								.createHash("md5")
+								.update(scriptSource, "utf8")
+								.digest();
+						}
+						const cachedData = script.createCachedData();
+						if (
+							cachedData.length === 0 ||
+							cachedData.length === lastSize ||
+							iteration >= 5
+						) {
+							// done
+							return;
+						}
+						if (cachedData.length < lastSize) {
+							// less data than before: skip, try again next round
 							createLoop();
-						},
-					);
-				}, timeout * Math.pow(4, iteration++));
+							return;
+						}
+						lastSize = cachedData.length;
+						this._fs.writeFile(
+							cachedDataPath,
+							Buffer.concat([hashData, cachedData]),
+							(err) => {
+								if (err) {
+									moduleManager.getConfig().onError(err);
+								}
+								moduleManager
+									.getRecorder()
+									.record(
+										63 /* LoaderEventType.CachedDataCreated */,
+										cachedDataPath,
+									);
+								createLoop();
+							},
+						);
+					},
+					timeout * Math.pow(4, iteration++),
+				);
 			};
 			// with some delay (`timeout`) create cached data
 			// and repeat that (with backoff delay) until the

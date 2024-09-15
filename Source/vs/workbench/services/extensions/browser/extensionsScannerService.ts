@@ -27,12 +27,16 @@ export class ExtensionsScannerService
 	implements IExtensionsScannerService
 {
 	constructor(
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsProfileScannerService
+		extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IProductService productService: IProductService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@IInstantiationService instantiationService: IInstantiationService,

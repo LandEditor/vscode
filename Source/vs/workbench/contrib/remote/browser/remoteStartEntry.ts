@@ -42,16 +42,20 @@ export class RemoteStartEntry
 	constructor(
 		@ICommandService private readonly commandService: ICommandService,
 		@IProductService private readonly productService: IProductService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService) {
-
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+	) {
 		super();
 
-		const remoteExtensionTips = this.productService.remoteExtensionTips?.['tunnel'];
-		this.startCommand = remoteExtensionTips?.startEntry?.startCommand ?? '';
-		this.remoteExtensionId = remoteExtensionTips?.extensionId ?? '';
+		const remoteExtensionTips =
+			this.productService.remoteExtensionTips?.["tunnel"];
+		this.startCommand = remoteExtensionTips?.startEntry?.startCommand ?? "";
+		this.remoteExtensionId = remoteExtensionTips?.extensionId ?? "";
 
 		this._init();
 		this.registerActions();

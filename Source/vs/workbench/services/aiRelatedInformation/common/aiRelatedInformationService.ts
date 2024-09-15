@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	raceTimeout,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
@@ -17,8 +17,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IAiRelatedInformationProvider,
 	IAiRelatedInformationService,
+	type IAiRelatedInformationProvider,
 	type RelatedInformationResult,
 	type RelatedInformationType,
 } from "./aiRelatedInformation.js";
@@ -35,7 +35,7 @@ export class AiRelatedInformationService
 		IAiRelatedInformationProvider[]
 	> = new Map();
 
-	constructor(@ILogService private readonly logService: ILogService) { }
+	constructor(@ILogService private readonly logService: ILogService) {}
 
 	isEnabled(): boolean {
 		return this._providers.size > 0;

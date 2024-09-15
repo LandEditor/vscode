@@ -58,21 +58,26 @@ export class ChatEditorInput extends EditorInput {
 	constructor(
 		readonly resource: URI,
 		readonly options: IChatEditorOptions,
-		@IChatService private readonly chatService: IChatService
+		@IChatService private readonly chatService: IChatService,
 	) {
 		super();
 
 		const parsed = ChatUri.parse(resource);
-		if (typeof parsed?.handle !== 'number') {
-			throw new Error('Invalid chat URI');
+		if (typeof parsed?.handle !== "number") {
+			throw new Error("Invalid chat URI");
 		}
 
-		this.sessionId = (options.target && 'sessionId' in options.target) ?
-			options.target.sessionId :
-			undefined;
+		this.sessionId =
+			options.target && "sessionId" in options.target
+				? options.target.sessionId
+				: undefined;
 		this.inputCount = ChatEditorInput.getNextCount();
 		ChatEditorInput.countsInUse.add(this.inputCount);
-		this._register(toDisposable(() => ChatEditorInput.countsInUse.delete(this.inputCount)));
+		this._register(
+			toDisposable(() =>
+				ChatEditorInput.countsInUse.delete(this.inputCount),
+			),
+		);
 	}
 
 	override get editorId(): string | undefined {

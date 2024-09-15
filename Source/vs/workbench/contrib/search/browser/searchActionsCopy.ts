@@ -22,8 +22,8 @@ import {
 	FolderMatch,
 	FolderMatchWithResource,
 	Match,
-	type RenderableMatch,
 	searchMatchComparer,
+	type RenderableMatch,
 } from "./searchModel.js";
 
 //#region Actions

@@ -6,8 +6,8 @@
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import * as nls from "../../../../../nls.js";
 import {
-	type ILogger,
 	ILoggerService,
+	type ILogger,
 } from "../../../../../platform/log/common/log.js";
 import type { INotebookLoggingService } from "../../common/notebookLoggingService.js";
 
@@ -22,11 +22,13 @@ export class NotebookLoggingService
 	static ID = "notebook";
 	private readonly _logger: ILogger;
 
-	constructor(
-		@ILoggerService loggerService: ILoggerService,
-	) {
+	constructor(@ILoggerService loggerService: ILoggerService) {
 		super();
-		this._logger = this._register(loggerService.createLogger(logChannelId, { name: nls.localize('renderChannelName', "Notebook") }));
+		this._logger = this._register(
+			loggerService.createLogger(logChannelId, {
+				name: nls.localize("renderChannelName", "Notebook"),
+			}),
+		);
 	}
 
 	debug(category: string, output: string): void {

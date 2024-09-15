@@ -8,8 +8,8 @@ import { CharCode } from "../../../../base/common/charCode.js";
 import { Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { TwoKeyMap } from "../../../../base/common/map.js";
@@ -23,7 +23,7 @@ import type {
 	IReadableTextureAtlasPage,
 	ITextureAtlasPageGlyph,
 } from "./atlas.js";
-import { type AllocatorType, TextureAtlasPage } from "./textureAtlasPage.js";
+import { TextureAtlasPage, type AllocatorType } from "./textureAtlasPage.js";
 
 export interface ITextureAtlasOptions {
 	allocatorType?: AllocatorType;
@@ -62,28 +62,43 @@ export class TextureAtlas extends Disposable {
 		private readonly _maxTextureSize: number,
 		options: ITextureAtlasOptions | undefined,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._allocatorType = options?.allocatorType ?? 'slab';
+		this._allocatorType = options?.allocatorType ?? "slab";
 
-		this._register(Event.runAndSubscribe(this._themeService.onDidColorThemeChange, () => {
-			// TODO: Clear entire atlas on theme change
-			this._colorMap = this._themeService.getColorTheme().tokenColorMap;
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				this._themeService.onDidColorThemeChange,
+				() => {
+					// TODO: Clear entire atlas on theme change
+					this._colorMap =
+						this._themeService.getColorTheme().tokenColorMap;
+				},
+			),
+		);
 
-		const dprFactor = Math.max(1, Math.floor(getActiveWindow().devicePixelRatio));
+		const dprFactor = Math.max(
+			1,
+			Math.floor(getActiveWindow().devicePixelRatio),
+		);
 
 		this.pageSize = Math.min(1024 * dprFactor, this._maxTextureSize);
-		const firstPage = this._instantiationService.createInstance(TextureAtlasPage, 0, this.pageSize, this._allocatorType);
+		const firstPage = this._instantiationService.createInstance(
+			TextureAtlasPage,
+			0,
+			this.pageSize,
+			this._allocatorType,
+		);
 		this._pages.push(firstPage);
 
 		// IMPORTANT: The first glyph on the first page must be an empty glyph such that zeroed out
 		// cells end up rendering nothing
 		// TODO: This currently means the first slab is for 0x0 glyphs and is wasted
-		const nullRasterizer = new GlyphRasterizer(1, '');
-		firstPage.getGlyph(nullRasterizer, '', 0);
+		const nullRasterizer = new GlyphRasterizer(1, "");
+		firstPage.getGlyph(nullRasterizer, "", 0);
 		nullRasterizer.dispose();
 
 		this._register(toDisposable(() => dispose(this._pages)));

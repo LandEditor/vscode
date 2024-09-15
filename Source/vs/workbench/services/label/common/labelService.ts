@@ -8,12 +8,12 @@ import { match } from "../../../../base/common/glob.js";
 import { getPathLabel, tildify } from "../../../../base/common/labels.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { posix, sep, win32 } from "../../../../base/common/path.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../../base/common/platform.js";
 import {
 	basename,
 	basenameOrAuthority,
@@ -27,11 +27,11 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IFormatterChangeEvent,
 	ILabelService,
+	Verbosity,
+	type IFormatterChangeEvent,
 	type ResourceLabelFormatter,
 	type ResourceLabelFormatting,
-	Verbosity,
 } from "../../../../platform/label/common/label.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -40,22 +40,22 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type ISingleFolderWorkspaceIdentifier,
-	type IWorkspace,
-	IWorkspaceContextService,
-	type IWorkspaceIdentifier,
-	WORKSPACE_EXTENSION,
 	isSingleFolderWorkspaceIdentifier,
 	isTemporaryWorkspace,
 	isUntitledWorkspace,
 	isWorkspace,
 	isWorkspaceIdentifier,
+	IWorkspaceContextService,
 	toWorkspaceIdentifier,
+	WORKSPACE_EXTENSION,
+	type ISingleFolderWorkspaceIdentifier,
+	type IWorkspace,
+	type IWorkspaceIdentifier,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { Memento } from "../../../common/memento.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
@@ -162,24 +162,32 @@ class ResourceLabelFormattersHandler implements IWorkbenchContribution {
 		resourceLabelFormattersExtPoint.setHandler((extensions, delta) => {
 			for (const added of delta.added) {
 				for (const untrustedFormatter of added.value) {
-
 					// We cannot trust that the formatter as it comes from an extension
 					// adheres to our interface, so for the required properties we fill
 					// in some defaults if missing.
 
 					const formatter = { ...untrustedFormatter };
-					if (typeof formatter.formatting.label !== 'string') {
-						formatter.formatting.label = '${authority}${path}';
+					if (typeof formatter.formatting.label !== "string") {
+						formatter.formatting.label = "${authority}${path}";
 					}
 					if (typeof formatter.formatting.separator !== `string`) {
 						formatter.formatting.separator = sep;
 					}
 
-					if (!isProposedApiEnabled(added.description, 'contribLabelFormatterWorkspaceTooltip') && formatter.formatting.workspaceTooltip) {
+					if (
+						!isProposedApiEnabled(
+							added.description,
+							"contribLabelFormatterWorkspaceTooltip",
+						) &&
+						formatter.formatting.workspaceTooltip
+					) {
 						formatter.formatting.workspaceTooltip = undefined; // workspaceTooltip is only proposed
 					}
 
-					this.formattersDisposables.set(formatter, labelService.registerFormatter(formatter));
+					this.formattersDisposables.set(
+						formatter,
+						labelService.registerFormatter(formatter),
+					);
 				}
 			}
 
@@ -221,10 +229,13 @@ export class LabelService extends Disposable implements ILabelService {
 	private userHome: URI | undefined;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IPathService private readonly pathService: IPathService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 		@IStorageService storageService: IStorageService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 	) {
@@ -235,10 +246,19 @@ export class LabelService extends Disposable implements ILabelService {
 		// and by taking the local `userHome` if we run on a local
 		// file scheme.
 		this.os = OS;
-		this.userHome = pathService.defaultUriScheme === Schemas.file ? this.pathService.userHome({ preferLocal: true }) : undefined;
+		this.userHome =
+			pathService.defaultUriScheme === Schemas.file
+				? this.pathService.userHome({ preferLocal: true })
+				: undefined;
 
-		const memento = this.storedFormattersMemento = new Memento('cachedResourceLabelFormatters2', storageService);
-		this.storedFormatters = memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
+		const memento = (this.storedFormattersMemento = new Memento(
+			"cachedResourceLabelFormatters2",
+			storageService,
+		));
+		this.storedFormatters = memento.getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE,
+		);
 		this.formatters = this.storedFormatters?.formatters?.slice() || [];
 
 		// Remote environment is potentially long running

@@ -5,19 +5,21 @@
 
 import { Disposable } from "../../../../../../base/common/lifecycle.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../../../common/contributions.js";
 import {
 	ChatAgentLocation,
 	IChatAgentService,
 } from "../../../../chat/common/chatAgents.js";
+
 import "./cellChatActions.js";
+
 import { CTX_NOTEBOOK_CHAT_HAS_AGENT } from "./notebookChatContext.js";
 
 class NotebookChatContribution

@@ -6,22 +6,22 @@
 import { findLast } from "../../../../base/common/arraysFind.js";
 import { DeferredPromise } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import type { IMatch } from "../../../../base/common/filters.js";
 import {
-	type IPreparedQuery,
 	pieceToQuery,
 	prepareQuery,
 	scoreFuzzy2,
+	type IPreparedQuery,
 } from "../../../../base/common/fuzzyScorer.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { format, trim } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -35,14 +35,14 @@ import type {
 	IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import type { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import { ScrollType } from "../../../common/editorCommon.js";
 import {
-	type DocumentSymbol,
+	getAriaLabelForSymbol,
 	SymbolKind,
 	SymbolKinds,
 	SymbolTag,
-	getAriaLabelForSymbol,
+	type DocumentSymbol,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
@@ -81,9 +81,11 @@ export abstract class AbstractGotoSymbolQuickAccessProvider extends AbstractEdit
 	protected override readonly options: IGotoSymbolQuickAccessProviderOptions;
 
 	constructor(
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IOutlineModelService private readonly _outlineModelService: IOutlineModelService,
-		options: IGotoSymbolQuickAccessProviderOptions = Object.create(null)
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IOutlineModelService
+		private readonly _outlineModelService: IOutlineModelService,
+		options: IGotoSymbolQuickAccessProviderOptions = Object.create(null),
 	) {
 		super(options);
 

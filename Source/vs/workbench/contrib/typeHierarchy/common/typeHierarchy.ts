@@ -7,16 +7,16 @@ import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
 import {
-	type IDisposable,
 	RefCountedDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { assertType } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { LanguageFeatureRegistry } from "../../../../editor/common/languageFeatureRegistry.js";
 import type {
 	ProviderResult,

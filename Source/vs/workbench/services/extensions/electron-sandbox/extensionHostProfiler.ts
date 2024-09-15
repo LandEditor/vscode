@@ -14,8 +14,8 @@ import {
 	type IV8ProfileNode,
 } from "../../../../platform/profiling/common/profiling.js";
 import {
-	type IExtensionHostProfile,
 	IExtensionService,
+	type IExtensionHostProfile,
 	type ProfileSegmentId,
 	type ProfileSession,
 } from "../common/extensions.js";
@@ -24,10 +24,11 @@ export class ExtensionHostProfiler {
 	constructor(
 		private readonly _host: string,
 		private readonly _port: number,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IV8InspectProfilingService private readonly _profilingService: IV8InspectProfilingService,
-	) {
-	}
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IV8InspectProfilingService
+		private readonly _profilingService: IV8InspectProfilingService,
+	) {}
 
 	public async start(): Promise<ProfileSession> {
 		const id = await this._profilingService.startProfiling({

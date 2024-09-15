@@ -6,6 +6,7 @@
 import * as nls from "../../../../nls.js";
 
 import "./media/dirtydiffDecorator.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import type { IActionBarOptions } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import {
@@ -23,9 +24,9 @@ import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { rot } from "../../../../base/common/numbers.js";
@@ -34,17 +35,17 @@ import type { ISplice } from "../../../../base/common/sequence.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
+	isCodeEditor,
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
-	isCodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import { EmbeddedDiffEditorWidget } from "../../../../editor/browser/widget/diffEditor/embeddedDiffEditorWidget.js";
@@ -56,33 +57,33 @@ import { Position } from "../../../../editor/common/core/position.js";
 import type { Range } from "../../../../editor/common/core/range.js";
 import type { IChange } from "../../../../editor/common/diff/legacyLinesDiffComputer.js";
 import {
+	ScrollType,
 	type IDiffEditorModel,
 	type IEditorContribution,
 	type IEditorDecorationsCollection,
 	type IEditorModel,
-	ScrollType,
 } from "../../../../editor/common/editorCommon.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import {
-	type IModelDecorationOptions,
-	type ITextModel,
 	MinimapPosition,
 	OverviewRulerLane,
 	shouldSynchronizeModel,
+	type IModelDecorationOptions,
+	type ITextModel,
 } from "../../../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../../../editor/common/model/textModel.js";
 import { IEditorWorkerService } from "../../../../editor/common/services/editorWorker.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import {
-	PeekViewWidget,
 	getOuterEditor,
 	peekViewBorder,
 	peekViewTitleBackground,
 	peekViewTitleForeground,
 	peekViewTitleInfoForeground,
+	PeekViewWidget,
 } from "../../../../editor/contrib/peekView/browser/peekView.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import {
@@ -91,24 +92,24 @@ import {
 } from "../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js";
 import { createAndFillInActionBarActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
 	IProgressService,
@@ -124,26 +125,26 @@ import {
 	gotoPreviousLocation,
 } from "../../../../platform/theme/common/iconRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
 	themeColorFromId,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import { TextCompareEditorActiveContext } from "../../../common/contextkeys.js";
 import type * as ext from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
 	EncodingMode,
+	isTextFileEditorModel,
+	ITextFileService,
 	type IResolvedTextFileEditorModel,
 	type ITextFileEditorModel,
-	ITextFileService,
-	isTextFileEditorModel,
 } from "../../../services/textfile/common/textfiles.js";
 import { IQuickDiffService, type QuickDiff } from "../common/quickDiff.js";
-import { type ISCMRepository, ISCMService } from "../common/scm.js";
+import { ISCMService, type ISCMRepository } from "../common/scm.js";
 import {
-	type IQuickDiffSelectItem,
 	SwitchQuickDiffBaseAction,
 	SwitchQuickDiffViewItem,
+	type IQuickDiffSelectItem,
 } from "./dirtyDiffSwitcher.js";
 
 class DiffActionRunner extends ActionRunner {
@@ -310,22 +311,39 @@ class DirtyDiffWidget extends PeekViewWidget {
 		@IThemeService private readonly themeService: IThemeService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private contextKeyService: IContextKeyService
+		@IContextKeyService private contextKeyService: IContextKeyService,
 	) {
-		super(editor, { isResizeable: true, frameWidth: 1, keepEditorSelection: true, className: 'dirty-diff' }, instantiationService);
+		super(
+			editor,
+			{
+				isResizeable: true,
+				frameWidth: 1,
+				keepEditorSelection: true,
+				className: "dirty-diff",
+			},
+			instantiationService,
+		);
 
-		this._disposables.add(themeService.onDidColorThemeChange(this._applyTheme, this));
+		this._disposables.add(
+			themeService.onDidColorThemeChange(this._applyTheme, this),
+		);
 		this._applyTheme(themeService.getColorTheme());
 
 		if (this.model.original.length > 0) {
-			contextKeyService = contextKeyService.createOverlay([['originalResourceScheme', this.model.original[0].uri.scheme], ['originalResourceSchemes', this.model.original.map(original => original.uri.scheme)]]);
+			contextKeyService = contextKeyService.createOverlay([
+				["originalResourceScheme", this.model.original[0].uri.scheme],
+				[
+					"originalResourceSchemes",
+					this.model.original.map((original) => original.uri.scheme),
+				],
+			]);
 		}
 
 		this.create();
 		if (editor.hasModel()) {
 			this.title = basename(editor.getModel().uri);
 		} else {
-			this.title = '';
+			this.title = "";
 		}
 		this.setTitle(this.title);
 	}
@@ -1039,19 +1057,32 @@ export class DirtyDiffController
 	constructor(
 		private editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		this.enabled = !contextKeyService.getContextKeyValue('isInDiffEditor');
-		this.stylesheet = dom.createStyleSheet(undefined, undefined, this._store);
+		this.enabled = !contextKeyService.getContextKeyValue("isInDiffEditor");
+		this.stylesheet = dom.createStyleSheet(
+			undefined,
+			undefined,
+			this._store,
+		);
 
 		if (this.enabled) {
-			this.isDirtyDiffVisible = isDirtyDiffVisible.bindTo(contextKeyService);
+			this.isDirtyDiffVisible =
+				isDirtyDiffVisible.bindTo(contextKeyService);
 			this._register(editor.onDidChangeModel(() => this.close()));
 
-			const onDidChangeGutterAction = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.diffDecorationsGutterAction'));
-			this._register(onDidChangeGutterAction(this.onDidChangeGutterAction, this));
+			const onDidChangeGutterAction = Event.filter(
+				configurationService.onDidChangeConfiguration,
+				(e) =>
+					e.affectsConfiguration("scm.diffDecorationsGutterAction"),
+			);
+			this._register(
+				onDidChangeGutterAction(this.onDidChangeGutterAction, this),
+			);
 			this.onDidChangeGutterAction();
 		}
 	}
@@ -1501,54 +1532,111 @@ class DirtyDiffDecorator extends Disposable {
 		editorModel: ITextModel,
 		private readonly codeEditor: ICodeEditor,
 		private model: DirtyDiffModel,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 		this.editorModel = editorModel;
 
-		const decorations = configurationService.getValue<string>('scm.diffDecorations');
-		const gutter = decorations === 'all' || decorations === 'gutter';
-		const overview = decorations === 'all' || decorations === 'overview';
-		const minimap = decorations === 'all' || decorations === 'minimap';
+		const decorations = configurationService.getValue<string>(
+			"scm.diffDecorations",
+		);
+		const gutter = decorations === "all" || decorations === "gutter";
+		const overview = decorations === "all" || decorations === "overview";
+		const minimap = decorations === "all" || decorations === "minimap";
 
-		const diffAdded = nls.localize('diffAdded', 'Added lines');
-		this.addedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-added', diffAdded, {
-			gutter,
-			overview: { active: overview, color: overviewRulerAddedForeground },
-			minimap: { active: minimap, color: minimapGutterAddedBackground },
-			isWholeLine: true
-		});
-		this.addedPatternOptions = DirtyDiffDecorator.createDecoration('dirty-diff-added-pattern', diffAdded, {
-			gutter,
-			overview: { active: overview, color: overviewRulerAddedForeground },
-			minimap: { active: minimap, color: minimapGutterAddedBackground },
-			isWholeLine: true
-		});
-		const diffModified = nls.localize('diffModified', 'Changed lines');
-		this.modifiedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-modified', diffModified, {
-			gutter,
-			overview: { active: overview, color: overviewRulerModifiedForeground },
-			minimap: { active: minimap, color: minimapGutterModifiedBackground },
-			isWholeLine: true
-		});
-		this.modifiedPatternOptions = DirtyDiffDecorator.createDecoration('dirty-diff-modified-pattern', diffModified, {
-			gutter,
-			overview: { active: overview, color: overviewRulerModifiedForeground },
-			minimap: { active: minimap, color: minimapGutterModifiedBackground },
-			isWholeLine: true
-		});
-		this.deletedOptions = DirtyDiffDecorator.createDecoration('dirty-diff-deleted', nls.localize('diffDeleted', 'Removed lines'), {
-			gutter,
-			overview: { active: overview, color: overviewRulerDeletedForeground },
-			minimap: { active: minimap, color: minimapGutterDeletedBackground },
-			isWholeLine: false
-		});
+		const diffAdded = nls.localize("diffAdded", "Added lines");
+		this.addedOptions = DirtyDiffDecorator.createDecoration(
+			"dirty-diff-added",
+			diffAdded,
+			{
+				gutter,
+				overview: {
+					active: overview,
+					color: overviewRulerAddedForeground,
+				},
+				minimap: {
+					active: minimap,
+					color: minimapGutterAddedBackground,
+				},
+				isWholeLine: true,
+			},
+		);
+		this.addedPatternOptions = DirtyDiffDecorator.createDecoration(
+			"dirty-diff-added-pattern",
+			diffAdded,
+			{
+				gutter,
+				overview: {
+					active: overview,
+					color: overviewRulerAddedForeground,
+				},
+				minimap: {
+					active: minimap,
+					color: minimapGutterAddedBackground,
+				},
+				isWholeLine: true,
+			},
+		);
+		const diffModified = nls.localize("diffModified", "Changed lines");
+		this.modifiedOptions = DirtyDiffDecorator.createDecoration(
+			"dirty-diff-modified",
+			diffModified,
+			{
+				gutter,
+				overview: {
+					active: overview,
+					color: overviewRulerModifiedForeground,
+				},
+				minimap: {
+					active: minimap,
+					color: minimapGutterModifiedBackground,
+				},
+				isWholeLine: true,
+			},
+		);
+		this.modifiedPatternOptions = DirtyDiffDecorator.createDecoration(
+			"dirty-diff-modified-pattern",
+			diffModified,
+			{
+				gutter,
+				overview: {
+					active: overview,
+					color: overviewRulerModifiedForeground,
+				},
+				minimap: {
+					active: minimap,
+					color: minimapGutterModifiedBackground,
+				},
+				isWholeLine: true,
+			},
+		);
+		this.deletedOptions = DirtyDiffDecorator.createDecoration(
+			"dirty-diff-deleted",
+			nls.localize("diffDeleted", "Removed lines"),
+			{
+				gutter,
+				overview: {
+					active: overview,
+					color: overviewRulerDeletedForeground,
+				},
+				minimap: {
+					active: minimap,
+					color: minimapGutterDeletedBackground,
+				},
+				isWholeLine: false,
+			},
+		);
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('scm.diffDecorationsGutterPattern')) {
-				this.onDidChange();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("scm.diffDecorationsGutterPattern")
+				) {
+					this.onDidChange();
+				}
+			}),
+		);
 
 		this._register(model.onDidChange(this.onDidChange, this));
 	}
@@ -1707,36 +1795,56 @@ export class DirtyDiffModel extends Disposable {
 		textFileModel: IResolvedTextFileEditorModel,
 		@ISCMService private readonly scmService: ISCMService,
 		@IQuickDiffService private readonly quickDiffService: IQuickDiffService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@IProgressService private readonly progressService: IProgressService,
 	) {
 		super();
 		this._model = textFileModel;
 
-		this._register(textFileModel.textEditorModel.onDidChangeContent(() => this.triggerDiff()));
 		this._register(
-			Event.filter(configurationService.onDidChangeConfiguration,
-				e => e.affectsConfiguration('scm.diffDecorationsIgnoreTrimWhitespace') || e.affectsConfiguration('diffEditor.ignoreTrimWhitespace')
-			)(this.triggerDiff, this)
+			textFileModel.textEditorModel.onDidChangeContent(() =>
+				this.triggerDiff(),
+			),
 		);
-		this._register(scmService.onDidAddRepository(this.onDidAddRepository, this));
+		this._register(
+			Event.filter(
+				configurationService.onDidChangeConfiguration,
+				(e) =>
+					e.affectsConfiguration(
+						"scm.diffDecorationsIgnoreTrimWhitespace",
+					) ||
+					e.affectsConfiguration("diffEditor.ignoreTrimWhitespace"),
+			)(this.triggerDiff, this),
+		);
+		this._register(
+			scmService.onDidAddRepository(this.onDidAddRepository, this),
+		);
 		for (const r of scmService.repositories) {
 			this.onDidAddRepository(r);
 		}
 
-		this._register(this._model.onDidChangeEncoding(() => {
-			this.diffDelayer.cancel();
-			this._quickDiffs = [];
-			this._originalModels.clear();
-			this._originalTextModels = [];
-			this._quickDiffsPromise = undefined;
-			this.setChanges([], new Map());
-			this.triggerDiff();
-		}));
+		this._register(
+			this._model.onDidChangeEncoding(() => {
+				this.diffDelayer.cancel();
+				this._quickDiffs = [];
+				this._originalModels.clear();
+				this._originalTextModels = [];
+				this._quickDiffsPromise = undefined;
+				this.setChanges([], new Map());
+				this.triggerDiff();
+			}),
+		);
 
-		this._register(this.quickDiffService.onDidChangeQuickDiffProviders(() => this.triggerDiff()));
+		this._register(
+			this.quickDiffService.onDidChangeQuickDiffProviders(() =>
+				this.triggerDiff(),
+			),
+		);
 		this.triggerDiff();
 	}
 
@@ -2138,23 +2246,51 @@ export class DirtyDiffWorkbenchController
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ITextFileService private readonly textFileService: ITextFileService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ITextFileService private readonly textFileService: ITextFileService,
 	) {
 		super();
-		this.stylesheet = dom.createStyleSheet(undefined, undefined, this._store);
+		this.stylesheet = dom.createStyleSheet(
+			undefined,
+			undefined,
+			this._store,
+		);
 
-		const onDidChangeConfiguration = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.diffDecorations'));
-		this._register(onDidChangeConfiguration(this.onDidChangeConfiguration, this));
+		const onDidChangeConfiguration = Event.filter(
+			configurationService.onDidChangeConfiguration,
+			(e) => e.affectsConfiguration("scm.diffDecorations"),
+		);
+		this._register(
+			onDidChangeConfiguration(this.onDidChangeConfiguration, this),
+		);
 		this.onDidChangeConfiguration();
 
-		const onDidChangeDiffWidthConfiguration = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.diffDecorationsGutterWidth'));
-		this._register(onDidChangeDiffWidthConfiguration(this.onDidChangeDiffWidthConfiguration, this));
+		const onDidChangeDiffWidthConfiguration = Event.filter(
+			configurationService.onDidChangeConfiguration,
+			(e) => e.affectsConfiguration("scm.diffDecorationsGutterWidth"),
+		);
+		this._register(
+			onDidChangeDiffWidthConfiguration(
+				this.onDidChangeDiffWidthConfiguration,
+				this,
+			),
+		);
 		this.onDidChangeDiffWidthConfiguration();
 
-		const onDidChangeDiffVisibilityConfiguration = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('scm.diffDecorationsGutterVisibility'));
-		this._register(onDidChangeDiffVisibilityConfiguration(this.onDidChangeDiffVisibilityConfiguration, this));
+		const onDidChangeDiffVisibilityConfiguration = Event.filter(
+			configurationService.onDidChangeConfiguration,
+			(e) =>
+				e.affectsConfiguration("scm.diffDecorationsGutterVisibility"),
+		);
+		this._register(
+			onDidChangeDiffVisibilityConfiguration(
+				this.onDidChangeDiffVisibilityConfiguration,
+				this,
+			),
+		);
 		this.onDidChangeDiffVisibilityConfiguration();
 	}
 

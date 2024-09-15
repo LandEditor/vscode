@@ -13,7 +13,9 @@ import { DisposableStore, dispose } from "../../../../base/common/lifecycle.js";
 import { basename } from "../../../../base/common/resources.js";
 import { ScrollbarVisibility } from "../../../../base/common/scrollable.js";
 import { splitLines } from "../../../../base/common/strings.js";
+
 import "./media/gotoErrorWidget.css";
+
 import * as nls from "../../../../nls.js";
 import { createAndFillInActionBarActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
@@ -24,9 +26,9 @@ import { IContextKeyService } from "../../../../platform/contextkey/common/conte
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
+	MarkerSeverity,
 	type IMarker,
 	type IRelatedInformation,
-	MarkerSeverity,
 } from "../../../../platform/markers/common/markers.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { SeverityIcon } from "../../../../platform/severityIcon/browser/severityIcon.js";
@@ -44,17 +46,17 @@ import {
 	transparent,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Range } from "../../../common/core/range.js";
 import { ScrollType } from "../../../common/editorCommon.js";
 import {
-	PeekViewWidget,
 	peekViewTitleForeground,
 	peekViewTitleInfoForeground,
+	PeekViewWidget,
 } from "../../peekView/browser/peekView.js";
 
 class MessageWidget {
@@ -316,15 +318,27 @@ export class MarkerNavigationWidget extends PeekViewWidget {
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IMenuService private readonly _menuService: IMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@ILabelService private readonly _labelService: ILabelService
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@ILabelService private readonly _labelService: ILabelService,
 	) {
-		super(editor, { showArrow: true, showFrame: true, isAccessible: true, frameWidth: 1 }, instantiationService);
+		super(
+			editor,
+			{
+				showArrow: true,
+				showFrame: true,
+				isAccessible: true,
+				frameWidth: 1,
+			},
+			instantiationService,
+		);
 		this._severity = MarkerSeverity.Warning;
 		this._backgroundColor = Color.white;
 
 		this._applyTheme(_themeService.getColorTheme());
-		this._callOnDispose.add(_themeService.onDidColorThemeChange(this._applyTheme.bind(this)));
+		this._callOnDispose.add(
+			_themeService.onDidColorThemeChange(this._applyTheme.bind(this)),
+		);
 
 		this.create();
 	}

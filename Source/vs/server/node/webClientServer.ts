@@ -9,6 +9,7 @@ import type * as http from "http";
 import * as path from "path";
 import * as url from "url";
 import * as cookie from "cookie";
+
 import { isESM } from "../../base/common/amd.js";
 import { streamToBuffer } from "../../base/common/buffer.js";
 import { CancellationToken } from "../../base/common/cancellation.js";
@@ -16,11 +17,11 @@ import { CharCode } from "../../base/common/charCode.js";
 import { isEqualOrParent } from "../../base/common/extpath.js";
 import { getMediaMime } from "../../base/common/mime.js";
 import {
-	FileAccess,
-	Schemas,
 	builtinExtensionsPath,
 	connectionTokenCookieName,
 	connectionTokenQueryName,
+	FileAccess,
+	Schemas,
 } from "../../base/common/network.js";
 import { dirname, extname, join, normalize } from "../../base/common/path.js";
 import { isLinux } from "../../base/common/platform.js";
@@ -34,12 +35,12 @@ import type { IExtensionManifest } from "../../platform/extensions/common/extens
 import { ILogService } from "../../platform/log/common/log.js";
 import { IProductService } from "../../platform/product/common/productService.js";
 import {
-	IRequestService,
 	asTextOrError,
+	IRequestService,
 } from "../../platform/request/common/request.js";
 import {
-	type ServerConnectionToken,
 	ServerConnectionTokenType,
+	type ServerConnectionToken,
 } from "./serverConnectionToken.js";
 import { IServerEnvironmentService } from "./serverEnvironmentService.js";
 
@@ -133,13 +134,20 @@ export class WebClientServer {
 		private readonly _connectionToken: ServerConnectionToken,
 		private readonly _basePath: string,
 		readonly serverRootPath: string,
-		@IServerEnvironmentService private readonly _environmentService: IServerEnvironmentService,
+		@IServerEnvironmentService
+		private readonly _environmentService: IServerEnvironmentService,
 		@ILogService private readonly _logService: ILogService,
 		@IRequestService private readonly _requestService: IRequestService,
 		@IProductService private readonly _productService: IProductService,
-		@ICSSDevelopmentService private readonly _cssDevService: ICSSDevelopmentService
+		@ICSSDevelopmentService
+		private readonly _cssDevService: ICSSDevelopmentService,
 	) {
-		this._webExtensionResourceUrlTemplate = this._productService.extensionsGallery?.resourceUrlTemplate ? URI.parse(this._productService.extensionsGallery.resourceUrlTemplate) : undefined;
+		this._webExtensionResourceUrlTemplate = this._productService
+			.extensionsGallery?.resourceUrlTemplate
+			? URI.parse(
+					this._productService.extensionsGallery.resourceUrlTemplate,
+				)
+			: undefined;
 
 		this._staticRoute = `${serverRootPath}/static`;
 		this._callbackRoute = `${serverRootPath}/callback`;

@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Emitter } from "../../../base/common/event.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostNotebookRenderersShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadNotebookRenderersShape,
 } from "./extHost.protocol.js";
 import type { ExtHostNotebookController } from "./extHostNotebook.js";

@@ -3,9 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../../nls.js";
-
 import type { IStringDictionary } from "../../../base/common/collections.js";
+import { ErrorNoTelemetry } from "../../../base/common/errors.js";
 import {
 	Disposable,
 	type IDisposable,
@@ -14,18 +13,25 @@ import * as Platform from "../../../base/common/platform.js";
 import * as Types from "../../../base/common/types.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { generateUuid } from "../../../base/common/uuid.js";
-
+import * as nls from "../../../nls.js";
+import type { ConfigurationTarget } from "../../../platform/configuration/common/configuration.js";
 import {
-	type IWorkspace,
 	IWorkspaceContextService,
+	type IWorkspace,
 	type IWorkspaceFolder,
 } from "../../../platform/workspace/common/workspace.js";
-
 import {
 	CommandOptions,
 	ConfiguringTask,
 	ContributedTask,
 	CustomTask,
+	PresentationOptions,
+	RunOptions,
+	RuntimeType,
+	TaskDefinition,
+	TaskEventKind,
+	TaskScope,
+	TaskSourceKind,
 	type ICommandConfiguration,
 	type IExtensionTaskSource,
 	type IPresentationOptions,
@@ -34,39 +40,28 @@ import {
 	type ITaskExecution,
 	type ITaskSet,
 	type KeyedTaskIdentifier,
-	PresentationOptions,
-	RunOptions,
-	RuntimeType,
 	type Task,
-	TaskDefinition,
-	TaskEventKind,
 	type TaskGroup,
-	TaskScope,
 	type TaskSource,
-	TaskSourceKind,
 } from "../../contrib/tasks/common/tasks.js";
-
 import {
+	ITaskService,
 	type ITaskFilter,
 	type ITaskProvider,
-	ITaskService,
 } from "../../contrib/tasks/common/taskService.js";
 import type {
-	IResolveSet,
 	IResolvedVariables,
+	IResolveSet,
 } from "../../contrib/tasks/common/taskSystem.js";
-
-import { ErrorNoTelemetry } from "../../../base/common/errors.js";
-import type { ConfigurationTarget } from "../../../platform/configuration/common/configuration.js";
 import { IConfigurationResolverService } from "../../services/configurationResolver/common/configurationResolver.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostTaskShape,
 	MainContext,
+	type ExtHostTaskShape,
 	type MainThreadTaskShape,
 } from "../common/extHost.protocol.js";
 import type {
@@ -76,8 +71,8 @@ import type {
 	IRunOptionsDTO,
 	IShellExecutionDTO,
 	IShellExecutionOptionsDTO,
-	ITaskDTO,
 	ITaskDefinitionDTO,
+	ITaskDTO,
 	ITaskExecutionDTO,
 	ITaskFilterDTO,
 	ITaskGroupDTO,
@@ -580,38 +575,72 @@ export class MainThreadTask extends Disposable implements MainThreadTaskShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ITaskService private readonly _taskService: ITaskService,
-		@IWorkspaceContextService private readonly _workspaceContextServer: IWorkspaceContextService,
-		@IConfigurationResolverService private readonly _configurationResolverService: IConfigurationResolverService
+		@IWorkspaceContextService
+		private readonly _workspaceContextServer: IWorkspaceContextService,
+		@IConfigurationResolverService
+		private readonly _configurationResolverService: IConfigurationResolverService,
 	) {
 		super();
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTask);
 		this._providers = new Map();
-		this._register(this._taskService.onDidStateChange(async (event: ITaskEvent) => {
-			if (event.kind === TaskEventKind.Changed) {
-				return;
-			}
-
-			const task = event.__task;
-			if (event.kind === TaskEventKind.Start) {
-				const execution = TaskExecutionDTO.from(task.getTaskExecution());
-				let resolvedDefinition: ITaskDefinitionDTO = execution.task!.definition;
-				if (execution.task?.execution && CustomExecutionDTO.is(execution.task.execution) && event.resolvedVariables) {
-					const dictionary: IStringDictionary<string> = {};
-					for (const [key, value] of event.resolvedVariables.entries()) {
-						dictionary[key] = value;
-					}
-					resolvedDefinition = await this._configurationResolverService.resolveAnyAsync(task.getWorkspaceFolder(),
-						execution.task.definition, dictionary);
+		this._register(
+			this._taskService.onDidStateChange(async (event: ITaskEvent) => {
+				if (event.kind === TaskEventKind.Changed) {
+					return;
 				}
-				this._proxy.$onDidStartTask(execution, event.terminalId, resolvedDefinition);
-			} else if (event.kind === TaskEventKind.ProcessStarted) {
-				this._proxy.$onDidStartTaskProcess(TaskProcessStartedDTO.from(task.getTaskExecution(), event.processId));
-			} else if (event.kind === TaskEventKind.ProcessEnded) {
-				this._proxy.$onDidEndTaskProcess(TaskProcessEndedDTO.from(task.getTaskExecution(), event.exitCode));
-			} else if (event.kind === TaskEventKind.End) {
-				this._proxy.$OnDidEndTask(TaskExecutionDTO.from(task.getTaskExecution()));
-			}
-		}));
+
+				const task = event.__task;
+				if (event.kind === TaskEventKind.Start) {
+					const execution = TaskExecutionDTO.from(
+						task.getTaskExecution(),
+					);
+					let resolvedDefinition: ITaskDefinitionDTO =
+						execution.task!.definition;
+					if (
+						execution.task?.execution &&
+						CustomExecutionDTO.is(execution.task.execution) &&
+						event.resolvedVariables
+					) {
+						const dictionary: IStringDictionary<string> = {};
+						for (const [
+							key,
+							value,
+						] of event.resolvedVariables.entries()) {
+							dictionary[key] = value;
+						}
+						resolvedDefinition =
+							await this._configurationResolverService.resolveAnyAsync(
+								task.getWorkspaceFolder(),
+								execution.task.definition,
+								dictionary,
+							);
+					}
+					this._proxy.$onDidStartTask(
+						execution,
+						event.terminalId,
+						resolvedDefinition,
+					);
+				} else if (event.kind === TaskEventKind.ProcessStarted) {
+					this._proxy.$onDidStartTaskProcess(
+						TaskProcessStartedDTO.from(
+							task.getTaskExecution(),
+							event.processId,
+						),
+					);
+				} else if (event.kind === TaskEventKind.ProcessEnded) {
+					this._proxy.$onDidEndTaskProcess(
+						TaskProcessEndedDTO.from(
+							task.getTaskExecution(),
+							event.exitCode,
+						),
+					);
+				} else if (event.kind === TaskEventKind.End) {
+					this._proxy.$OnDidEndTask(
+						TaskExecutionDTO.from(task.getTaskExecution()),
+					);
+				}
+			}),
+		);
 	}
 
 	public override dispose(): void {

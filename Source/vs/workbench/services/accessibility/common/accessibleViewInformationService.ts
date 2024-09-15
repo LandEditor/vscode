@@ -26,7 +26,9 @@ export class AccessibleViewInformationService
 	implements IAccessibleViewInformationService
 {
 	declare readonly _serviceBrand: undefined;
-	constructor(@IStorageService private readonly _storageService: IStorageService) {
+	constructor(
+		@IStorageService private readonly _storageService: IStorageService,
+	) {
 		super();
 	}
 	hasShownAccessibleView(viewId: string): boolean {

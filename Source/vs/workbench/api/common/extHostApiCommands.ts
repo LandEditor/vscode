@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { isFalsyOrEmpty } from "../../../base/common/arrays.js";
 import type { VSBuffer } from "../../../base/common/buffer.js";
-import { Schemas, matchesSomeScheme } from "../../../base/common/network.js";
+import { matchesSomeScheme, Schemas } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 import type { IPosition } from "../../../editor/common/core/position.js";
 import type { IRange } from "../../../editor/common/core/range.js";

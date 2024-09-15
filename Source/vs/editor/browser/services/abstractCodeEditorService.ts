@@ -8,8 +8,8 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../base/common/linkedList.js";
 import * as strings from "../../../base/common/strings.js";
@@ -17,21 +17,21 @@ import type { ThemeColor } from "../../../base/common/themables.js";
 import { URI } from "../../../base/common/uri.js";
 import type { IResourceEditorInput } from "../../../platform/editor/common/editor.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../platform/theme/common/themeService.js";
 import {
+	isThemeColor,
 	type IContentDecorationRenderOptions,
 	type IDecorationRenderOptions,
 	type IThemeDecorationRenderOptions,
-	isThemeColor,
 } from "../../common/editorCommon.js";
 import {
+	OverviewRulerLane,
 	type IModelDecorationOptions,
 	type IModelDecorationOverviewRulerOptions,
-	type ITextModel,
 	type InjectedTextOptions,
-	OverviewRulerLane,
+	type ITextModel,
 	type TrackedRangeStickiness,
 } from "../../common/model.js";
 import type { ICodeEditor, IDiffEditor } from "../editorBrowser.js";
@@ -104,9 +104,7 @@ export abstract class AbstractCodeEditorService
 	private readonly _codeEditorOpenHandlers =
 		new LinkedList<ICodeEditorOpenHandler>();
 
-	constructor(
-		@IThemeService private readonly _themeService: IThemeService,
-	) {
+	constructor(@IThemeService private readonly _themeService: IThemeService) {
 		super();
 		this._codeEditors = Object.create(null);
 		this._diffEditors = Object.create(null);

@@ -3,12 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type Dimension, reset } from "../../../../../base/browser/dom.js";
+import { reset, type Dimension } from "../../../../../base/browser/dom.js";
 import {
+	SerializableGrid,
 	type Grid,
 	type GridNodeDescriptor,
 	type IView,
-	SerializableGrid,
 } from "../../../../../base/browser/ui/grid/grid.js";
 import { Orientation } from "../../../../../base/browser/ui/splitview/splitview.js";
 import type { CancellationToken } from "../../../../../base/common/cancellation.js";
@@ -21,22 +21,24 @@ import { Emitter, type Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
 	autorun,
 	autorunWithStore,
 	observableValue,
 	transaction,
+	type IObservable,
+	type IReader,
 } from "../../../../../base/common/observable.js";
 import { basename, isEqual } from "../../../../../base/common/resources.js";
 import { isDefined } from "../../../../../base/common/types.js";
 import type { URI } from "../../../../../base/common/uri.js";
+
 import "./media/mergeEditor.css";
+
 import type {
 	ICodeEditor,
 	IViewZoneChangeAccessor,
@@ -44,16 +46,16 @@ import type {
 import { ICodeEditorService } from "../../../../../editor/browser/services/codeEditorService.js";
 import type { IEditorOptions as ICodeEditorOptions } from "../../../../../editor/common/config/editorOptions.js";
 import {
-	type ICodeEditorViewState,
 	ScrollType,
+	type ICodeEditorViewState,
 } from "../../../../../editor/common/editorCommon.js";
 import type { ITextModel } from "../../../../../editor/common/model.js";
 import { ITextResourceConfigurationService } from "../../../../../editor/common/services/textResourceConfiguration.js";
 import { localize } from "../../../../../nls.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import type {
 	IEditorOptions,
@@ -80,13 +82,13 @@ import {
 import type { EditorInput } from "../../../../common/editor/editorInput.js";
 import { applyTextEditorOptions } from "../../../../common/editor/editorOptions.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../../services/editor/common/editorGroupsService.js";
 import {
 	IEditorResolverService,
-	type MergeEditorInputFactoryFunction,
 	RegisteredEditorPriority,
+	type MergeEditorInputFactoryFunction,
 } from "../../../../services/editor/common/editorResolverService.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import {
@@ -95,7 +97,6 @@ import {
 } from "../../../codeEditor/browser/toggleWordWrap.js";
 import { settingsSashBorder } from "../../../preferences/common/settingsEditorColorRegistry.js";
 import {
-	type MergeEditorLayoutKind,
 	ctxIsMergeEditor,
 	ctxMergeBaseUri,
 	ctxMergeEditorLayout,
@@ -103,16 +104,19 @@ import {
 	ctxMergeEditorShowBaseAtTop,
 	ctxMergeEditorShowNonConflictingChanges,
 	ctxMergeResultUri,
+	type MergeEditorLayoutKind,
 } from "../../common/mergeEditor.js";
 import { MergeEditorInput } from "../mergeEditorInput.js";
 import type { IMergeEditorInputModel } from "../mergeEditorInputModel.js";
 import type { MergeEditorModel } from "../model/mergeEditorModel.js";
-import { PersistentStore, deepMerge, thenIfNotDisposed } from "../utils.js";
+import { deepMerge, PersistentStore, thenIfNotDisposed } from "../utils.js";
 import { BaseCodeEditorView } from "./editors/baseCodeEditorView.js";
 import { ScrollSynchronizer } from "./scrollSynchronizer.js";
 import { MergeEditorViewModel } from "./viewModel.js";
 import { ViewZoneComputer } from "./viewZones.js";
+
 import "./colors.js";
+
 import { InputCodeEditorView } from "./editors/inputCodeEditorView.js";
 import { ResultCodeEditorView } from "./editors/resultCodeEditorView.js";
 
@@ -225,19 +229,35 @@ export class MergeEditor extends AbstractTextEditor<IMergeEditorViewState> {
 	constructor(
 		group: IEditorGroup,
 		@IInstantiationService instantiation: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService storageService: IStorageService,
 		@IThemeService themeService: IThemeService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IFileService fileService: IFileService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
-		super(MergeEditor.ID, group, telemetryService, instantiation, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService, fileService);
+		super(
+			MergeEditor.ID,
+			group,
+			telemetryService,
+			instantiation,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService,
+			fileService,
+		);
 	}
 
 	override dispose(): void {
@@ -981,9 +1001,13 @@ class MergeEditorLayoutStore {
 	};
 
 	constructor(@IStorageService private _storageService: IStorageService) {
-		const value = _storageService.get(MergeEditorLayoutStore._key, StorageScope.PROFILE, 'mixed');
+		const value = _storageService.get(
+			MergeEditorLayoutStore._key,
+			StorageScope.PROFILE,
+			"mixed",
+		);
 
-		if (value === 'mixed' || value === 'columns') {
+		if (value === "mixed" || value === "columns") {
 			this._value = { kind: value, showBase: false, showBaseAtTop: true };
 		} else if (value) {
 			try {
@@ -1017,7 +1041,11 @@ export class MergeEditorOpenHandlerContribution extends Disposable {
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 	) {
 		super();
-		this._store.add(codeEditorService.registerCodeEditorOpenHandler(this.openCodeEditorFromMergeEditor.bind(this)));
+		this._store.add(
+			codeEditorService.registerCodeEditorOpenHandler(
+				this.openCodeEditorFromMergeEditor.bind(this),
+			),
+		);
 	}
 
 	private async openCodeEditorFromMergeEditor(

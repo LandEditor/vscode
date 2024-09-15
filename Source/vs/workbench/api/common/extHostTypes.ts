@@ -6,6 +6,7 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import {
 	asArray,
 	coalesceInPlace,
@@ -39,9 +40,9 @@ import {
 import { RemoteAuthorityResolverErrorCode } from "../../../platform/remote/common/remoteAuthorityResolver.js";
 import {
 	CellEditType,
+	isTextStreamMime,
 	type ICellMetadataEdit,
 	type IDocumentMetadataEdit,
-	isTextStreamMime,
 } from "../../contrib/notebook/common/notebookCommon.js";
 import type { IRelativePatternDto } from "./extHost.protocol.js";
 
@@ -2769,9 +2770,11 @@ export class CustomExecution implements vscode.CustomExecution {
 		return "customExecution" + generateUuid();
 	}
 
-	public set callback(value: (
-		resolvedDefinition: vscode.TaskDefinition,
-	) => Thenable<vscode.Pseudoterminal>) {
+	public set callback(
+		value: (
+			resolvedDefinition: vscode.TaskDefinition,
+		) => Thenable<vscode.Pseudoterminal>,
+	) {
 		this._callback = value;
 	}
 
@@ -2943,10 +2946,12 @@ export class Task implements vscode.Task {
 		return this._scope;
 	}
 
-	set target(value:
-		| vscode.TaskScope.Global
-		| vscode.TaskScope.Workspace
-		| vscode.WorkspaceFolder) {
+	set target(
+		value:
+			| vscode.TaskScope.Global
+			| vscode.TaskScope.Workspace
+			| vscode.WorkspaceFolder,
+	) {
 		this.clear();
 		this._scope = value;
 	}
@@ -2971,11 +2976,9 @@ export class Task implements vscode.Task {
 		return this._execution;
 	}
 
-	set execution(value:
-		| ProcessExecution
-		| ShellExecution
-		| CustomExecution
-		| undefined) {
+	set execution(
+		value: ProcessExecution | ShellExecution | CustomExecution | undefined,
+	) {
 		if (value === null) {
 			value = undefined;
 		}
@@ -3137,7 +3140,7 @@ export class TreeItem {
 			const checkbox = isNumber(treeItemThing.checkboxState)
 				? treeItemThing.checkboxState
 				: isObject(treeItemThing.checkboxState) &&
-						isNumber(treeItemThing.checkboxState.state)
+					  isNumber(treeItemThing.checkboxState.state)
 					? treeItemThing.checkboxState.state
 					: undefined;
 			const tooltip =

@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type JSONScanner,
-	SyntaxKind as JSONSyntaxKind,
 	createScanner as createJSONScanner,
+	SyntaxKind as JSONSyntaxKind,
+	type JSONScanner,
 } from "../../../../base/common/json.js";
 import { Position } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";

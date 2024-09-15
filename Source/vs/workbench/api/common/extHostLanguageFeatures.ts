@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	asArray,
 	coalesce,
@@ -14,8 +15,8 @@ import { raceCancellationError } from "../../../base/common/async.js";
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	NotImplementedError,
 	isCancellationError,
+	NotImplementedError,
 } from "../../../base/common/errors.js";
 import { IdGenerator } from "../../../base/common/idGenerator.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
@@ -32,8 +33,8 @@ import {
 	type IRange,
 } from "../../../editor/common/core/range.js";
 import {
-	type ISelection,
 	Selection,
+	type ISelection,
 } from "../../../editor/common/core/selection.js";
 import * as languages from "../../../editor/common/languages.js";
 import type { IAutoClosingPairConditional } from "../../../editor/common/languages/languageConfiguration.js";
@@ -75,8 +76,8 @@ import {
 	SemanticTokensEdit,
 	SemanticTokensEdits,
 	SnippetString,
-	type SymbolInformation,
 	SyntaxTokenType,
+	type SymbolInformation,
 } from "./extHostTypes.js";
 
 // --- adapter

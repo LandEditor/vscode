@@ -20,28 +20,28 @@ import { IAuthenticationAccessService } from "../../services/authentication/brow
 import { getAuthenticationProviderActivationEvent } from "../../services/authentication/browser/authenticationService.js";
 import { IAuthenticationUsageService } from "../../services/authentication/browser/authenticationUsageService.js";
 import {
+	IAuthenticationExtensionsService,
+	IAuthenticationService,
+	INTERNAL_AUTH_PROVIDER_PREFIX as INTERNAL_MODEL_AUTH_PROVIDER_PREFIX,
 	type AuthenticationSession,
 	type AuthenticationSessionAccount,
 	type AuthenticationSessionsChangeEvent,
 	type IAuthenticationCreateSessionOptions,
-	IAuthenticationExtensionsService,
 	type IAuthenticationProvider,
 	type IAuthenticationProviderSessionOptions,
-	IAuthenticationService,
-	INTERNAL_AUTH_PROVIDER_PREFIX as INTERNAL_MODEL_AUTH_PROVIDER_PREFIX,
 } from "../../services/authentication/common/authentication.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ActivationKind,
 	IExtensionService,
 } from "../../services/extensions/common/extensions.js";
 import {
-	type ExtHostAuthenticationShape,
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
 	ExtHostContext,
 	MainContext,
+	type ExtHostAuthenticationShape,
 	type MainThreadAuthenticationShape,
 } from "../common/extHost.protocol.js";
 
@@ -112,22 +112,34 @@ export class MainThreadAuthentication
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
-		@IAuthenticationExtensionsService private readonly authenticationExtensionsService: IAuthenticationExtensionsService,
-		@IAuthenticationAccessService private readonly authenticationAccessService: IAuthenticationAccessService,
-		@IAuthenticationUsageService private readonly authenticationUsageService: IAuthenticationUsageService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
+		@IAuthenticationExtensionsService
+		private readonly authenticationExtensionsService: IAuthenticationExtensionsService,
+		@IAuthenticationAccessService
+		private readonly authenticationAccessService: IAuthenticationAccessService,
+		@IAuthenticationUsageService
+		private readonly authenticationUsageService: IAuthenticationUsageService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IOpenerService private readonly openerService: IOpenerService
+		@IOpenerService private readonly openerService: IOpenerService,
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostAuthentication);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostAuthentication,
+		);
 
-		this._register(this.authenticationService.onDidChangeSessions(e => {
-			this._proxy.$onDidChangeAuthenticationSessions(e.providerId, e.label);
-		}));
+		this._register(
+			this.authenticationService.onDidChangeSessions((e) => {
+				this._proxy.$onDidChangeAuthenticationSessions(
+					e.providerId,
+					e.label,
+				);
+			}),
+		);
 	}
 
 	async $registerAuthenticationProvider(

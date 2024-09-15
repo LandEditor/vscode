@@ -9,14 +9,15 @@ import type {
 	ILinkProvider,
 	IViewportRange,
 } from "@xterm/xterm";
+
 import { Emitter } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { localize } from "../../../../../nls.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
+	TerminalBuiltinLinkType,
 	type ITerminalLinkDetector,
 	type ITerminalSimpleLink,
-	TerminalBuiltinLinkType,
 	type TerminalLinkType,
 } from "./links.js";
 import { TerminalLink } from "./terminalLink.js";
@@ -54,7 +55,8 @@ export class TerminalLinkDetectorAdapter
 
 	constructor(
 		private readonly _detector: ITerminalLinkDetector,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 	}

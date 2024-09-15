@@ -9,21 +9,21 @@ import { localize } from "../../../../nls.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IStorageEntry,
 	IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageEntry,
 } from "../../../../platform/storage/common/storage.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	ProfileResourceType,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { IUserDataProfileStorageService } from "../../../../platform/userDataProfile/common/userDataProfileStorageService.js";
 import { API_OPEN_EDITOR_COMMAND_ID } from "../../../browser/parts/editor/editorCommands.js";
 import {
-	type ITreeItemCheckboxState,
 	TreeItemCollapsibleState,
+	type ITreeItemCheckboxState,
 } from "../../../common/views.js";
 import type {
 	IProfileResource,
@@ -39,8 +39,9 @@ interface IGlobalState {
 export class GlobalStateResourceInitializer
 	implements IProfileResourceInitializer
 {
-	constructor(@IStorageService private readonly storageService: IStorageService) {
-	}
+	constructor(
+		@IStorageService private readonly storageService: IStorageService,
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const globalState: IGlobalState = JSON.parse(content);
@@ -63,10 +64,10 @@ export class GlobalStateResourceInitializer
 export class GlobalStateResource implements IProfileResource {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@IUserDataProfileStorageService private readonly userDataProfileStorageService: IUserDataProfileStorageService,
+		@IUserDataProfileStorageService
+		private readonly userDataProfileStorageService: IUserDataProfileStorageService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const globalState = await this.getGlobalState(profile);
@@ -177,7 +178,8 @@ export class GlobalStateResourceExportTreeItem extends GlobalStateResourceTreeIt
 		private readonly profile: IUserDataProfile,
 		resource: URI,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super(resource, uriIdentityService);
 	}

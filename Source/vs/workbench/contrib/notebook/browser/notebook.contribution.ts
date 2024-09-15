@@ -12,8 +12,8 @@ import type {
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { parse } from "../../../../base/common/marshalling.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -21,8 +21,8 @@ import { extname, isEqual } from "../../../../base/common/resources.js";
 import { assertType } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type ILanguageSelection,
 	ILanguageService,
+	type ILanguageSelection,
 } from "../../../../editor/common/languages/language.js";
 import {
 	DefaultEndOfLine,
@@ -32,8 +32,8 @@ import {
 } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import * as nls from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -50,8 +50,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
@@ -61,11 +61,11 @@ import {
 	type IEditorPaneRegistry,
 } from "../../../browser/editor.js";
 import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -79,20 +79,20 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import type { IWorkingCopyIdentifier } from "../../../services/workingCopy/common/workingCopy.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../../services/workingCopy/common/workingCopyEditorService.js";
 import { INotebookCellStatusBarService } from "../common/notebookCellStatusBarService.js";
 import {
 	CellKind,
 	CellUri,
-	type ICell,
-	type ICellOutput,
-	type IResolvedNotebookEditorModel,
 	NotebookCellsChangeType,
 	NotebookMetadataUri,
 	NotebookSetting,
 	NotebookWorkingCopyTypeIdentifier,
+	type ICell,
+	type ICellOutput,
+	type IResolvedNotebookEditorModel,
 } from "../common/notebookCommon.js";
 import { NotebookDiffEditorInput } from "../common/notebookDiffEditorInput.js";
 import {
@@ -125,7 +125,6 @@ import {
 	INotebookCellOutlineDataSourceFactory,
 	NotebookCellOutlineDataSourceFactory,
 } from "./viewModel/notebookOutlineDataSourceFactory.js";
-
 // Editor Controller
 import "./controller/coreActions.js";
 import "./controller/insertCellActions.js";
@@ -137,7 +136,6 @@ import "./controller/cellOutputActions.js";
 import "./controller/apiActions.js";
 import "./controller/foldingController.js";
 import "./controller/chat/notebook.chat.contribution.js";
-
 // Editor Contribution
 import "./contrib/editorHint/emptyCellEditorHint.js";
 import "./contrib/clipboard/notebookClipboard.js";
@@ -165,7 +163,6 @@ import "./contrib/execute/executionEditorProgress.js";
 import "./contrib/kernelDetection/notebookKernelDetection.js";
 import "./contrib/cellDiagnostics/cellDiagnostics.js";
 import "./contrib/multicursor/notebookMulticursor.js";
-
 // Diff Editor Contribution
 import "./diff/notebookDiffActions.js";
 
@@ -236,7 +233,10 @@ Registry.as<IEditorPaneRegistry>(
 );
 
 class NotebookDiffEditorSerializer implements IEditorSerializer {
-	constructor(@IConfigurationService private readonly _configurationService: IConfigurationService) { }
+	constructor(
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+	) {}
 	canSerialize(): boolean {
 		return true;
 	}
@@ -373,21 +373,34 @@ export class NotebookContribution
 	constructor(
 		@IUndoRedoService undoRedoService: IUndoRedoService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 	) {
 		super();
 
-		this.updateCellUndoRedoComparisonKey(configurationService, undoRedoService);
+		this.updateCellUndoRedoComparisonKey(
+			configurationService,
+			undoRedoService,
+		);
 
 		// Watch for changes to undoRedoPerCell setting
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(NotebookSetting.undoRedoPerCell)) {
-				this.updateCellUndoRedoComparisonKey(configurationService, undoRedoService);
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(NotebookSetting.undoRedoPerCell)) {
+					this.updateCellUndoRedoComparisonKey(
+						configurationService,
+						undoRedoService,
+					);
+				}
+			}),
+		);
 
 		// register comment decoration
-		this.codeEditorService.registerDecorationType('comment-controller', COMMENTEDITOR_DECORATION_KEY, {});
+		this.codeEditorService.registerDecorationType(
+			"comment-controller",
+			COMMENTEDITOR_DECORATION_KEY,
+			{},
+		);
 	}
 
 	// Add or remove the cell undo redo comparison key based on the user setting
@@ -448,9 +461,13 @@ class CellContentProvider implements ITextModelContentProvider {
 		@ITextModelService textModelService: ITextModelService,
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@INotebookEditorModelResolverService private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
 	) {
-		this._registration = textModelService.registerTextModelContentProvider(CellUri.scheme, this);
+		this._registration = textModelService.registerTextModelContentProvider(
+			CellUri.scheme,
+			this,
+		);
 	}
 
 	dispose(): void {
@@ -545,31 +562,48 @@ class CellInfoContentProvider {
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@INotebookEditorModelResolverService private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
 	) {
-		this._disposables.push(textModelService.registerTextModelContentProvider(Schemas.vscodeNotebookCellMetadata, {
-			provideTextContent: this.provideMetadataTextContent.bind(this)
-		}));
+		this._disposables.push(
+			textModelService.registerTextModelContentProvider(
+				Schemas.vscodeNotebookCellMetadata,
+				{
+					provideTextContent:
+						this.provideMetadataTextContent.bind(this),
+				},
+			),
+		);
 
-		this._disposables.push(textModelService.registerTextModelContentProvider(Schemas.vscodeNotebookCellOutput, {
-			provideTextContent: this.provideOutputTextContent.bind(this)
-		}));
+		this._disposables.push(
+			textModelService.registerTextModelContentProvider(
+				Schemas.vscodeNotebookCellOutput,
+				{
+					provideTextContent:
+						this.provideOutputTextContent.bind(this),
+				},
+			),
+		);
 
-		this._disposables.push(this._labelService.registerFormatter({
-			scheme: Schemas.vscodeNotebookCellMetadata,
-			formatting: {
-				label: '${path} (metadata)',
-				separator: '/'
-			}
-		}));
+		this._disposables.push(
+			this._labelService.registerFormatter({
+				scheme: Schemas.vscodeNotebookCellMetadata,
+				formatting: {
+					label: "${path} (metadata)",
+					separator: "/",
+				},
+			}),
+		);
 
-		this._disposables.push(this._labelService.registerFormatter({
-			scheme: Schemas.vscodeNotebookCellOutput,
-			formatting: {
-				label: '${path} (output)',
-				separator: '/'
-			}
-		}));
+		this._disposables.push(
+			this._labelService.registerFormatter({
+				scheme: Schemas.vscodeNotebookCellOutput,
+				formatting: {
+					label: "${path} (output)",
+					separator: "/",
+				},
+			}),
+		);
 	}
 
 	dispose(): void {
@@ -843,19 +877,28 @@ class NotebookMetadataContentProvider {
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@INotebookEditorModelResolverService private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
 	) {
-		this._disposables.push(textModelService.registerTextModelContentProvider(Schemas.vscodeNotebookMetadata, {
-			provideTextContent: this.provideMetadataTextContent.bind(this)
-		}));
+		this._disposables.push(
+			textModelService.registerTextModelContentProvider(
+				Schemas.vscodeNotebookMetadata,
+				{
+					provideTextContent:
+						this.provideMetadataTextContent.bind(this),
+				},
+			),
+		);
 
-		this._disposables.push(this._labelService.registerFormatter({
-			scheme: Schemas.vscodeNotebookMetadata,
-			formatting: {
-				label: '${path} (metadata)',
-				separator: '/'
-			}
-		}));
+		this._disposables.push(
+			this._labelService.registerFormatter({
+				scheme: Schemas.vscodeNotebookMetadata,
+				formatting: {
+					label: "${path} (metadata)",
+					separator: "/",
+				},
+			}),
+		);
 	}
 
 	dispose(): void {
@@ -971,25 +1014,35 @@ class NotebookEditorManager implements IWorkbenchContribution {
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@INotebookEditorModelResolverService private readonly _notebookEditorModelService: INotebookEditorModelResolverService,
-		@IEditorGroupsService editorGroups: IEditorGroupsService
+		@INotebookEditorModelResolverService
+		private readonly _notebookEditorModelService: INotebookEditorModelResolverService,
+		@IEditorGroupsService editorGroups: IEditorGroupsService,
 	) {
 		// OPEN notebook editor for models that have turned dirty without being visible in an editor
 		type E = IResolvedNotebookEditorModel;
-		this._disposables.add(Event.debounce<E, E[]>(
-			this._notebookEditorModelService.onDidChangeDirty,
-			(last, current) => last ? [...last, current] : [current],
-			100
-		)(this._openMissingDirtyNotebookEditors, this));
+		this._disposables.add(
+			Event.debounce<E, E[]>(
+				this._notebookEditorModelService.onDidChangeDirty,
+				(last, current) => (last ? [...last, current] : [current]),
+				100,
+			)(this._openMissingDirtyNotebookEditors, this),
+		);
 
 		// CLOSE editors when we are about to open conflicting notebooks
-		this._disposables.add(_notebookEditorModelService.onWillFailWithConflict(e => {
-			for (const group of editorGroups.groups) {
-				const conflictInputs = group.editors.filter(input => input instanceof NotebookEditorInput && input.viewType !== e.viewType && isEqual(input.resource, e.resource));
-				const p = group.closeEditors(conflictInputs);
-				e.waitUntil(p);
-			}
-		}));
+		this._disposables.add(
+			_notebookEditorModelService.onWillFailWithConflict((e) => {
+				for (const group of editorGroups.groups) {
+					const conflictInputs = group.editors.filter(
+						(input) =>
+							input instanceof NotebookEditorInput &&
+							input.viewType !== e.viewType &&
+							isEqual(input.resource, e.resource),
+					);
+					const p = group.closeEditors(conflictInputs);
+					e.waitUntil(p);
+				}
+			}),
+		);
 	}
 
 	dispose(): void {
@@ -1035,10 +1088,13 @@ class SimpleNotebookWorkingCopyEditorHandler
 		"workbench.contrib.simpleNotebookWorkingCopyEditorHandler";
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWorkingCopyEditorService private readonly _workingCopyEditorService: IWorkingCopyEditorService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotebookService private readonly _notebookService: INotebookService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWorkingCopyEditorService
+		private readonly _workingCopyEditorService: IWorkingCopyEditorService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotebookService private readonly _notebookService: INotebookService,
 	) {
 		super();
 
@@ -1109,9 +1165,12 @@ class NotebookLanguageSelectorScoreRefine {
 
 	constructor(
 		@INotebookService private readonly _notebookService: INotebookService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
-		languageFeaturesService.setNotebookTypeResolver(this._getNotebookInfo.bind(this));
+		languageFeaturesService.setNotebookTypeResolver(
+			this._getNotebookInfo.bind(this),
+		);
 	}
 
 	private _getNotebookInfo(uri: URI): NotebookInfo | undefined {

@@ -5,10 +5,10 @@
 
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type AccessibleContentProvider,
 	AccessibleViewType,
-	type ExtensionContentProvider,
 	IAccessibleViewService,
+	type AccessibleContentProvider,
+	type ExtensionContentProvider,
 } from "../../../../platform/accessibility/browser/accessibleView.js";
 import { AccessibleViewRegistry } from "../../../../platform/accessibility/browser/accessibleViewRegistry.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";

@@ -6,8 +6,8 @@
 import { first } from "../../../base/common/async.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { IProductService } from "../../product/common/productService.js";
@@ -40,7 +40,7 @@ export abstract class AbstractURLService
 
 export class NativeURLService extends AbstractURLService {
 	constructor(
-		@IProductService protected readonly productService: IProductService
+		@IProductService protected readonly productService: IProductService,
 	) {
 		super();
 	}

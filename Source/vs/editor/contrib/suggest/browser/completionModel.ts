@@ -6,12 +6,12 @@
 import { quickSelect } from "../../../../base/common/arrays.js";
 import { CharCode } from "../../../../base/common/charCode.js";
 import {
-	FuzzyScore,
-	FuzzyScoreOptions,
-	type FuzzyScorer,
 	anyScore,
+	FuzzyScore,
 	fuzzyScore,
 	fuzzyScoreGracefulAggressive,
+	FuzzyScoreOptions,
+	type FuzzyScorer,
 } from "../../../../base/common/filters.js";
 import { compareIgnoreCase } from "../../../../base/common/strings.js";
 import type { InternalSuggestOptions } from "../../../common/config/editorOptions.js";

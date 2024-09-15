@@ -18,8 +18,8 @@ import {
 } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
@@ -32,8 +32,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import type {
 	IProgress,
@@ -362,25 +362,38 @@ export class WorkingCopyFileService
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 
 		// register a default working copy provider that uses the working copy service
-		this._register(this.registerWorkingCopyProvider(resource => {
-			return this.workingCopyService.workingCopies.filter(workingCopy => {
-				if (this.fileService.hasProvider(resource)) {
-					// only check for parents if the resource can be handled
-					// by the file system where we then assume a folder like
-					// path structure
-					return this.uriIdentityService.extUri.isEqualOrParent(workingCopy.resource, resource);
-				}
+		this._register(
+			this.registerWorkingCopyProvider((resource) => {
+				return this.workingCopyService.workingCopies.filter(
+					(workingCopy) => {
+						if (this.fileService.hasProvider(resource)) {
+							// only check for parents if the resource can be handled
+							// by the file system where we then assume a folder like
+							// path structure
+							return this.uriIdentityService.extUri.isEqualOrParent(
+								workingCopy.resource,
+								resource,
+							);
+						}
 
-				return this.uriIdentityService.extUri.isEqual(workingCopy.resource, resource);
-			});
-		}));
+						return this.uriIdentityService.extUri.isEqual(
+							workingCopy.resource,
+							resource,
+						);
+					},
+				);
+			}),
+		);
 	}
 
 	//#region File operations

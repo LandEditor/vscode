@@ -7,8 +7,8 @@ import { Disposable } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { IDownloadService } from "../../../platform/download/common/download.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	MainContext,
@@ -22,7 +22,7 @@ export class MainThreadDownloadService
 {
 	constructor(
 		extHostContext: IExtHostContext,
-		@IDownloadService private readonly downloadService: IDownloadService
+		@IDownloadService private readonly downloadService: IDownloadService,
 	) {
 		super();
 	}

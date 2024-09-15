@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	PauseableEmitter,
 	type Emitter,
 	type Event,
-	PauseableEmitter,
 } from "../../../base/common/event.js";
 import { Iterable } from "../../../base/common/iterator.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { MarshalledObject } from "../../../base/common/marshalling.js";
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
@@ -27,17 +27,17 @@ import {
 } from "../../configuration/common/configuration.js";
 import type { ServicesAccessor } from "../../instantiation/common/instantiation.js";
 import {
+	IContextKeyService,
+	RawContextKey,
 	type ContextKeyExpression,
 	type ContextKeyInfo,
 	type ContextKeyValue,
 	type IContext,
 	type IContextKey,
 	type IContextKeyChangeEvent,
-	IContextKeyService,
 	type IContextKeyServiceTarget,
 	type IReadableSet,
 	type IScopedContextKeyService,
-	RawContextKey,
 } from "../common/contextkey.js";
 
 const KEYBINDING_CONTEXT_ATTR = "data-keybinding-context";
@@ -436,11 +436,19 @@ export class ContextKeyService
 	private _lastContextId: number;
 	private readonly _contexts = new Map<number, Context>();
 
-	constructor(@IConfigurationService configurationService: IConfigurationService) {
+	constructor(
+		@IConfigurationService configurationService: IConfigurationService,
+	) {
 		super(0);
 		this._lastContextId = 0;
 
-		const myContext = this._register(new ConfigAwareContextValuesContainer(this._myContextId, configurationService, this._onDidChangeContext));
+		const myContext = this._register(
+			new ConfigAwareContextValuesContainer(
+				this._myContextId,
+				configurationService,
+				this._onDidChangeContext,
+			),
+		);
 		this._contexts.set(this._myContextId, myContext);
 
 		// Uncomment this to see the contexts continuously logged

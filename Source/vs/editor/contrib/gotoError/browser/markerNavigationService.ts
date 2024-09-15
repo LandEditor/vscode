@@ -7,8 +7,8 @@ import { binarySearch } from "../../../../base/common/arrays.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import { compare } from "../../../../base/common/strings.js";
@@ -20,9 +20,9 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IMarker,
 	IMarkerService,
 	MarkerSeverity,
+	type IMarker,
 } from "../../../../platform/markers/common/markers.js";
 import type { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
@@ -49,22 +49,29 @@ export class MarkerList {
 	constructor(
 		resourceFilter: URI | ((uri: URI) => boolean) | undefined,
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 	) {
 		if (URI.isUri(resourceFilter)) {
-			this._resourceFilter = uri => uri.toString() === resourceFilter.toString();
+			this._resourceFilter = (uri) =>
+				uri.toString() === resourceFilter.toString();
 		} else if (resourceFilter) {
 			this._resourceFilter = resourceFilter;
 		}
 
-		const compareOrder = this._configService.getValue<string>('problems.sortOrder');
+		const compareOrder =
+			this._configService.getValue<string>("problems.sortOrder");
 		const compareMarker = (a: IMarker, b: IMarker): number => {
 			let res = compare(a.resource.toString(), b.resource.toString());
 			if (res === 0) {
-				if (compareOrder === 'position') {
-					res = Range.compareRangesUsingStarts(a, b) || MarkerSeverity.compare(a.severity, b.severity);
+				if (compareOrder === "position") {
+					res =
+						Range.compareRangesUsingStarts(a, b) ||
+						MarkerSeverity.compare(a.severity, b.severity);
 				} else {
-					res = MarkerSeverity.compare(a.severity, b.severity) || Range.compareRangesUsingStarts(a, b);
+					res =
+						MarkerSeverity.compare(a.severity, b.severity) ||
+						Range.compareRangesUsingStarts(a, b);
 				}
 			}
 			return res;
@@ -72,24 +79,36 @@ export class MarkerList {
 
 		const updateMarker = () => {
 			this._markers = this._markerService.read({
-				resource: URI.isUri(resourceFilter) ? resourceFilter : undefined,
-				severities: MarkerSeverity.Error | MarkerSeverity.Warning | MarkerSeverity.Info
+				resource: URI.isUri(resourceFilter)
+					? resourceFilter
+					: undefined,
+				severities:
+					MarkerSeverity.Error |
+					MarkerSeverity.Warning |
+					MarkerSeverity.Info,
 			});
-			if (typeof resourceFilter === 'function') {
-				this._markers = this._markers.filter(m => this._resourceFilter!(m.resource));
+			if (typeof resourceFilter === "function") {
+				this._markers = this._markers.filter((m) =>
+					this._resourceFilter!(m.resource),
+				);
 			}
 			this._markers.sort(compareMarker);
 		};
 
 		updateMarker();
 
-		this._dispoables.add(_markerService.onMarkerChanged(uris => {
-			if (!this._resourceFilter || uris.some(uri => this._resourceFilter!(uri))) {
-				updateMarker();
-				this._nextIdx = -1;
-				this._onDidChange.fire();
-			}
-		}));
+		this._dispoables.add(
+			_markerService.onMarkerChanged((uris) => {
+				if (
+					!this._resourceFilter ||
+					uris.some((uri) => this._resourceFilter!(uri))
+				) {
+					updateMarker();
+					this._nextIdx = -1;
+					this._onDidChange.fire();
+				}
+			}),
+		);
 	}
 
 	dispose(): void {
@@ -247,8 +266,9 @@ class MarkerNavigationService
 
 	constructor(
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-	) { }
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+	) {}
 
 	registerProvider(provider: IMarkerListProvider): IDisposable {
 		const remove = this._provider.unshift(provider);

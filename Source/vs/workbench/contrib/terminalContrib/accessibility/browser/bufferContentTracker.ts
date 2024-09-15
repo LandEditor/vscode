@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IMarker, Terminal } from "@xterm/xterm";
+
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
@@ -30,9 +31,13 @@ export class BufferContentTracker extends Disposable {
 	bufferToEditorLineMapping: Map<number, number> = new Map();
 
 	constructor(
-		private readonly _xterm: Pick<IXtermTerminal, 'getFont'> & { raw: Terminal },
+		private readonly _xterm: Pick<IXtermTerminal, "getFont"> & {
+			raw: Terminal;
+		},
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService) {
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+	) {
 		super();
 	}
 

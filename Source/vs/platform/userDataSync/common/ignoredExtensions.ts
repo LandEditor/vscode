@@ -38,9 +38,9 @@ export class IgnoredExtensionsManagementService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-	) {
-	}
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+	) {}
 
 	hasToNeverSyncExtension(extensionId: string): boolean {
 		const configuredIgnoredExtensions =

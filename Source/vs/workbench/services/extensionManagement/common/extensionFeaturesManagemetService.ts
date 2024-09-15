@@ -9,7 +9,7 @@ import { Emitter } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { equals } from "../../../../base/common/objects.js";
 import type Severity from "../../../../base/common/severity.js";
-import { type Mutable, isBoolean } from "../../../../base/common/types.js";
+import { isBoolean, type Mutable } from "../../../../base/common/types.js";
 import type { IStorageChangeEvent } from "../../../../base/parts/storage/common/storage.js";
 import { localize } from "../../../../nls.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -27,8 +27,8 @@ import {
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import {
 	Extensions,
-	type IExtensionFeatureAccessData,
 	IExtensionFeaturesManagementService,
+	type IExtensionFeatureAccessData,
 	type IExtensionFeaturesRegistry,
 } from "./extensionFeatures.js";
 
@@ -75,9 +75,17 @@ class ExtensionFeaturesManagementService
 		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super();
-		this.registry = Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry);
+		this.registry = Registry.as<IExtensionFeaturesRegistry>(
+			Extensions.ExtensionFeaturesRegistry,
+		);
 		this.extensionFeaturesState = this.loadState();
-		this._register(storageService.onDidChangeValue(StorageScope.PROFILE, FEATURES_STATE_KEY, this._store)(e => this.onDidStorageChange(e)));
+		this._register(
+			storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				FEATURES_STATE_KEY,
+				this._store,
+			)((e) => this.onDidStorageChange(e)),
+		);
 	}
 
 	isEnabled(extension: ExtensionIdentifier, featureId: string): boolean {
@@ -120,9 +128,7 @@ class ExtensionFeaturesManagementService
 		}
 	}
 
-	getEnablementData(
-		featureId: string,
-	): {
+	getEnablementData(featureId: string): {
 		readonly extension: ExtensionIdentifier;
 		readonly enabled: boolean;
 	}[] {

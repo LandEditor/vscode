@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./accessibility.css";
+
 import { alert } from "../../../../../base/browser/ui/aria/aria.js";
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import { AccessibilityHelpNLS } from "../../../../../editor/common/standaloneStrings.js";

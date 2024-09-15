@@ -11,9 +11,9 @@ import { Queue, RunOnceScheduler } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
+	parse,
 	type JSONPath,
 	type ParseError,
-	parse,
 } from "../../../base/common/json.js";
 import { applyEdits, setProperty } from "../../../base/common/jsonEdit.js";
 import type {
@@ -26,21 +26,23 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../base/common/map.js";
 import { equals } from "../../../base/common/objects.js";
-import { OS, OperatingSystem } from "../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../base/common/platform.js";
 import { extUriBiasedIgnorePathCase } from "../../../base/common/resources.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
+	type FileOperationError,
 	type IFileService,
 } from "../../files/common/files.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
-	type IPolicyService,
 	NullPolicyService,
+	type IPolicyService,
 } from "../../policy/common/policy.js";
 import {
 	ConfigurationTarget,
+	isConfigurationOverrides,
+	isConfigurationUpdateOverrides,
 	type IConfigurationChange,
 	type IConfigurationChangeEvent,
 	type IConfigurationData,
@@ -49,8 +51,6 @@ import {
 	type IConfigurationUpdateOptions,
 	type IConfigurationUpdateOverrides,
 	type IConfigurationValue,
-	isConfigurationOverrides,
-	isConfigurationUpdateOverrides,
 } from "./configuration.js";
 import {
 	Configuration,
@@ -61,9 +61,9 @@ import {
 import { keyFromOverrideIdentifiers } from "./configurationRegistry.js";
 import {
 	DefaultConfiguration,
-	type IPolicyConfiguration,
 	NullPolicyConfiguration,
 	PolicyConfiguration,
+	type IPolicyConfiguration,
 } from "./configurations.js";
 
 export class ConfigurationService

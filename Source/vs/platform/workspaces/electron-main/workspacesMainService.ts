@@ -33,12 +33,15 @@ export class WorkspacesMainService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IWorkspacesHistoryMainService private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
-		@IBackupMainService private readonly backupMainService: IBackupMainService
-	) {
-	}
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@IWorkspacesHistoryMainService
+		private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
+		@IBackupMainService
+		private readonly backupMainService: IBackupMainService,
+	) {}
 
 	//#region Workspace Management
 

@@ -9,13 +9,13 @@ import * as errors from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import { hash } from "../../../../base/common/hash.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
-	combinedDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { equals } from "../../../../base/common/objects.js";
 import { joinPath } from "../../../../base/common/resources.js";
@@ -24,48 +24,48 @@ import type { URI } from "../../../../base/common/uri.js";
 import {
 	ConfigurationModel,
 	ConfigurationModelParser,
-	type ConfigurationParseOptions,
 	UserSettings,
+	type ConfigurationParseOptions,
 } from "../../../../platform/configuration/common/configurationModels.js";
 import {
 	ConfigurationScope,
 	Extensions,
-	type IConfigurationRegistry,
 	OVERRIDE_PROPERTY_REGEX,
+	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import { DefaultConfiguration as BaseDefaultConfiguration } from "../../../../platform/configuration/common/configurations.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	FileOperation,
+	FileOperationResult,
+	whenProviderRegistered,
+	type FileChangesEvent,
 	type FileOperationError,
 	type FileOperationEvent,
-	FileOperationResult,
 	type IFileService,
-	whenProviderRegistered,
 } from "../../../../platform/files/common/files.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import type { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import type { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
+	WorkbenchState,
 	type IWorkspaceFolder,
 	type IWorkspaceIdentifier,
-	WorkbenchState,
 } from "../../../../platform/workspace/common/workspace.js";
 import type { IStoredWorkspaceFolder } from "../../../../platform/workspaces/common/workspaces.js";
 import type { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
 import type { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
 import {
 	APPLY_ALL_PROFILES_SETTING,
-	type ConfigurationKey,
 	FOLDER_SCOPES,
 	FOLDER_SETTINGS_NAME,
-	type IConfigurationCache,
 	LAUNCH_CONFIGURATION_KEY,
 	REMOTE_MACHINE_SCOPES,
 	TASKS_CONFIGURATION_KEY,
 	WORKSPACE_SCOPES,
+	type ConfigurationKey,
+	type IConfigurationCache,
 } from "../common/configuration.js";
 import {
 	StandaloneConfigurationModelParser,

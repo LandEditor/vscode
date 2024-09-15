@@ -42,22 +42,22 @@ import type { IWebviewElement } from "../../webview/browser/webview.js";
 import type { NotebookCellTextModel } from "../common/model/notebookCellTextModel.js";
 import type { NotebookTextModel } from "../common/model/notebookTextModel.js";
 import {
+	NOTEBOOK_EDITOR_ID,
 	type CellKind,
 	type ICellOutput,
 	type INotebookCellStatusBarItem,
 	type INotebookFindOptions,
 	type INotebookRendererInfo,
 	type IOrderedMimeType,
-	NOTEBOOK_EDITOR_ID,
 	type NotebookCellInternalMetadata,
 	type NotebookCellMetadata,
 } from "../common/notebookCommon.js";
 import { isCompositeNotebookEditorInput } from "../common/notebookEditorInput.js";
 import type { INotebookKernel } from "../common/notebookKernelService.js";
 import {
-	type ICellRange,
 	cellRangesToIndexes,
 	reduceCellRanges,
+	type ICellRange,
 } from "../common/notebookRange.js";
 import type { NotebookOptions } from "./notebookOptions.js";
 import type {

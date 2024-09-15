@@ -21,8 +21,8 @@ import {
 import { localize } from "../../../../../../nls.js";
 import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -67,11 +67,19 @@ export class NotebookFindContrib
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this.widget = new Lazy(() => this._register(this.instantiationService.createInstance(NotebookFindWidget, this.notebookEditor)));
+		this.widget = new Lazy(() =>
+			this._register(
+				this.instantiationService.createInstance(
+					NotebookFindWidget,
+					this.notebookEditor,
+				),
+			),
+		);
 	}
 
 	show(

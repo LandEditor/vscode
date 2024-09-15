@@ -21,8 +21,8 @@ import { observableValue } from "../../../../base/common/observable.js";
 import { count } from "../../../../base/common/strings.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import { EditorAction2 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
@@ -32,17 +32,17 @@ import { EditorOption } from "../../../../editor/common/config/editorOptions.js"
 import type { Position } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import {
+	ScrollType,
 	type IEditor,
 	type IEditorContribution,
-	ScrollType,
 } from "../../../../editor/common/editorCommon.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import { ITextModelService } from "../../../../editor/common/services/resolverService.js";
 import {
 	IPeekViewService,
-	PeekViewWidget,
 	peekViewTitleForeground,
 	peekViewTitleInfoForeground,
+	PeekViewWidget,
 } from "../../../../editor/contrib/peekView/browser/peekView.js";
 import { localize, localize2 } from "../../../../nls.js";
 import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
@@ -56,13 +56,13 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
-	type ITextEditorOptions,
 	TextEditorSelectionRevealType,
+	type ITextEditorOptions,
 } from "../../../../platform/editor/common/editor.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import {
@@ -85,16 +85,16 @@ import { editorBackground } from "../../../../platform/theme/common/colorRegistr
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { IViewDescriptorService } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	AutoOpenPeekViewWhen,
-	TestingConfigKeys,
 	getTestingConfiguration,
+	TestingConfigKeys,
 } from "../common/configuration.js";
 import { Testing } from "../common/constants.js";
 import {
@@ -102,11 +102,23 @@ import {
 	staticObservableValue,
 } from "../common/observableValue.js";
 import { StoredValue } from "../common/storedValue.js";
+import { TestingContextKeys } from "../common/testingContextKeys.js";
 import {
+	ITestingPeekOpener,
+	type IShowResultOptions,
+} from "../common/testingPeekOpener.js";
+import { isFailedState } from "../common/testingStates.js";
+import {
+	buildTestUri,
+	parseTestUri,
+	TestUriType,
+	type ParsedTestUri,
+} from "../common/testingUri.js";
+import {
+	resultItemParents,
+	TestResultItemChangeReason,
 	type ITestResult,
 	type TestResultItemChange,
-	TestResultItemChangeReason,
-	resultItemParents,
 } from "../common/testResult.js";
 import {
 	ITestResultService,
@@ -114,31 +126,19 @@ import {
 } from "../common/testResultService.js";
 import { ITestService } from "../common/testService.js";
 import {
-	type IRichLocation,
 	ITestMessage,
 	TestMessageType,
+	type IRichLocation,
 	type TestResultItem,
 } from "../common/testTypes.js";
-import { TestingContextKeys } from "../common/testingContextKeys.js";
-import {
-	type IShowResultOptions,
-	ITestingPeekOpener,
-} from "../common/testingPeekOpener.js";
-import { isFailedState } from "../common/testingStates.js";
-import {
-	type ParsedTestUri,
-	TestUriType,
-	buildTestUri,
-	parseTestUri,
-} from "../common/testingUri.js";
 import { renderTestMessageAsText } from "./testMessageColorizer.js";
 import {
-	type InspectSubject,
+	inspectSubjectHasStack,
+	mapFindTestMessage,
 	MessageSubject,
 	TaskSubject,
 	TestOutputSubject,
-	inspectSubjectHasStack,
-	mapFindTestMessage,
+	type InspectSubject,
 } from "./testResultsView/testResultsSubject.js";
 import { TestResultsViewContent } from "./testResultsView/testResultsViewContent.js";
 import {
@@ -195,15 +195,18 @@ export class TestingPeekOpener
 	);
 
 	constructor(
-		@IConfigurationService private readonly configuration: IConfigurationService,
+		@IConfigurationService
+		private readonly configuration: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@ITestResultService private readonly testResults: ITestResultService,
 		@ITestService private readonly testService: ITestService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IViewsService private readonly viewsService: IViewsService,
 		@ICommandService private readonly commandService: ICommandService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
 		this._register(testResults.onTestChanged(this.openPeekOnFailure, this));
@@ -623,16 +626,26 @@ export class TestingOutputPeekController
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITestResultService private readonly testResults: ITestResultService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
-		this.visible = TestingContextKeys.isPeekVisible.bindTo(contextKeyService);
+		this.visible =
+			TestingContextKeys.isPeekVisible.bindTo(contextKeyService);
 		this._register(editor.onDidChangeModel(() => this.peek.clear()));
-		this._register(testResults.onResultsChanged(this.closePeekOnCertainResultEvents, this));
-		this._register(testResults.onTestChanged(this.closePeekOnTestChange, this));
+		this._register(
+			testResults.onResultsChanged(
+				this.closePeekOnCertainResultEvents,
+				this,
+			),
+		);
+		this._register(
+			testResults.onTestChanged(this.closePeekOnTestChange, this),
+		);
 	}
 
 	/**
@@ -920,17 +933,35 @@ class TestResultsPeek extends PeekViewWidget {
 		@IThemeService private readonly themeService: IThemeService,
 		@IPeekViewService peekViewService: IPeekViewService,
 		@ITestingPeekOpener private readonly testingPeek: ITestingPeekOpener,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ITextModelService protected readonly modelService: ITextModelService,
-		@ICodeEditorService protected readonly codeEditorService: ICodeEditorService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
+		@ICodeEditorService
+		protected readonly codeEditorService: ICodeEditorService,
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
 	) {
-		super(editor, { showFrame: true, frameWidth: 1, showArrow: true, isResizeable: true, isAccessible: true, className: 'test-output-peek' }, instantiationService);
+		super(
+			editor,
+			{
+				showFrame: true,
+				frameWidth: 1,
+				showArrow: true,
+				isResizeable: true,
+				isAccessible: true,
+				className: "test-output-peek",
+			},
+			instantiationService,
+		);
 
-		this._disposables.add(themeService.onDidColorThemeChange(this.applyTheme, this));
-		this._disposables.add(this.onDidClose(() => this.visibilityChange.fire(false)));
+		this._disposables.add(
+			themeService.onDidColorThemeChange(this.applyTheme, this),
+		);
+		this._disposables.add(
+			this.onDidClose(() => this.visibilityChange.fire(false)),
+		);
 		peekViewService.addExclusiveWidget(editor, this);
 	}
 
@@ -1174,7 +1205,19 @@ export class TestResultsView extends ViewPane {
 		@IHoverService hoverService: IHoverService,
 		@ITestResultService private readonly resultService: ITestResultService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 	}
 
 	public get subject() {

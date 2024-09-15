@@ -28,12 +28,13 @@ export class EditorHoverStatusBar
 	}
 
 	constructor(
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
-		this.hoverElement = $('div.hover-row.status-bar');
+		this.hoverElement = $("div.hover-row.status-bar");
 		this.hoverElement.tabIndex = 0;
-		this.actionsElement = dom.append(this.hoverElement, $('div.actions'));
+		this.actionsElement = dom.append(this.hoverElement, $("div.actions"));
 	}
 
 	public addAction(actionOptions: {

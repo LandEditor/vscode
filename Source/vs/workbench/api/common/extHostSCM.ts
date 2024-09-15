@@ -6,6 +6,7 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import { equals, sortedDiff } from "../../../base/common/arrays.js";
 import { asPromise } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
@@ -15,8 +16,8 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
 import { Schemas } from "../../../base/common/network.js";
@@ -34,10 +35,10 @@ import {
 	isProposedApiEnabled,
 } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostSCMShape,
 	type ICommandDto,
 	type IMainContext,
-	MainContext,
 	type MainThreadSCMShape,
 	type MainThreadTelemetryShape,
 	type SCMGroupFeatures,
@@ -770,9 +771,9 @@ class ExtHostSourceControl implements vscode.SourceControl {
 		return this._quickDiffProvider;
 	}
 
-	set quickDiffProvider(quickDiffProvider:
-		| vscode.QuickDiffProvider
-		| undefined) {
+	set quickDiffProvider(
+		quickDiffProvider: vscode.QuickDiffProvider | undefined,
+	) {
 		this._quickDiffProvider = quickDiffProvider;
 		let quickDiffLabel;
 		if (isProposedApiEnabled(this._extension, "quickDiffProvider")) {
@@ -793,9 +794,9 @@ class ExtHostSourceControl implements vscode.SourceControl {
 		return this._historyProvider;
 	}
 
-	set historyProvider(historyProvider:
-		| vscode.SourceControlHistoryProvider
-		| undefined) {
+	set historyProvider(
+		historyProvider: vscode.SourceControlHistoryProvider | undefined,
+	) {
 		checkProposedApiEnabled(this._extension, "scmHistoryProvider");
 
 		this._historyProvider = historyProvider;
@@ -902,9 +903,9 @@ class ExtHostSourceControl implements vscode.SourceControl {
 		checkProposedApiEnabled(this._extension, "scmActionButton");
 		return this._actionButton;
 	}
-	set actionButton(actionButton:
-		| vscode.SourceControlActionButton
-		| undefined) {
+	set actionButton(
+		actionButton: vscode.SourceControlActionButton | undefined,
+	) {
 		checkProposedApiEnabled(this._extension, "scmActionButton");
 		this._actionButtonDisposables.value = new DisposableStore();
 
@@ -1158,21 +1159,25 @@ export class ExtHostSCM implements ExtHostSCMShape {
 		mainContext: IMainContext,
 		private _commands: ExtHostCommands,
 		private _extHostDocuments: ExtHostDocuments,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadSCM);
 		this._telemetry = mainContext.getProxy(MainContext.MainThreadTelemetry);
 
 		_commands.registerArgumentProcessor({
-			processArgument: arg => {
+			processArgument: (arg) => {
 				if (arg && arg.$mid === MarshalledId.ScmResource) {
-					const sourceControl = this._sourceControls.get(arg.sourceControlHandle);
+					const sourceControl = this._sourceControls.get(
+						arg.sourceControlHandle,
+					);
 
 					if (!sourceControl) {
 						return arg;
 					}
 
-					const group = sourceControl.getResourceGroup(arg.groupHandle);
+					const group = sourceControl.getResourceGroup(
+						arg.groupHandle,
+					);
 
 					if (!group) {
 						return arg;
@@ -1180,7 +1185,9 @@ export class ExtHostSCM implements ExtHostSCMShape {
 
 					return group.getResourceState(arg.handle);
 				} else if (arg && arg.$mid === MarshalledId.ScmResourceGroup) {
-					const sourceControl = this._sourceControls.get(arg.sourceControlHandle);
+					const sourceControl = this._sourceControls.get(
+						arg.sourceControlHandle,
+					);
 
 					if (!sourceControl) {
 						return arg;
@@ -1198,7 +1205,7 @@ export class ExtHostSCM implements ExtHostSCMShape {
 				}
 
 				return arg;
-			}
+			},
 		});
 	}
 

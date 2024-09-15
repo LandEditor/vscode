@@ -46,8 +46,9 @@ export class BrowserUpdateService extends Disposable implements IUpdateService {
 	}
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@IHostService private readonly hostService: IHostService
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IHostService private readonly hostService: IHostService,
 	) {
 		super();
 

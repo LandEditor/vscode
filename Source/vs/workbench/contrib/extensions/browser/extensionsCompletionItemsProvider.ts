@@ -9,9 +9,9 @@ import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { Position } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import {
+	CompletionItemKind,
 	type CompletionContext,
 	type CompletionItem,
-	CompletionItemKind,
 	type CompletionList,
 } from "../../../../editor/common/languages.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
@@ -25,35 +25,80 @@ export class ExtensionsCompletionItemsProvider
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 
-		this._register(languageFeaturesService.completionProvider.register({ language: 'jsonc', pattern: '**/settings.json' }, {
-			_debugDisplayName: 'extensionsCompletionProvider',
-			provideCompletionItems: async (model: ITextModel, position: Position, _context: CompletionContext, token: CancellationToken): Promise<CompletionList> => {
-				const getWordRangeAtPosition = (model: ITextModel, position: Position): Range | null => {
-					const wordAtPosition = model.getWordAtPosition(position);
-					return wordAtPosition ? new Range(position.lineNumber, wordAtPosition.startColumn, position.lineNumber, wordAtPosition.endColumn) : null;
-				};
+		this._register(
+			languageFeaturesService.completionProvider.register(
+				{ language: "jsonc", pattern: "**/settings.json" },
+				{
+					_debugDisplayName: "extensionsCompletionProvider",
+					provideCompletionItems: async (
+						model: ITextModel,
+						position: Position,
+						_context: CompletionContext,
+						token: CancellationToken,
+					): Promise<CompletionList> => {
+						const getWordRangeAtPosition = (
+							model: ITextModel,
+							position: Position,
+						): Range | null => {
+							const wordAtPosition =
+								model.getWordAtPosition(position);
+							return wordAtPosition
+								? new Range(
+										position.lineNumber,
+										wordAtPosition.startColumn,
+										position.lineNumber,
+										wordAtPosition.endColumn,
+									)
+								: null;
+						};
 
-				const location = getLocation(model.getValue(), model.getOffsetAt(position));
-				const range = getWordRangeAtPosition(model, position) ?? Range.fromPositions(position, position);
+						const location = getLocation(
+							model.getValue(),
+							model.getOffsetAt(position),
+						);
+						const range =
+							getWordRangeAtPosition(model, position) ??
+							Range.fromPositions(position, position);
 
-				// extensions.supportUntrustedWorkspaces
-				if (location.path[0] === 'extensions.supportUntrustedWorkspaces' && location.path.length === 2 && location.isAtPropertyKey) {
-					let alreadyConfigured: string[] = [];
-					try {
-						alreadyConfigured = Object.keys(parse(model.getValue())['extensions.supportUntrustedWorkspaces']);
-					} catch (e) {/* ignore error */ }
+						// extensions.supportUntrustedWorkspaces
+						if (
+							location.path[0] ===
+								"extensions.supportUntrustedWorkspaces" &&
+							location.path.length === 2 &&
+							location.isAtPropertyKey
+						) {
+							let alreadyConfigured: string[] = [];
+							try {
+								alreadyConfigured = Object.keys(
+									parse(model.getValue())[
+										"extensions.supportUntrustedWorkspaces"
+									],
+								);
+							} catch (e) {
+								/* ignore error */
+							}
 
-					return { suggestions: await this.provideSupportUntrustedWorkspacesExtensionProposals(alreadyConfigured, range) };
-				}
+							return {
+								suggestions:
+									await this.provideSupportUntrustedWorkspacesExtensionProposals(
+										alreadyConfigured,
+										range,
+									),
+							};
+						}
 
-				return { suggestions: [] };
-			}
-		}));
+						return { suggestions: [] };
+					},
+				},
+			),
+		);
 	}
 
 	private async provideSupportUntrustedWorkspacesExtensionProposals(

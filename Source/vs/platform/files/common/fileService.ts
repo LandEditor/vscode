@@ -6,15 +6,15 @@
 import { coalesce } from "../../../base/common/arrays.js";
 import { Promises, ResourceQueue } from "../../../base/common/async.js";
 import {
+	bufferedStreamToBuffer,
+	bufferToReadable,
+	newWriteableBufferStream,
+	readableToBuffer,
+	streamToBuffer,
 	VSBuffer,
 	type VSBufferReadable,
 	type VSBufferReadableBufferedStream,
 	type VSBufferReadableStream,
-	bufferToReadable,
-	bufferedStreamToBuffer,
-	newWriteableBufferStream,
-	readableToBuffer,
-	streamToBuffer,
 } from "../../../base/common/buffer.js";
 import {
 	CancellationToken,
@@ -27,17 +27,17 @@ import { Iterable } from "../../../base/common/iterator.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import { mark } from "../../../base/common/performance.js";
 import {
-	type IExtUri,
 	extUri,
 	extUriIgnorePathCase,
 	isAbsolutePath,
+	type IExtUri,
 } from "../../../base/common/resources.js";
 import {
 	consumeStream,
@@ -54,6 +54,8 @@ import type { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import { ILogService } from "../../log/common/log.js";
 import {
+	ensureFileSystemProviderError,
+	etag,
 	ETAG_DISABLED,
 	FileChangesEvent,
 	FileOperation,
@@ -64,6 +66,18 @@ import {
 	FileSystemProviderCapabilities,
 	FileSystemProviderErrorCode,
 	FileType,
+	hasFileAtomicDeleteCapability,
+	hasFileAtomicReadCapability,
+	hasFileAtomicWriteCapability,
+	hasFileCloneCapability,
+	hasFileFolderCopyCapability,
+	hasFileReadStreamCapability,
+	hasOpenReadWriteCloseCapability,
+	hasReadWriteCapability,
+	NotModifiedSinceFileOperationError,
+	toFileOperationResult,
+	toFileSystemProviderErrorCode,
+	TooLargeFileOperationError,
 	type ICreateFileOptions,
 	type IFileContent,
 	type IFileDeleteOptions,
@@ -92,20 +106,6 @@ import {
 	type IWatchOptionsWithCorrelation,
 	type IWatchOptionsWithoutCorrelation,
 	type IWriteFileOptions,
-	NotModifiedSinceFileOperationError,
-	TooLargeFileOperationError,
-	ensureFileSystemProviderError,
-	etag,
-	hasFileAtomicDeleteCapability,
-	hasFileAtomicReadCapability,
-	hasFileAtomicWriteCapability,
-	hasFileCloneCapability,
-	hasFileFolderCopyCapability,
-	hasFileReadStreamCapability,
-	hasOpenReadWriteCloseCapability,
-	hasReadWriteCapability,
-	toFileOperationResult,
-	toFileSystemProviderErrorCode,
 } from "./files.js";
 import { readFileIntoStream } from "./io.js";
 

@@ -27,8 +27,8 @@ import {
 	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -36,9 +36,9 @@ import {
 	type IEditorPaneRegistry,
 } from "../../../browser/editor.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -55,8 +55,8 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import type { IWorkingCopyIdentifier } from "../../../services/workingCopy/common/workingCopy.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../../services/workingCopy/common/workingCopyEditorService.js";
 import { ResourceNotebookCellEdit } from "../../bulkEdit/browser/bulkCellEdits.js";
 import { getReplView } from "../../debug/browser/repl.js";
@@ -141,9 +141,12 @@ export class ReplDocumentContribution
 	constructor(
 		@INotebookService notebookService: INotebookService,
 		@IEditorResolverService editorResolverService: IEditorResolverService,
-		@INotebookEditorModelResolverService private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@INotebookEditorModelResolverService
+		private readonly notebookEditorModelResolverService: INotebookEditorModelResolverService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
@@ -151,34 +154,59 @@ export class ReplDocumentContribution
 			// don't match anything, we don't need to support re-opening files as REPL editor at this point
 			` `,
 			{
-				id: 'repl',
-				label: 'repl Editor',
-				priority: RegisteredEditorPriority.option
+				id: "repl",
+				label: "repl Editor",
+				priority: RegisteredEditorPriority.option,
 			},
 			{
 				// We want to support all notebook types which could have any file extension,
 				// so we just check if the resource corresponds to a notebook
-				canSupportResource: uri => notebookService.getNotebookTextModel(uri) !== undefined,
-				singlePerResource: true
+				canSupportResource: (uri) =>
+					notebookService.getNotebookTextModel(uri) !== undefined,
+				singlePerResource: true,
 			},
 			{
 				createUntitledEditorInput: async ({ resource, options }) => {
-					const scratchpad = this.configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
-					const ref = await this.notebookEditorModelResolverService.resolve({ untitledResource: resource }, 'jupyter-notebook', { scratchpad });
+					const scratchpad =
+						this.configurationService.getValue<boolean>(
+							NotebookSetting.InteractiveWindowPromptToSave,
+						) !== true;
+					const ref =
+						await this.notebookEditorModelResolverService.resolve(
+							{ untitledResource: resource },
+							"jupyter-notebook",
+							{ scratchpad },
+						);
 
 					// untitled notebooks are disposed when they get saved. we should not hold a reference
 					// to such a disposed notebook and therefore dispose the reference as well
 					ref.object.notebook.onWillDispose(() => {
 						ref.dispose();
 					});
-					const label = (options as INotebookEditorOptions)?.label ?? undefined;
-					return { editor: this.instantiationService.createInstance(ReplEditorInput, resource!, label), options };
+					const label =
+						(options as INotebookEditorOptions)?.label ?? undefined;
+					return {
+						editor: this.instantiationService.createInstance(
+							ReplEditorInput,
+							resource!,
+							label,
+						),
+						options,
+					};
 				},
 				createEditorInput: async ({ resource, options }) => {
-					const label = (options as INotebookEditorOptions)?.label ?? undefined;
-					return { editor: this.instantiationService.createInstance(ReplEditorInput, resource, label), options };
-				}
-			}
+					const label =
+						(options as INotebookEditorOptions)?.label ?? undefined;
+					return {
+						editor: this.instantiationService.createInstance(
+							ReplEditorInput,
+							resource,
+							label,
+						),
+						options,
+					};
+				},
+			},
 		);
 	}
 }
@@ -190,8 +218,10 @@ class ReplWindowWorkingCopyEditorHandler
 	static readonly ID = "workbench.contrib.replWorkingCopyEditorHandler";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkingCopyEditorService private readonly workingCopyEditorService: IWorkingCopyEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkingCopyEditorService
+		private readonly workingCopyEditorService: IWorkingCopyEditorService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super();

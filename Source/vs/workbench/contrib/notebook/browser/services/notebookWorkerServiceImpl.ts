@@ -7,9 +7,9 @@ import { createWebWorker } from "../../../../../base/browser/defaultWorkerFactor
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { isEqual } from "../../../../../base/common/resources.js";
@@ -24,9 +24,9 @@ import { IModelService } from "../../../../../editor/common/services/model.js";
 import type { NotebookCellTextModel } from "../../common/model/notebookCellTextModel.js";
 import {
 	CellUri,
+	NotebookCellsChangeType,
 	type IMainCellDto,
 	type INotebookDiffResult,
-	NotebookCellsChangeType,
 	type NotebookRawContentEventDto,
 } from "../../common/notebookCommon.js";
 import { INotebookService } from "../../common/notebookService.js";

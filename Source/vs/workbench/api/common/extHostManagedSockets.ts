@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { VSBuffer } from "../../../base/common/buffer.js";
 import {
 	Disposable,
@@ -12,8 +13,8 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type ExtHostManagedSocketsShape,
 	MainContext,
+	type ExtHostManagedSocketsShape,
 	type MainThreadManagedSocketsShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -39,9 +40,7 @@ export class ExtHostManagedSockets implements IExtHostManagedSockets {
 	private readonly _managedRemoteSockets: Map<number, ManagedSocket> =
 		new Map();
 
-	constructor(
-		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-	) {
+	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadManagedSockets);
 	}
 

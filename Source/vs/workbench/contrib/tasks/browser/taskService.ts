@@ -9,9 +9,9 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import type { IWorkspaceFolder } from "../../../../platform/workspace/common/workspace.js";
-import { type ITaskFilter, ITaskService } from "../common/taskService.js";
-import type { ITaskSystem } from "../common/taskSystem.js";
 import { ExecutionEngine } from "../common/tasks.js";
+import { ITaskService, type ITaskFilter } from "../common/taskService.js";
+import type { ITaskSystem } from "../common/taskSystem.js";
 import {
 	AbstractTaskService,
 	type IWorkspaceFolderConfigurationResult,

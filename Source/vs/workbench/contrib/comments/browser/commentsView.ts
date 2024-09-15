@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/panel.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import type { ITreeElement } from "../../../../base/browser/ui/tree/tree.js";
 import { basename } from "../../../../base/common/resources.js";
@@ -15,9 +16,9 @@ import {
 import * as nls from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -46,23 +47,23 @@ import { AccessibilityVerbositySettingId } from "../../accessibility/browser/acc
 import { AccessibleViewAction } from "../../accessibility/browser/accessibleViewActions.js";
 import {
 	CommentNode,
-	type ICommentThreadChangedEvent,
 	ResourceWithCommentThreads,
+	type ICommentThreadChangedEvent,
 } from "../common/commentModel.js";
-import {
-	ICommentService,
-	type IWorkspaceCommentThreadsEvent,
-} from "./commentService.js";
 import {
 	CommentsViewFilterFocusContextKey,
 	type ICommentsView,
 } from "./comments.js";
 import { revealCommentThread } from "./commentsController.js";
+import {
+	ICommentService,
+	type IWorkspaceCommentThreadsEvent,
+} from "./commentService.js";
 import { FilterOptions } from "./commentsFilterOptions.js";
 import {
 	CommentsModel,
-	type ICommentsModel,
 	threadHasMeaningfulComments,
+	type ICommentsModel,
 } from "./commentsModel.js";
 import {
 	COMMENTS_VIEW_TITLE,
@@ -71,8 +72,8 @@ import {
 } from "./commentsTreeViewer.js";
 import {
 	CommentsFilters,
-	type CommentsFiltersChangeEvent,
 	CommentsSortOrder,
+	type CommentsFiltersChangeEvent,
 } from "./commentsViewActions.js";
 
 export const CONTEXT_KEY_HAS_COMMENTS = new RawContextKey<boolean>(
@@ -199,44 +200,86 @@ export class CommentsPanel extends FilterViewPane implements ICommentsView {
 		@ICommentService private readonly commentService: ICommentService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IStorageService storageService: IStorageService,
 		@IPathService private readonly pathService: IPathService,
 	) {
 		const stateMemento = new Memento(VIEW_STORAGE_ID, storageService);
-		const viewState = stateMemento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE);
-		super({
-			...options,
-			filterOptions: {
-				placeholder: nls.localize('comments.filter.placeholder', "Filter (e.g. text, author)"),
-				ariaLabel: nls.localize('comments.filter.ariaLabel', "Filter comments"),
-				history: viewState['filterHistory'] || [],
-				text: viewState['filter'] || '',
-				focusContextKey: CommentsViewFilterFocusContextKey.key
-			}
-		}, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
-		this.hasCommentsContextKey = CONTEXT_KEY_HAS_COMMENTS.bindTo(contextKeyService);
-		this.someCommentsExpandedContextKey = CONTEXT_KEY_SOME_COMMENTS_EXPANDED.bindTo(contextKeyService);
-		this.commentsFocusedContextKey = CONTEXT_KEY_COMMENT_FOCUSED.bindTo(contextKeyService);
+		const viewState = stateMemento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		);
+		super(
+			{
+				...options,
+				filterOptions: {
+					placeholder: nls.localize(
+						"comments.filter.placeholder",
+						"Filter (e.g. text, author)",
+					),
+					ariaLabel: nls.localize(
+						"comments.filter.ariaLabel",
+						"Filter comments",
+					),
+					history: viewState["filterHistory"] || [],
+					text: viewState["filter"] || "",
+					focusContextKey: CommentsViewFilterFocusContextKey.key,
+				},
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
+		this.hasCommentsContextKey =
+			CONTEXT_KEY_HAS_COMMENTS.bindTo(contextKeyService);
+		this.someCommentsExpandedContextKey =
+			CONTEXT_KEY_SOME_COMMENTS_EXPANDED.bindTo(contextKeyService);
+		this.commentsFocusedContextKey =
+			CONTEXT_KEY_COMMENT_FOCUSED.bindTo(contextKeyService);
 		this.stateMemento = stateMemento;
 		this.viewState = viewState;
 
-		this.filters = this._register(new CommentsFilters({
-			showResolved: this.viewState['showResolved'] !== false,
-			showUnresolved: this.viewState['showUnresolved'] !== false,
-			sortBy: this.viewState['sortBy'] ?? CommentsSortOrder.ResourceAscending,
-		}, this.contextKeyService));
-		this.filter = new Filter(new FilterOptions(this.filterWidget.getFilterText(), this.filters.showResolved, this.filters.showUnresolved));
+		this.filters = this._register(
+			new CommentsFilters(
+				{
+					showResolved: this.viewState["showResolved"] !== false,
+					showUnresolved: this.viewState["showUnresolved"] !== false,
+					sortBy:
+						this.viewState["sortBy"] ??
+						CommentsSortOrder.ResourceAscending,
+				},
+				this.contextKeyService,
+			),
+		);
+		this.filter = new Filter(
+			new FilterOptions(
+				this.filterWidget.getFilterText(),
+				this.filters.showResolved,
+				this.filters.showUnresolved,
+			),
+		);
 
-		this._register(this.filters.onDidChange((event: CommentsFiltersChangeEvent) => {
-			if (event.showResolved || event.showUnresolved) {
-				this.updateFilter();
-			}
-			if (event.sortBy) {
-				this.refresh();
-			}
-		}));
-		this._register(this.filterWidget.onDidChangeFilterText(() => this.updateFilter()));
+		this._register(
+			this.filters.onDidChange((event: CommentsFiltersChangeEvent) => {
+				if (event.showResolved || event.showUnresolved) {
+					this.updateFilter();
+				}
+				if (event.sortBy) {
+					this.refresh();
+				}
+			}),
+		);
+		this._register(
+			this.filterWidget.onDidChangeFilterText(() => this.updateFilter()),
+		);
 	}
 
 	override saveState(): void {

@@ -1,4 +1,5 @@
 {
+	"name": "vscode-reh",
 	"dependencies": {
 		"@bpasero/watcher": "https://github.com/bpasero/watcher.git#5d29cc732a03c91ecc2c861940a240b01e765c65",
 		"@vscode/deviceid": "0.1.1",
@@ -23,7 +24,6 @@
 		"yauzl": "3.0.0",
 		"yazl": "2.4.3"
 	},
-	"name": "vscode-reh",
 	"overrides": {
 		"node-gyp-build": "4.8.1"
 	}

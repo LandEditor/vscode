@@ -11,8 +11,8 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	IStorageService,
@@ -20,8 +20,8 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { testUrlMatchesGlob } from "../common/urlGlob.js";
 import {
-	TRUSTED_DOMAINS_STORAGE_KEY,
 	readStaticTrustedDomains,
+	TRUSTED_DOMAINS_STORAGE_KEY,
 } from "./trustedDomains.js";
 
 export const ITrustedDomainService = createDecorator<ITrustedDomainService>(
@@ -43,25 +43,32 @@ export class TrustedDomainService
 	private _staticTrustedDomainsResult!: WindowIdleValue<string[]>;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
 
 		const initStaticDomainsResult = () => {
 			return new WindowIdleValue(mainWindow, () => {
-				const { defaultTrustedDomains, trustedDomains, } = this._instantiationService.invokeFunction(readStaticTrustedDomains);
-				return [
-					...defaultTrustedDomains,
-					...trustedDomains
-				];
+				const { defaultTrustedDomains, trustedDomains } =
+					this._instantiationService.invokeFunction(
+						readStaticTrustedDomains,
+					);
+				return [...defaultTrustedDomains, ...trustedDomains];
 			});
 		};
 		this._staticTrustedDomainsResult = initStaticDomainsResult();
-		this._register(this._storageService.onDidChangeValue(StorageScope.APPLICATION, TRUSTED_DOMAINS_STORAGE_KEY, this._register(new DisposableStore()))(() => {
-			this._staticTrustedDomainsResult?.dispose();
-			this._staticTrustedDomainsResult = initStaticDomainsResult();
-		}));
+		this._register(
+			this._storageService.onDidChangeValue(
+				StorageScope.APPLICATION,
+				TRUSTED_DOMAINS_STORAGE_KEY,
+				this._register(new DisposableStore()),
+			)(() => {
+				this._staticTrustedDomainsResult?.dispose();
+				this._staticTrustedDomainsResult = initStaticDomainsResult();
+			}),
+		);
 	}
 
 	isValid(resource: URI): boolean {

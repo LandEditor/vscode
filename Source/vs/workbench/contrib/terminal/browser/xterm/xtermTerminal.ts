@@ -22,11 +22,12 @@ import type {
 	Terminal as RawXtermTerminal,
 	LogLevel as XtermLogLevel,
 } from "@xterm/xterm";
+
 import { importAMDNodeModule } from "../../../../../amdX.js";
 import * as dom from "../../../../../base/browser/dom.js";
 import {
-	type IMouseWheelEvent,
 	StandardWheelEvent,
+	type IMouseWheelEvent,
 } from "../../../../../base/browser/mouseEvent.js";
 import { MouseWheelClassifier } from "../../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import { debounce } from "../../../../../base/common/decorators.js";
@@ -44,8 +45,8 @@ import {
 import { IClipboardService } from "../../../../../platform/clipboard/common/clipboardService.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { ILayoutService } from "../../../../../platform/layout/browser/layoutService.js";
@@ -53,14 +54,14 @@ import { LogLevel } from "../../../../../platform/log/common/log.js";
 import { INotificationService } from "../../../../../platform/notification/common/notification.js";
 import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
 import {
+	TerminalCapability,
 	type ITerminalCapabilityStore,
 	type ITerminalCommand,
-	TerminalCapability,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
-	type IShellIntegration,
 	ITerminalLogService,
 	TerminalSettingId,
+	type IShellIntegration,
 } from "../../../../../platform/terminal/common/terminal.js";
 import { ShellIntegrationAddon } from "../../../../../platform/terminal/common/xterm/shellIntegrationAddon.js";
 import {
@@ -69,8 +70,8 @@ import {
 	scrollbarSliderHoverBackground,
 } from "../../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../../platform/theme/common/themeService.js";
 import { PANEL_BACKGROUND } from "../../../../common/theme.js";
 import type {
@@ -78,6 +79,7 @@ import type {
 	ITerminalFont,
 } from "../../common/terminal.js";
 import {
+	ansiColorIdentifiers,
 	TERMINAL_BACKGROUND_COLOR,
 	TERMINAL_CURSOR_BACKGROUND_COLOR,
 	TERMINAL_CURSOR_FOREGROUND_COLOR,
@@ -92,18 +94,17 @@ import {
 	TERMINAL_OVERVIEW_RULER_FIND_MATCH_FOREGROUND_COLOR,
 	TERMINAL_SELECTION_BACKGROUND_COLOR,
 	TERMINAL_SELECTION_FOREGROUND_COLOR,
-	ansiColorIdentifiers,
 } from "../../common/terminalColorRegistry.js";
 import { TerminalContextKeys } from "../../common/terminalContextKey.js";
 import {
+	ITerminalConfigurationService,
+	XtermTerminalConstants,
 	type IDetachedXtermTerminal,
 	type IInternalXtermTerminal,
 	type IMarkTracker,
-	ITerminalConfigurationService,
 	type IXtermAttachToElementOptions,
 	type IXtermColorProvider,
 	type IXtermTerminal,
-	XtermTerminalConstants,
 } from "../terminal.js";
 import type { IXtermCore } from "../xterm-private.js";
 import { DecorationAddon } from "./decorationAddon.js";
@@ -297,117 +298,195 @@ export class XtermTerminal
 		private readonly _capabilities: ITerminalCapabilityStore,
 		shellIntegrationNonce: string,
 		disableShellIntegrationReporting: boolean,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@ILayoutService layoutService: ILayoutService
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@ILayoutService layoutService: ILayoutService,
 	) {
 		super();
-		const font = this._terminalConfigurationService.getFont(dom.getActiveWindow(), undefined, true);
+		const font = this._terminalConfigurationService.getFont(
+			dom.getActiveWindow(),
+			undefined,
+			true,
+		);
 		const config = this._terminalConfigurationService.config;
-		const editorOptions = this._configurationService.getValue<IEditorOptions>('editor');
+		const editorOptions =
+			this._configurationService.getValue<IEditorOptions>("editor");
 
-		this.raw = this._register(new xtermCtor({
-			allowProposedApi: true,
-			cols,
-			rows,
-			documentOverride: layoutService.mainContainer.ownerDocument,
-			altClickMovesCursor: config.altClickMovesCursor && editorOptions.multiCursorModifier === 'alt',
-			scrollback: config.scrollback,
-			theme: this.getXtermTheme(),
-			drawBoldTextInBrightColors: config.drawBoldTextInBrightColors,
-			fontFamily: font.fontFamily,
-			fontWeight: config.fontWeight,
-			fontWeightBold: config.fontWeightBold,
-			fontSize: font.fontSize,
-			letterSpacing: font.letterSpacing,
-			lineHeight: font.lineHeight,
-			logLevel: vscodeToXtermLogLevel(this._logService.getLevel()),
-			logger: this._logService,
-			minimumContrastRatio: config.minimumContrastRatio,
-			tabStopWidth: config.tabStopWidth,
-			cursorBlink: config.cursorBlinking,
-			cursorStyle: vscodeToXtermCursorStyle<'cursorStyle'>(config.cursorStyle),
-			cursorInactiveStyle: vscodeToXtermCursorStyle(config.cursorStyleInactive),
-			cursorWidth: config.cursorWidth,
-			macOptionIsMeta: config.macOptionIsMeta,
-			macOptionClickForcesSelection: config.macOptionClickForcesSelection,
-			rightClickSelectsWord: config.rightClickBehavior === 'selectWord',
-			fastScrollModifier: 'alt',
-			fastScrollSensitivity: config.fastScrollSensitivity,
-			scrollSensitivity: config.mouseWheelScrollSensitivity,
-			wordSeparator: config.wordSeparators,
-			overviewRuler: {
-				width: 14,
-				showTopBorder: true,
-			},
-			ignoreBracketedPasteMode: config.ignoreBracketedPasteMode,
-			rescaleOverlappingGlyphs: config.rescaleOverlappingGlyphs,
-			windowOptions: {
-				getWinSizePixels: true,
-				getCellSizePixels: true,
-				getWinSizeChars: true,
-			},
-		}));
+		this.raw = this._register(
+			new xtermCtor({
+				allowProposedApi: true,
+				cols,
+				rows,
+				documentOverride: layoutService.mainContainer.ownerDocument,
+				altClickMovesCursor:
+					config.altClickMovesCursor &&
+					editorOptions.multiCursorModifier === "alt",
+				scrollback: config.scrollback,
+				theme: this.getXtermTheme(),
+				drawBoldTextInBrightColors: config.drawBoldTextInBrightColors,
+				fontFamily: font.fontFamily,
+				fontWeight: config.fontWeight,
+				fontWeightBold: config.fontWeightBold,
+				fontSize: font.fontSize,
+				letterSpacing: font.letterSpacing,
+				lineHeight: font.lineHeight,
+				logLevel: vscodeToXtermLogLevel(this._logService.getLevel()),
+				logger: this._logService,
+				minimumContrastRatio: config.minimumContrastRatio,
+				tabStopWidth: config.tabStopWidth,
+				cursorBlink: config.cursorBlinking,
+				cursorStyle: vscodeToXtermCursorStyle<"cursorStyle">(
+					config.cursorStyle,
+				),
+				cursorInactiveStyle: vscodeToXtermCursorStyle(
+					config.cursorStyleInactive,
+				),
+				cursorWidth: config.cursorWidth,
+				macOptionIsMeta: config.macOptionIsMeta,
+				macOptionClickForcesSelection:
+					config.macOptionClickForcesSelection,
+				rightClickSelectsWord:
+					config.rightClickBehavior === "selectWord",
+				fastScrollModifier: "alt",
+				fastScrollSensitivity: config.fastScrollSensitivity,
+				scrollSensitivity: config.mouseWheelScrollSensitivity,
+				wordSeparator: config.wordSeparators,
+				overviewRuler: {
+					width: 14,
+					showTopBorder: true,
+				},
+				ignoreBracketedPasteMode: config.ignoreBracketedPasteMode,
+				rescaleOverlappingGlyphs: config.rescaleOverlappingGlyphs,
+				windowOptions: {
+					getWinSizePixels: true,
+					getCellSizePixels: true,
+					getWinSizeChars: true,
+				},
+			}),
+		);
 		this._updateSmoothScrolling();
 		this._core = (this.raw as any)._core as IXtermCore;
 
-		this._register(this._configurationService.onDidChangeConfiguration(async e => {
-			if (e.affectsConfiguration(TerminalSettingId.GpuAcceleration)) {
-				XtermTerminal._suggestedRendererType = undefined;
-			}
-			if (e.affectsConfiguration('terminal.integrated') || e.affectsConfiguration('editor.fastScrollSensitivity') || e.affectsConfiguration('editor.mouseWheelScrollSensitivity') || e.affectsConfiguration('editor.multiCursorModifier')) {
-				this.updateConfig();
-			}
-			if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
-				this._updateUnicodeVersion();
-			}
-			if (e.affectsConfiguration(TerminalSettingId.ShellIntegrationDecorationsEnabled)) {
-				this._updateTheme();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration(async (e) => {
+				if (e.affectsConfiguration(TerminalSettingId.GpuAcceleration)) {
+					XtermTerminal._suggestedRendererType = undefined;
+				}
+				if (
+					e.affectsConfiguration("terminal.integrated") ||
+					e.affectsConfiguration("editor.fastScrollSensitivity") ||
+					e.affectsConfiguration(
+						"editor.mouseWheelScrollSensitivity",
+					) ||
+					e.affectsConfiguration("editor.multiCursorModifier")
+				) {
+					this.updateConfig();
+				}
+				if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
+					this._updateUnicodeVersion();
+				}
+				if (
+					e.affectsConfiguration(
+						TerminalSettingId.ShellIntegrationDecorationsEnabled,
+					)
+				) {
+					this._updateTheme();
+				}
+			}),
+		);
 
-		this._register(this._themeService.onDidColorThemeChange(theme => this._updateTheme(theme)));
-		this._register(this._logService.onDidChangeLogLevel(e => this.raw.options.logLevel = vscodeToXtermLogLevel(e)));
+		this._register(
+			this._themeService.onDidColorThemeChange((theme) =>
+				this._updateTheme(theme),
+			),
+		);
+		this._register(
+			this._logService.onDidChangeLogLevel(
+				(e) => (this.raw.options.logLevel = vscodeToXtermLogLevel(e)),
+			),
+		);
 
 		// Refire events
-		this._register(this.raw.onSelectionChange(() => {
-			this._onDidChangeSelection.fire();
-			if (this.isFocused) {
-				this._anyFocusedTerminalHasSelection.set(this.raw.hasSelection());
-			}
-		}));
+		this._register(
+			this.raw.onSelectionChange(() => {
+				this._onDidChangeSelection.fire();
+				if (this.isFocused) {
+					this._anyFocusedTerminalHasSelection.set(
+						this.raw.hasSelection(),
+					);
+				}
+			}),
+		);
 
 		// Load addons
 		this._updateUnicodeVersion();
-		this._markNavigationAddon = this._instantiationService.createInstance(MarkNavigationAddon, _capabilities);
+		this._markNavigationAddon = this._instantiationService.createInstance(
+			MarkNavigationAddon,
+			_capabilities,
+		);
 		this.raw.loadAddon(this._markNavigationAddon);
-		this._decorationAddon = this._instantiationService.createInstance(DecorationAddon, this._capabilities);
-		this._register(this._decorationAddon.onDidRequestRunCommand(e => this._onDidRequestRunCommand.fire(e)));
+		this._decorationAddon = this._instantiationService.createInstance(
+			DecorationAddon,
+			this._capabilities,
+		);
+		this._register(
+			this._decorationAddon.onDidRequestRunCommand((e) =>
+				this._onDidRequestRunCommand.fire(e),
+			),
+		);
 		this.raw.loadAddon(this._decorationAddon);
-		this._shellIntegrationAddon = new ShellIntegrationAddon(shellIntegrationNonce, disableShellIntegrationReporting, this._telemetryService, this._logService);
+		this._shellIntegrationAddon = new ShellIntegrationAddon(
+			shellIntegrationNonce,
+			disableShellIntegrationReporting,
+			this._telemetryService,
+			this._logService,
+		);
 		this.raw.loadAddon(this._shellIntegrationAddon);
-		this._getClipboardAddonConstructor().then(ClipboardAddon => {
-			this._clipboardAddon = this._instantiationService.createInstance(ClipboardAddon, undefined, {
-				async readText(type: ClipboardSelectionType): Promise<string> {
-					return _clipboardService.readText(type === 'p' ? 'selection' : 'clipboard');
+		this._getClipboardAddonConstructor().then((ClipboardAddon) => {
+			this._clipboardAddon = this._instantiationService.createInstance(
+				ClipboardAddon,
+				undefined,
+				{
+					async readText(
+						type: ClipboardSelectionType,
+					): Promise<string> {
+						return _clipboardService.readText(
+							type === "p" ? "selection" : "clipboard",
+						);
+					},
+					async writeText(
+						type: ClipboardSelectionType,
+						text: string,
+					): Promise<void> {
+						return _clipboardService.writeText(
+							text,
+							type === "p" ? "selection" : "clipboard",
+						);
+					},
 				},
-				async writeText(type: ClipboardSelectionType, text: string): Promise<void> {
-					return _clipboardService.writeText(text, type === 'p' ? 'selection' : 'clipboard');
-				}
-			});
+			);
 			this.raw.loadAddon(this._clipboardAddon);
 		});
 
-		this._anyTerminalFocusContextKey = TerminalContextKeys.focusInAny.bindTo(contextKeyService);
-		this._anyFocusedTerminalHasSelection = TerminalContextKeys.textSelectedInFocused.bindTo(contextKeyService);
+		this._anyTerminalFocusContextKey =
+			TerminalContextKeys.focusInAny.bindTo(contextKeyService);
+		this._anyFocusedTerminalHasSelection =
+			TerminalContextKeys.textSelectedInFocused.bindTo(contextKeyService);
 	}
 
 	*getBufferReverseIterator(): IterableIterator<string> {

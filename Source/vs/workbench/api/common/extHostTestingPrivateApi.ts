@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
-	type ExtHostTestItemEvent,
 	InvalidTestItemError,
+	type ExtHostTestItemEvent,
 } from "../../contrib/testing/common/testItemCollection.js";
 
 export interface IExtHostTestItemApi {

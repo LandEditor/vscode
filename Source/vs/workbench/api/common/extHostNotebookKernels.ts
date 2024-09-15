@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { asArray } from "../../../base/common/arrays.js";
 import { DeferredPromise, timeout } from "../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
 import {
@@ -33,11 +34,11 @@ import { asWebviewUri } from "../../contrib/webview/common/webview.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
+	MainContext,
 	type ExtHostNotebookKernelsShape,
 	type ICellExecuteUpdateDto,
 	type IMainContext,
 	type INotebookKernelDto2,
-	MainContext,
 	type MainThreadNotebookKernelsShape,
 	type NotebookOutputDto,
 	type VariablesResult,
@@ -123,52 +124,76 @@ export class ExtHostNotebookKernels implements ExtHostNotebookKernelsShape {
 		private _commands: ExtHostCommands,
 		@ILogService private readonly _logService: ILogService,
 	) {
-		this._proxy = mainContext.getProxy(MainContext.MainThreadNotebookKernels);
+		this._proxy = mainContext.getProxy(
+			MainContext.MainThreadNotebookKernels,
+		);
 
 		// todo@rebornix @joyceerhl: move to APICommands once stabilized.
 		const selectKernelApiCommand = new ApiCommand(
-			'notebook.selectKernel',
-			'_notebook.selectKernel',
-			'Trigger kernel picker for specified notebook editor widget',
+			"notebook.selectKernel",
+			"_notebook.selectKernel",
+			"Trigger kernel picker for specified notebook editor widget",
 			[
-				new ApiCommandArgument<ExtHostSelectKernelArgs, SelectKernelReturnArgs>('options', 'Select kernel options', v => true, (v: ExtHostSelectKernelArgs) => {
-					if (v && 'notebookEditor' in v && 'id' in v) {
-						const notebookEditorId = this._extHostNotebook.getIdByEditor(v.notebookEditor);
-						return {
-							id: v.id, extension: v.extension, notebookEditorId
-						};
-					} else if (v && 'notebookEditor' in v) {
-						const notebookEditorId = this._extHostNotebook.getIdByEditor(v.notebookEditor);
-						if (notebookEditorId === undefined) {
-							throw new Error(`Cannot invoke 'notebook.selectKernel' for unrecognized notebook editor ${v.notebookEditor.notebook.uri.toString()}`);
+				new ApiCommandArgument<
+					ExtHostSelectKernelArgs,
+					SelectKernelReturnArgs
+				>(
+					"options",
+					"Select kernel options",
+					(v) => true,
+					(v: ExtHostSelectKernelArgs) => {
+						if (v && "notebookEditor" in v && "id" in v) {
+							const notebookEditorId =
+								this._extHostNotebook.getIdByEditor(
+									v.notebookEditor,
+								);
+							return {
+								id: v.id,
+								extension: v.extension,
+								notebookEditorId,
+							};
+						} else if (v && "notebookEditor" in v) {
+							const notebookEditorId =
+								this._extHostNotebook.getIdByEditor(
+									v.notebookEditor,
+								);
+							if (notebookEditorId === undefined) {
+								throw new Error(
+									`Cannot invoke 'notebook.selectKernel' for unrecognized notebook editor ${v.notebookEditor.notebook.uri.toString()}`,
+								);
+							}
+							return { notebookEditorId };
 						}
-						return { notebookEditorId };
-					}
-					return v;
-				})
+						return v;
+					},
+				),
 			],
-			ApiCommandResult.Void);
+			ApiCommandResult.Void,
+		);
 
 		const requestKernelVariablesApiCommand = new ApiCommand(
-			'vscode.executeNotebookVariableProvider',
-			'_executeNotebookVariableProvider',
-			'Execute notebook variable provider',
+			"vscode.executeNotebookVariableProvider",
+			"_executeNotebookVariableProvider",
+			"Execute notebook variable provider",
 			[ApiCommandArgument.Uri],
-			new ApiCommandResult<VariablesResult[], vscode.VariablesResult[]>('A promise that resolves to an array of variables', (value, apiArgs) => {
-				return value.map(variable => {
-					return {
-						variable: {
-							name: variable.name,
-							value: variable.value,
-							expression: variable.expression,
-							type: variable.type,
-							language: variable.language
-						},
-						hasNamedChildren: variable.hasNamedChildren,
-						indexedChildrenCount: variable.indexedChildrenCount
-					};
-				});
-			})
+			new ApiCommandResult<VariablesResult[], vscode.VariablesResult[]>(
+				"A promise that resolves to an array of variables",
+				(value, apiArgs) => {
+					return value.map((variable) => {
+						return {
+							variable: {
+								name: variable.name,
+								value: variable.value,
+								expression: variable.expression,
+								type: variable.type,
+								language: variable.language,
+							},
+							hasNamedChildren: variable.hasNamedChildren,
+							indexedChildrenCount: variable.indexedChildrenCount,
+						};
+					});
+				},
+			),
 		);
 		this._commands.registerApiCommand(selectKernelApiCommand);
 		this._commands.registerApiCommand(requestKernelVariablesApiCommand);

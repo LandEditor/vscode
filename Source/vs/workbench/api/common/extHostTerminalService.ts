@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Promises } from "../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../base/common/cancellation.js";
 import { NotSupportedError } from "../../../base/common/errors.js";
@@ -11,8 +12,8 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
 import { ThemeColor } from "../../../base/common/themables.js";
@@ -31,6 +32,7 @@ import {
 	serializeEnvironmentVariableCollection,
 } from "../../../platform/terminal/common/environmentVariableShared.js";
 import {
+	ProcessPropertyType,
 	type ICreateContributedTerminalProfileOptions,
 	type IProcessProperty,
 	type IProcessPropertyMap,
@@ -39,7 +41,6 @@ import {
 	type ITerminalChildProcess,
 	type ITerminalLaunchError,
 	type ITerminalProfile,
-	ProcessPropertyType,
 	type TerminalIcon,
 	type TerminalLocation,
 } from "../../../platform/terminal/common/terminal.js";
@@ -47,6 +48,7 @@ import { TerminalDataBufferer } from "../../../platform/terminal/common/terminal
 import type { ISerializedTerminalInstanceContext } from "../../contrib/terminal/common/terminal.js";
 import type { EditorGroupColumn } from "../../services/editor/common/editorGroupColumn.js";
 import {
+	MainContext,
 	type ExtHostTerminalIdentifier,
 	type ExtHostTerminalServiceShape,
 	type ICommandDto,
@@ -55,7 +57,6 @@ import {
 	type ITerminalLinkDto,
 	type ITerminalQuickFixOpenerDto,
 	type ITerminalQuickFixTerminalCommandDto,
-	MainContext,
 	type MainThreadTerminalServiceShape,
 	type TerminalCommandMatchResultDto,
 } from "./extHost.protocol.js";
@@ -64,8 +65,8 @@ import { IExtHostRpcService } from "./extHostRpcService.js";
 import { TerminalQuickFix, ViewColumn } from "./extHostTypeConverters.js";
 import {
 	EnvironmentVariableMutatorType,
-	type TerminalExitReason,
 	Disposable as VSCodeDisposable,
+	type TerminalExitReason,
 } from "./extHostTypes.js";
 
 export interface IExtHostTerminalService
@@ -609,25 +610,30 @@ export abstract class BaseExtHostTerminalService
 	constructor(
 		supportsProcesses: boolean,
 		@IExtHostCommands private readonly _extHostCommands: IExtHostCommands,
-		@IExtHostRpcService extHostRpc: IExtHostRpcService
+		@IExtHostRpcService extHostRpc: IExtHostRpcService,
 	) {
 		super();
-		this._proxy = extHostRpc.getProxy(MainContext.MainThreadTerminalService);
+		this._proxy = extHostRpc.getProxy(
+			MainContext.MainThreadTerminalService,
+		);
 		this._bufferer = new TerminalDataBufferer(this._proxy.$sendProcessData);
 		this._proxy.$registerProcessSupport(supportsProcesses);
 		this._extHostCommands.registerArgumentProcessor({
-			processArgument: arg => {
+			processArgument: (arg) => {
 				const deserialize = (arg: any) => {
 					const cast = arg as ISerializedTerminalInstanceContext;
 					return this.getTerminalById(cast.instanceId)?.value;
 				};
 				switch (arg?.$mid) {
-					case MarshalledId.TerminalContext: return deserialize(arg);
+					case MarshalledId.TerminalContext:
+						return deserialize(arg);
 					default: {
 						// Do array transformation in place as this is a hot path
 						if (Array.isArray(arg)) {
 							for (let i = 0; i < arg.length; i++) {
-								if (arg[i].$mid === MarshalledId.TerminalContext) {
+								if (
+									arg[i].$mid === MarshalledId.TerminalContext
+								) {
 									arg[i] = deserialize(arg[i]);
 								} else {
 									// Probably something else, so exit early
@@ -638,14 +644,14 @@ export abstract class BaseExtHostTerminalService
 						return arg;
 					}
 				}
-			}
+			},
 		});
 		this._register({
 			dispose: () => {
 				for (const [_, terminalProcess] of this._terminalProcesses) {
 					terminalProcess.shutdown(true);
 				}
-			}
+			},
 		});
 	}
 

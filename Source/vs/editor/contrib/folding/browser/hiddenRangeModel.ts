@@ -4,11 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { findFirstIdxMonotonousOrArrLen } from "../../../../base/common/arraysFind.js";
-
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import { countEOL } from "../../../common/core/eolCounter.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { Selection } from "../../../common/core/selection.js";
 import type { IModelContentChangedEvent } from "../../../common/textModelEvents.js";
 import type { FoldingModel } from "./foldingModel.js";

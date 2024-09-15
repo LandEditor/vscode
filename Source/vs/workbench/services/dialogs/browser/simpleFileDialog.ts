@@ -5,8 +5,8 @@
 
 import { getActiveDocument } from "../../../../base/browser/dom.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Emitter } from "../../../../base/common/event.js";
@@ -20,8 +20,8 @@ import {
 import { Schemas } from "../../../../base/common/network.js";
 import * as objects from "../../../../base/common/objects.js";
 import {
-	OperatingSystem,
 	isWindows,
+	OperatingSystem,
 } from "../../../../base/common/platform.js";
 import * as resources from "../../../../base/common/resources.js";
 import {
@@ -37,9 +37,9 @@ import * as nls from "../../../../nls.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import type { ICommandHandler } from "../../../../platform/commands/common/commands.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IFileDialogService,
@@ -57,9 +57,9 @@ import { ILabelService } from "../../../../platform/label/common/label.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
 	IQuickInputService,
+	ItemActivation,
 	type IQuickPick,
 	type IQuickPickItem,
-	ItemActivation,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import type { IRemoteAgentEnvironment } from "../../../../platform/remote/common/remoteAgentEnvironment.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
@@ -191,19 +191,27 @@ export class SimpleFileDialog extends Disposable implements ISimpleFileDialog {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 		@IPathService protected readonly pathService: IPathService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 	) {
 		super();
 		this.remoteAuthority = this.environmentService.remoteAuthority;

@@ -20,9 +20,9 @@ import {
 import { basename } from "../../../../base/common/resources.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
@@ -35,11 +35,11 @@ import { EditorResourceAccessor } from "../../../common/editor.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import {
+	ISCMRepositorySortKey,
+	ISCMService,
 	type ISCMMenus,
 	type ISCMProvider,
 	type ISCMRepository,
-	ISCMRepositorySortKey,
-	ISCMService,
 	type ISCMViewService,
 	type ISCMViewVisibleRepositoryChangeEvent,
 } from "../common/scm.js";
@@ -258,38 +258,64 @@ export class SCMViewService implements ISCMViewService {
 		@IEditorService private readonly editorService: IEditorService,
 		@IExtensionService extensionService: IExtensionService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		this.menus = instantiationService.createInstance(SCMMenus);
 
 		try {
-			this.previousState = JSON.parse(storageService.get('scm:view:visibleRepositories', StorageScope.WORKSPACE, ''));
+			this.previousState = JSON.parse(
+				storageService.get(
+					"scm:view:visibleRepositories",
+					StorageScope.WORKSPACE,
+					"",
+				),
+			);
 		} catch {
 			// noop
 		}
 
-		this._repositoriesSortKey = this.previousState?.sortKey ?? this.getViewSortOrder();
-		this._sortKeyContextKey = RepositoryContextKeys.RepositorySortKey.bindTo(contextKeyService);
+		this._repositoriesSortKey =
+			this.previousState?.sortKey ?? this.getViewSortOrder();
+		this._sortKeyContextKey =
+			RepositoryContextKeys.RepositorySortKey.bindTo(contextKeyService);
 		this._sortKeyContextKey.set(this._repositoriesSortKey);
 
-		scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
-		scmService.onDidRemoveRepository(this.onDidRemoveRepository, this, this.disposables);
+		scmService.onDidAddRepository(
+			this.onDidAddRepository,
+			this,
+			this.disposables,
+		);
+		scmService.onDidRemoveRepository(
+			this.onDidRemoveRepository,
+			this,
+			this.disposables,
+		);
 
 		for (const repository of scmService.repositories) {
 			this.onDidAddRepository(repository);
 		}
 
-		storageService.onWillSaveState(this.onWillSaveState, this, this.disposables);
+		storageService.onWillSaveState(
+			this.onWillSaveState,
+			this,
+			this.disposables,
+		);
 
 		// Maintain repository selection when the extension host restarts.
 		// Extension host is restarted after installing an extension update
 		// or during a profile switch.
-		extensionService.onWillStop(() => {
-			this.onWillSaveState();
-			this.didFinishLoading = false;
-		}, this, this.disposables);
+		extensionService.onWillStop(
+			() => {
+				this.onWillSaveState();
+				this.didFinishLoading = false;
+			},
+			this,
+			this.disposables,
+		);
 	}
 
 	private onDidAddRepository(repository: ISCMRepository): void {

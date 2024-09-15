@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ILink } from "@xterm/xterm";
+
 import { EventType } from "../../../../../base/browser/dom.js";
 import { Sequencer, timeout } from "../../../../../base/common/async.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
@@ -21,15 +22,15 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { ILabelService } from "../../../../../platform/label/common/label.js";
 import {
 	IQuickInputService,
-	type IQuickPickItem,
 	QuickInputHideReason,
+	type IQuickPickItem,
 	type QuickPickItem,
 } from "../../../../../platform/quickinput/common/quickInput.js";
 import { PickerEditorState } from "../../../../browser/quickaccess.js";
 import {
+	TerminalLinkQuickPickEvent,
 	type IDetachedTerminalInstance,
 	type ITerminalInstance,
-	TerminalLinkQuickPickEvent,
 } from "../../../terminal/browser/terminal.js";
 import { TerminalBuiltinLinkType } from "./links.js";
 import type { TerminalLink } from "./terminalLink.js";
@@ -50,12 +51,16 @@ export class TerminalLinkQuickpick extends DisposableStore {
 
 	constructor(
 		@ILabelService private readonly _labelService: ILabelService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
-		@IAccessibleViewService private readonly _accessibleViewService: IAccessibleViewService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
+		@IAccessibleViewService
+		private readonly _accessibleViewService: IAccessibleViewService,
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
-		this._editorViewState = this.add(instantiationService.createInstance(PickerEditorState));
+		this._editorViewState = this.add(
+			instantiationService.createInstance(PickerEditorState),
+		);
 	}
 
 	async show(

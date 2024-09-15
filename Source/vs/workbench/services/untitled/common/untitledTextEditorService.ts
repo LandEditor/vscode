@@ -18,12 +18,12 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IUntitledTextEditorModel,
 	UntitledTextEditorModel,
+	type IUntitledTextEditorModel,
 } from "./untitledTextEditorModel.js";
 
 export const IUntitledTextEditorService =
@@ -201,8 +201,10 @@ export class UntitledTextEditorService
 		new ResourceMap<UntitledTextEditorModel>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 	}

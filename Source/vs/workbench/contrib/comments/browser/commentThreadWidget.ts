@@ -4,20 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/review.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import { DomEmitter } from "../../../../base/browser/event.js";
 import { Emitter } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { isCodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import type { IMarkdownRendererOptions } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import type { FontInfo } from "../../../../editor/common/config/fontInfo.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import * as languages from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -46,11 +47,11 @@ import { AccessibilityVerbositySettingId } from "../../accessibility/browser/acc
 import { AccessibilityCommandId } from "../../accessibility/common/accessibilityCommands.js";
 import type { ICellRange } from "../../notebook/common/notebookRange.js";
 import { CommentContextKeys } from "../common/commentContextKeys.js";
-import type { ICommentThreadWidget } from "../common/commentThreadWidget.js";
 import {
 	COMMENTS_SECTION,
 	type ICommentsConfiguration,
 } from "../common/commentsConfiguration.js";
+import type { ICommentThreadWidget } from "../common/commentThreadWidget.js";
 import {
 	commentThreadStateBackgroundColorVar,
 	commentThreadStateColorVar,
@@ -105,57 +106,81 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 		},
 		@ICommentService private commentService: ICommentService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IConfigurationService private configurationService: IConfigurationService,
-		@IKeybindingService private _keybindingService: IKeybindingService
+		@IConfigurationService
+		private configurationService: IConfigurationService,
+		@IKeybindingService private _keybindingService: IKeybindingService,
 	) {
 		super();
 
-		this._threadIsEmpty = CommentContextKeys.commentThreadIsEmpty.bindTo(this._contextKeyService);
-		this._threadIsEmpty.set(!_commentThread.comments || !_commentThread.comments.length);
-		this._focusedContextKey = CommentContextKeys.commentFocused.bindTo(this._contextKeyService);
+		this._threadIsEmpty = CommentContextKeys.commentThreadIsEmpty.bindTo(
+			this._contextKeyService,
+		);
+		this._threadIsEmpty.set(
+			!_commentThread.comments || !_commentThread.comments.length,
+		);
+		this._focusedContextKey = CommentContextKeys.commentFocused.bindTo(
+			this._contextKeyService,
+		);
 
 		this._commentMenus = this.commentService.getCommentMenus(this._owner);
 
-		this._register(this._header = new CommentThreadHeader<T>(
-			container,
-			{
-				collapse: this.collapse.bind(this)
-			},
-			this._commentMenus,
-			this._commentThread,
-			this._contextKeyService,
-			this._scopedInstantiationService,
-			contextMenuService
-		));
+		this._register(
+			(this._header = new CommentThreadHeader<T>(
+				container,
+				{
+					collapse: this.collapse.bind(this),
+				},
+				this._commentMenus,
+				this._commentThread,
+				this._contextKeyService,
+				this._scopedInstantiationService,
+				contextMenuService,
+			)),
+		);
 
 		this._header.updateCommentThread(this._commentThread);
 
-		const bodyElement = <HTMLDivElement>dom.$('.body');
+		const bodyElement = <HTMLDivElement>dom.$(".body");
 		container.appendChild(bodyElement);
 		this._register(toDisposable(() => bodyElement.remove()));
 
 		const tracker = this._register(dom.trackFocus(bodyElement));
-		this._register(registerNavigableContainer({
-			name: 'commentThreadWidget',
-			focusNotifiers: [tracker],
-			focusNextWidget: () => {
-				if (!this._commentReply?.isCommentEditorFocused()) {
-					this._commentReply?.expandReplyAreaAndFocusCommentEditor();
+		this._register(
+			registerNavigableContainer({
+				name: "commentThreadWidget",
+				focusNotifiers: [tracker],
+				focusNextWidget: () => {
+					if (!this._commentReply?.isCommentEditorFocused()) {
+						this._commentReply?.expandReplyAreaAndFocusCommentEditor();
+					}
+				},
+				focusPreviousWidget: () => {
+					if (
+						this._commentReply?.isCommentEditorFocused() &&
+						this._commentThread.comments?.length
+					) {
+						this._body.focus();
+					}
+				},
+			}),
+		);
+		this._register(
+			tracker.onDidFocus(() => this._focusedContextKey.set(true)),
+		);
+		this._register(
+			tracker.onDidBlur(() => this._focusedContextKey.reset()),
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						AccessibilityVerbositySettingId.Comments,
+					)
+				) {
+					this._setAriaLabel();
 				}
-			},
-			focusPreviousWidget: () => {
-				if (this._commentReply?.isCommentEditorFocused() && this._commentThread.comments?.length) {
-					this._body.focus();
-				}
-			}
-		}));
-		this._register(tracker.onDidFocus(() => this._focusedContextKey.set(true)));
-		this._register(tracker.onDidBlur(() => this._focusedContextKey.reset()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.Comments)) {
-				this._setAriaLabel();
-			}
-		}));
+			}),
+		);
 		this._body = this._scopedInstantiationService.createInstance(
 			CommentThreadBody,
 			this._parentEditor,
@@ -166,32 +191,46 @@ export class CommentThreadWidget<T extends IRange | ICellRange = IRange>
 			this._commentThread,
 			this._pendingEdits,
 			this._scopedInstantiationService,
-			this
+			this,
 		) as unknown as CommentThreadBody<T>;
 		this._register(this._body);
 		this._setAriaLabel();
 		this._styleElement = dom.createStyleSheet(this.container);
 
-
-		this._commentThreadContextValue = CommentContextKeys.commentThreadContext.bindTo(this._contextKeyService);
+		this._commentThreadContextValue =
+			CommentContextKeys.commentThreadContext.bindTo(
+				this._contextKeyService,
+			);
 		this._commentThreadContextValue.set(_commentThread.contextValue);
 
-		const commentControllerKey = CommentContextKeys.commentControllerContext.bindTo(this._contextKeyService);
-		const controller = this.commentService.getCommentController(this._owner);
+		const commentControllerKey =
+			CommentContextKeys.commentControllerContext.bindTo(
+				this._contextKeyService,
+			);
+		const controller = this.commentService.getCommentController(
+			this._owner,
+		);
 
 		if (controller?.contextValue) {
 			commentControllerKey.set(controller.contextValue);
 		}
 
 		this.currentThreadListeners();
-		this._register(new DomEmitter(this.container, 'keydown').event(e => {
-			if (dom.isKeyboardEvent(e) && e.key === 'Escape') {
-				if (Range.isIRange(this.commentThread.range) && isCodeEditor(this._parentEditor)) {
-					this._parentEditor.setSelection(this.commentThread.range);
+		this._register(
+			new DomEmitter(this.container, "keydown").event((e) => {
+				if (dom.isKeyboardEvent(e) && e.key === "Escape") {
+					if (
+						Range.isIRange(this.commentThread.range) &&
+						isCodeEditor(this._parentEditor)
+					) {
+						this._parentEditor.setSelection(
+							this.commentThread.range,
+						);
+					}
+					this.collapse();
 				}
-				this.collapse();
-			}
-		}));
+			}),
+		);
 	}
 
 	private _setAriaLabel(): void {

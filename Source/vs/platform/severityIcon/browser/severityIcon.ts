@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/severityIcon.css";
+
 import { Codicon } from "../../../base/common/codicons.js";
 import Severity from "../../../base/common/severity.js";
 import { ThemeIcon } from "../../../base/common/themables.js";

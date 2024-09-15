@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { AutoOpenBarrier } from "../../../../../base/common/async.js";
 import { Event } from "../../../../../base/common/event.js";
@@ -18,8 +19,8 @@ import { localize2 } from "../../../../../nls.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 	type IReadableSet,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
@@ -44,23 +45,23 @@ import { registerActiveInstanceAction } from "../../../terminal/browser/terminal
 import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
 import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
 import {
+	TERMINAL_CONFIG_SECTION,
 	type ITerminalConfiguration,
 	type ITerminalProcessManager,
-	TERMINAL_CONFIG_SECTION,
 } from "../../../terminal/common/terminal.js";
 import { TerminalContextKeys } from "../../../terminal/common/terminalContextKey.js";
 import { TerminalSuggestCommandId } from "../common/terminal.suggest.js";
 import {
-	type ITerminalSuggestConfiguration,
-	TerminalSuggestSettingId,
 	terminalSuggestConfigSection,
+	TerminalSuggestSettingId,
+	type ITerminalSuggestConfiguration,
 } from "../common/terminalSuggestConfiguration.js";
 import {
-	type CompressedPwshCompletion,
-	type PwshCompletion,
+	parseCompletionsFromShell,
 	SuggestAddon,
 	VSCodeSuggestOscPt,
-	parseCompletionsFromShell,
+	type CompressedPwshCompletion,
+	type PwshCompletion,
 } from "./terminalSuggestAddon.js";
 
 enum Constants {
@@ -102,18 +103,28 @@ class TerminalSuggestContribution
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
 		this.add(toDisposable(() => this._addon?.dispose()));
-		this._terminalSuggestWidgetVisibleContextKey = TerminalContextKeys.suggestWidgetVisible.bindTo(this._contextKeyService);
+		this._terminalSuggestWidgetVisibleContextKey =
+			TerminalContextKeys.suggestWidgetVisible.bindTo(
+				this._contextKeyService,
+			);
 
 		// Attempt to load cached pwsh commands if not already loaded
 		if (TerminalSuggestContribution._cachedPwshCommands.size === 0) {
-			const config = this._storageService.get(Constants.CachedPwshCommandsStorageKey, StorageScope.APPLICATION, undefined);
+			const config = this._storageService.get(
+				Constants.CachedPwshCommandsStorageKey,
+				StorageScope.APPLICATION,
+				undefined,
+			);
 			if (config !== undefined) {
 				const completions = JSON.parse(config);
 				for (const c of completions) {
@@ -122,11 +133,13 @@ class TerminalSuggestContribution
 			}
 		}
 
-		this.add(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSuggestSettingId.Enabled)) {
-				this.clearSuggestCache();
-			}
-		}));
+		this.add(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TerminalSuggestSettingId.Enabled)) {
+					this.clearSuggestCache();
+				}
+			}),
+		);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {

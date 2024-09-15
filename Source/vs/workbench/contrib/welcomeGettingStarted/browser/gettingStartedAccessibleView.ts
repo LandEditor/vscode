@@ -5,9 +5,9 @@ import { localize } from "../../../../nls.js";
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import {
-	type AccessibleContentProvider,
 	AccessibleViewProviderId,
 	AccessibleViewType,
+	type AccessibleContentProvider,
 	type ExtensionContentProvider,
 	type IAccessibleViewContentProvider,
 } from "../../../../platform/accessibility/browser/accessibleView.js";
@@ -19,8 +19,8 @@ import { AccessibilityVerbositySettingId } from "../../accessibility/browser/acc
 import { GettingStartedPage } from "./gettingStarted.js";
 import { GettingStartedInput } from "./gettingStartedInput.js";
 import {
-	type IResolvedWalkthrough,
 	IWalkthroughsService,
+	type IResolvedWalkthrough,
 } from "./gettingStartedService.js";
 
 export class GettingStartedAccessibleView

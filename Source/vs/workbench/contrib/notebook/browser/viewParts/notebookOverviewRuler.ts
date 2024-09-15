@@ -5,8 +5,8 @@
 
 import { getWindow } from "../../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../../base/browser/fastDomNode.js";
 import { PixelRatio } from "../../../../../base/browser/pixelRatio.js";
 import {
@@ -14,8 +14,8 @@ import {
 	Themable,
 } from "../../../../../platform/theme/common/themeService.js";
 import {
-	type INotebookEditorDelegate,
 	NotebookOverviewRulerLane,
+	type INotebookEditorDelegate,
 } from "../notebookBrowser.js";
 
 export class NotebookOverviewRuler extends Themable {

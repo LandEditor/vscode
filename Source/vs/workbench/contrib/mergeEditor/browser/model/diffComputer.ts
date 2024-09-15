@@ -38,10 +38,11 @@ export class MergeDiffComputer implements IMergeDiffComputer {
 	);
 
 	constructor(
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-	) {
-	}
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+	) {}
 
 	async computeDiff(
 		textModel1: ITextModel,

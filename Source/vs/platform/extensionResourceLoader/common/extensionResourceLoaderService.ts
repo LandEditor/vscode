@@ -14,8 +14,8 @@ import {
 } from "../../instantiation/common/extensions.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	IRequestService,
 	asTextOrError,
+	IRequestService,
 } from "../../request/common/request.js";
 import { IStorageService } from "../../storage/common/storage.js";
 import {
@@ -32,7 +32,13 @@ export class ExtensionResourceLoaderService extends AbstractExtensionResourceLoa
 		@IConfigurationService configurationService: IConfigurationService,
 		@IRequestService private readonly _requestService: IRequestService,
 	) {
-		super(fileService, storageService, productService, environmentService, configurationService);
+		super(
+			fileService,
+			storageService,
+			productService,
+			environmentService,
+			configurationService,
+		);
 	}
 
 	async readExtensionResource(uri: URI): Promise<string> {

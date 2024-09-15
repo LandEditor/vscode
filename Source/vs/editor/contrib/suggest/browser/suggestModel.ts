@@ -10,8 +10,8 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import { FuzzyScoreOptions } from "../../../../base/common/filters.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	getLeadingWhitespace,
@@ -35,10 +35,10 @@ import {
 	type ICursorSelectionChangedEvent,
 } from "../../../common/cursorEvents.js";
 import {
-	type CompletionContext,
 	CompletionItemKind,
-	type CompletionItemProvider,
 	CompletionTriggerKind,
+	type CompletionContext,
+	type CompletionItemProvider,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import { IEditorWorkerService } from "../../../common/services/editorWorker.js";
@@ -47,13 +47,13 @@ import { InlineCompletionContextKeys } from "../../inlineCompletions/browser/con
 import { SnippetController2 } from "../../snippet/browser/snippetController2.js";
 import { CompletionModel } from "./completionModel.js";
 import {
-	type CompletionDurations,
-	type CompletionItem,
 	CompletionOptions,
-	QuickSuggestionsOptions,
-	SnippetSortOrder,
 	getSnippetSuggestSupport,
 	provideSuggestionItems,
+	QuickSuggestionsOptions,
+	SnippetSortOrder,
+	type CompletionDurations,
+	type CompletionItem,
 } from "./suggest.js";
 import { WordDistance } from "./wordDistance.js";
 
@@ -205,56 +205,79 @@ export class SuggestModel implements IDisposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
 		@IEnvironmentService private readonly _envService: IEnvironmentService,
 	) {
-		this._currentSelection = this._editor.getSelection() || new Selection(1, 1, 1, 1);
+		this._currentSelection =
+			this._editor.getSelection() || new Selection(1, 1, 1, 1);
 
 		// wire up various listeners
-		this._toDispose.add(this._editor.onDidChangeModel(() => {
-			this._updateTriggerCharacters();
-			this.cancel();
-		}));
-		this._toDispose.add(this._editor.onDidChangeModelLanguage(() => {
-			this._updateTriggerCharacters();
-			this.cancel();
-		}));
-		this._toDispose.add(this._editor.onDidChangeConfiguration(() => {
-			this._updateTriggerCharacters();
-		}));
-		this._toDispose.add(this._languageFeaturesService.completionProvider.onDidChange(() => {
-			this._updateTriggerCharacters();
-			this._updateActiveSuggestSession();
-		}));
+		this._toDispose.add(
+			this._editor.onDidChangeModel(() => {
+				this._updateTriggerCharacters();
+				this.cancel();
+			}),
+		);
+		this._toDispose.add(
+			this._editor.onDidChangeModelLanguage(() => {
+				this._updateTriggerCharacters();
+				this.cancel();
+			}),
+		);
+		this._toDispose.add(
+			this._editor.onDidChangeConfiguration(() => {
+				this._updateTriggerCharacters();
+			}),
+		);
+		this._toDispose.add(
+			this._languageFeaturesService.completionProvider.onDidChange(() => {
+				this._updateTriggerCharacters();
+				this._updateActiveSuggestSession();
+			}),
+		);
 
 		let editorIsComposing = false;
-		this._toDispose.add(this._editor.onDidCompositionStart(() => {
-			editorIsComposing = true;
-		}));
-		this._toDispose.add(this._editor.onDidCompositionEnd(() => {
-			editorIsComposing = false;
-			this._onCompositionEnd();
-		}));
-		this._toDispose.add(this._editor.onDidChangeCursorSelection(e => {
-			// only trigger suggest when the editor isn't composing a character
-			if (!editorIsComposing) {
-				this._onCursorChange(e);
-			}
-		}));
-		this._toDispose.add(this._editor.onDidChangeModelContent(() => {
-			// only filter completions when the editor isn't composing a character
-			// allow-any-unicode-next-line
-			// e.g. ¨ + u makes ü but just ¨ cannot be used for filtering
-			if (!editorIsComposing && this._triggerState !== undefined) {
-				this._refilterCompletionItems();
-			}
-		}));
+		this._toDispose.add(
+			this._editor.onDidCompositionStart(() => {
+				editorIsComposing = true;
+			}),
+		);
+		this._toDispose.add(
+			this._editor.onDidCompositionEnd(() => {
+				editorIsComposing = false;
+				this._onCompositionEnd();
+			}),
+		);
+		this._toDispose.add(
+			this._editor.onDidChangeCursorSelection((e) => {
+				// only trigger suggest when the editor isn't composing a character
+				if (!editorIsComposing) {
+					this._onCursorChange(e);
+				}
+			}),
+		);
+		this._toDispose.add(
+			this._editor.onDidChangeModelContent(() => {
+				// only filter completions when the editor isn't composing a character
+				// allow-any-unicode-next-line
+				// e.g. ¨ + u makes ü but just ¨ cannot be used for filtering
+				if (!editorIsComposing && this._triggerState !== undefined) {
+					this._refilterCompletionItems();
+				}
+			}),
+		);
 
 		this._updateTriggerCharacters();
 	}

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	getWindow,
 } from "../../../../../base/browser/dom.js";
 import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";

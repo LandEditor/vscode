@@ -21,8 +21,8 @@ import { PLAINTEXT_LANGUAGE_ID } from "../../../../editor/common/languages/modes
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { peekViewBorder } from "../../../../editor/contrib/peekView/browser/peekView.js";
 import { Context as SuggestContext } from "../../../../editor/contrib/suggest/browser/suggest.js";
@@ -66,9 +66,9 @@ import {
 	type IEditorPaneRegistry,
 } from "../../../browser/editor.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -89,8 +89,8 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import type { IWorkingCopyIdentifier } from "../../../services/workingCopy/common/workingCopy.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../../services/workingCopy/common/workingCopyEditorService.js";
 import { ResourceNotebookCellEdit } from "../../bulkEdit/browser/bulkCellEdits.js";
 import { NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT } from "../../notebook/browser/controller/coreActions.js";
@@ -150,53 +150,67 @@ export class InteractiveDocumentContribution
 		@INotebookService notebookService: INotebookService,
 		@IEditorResolverService editorResolverService: IEditorResolverService,
 		@IEditorService editorService: IEditorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		const info = notebookService.getContributedNotebookType('interactive');
+		const info = notebookService.getContributedNotebookType("interactive");
 
 		// We need to contribute a notebook type for the Interactive Window to provide notebook models.
 		if (!info) {
-			this._register(notebookService.registerContributedNotebookType('interactive', {
-				providerDisplayName: 'Interactive Notebook',
-				displayName: 'Interactive',
-				filenamePattern: ['*.interactive'],
-				priority: RegisteredEditorPriority.builtin
-			}));
+			this._register(
+				notebookService.registerContributedNotebookType("interactive", {
+					providerDisplayName: "Interactive Notebook",
+					displayName: "Interactive",
+					filenamePattern: ["*.interactive"],
+					priority: RegisteredEditorPriority.builtin,
+				}),
+			);
 		}
 
 		editorResolverService.registerEditor(
 			`${Schemas.vscodeInteractiveInput}:/**`,
 			{
-				id: 'vscode-interactive-input',
-				label: 'Interactive Editor',
-				priority: RegisteredEditorPriority.exclusive
+				id: "vscode-interactive-input",
+				label: "Interactive Editor",
+				priority: RegisteredEditorPriority.exclusive,
 			},
 			{
-				canSupportResource: uri => uri.scheme === Schemas.vscodeInteractiveInput,
-				singlePerResource: true
+				canSupportResource: (uri) =>
+					uri.scheme === Schemas.vscodeInteractiveInput,
+				singlePerResource: true,
 			},
 			{
 				createEditorInput: ({ resource }) => {
-					const editorInput = editorService.getEditors(EditorsOrder.SEQUENTIAL).find(editor => editor.editor instanceof InteractiveEditorInput && editor.editor.inputResource.toString() === resource.toString());
+					const editorInput = editorService
+						.getEditors(EditorsOrder.SEQUENTIAL)
+						.find(
+							(editor) =>
+								editor.editor instanceof
+									InteractiveEditorInput &&
+								editor.editor.inputResource.toString() ===
+									resource.toString(),
+						);
 					return editorInput!;
-				}
-			}
+				},
+			},
 		);
 
 		editorResolverService.registerEditor(
 			`*.interactive`,
 			{
-				id: 'interactive',
-				label: 'Interactive Editor',
-				priority: RegisteredEditorPriority.exclusive
+				id: "interactive",
+				label: "Interactive Editor",
+				priority: RegisteredEditorPriority.exclusive,
 			},
 			{
-				canSupportResource: uri =>
-					(uri.scheme === Schemas.untitled && extname(uri) === '.interactive') ||
-					(uri.scheme === Schemas.vscodeNotebookCell && extname(uri) === '.interactive'),
-				singlePerResource: true
+				canSupportResource: (uri) =>
+					(uri.scheme === Schemas.untitled &&
+						extname(uri) === ".interactive") ||
+					(uri.scheme === Schemas.vscodeNotebookCell &&
+						extname(uri) === ".interactive"),
+				singlePerResource: true,
 			},
 			{
 				createEditorInput: ({ resource, options }) => {
@@ -209,25 +223,31 @@ export class InteractiveDocumentContribution
 						iwResource = data.notebook;
 					}
 
-					const notebookOptions: INotebookEditorOptions | undefined = {
-						...options,
-						cellOptions,
-						cellRevealType: undefined,
-						cellSelections: undefined,
-						isReadOnly: undefined,
-						viewState: undefined,
-						indexedCellOptions: undefined
-					};
+					const notebookOptions: INotebookEditorOptions | undefined =
+						{
+							...options,
+							cellOptions,
+							cellRevealType: undefined,
+							cellSelections: undefined,
+							isReadOnly: undefined,
+							viewState: undefined,
+							indexedCellOptions: undefined,
+						};
 
-					const editorInput = createEditor(iwResource, this.instantiationService);
+					const editorInput = createEditor(
+						iwResource,
+						this.instantiationService,
+					);
 					return {
 						editor: editorInput,
-						options: notebookOptions
+						options: notebookOptions,
 					};
 				},
 				createUntitledEditorInput: ({ resource, options }) => {
 					if (!resource) {
-						throw new Error('Interactive window editors must have a resource name');
+						throw new Error(
+							"Interactive window editors must have a resource name",
+						);
 					}
 					const data = CellUri.parse(resource);
 					let cellOptions: ITextResourceEditorInput | undefined;
@@ -243,16 +263,19 @@ export class InteractiveDocumentContribution
 						cellSelections: undefined,
 						isReadOnly: undefined,
 						viewState: undefined,
-						indexedCellOptions: undefined
+						indexedCellOptions: undefined,
 					};
 
-					const editorInput = createEditor(resource, this.instantiationService);
+					const editorInput = createEditor(
+						resource,
+						this.instantiationService,
+					);
 					return {
 						editor: editorInput,
-						options: notebookOptions
+						options: notebookOptions,
 					};
-				}
-			}
+				},
+			},
 		);
 	}
 }
@@ -266,7 +289,10 @@ class InteractiveInputContentProvider implements ITextModelContentProvider {
 		@ITextModelService textModelService: ITextModelService,
 		@IModelService private readonly _modelService: IModelService,
 	) {
-		this._registration = textModelService.registerTextModelContentProvider(Schemas.vscodeInteractiveInput, this);
+		this._registration = textModelService.registerTextModelContentProvider(
+			Schemas.vscodeInteractiveInput,
+			this,
+		);
 	}
 
 	dispose(): void {
@@ -318,9 +344,12 @@ class InteractiveWindowWorkingCopyEditorHandler
 		"workbench.contrib.interactiveWindowWorkingCopyEditorHandler";
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWorkingCopyEditorService private readonly _workingCopyEditorService: IWorkingCopyEditorService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWorkingCopyEditorService
+		private readonly _workingCopyEditorService: IWorkingCopyEditorService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 	) {
 		super();
 

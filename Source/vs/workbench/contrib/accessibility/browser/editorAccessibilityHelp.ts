@@ -11,9 +11,9 @@ import { AccessibilityHelpNLS } from "../../../../editor/common/standaloneString
 import {
 	AccessibleViewProviderId,
 	AccessibleViewType,
+	IAccessibleViewService,
 	type IAccessibleViewContentProvider,
 	type IAccessibleViewOptions,
-	IAccessibleViewService,
 } from "../../../../platform/accessibility/browser/accessibleView.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
@@ -79,8 +79,10 @@ class EditorAccessibilityHelpProvider
 	verbositySettingKey = AccessibilityVerbositySettingId.Editor;
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super();
 	}

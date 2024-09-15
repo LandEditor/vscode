@@ -23,8 +23,8 @@ import {
 	foreground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	IThemeService,
 	getThemeTypeSelector,
+	IThemeService,
 } from "../../../../platform/theme/common/themeService.js";
 import { TitleBarSetting } from "../../../../platform/window/common/window.js";
 import { DEFAULT_EDITOR_MIN_DIMENSIONS } from "../../../browser/parts/editor/editor.js";
@@ -53,33 +53,56 @@ export class PartsSplash {
 
 	constructor(
 		@IThemeService private readonly _themeService: IThemeService,
-		@IWorkbenchLayoutService private readonly _layoutService: IWorkbenchLayoutService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-		@ISplashStorageService private readonly _partSplashService: ISplashStorageService,
+		@IWorkbenchLayoutService
+		private readonly _layoutService: IWorkbenchLayoutService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+		@ISplashStorageService
+		private readonly _partSplashService: ISplashStorageService,
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 	) {
-		Event.once(_layoutService.onDidLayoutMainContainer)(() => {
-			this._removePartsSplash();
-			perf.mark('code/didRemovePartsSplash');
-		}, undefined, this._disposables);
+		Event.once(_layoutService.onDidLayoutMainContainer)(
+			() => {
+				this._removePartsSplash();
+				perf.mark("code/didRemovePartsSplash");
+			},
+			undefined,
+			this._disposables,
+		);
 
 		const lastIdleSchedule = this._disposables.add(new MutableDisposable());
 		const savePartsSplashSoon = () => {
-			lastIdleSchedule.value = dom.runWhenWindowIdle(mainWindow, () => this._savePartsSplash(), 2500);
+			lastIdleSchedule.value = dom.runWhenWindowIdle(
+				mainWindow,
+				() => this._savePartsSplash(),
+				2500,
+			);
 		};
 		lifecycleService.when(LifecyclePhase.Restored).then(() => {
-			Event.any(Event.filter(onDidChangeFullscreen, windowId => windowId === mainWindow.vscodeWindowId), editorGroupsService.mainPart.onDidLayout, _themeService.onDidColorThemeChange)(savePartsSplashSoon, undefined, this._disposables);
+			Event.any(
+				Event.filter(
+					onDidChangeFullscreen,
+					(windowId) => windowId === mainWindow.vscodeWindowId,
+				),
+				editorGroupsService.mainPart.onDidLayout,
+				_themeService.onDidColorThemeChange,
+			)(savePartsSplashSoon, undefined, this._disposables);
 			savePartsSplashSoon();
 		});
 
-		_configService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TitleBarSetting.TITLE_BAR_STYLE)) {
-				this._didChangeTitleBarStyle = true;
-				this._savePartsSplash();
-			}
-		}, this, this._disposables);
+		_configService.onDidChangeConfiguration(
+			(e) => {
+				if (e.affectsConfiguration(TitleBarSetting.TITLE_BAR_STYLE)) {
+					this._didChangeTitleBarStyle = true;
+					this._savePartsSplash();
+				}
+			},
+			this,
+			this._disposables,
+		);
 	}
 
 	dispose(): void {

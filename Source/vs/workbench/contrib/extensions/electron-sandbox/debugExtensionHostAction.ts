@@ -33,7 +33,7 @@ import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { ExtensionHostKind } from "../../../services/extensions/common/extensionHostKind.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { IHostService } from "../../../services/host/browser/host.js";
-import { type IConfig, IDebugService } from "../../debug/common/debug.js";
+import { IDebugService, type IConfig } from "../../debug/common/debug.js";
 import { RuntimeExtensionsEditor } from "./runtimeExtensionsEditor.js";
 
 export class DebugExtensionHostAction extends Action2 {
@@ -109,8 +109,9 @@ export class DebugExtensionHostAction extends Action2 {
 }
 
 class Storage {
-	constructor(@IStorageService private readonly _storageService: IStorageService,) {
-	}
+	constructor(
+		@IStorageService private readonly _storageService: IStorageService,
+	) {}
 
 	storeDebugOnNewWindow(targetPort: number) {
 		this._storageService.store(
@@ -142,7 +143,8 @@ export class DebugExtensionsContribution
 {
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IProgressService _progressService: IProgressService,
 	) {
 		super();
@@ -150,27 +152,36 @@ export class DebugExtensionsContribution
 		const storage = this._instantiationService.createInstance(Storage);
 		const port = storage.getAndDeleteDebugPortIfSet();
 		if (port !== undefined) {
-			_progressService.withProgress({
-				location: ProgressLocation.Notification,
-				title: nls.localize('debugExtensionHost.progress', "Attaching Debugger To Extension Host"),
-			}, async p => {
-				await this._debugService.startDebugging(undefined, {
-					type: 'node',
-					name: nls.localize('debugExtensionHost.launch.name', "Attach Extension Host"),
-					request: 'attach',
-					port,
-					trace: true,
-					// resolve source maps everywhere:
-					resolveSourceMapLocations: null,
-					// announces sources eagerly for the loaded scripts view:
-					eagerSources: true,
-					// source maps of published VS Code are on the CDN and can take a while to load
-					timeouts: {
-						sourceMapMinPause: 30_000,
-						sourceMapCumulativePause: 300_000,
-					},
-				} as IConfig);
-			});
+			_progressService.withProgress(
+				{
+					location: ProgressLocation.Notification,
+					title: nls.localize(
+						"debugExtensionHost.progress",
+						"Attaching Debugger To Extension Host",
+					),
+				},
+				async (p) => {
+					await this._debugService.startDebugging(undefined, {
+						type: "node",
+						name: nls.localize(
+							"debugExtensionHost.launch.name",
+							"Attach Extension Host",
+						),
+						request: "attach",
+						port,
+						trace: true,
+						// resolve source maps everywhere:
+						resolveSourceMapLocations: null,
+						// announces sources eagerly for the loaded scripts view:
+						eagerSources: true,
+						// source maps of published VS Code are on the CDN and can take a while to load
+						timeouts: {
+							sourceMapMinPause: 30_000,
+							sourceMapCumulativePause: 300_000,
+						},
+					} as IConfig);
+				},
+			);
 		}
 	}
 }

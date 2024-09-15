@@ -7,15 +7,15 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { IServerChannel } from "../../../base/parts/ipc/common/ipc.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
+	loadKeyTargets,
 	StorageScope,
 	TARGET_KEY,
-	loadKeyTargets,
 } from "../../storage/common/storage.js";
 import type { IBaseSerializableStorageRequest } from "../../storage/common/storageIpc.js";
 import type { IStorageMain } from "../../storage/electron-main/storageMain.js";

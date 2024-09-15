@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../../base/browser/dom.js";
-
 import type { IAction } from "../../../../base/common/actions.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../../base/common/marshallingIds.js";
@@ -37,10 +36,13 @@ export class CommentThreadAdditionalActions<
 	) {
 		super();
 
-		this._container = dom.append(container, dom.$('.comment-additional-actions'));
-		dom.append(this._container, dom.$('.section-separator'));
+		this._container = dom.append(
+			container,
+			dom.$(".comment-additional-actions"),
+		);
+		dom.append(this._container, dom.$(".section-separator"));
 
-		this._buttonBar = dom.append(this._container, dom.$('.button-bar'));
+		this._buttonBar = dom.append(this._container, dom.$(".button-bar"));
 		this._createAdditionalActions(this._buttonBar);
 	}
 

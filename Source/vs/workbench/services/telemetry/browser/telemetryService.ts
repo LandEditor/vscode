@@ -10,8 +10,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
@@ -23,10 +23,10 @@ import type {
 	StrictPropertyCheck,
 } from "../../../../platform/telemetry/common/gdprTypings.js";
 import {
-	type ITelemetryData,
 	ITelemetryService,
 	TELEMETRY_SETTING_ID,
 	TelemetryLevel,
+	type ITelemetryData,
 } from "../../../../platform/telemetry/common/telemetry.js";
 import { TelemetryLogAppender } from "../../../../platform/telemetry/common/telemetryLogAppender.js";
 import {
@@ -34,12 +34,12 @@ import {
 	type ITelemetryServiceConfig,
 } from "../../../../platform/telemetry/common/telemetryService.js";
 import {
-	type ITelemetryAppender,
-	NullTelemetryService,
 	getTelemetryLevel,
 	isInternalTelemetry,
 	isLoggingOnly,
+	NullTelemetryService,
 	supportsTelemetry,
+	type ITelemetryAppender,
 } from "../../../../platform/telemetry/common/telemetryUtils.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
 import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
@@ -71,7 +71,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 	}
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@ILogService logService: ILogService,
 		@ILoggerService loggerService: ILoggerService,
 		@IConfigurationService configurationService: IConfigurationService,

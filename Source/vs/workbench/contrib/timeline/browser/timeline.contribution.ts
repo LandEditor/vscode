@@ -7,9 +7,9 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { localize } from "../../../../nls.js";
 import type { ILocalizedString } from "../../../../platform/action/common/action.js";
 import {
-	type ISubmenuItem,
 	MenuId,
 	MenuRegistry,
+	type ISubmenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import {
 	CommandsRegistry,
@@ -29,9 +29,9 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js";
 import { ResourceContextKey } from "../../../common/contextkeys.js";
 import {
+	Extensions as ViewExtensions,
 	type IViewDescriptor,
 	type IViewsRegistry,
-	Extensions as ViewExtensions,
 } from "../../../common/views.js";
 import { VIEW_CONTAINER } from "../../files/browser/explorerViewlet.js";
 import { ExplorerFolderContext } from "../../files/common/files.js";

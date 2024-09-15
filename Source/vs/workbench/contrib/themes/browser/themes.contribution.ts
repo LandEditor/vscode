@@ -7,8 +7,8 @@ import { Toggle } from "../../../../base/browser/ui/toggle/toggle.js";
 import { mainWindow } from "../../../../base/browser/window.js";
 import { ThrottledDelayer } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Color } from "../../../../base/common/color.js";
@@ -26,10 +26,10 @@ import { localize, localize2 } from "../../../../nls.js";
 import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
 import {
 	Action2,
-	type ISubmenuItem,
 	MenuId,
 	MenuRegistry,
 	registerAction2,
+	type ISubmenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import {
 	CommandsRegistry,
@@ -51,16 +51,16 @@ import { KeybindingWeight } from "../../../../platform/keybinding/common/keybind
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
 	INotificationService,
-	type IPromptChoice,
 	Severity,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import {
 	IProgressService,
 	ProgressLocation,
 } from "../../../../platform/progress/common/progress.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickInputToggle,
 	type IQuickPick,
 	type IQuickPickItem,
@@ -99,14 +99,14 @@ import {
 } from "../../../services/themes/browser/productIconThemeData.js";
 import { colorThemeSchemaId } from "../../../services/themes/common/colorThemeSchema.js";
 import {
+	IWorkbenchThemeService,
+	ThemeSettingDefaults,
+	ThemeSettings,
 	type IWorkbenchColorTheme,
 	type IWorkbenchFileIconTheme,
 	type IWorkbenchProductIconTheme,
 	type IWorkbenchTheme,
-	IWorkbenchThemeService,
-	ThemeSettingDefaults,
 	type ThemeSettingTarget,
-	ThemeSettings,
 } from "../../../services/themes/common/workbenchThemeService.js";
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
 
@@ -140,24 +140,34 @@ class MarketplaceThemesPicker {
 	private readonly _queryDelayer = new ThrottledDelayer<void>(200);
 
 	constructor(
-		private readonly getMarketplaceColorThemes: (publisher: string, name: string, version: string) => Promise<IWorkbenchTheme[]>,
+		private readonly getMarketplaceColorThemes: (
+			publisher: string,
+			name: string,
+			version: string,
+		) => Promise<IWorkbenchTheme[]>,
 		private readonly marketplaceQuery: string,
 
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@ILogService private readonly logService: ILogService,
 		@IProgressService private readonly progressService: IProgressService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IDialogService private readonly dialogService: IDialogService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IDialogService private readonly dialogService: IDialogService,
 	) {
-		this._installedExtensions = extensionManagementService.getInstalled().then(installed => {
-			const result = new Set<string>();
-			for (const ext of installed) {
-				result.add(ext.identifier.id);
-			}
-			return result;
-		});
+		this._installedExtensions = extensionManagementService
+			.getInstalled()
+			.then((installed) => {
+				const result = new Set<string>();
+				for (const ext of installed) {
+					result.add(ext.identifier.id);
+				}
+				return result;
+			});
 	}
 
 	public get themes(): ThemeItem[] {
@@ -460,15 +470,26 @@ interface InstalledThemesPickerOptions {
 class InstalledThemesPicker {
 	constructor(
 		private readonly options: InstalledThemesPickerOptions,
-		private readonly setTheme: (theme: IWorkbenchTheme | undefined, settingsTarget: ThemeSettingTarget) => Promise<any>,
-		private readonly getMarketplaceColorThemes: (publisher: string, name: string, version: string) => Promise<IWorkbenchTheme[]>,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionResourceLoaderService private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) {
-	}
+		private readonly setTheme: (
+			theme: IWorkbenchTheme | undefined,
+			settingsTarget: ThemeSettingTarget,
+		) => Promise<any>,
+		private readonly getMarketplaceColorThemes: (
+			publisher: string,
+			name: string,
+			version: string,
+		) => Promise<IWorkbenchTheme[]>,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionResourceLoaderService
+		private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	public async openQuickPick(
 		picks: QuickPickInput<ThemeItem>[],
@@ -1370,27 +1391,51 @@ class DefaultThemeUpdatedNotificationContribution
 	static STORAGE_KEY = "themeUpdatedNotificationShown";
 
 	constructor(
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IWorkbenchThemeService private readonly _workbenchThemeService: IWorkbenchThemeService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IWorkbenchThemeService
+		private readonly _workbenchThemeService: IWorkbenchThemeService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@IHostService private readonly _hostService: IHostService,
 	) {
-		if (_storageService.getBoolean(DefaultThemeUpdatedNotificationContribution.STORAGE_KEY, StorageScope.APPLICATION)) {
+		if (
+			_storageService.getBoolean(
+				DefaultThemeUpdatedNotificationContribution.STORAGE_KEY,
+				StorageScope.APPLICATION,
+			)
+		) {
 			return;
 		}
 		setTimeout(async () => {
-			if (_storageService.getBoolean(DefaultThemeUpdatedNotificationContribution.STORAGE_KEY, StorageScope.APPLICATION)) {
+			if (
+				_storageService.getBoolean(
+					DefaultThemeUpdatedNotificationContribution.STORAGE_KEY,
+					StorageScope.APPLICATION,
+				)
+			) {
 				return;
 			}
 			if (await this._hostService.hadLastFocus()) {
-				this._storageService.store(DefaultThemeUpdatedNotificationContribution.STORAGE_KEY, true, StorageScope.APPLICATION, StorageTarget.USER);
+				this._storageService.store(
+					DefaultThemeUpdatedNotificationContribution.STORAGE_KEY,
+					true,
+					StorageScope.APPLICATION,
+					StorageTarget.USER,
+				);
 				if (this._workbenchThemeService.hasUpdatedDefaultThemes()) {
 					this._showYouGotMigratedNotification();
 				} else {
-					const currentTheme = this._workbenchThemeService.getColorTheme().settingsId;
-					if (currentTheme === ThemeSettingDefaults.COLOR_THEME_LIGHT_OLD || currentTheme === ThemeSettingDefaults.COLOR_THEME_DARK_OLD) {
+					const currentTheme =
+						this._workbenchThemeService.getColorTheme().settingsId;
+					if (
+						currentTheme ===
+							ThemeSettingDefaults.COLOR_THEME_LIGHT_OLD ||
+						currentTheme ===
+							ThemeSettingDefaults.COLOR_THEME_DARK_OLD
+					) {
 						this._tryNewThemeNotification();
 					}
 				}

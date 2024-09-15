@@ -8,16 +8,14 @@ import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import type { Comment } from "../../../../editor/common/languages.js";
 import { createAndFillInContextMenuActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import type { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 
 export class CommentMenus implements IDisposable {
-	constructor(
-		@IMenuService private readonly menuService: IMenuService
-	) { }
+	constructor(@IMenuService private readonly menuService: IMenuService) {}
 
 	getCommentThreadTitleActions(contextKeyService: IContextKeyService): IMenu {
 		return this.getMenu(MenuId.CommentThreadTitle, contextKeyService);

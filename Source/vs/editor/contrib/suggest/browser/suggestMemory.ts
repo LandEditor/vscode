@@ -21,8 +21,8 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import type { IPosition } from "../../../common/core/position.js";
 import {
-	type CompletionItemKind,
 	CompletionItemKinds,
+	type CompletionItemKind,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import type { CompletionItem } from "./suggest.js";
@@ -265,14 +265,17 @@ export class SuggestMemoryService implements ISuggestMemoryService {
 
 	constructor(
 		@IStorageService private readonly _storageService: IStorageService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 	) {
 		this._persistSoon = new RunOnceScheduler(() => this._saveState(), 500);
-		this._disposables.add(_storageService.onWillSaveState(e => {
-			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				this._saveState();
-			}
-		}));
+		this._disposables.add(
+			_storageService.onWillSaveState((e) => {
+				if (e.reason === WillSaveStateReason.SHUTDOWN) {
+					this._saveState();
+				}
+			}),
+		);
 	}
 
 	dispose(): void {

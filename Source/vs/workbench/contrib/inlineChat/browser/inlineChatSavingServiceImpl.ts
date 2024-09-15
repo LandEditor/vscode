@@ -8,18 +8,18 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { Event } from "../../../../base/common/event.js";
 import { Iterable } from "../../../../base/common/iterator.js";
 import {
-	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	combinedDisposable,
+	DisposableStore,
 	dispose,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { compare } from "../../../../base/common/strings.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -32,8 +32,8 @@ import type {
 import { SaveReason } from "../../../common/editor.js";
 import {
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
@@ -64,18 +64,28 @@ export class InlineChatSavingServiceImpl implements IInlineChatSavingService {
 	private readonly _sessionData = new Map<Session, SessionData>();
 
 	constructor(
-		@IFilesConfigurationService private readonly _fileConfigService: IFilesConfigurationService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
+		@IFilesConfigurationService
+		private readonly _fileConfigService: IFilesConfigurationService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInlineChatSessionService private readonly _inlineChatSessionService: IInlineChatSessionService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IInlineChatSessionService
+		private readonly _inlineChatSessionService: IInlineChatSessionService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
 		@ILogService private readonly _logService: ILogService,
 	) {
-		this._store.add(Event.any(_inlineChatSessionService.onDidEndSession, _inlineChatSessionService.onDidStashSession)(e => {
-			this._sessionData.get(e.session)?.dispose();
-		}));
+		this._store.add(
+			Event.any(
+				_inlineChatSessionService.onDidEndSession,
+				_inlineChatSessionService.onDidStashSession,
+			)((e) => {
+				this._sessionData.get(e.session)?.dispose();
+			}),
+		);
 	}
 
 	dispose(): void {

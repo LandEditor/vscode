@@ -6,8 +6,8 @@
 import type { IAction } from "../../../base/common/actions.js";
 import { DeferredPromise } from "../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import {
 	Disposable,

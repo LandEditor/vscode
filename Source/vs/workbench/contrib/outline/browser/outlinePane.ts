@@ -4,23 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./outlinePane.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import { ProgressBar } from "../../../../base/browser/ui/progressbar/progressbar.js";
 import {
 	AbstractTreeViewState,
-	type IAbstractTreeViewState,
 	TreeFindMode,
+	type IAbstractTreeViewState,
 } from "../../../../base/browser/ui/tree/abstractTree.js";
 import type { ITreeSorter } from "../../../../base/browser/ui/tree/tree.js";
-import { TimeoutTimer, timeout } from "../../../../base/common/async.js";
+import { timeout, TimeoutTimer } from "../../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import { Event } from "../../../../base/common/event.js";
 import type { FuzzyScore } from "../../../../base/common/filters.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LRUCache } from "../../../../base/common/map.js";
 import { basename } from "../../../../base/common/resources.js";
@@ -28,8 +29,8 @@ import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -50,18 +51,18 @@ import {
 import { IViewDescriptorService } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IOutline,
-	type IOutlineComparator,
 	IOutlineService,
 	OutlineTarget,
+	type IOutline,
+	type IOutlineComparator,
 } from "../../../services/outline/browser/outline.js";
 import {
-	type IOutlinePane,
-	OutlineSortOrder,
 	ctxAllCollapsed,
 	ctxFilterOnType,
 	ctxFollowsCursor,
 	ctxSortMode,
+	OutlineSortOrder,
+	type IOutlinePane,
 } from "./outline.js";
 import { OutlineViewState } from "./outlineViewState.js";
 
@@ -113,7 +114,8 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 	constructor(
 		options: IViewletViewOptions,
 		@IOutlineService private readonly _outlineService: IOutlineService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IEditorService private readonly _editorService: IEditorService,
@@ -126,7 +128,19 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, _instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			_instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 		this._outlineViewState.restore(this._storageService);
 		this._disposables.add(this._outlineViewState);
 
@@ -143,7 +157,9 @@ export class OutlinePane extends ViewPane implements IOutlinePane {
 			this._ctxSortMode.set(this._outlineViewState.sortBy);
 		};
 		updateContext();
-		this._disposables.add(this._outlineViewState.onDidChange(updateContext));
+		this._disposables.add(
+			this._outlineViewState.onDidChange(updateContext),
+		);
 	}
 
 	override dispose(): void {

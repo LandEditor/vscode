@@ -8,9 +8,9 @@ import { ICodeEditorService } from "../../../../editor/browser/services/codeEdit
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 

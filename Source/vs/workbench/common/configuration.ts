@@ -7,7 +7,7 @@ import { DeferredPromise } from "../../base/common/async.js";
 import { Emitter } from "../../base/common/event.js";
 import { Disposable } from "../../base/common/lifecycle.js";
 import { equals } from "../../base/common/objects.js";
-import { OperatingSystem, isWindows } from "../../base/common/platform.js";
+import { isWindows, OperatingSystem } from "../../base/common/platform.js";
 import type { URI } from "../../base/common/uri.js";
 import { localize } from "../../nls.js";
 import {
@@ -24,13 +24,13 @@ import {
 } from "../../platform/configuration/common/configurationRegistry.js";
 import { Registry } from "../../platform/registry/common/platform.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	IWorkspaceContextService,
-	type IWorkspaceFolder,
 	WorkbenchState,
+	type IWorkspaceFolder,
 } from "../../platform/workspace/common/workspace.js";
 import { IRemoteAgentService } from "../services/remote/common/remoteAgentService.js";
 import type { IWorkbenchContribution } from "./contributions.js";
@@ -126,17 +126,28 @@ export class ConfigurationMigrationWorkbenchContribution
 	static readonly ID = "workbench.contrib.configurationMigration";
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
 	) {
 		super();
-		this._register(this.workspaceService.onDidChangeWorkspaceFolders(async (e) => {
-			for (const folder of e.added) {
-				await this.migrateConfigurationsForFolder(folder, configurationMigrationRegistry.migrations);
-			}
-		}));
+		this._register(
+			this.workspaceService.onDidChangeWorkspaceFolders(async (e) => {
+				for (const folder of e.added) {
+					await this.migrateConfigurationsForFolder(
+						folder,
+						configurationMigrationRegistry.migrations,
+					);
+				}
+			}),
+		);
 		this.migrateConfigurations(configurationMigrationRegistry.migrations);
-		this._register(configurationMigrationRegistry.onDidRegisterConfigurationMigration(migration => this.migrateConfigurations(migration)));
+		this._register(
+			configurationMigrationRegistry.onDidRegisterConfigurationMigration(
+				(migration) => this.migrateConfigurations(migration),
+			),
+		);
 	}
 
 	private async migrateConfigurations(
@@ -288,7 +299,8 @@ export class DynamicWorkbenchSecurityConfiguration
 	readonly ready = this._ready.p;
 
 	constructor(
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 	) {
 		super();
 
@@ -362,22 +374,37 @@ export class DynamicWindowConfiguration
 	private newWindowProfile: IUserDataProfile | undefined;
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 		this.registerNewWindowProfileConfiguration();
-		this._register(this.userDataProfilesService.onDidChangeProfiles((e) => this.registerNewWindowProfileConfiguration()));
+		this._register(
+			this.userDataProfilesService.onDidChangeProfiles((e) =>
+				this.registerNewWindowProfileConfiguration(),
+			),
+		);
 
 		this.setNewWindowProfile();
 		this.checkAndResetNewWindowProfileConfig();
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.source !== ConfigurationTarget.DEFAULT && e.affectsConfiguration(CONFIG_NEW_WINDOW_PROFILE)) {
-				this.setNewWindowProfile();
-			}
-		}));
-		this._register(this.userDataProfilesService.onDidChangeProfiles(() => this.checkAndResetNewWindowProfileConfig()));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.source !== ConfigurationTarget.DEFAULT &&
+					e.affectsConfiguration(CONFIG_NEW_WINDOW_PROFILE)
+				) {
+					this.setNewWindowProfile();
+				}
+			}),
+		);
+		this._register(
+			this.userDataProfilesService.onDidChangeProfiles(() =>
+				this.checkAndResetNewWindowProfileConfig(),
+			),
+		);
 	}
 
 	private registerNewWindowProfileConfiguration(): void {

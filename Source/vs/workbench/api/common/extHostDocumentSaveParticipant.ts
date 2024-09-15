@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { illegalState } from "../../../base/common/errors.js";
 import type { Event } from "../../../base/common/event.js";
 import { LinkedList } from "../../../base/common/linkedList.js";

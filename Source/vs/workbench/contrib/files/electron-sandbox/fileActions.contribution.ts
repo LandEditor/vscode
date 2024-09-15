@@ -16,8 +16,8 @@ import {
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { IListService } from "../../../../platform/list/browser/listService.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
@@ -34,8 +34,8 @@ import {
 	appendToCommandPalette,
 } from "../browser/fileActions.contribution.js";
 import {
-	IExplorerService,
 	getMultiSelectedResources,
+	IExplorerService,
 } from "../browser/files.js";
 import { revealResourcesInOS } from "./fileCommands.js";
 

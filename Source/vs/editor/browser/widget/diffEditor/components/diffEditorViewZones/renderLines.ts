@@ -22,8 +22,8 @@ import {
 	renderViewLine,
 } from "../../../../../common/viewLayout/viewLineRenderer.js";
 import {
-	type InlineDecoration,
 	ViewLineRenderingData,
+	type InlineDecoration,
 } from "../../../../../common/viewModel.js";
 import { applyFontInfo } from "../../../../config/domFontInfo.js";
 import type { ICodeEditor } from "../../../../editorBrowser.js";

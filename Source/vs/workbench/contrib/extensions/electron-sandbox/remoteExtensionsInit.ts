@@ -26,10 +26,10 @@ import { IUserDataProfilesService } from "../../../../platform/userDataProfile/c
 import { AbstractExtensionsInitializer } from "../../../../platform/userDataSync/common/extensionsSync.js";
 import { IIgnoredExtensionsManagementService } from "../../../../platform/userDataSync/common/ignoredExtensions.js";
 import {
-	type IRemoteUserData,
 	IUserDataSyncEnablementService,
 	IUserDataSyncStoreManagementService,
 	SyncResource,
+	type IRemoteUserData,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { UserDataSyncStoreClient } from "../../../../platform/userDataSync/common/userDataSyncStoreService.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
@@ -42,15 +42,22 @@ export class RemoteExtensionsInitializerContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILogService private readonly logService: ILogService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
-		@IRemoteAuthorityResolverService private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
+		@IRemoteAuthorityResolverService
+		private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
 	) {
 		this.initializeRemoteExtensions();
 	}
@@ -161,18 +168,32 @@ export class RemoteExtensionsInitializerContribution
 
 class RemoteExtensionsInitializer extends AbstractExtensionsInitializer {
 	constructor(
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
-		@IIgnoredExtensionsManagementService ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
+		@IIgnoredExtensionsManagementService
+		ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@ILogService logService: ILogService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
 		@IStorageService storageService: IStorageService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
-		super(extensionManagementService, ignoredExtensionsManagementService, fileService, userDataProfilesService, environmentService, logService, storageService, uriIdentityService);
+		super(
+			extensionManagementService,
+			ignoredExtensionsManagementService,
+			fileService,
+			userDataProfilesService,
+			environmentService,
+			logService,
+			storageService,
+			uriIdentityService,
+		);
 	}
 
 	protected override async doInitialize(

@@ -10,9 +10,9 @@ import type {
 	IReadonlyTextBuffer,
 } from "../../../../editor/common/model.js";
 import {
+	TextSearchMatch,
 	type IFileMatch,
 	type ITextSearchMatch,
-	TextSearchMatch,
 } from "../../../services/search/common/search.js";
 
 export type IRawClosedNotebookFileMatch =

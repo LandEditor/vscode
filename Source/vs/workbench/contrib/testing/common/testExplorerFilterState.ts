@@ -12,8 +12,8 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IObservableValue,
 	MutableObservableValue,
+	type IObservableValue,
 } from "./observableValue.js";
 import { StoredValue } from "./storedValue.js";
 import { namespaceTestTag } from "./testTypes.js";
@@ -121,7 +121,9 @@ export class TestExplorerFilterState
 
 	public readonly onDidRequestInputFocus = this.focusEmitter.event;
 
-	constructor(@IStorageService private readonly storageService: IStorageService) {
+	constructor(
+		@IStorageService private readonly storageService: IStorageService,
+	) {
 		super();
 	}
 

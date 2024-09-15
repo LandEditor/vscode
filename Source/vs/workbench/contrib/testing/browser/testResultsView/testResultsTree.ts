@@ -18,8 +18,8 @@ import type {
 } from "../../../../../base/browser/ui/tree/tree.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../../base/common/actions.js";
 import { RunOnceScheduler } from "../../../../../base/common/async.js";
 import { Codicon } from "../../../../../base/common/codicons.js";
@@ -38,8 +38,8 @@ import { isDefined } from "../../../../../base/common/types.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import { localize } from "../../../../../nls.js";
 import {
-	MenuEntryActionViewItem,
 	createAndFillInActionBarActions,
+	MenuEntryActionViewItem,
 } from "../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	IMenuService,
@@ -58,40 +58,40 @@ import { IEditorService } from "../../../../services/editor/common/editorService
 import { TestCommandId, Testing } from "../../common/constants.js";
 import { ITestCoverageService } from "../../common/testCoverageService.js";
 import { ITestExplorerFilterState } from "../../common/testExplorerFilterState.js";
+import { TestingContextKeys } from "../../common/testingContextKeys.js";
+import { cmpPriority } from "../../common/testingStates.js";
+import { buildTestUri, TestUriType } from "../../common/testingUri.js";
 import { ITestProfileService } from "../../common/testProfileService.js";
 import {
+	LiveTestResult,
+	maxCountPriority,
+	TestResultItemChangeReason,
 	type ITestResult,
 	type ITestRunTaskResults,
-	LiveTestResult,
-	TestResultItemChangeReason,
-	maxCountPriority,
 } from "../../common/testResult.js";
 import { ITestResultService } from "../../common/testResultService.js";
 import {
+	InternalTestItem,
+	TestMessageType,
+	TestResultState,
+	testResultStateToContextValues,
+	TestRunProfileBitset,
 	type IRichLocation,
 	type ITestItemContext,
 	type ITestMessage,
 	type ITestMessageMenuArgs,
-	InternalTestItem,
-	TestMessageType,
 	type TestResultItem,
-	TestResultState,
-	TestRunProfileBitset,
-	testResultStateToContextValues,
 } from "../../common/testTypes.js";
-import { TestingContextKeys } from "../../common/testingContextKeys.js";
-import { cmpPriority } from "../../common/testingStates.js";
-import { TestUriType, buildTestUri } from "../../common/testingUri.js";
 import { getTestItemContextOverlay } from "../explorerProjections/testItemContextOverlay.js";
 import * as icons from "../icons.js";
 import { renderTestMessageAsText } from "../testMessageColorizer.js";
 import {
-	type InspectSubject,
+	getMessageArgs,
+	mapFindTestMessage,
 	MessageSubject,
 	TaskSubject,
 	TestOutputSubject,
-	getMessageArgs,
-	mapFindTestMessage,
+	type InspectSubject,
 } from "./testResultsSubject.js";
 
 interface ITreeElement {
@@ -340,8 +340,12 @@ export class OutputPeekTree extends Disposable {
 	constructor(
 		container: HTMLElement,
 		onDidReveal: Event<{ subject: InspectSubject; preserveFocus: boolean }>,
-		options: { showRevealLocationOnMessages: boolean; locationForProgress: string },
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		options: {
+			showRevealLocationOnMessages: boolean;
+			locationForProgress: string;
+		},
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@ITestResultService results: ITestResultService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ITestExplorerFilterState explorerFilter: ITestExplorerFilterState,
@@ -351,61 +355,93 @@ export class OutputPeekTree extends Disposable {
 	) {
 		super();
 
-		this.treeActions = instantiationService.createInstance(TreeActionsProvider, options.showRevealLocationOnMessages, this.requestReveal,);
+		this.treeActions = instantiationService.createInstance(
+			TreeActionsProvider,
+			options.showRevealLocationOnMessages,
+			this.requestReveal,
+		);
 		const diffIdentityProvider: IIdentityProvider<TreeElement> = {
 			getId(e: TreeElement) {
 				return e.id;
-			}
+			},
 		};
 
-		this.tree = this._register(instantiationService.createInstance(
-			WorkbenchCompressibleObjectTree,
-			'Test Output Peek',
-			container,
-			{
-				getHeight: () => 22,
-				getTemplateId: () => TestRunElementRenderer.ID,
-			},
-			[instantiationService.createInstance(TestRunElementRenderer, this.treeActions)],
-			{
-				compressionEnabled: true,
-				hideTwistiesOfChildlessElements: true,
-				identityProvider: diffIdentityProvider,
-				sorter: {
-					compare(a, b) {
-						if (a instanceof TestCaseElement && b instanceof TestCaseElement) {
-							return cmpPriority(a.state, b.state);
-						}
+		this.tree = this._register(
+			instantiationService.createInstance(
+				WorkbenchCompressibleObjectTree,
+				"Test Output Peek",
+				container,
+				{
+					getHeight: () => 22,
+					getTemplateId: () => TestRunElementRenderer.ID,
+				},
+				[
+					instantiationService.createInstance(
+						TestRunElementRenderer,
+						this.treeActions,
+					),
+				],
+				{
+					compressionEnabled: true,
+					hideTwistiesOfChildlessElements: true,
+					identityProvider: diffIdentityProvider,
+					sorter: {
+						compare(a, b) {
+							if (
+								a instanceof TestCaseElement &&
+								b instanceof TestCaseElement
+							) {
+								return cmpPriority(a.state, b.state);
+							}
 
-						return 0;
+							return 0;
+						},
+					},
+					accessibilityProvider: {
+						getAriaLabel(element: ITreeElement) {
+							return element.ariaLabel || element.label;
+						},
+						getWidgetAriaLabel() {
+							return localize(
+								"testingPeekLabel",
+								"Test Result Messages",
+							);
+						},
 					},
 				},
-				accessibilityProvider: {
-					getAriaLabel(element: ITreeElement) {
-						return element.ariaLabel || element.label;
-					},
-					getWidgetAriaLabel() {
-						return localize('testingPeekLabel', 'Test Result Messages');
-					}
-				}
-			},
-		)) as WorkbenchCompressibleObjectTree<TreeElement, FuzzyScore>;
+			),
+		) as WorkbenchCompressibleObjectTree<TreeElement, FuzzyScore>;
 
 		const cc = new CreationCache<TreeElement>();
 
-		const getTaskChildren = (taskElem: TaskElement): Iterable<ICompressedTreeElement<TreeElement>> => {
+		const getTaskChildren = (
+			taskElem: TaskElement,
+		): Iterable<ICompressedTreeElement<TreeElement>> => {
 			const { results, index, itemsCache, task } = taskElem;
-			const tests = Iterable.filter(results.tests, test => test.tasks[index].state >= TestResultState.Running || test.tasks[index].messages.length > 0);
-			let result: Iterable<ICompressedTreeElement<TreeElement>> = Iterable.map(tests, test => ({
-				element: itemsCache.getOrCreate(test, () => new TestCaseElement(results, test, index)),
-				incompressible: true,
-				children: getTestChildren(results, test, index),
-			}));
+			const tests = Iterable.filter(
+				results.tests,
+				(test) =>
+					test.tasks[index].state >= TestResultState.Running ||
+					test.tasks[index].messages.length > 0,
+			);
+			let result: Iterable<ICompressedTreeElement<TreeElement>> =
+				Iterable.map(tests, (test) => ({
+					element: itemsCache.getOrCreate(
+						test,
+						() => new TestCaseElement(results, test, index),
+					),
+					incompressible: true,
+					children: getTestChildren(results, test, index),
+				}));
 
 			if (task.coverage.get()) {
 				result = Iterable.concat(
 					Iterable.single<ICompressedTreeElement<TreeElement>>({
-						element: new CoverageElement(results, task, coverageService),
+						element: new CoverageElement(
+							results,
+							task,
+							coverageService,
+						),
 						collapsible: true,
 						incompressible: true,
 					}),
@@ -416,29 +452,52 @@ export class OutputPeekTree extends Disposable {
 			return result;
 		};
 
-		const getTestChildren = (result: ITestResult, test: TestResultItem, taskIndex: number): Iterable<ICompressedTreeElement<TreeElement>> => {
+		const getTestChildren = (
+			result: ITestResult,
+			test: TestResultItem,
+			taskIndex: number,
+		): Iterable<ICompressedTreeElement<TreeElement>> => {
 			return test.tasks[taskIndex].messages
 				.map((m, messageIndex) =>
 					m.type === TestMessageType.Error
-						? { element: cc.getOrCreate(m, () => new TestMessageElement(result, test, taskIndex, messageIndex)), incompressible: false }
-						: undefined
+						? {
+								element: cc.getOrCreate(
+									m,
+									() =>
+										new TestMessageElement(
+											result,
+											test,
+											taskIndex,
+											messageIndex,
+										),
+								),
+								incompressible: false,
+							}
+						: undefined,
 				)
 				.filter(isDefined);
 		};
 
-		const getResultChildren = (result: ITestResult): ICompressedTreeElement<TreeElement>[] => {
+		const getResultChildren = (
+			result: ITestResult,
+		): ICompressedTreeElement<TreeElement>[] => {
 			return result.tasks.map((task, taskIndex) => {
-				const taskElem = cc.getOrCreate(task, () => new TaskElement(result, task, taskIndex));
-				return ({
+				const taskElem = cc.getOrCreate(
+					task,
+					() => new TaskElement(result, task, taskIndex),
+				);
+				return {
 					element: taskElem,
 					incompressible: false,
 					collapsible: true,
 					children: getTaskChildren(taskElem),
-				});
+				};
 			});
 		};
 
-		const getRootChildren = (): Iterable<ICompressedTreeElement<TreeElement>> => {
+		const getRootChildren = (): Iterable<
+			ICompressedTreeElement<TreeElement>
+		> => {
 			let children: ICompressedTreeElement<TreeElement>[] = [];
 
 			const older = [];
@@ -447,13 +506,18 @@ export class OutputPeekTree extends Disposable {
 				if (!children.length && result.tasks.length) {
 					children = getResultChildren(result);
 				} else if (children) {
-					const element = cc.getOrCreate(result, () => new TestResultElement(result));
+					const element = cc.getOrCreate(
+						result,
+						() => new TestResultElement(result),
+					);
 					older.push({
 						element,
 						incompressible: true,
 						collapsible: true,
-						collapsed: this.tree.hasElement(element) ? this.tree.isCollapsed(element) : true,
-						children: getResultChildren(result)
+						collapsed: this.tree.hasElement(element)
+							? this.tree.isCollapsed(element)
+							: true,
+						children: getResultChildren(result),
 					});
 				}
 			}
@@ -478,14 +542,20 @@ export class OutputPeekTree extends Disposable {
 		// Queued result updates to prevent spamming CPU when lots of tests are
 		// completing and messaging quickly (#142514)
 		const taskChildrenToUpdate = new Set<TaskElement>();
-		const taskChildrenUpdate = this._register(new RunOnceScheduler(() => {
-			for (const taskNode of taskChildrenToUpdate) {
-				if (this.tree.hasElement(taskNode)) {
-					this.tree.setChildren(taskNode, getTaskChildren(taskNode), { diffIdentityProvider });
+		const taskChildrenUpdate = this._register(
+			new RunOnceScheduler(() => {
+				for (const taskNode of taskChildrenToUpdate) {
+					if (this.tree.hasElement(taskNode)) {
+						this.tree.setChildren(
+							taskNode,
+							getTaskChildren(taskNode),
+							{ diffIdentityProvider },
+						);
+					}
 				}
-			}
-			taskChildrenToUpdate.clear();
-		}, 300));
+				taskChildrenToUpdate.clear();
+			}, 300),
+		);
 
 		const queueTaskChildrenUpdate = (taskNode: TaskElement) => {
 			taskChildrenToUpdate.add(taskNode);
@@ -496,68 +566,100 @@ export class OutputPeekTree extends Disposable {
 
 		const attachToResults = (result: LiveTestResult) => {
 			const disposable = new DisposableStore();
-			disposable.add(result.onNewTask(i => {
-				this.tree.setChildren(null, getRootChildren(), { diffIdentityProvider });
+			disposable.add(
+				result.onNewTask((i) => {
+					this.tree.setChildren(null, getRootChildren(), {
+						diffIdentityProvider,
+					});
 
-				if (result.tasks.length === 1) {
-					this.requestReveal.fire(new TaskSubject(result, 0)); // reveal the first task in new runs
-				}
-
-				// note: tasks are bounded and their lifetime is equivalent to that of
-				// the test result, so this doesn't leak indefinitely.
-				const task = result.tasks[i];
-				disposable.add(autorun(reader => {
-					task.coverage.read(reader); // add it to the autorun
-					queueTaskChildrenUpdate(cc.get(task) as TaskElement);
-				}));
-			}));
-
-			disposable.add(result.onEndTask(index => {
-				(cc.get(result.tasks[index]) as TaskElement | undefined)?.changeEmitter.fire();
-			}));
-
-			disposable.add(result.onChange(e => {
-				// try updating the item in each of its tasks
-				for (const [index, task] of result.tasks.entries()) {
-					const taskNode = cc.get(task) as TaskElement;
-					if (!this.tree.hasElement(taskNode)) {
-						continue;
+					if (result.tasks.length === 1) {
+						this.requestReveal.fire(new TaskSubject(result, 0)); // reveal the first task in new runs
 					}
 
-					const itemNode = taskNode.itemsCache.get(e.item);
-					if (itemNode && this.tree.hasElement(itemNode)) {
-						if (e.reason === TestResultItemChangeReason.NewMessage && e.message.type === TestMessageType.Error) {
-							this.tree.setChildren(itemNode, getTestChildren(result, e.item, index), { diffIdentityProvider });
+					// note: tasks are bounded and their lifetime is equivalent to that of
+					// the test result, so this doesn't leak indefinitely.
+					const task = result.tasks[i];
+					disposable.add(
+						autorun((reader) => {
+							task.coverage.read(reader); // add it to the autorun
+							queueTaskChildrenUpdate(
+								cc.get(task) as TaskElement,
+							);
+						}),
+					);
+				}),
+			);
+
+			disposable.add(
+				result.onEndTask((index) => {
+					(
+						cc.get(result.tasks[index]) as TaskElement | undefined
+					)?.changeEmitter.fire();
+				}),
+			);
+
+			disposable.add(
+				result.onChange((e) => {
+					// try updating the item in each of its tasks
+					for (const [index, task] of result.tasks.entries()) {
+						const taskNode = cc.get(task) as TaskElement;
+						if (!this.tree.hasElement(taskNode)) {
+							continue;
 						}
-						return;
+
+						const itemNode = taskNode.itemsCache.get(e.item);
+						if (itemNode && this.tree.hasElement(itemNode)) {
+							if (
+								e.reason ===
+									TestResultItemChangeReason.NewMessage &&
+								e.message.type === TestMessageType.Error
+							) {
+								this.tree.setChildren(
+									itemNode,
+									getTestChildren(result, e.item, index),
+									{ diffIdentityProvider },
+								);
+							}
+							return;
+						}
+
+						queueTaskChildrenUpdate(taskNode);
 					}
+				}),
+			);
 
-					queueTaskChildrenUpdate(taskNode);
-				}
-			}));
-
-			disposable.add(result.onComplete(() => {
-				(cc.get(result) as TestResultElement | undefined)?.changeEmitter.fire();
-				disposable.dispose();
-			}));
+			disposable.add(
+				result.onComplete(() => {
+					(
+						cc.get(result) as TestResultElement | undefined
+					)?.changeEmitter.fire();
+					disposable.dispose();
+				}),
+			);
 		};
 
-		this._register(results.onResultsChanged(e => {
-			// little hack here: a result change can cause the peek to be disposed,
-			// but this listener will still be queued. Doing stuff with the tree
-			// will cause errors.
-			if (this.disposed) {
-				return;
-			}
+		this._register(
+			results.onResultsChanged((e) => {
+				// little hack here: a result change can cause the peek to be disposed,
+				// but this listener will still be queued. Doing stuff with the tree
+				// will cause errors.
+				if (this.disposed) {
+					return;
+				}
 
-			if ('completed' in e) {
-				(cc.get(e.completed) as TestResultElement | undefined)?.changeEmitter.fire();
-			} else if ('started' in e) {
-				attachToResults(e.started);
-			} else {
-				this.tree.setChildren(null, getRootChildren(), { diffIdentityProvider });
-			}
-		}));
+				if ("completed" in e) {
+					(
+						cc.get(e.completed) as TestResultElement | undefined
+					)?.changeEmitter.fire();
+				} else if ("started" in e) {
+					attachToResults(e.started);
+				} else {
+					this.tree.setChildren(null, getRootChildren(), {
+						diffIdentityProvider,
+					});
+				}
+			}),
+		);
 
 		const revealItem = (element: TreeElement, preserveFocus: boolean) => {
 			this.tree.setFocus([element]);
@@ -567,88 +669,131 @@ export class OutputPeekTree extends Disposable {
 			}
 		};
 
-		this._register(onDidReveal(async ({ subject, preserveFocus = false }) => {
-			if (subject instanceof TaskSubject) {
-				const resultItem = this.tree.getNode(null).children.find(c => {
-					if (c.element instanceof TaskElement) {
-						return c.element.results.id === subject.result.id && c.element.index === subject.taskIndex;
+		this._register(
+			onDidReveal(async ({ subject, preserveFocus = false }) => {
+				if (subject instanceof TaskSubject) {
+					const resultItem = this.tree
+						.getNode(null)
+						.children.find((c) => {
+							if (c.element instanceof TaskElement) {
+								return (
+									c.element.results.id ===
+										subject.result.id &&
+									c.element.index === subject.taskIndex
+								);
+							}
+							if (c.element instanceof TestResultElement) {
+								return c.element.id === subject.result.id;
+							}
+							return false;
+						});
+
+					if (resultItem) {
+						revealItem(resultItem.element!, preserveFocus);
 					}
-					if (c.element instanceof TestResultElement) {
-						return c.element.id === subject.result.id;
+					return;
+				}
+
+				const revealElement =
+					subject instanceof TestOutputSubject
+						? cc
+								.get<TaskElement>(subject.task)
+								?.itemsCache.get(subject.test)
+						: cc.get(subject.message);
+				if (!revealElement || !this.tree.hasElement(revealElement)) {
+					return;
+				}
+
+				const parents: TreeElement[] = [];
+				for (
+					let parent = this.tree.getParentElement(revealElement);
+					parent;
+					parent = this.tree.getParentElement(parent)
+				) {
+					parents.unshift(parent);
+				}
+
+				for (const parent of parents) {
+					this.tree.expand(parent);
+				}
+
+				if (this.tree.getRelativeTop(revealElement) === null) {
+					this.tree.reveal(revealElement, 0.5);
+				}
+
+				revealItem(revealElement, preserveFocus);
+			}),
+		);
+
+		this._register(
+			this.tree.onDidOpen(async (e) => {
+				if (e.element instanceof TestMessageElement) {
+					this.requestReveal.fire(
+						new MessageSubject(
+							e.element.result,
+							e.element.test,
+							e.element.taskIndex,
+							e.element.messageIndex,
+						),
+					);
+				} else if (e.element instanceof TestCaseElement) {
+					const t = e.element;
+					const message = mapFindTestMessage(
+						e.element.test,
+						(_t, _m, mesasgeIndex, taskIndex) =>
+							new MessageSubject(
+								t.results,
+								t.test,
+								taskIndex,
+								mesasgeIndex,
+							),
+					);
+					this.requestReveal.fire(
+						message || new TestOutputSubject(t.results, 0, t.test),
+					);
+				} else if (e.element instanceof CoverageElement) {
+					const task = e.element.task;
+					if (e.element.isOpen) {
+						return coverageService.closeCoverage();
 					}
-					return false;
-				});
-
-				if (resultItem) {
-					revealItem(resultItem.element!, preserveFocus);
+					progressService.withProgress(
+						{ location: options.locationForProgress },
+						() => coverageService.openCoverage(task, true),
+					);
 				}
-				return;
-			}
+			}),
+		);
 
-			const revealElement = subject instanceof TestOutputSubject
-				? cc.get<TaskElement>(subject.task)?.itemsCache.get(subject.test)
-				: cc.get(subject.message);
-			if (!revealElement || !this.tree.hasElement(revealElement)) {
-				return;
-			}
-
-			const parents: TreeElement[] = [];
-			for (let parent = this.tree.getParentElement(revealElement); parent; parent = this.tree.getParentElement(parent)) {
-				parents.unshift(parent);
-			}
-
-			for (const parent of parents) {
-				this.tree.expand(parent);
-			}
-
-			if (this.tree.getRelativeTop(revealElement) === null) {
-				this.tree.reveal(revealElement, 0.5);
-			}
-
-			revealItem(revealElement, preserveFocus);
-		}));
-
-		this._register(this.tree.onDidOpen(async e => {
-			if (e.element instanceof TestMessageElement) {
-				this.requestReveal.fire(new MessageSubject(e.element.result, e.element.test, e.element.taskIndex, e.element.messageIndex));
-			} else if (e.element instanceof TestCaseElement) {
-				const t = e.element;
-				const message = mapFindTestMessage(e.element.test, (_t, _m, mesasgeIndex, taskIndex) =>
-					new MessageSubject(t.results, t.test, taskIndex, mesasgeIndex));
-				this.requestReveal.fire(message || new TestOutputSubject(t.results, 0, t.test));
-			} else if (e.element instanceof CoverageElement) {
-				const task = e.element.task;
-				if (e.element.isOpen) {
-					return coverageService.closeCoverage();
+		this._register(
+			this.tree.onDidChangeSelection((evt) => {
+				for (const element of evt.elements) {
+					if (element && "test" in element) {
+						explorerFilter.reveal.value = element.test.item.extId;
+						break;
+					}
 				}
-				progressService.withProgress(
-					{ location: options.locationForProgress },
-					() => coverageService.openCoverage(task, true)
-				);
-			}
-		}));
+			}),
+		);
 
-		this._register(this.tree.onDidChangeSelection(evt => {
-			for (const element of evt.elements) {
-				if (element && 'test' in element) {
-					explorerFilter.reveal.value = element.test.item.extId;
-					break;
+		this._register(this.tree.onContextMenu((e) => this.onContextMenu(e)));
+
+		this._register(
+			this.tree.onDidChangeCollapseState((e) => {
+				if (
+					e.node.element instanceof OlderResultsElement &&
+					!e.node.collapsed
+				) {
+					telemetryService.publicLog2<
+						{},
+						{
+							owner: "connor4312";
+							// we're considering removing or depromoting this feature because we don't think it's used:
+							comment: "Records that test history was used";
+						}
+					>("testing.expandOlderResults");
 				}
-			}
-		}));
-
-
-		this._register(this.tree.onContextMenu(e => this.onContextMenu(e)));
-
-		this._register(this.tree.onDidChangeCollapseState(e => {
-			if (e.node.element instanceof OlderResultsElement && !e.node.collapsed) {
-				telemetryService.publicLog2<{}, {
-					owner: 'connor4312';
-					// we're considering removing or depromoting this feature because we don't think it's used:
-					comment: 'Records that test history was used';
-				}>('testing.expandOlderResults');
-			}
-		}));
+			}),
+		);
 
 		this.tree.setChildren(null, getRootChildren());
 		for (const result of results.results) {
@@ -697,15 +842,17 @@ interface TemplateData {
 }
 
 class TestRunElementRenderer
-	implements ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData>
+	implements
+		ICompressibleTreeRenderer<ITreeElement, FuzzyScore, TemplateData>
 {
 	public static readonly ID = "testRunElementRenderer";
 	public readonly templateId = TestRunElementRenderer.ID;
 
 	constructor(
 		private readonly treeActions: TreeActionsProvider,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	/** @inheritdoc */
 	public renderCompressedElements(
@@ -827,12 +974,14 @@ class TreeActionsProvider {
 	constructor(
 		private readonly showRevealLocationOnMessages: boolean,
 		private readonly requestReveal: Emitter<InspectSubject>,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IMenuService private readonly menuService: IMenuService,
 		@ICommandService private readonly commandService: ICommandService,
-		@ITestProfileService private readonly testProfileService: ITestProfileService,
+		@ITestProfileService
+		private readonly testProfileService: ITestProfileService,
 		@IEditorService private readonly editorService: IEditorService,
-	) { }
+	) {}
 
 	public provideActionBar(element: ITreeElement) {
 		const test =

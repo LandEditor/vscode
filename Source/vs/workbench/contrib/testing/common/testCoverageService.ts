@@ -10,10 +10,10 @@ import {
 	MutableDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ISettableObservable,
 	observableValue,
 	transaction,
+	type IObservable,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
@@ -27,9 +27,9 @@ import { TestingConfigKeys } from "./configuration.js";
 import { Testing } from "./constants.js";
 import type { TestCoverage } from "./testCoverage.js";
 import type { TestId } from "./testId.js";
+import { TestingContextKeys } from "./testingContextKeys.js";
 import type { ITestRunTaskResults } from "./testResult.js";
 import { ITestResultService } from "./testResultService.js";
-import { TestingContextKeys } from "./testingContextKeys.js";
 
 export const ITestCoverageService = createDecorator<ITestCoverageService>(
 	"testCoverageService",
@@ -92,52 +92,77 @@ export class TestCoverageService
 	) {
 		super();
 
-		const toolbarConfig = observableConfigValue(TestingConfigKeys.CoverageToolbarEnabled, true, configService);
-		this._register(bindContextKey(
-			TestingContextKeys.coverageToolbarEnabled,
-			contextKeyService,
-			reader => toolbarConfig.read(reader),
-		));
+		const toolbarConfig = observableConfigValue(
+			TestingConfigKeys.CoverageToolbarEnabled,
+			true,
+			configService,
+		);
+		this._register(
+			bindContextKey(
+				TestingContextKeys.coverageToolbarEnabled,
+				contextKeyService,
+				(reader) => toolbarConfig.read(reader),
+			),
+		);
 
-		this._register(bindContextKey(
-			TestingContextKeys.inlineCoverageEnabled,
-			contextKeyService,
-			reader => this.showInline.read(reader),
-		));
+		this._register(
+			bindContextKey(
+				TestingContextKeys.inlineCoverageEnabled,
+				contextKeyService,
+				(reader) => this.showInline.read(reader),
+			),
+		);
 
-		this._register(bindContextKey(
-			TestingContextKeys.isTestCoverageOpen,
-			contextKeyService,
-			reader => !!this.selected.read(reader),
-		));
+		this._register(
+			bindContextKey(
+				TestingContextKeys.isTestCoverageOpen,
+				contextKeyService,
+				(reader) => !!this.selected.read(reader),
+			),
+		);
 
-		this._register(bindContextKey(
-			TestingContextKeys.hasPerTestCoverage,
-			contextKeyService,
-			reader => !Iterable.isEmpty(this.selected.read(reader)?.allPerTestIDs()),
-		));
+		this._register(
+			bindContextKey(
+				TestingContextKeys.hasPerTestCoverage,
+				contextKeyService,
+				(reader) =>
+					!Iterable.isEmpty(
+						this.selected.read(reader)?.allPerTestIDs(),
+					),
+			),
+		);
 
-		this._register(bindContextKey(
-			TestingContextKeys.isCoverageFilteredToTest,
-			contextKeyService,
-			reader => !!this.filterToTest.read(reader),
-		));
+		this._register(
+			bindContextKey(
+				TestingContextKeys.isCoverageFilteredToTest,
+				contextKeyService,
+				(reader) => !!this.filterToTest.read(reader),
+			),
+		);
 
-		this._register(resultService.onResultsChanged(evt => {
-			if ('completed' in evt) {
-				const coverage = evt.completed.tasks.find(t => t.coverage.get());
-				if (coverage) {
-					this.openCoverage(coverage, false);
-				} else {
-					this.closeCoverage();
+		this._register(
+			resultService.onResultsChanged((evt) => {
+				if ("completed" in evt) {
+					const coverage = evt.completed.tasks.find((t) =>
+						t.coverage.get(),
+					);
+					if (coverage) {
+						this.openCoverage(coverage, false);
+					} else {
+						this.closeCoverage();
+					}
+				} else if ("removed" in evt && this.selected.get()) {
+					const taskId = this.selected.get()?.fromTaskId;
+					if (
+						evt.removed.some((e) =>
+							e.tasks.some((t) => t.id === taskId),
+						)
+					) {
+						this.closeCoverage();
+					}
 				}
-			} else if ('removed' in evt && this.selected.get()) {
-				const taskId = this.selected.get()?.fromTaskId;
-				if (evt.removed.some(e => e.tasks.some(t => t.id === taskId))) {
-					this.closeCoverage();
-				}
-			}
-		}));
+			}),
+		);
 	}
 
 	/** @inheritdoc */

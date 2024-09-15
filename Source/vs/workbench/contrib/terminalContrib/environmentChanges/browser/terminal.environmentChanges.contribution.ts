@@ -8,8 +8,8 @@ import { URI } from "../../../../../base/common/uri.js";
 import type { ITextModel } from "../../../../../editor/common/model.js";
 import { IModelService } from "../../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../../editor/common/services/resolverService.js";
 import { localize, localize2 } from "../../../../../nls.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
@@ -136,9 +136,12 @@ class EnvironmentCollectionProvider implements ITextModelContentProvider {
 
 	constructor(
 		@ITextModelService textModelResolverService: ITextModelService,
-		@IModelService private readonly _modelService: IModelService
+		@IModelService private readonly _modelService: IModelService,
 	) {
-		textModelResolverService.registerTextModelContentProvider(EnvironmentCollectionProvider.scheme, this);
+		textModelResolverService.registerTextModelContentProvider(
+			EnvironmentCollectionProvider.scheme,
+			this,
+		);
 	}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {

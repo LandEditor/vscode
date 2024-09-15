@@ -27,12 +27,14 @@ import * as files from "../../files/common/files.js";
 export abstract class StartupTimings {
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@IPaneCompositePartService
+		private readonly _paneCompositeService: IPaneCompositePartService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@IUpdateService private readonly _updateService: IUpdateService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService
-	) {
-	}
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
+	) {}
 
 	protected async _isStandardStartup(): Promise<string | undefined> {
 		// check for standard startup:
@@ -81,17 +83,26 @@ export class BrowserStartupTimings
 {
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IUpdateService updateService: IUpdateService,
-		@IWorkspaceTrustManagementService workspaceTrustService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustService: IWorkspaceTrustManagementService,
 		@ITimerService private readonly timerService: ITimerService,
 		@ILogService private readonly logService: ILogService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IProductService private readonly productService: IProductService
+		@IProductService private readonly productService: IProductService,
 	) {
-		super(editorService, paneCompositeService, lifecycleService, updateService, workspaceTrustService);
+		super(
+			editorService,
+			paneCompositeService,
+			lifecycleService,
+			updateService,
+			workspaceTrustService,
+		);
 
 		this.logPerfMarks();
 	}
@@ -113,33 +124,44 @@ export class BrowserStartupTimings
 }
 
 export class BrowserResourcePerformanceMarks {
-	constructor(
-		@ITelemetryService telemetryService: ITelemetryService
-	) {
-
+	constructor(@ITelemetryService telemetryService: ITelemetryService) {
 		type Entry = {
 			hosthash: string;
 			name: string;
 			duration: number;
 		};
 		type EntryClassifify = {
-			owner: 'jrieken';
-			comment: 'Resource performance numbers';
-			hosthash: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Hash of the hostname' };
-			name: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource basename' };
-			duration: { classification: 'SystemMetaData'; purpose: 'PerformanceAndHealth'; comment: 'Resource duration' };
+			owner: "jrieken";
+			comment: "Resource performance numbers";
+			hosthash: {
+				classification: "SystemMetaData";
+				purpose: "PerformanceAndHealth";
+				comment: "Hash of the hostname";
+			};
+			name: {
+				classification: "SystemMetaData";
+				purpose: "PerformanceAndHealth";
+				comment: "Resource basename";
+			};
+			duration: {
+				classification: "SystemMetaData";
+				purpose: "PerformanceAndHealth";
+				comment: "Resource duration";
+			};
 		};
-		for (const item of performance.getEntriesByType('resource')) {
-
+		for (const item of performance.getEntriesByType("resource")) {
 			try {
 				const url = new URL(item.name);
 				const name = posix.basename(url.pathname);
 
-				telemetryService.publicLog2<Entry, EntryClassifify>('startup.resource.perf', {
-					hosthash: `H${hash(url.host).toString(16)}`,
-					name,
-					duration: item.duration
-				});
+				telemetryService.publicLog2<Entry, EntryClassifify>(
+					"startup.resource.perf",
+					{
+						hosthash: `H${hash(url.host).toString(16)}`,
+						name,
+						duration: item.duration,
+					},
+				);
 			} catch {
 				// ignore
 			}

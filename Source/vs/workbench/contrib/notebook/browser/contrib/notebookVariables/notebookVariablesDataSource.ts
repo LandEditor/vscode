@@ -8,10 +8,10 @@ import { CancellationTokenSource } from "../../../../../../base/common/cancellat
 import { localize } from "../../../../../../nls.js";
 import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
 import {
+	variablePageSize,
 	type INotebookKernel,
 	type INotebookKernelService,
 	type VariablesResult,
-	variablePageSize,
 } from "../../../common/notebookKernelService.js";
 
 export interface INotebookScope {

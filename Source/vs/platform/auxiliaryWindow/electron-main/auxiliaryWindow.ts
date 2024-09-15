@@ -8,6 +8,7 @@ import {
 	type BrowserWindowConstructorOptions,
 	type WebContents,
 } from "electron";
+
 import { isLinux, isWindows } from "../../../base/common/platform.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import { IEnvironmentMainService } from "../../environment/electron-main/environmentMainService.js";
@@ -15,12 +16,12 @@ import { ILifecycleMainService } from "../../lifecycle/electron-main/lifecycleMa
 import { ILogService } from "../../log/common/log.js";
 import { IStateService } from "../../state/node/state.js";
 import {
-	TitlebarStyle,
 	hasNativeTitlebar,
+	TitlebarStyle,
 } from "../../window/common/window.js";
 import {
-	type IBaseWindow,
 	WindowMode,
+	type IBaseWindow,
 } from "../../window/electron-main/window.js";
 import { BaseWindow } from "../../windows/electron-main/windowImpl.js";
 
@@ -44,13 +45,20 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 
 	constructor(
 		private readonly webContents: WebContents,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@ILogService logService: ILogService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IStateService stateService: IStateService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 	) {
-		super(configurationService, stateService, environmentMainService, logService);
+		super(
+			configurationService,
+			stateService,
+			environmentMainService,
+			logService,
+		);
 
 		// Try to claim window
 		this.tryClaimWindow();

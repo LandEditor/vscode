@@ -14,8 +14,8 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import * as colorRegistry from "../../../../platform/theme/common/colorRegistry.js";
 import { ColorScheme } from "../../../../platform/theme/common/theme.js";
 import {
-	type IWorkbenchColorTheme,
 	IWorkbenchThemeService,
+	type IWorkbenchColorTheme,
 } from "../../../services/themes/common/workbenchThemeService.js";
 import type { WebviewStyles } from "./webview.js";
 
@@ -33,21 +33,36 @@ export class WebviewThemeDataProvider extends Disposable {
 	public readonly onThemeDataChanged = this._onThemeDataChanged.event;
 
 	constructor(
-		@IWorkbenchThemeService private readonly _themeService: IWorkbenchThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IWorkbenchThemeService
+		private readonly _themeService: IWorkbenchThemeService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._reset();
-		}));
-
-		const webviewConfigurationKeys = ['editor.fontFamily', 'editor.fontWeight', 'editor.fontSize', 'accessibility.underlineLinks'];
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (webviewConfigurationKeys.some(key => e.affectsConfiguration(key))) {
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
 				this._reset();
-			}
-		}));
+			}),
+		);
+
+		const webviewConfigurationKeys = [
+			"editor.fontFamily",
+			"editor.fontWeight",
+			"editor.fontSize",
+			"accessibility.underlineLinks",
+		];
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					webviewConfigurationKeys.some((key) =>
+						e.affectsConfiguration(key),
+					)
+				) {
+					this._reset();
+				}
+			}),
+		);
 	}
 
 	public getTheme(): IWorkbenchColorTheme {

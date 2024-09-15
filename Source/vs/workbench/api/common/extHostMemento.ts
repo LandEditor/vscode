@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	DeferredPromise,
 	RunOnceScheduler,

@@ -8,9 +8,9 @@ import { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../instantiation/common/instantiation.js";
 import { ILayoutService } from "../../layout/browser/layoutService.js";
@@ -55,13 +55,13 @@ import type {
 } from "../common/quickInput.js";
 import { QuickAccessController } from "./quickAccess.js";
 import {
+	QuickInputHoverDelegate,
 	type IQuickInputOptions,
 	type IQuickInputStyles,
-	QuickInputHoverDelegate,
 } from "./quickInput.js";
 import {
-	type IQuickInputControllerHost,
 	QuickInputController,
+	type IQuickInputControllerHost,
 } from "./quickInputController.js";
 
 export class QuickInputService extends Themable implements IQuickInputService {
@@ -107,11 +107,14 @@ export class QuickInputService extends Themable implements IQuickInputService {
 	private readonly contexts = new Map<string, IContextKey<boolean>>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService protected readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		protected readonly contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@ILayoutService protected readonly layoutService: ILayoutService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 	) {
 		super(themeService);
 	}

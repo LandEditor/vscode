@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { PolicyUpdate, Watcher } from "@vscode/policy-watcher";
+
 import { Throttler } from "../../../base/common/async.js";
 import type { IStringDictionary } from "../../../base/common/collections.js";
 import { MutableDisposable } from "../../../base/common/lifecycle.js";
@@ -23,7 +24,7 @@ export class NativePolicyService
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		private readonly productName: string
+		private readonly productName: string,
 	) {
 		super();
 	}

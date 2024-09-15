@@ -35,20 +35,39 @@ export class MainThreadNotebookDocuments
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotebookEditorModelResolverService private readonly _notebookEditorModelResolverService: INotebookEditorModelResolverService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService
+		@INotebookEditorModelResolverService
+		private readonly _notebookEditorModelResolverService: INotebookEditorModelResolverService,
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookDocuments);
-		this._modelReferenceCollection = new BoundModelReferenceCollection(this._uriIdentityService.extUri);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookDocuments,
+		);
+		this._modelReferenceCollection = new BoundModelReferenceCollection(
+			this._uriIdentityService.extUri,
+		);
 
 		// forward dirty and save events
-		this._disposables.add(this._notebookEditorModelResolverService.onDidChangeDirty(model => this._proxy.$acceptDirtyStateChanged(model.resource, model.isDirty())));
-		this._disposables.add(this._notebookEditorModelResolverService.onDidSaveNotebook(e => this._proxy.$acceptModelSaved(e)));
+		this._disposables.add(
+			this._notebookEditorModelResolverService.onDidChangeDirty((model) =>
+				this._proxy.$acceptDirtyStateChanged(
+					model.resource,
+					model.isDirty(),
+				),
+			),
+		);
+		this._disposables.add(
+			this._notebookEditorModelResolverService.onDidSaveNotebook((e) =>
+				this._proxy.$acceptModelSaved(e),
+			),
+		);
 
 		// when a conflict is going to happen RELEASE references that are held by extensions
-		this._disposables.add(_notebookEditorModelResolverService.onWillFailWithConflict(e => {
-			this._modelReferenceCollection.remove(e.resource);
-		}));
+		this._disposables.add(
+			_notebookEditorModelResolverService.onWillFailWithConflict((e) => {
+				this._modelReferenceCollection.remove(e.resource);
+			}),
+		);
 	}
 
 	dispose(): void {

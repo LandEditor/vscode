@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { onUnexpectedError } from "../../../base/common/errors.js";
 import { toDisposable } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
@@ -12,9 +13,9 @@ import {
 	type IExtensionDescription,
 } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostUrlsShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadUrlsShape,
 } from "./extHost.protocol.js";
 

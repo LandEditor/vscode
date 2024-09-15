@@ -31,35 +31,35 @@ import { NotebookEditorInput } from "../../contrib/notebook/common/notebookEdito
 import { TerminalEditorInput } from "../../contrib/terminal/browser/terminalEditorInput.js";
 import { WebviewInput } from "../../contrib/webviewPanel/browser/webviewEditorInput.js";
 import {
-	type EditorGroupColumn,
 	columnToEditorGroup,
 	editorGroupToColumn,
+	type EditorGroupColumn,
 } from "../../services/editor/common/editorGroupColumn.js";
 import {
 	GroupDirection,
-	type IEditorGroup,
 	IEditorGroupsService,
 	preferredSideBySideGroupDirection,
+	type IEditorGroup,
 } from "../../services/editor/common/editorGroupsService.js";
 import {
 	IEditorService,
-	type IEditorsChangeEvent,
 	SIDE_GROUP,
+	type IEditorsChangeEvent,
 } from "../../services/editor/common/editorService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type AnyInputDto,
 	ExtHostContext,
+	MainContext,
+	TabInputKind,
+	TabModelOperationKind,
+	type AnyInputDto,
 	type IEditorTabDto,
 	type IEditorTabGroupDto,
 	type IExtHostEditorTabsShape,
-	MainContext,
 	type MainThreadEditorTabsShape,
-	TabInputKind,
-	TabModelOperationKind,
 	type TextDiffInputDto,
 } from "../common/extHost.protocol.js";
 
@@ -84,30 +84,43 @@ export class MainThreadEditorTabs implements MainThreadEditorTabsShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ILogService private readonly _logService: ILogService,
-		@IEditorService editorService: IEditorService
+		@IEditorService editorService: IEditorService,
 	) {
-
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostEditorTabs);
 
 		// Main listener which responds to events from the editor service
-		this._dispoables.add(editorService.onDidEditorsChange((event) => {
-			try {
-				this._updateTabsModel(event);
-			} catch {
-				this._logService.error('Failed to update model, rebuilding');
-				this._createTabsModel();
-			}
-		}));
+		this._dispoables.add(
+			editorService.onDidEditorsChange((event) => {
+				try {
+					this._updateTabsModel(event);
+				} catch {
+					this._logService.error(
+						"Failed to update model, rebuilding",
+					);
+					this._createTabsModel();
+				}
+			}),
+		);
 
 		this._dispoables.add(this._multiDiffEditorInputListeners);
 
 		// Structural group changes (add, remove, move, etc) are difficult to patch.
 		// Since they happen infrequently we just rebuild the entire model
-		this._dispoables.add(this._editorGroupsService.onDidAddGroup(() => this._createTabsModel()));
-		this._dispoables.add(this._editorGroupsService.onDidRemoveGroup(() => this._createTabsModel()));
+		this._dispoables.add(
+			this._editorGroupsService.onDidAddGroup(() =>
+				this._createTabsModel(),
+			),
+		);
+		this._dispoables.add(
+			this._editorGroupsService.onDidRemoveGroup(() =>
+				this._createTabsModel(),
+			),
+		);
 
 		// Once everything is read go ahead and initialize the model
 		this._editorGroupsService.whenReady.then(() => this._createTabsModel());

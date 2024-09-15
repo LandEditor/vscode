@@ -52,9 +52,10 @@ class ProfileAnalysisWorkerService implements IProfileAnalysisWorkerService {
 	declare _serviceBrand: undefined;
 
 	constructor(
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
-	) { }
+	) {}
 
 	private async _withWorker<R>(
 		callback: (worker: Proxied<IProfileAnalysisWorker>) => Promise<R>,

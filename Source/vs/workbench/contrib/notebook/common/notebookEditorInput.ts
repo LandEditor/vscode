@@ -23,13 +23,13 @@ import type { IInstantiationService } from "../../../../platform/instantiation/c
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
 	EditorInputCapabilities,
+	Verbosity,
 	type GroupIdentifier,
 	type IFileLimitedEditorInputOptions,
 	type IMoveResult,
 	type IRevertOptions,
 	type ISaveOptions,
 	type IUntypedEditorInput,
-	Verbosity,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import { AbstractResourceEditorInput } from "../../../common/editor/resourceEditorInput.js";
@@ -93,51 +93,81 @@ export class NotebookEditorInput extends AbstractResourceEditorInput {
 		public readonly viewType: string,
 		public readonly options: NotebookEditorInputOptions,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookEditorModelResolverService private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
-		@IFileDialogService private readonly _fileDialogService: IFileDialogService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelResolverService: INotebookEditorModelResolverService,
+		@IFileDialogService
+		private readonly _fileDialogService: IFileDialogService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@IExtensionService extensionService: IExtensionService,
 		@IEditorService editorService: IEditorService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super(resource, preferredResource, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			resource,
+			preferredResource,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
 		this._defaultDirtyState = !!options.startDirty;
 
 		// Automatically resolve this input when the "wanted" model comes to life via
 		// some other way. This happens only once per input and resolve disposes
 		// this listener
-		this._sideLoadedListener = _notebookService.onDidAddNotebookDocument(e => {
-			if (e.viewType === this.viewType && e.uri.toString() === this.resource.toString()) {
-				this.resolve().catch(onUnexpectedError);
-			}
-		});
-
-		this._register(extensionService.onWillStop(e => {
-			if (!e.auto && !this.isDirty()) {
-				return;
-			}
-
-			const reason = e.auto
-				? localize('vetoAutoExtHostRestart', "One of the opened editors is a notebook editor.")
-				: localize('vetoExtHostRestart', "Notebook '{0}' could not be saved.", this.resource.path);
-
-			e.veto((async () => {
-				const editors = editorService.findEditors(this);
-				if (e.auto) {
-					return true;
+		this._sideLoadedListener = _notebookService.onDidAddNotebookDocument(
+			(e) => {
+				if (
+					e.viewType === this.viewType &&
+					e.uri.toString() === this.resource.toString()
+				) {
+					this.resolve().catch(onUnexpectedError);
 				}
-				if (editors.length > 0) {
-					const result = await editorService.save(editors[0]);
-					if (result.success) {
-						return false; // Don't Veto
-					}
+			},
+		);
+
+		this._register(
+			extensionService.onWillStop((e) => {
+				if (!e.auto && !this.isDirty()) {
+					return;
 				}
-				return true; // Veto
-			})(), reason);
-		}));
+
+				const reason = e.auto
+					? localize(
+							"vetoAutoExtHostRestart",
+							"One of the opened editors is a notebook editor.",
+						)
+					: localize(
+							"vetoExtHostRestart",
+							"Notebook '{0}' could not be saved.",
+							this.resource.path,
+						);
+
+				e.veto(
+					(async () => {
+						const editors = editorService.findEditors(this);
+						if (e.auto) {
+							return true;
+						}
+						if (editors.length > 0) {
+							const result = await editorService.save(editors[0]);
+							if (result.success) {
+								return false; // Don't Veto
+							}
+						}
+						return true; // Veto
+					})(),
+					reason,
+				);
+			}),
+		);
 	}
 
 	override dispose() {

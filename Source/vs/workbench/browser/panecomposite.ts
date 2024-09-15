@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Dimension } from "../../base/browser/dom.js";
-import type { IBaseActionViewItemOptions } from "../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IActionViewItem } from "../../base/browser/ui/actionbar/actionbar.js";
+import type { IBaseActionViewItemOptions } from "../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IBoundarySashes } from "../../base/browser/ui/sash/sash.js";
-import { type IAction, Separator } from "../../base/common/actions.js";
+import { Separator, type IAction } from "../../base/common/actions.js";
 import type { URI } from "../../base/common/uri.js";
 import {
-	type MenuId,
 	SubmenuItemAction,
+	type MenuId,
 } from "../../platform/actions/common/actions.js";
 import { IContextMenuService } from "../../platform/contextview/browser/contextView.js";
 import {
+	IInstantiationService,
 	type BrandedService,
 	type IConstructorSignature,
-	IInstantiationService,
 } from "../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../platform/registry/common/platform.js";
 import { IStorageService } from "../../platform/storage/common/storage.js";
@@ -34,8 +34,8 @@ import {
 } from "./composite.js";
 import { VIEWPANE_FILTER_ACTION } from "./parts/views/viewPane.js";
 import {
-	type ViewPaneContainer,
 	ViewsSubMenu,
+	type ViewPaneContainer,
 } from "./parts/views/viewPaneContainer.js";
 
 export abstract class PaneComposite
@@ -48,11 +48,13 @@ export abstract class PaneComposite
 		id: string,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService protected storageService: IStorageService,
-		@IInstantiationService protected instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IContextMenuService protected contextMenuService: IContextMenuService,
 		@IExtensionService protected extensionService: IExtensionService,
-		@IWorkspaceContextService protected contextService: IWorkspaceContextService
+		@IWorkspaceContextService
+		protected contextService: IWorkspaceContextService,
 	) {
 		super(id, telemetryService, themeService, storageService);
 	}

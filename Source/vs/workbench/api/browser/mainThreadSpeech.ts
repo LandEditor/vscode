@@ -11,21 +11,21 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
+	ISpeechService,
+	TextToSpeechStatus,
 	type IKeywordRecognitionEvent,
 	type ISpeechProviderMetadata,
-	ISpeechService,
 	type ISpeechToTextEvent,
 	type ITextToSpeechEvent,
-	TextToSpeechStatus,
 } from "../../contrib/speech/common/speechService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostSpeechShape,
 	MainContext,
+	type ExtHostSpeechShape,
 	type MainThreadSpeechShape,
 } from "../common/extHost.protocol.js";
 
@@ -63,7 +63,7 @@ export class MainThreadSpeech implements MainThreadSpeechShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ISpeechService private readonly speechService: ISpeechService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostSpeech);
 	}

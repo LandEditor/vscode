@@ -14,8 +14,8 @@ import { ILanguageFeaturesService } from "../../../../editor/common/services/lan
 import { CodeActionKind } from "../../../../editor/contrib/codeAction/common/types.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import type { IExtensionPoint } from "../../../services/extensions/common/extensionsRegistry.js";
@@ -38,14 +38,18 @@ export class CodeActionDocumentationContribution
 
 	constructor(
 		extensionPoint: IExtensionPoint<DocumentationExtensionPoint>,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 
-		this._register(languageFeaturesService.codeActionProvider.register('*', this));
+		this._register(
+			languageFeaturesService.codeActionProvider.register("*", this),
+		);
 
-		extensionPoint.setHandler(points => {
+		extensionPoint.setHandler((points) => {
 			this.contributions = [];
 			for (const documentation of points) {
 				if (!documentation.value.refactoring) {
@@ -53,7 +57,9 @@ export class CodeActionDocumentationContribution
 				}
 
 				for (const contribution of documentation.value.refactoring) {
-					const precondition = ContextKeyExpr.deserialize(contribution.when);
+					const precondition = ContextKeyExpr.deserialize(
+						contribution.when,
+					);
 					if (!precondition) {
 						continue;
 					}
@@ -61,9 +67,8 @@ export class CodeActionDocumentationContribution
 					this.contributions.push({
 						title: contribution.title,
 						when: precondition,
-						command: contribution.command
+						command: contribution.command,
 					});
-
 				}
 			}
 		});

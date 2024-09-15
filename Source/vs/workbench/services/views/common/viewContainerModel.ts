@@ -31,8 +31,8 @@ import {
 	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type ILogger,
 	ILoggerService,
+	type ILogger,
 } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -41,17 +41,17 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	defaultViewIcon,
+	Extensions as ViewExtensions,
+	VIEWS_LOG_ID,
+	VIEWS_LOG_NAME,
 	type IAddedViewDescriptorRef,
 	type IAddedViewDescriptorState,
 	type IViewContainerModel,
 	type IViewDescriptor,
 	type IViewDescriptorRef,
 	type IViewsRegistry,
-	VIEWS_LOG_ID,
-	VIEWS_LOG_NAME,
 	type ViewContainer,
-	Extensions as ViewExtensions,
-	defaultViewIcon,
 } from "../../../common/views.js";
 import { IOutputService } from "../../output/common/output.js";
 
@@ -120,14 +120,26 @@ class ViewDescriptorsState extends Disposable {
 	) {
 		super();
 
-		this.logger = new Lazy(() => loggerService.createLogger(VIEWS_LOG_ID, { name: VIEWS_LOG_NAME, hidden: true }));
+		this.logger = new Lazy(() =>
+			loggerService.createLogger(VIEWS_LOG_ID, {
+				name: VIEWS_LOG_NAME,
+				hidden: true,
+			}),
+		);
 
-		this.globalViewsStateStorageId = getViewsStateStorageId(viewContainerStorageId);
+		this.globalViewsStateStorageId = getViewsStateStorageId(
+			viewContainerStorageId,
+		);
 		this.workspaceViewsStateStorageId = viewContainerStorageId;
-		this._register(this.storageService.onDidChangeValue(StorageScope.PROFILE, this.globalViewsStateStorageId, this._register(new DisposableStore()))(() => this.onDidStorageChange()));
+		this._register(
+			this.storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				this.globalViewsStateStorageId,
+				this._register(new DisposableStore()),
+			)(() => this.onDidStorageChange()),
+		);
 
 		this.state = this.initialize();
-
 	}
 
 	set(id: string, state: IViewDescriptorState): void {
@@ -503,16 +515,38 @@ export class ViewContainerModel
 	constructor(
 		readonly viewContainer: ViewContainer,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ILoggerService loggerService: ILoggerService,
 	) {
 		super();
 
-		this.logger = new Lazy(() => loggerService.createLogger(VIEWS_LOG_ID, { name: VIEWS_LOG_NAME, hidden: true }));
+		this.logger = new Lazy(() =>
+			loggerService.createLogger(VIEWS_LOG_ID, {
+				name: VIEWS_LOG_NAME,
+				hidden: true,
+			}),
+		);
 
-		this._register(Event.filter(contextKeyService.onDidChangeContext, e => e.affectsSome(this.contextKeys))(() => this.onDidChangeContext()));
-		this.viewDescriptorsState = this._register(instantiationService.createInstance(ViewDescriptorsState, viewContainer.storageId || `${viewContainer.id}.state`, typeof viewContainer.title === 'string' ? viewContainer.title : viewContainer.title.original));
-		this._register(this.viewDescriptorsState.onDidChangeStoredState(items => this.updateVisibility(items)));
+		this._register(
+			Event.filter(contextKeyService.onDidChangeContext, (e) =>
+				e.affectsSome(this.contextKeys),
+			)(() => this.onDidChangeContext()),
+		);
+		this.viewDescriptorsState = this._register(
+			instantiationService.createInstance(
+				ViewDescriptorsState,
+				viewContainer.storageId || `${viewContainer.id}.state`,
+				typeof viewContainer.title === "string"
+					? viewContainer.title
+					: viewContainer.title.original,
+			),
+		);
+		this._register(
+			this.viewDescriptorsState.onDidChangeStoredState((items) =>
+				this.updateVisibility(items),
+			),
+		);
 
 		this.updateContainerInfo();
 	}
@@ -1049,9 +1083,7 @@ export class ViewContainerModel
 		throw new Error(`view descriptor ${id} not found`);
 	}
 
-	private findAndIgnoreIfNotFound(
-		id: string,
-	):
+	private findAndIgnoreIfNotFound(id: string):
 		| {
 				index: number;
 				visibleIndex: number;

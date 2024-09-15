@@ -19,9 +19,9 @@ import {
 } from "../../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../../platform/dialogs/common/dialogs.js";
 import { SyncDescriptor } from "../../../../../platform/instantiation/common/descriptors.js";
@@ -33,8 +33,8 @@ import { registerIcon } from "../../../../../platform/theme/common/iconRegistry.
 import { ViewPaneContainer } from "../../../../browser/parts/views/viewPaneContainer.js";
 import { FocusedViewContext } from "../../../../common/contextkeys.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../../common/contributions.js";
 import {
 	EditorResourceAccessor,
@@ -42,10 +42,10 @@ import {
 } from "../../../../common/editor.js";
 import type { EditorInput } from "../../../../common/editor/editorInput.js";
 import {
-	type IViewContainersRegistry,
-	type IViewsRegistry,
 	Extensions as ViewContainerExtensions,
 	ViewContainerLocation,
+	type IViewContainersRegistry,
+	type IViewsRegistry,
 } from "../../../../common/views.js";
 import { IEditorGroupsService } from "../../../../services/editor/common/editorGroupsService.js";
 import { IPaneCompositePartService } from "../../../../services/panecomposite/browser/panecomposite.js";
@@ -66,10 +66,14 @@ class UXState {
 	private readonly _activePanel: string | undefined;
 
 	constructor(
-		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
+		@IPaneCompositePartService
+		private readonly _paneCompositeService: IPaneCompositePartService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
 	) {
-		this._activePanel = _paneCompositeService.getActivePaneComposite(ViewContainerLocation.Panel)?.getId();
+		this._activePanel = _paneCompositeService
+			.getActivePaneComposite(ViewContainerLocation.Panel)
+			?.getId();
 	}
 
 	async restore(panels: boolean, editors: boolean): Promise<void> {
@@ -129,15 +133,18 @@ class BulkEditPreviewContribution {
 	private _activeSession: PreviewSession | undefined;
 
 	constructor(
-		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly _paneCompositeService: IPaneCompositePartService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IBulkEditService bulkEditService: IBulkEditService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
-		bulkEditService.setPreviewHandler(edits => this._previewEdit(edits));
-		this._ctxEnabled = BulkEditPreviewContribution.ctxEnabled.bindTo(contextKeyService);
+		bulkEditService.setPreviewHandler((edits) => this._previewEdit(edits));
+		this._ctxEnabled =
+			BulkEditPreviewContribution.ctxEnabled.bindTo(contextKeyService);
 	}
 
 	private async _previewEdit(edits: ResourceEdit[]): Promise<ResourceEdit[]> {

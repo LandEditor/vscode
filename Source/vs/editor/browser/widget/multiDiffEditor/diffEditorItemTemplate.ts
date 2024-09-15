@@ -160,73 +160,137 @@ export class DiffEditorItemTemplate
 		private readonly _container: HTMLElement,
 		private readonly _overflowWidgetsDomNode: HTMLElement,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IContextKeyService _parentContextKeyService: IContextKeyService,
 	) {
 		super();
 
 		const btn = new Button(this._elements.collapseButton, {});
 
-		this._register(autorun(reader => {
-			btn.element.className = '';
-			btn.icon = this._collapsed.read(reader) ? Codicon.chevronRight : Codicon.chevronDown;
-		}));
-		this._register(btn.onDidClick(() => {
-			this._viewModel.get()?.collapsed.set(!this._collapsed.get(), undefined);
-		}));
+		this._register(
+			autorun((reader) => {
+				btn.element.className = "";
+				btn.icon = this._collapsed.read(reader)
+					? Codicon.chevronRight
+					: Codicon.chevronDown;
+			}),
+		);
+		this._register(
+			btn.onDidClick(() => {
+				this._viewModel
+					.get()
+					?.collapsed.set(!this._collapsed.get(), undefined);
+			}),
+		);
 
-		this._register(autorun(reader => {
-			this._elements.editor.style.display = this._collapsed.read(reader) ? 'none' : 'block';
-		}));
+		this._register(
+			autorun((reader) => {
+				this._elements.editor.style.display = this._collapsed.read(
+					reader,
+				)
+					? "none"
+					: "block";
+			}),
+		);
 
-		this._register(this.editor.getModifiedEditor().onDidLayoutChange(e => {
-			const width = this.editor.getModifiedEditor().getLayoutInfo().contentWidth;
-			this._modifiedWidth.set(width, undefined);
-		}));
+		this._register(
+			this.editor.getModifiedEditor().onDidLayoutChange((e) => {
+				const width = this.editor
+					.getModifiedEditor()
+					.getLayoutInfo().contentWidth;
+				this._modifiedWidth.set(width, undefined);
+			}),
+		);
 
-		this._register(this.editor.getOriginalEditor().onDidLayoutChange(e => {
-			const width = this.editor.getOriginalEditor().getLayoutInfo().contentWidth;
-			this._originalWidth.set(width, undefined);
-		}));
+		this._register(
+			this.editor.getOriginalEditor().onDidLayoutChange((e) => {
+				const width = this.editor
+					.getOriginalEditor()
+					.getLayoutInfo().contentWidth;
+				this._originalWidth.set(width, undefined);
+			}),
+		);
 
-		this._register(this.editor.onDidContentSizeChange(e => {
-			globalTransaction(tx => {
-				this._editorContentHeight.set(e.contentHeight, tx);
-				this._modifiedContentWidth.set(this.editor.getModifiedEditor().getContentWidth(), tx);
-				this._originalContentWidth.set(this.editor.getOriginalEditor().getContentWidth(), tx);
-			});
-		}));
+		this._register(
+			this.editor.onDidContentSizeChange((e) => {
+				globalTransaction((tx) => {
+					this._editorContentHeight.set(e.contentHeight, tx);
+					this._modifiedContentWidth.set(
+						this.editor.getModifiedEditor().getContentWidth(),
+						tx,
+					);
+					this._originalContentWidth.set(
+						this.editor.getOriginalEditor().getContentWidth(),
+						tx,
+					);
+				});
+			}),
+		);
 
-		this._register(this.editor.getOriginalEditor().onDidScrollChange(e => {
-			if (this._isSettingScrollTop) {
-				return;
-			}
+		this._register(
+			this.editor.getOriginalEditor().onDidScrollChange((e) => {
+				if (this._isSettingScrollTop) {
+					return;
+				}
 
-			if (!e.scrollTopChanged || !this._data) {
-				return;
-			}
-			const delta = e.scrollTop - this._lastScrollTop;
-			this._data.deltaScrollVertical(delta);
-		}));
+				if (!e.scrollTopChanged || !this._data) {
+					return;
+				}
+				const delta = e.scrollTop - this._lastScrollTop;
+				this._data.deltaScrollVertical(delta);
+			}),
+		);
 
-		this._register(autorun(reader => {
-			const isActive = this._viewModel.read(reader)?.isActive.read(reader);
-			this._elements.root.classList.toggle('active', isActive);
-		}));
+		this._register(
+			autorun((reader) => {
+				const isActive = this._viewModel
+					.read(reader)
+					?.isActive.read(reader);
+				this._elements.root.classList.toggle("active", isActive);
+			}),
+		);
 
 		this._container.appendChild(this._elements.root);
 		this._outerEditorHeight = this._headerHeight;
 
-		this._contextKeyService = this._register(_parentContextKeyService.createScoped(this._elements.actions));
-		const instantiationService = this._register(this._instantiationService.createChild(new ServiceCollection([IContextKeyService, this._contextKeyService])));
-		this._register(instantiationService.createInstance(MenuWorkbenchToolBar, this._elements.actions, MenuId.MultiDiffEditorFileToolbar, {
-			actionRunner: this._register(new ActionRunnerWithContext(() => (this._viewModel.get()?.modifiedUri))),
-			menuOptions: {
-				shouldForwardArgs: true,
-			},
-			toolbarOptions: { primaryGroup: g => g.startsWith('navigation') },
-			actionViewItemProvider: (action, options) => createActionViewItem(instantiationService, action, options),
-		}));
+		this._contextKeyService = this._register(
+			_parentContextKeyService.createScoped(this._elements.actions),
+		);
+		const instantiationService = this._register(
+			this._instantiationService.createChild(
+				new ServiceCollection([
+					IContextKeyService,
+					this._contextKeyService,
+				]),
+			),
+		);
+		this._register(
+			instantiationService.createInstance(
+				MenuWorkbenchToolBar,
+				this._elements.actions,
+				MenuId.MultiDiffEditorFileToolbar,
+				{
+					actionRunner: this._register(
+						new ActionRunnerWithContext(
+							() => this._viewModel.get()?.modifiedUri,
+						),
+					),
+					menuOptions: {
+						shouldForwardArgs: true,
+					},
+					toolbarOptions: {
+						primaryGroup: (g) => g.startsWith("navigation"),
+					},
+					actionViewItemProvider: (action, options) =>
+						createActionViewItem(
+							instantiationService,
+							action,
+							options,
+						),
+				},
+			),
+		);
 	}
 
 	public setScrollLeft(left: number): void {

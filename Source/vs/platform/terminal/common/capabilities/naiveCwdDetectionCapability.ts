@@ -6,8 +6,8 @@
 import { Emitter } from "../../../../base/common/event.js";
 import type { ITerminalChildProcess } from "../terminal.js";
 import {
-	type INaiveCwdDetectionCapability,
 	TerminalCapability,
+	type INaiveCwdDetectionCapability,
 } from "./capabilities.js";
 
 export class NaiveCwdDetectionCapability

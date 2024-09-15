@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	Platform,
-	PlatformToString,
 	isLinuxSnap,
+	Platform,
 	platform,
+	PlatformToString,
 } from "../../../base/common/platform.js";
 import { env, platform as nodePlatform } from "../../../base/common/process.js";
 import { generateUuid } from "../../../base/common/uuid.js";

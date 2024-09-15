@@ -11,9 +11,9 @@ import {
 	UserSettingsLabelProvider,
 } from "../../../base/common/keybindingLabels.js";
 import {
-	type Chord,
 	ResolvedChord,
 	ResolvedKeybinding,
+	type Chord,
 	type SingleModifierChord,
 } from "../../../base/common/keybindings.js";
 import type { OperatingSystem } from "../../../base/common/platform.js";

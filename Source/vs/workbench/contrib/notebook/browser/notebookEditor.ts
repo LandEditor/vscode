@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as DOM from "../../../../base/browser/dom.js";
-import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IActionViewItem } from "../../../../base/browser/ui/actionbar/actionbar.js";
-import { type IAction, toAction } from "../../../../base/common/actions.js";
+import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
+import { toAction, type IAction } from "../../../../base/common/actions.js";
 import { timeout } from "../../../../base/common/async.js";
 import { streamToBuffer } from "../../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
@@ -26,10 +26,10 @@ import { IContextKeyService } from "../../../../platform/contextkey/common/conte
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
 import {
 	ByteSize,
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
 	TooLargeFileOperationError,
+	type FileOperationError,
 } from "../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -39,25 +39,25 @@ import { ITelemetryService } from "../../../../platform/telemetry/common/telemet
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import { EditorPane } from "../../../browser/parts/editor/editorPane.js";
 import {
+	createEditorOpenError,
+	createTooLargeFileError,
 	DEFAULT_EDITOR_ASSOCIATION,
 	EditorPaneSelectionChangeReason,
 	EditorPaneSelectionCompareResult,
 	EditorResourceAccessor,
+	isEditorOpenError,
 	type IEditorMemento,
 	type IEditorOpenContext,
 	type IEditorPaneScrollPosition,
 	type IEditorPaneSelection,
 	type IEditorPaneSelectionChangeEvent,
 	type IEditorPaneWithScrolling,
-	createEditorOpenError,
-	createTooLargeFileError,
-	isEditorOpenError,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { EnablementState } from "../../../services/extensionManagement/common/extensionManagement.js";
@@ -83,8 +83,8 @@ import type {
 } from "./notebookBrowser.js";
 import type { NotebookEditorWidget } from "./notebookEditorWidget.js";
 import {
-	type IBorrowValue,
 	INotebookEditorService,
+	type IBorrowValue,
 } from "./services/notebookEditorService.js";
 import { NotebooKernelActionViewItem } from "./viewParts/notebookKernelView.js";
 
@@ -135,27 +135,55 @@ export class NotebookEditor
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@INotebookEditorService private readonly _notebookWidgetService: INotebookEditorService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@INotebookEditorService
+		private readonly _notebookWidgetService: INotebookEditorService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IFileService private readonly _fileService: IFileService,
-		@ITextResourceConfigurationService configurationService: ITextResourceConfigurationService,
-		@IEditorProgressService private readonly _editorProgressService: IEditorProgressService,
+		@ITextResourceConfigurationService
+		configurationService: ITextResourceConfigurationService,
+		@IEditorProgressService
+		private readonly _editorProgressService: IEditorProgressService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IExtensionsWorkbenchService private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkingCopyBackupService private readonly _workingCopyBackupService: IWorkingCopyBackupService,
+		@IExtensionsWorkbenchService
+		private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkingCopyBackupService
+		private readonly _workingCopyBackupService: IWorkingCopyBackupService,
 		@ILogService private readonly logService: ILogService,
-		@INotebookEditorWorkerService private readonly _notebookEditorWorkerService: INotebookEditorWorkerService,
-		@IPreferencesService private readonly _preferencesService: IPreferencesService
+		@INotebookEditorWorkerService
+		private readonly _notebookEditorWorkerService: INotebookEditorWorkerService,
+		@IPreferencesService
+		private readonly _preferencesService: IPreferencesService,
 	) {
-		super(NotebookEditor.ID, group, telemetryService, themeService, storageService);
-		this._editorMemento = this.getEditorMemento<INotebookEditorViewState>(_editorGroupService, configurationService, NOTEBOOK_EDITOR_VIEW_STATE_PREFERENCE_KEY);
+		super(
+			NotebookEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
+		this._editorMemento = this.getEditorMemento<INotebookEditorViewState>(
+			_editorGroupService,
+			configurationService,
+			NOTEBOOK_EDITOR_VIEW_STATE_PREFERENCE_KEY,
+		);
 
-		this._register(this._fileService.onDidChangeFileSystemProviderCapabilities(e => this._onDidChangeFileSystemProvider(e.scheme)));
-		this._register(this._fileService.onDidChangeFileSystemProviderRegistrations(e => this._onDidChangeFileSystemProvider(e.scheme)));
+		this._register(
+			this._fileService.onDidChangeFileSystemProviderCapabilities((e) =>
+				this._onDidChangeFileSystemProvider(e.scheme),
+			),
+		);
+		this._register(
+			this._fileService.onDidChangeFileSystemProviderRegistrations((e) =>
+				this._onDidChangeFileSystemProvider(e.scheme),
+			),
+		);
 	}
 
 	private _onDidChangeFileSystemProvider(scheme: string): void {

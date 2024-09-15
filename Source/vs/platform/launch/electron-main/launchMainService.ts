@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { app } from "electron";
+
 import { coalesce } from "../../../base/common/arrays.js";
 import {
-	type IProcessEnvironment,
 	isMacintosh,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import { URI } from "../../../base/common/uri.js";
 import { whenDeleted } from "../../../base/node/pfs.js";
@@ -21,9 +22,9 @@ import type { IProtocolUrl } from "../../url/electron-main/url.js";
 import type { IWindowSettings } from "../../window/common/window.js";
 import type { ICodeWindow } from "../../window/electron-main/window.js";
 import {
-	type IOpenConfiguration,
 	IWindowsMainService,
 	OpenContext,
+	type IOpenConfiguration,
 } from "../../windows/electron-main/windows.js";
 
 export const ID = "launchMainService";
@@ -47,10 +48,12 @@ export class LaunchMainService implements ILaunchMainService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@IURLService private readonly urlService: IURLService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-	) { }
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+	) {}
 
 	async start(
 		args: NativeParsedArgs,
@@ -197,7 +200,7 @@ export class LaunchMainService implements ILaunchMainService {
 				>("window");
 				const openWithoutArgumentsInNewWindowConfig =
 					windowConfig?.openWithoutArgumentsInNewWindow ||
-					"default" /* default */;
+					"default"; /* default */
 				switch (openWithoutArgumentsInNewWindowConfig) {
 					case "on":
 						openNewWindow = true;

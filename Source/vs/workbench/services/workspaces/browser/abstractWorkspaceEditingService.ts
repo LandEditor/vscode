@@ -36,32 +36,32 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
-	IWorkspaceContextService,
-	type IWorkspaceIdentifier,
-	WORKSPACE_EXTENSION,
-	WORKSPACE_FILTER,
-	WorkbenchState,
 	hasWorkspaceFileExtension,
 	isSavedWorkspace,
 	isUntitledWorkspace,
 	isWorkspaceIdentifier,
+	IWorkspaceContextService,
 	toWorkspaceIdentifier,
+	WorkbenchState,
+	WORKSPACE_EXTENSION,
+	WORKSPACE_FILTER,
+	type IWorkspaceIdentifier,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import {
+	IWorkspacesService,
+	rewriteWorkspaceFileForNewLocation,
 	type IEnterWorkspaceResult,
 	type IStoredWorkspace,
 	type IWorkspaceFolderCreationData,
-	IWorkspacesService,
-	rewriteWorkspaceFileForNewLocation,
 } from "../../../../platform/workspaces/common/workspaces.js";
 import { SaveReason } from "../../../common/editor.js";
 import type { WorkspaceService } from "../../configuration/browser/configurationService.js";
 import { IWorkbenchConfigurationService } from "../../configuration/common/configuration.js";
 import {
 	IJSONEditingService,
-	type JSONEditingError,
 	JSONEditingErrorCode,
+	type JSONEditingError,
 } from "../../configuration/common/jsonEditing.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { IHostService } from "../../host/browser/host.js";
@@ -76,22 +76,33 @@ export abstract class AbstractWorkspaceEditingService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
-		@IWorkspaceContextService protected readonly contextService: WorkspaceService,
-		@IWorkbenchConfigurationService protected readonly configurationService: IWorkbenchConfigurationService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
+		@IWorkspaceContextService
+		protected readonly contextService: WorkspaceService,
+		@IWorkbenchConfigurationService
+		protected readonly configurationService: IWorkbenchConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IFileService private readonly fileService: IFileService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IWorkspacesService protected readonly workspacesService: IWorkspacesService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@IWorkspacesService
+		protected readonly workspacesService: IWorkspacesService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@IDialogService protected readonly dialogService: IDialogService,
 		@IHostService protected readonly hostService: IHostService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 	) {
 		super();
 	}

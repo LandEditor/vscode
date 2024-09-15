@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IExperimentationFilterProvider } from "tas-client-umd";
+
 import * as platform from "../../../base/common/platform.js";
 
 export const ASSIGNMENT_STORAGE_KEY = "VSCode.ABExp.FeatureData";

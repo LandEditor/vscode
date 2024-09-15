@@ -28,14 +28,14 @@ import {
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import {
 	IQuickInputService,
@@ -54,8 +54,9 @@ import { TaskDefinitionRegistry } from "../../tasks/common/taskDefinitionRegistr
 import { ITaskService } from "../../tasks/common/taskService.js";
 import { Breakpoints } from "../common/breakpoints.js";
 import {
-	CONTEXT_DEBUGGERS_AVAILABLE,
 	CONTEXT_DEBUG_EXTENSION_AVAILABLE,
+	CONTEXT_DEBUGGERS_AVAILABLE,
+	INTERNAL_CONSOLE_OPTIONS_SCHEMA,
 	type IAdapterDescriptor,
 	type IAdapterManager,
 	type IConfig,
@@ -64,15 +65,14 @@ import {
 	type IDebugAdapterFactory,
 	type IDebugConfiguration,
 	type IDebugSession,
-	INTERNAL_CONSOLE_OPTIONS_SCHEMA,
 } from "../common/debug.js";
+import { Debugger } from "../common/debugger.js";
 import {
 	breakpointsExtPoint,
 	debuggersExtPoint,
 	launchSchema,
 	presentationSchema,
 } from "../common/debugSchemas.js";
-import { Debugger } from "../common/debugger.js";
 
 const jsonRegistry = Registry.as<IJSONContributionRegistry>(
 	JSONExtensions.JSONContribution,
@@ -102,12 +102,16 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 	constructor(
 		delegate: IAdapterManagerDelegate,
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
@@ -119,32 +123,50 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 		this.debuggers = [];
 		this.registerListeners();
 		this.contextKeyService.bufferChangeEvents(() => {
-			this.debuggersAvailable = CONTEXT_DEBUGGERS_AVAILABLE.bindTo(contextKeyService);
-			this.debugExtensionsAvailable = CONTEXT_DEBUG_EXTENSION_AVAILABLE.bindTo(contextKeyService);
+			this.debuggersAvailable =
+				CONTEXT_DEBUGGERS_AVAILABLE.bindTo(contextKeyService);
+			this.debugExtensionsAvailable =
+				CONTEXT_DEBUG_EXTENSION_AVAILABLE.bindTo(contextKeyService);
 		});
-		this._register(this.contextKeyService.onDidChangeContext(e => {
-			if (e.affectsSome(this.debuggerWhenKeys)) {
-				this.debuggersAvailable.set(this.hasEnabledDebuggers());
-				this.updateDebugAdapterSchema();
-			}
-		}));
-		this._register(this.onDidDebuggersExtPointRead(() => {
-			this.debugExtensionsAvailable.set(this.debuggers.length > 0);
-		}));
+		this._register(
+			this.contextKeyService.onDidChangeContext((e) => {
+				if (e.affectsSome(this.debuggerWhenKeys)) {
+					this.debuggersAvailable.set(this.hasEnabledDebuggers());
+					this.updateDebugAdapterSchema();
+				}
+			}),
+		);
+		this._register(
+			this.onDidDebuggersExtPointRead(() => {
+				this.debugExtensionsAvailable.set(this.debuggers.length > 0);
+			}),
+		);
 
 		// generous debounce since this will end up calling `resolveTask` internally
-		const updateTaskScheduler = this._register(new RunOnceScheduler(() => this.updateTaskLabels(), 5000));
+		const updateTaskScheduler = this._register(
+			new RunOnceScheduler(() => this.updateTaskLabels(), 5000),
+		);
 
-		this._register(Event.any(tasksService.onDidChangeTaskConfig, tasksService.onDidChangeTaskProviders)(() => {
-			updateTaskScheduler.cancel();
-			updateTaskScheduler.schedule();
-		}));
-		this.lifecycleService.when(LifecyclePhase.Eventually)
-			.then(() => this.debugExtensionsAvailable.set(this.debuggers.length > 0)); // If no extensions with a debugger contribution are loaded
+		this._register(
+			Event.any(
+				tasksService.onDidChangeTaskConfig,
+				tasksService.onDidChangeTaskProviders,
+			)(() => {
+				updateTaskScheduler.cancel();
+				updateTaskScheduler.schedule();
+			}),
+		);
+		this.lifecycleService
+			.when(LifecyclePhase.Eventually)
+			.then(() =>
+				this.debugExtensionsAvailable.set(this.debuggers.length > 0),
+			); // If no extensions with a debugger contribution are loaded
 
-		this._register(delegate.onDidNewSession(s => {
-			this.usedDebugTypes.add(s.configuration.type);
-		}));
+		this._register(
+			delegate.onDidNewSession((s) => {
+				this.usedDebugTypes.add(s.configuration.type);
+			}),
+		);
 
 		updateTaskScheduler.schedule();
 	}
@@ -623,10 +645,9 @@ export class AdapterManager extends Disposable implements IAdapterManager {
 		}
 		const placeHolder = nls.localize("selectDebug", "Select debugger");
 		return this.quickInputService
-			.pick<{ label: string; debugger?: Debugger } | IQuickPickItem>(
-				picks,
-				{ activeItem: picks[0], placeHolder },
-			)
+			.pick<
+				{ label: string; debugger?: Debugger } | IQuickPickItem
+			>(picks, { activeItem: picks[0], placeHolder })
 			.then(async (picked) => {
 				if (picked && "debugger" in picked && picked.debugger) {
 					return picked.debugger;

@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../../base/browser/dom.js";
-import type { IBaseActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IActionViewItem } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import type { IBaseActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { Action, type IAction } from "../../../../base/common/actions.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { DropdownWithPrimaryActionViewItem } from "../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -67,20 +67,43 @@ export class TerminalEditor extends EditorPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IMenuService menuService: IMenuService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@IWorkbenchLayoutService private readonly _workbenchLayoutService: IWorkbenchLayoutService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@IWorkbenchLayoutService
+		private readonly _workbenchLayoutService: IWorkbenchLayoutService,
 	) {
-		super(terminalEditorId, group, telemetryService, themeService, storageService);
-		this._dropdownMenu = this._register(menuService.createMenu(MenuId.TerminalNewDropdownContext, contextKeyService));
-		this._instanceMenu = this._register(menuService.createMenu(MenuId.TerminalInstanceContext, contextKeyService));
+		super(
+			terminalEditorId,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
+		this._dropdownMenu = this._register(
+			menuService.createMenu(
+				MenuId.TerminalNewDropdownContext,
+				contextKeyService,
+			),
+		);
+		this._instanceMenu = this._register(
+			menuService.createMenu(
+				MenuId.TerminalInstanceContext,
+				contextKeyService,
+			),
+		);
 	}
 
 	override async setInput(

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./decorations.css";
+
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Range } from "../../../common/core/range.js";
 import type * as viewEvents from "../../../common/viewEvents.js";

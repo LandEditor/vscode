@@ -17,6 +17,8 @@ import {
 	reviveProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
+	SyncStatus,
+	UserDataSyncError,
 	type ISyncResourceHandle,
 	type IUserDataManualSyncTask,
 	type IUserDataSyncResource,
@@ -25,8 +27,6 @@ import {
 	type IUserDataSyncService,
 	type IUserDataSyncTask,
 	type SyncResource,
-	SyncStatus,
-	UserDataSyncError,
 } from "./userDataSync.js";
 
 type ManualSyncTaskEvent<T> = { manualSyncTaskId: string; data: T };
@@ -269,29 +269,69 @@ export class UserDataSyncServiceChannelClient
 
 	constructor(
 		userDataSyncChannel: IChannel,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
 		this.channel = {
-			call<T>(command: string, arg?: any, cancellationToken?: CancellationToken): Promise<T> {
-				return userDataSyncChannel.call(command, arg, cancellationToken)
-					.then(null, error => { throw UserDataSyncError.toUserDataSyncError(error); });
+			call<T>(
+				command: string,
+				arg?: any,
+				cancellationToken?: CancellationToken,
+			): Promise<T> {
+				return userDataSyncChannel
+					.call(command, arg, cancellationToken)
+					.then(null, (error) => {
+						throw UserDataSyncError.toUserDataSyncError(error);
+					});
 			},
 			listen<T>(event: string, arg?: any): Event<T> {
 				return userDataSyncChannel.listen(event, arg);
-			}
+			},
 		};
-		this.channel.call<[SyncStatus, IUserDataSyncResourceConflicts[], number | undefined]>('_getInitialData').then(([status, conflicts, lastSyncTime]) => {
-			this.updateStatus(status);
-			this.updateConflicts(conflicts);
-			if (lastSyncTime) {
-				this.updateLastSyncTime(lastSyncTime);
-			}
-			this._register(this.channel.listen<SyncStatus>('onDidChangeStatus')(status => this.updateStatus(status)));
-			this._register(this.channel.listen<number>('onDidChangeLastSyncTime')(lastSyncTime => this.updateLastSyncTime(lastSyncTime)));
-		});
-		this._register(this.channel.listen<IUserDataSyncResourceConflicts[]>('onDidChangeConflicts')(conflicts => this.updateConflicts(conflicts)));
-		this._register(this.channel.listen<IUserDataSyncResourceError[]>('onSyncErrors')(errors => this._onSyncErrors.fire(errors.map(syncError => ({ ...syncError, error: UserDataSyncError.toUserDataSyncError(syncError.error) })))));
+		this.channel
+			.call<
+				[
+					SyncStatus,
+					IUserDataSyncResourceConflicts[],
+					number | undefined,
+				]
+			>("_getInitialData")
+			.then(([status, conflicts, lastSyncTime]) => {
+				this.updateStatus(status);
+				this.updateConflicts(conflicts);
+				if (lastSyncTime) {
+					this.updateLastSyncTime(lastSyncTime);
+				}
+				this._register(
+					this.channel.listen<SyncStatus>("onDidChangeStatus")(
+						(status) => this.updateStatus(status),
+					),
+				);
+				this._register(
+					this.channel.listen<number>("onDidChangeLastSyncTime")(
+						(lastSyncTime) => this.updateLastSyncTime(lastSyncTime),
+					),
+				);
+			});
+		this._register(
+			this.channel.listen<IUserDataSyncResourceConflicts[]>(
+				"onDidChangeConflicts",
+			)((conflicts) => this.updateConflicts(conflicts)),
+		);
+		this._register(
+			this.channel.listen<IUserDataSyncResourceError[]>("onSyncErrors")(
+				(errors) =>
+					this._onSyncErrors.fire(
+						errors.map((syncError) => ({
+							...syncError,
+							error: UserDataSyncError.toUserDataSyncError(
+								syncError.error,
+							),
+						})),
+					),
+			),
+		);
 	}
 
 	createSyncTask(): Promise<IUserDataSyncTask> {

@@ -20,27 +20,27 @@ import {
 import { ServiceCollection } from "../../../../../platform/instantiation/common/serviceCollection.js";
 import { IEditorProgressService } from "../../../../../platform/progress/common/progress.js";
 import {
-	type GroupIdentifier,
 	GroupModelChangeKind,
+	type GroupIdentifier,
 } from "../../../../common/editor.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import { InteractiveWindowOpen } from "../../common/notebookContextKeys.js";
 import {
-	NotebookEditorInput,
 	isCompositeNotebookEditorInput,
 	isNotebookEditorInput,
+	NotebookEditorInput,
 } from "../../common/notebookEditorInput.js";
 import type {
 	INotebookEditor,
 	INotebookEditorCreationOptions,
 } from "../notebookBrowser.js";
 import {
-	NotebookEditorWidget,
 	getDefaultNotebookCreationOptions,
+	NotebookEditorWidget,
 } from "../notebookEditorWidget.js";
 import type {
 	IBorrowValue,
@@ -74,80 +74,114 @@ export class NotebookEditorWidgetService implements INotebookEditorService {
 	>();
 
 	constructor(
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		const onNewGroup = (group: IEditorGroup) => {
 			const { id } = group;
 			const listeners: IDisposable[] = [];
-			listeners.push(group.onDidCloseEditor(e => {
-				const widgetMap = this._borrowableEditors.get(group.id);
-				if (!widgetMap) {
-					return;
-				}
-
-				const inputs = e.editor instanceof NotebookEditorInput ? [e.editor] : (isCompositeNotebookEditorInput(e.editor) ? e.editor.editorInputs : []);
-				inputs.forEach(input => {
-					const widgets = widgetMap.get(input.resource);
-					const index = widgets?.findIndex(widget => widget.editorType === input.typeId);
-					if (!widgets || index === undefined || index === -1) {
+			listeners.push(
+				group.onDidCloseEditor((e) => {
+					const widgetMap = this._borrowableEditors.get(group.id);
+					if (!widgetMap) {
 						return;
 					}
-					const value = widgets.splice(index, 1)[0];
-					value.token = undefined;
-					this._disposeWidget(value.widget);
-					value.widget = (<any>undefined); // unset the widget so that others that still hold a reference don't harm us
-				});
-			}));
-			listeners.push(group.onWillMoveEditor(e => {
-				if (isNotebookEditorInput(e.editor)) {
-					this._allowWidgetMove(e.editor, e.groupId, e.target);
-				}
 
-				if (isCompositeNotebookEditorInput(e.editor)) {
-					e.editor.editorInputs.forEach(input => {
-						this._allowWidgetMove(input, e.groupId, e.target);
+					const inputs =
+						e.editor instanceof NotebookEditorInput
+							? [e.editor]
+							: isCompositeNotebookEditorInput(e.editor)
+								? e.editor.editorInputs
+								: [];
+					inputs.forEach((input) => {
+						const widgets = widgetMap.get(input.resource);
+						const index = widgets?.findIndex(
+							(widget) => widget.editorType === input.typeId,
+						);
+						if (!widgets || index === undefined || index === -1) {
+							return;
+						}
+						const value = widgets.splice(index, 1)[0];
+						value.token = undefined;
+						this._disposeWidget(value.widget);
+						value.widget = <any>undefined; // unset the widget so that others that still hold a reference don't harm us
 					});
-				}
-			}));
+				}),
+			);
+			listeners.push(
+				group.onWillMoveEditor((e) => {
+					if (isNotebookEditorInput(e.editor)) {
+						this._allowWidgetMove(e.editor, e.groupId, e.target);
+					}
+
+					if (isCompositeNotebookEditorInput(e.editor)) {
+						e.editor.editorInputs.forEach((input) => {
+							this._allowWidgetMove(input, e.groupId, e.target);
+						});
+					}
+				}),
+			);
 			this.groupListener.set(id, listeners);
 		};
 		this._disposables.add(editorGroupService.onDidAddGroup(onNewGroup));
-		editorGroupService.whenReady.then(() => editorGroupService.groups.forEach(onNewGroup));
+		editorGroupService.whenReady.then(() =>
+			editorGroupService.groups.forEach(onNewGroup),
+		);
 
 		// group removed -> clean up listeners, clean up widgets
-		this._disposables.add(editorGroupService.onDidRemoveGroup(group => {
-			const listeners = this.groupListener.get(group.id);
-			if (listeners) {
-				listeners.forEach(listener => listener.dispose());
-				this.groupListener.delete(group.id);
-			}
-			const widgets = this._borrowableEditors.get(group.id);
-			this._borrowableEditors.delete(group.id);
-			if (widgets) {
-				for (const values of widgets.values()) {
-					for (const value of values) {
-						value.token = undefined;
-						this._disposeWidget(value.widget);
+		this._disposables.add(
+			editorGroupService.onDidRemoveGroup((group) => {
+				const listeners = this.groupListener.get(group.id);
+				if (listeners) {
+					listeners.forEach((listener) => listener.dispose());
+					this.groupListener.delete(group.id);
+				}
+				const widgets = this._borrowableEditors.get(group.id);
+				this._borrowableEditors.delete(group.id);
+				if (widgets) {
+					for (const values of widgets.values()) {
+						for (const value of values) {
+							value.token = undefined;
+							this._disposeWidget(value.widget);
+						}
 					}
 				}
-			}
-		}));
+			}),
+		);
 
-		const interactiveWindowOpen = InteractiveWindowOpen.bindTo(contextKeyService);
-		this._disposables.add(editorService.onDidEditorsChange(e => {
-			if (e.event.kind === GroupModelChangeKind.EDITOR_OPEN && !interactiveWindowOpen.get()) {
-				if (editorService.editors.find(editor => editor.editorId === 'interactive')) {
-					interactiveWindowOpen.set(true);
+		const interactiveWindowOpen =
+			InteractiveWindowOpen.bindTo(contextKeyService);
+		this._disposables.add(
+			editorService.onDidEditorsChange((e) => {
+				if (
+					e.event.kind === GroupModelChangeKind.EDITOR_OPEN &&
+					!interactiveWindowOpen.get()
+				) {
+					if (
+						editorService.editors.find(
+							(editor) => editor.editorId === "interactive",
+						)
+					) {
+						interactiveWindowOpen.set(true);
+					}
+				} else if (
+					e.event.kind === GroupModelChangeKind.EDITOR_CLOSE &&
+					interactiveWindowOpen.get()
+				) {
+					if (
+						!editorService.editors.find(
+							(editor) => editor.editorId === "interactive",
+						)
+					) {
+						interactiveWindowOpen.set(false);
+					}
 				}
-			} else if (e.event.kind === GroupModelChangeKind.EDITOR_CLOSE && interactiveWindowOpen.get()) {
-				if (!editorService.editors.find(editor => editor.editorId === 'interactive')) {
-					interactiveWindowOpen.set(false);
-				}
-			}
-		}));
+			}),
+		);
 	}
 
 	dispose() {

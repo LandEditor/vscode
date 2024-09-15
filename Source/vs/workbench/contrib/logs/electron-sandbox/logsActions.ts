@@ -15,9 +15,13 @@ export class OpenLogsFolderAction extends Action {
 	static readonly ID = "workbench.action.openLogsFolder";
 	static readonly TITLE = nls.localize2("openLogsFolder", "Open Logs Folder");
 
-	constructor(id: string, label: string,
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+	constructor(
+		id: string,
+		label: string,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 	) {
 		super(id, label);
 	}
@@ -38,10 +42,14 @@ export class OpenExtensionLogsFolderAction extends Action {
 		"Open Extension Logs Folder",
 	);
 
-	constructor(id: string, label: string,
-		@INativeWorkbenchEnvironmentService private readonly environmentSerice: INativeWorkbenchEnvironmentService,
+	constructor(
+		id: string,
+		label: string,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentSerice: INativeWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@INativeHostService private readonly nativeHostService: INativeHostService
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 	) {
 		super(id, label);
 	}

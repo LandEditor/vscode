@@ -5,20 +5,26 @@
 
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ILogger,
 	ILoggerService,
-	type LogLevel,
 	log,
+	type ILogger,
+	type LogLevel,
 } from "../../../../platform/log/common/log.js";
 
 export class DelayedLogChannel {
 	private readonly logger: ILogger;
 
 	constructor(
-		id: string, name: string, private readonly file: URI,
+		id: string,
+		name: string,
+		private readonly file: URI,
 		@ILoggerService private readonly loggerService: ILoggerService,
 	) {
-		this.logger = loggerService.createLogger(file, { name, id, hidden: true });
+		this.logger = loggerService.createLogger(file, {
+			name,
+			id,
+			hidden: true,
+		});
 	}
 
 	log(level: LogLevel, message: string): void {

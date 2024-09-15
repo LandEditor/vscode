@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./share.css";
+
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { MarkdownString } from "../../../../base/common/htmlContent.js";
@@ -72,17 +73,32 @@ class ShareWorkbenchContribution {
 
 	constructor(
 		@IShareService private readonly shareService: IShareService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
-		if (this.configurationService.getValue<boolean>(ShareWorkbenchContribution.SHARE_ENABLED_SETTING)) {
+		if (
+			this.configurationService.getValue<boolean>(
+				ShareWorkbenchContribution.SHARE_ENABLED_SETTING,
+			)
+		) {
 			this.registerActions();
 		}
-		this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(ShareWorkbenchContribution.SHARE_ENABLED_SETTING)) {
-				const settingValue = this.configurationService.getValue<boolean>(ShareWorkbenchContribution.SHARE_ENABLED_SETTING);
+		this.configurationService.onDidChangeConfiguration((e) => {
+			if (
+				e.affectsConfiguration(
+					ShareWorkbenchContribution.SHARE_ENABLED_SETTING,
+				)
+			) {
+				const settingValue =
+					this.configurationService.getValue<boolean>(
+						ShareWorkbenchContribution.SHARE_ENABLED_SETTING,
+					);
 				if (settingValue === true && this._disposables === undefined) {
 					this.registerActions();
-				} else if (settingValue === false && this._disposables !== undefined) {
+				} else if (
+					settingValue === false &&
+					this._disposables !== undefined
+				) {
 					this._disposables?.clear();
 					this._disposables = undefined;
 				}

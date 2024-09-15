@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Emitter } from "../../base/common/event.js";
-import { type IDisposable, toDisposable } from "../../base/common/lifecycle.js";
+import { toDisposable, type IDisposable } from "../../base/common/lifecycle.js";
 import type { URI } from "../../base/common/uri.js";
 import {
+	score,
 	type LanguageFilter,
 	type LanguageSelector,
-	score,
 } from "./languageSelector.js";
-import { type ITextModel, shouldSynchronizeModel } from "./model.js";
+import { shouldSynchronizeModel, type ITextModel } from "./model.js";
 
 interface Entry<T> {
 	readonly selector: LanguageSelector;

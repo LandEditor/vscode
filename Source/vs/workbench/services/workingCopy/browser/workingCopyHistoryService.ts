@@ -16,15 +16,16 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
 import { IWorkingCopyHistoryService } from "../common/workingCopyHistory.js";
 import {
-	type IWorkingCopyHistoryModelOptions,
 	WorkingCopyHistoryService,
+	type IWorkingCopyHistoryModelOptions,
 } from "../common/workingCopyHistoryService.js";
 
 export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService {
 	constructor(
 		@IFileService fileService: IFileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILabelService labelService: ILabelService,
 		@ILogService logService: ILogService,
@@ -43,7 +44,8 @@ export class BrowserWorkingCopyHistoryService extends WorkingCopyHistoryService 
 
 	protected getModelOptions(): IWorkingCopyHistoryModelOptions {
 		return {
-			flushOnChange: true /* because browsers support no long running shutdown */,
+			flushOnChange:
+				true /* because browsers support no long running shutdown */,
 		};
 	}
 }

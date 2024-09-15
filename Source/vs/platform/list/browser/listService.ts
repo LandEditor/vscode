@@ -16,22 +16,22 @@ import type {
 	IListVirtualDelegate,
 } from "../../../base/browser/ui/list/list.js";
 import {
+	PagedList,
 	type IPagedListOptions,
 	type IPagedRenderer,
-	PagedList,
 } from "../../../base/browser/ui/list/listPaging.js";
 import {
 	DefaultStyleController,
+	isSelectionRangeChangeEvent,
+	isSelectionSingleChangeEvent,
+	List,
+	TypeNavigationMode,
 	type IKeyboardNavigationEventFilter,
 	type IListAccessibilityProvider,
 	type IListOptions,
 	type IListOptionsUpdate,
 	type IListStyles,
 	type IMultipleSelectionController,
-	List,
-	TypeNavigationMode,
-	isSelectionRangeChangeEvent,
-	isSelectionSingleChangeEvent,
 } from "../../../base/browser/ui/list/listWidget.js";
 import type {
 	ITableColumn,
@@ -39,17 +39,17 @@ import type {
 	ITableVirtualDelegate,
 } from "../../../base/browser/ui/table/table.js";
 import {
+	Table,
 	type ITableOptions,
 	type ITableOptionsUpdate,
 	type ITableStyles,
-	Table,
 } from "../../../base/browser/ui/table/tableWidget.js";
 import {
+	TreeFindMatchType,
+	TreeFindMode,
 	type IAbstractTreeOptions,
 	type IAbstractTreeOptionsUpdate,
 	type RenderIndentGuides,
-	TreeFindMatchType,
-	TreeFindMode,
 } from "../../../base/browser/ui/tree/abstractTree.js";
 import {
 	AsyncDataTree,
@@ -66,11 +66,11 @@ import {
 } from "../../../base/browser/ui/tree/dataTree.js";
 import {
 	CompressibleObjectTree,
+	ObjectTree,
 	type ICompressibleObjectTreeOptions,
 	type ICompressibleObjectTreeOptionsUpdate,
 	type ICompressibleTreeRenderer,
 	type IObjectTreeOptions,
-	ObjectTree,
 } from "../../../base/browser/ui/tree/objectTree.js";
 import type {
 	IAsyncDataSource,
@@ -80,12 +80,12 @@ import type {
 } from "../../../base/browser/ui/tree/tree.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	combinedDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
@@ -95,27 +95,27 @@ import {
 } from "../../configuration/common/configurationRegistry.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
-	type IScopedContextKeyService,
 	RawContextKey,
+	type IContextKey,
+	type IScopedContextKeyService,
 } from "../../contextkey/common/contextkey.js";
 import { InputFocusedContextKey } from "../../contextkey/common/contextkeys.js";
 import { IContextViewService } from "../../contextview/browser/contextView.js";
 import type { IEditorOptions } from "../../editor/common/editor.js";
 import {
+	createDecorator,
 	IInstantiationService,
 	type ServicesAccessor,
-	createDecorator,
 } from "../../instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../keybinding/common/keybinding.js";
 import { ResultKind } from "../../keybinding/common/keybindingResolver.js";
 import { Registry } from "../../registry/common/platform.js";
 import {
-	type IStyleOverride,
 	defaultFindWidgetStyles,
 	defaultListStyles,
 	getListStyles,
+	type IStyleOverride,
 } from "../../theme/browser/defaultStyles.js";
 
 export type ListWidget =

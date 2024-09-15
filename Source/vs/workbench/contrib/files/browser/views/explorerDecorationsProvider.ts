@@ -63,15 +63,21 @@ export class ExplorerDecorationsProvider implements IDecorationsProvider {
 
 	constructor(
 		@IExplorerService private explorerService: IExplorerService,
-		@IWorkspaceContextService contextService: IWorkspaceContextService
+		@IWorkspaceContextService contextService: IWorkspaceContextService,
 	) {
 		this.toDispose.add(this._onDidChange);
-		this.toDispose.add(contextService.onDidChangeWorkspaceFolders(e => {
-			this._onDidChange.fire(e.changed.concat(e.added).map(wf => wf.uri));
-		}));
-		this.toDispose.add(explorerRootErrorEmitter.event((resource => {
-			this._onDidChange.fire([resource]);
-		})));
+		this.toDispose.add(
+			contextService.onDidChangeWorkspaceFolders((e) => {
+				this._onDidChange.fire(
+					e.changed.concat(e.added).map((wf) => wf.uri),
+				);
+			}),
+		);
+		this.toDispose.add(
+			explorerRootErrorEmitter.event((resource) => {
+				this._onDidChange.fire([resource]);
+			}),
+		);
 	}
 
 	get onDidChange(): Event<URI[]> {

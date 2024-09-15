@@ -3,8 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import {
-	Dimension,
 	addDisposableListener,
+	Dimension,
 } from "../../../../base/browser/dom.js";
 import * as aria from "../../../../base/browser/ui/aria/aria.js";
 import {
@@ -16,8 +16,8 @@ import { assertType } from "../../../../base/common/types.js";
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import { StableEditorBottomScrollState } from "../../../../editor/browser/stableEditorScroll.js";
 import {
-	type EditorLayoutInfo,
 	EditorOption,
+	type EditorLayoutInfo,
 } from "../../../../editor/common/config/editorOptions.js";
 import type { Position } from "../../../../editor/common/core/position.js";
 import type { Range } from "../../../../editor/common/core/range.js";
@@ -27,8 +27,8 @@ import { localize } from "../../../../nls.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -58,91 +58,153 @@ export class InlineChatZoneWidget extends ZoneWidget {
 	constructor(
 		location: IChatWidgetLocationOptions,
 		editor: ICodeEditor,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@ILogService private _logService: ILogService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
 	) {
-		super(editor, { showFrame: false, showArrow: false, isAccessible: true, className: 'inline-chat-widget', keepEditorSelection: true, showInHiddenAreas: true, ordinal: 50000 });
-
-		this._ctxCursorPosition = CTX_INLINE_CHAT_OUTER_CURSOR_POSITION.bindTo(contextKeyService);
-
-		this._disposables.add(toDisposable(() => {
-			this._ctxCursorPosition.reset();
-		}));
-
-		this.widget = this._instaService.createInstance(EditorBasedInlineChatWidget, location, this.editor, {
-			statusMenuId: {
-				menu: MENU_INLINE_CHAT_WIDGET_STATUS,
-				options: {
-					buttonConfigProvider: (action, index) => {
-						const isSecondary = index > 0;
-						if (new Set([ACTION_REGENERATE_RESPONSE, ACTION_TOGGLE_DIFF, ACTION_REPORT_ISSUE]).has(action.id)) {
-							return { isSecondary, showIcon: true, showLabel: false };
-						} else {
-							return { isSecondary };
-						}
-					}
-				}
-			},
-			secondaryMenuId: MENU_INLINE_CHAT_WIDGET_SECONDARY,
-			chatWidgetViewOptions: {
-				menus: {
-					executeToolbar: MenuId.ChatExecute,
-					telemetrySource: 'interactiveEditorWidget-toolbar',
-				},
-				rendererOptions: {
-					renderTextEditsAsSummary: (uri) => {
-						// render edits as summary only when using Live mode and when
-						// dealing with the current file in the editor
-						return isEqual(uri, editor.getModel()?.uri)
-							&& configurationService.getValue<EditMode>(InlineChatConfigKeys.Mode) === EditMode.Live;
-					},
-				}
-			}
+		super(editor, {
+			showFrame: false,
+			showArrow: false,
+			isAccessible: true,
+			className: "inline-chat-widget",
+			keepEditorSelection: true,
+			showInHiddenAreas: true,
+			ordinal: 50000,
 		});
+
+		this._ctxCursorPosition =
+			CTX_INLINE_CHAT_OUTER_CURSOR_POSITION.bindTo(contextKeyService);
+
+		this._disposables.add(
+			toDisposable(() => {
+				this._ctxCursorPosition.reset();
+			}),
+		);
+
+		this.widget = this._instaService.createInstance(
+			EditorBasedInlineChatWidget,
+			location,
+			this.editor,
+			{
+				statusMenuId: {
+					menu: MENU_INLINE_CHAT_WIDGET_STATUS,
+					options: {
+						buttonConfigProvider: (action, index) => {
+							const isSecondary = index > 0;
+							if (
+								new Set([
+									ACTION_REGENERATE_RESPONSE,
+									ACTION_TOGGLE_DIFF,
+									ACTION_REPORT_ISSUE,
+								]).has(action.id)
+							) {
+								return {
+									isSecondary,
+									showIcon: true,
+									showLabel: false,
+								};
+							} else {
+								return { isSecondary };
+							}
+						},
+					},
+				},
+				secondaryMenuId: MENU_INLINE_CHAT_WIDGET_SECONDARY,
+				chatWidgetViewOptions: {
+					menus: {
+						executeToolbar: MenuId.ChatExecute,
+						telemetrySource: "interactiveEditorWidget-toolbar",
+					},
+					rendererOptions: {
+						renderTextEditsAsSummary: (uri) => {
+							// render edits as summary only when using Live mode and when
+							// dealing with the current file in the editor
+							return (
+								isEqual(uri, editor.getModel()?.uri) &&
+								configurationService.getValue<EditMode>(
+									InlineChatConfigKeys.Mode,
+								) === EditMode.Live
+							);
+						},
+					},
+				},
+			},
+		);
 		this._disposables.add(this.widget);
 
 		let revealFn: (() => void) | undefined;
-		this._disposables.add(this.widget.chatWidget.onWillMaybeChangeHeight(() => {
-			if (this.position) {
-				revealFn = this._createZoneAndScrollRestoreFn(this.position);
-			}
-		}));
-		this._disposables.add(this.widget.onDidChangeHeight(() => {
-			if (this.position) {
-				// only relayout when visible
-				revealFn ??= this._createZoneAndScrollRestoreFn(this.position);
-				const height = this._computeHeight();
-				this._relayout(height.linesValue);
-				revealFn();
-				revealFn = undefined;
-			}
-		}));
+		this._disposables.add(
+			this.widget.chatWidget.onWillMaybeChangeHeight(() => {
+				if (this.position) {
+					revealFn = this._createZoneAndScrollRestoreFn(
+						this.position,
+					);
+				}
+			}),
+		);
+		this._disposables.add(
+			this.widget.onDidChangeHeight(() => {
+				if (this.position) {
+					// only relayout when visible
+					revealFn ??= this._createZoneAndScrollRestoreFn(
+						this.position,
+					);
+					const height = this._computeHeight();
+					this._relayout(height.linesValue);
+					revealFn();
+					revealFn = undefined;
+				}
+			}),
+		);
 
 		this.create();
 
-		this._disposables.add(addDisposableListener(this.domNode, 'click', e => {
-			if (!this.editor.hasWidgetFocus() && !this.widget.hasFocus()) {
-				this.editor.focus();
-			}
-		}, true));
-
+		this._disposables.add(
+			addDisposableListener(
+				this.domNode,
+				"click",
+				(e) => {
+					if (
+						!this.editor.hasWidgetFocus() &&
+						!this.widget.hasFocus()
+					) {
+						this.editor.focus();
+					}
+				},
+				true,
+			),
+		);
 
 		// todo@jrieken listen ONLY when showing
 		const updateCursorIsAboveContextKey = () => {
 			if (!this.position || !this.editor.hasModel()) {
 				this._ctxCursorPosition.reset();
-			} else if (this.position.lineNumber === this.editor.getPosition().lineNumber) {
-				this._ctxCursorPosition.set('above');
-			} else if (this.position.lineNumber + 1 === this.editor.getPosition().lineNumber) {
-				this._ctxCursorPosition.set('below');
+			} else if (
+				this.position.lineNumber ===
+				this.editor.getPosition().lineNumber
+			) {
+				this._ctxCursorPosition.set("above");
+			} else if (
+				this.position.lineNumber + 1 ===
+				this.editor.getPosition().lineNumber
+			) {
+				this._ctxCursorPosition.set("below");
 			} else {
 				this._ctxCursorPosition.reset();
 			}
 		};
-		this._disposables.add(this.editor.onDidChangeCursorPosition(e => updateCursorIsAboveContextKey()));
-		this._disposables.add(this.editor.onDidFocusEditorText(e => updateCursorIsAboveContextKey()));
+		this._disposables.add(
+			this.editor.onDidChangeCursorPosition((e) =>
+				updateCursorIsAboveContextKey(),
+			),
+		);
+		this._disposables.add(
+			this.editor.onDidFocusEditorText((e) =>
+				updateCursorIsAboveContextKey(),
+			),
+		);
 		updateCursorIsAboveContextKey();
 	}
 

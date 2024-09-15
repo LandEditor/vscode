@@ -13,10 +13,10 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	type IProfileStorageValueChangeEvent,
 	IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IProfileStorageValueChangeEvent,
 } from "../../storage/common/storage.js";
 import type {
 	IExtensionManagementService,
@@ -158,8 +158,17 @@ export class ExtensionStorageService
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this.extensionsWithKeysForSync = ExtensionStorageService.readAllExtensionsWithKeysForSync(storageService);
-		this._register(this.storageService.onDidChangeValue(StorageScope.PROFILE, undefined, this._register(new DisposableStore()))(e => this.onDidChangeStorageValue(e)));
+		this.extensionsWithKeysForSync =
+			ExtensionStorageService.readAllExtensionsWithKeysForSync(
+				storageService,
+			);
+		this._register(
+			this.storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				undefined,
+				this._register(new DisposableStore()),
+			)((e) => this.onDidChangeStorageValue(e)),
+		);
 	}
 
 	private onDidChangeStorageValue(e: IProfileStorageValueChangeEvent): void {

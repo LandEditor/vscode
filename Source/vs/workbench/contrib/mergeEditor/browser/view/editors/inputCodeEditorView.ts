@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	h,
 	reset,
 } from "../../../../../../base/browser/dom.js";
@@ -13,30 +13,30 @@ import { renderLabelWithIcons } from "../../../../../../base/browser/ui/iconLabe
 import { Toggle } from "../../../../../../base/browser/ui/toggle/toggle.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../../../base/common/actions.js";
 import { Codicon } from "../../../../../../base/common/codicons.js";
 import { Disposable } from "../../../../../../base/common/lifecycle.js";
 import { clamp } from "../../../../../../base/common/numbers.js";
 import {
-	type IObservable,
-	type ISettableObservable,
-	type ITransaction,
 	autorun,
 	autorunOpts,
 	derived,
 	derivedOpts,
 	observableValue,
 	transaction,
+	type IObservable,
+	type ISettableObservable,
+	type ITransaction,
 } from "../../../../../../base/common/observable.js";
 import { noBreakWhitespace } from "../../../../../../base/common/strings.js";
 import type { ThemeIcon } from "../../../../../../base/common/themables.js";
 import { isDefined } from "../../../../../../base/common/types.js";
 import {
-	type IModelDeltaDecoration,
 	MinimapPosition,
 	OverviewRulerLane,
+	type IModelDeltaDecoration,
 } from "../../../../../../editor/common/model.js";
 import { localize } from "../../../../../../nls.js";
 import { MenuId } from "../../../../../../platform/actions/common/actions.js";
@@ -62,8 +62,8 @@ import {
 import type { MergeEditorViewModel } from "../viewModel.js";
 import {
 	CodeEditorView,
-	TitleMenu,
 	createSelectionsAutorun,
+	TitleMenu,
 } from "./codeEditorView.js";
 
 export class InputCodeEditorView extends CodeEditorView {

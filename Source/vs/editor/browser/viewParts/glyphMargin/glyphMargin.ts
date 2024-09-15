@@ -4,11 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import { ArrayQueue } from "../../../../base/common/arrays.js";
+
 import "./glyphMargin.css";
+
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";

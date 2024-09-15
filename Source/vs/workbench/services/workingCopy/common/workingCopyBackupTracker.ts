@@ -7,8 +7,8 @@ import { Promises } from "../../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
 import { EditorsOrder } from "../../../common/editor.js";
@@ -17,15 +17,15 @@ import type { IEditorGroupsService } from "../../editor/common/editorGroupsServi
 import type { IEditorService } from "../../editor/common/editorService.js";
 import type { IFilesConfigurationService } from "../../filesConfiguration/common/filesConfigurationService.js";
 import {
+	LifecyclePhase,
 	type ILifecycleService,
 	type InternalBeforeShutdownEvent,
-	LifecyclePhase,
 	type ShutdownReason,
 } from "../../lifecycle/common/lifecycle.js";
 import {
+	WorkingCopyCapabilities,
 	type IWorkingCopy,
 	type IWorkingCopyIdentifier,
-	WorkingCopyCapabilities,
 } from "./workingCopy.js";
 import type { IWorkingCopyBackupService } from "./workingCopyBackup.js";
 import type {

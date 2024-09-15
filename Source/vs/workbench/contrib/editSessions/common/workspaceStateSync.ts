@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import type { IStringDictionary } from "../../../../base/common/collections.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
@@ -15,10 +15,10 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import {
-	type IStorageEntry,
 	IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageEntry,
 } from "../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
@@ -31,21 +31,21 @@ import {
 	type ISyncResourcePreview,
 } from "../../../../platform/userDataSync/common/abstractSynchronizer.js";
 import {
+	SyncResource,
 	type IRemoteUserData,
 	type IResourceRefHandle,
 	type IUserDataSyncConfiguration,
 	type IUserDataSyncEnablementService,
+	type IUserDataSynchroniser,
 	type IUserDataSyncLocalStoreService,
 	type IUserDataSyncLogService,
 	type IUserDataSyncStoreService,
-	type IUserDataSynchroniser,
 	type IWorkspaceState,
-	SyncResource,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { IWorkspaceIdentityService } from "../../../services/workspaces/common/workspaceIdentityService.js";
 import {
-	type EditSession,
 	IEditSessionsStorageService,
+	type EditSession,
 } from "./editSessions.js";
 
 class NullBackupStoreService implements IUserDataSyncLocalStoreService {
@@ -107,12 +107,27 @@ export class WorkspaceStateSynchroniser
 		@IConfigurationService configurationService: IConfigurationService,
 		@IStorageService storageService: IStorageService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IWorkspaceIdentityService private readonly workspaceIdentityService: IWorkspaceIdentityService,
-		@IEditSessionsStorageService private readonly editSessionsStorageService: IEditSessionsStorageService,
+		@IWorkspaceIdentityService
+		private readonly workspaceIdentityService: IWorkspaceIdentityService,
+		@IEditSessionsStorageService
+		private readonly editSessionsStorageService: IEditSessionsStorageService,
 	) {
 		const userDataSyncLocalStoreService = new NullBackupStoreService();
 		const userDataSyncEnablementService = new NullEnablementService();
-		super({ syncResource: SyncResource.WorkspaceState, profile }, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, configurationService, uriIdentityService);
+		super(
+			{ syncResource: SyncResource.WorkspaceState, profile },
+			collection,
+			fileService,
+			environmentService,
+			storageService,
+			userDataSyncStoreService,
+			userDataSyncLocalStoreService,
+			userDataSyncEnablementService,
+			telemetryService,
+			logService,
+			configurationService,
+			uriIdentityService,
+		);
 	}
 
 	override async sync(): Promise<void> {

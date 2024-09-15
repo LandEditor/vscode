@@ -12,9 +12,9 @@ import type { FontInfo } from "../../common/config/fontInfo.js";
 import { StringBuilder } from "../../common/core/stringBuilder.js";
 import type { InjectedTextOptions } from "../../common/model.js";
 import {
+	ModelLineProjectionData,
 	type ILineBreaksComputer,
 	type ILineBreaksComputerFactory,
-	ModelLineProjectionData,
 } from "../../common/modelLineProjectionData.js";
 import { LineInjectedText } from "../../common/textModelEvents.js";
 import { applyFontInfo } from "../config/domFontInfo.js";

@@ -13,19 +13,19 @@ import { URI } from "../../../../base/common/uri.js";
 import {
 	AbstractExtensionManagementService,
 	AbstractExtensionTask,
-	type IInstallExtensionTask,
-	type IUninstallExtensionTask,
-	type InstallExtensionTaskOptions,
-	type UninstallExtensionTaskOptions,
 	toExtensionManagementError,
+	type IInstallExtensionTask,
+	type InstallExtensionTaskOptions,
+	type IUninstallExtensionTask,
+	type UninstallExtensionTaskOptions,
 } from "../../../../platform/extensionManagement/common/abstractExtensionManagementService.js";
 import {
 	IExtensionGalleryService,
+	InstallOperation,
 	type IGalleryExtension,
 	type ILocalExtension,
-	type IProductVersion,
-	InstallOperation,
 	type InstallOptions,
+	type IProductVersion,
 	type Metadata,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
@@ -35,10 +35,10 @@ import {
 import {
 	ExtensionIdentifier,
 	ExtensionType,
+	TargetPlatform,
 	type IExtension,
 	type IExtensionIdentifier,
 	type IExtensionManifest,
-	TargetPlatform,
 } from "../../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -47,13 +47,13 @@ import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uri
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { IExtensionManifestPropertiesService } from "../../extensions/common/extensionManifestPropertiesService.js";
 import {
-	type DidChangeUserDataProfileEvent,
 	IUserDataProfileService,
+	type DidChangeUserDataProfileEvent,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
+	IWebExtensionsScannerService,
 	type IProfileAwareExtensionManagementService,
 	type IScannedExtension,
-	IWebExtensionsScannerService,
 } from "./extensionManagement.js";
 
 export class WebExtensionManagementService
@@ -121,28 +121,50 @@ export class WebExtensionManagementService
 	readonly onDidChangeProfile = this._onDidChangeProfile.event;
 
 	constructor(
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILogService logService: ILogService,
-		@IWebExtensionsScannerService private readonly webExtensionsScannerService: IWebExtensionsScannerService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IWebExtensionsScannerService
+		private readonly webExtensionsScannerService: IWebExtensionsScannerService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IProductService productService: IProductService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
-		super(extensionGalleryService, telemetryService, uriIdentityService, logService, productService, userDataProfilesService);
-		this._register(userDataProfileService.onDidChangeCurrentProfile(e => {
-			if (!this.uriIdentityService.extUri.isEqual(e.previous.extensionsResource, e.profile.extensionsResource)) {
-				e.join(this.whenProfileChanged(e));
-			}
-		}));
+		super(
+			extensionGalleryService,
+			telemetryService,
+			uriIdentityService,
+			logService,
+			productService,
+			userDataProfilesService,
+		);
+		this._register(
+			userDataProfileService.onDidChangeCurrentProfile((e) => {
+				if (
+					!this.uriIdentityService.extUri.isEqual(
+						e.previous.extensionsResource,
+						e.profile.extensionsResource,
+					)
+				) {
+					e.join(this.whenProfileChanged(e));
+				}
+			}),
+		);
 	}
 
 	private filterEvent({
 		profileLocation,
 		applicationScoped,
-	}: { profileLocation?: URI; applicationScoped?: boolean }): boolean {
+	}: {
+		profileLocation?: URI;
+		applicationScoped?: boolean;
+	}): boolean {
 		profileLocation =
 			profileLocation ??
 			this.userDataProfileService.currentProfile.extensionsResource;

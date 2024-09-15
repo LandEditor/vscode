@@ -32,21 +32,21 @@ import {
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IDownloadService } from "../../../../platform/download/common/download.js";
 import {
-	type DidUpdateExtensionMetadata,
 	EXTENSION_INSTALL_SOURCE_CONTEXT,
 	ExtensionInstallSource,
 	ExtensionManagementError,
 	ExtensionManagementErrorCode,
 	IExtensionGalleryService,
+	InstallOperation,
+	type DidUpdateExtensionMetadata,
 	type IExtensionIdentifier,
 	type IExtensionsControlManifest,
 	type IGalleryExtension,
 	type ILocalExtension,
-	type IProductVersion,
 	type InstallExtensionInfo,
 	type InstallExtensionResult,
-	InstallOperation,
 	type InstallOptions,
+	type IProductVersion,
 	type Metadata,
 	type UninstallExtensionInfo,
 	type UninstallOptions,
@@ -61,14 +61,14 @@ import {
 } from "../../../../platform/extensionManagement/common/extensionsScannerService.js";
 import {
 	ExtensionType,
-	type IExtensionManifest,
-	type TargetPlatform,
 	getWorkspaceSupportTypeMessage,
 	isLanguagePackExtension,
+	type IExtensionManifest,
+	type TargetPlatform,
 } from "../../../../platform/extensions/common/extensions.js";
 import {
-	type FileChangesEvent,
 	IFileService,
+	type FileChangesEvent,
 } from "../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -95,13 +95,13 @@ import {
 import { IExtensionManifestPropertiesService } from "../../extensions/common/extensionManifestPropertiesService.js";
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
 import {
+	IExtensionManagementServerService,
 	type DidChangeProfileForServerEvent,
 	type DidUninstallExtensionOnServerEvent,
 	type IExtensionManagementServer,
-	IExtensionManagementServerService,
+	type InstallExtensionOnServerEvent,
 	type IResourceExtension,
 	type IWorkbenchExtensionManagementService,
-	type InstallExtensionOnServerEvent,
 	type UninstallExtensionOnServerEvent,
 } from "./extensionManagement.js";
 
@@ -147,66 +147,165 @@ export class ExtensionManagementService
 	private readonly workspaceExtensionManagementService: WorkspaceExtensionsManagementService;
 
 	constructor(
-		@IExtensionManagementServerService protected readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IExtensionManagementServerService
+		protected readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IProductService protected readonly productService: IProductService,
 		@IDownloadService protected readonly downloadService: IDownloadService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionsScannerService private readonly extensionsScannerService: IExtensionsScannerService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionsScannerService
+		private readonly extensionsScannerService: IExtensionsScannerService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super();
 
-		this.workspaceExtensionManagementService = this._register(this.instantiationService.createInstance(WorkspaceExtensionsManagementService));
-		this.onDidEnableExtensions = this.workspaceExtensionManagementService.onDidChangeInvalidExtensions;
+		this.workspaceExtensionManagementService = this._register(
+			this.instantiationService.createInstance(
+				WorkspaceExtensionsManagementService,
+			),
+		);
+		this.onDidEnableExtensions =
+			this.workspaceExtensionManagementService.onDidChangeInvalidExtensions;
 
-		if (this.extensionManagementServerService.localExtensionManagementServer) {
-			this.servers.push(this.extensionManagementServerService.localExtensionManagementServer);
+		if (
+			this.extensionManagementServerService.localExtensionManagementServer
+		) {
+			this.servers.push(
+				this.extensionManagementServerService
+					.localExtensionManagementServer,
+			);
 		}
-		if (this.extensionManagementServerService.remoteExtensionManagementServer) {
-			this.servers.push(this.extensionManagementServerService.remoteExtensionManagementServer);
+		if (
+			this.extensionManagementServerService
+				.remoteExtensionManagementServer
+		) {
+			this.servers.push(
+				this.extensionManagementServerService
+					.remoteExtensionManagementServer,
+			);
 		}
-		if (this.extensionManagementServerService.webExtensionManagementServer) {
-			this.servers.push(this.extensionManagementServerService.webExtensionManagementServer);
+		if (
+			this.extensionManagementServerService.webExtensionManagementServer
+		) {
+			this.servers.push(
+				this.extensionManagementServerService
+					.webExtensionManagementServer,
+			);
 		}
 
-		const onInstallExtensionEventMultiplexer = this._register(new EventMultiplexer<InstallExtensionOnServerEvent>());
-		this._register(onInstallExtensionEventMultiplexer.add(this._onInstallExtension.event));
+		const onInstallExtensionEventMultiplexer = this._register(
+			new EventMultiplexer<InstallExtensionOnServerEvent>(),
+		);
+		this._register(
+			onInstallExtensionEventMultiplexer.add(
+				this._onInstallExtension.event,
+			),
+		);
 		this.onInstallExtension = onInstallExtensionEventMultiplexer.event;
 
-		const onDidInstallExtensionsEventMultiplexer = this._register(new EventMultiplexer<readonly InstallExtensionResult[]>());
-		this._register(onDidInstallExtensionsEventMultiplexer.add(this._onDidInstallExtensions.event));
-		this.onDidInstallExtensions = onDidInstallExtensionsEventMultiplexer.event;
+		const onDidInstallExtensionsEventMultiplexer = this._register(
+			new EventMultiplexer<readonly InstallExtensionResult[]>(),
+		);
+		this._register(
+			onDidInstallExtensionsEventMultiplexer.add(
+				this._onDidInstallExtensions.event,
+			),
+		);
+		this.onDidInstallExtensions =
+			onDidInstallExtensionsEventMultiplexer.event;
 
-		const onUninstallExtensionEventMultiplexer = this._register(new EventMultiplexer<UninstallExtensionOnServerEvent>());
-		this._register(onUninstallExtensionEventMultiplexer.add(this._onUninstallExtension.event));
+		const onUninstallExtensionEventMultiplexer = this._register(
+			new EventMultiplexer<UninstallExtensionOnServerEvent>(),
+		);
+		this._register(
+			onUninstallExtensionEventMultiplexer.add(
+				this._onUninstallExtension.event,
+			),
+		);
 		this.onUninstallExtension = onUninstallExtensionEventMultiplexer.event;
 
-		const onDidUninstallExtensionEventMultiplexer = this._register(new EventMultiplexer<DidUninstallExtensionOnServerEvent>());
-		this._register(onDidUninstallExtensionEventMultiplexer.add(this._onDidUninstallExtension.event));
-		this.onDidUninstallExtension = onDidUninstallExtensionEventMultiplexer.event;
+		const onDidUninstallExtensionEventMultiplexer = this._register(
+			new EventMultiplexer<DidUninstallExtensionOnServerEvent>(),
+		);
+		this._register(
+			onDidUninstallExtensionEventMultiplexer.add(
+				this._onDidUninstallExtension.event,
+			),
+		);
+		this.onDidUninstallExtension =
+			onDidUninstallExtensionEventMultiplexer.event;
 
-		const onDidUpdateExtensionMetadaEventMultiplexer = this._register(new EventMultiplexer<DidUpdateExtensionMetadata>());
-		this.onDidUpdateExtensionMetadata = onDidUpdateExtensionMetadaEventMultiplexer.event;
+		const onDidUpdateExtensionMetadaEventMultiplexer = this._register(
+			new EventMultiplexer<DidUpdateExtensionMetadata>(),
+		);
+		this.onDidUpdateExtensionMetadata =
+			onDidUpdateExtensionMetadaEventMultiplexer.event;
 
-		const onDidChangeProfileEventMultiplexer = this._register(new EventMultiplexer<DidChangeProfileForServerEvent>());
+		const onDidChangeProfileEventMultiplexer = this._register(
+			new EventMultiplexer<DidChangeProfileForServerEvent>(),
+		);
 		this.onDidChangeProfile = onDidChangeProfileEventMultiplexer.event;
 
 		for (const server of this.servers) {
-			this._register(onInstallExtensionEventMultiplexer.add(Event.map(server.extensionManagementService.onInstallExtension, e => ({ ...e, server }))));
-			this._register(onDidInstallExtensionsEventMultiplexer.add(server.extensionManagementService.onDidInstallExtensions));
-			this._register(onUninstallExtensionEventMultiplexer.add(Event.map(server.extensionManagementService.onUninstallExtension, e => ({ ...e, server }))));
-			this._register(onDidUninstallExtensionEventMultiplexer.add(Event.map(server.extensionManagementService.onDidUninstallExtension, e => ({ ...e, server }))));
-			this._register(onDidUpdateExtensionMetadaEventMultiplexer.add(server.extensionManagementService.onDidUpdateExtensionMetadata));
-			this._register(onDidChangeProfileEventMultiplexer.add(Event.map(server.extensionManagementService.onDidChangeProfile, e => ({ ...e, server }))));
+			this._register(
+				onInstallExtensionEventMultiplexer.add(
+					Event.map(
+						server.extensionManagementService.onInstallExtension,
+						(e) => ({ ...e, server }),
+					),
+				),
+			);
+			this._register(
+				onDidInstallExtensionsEventMultiplexer.add(
+					server.extensionManagementService.onDidInstallExtensions,
+				),
+			);
+			this._register(
+				onUninstallExtensionEventMultiplexer.add(
+					Event.map(
+						server.extensionManagementService.onUninstallExtension,
+						(e) => ({ ...e, server }),
+					),
+				),
+			);
+			this._register(
+				onDidUninstallExtensionEventMultiplexer.add(
+					Event.map(
+						server.extensionManagementService
+							.onDidUninstallExtension,
+						(e) => ({ ...e, server }),
+					),
+				),
+			);
+			this._register(
+				onDidUpdateExtensionMetadaEventMultiplexer.add(
+					server.extensionManagementService
+						.onDidUpdateExtensionMetadata,
+				),
+			);
+			this._register(
+				onDidChangeProfileEventMultiplexer.add(
+					Event.map(
+						server.extensionManagementService.onDidChangeProfile,
+						(e) => ({ ...e, server }),
+					),
+				),
+			);
 		}
 	}
 
@@ -1535,23 +1634,36 @@ class WorkspaceExtensionsManagementService extends Disposable {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
-		@IExtensionsScannerService private readonly extensionsScannerService: IExtensionsScannerService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
+		@IExtensionsScannerService
+		private readonly extensionsScannerService: IExtensionsScannerService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super();
 
-		this._register(Event.debounce<FileChangesEvent, FileChangesEvent[]>(this.fileService.onDidFilesChange, (last, e) => {
-			(last = last ?? []).push(e);
-			return last;
-		}, 1000)(events => {
-			const changedInvalidExtensions = this.extensions.filter(extension => !extension.isValid && events.some(e => e.affects(extension.location)));
-			if (changedInvalidExtensions.length) {
-				this.checkExtensionsValidity(changedInvalidExtensions);
-			}
-		}));
+		this._register(
+			Event.debounce<FileChangesEvent, FileChangesEvent[]>(
+				this.fileService.onDidFilesChange,
+				(last, e) => {
+					(last = last ?? []).push(e);
+					return last;
+				},
+				1000,
+			)((events) => {
+				const changedInvalidExtensions = this.extensions.filter(
+					(extension) =>
+						!extension.isValid &&
+						events.some((e) => e.affects(extension.location)),
+				);
+				if (changedInvalidExtensions.length) {
+					this.checkExtensionsValidity(changedInvalidExtensions);
+				}
+			}),
+		);
 
 		this.initializePromise = this.initialize();
 	}

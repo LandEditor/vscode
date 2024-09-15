@@ -10,19 +10,19 @@ import type {
 	IRequestHandler,
 	IWorkerServer,
 } from "../../../base/common/worker/simpleWorker.js";
-import { type IV8Profile, Utils } from "../common/profiling.js";
+import { Utils, type IV8Profile } from "../common/profiling.js";
 import {
 	BottomUpNode,
+	buildModel,
+	processNode,
 	type BottomUpSample,
 	type CdpCallFrame,
 	type IProfileModel,
-	buildModel,
-	processNode,
 } from "../common/profilingModel.js";
 import {
+	ProfilingOutput,
 	type BottomUpAnalysis,
 	type IProfileAnalysisWorker,
-	ProfilingOutput,
 } from "./profileAnalysisWorkerService.js";
 
 /**

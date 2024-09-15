@@ -8,18 +8,18 @@ import { MarkdownString } from "../../../../base/common/htmlContent.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { compare, compareSubstring } from "../../../../base/common/strings.js";
 import { Position } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type { IWordAtPosition } from "../../../../editor/common/core/wordHelper.js";
 import {
+	CompletionItemInsertTextRule,
+	CompletionItemKind,
+	CompletionTriggerKind,
 	type Command,
 	type CompletionContext,
 	type CompletionItem,
-	CompletionItemInsertTextRule,
-	CompletionItemKind,
 	type CompletionItemLabel,
 	type CompletionItemProvider,
 	type CompletionList,
-	CompletionTriggerKind,
 } from "../../../../editor/common/languages.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { ILanguageConfigurationService } from "../../../../editor/common/languages/languageConfigurationRegistry.js";
@@ -102,7 +102,8 @@ export class SnippetCompletionProvider implements CompletionItemProvider {
 	constructor(
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@ISnippetsService private readonly _snippets: ISnippetsService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		//
 	}

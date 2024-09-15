@@ -11,15 +11,15 @@ import { isAbsolute } from "../../../../base/common/path.js";
 import { equalsIgnoreCase } from "../../../../base/common/strings.js";
 import { URI as uri } from "../../../../base/common/uri.js";
 import type { Position } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import type { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
 import type { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import type { IEditorService } from "../../../services/editor/common/editorService.js";
 import type {
 	IConfigPresentation,
-	IDebugSession,
 	IDebuggerContribution,
+	IDebugSession,
 } from "./debug.js";
 
 const _formatPIIRegexp = /{([^}]+)}/g;

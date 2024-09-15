@@ -19,7 +19,6 @@ import { IConfigurationService } from "../../../../../../platform/configuration/
 import { IContextKeyService } from "../../../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../../../platform/hover/browser/hover.js";
-
 import { IInstantiationService } from "../../../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../../../platform/keybinding/common/keybinding.js";
 import { WorkbenchAsyncDataTree } from "../../../../../../platform/list/browser/listService.js";
@@ -28,8 +27,8 @@ import { IQuickInputService } from "../../../../../../platform/quickinput/common
 import { ITelemetryService } from "../../../../../../platform/telemetry/common/telemetry.js";
 import { IThemeService } from "../../../../../../platform/theme/common/themeService.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../../../browser/parts/views/viewPane.js";
 import { IViewDescriptorService } from "../../../../../common/views.js";
 import { IEditorService } from "../../../../../services/editor/common/editorService.js";
@@ -43,16 +42,16 @@ import {
 } from "../../../../debug/common/debug.js";
 import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
 import {
+	INotebookExecutionStateService,
 	type ICellExecutionStateChangedEvent,
 	type IExecutionStateChangedEvent,
-	INotebookExecutionStateService,
 } from "../../../common/notebookExecutionStateService.js";
 import { INotebookKernelService } from "../../../common/notebookKernelService.js";
 import { getNotebookEditorFromEditorPane } from "../../notebookBrowser.js";
 import {
+	NotebookVariableDataSource,
 	type INotebookScope,
 	type INotebookVariableElement,
-	NotebookVariableDataSource,
 } from "./notebookVariablesDataSource.js";
 import {
 	NotebookVariableAccessibilityProvider,
@@ -88,8 +87,10 @@ export class NotebookVariablesView extends ViewPane {
 	constructor(
 		options: IViewPaneOptions,
 		@IEditorService private readonly editorService: IEditorService,
-		@INotebookKernelService private readonly notebookKernelService: INotebookKernelService,
-		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookKernelService
+		private readonly notebookKernelService: INotebookKernelService,
+		@INotebookExecutionStateService
+		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -102,18 +103,47 @@ export class NotebookVariablesView extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@IMenuService private readonly menuService: IMenuService
+		@IMenuService private readonly menuService: IMenuService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this._register(this.editorService.onDidActiveEditorChange(this.handleActiveEditorChange.bind(this)));
-		this._register(this.notebookKernelService.onDidNotebookVariablesUpdate(this.handleVariablesChanged.bind(this)));
-		this._register(this.notebookExecutionStateService.onDidChangeExecution(this.handleExecutionStateChange.bind(this)));
+		this._register(
+			this.editorService.onDidActiveEditorChange(
+				this.handleActiveEditorChange.bind(this),
+			),
+		);
+		this._register(
+			this.notebookKernelService.onDidNotebookVariablesUpdate(
+				this.handleVariablesChanged.bind(this),
+			),
+		);
+		this._register(
+			this.notebookExecutionStateService.onDidChangeExecution(
+				this.handleExecutionStateChange.bind(this),
+			),
+		);
 
 		this.setActiveNotebook();
 
-		this.dataSource = new NotebookVariableDataSource(this.notebookKernelService);
-		this.updateScheduler = new RunOnceScheduler(() => this.tree?.updateChildren(), 100);
+		this.dataSource = new NotebookVariableDataSource(
+			this.notebookKernelService,
+		);
+		this.updateScheduler = new RunOnceScheduler(
+			() => this.tree?.updateChildren(),
+			100,
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {

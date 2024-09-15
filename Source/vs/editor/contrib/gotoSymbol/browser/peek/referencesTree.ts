@@ -20,9 +20,9 @@ import type {
 	ITreeRenderer,
 } from "../../../../../base/browser/ui/tree/tree.js";
 import {
+	createMatches,
 	FuzzyScore,
 	type IMatch,
-	createMatches,
 } from "../../../../../base/common/filters.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { basename, dirname } from "../../../../../base/common/resources.js";
@@ -45,7 +45,9 @@ export type TreeElement = FileReferences | OneReference;
 export class DataSource
 	implements IAsyncDataSource<ReferencesModel | FileReferences, TreeElement>
 {
-	constructor(@ITextModelService private readonly _resolverService: ITextModelService) { }
+	constructor(
+		@ITextModelService private readonly _resolverService: ITextModelService,
+	) {}
 
 	hasChildren(
 		element: ReferencesModel | FileReferences | TreeElement,
@@ -99,7 +101,10 @@ export class Delegate implements IListVirtualDelegate<TreeElement> {
 export class StringRepresentationProvider
 	implements IKeyboardNavigationLabelProvider<TreeElement>
 {
-	constructor(@IKeybindingService private readonly _keybindingService: IKeybindingService) { }
+	constructor(
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+	) {}
 
 	getKeyboardNavigationLabel(element: TreeElement): { toString(): string } {
 		if (element instanceof OneReference) {
@@ -133,14 +138,20 @@ class FileReferencesTemplate extends Disposable {
 
 	constructor(
 		container: HTMLElement,
-		@ILabelService private readonly _labelService: ILabelService
+		@ILabelService private readonly _labelService: ILabelService,
 	) {
 		super();
-		const parent = document.createElement('div');
-		parent.classList.add('reference-file');
-		this.file = this._register(new IconLabel(parent, { supportHighlights: true }));
+		const parent = document.createElement("div");
+		parent.classList.add("reference-file");
+		this.file = this._register(
+			new IconLabel(parent, { supportHighlights: true }),
+		);
 
-		this.badge = new CountBadge(dom.append(parent, dom.$('.count')), {}, defaultCountBadgeStyles);
+		this.badge = new CountBadge(
+			dom.append(parent, dom.$(".count")),
+			{},
+			defaultCountBadgeStyles,
+		);
 
 		container.appendChild(parent);
 	}
@@ -167,13 +178,17 @@ class FileReferencesTemplate extends Disposable {
 }
 
 export class FileReferencesRenderer
-	implements ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
+	implements
+		ITreeRenderer<FileReferences, FuzzyScore, FileReferencesTemplate>
 {
 	static readonly id = "FileReferencesRenderer";
 
 	readonly templateId: string = FileReferencesRenderer.id;
 
-	constructor(@IInstantiationService private readonly _instantiationService: IInstantiationService) { }
+	constructor(
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): FileReferencesTemplate {
 		return this._instantiationService.createInstance(

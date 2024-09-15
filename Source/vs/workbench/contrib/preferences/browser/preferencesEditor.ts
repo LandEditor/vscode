@@ -14,9 +14,9 @@ import { IWorkspaceContextService } from "../../../../platform/workspace/common/
 import { IPreferencesService } from "../../../services/preferences/common/preferences.js";
 import { SettingsEditorModel } from "../../../services/preferences/common/preferencesModels.js";
 import {
-	type IPreferencesRenderer,
 	UserSettingsRenderer,
 	WorkspaceSettingsRenderer,
+	type IPreferencesRenderer,
 } from "./preferencesRenderers.js";
 
 export class SettingsEditorContribution extends Disposable {
@@ -27,14 +27,25 @@ export class SettingsEditorContribution extends Disposable {
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 		this._createPreferencesRenderer();
-		this._register(this.editor.onDidChangeModel(e => this._createPreferencesRenderer()));
-		this._register(this.workspaceContextService.onDidChangeWorkbenchState(() => this._createPreferencesRenderer()));
+		this._register(
+			this.editor.onDidChangeModel((e) =>
+				this._createPreferencesRenderer(),
+			),
+		);
+		this._register(
+			this.workspaceContextService.onDidChangeWorkbenchState(() =>
+				this._createPreferencesRenderer(),
+			),
+		);
 	}
 
 	private async _createPreferencesRenderer(): Promise<void> {

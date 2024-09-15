@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./lineNumbers.css";
+
 import * as platform from "../../../../base/common/platform.js";
 import { registerThemingParticipant } from "../../../../platform/theme/common/themeService.js";
 import {

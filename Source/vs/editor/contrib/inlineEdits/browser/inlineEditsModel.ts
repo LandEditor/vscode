@@ -19,19 +19,19 @@ import {
 	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ISettableObservable,
-	type ITransaction,
-	ObservablePromise,
 	derived,
 	derivedDisposable,
 	derivedHandleChanges,
 	derivedOpts,
 	disposableObservableValue,
+	ObservablePromise,
 	observableSignal,
 	observableValue,
 	recomputeInitiallyAndOnChange,
 	subtransaction,
+	type IObservable,
+	type ISettableObservable,
+	type ITransaction,
 } from "../../../../base/common/observable.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
@@ -40,9 +40,9 @@ import { LineRange } from "../../../common/core/lineRange.js";
 import type { Range } from "../../../common/core/range.js";
 import type { Selection } from "../../../common/core/selection.js";
 import {
+	InlineCompletionTriggerKind,
 	type Command,
 	type InlineCompletionContext,
-	InlineCompletionTriggerKind,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import type { IFeatureDebounceInformation } from "../../../common/services/languageFeatureDebounce.js";
@@ -50,9 +50,9 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import { IModelService } from "../../../common/services/model.js";
 import type { IModelContentChangedEvent } from "../../../common/textModelEvents.js";
 import {
+	provideInlineCompletions,
 	type InlineCompletionItem,
 	type InlineCompletionProviderResult,
-	provideInlineCompletions,
 } from "../../inlineCompletions/browser/model/provideInlineCompletions.js";
 import { InlineEdit } from "./inlineEditsWidget.js";
 
@@ -101,16 +101,23 @@ export class InlineEditsModel extends Disposable {
 
 	constructor(
 		public readonly textModel: ITextModel,
-		public readonly _textModelVersionId: IObservable<number | null, IModelContentChangedEvent | undefined>,
+		public readonly _textModelVersionId: IObservable<
+			number | null,
+			IModelContentChangedEvent | undefined
+		>,
 		private readonly _selection: IObservable<Selection>,
 		protected readonly _debounceValue: IFeatureDebounceInformation,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@IDiffProviderFactoryService private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@IDiffProviderFactoryService
+		private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
 		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
 
-		this._register(recomputeInitiallyAndOnChange(this._fetchInlineEditsPromise));
+		this._register(
+			recomputeInitiallyAndOnChange(this._fetchInlineEditsPromise),
+		);
 	}
 
 	public readonly inlineEdit = derived<InlineEdit | undefined>(

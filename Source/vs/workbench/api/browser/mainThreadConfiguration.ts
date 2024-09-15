@@ -7,14 +7,14 @@ import type { IDisposable } from "../../../base/common/lifecycle.js";
 import { URI } from "../../../base/common/uri.js";
 import {
 	ConfigurationTarget,
-	type IConfigurationOverrides,
 	IConfigurationService,
+	type IConfigurationOverrides,
 } from "../../../platform/configuration/common/configuration.js";
 import {
 	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
-	type IConfigurationRegistry,
 	getScopes,
+	type IConfigurationRegistry,
 } from "../../../platform/configuration/common/configurationRegistry.js";
 import { IEnvironmentService } from "../../../platform/environment/common/environment.js";
 import { Registry } from "../../../platform/registry/common/platform.js";
@@ -23,13 +23,13 @@ import {
 	WorkbenchState,
 } from "../../../platform/workspace/common/workspace.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type IConfigurationInitData,
 	MainContext,
+	type IConfigurationInitData,
 	type MainThreadConfigurationShape,
 } from "../common/extHost.protocol.js";
 
@@ -39,16 +39,25 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
 	) {
-		const proxy = extHostContext.getProxy(ExtHostContext.ExtHostConfiguration);
+		const proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostConfiguration,
+		);
 
 		proxy.$initializeConfiguration(this._getConfigurationData());
-		this._configurationListener = configurationService.onDidChangeConfiguration(e => {
-			proxy.$acceptConfigurationChanged(this._getConfigurationData(), e.change);
-		});
+		this._configurationListener =
+			configurationService.onDidChangeConfiguration((e) => {
+				proxy.$acceptConfigurationChanged(
+					this._getConfigurationData(),
+					e.change,
+				);
+			});
 	}
 
 	private _getConfigurationData(): IConfigurationInitData {
@@ -191,7 +200,7 @@ export class MainThreadConfiguration implements MainThreadConfigurationShape {
 				: scopeToLanguage === false
 					? { resource: overrides.resource }
 					: overrides.overrideIdentifier &&
-							overriddenValue !== undefined
+						  overriddenValue !== undefined
 						? overrides
 						: { resource: overrides.resource };
 		return this.configurationService.updateValue(

@@ -21,25 +21,27 @@ import {
 	raceCancellation,
 } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter } from "../../../../base/common/event.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { assertType, isDefined } from "../../../../base/common/types.js";
+
 import "./renameWidget.css";
+
 import * as nls from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -55,8 +57,8 @@ import {
 	widgetShadow,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import * as domFontInfo from "../../../browser/config/domFontInfo.js";
 import {
@@ -69,12 +71,12 @@ import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { FontInfo } from "../../../common/config/fontInfo.js";
 import type { IDimension } from "../../../common/core/dimension.js";
 import { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import { ScrollType } from "../../../common/editorCommon.js";
 import {
-	type NewSymbolName,
 	NewSymbolNameTag,
 	NewSymbolNameTriggerKind,
+	type NewSymbolName,
 	type ProviderResult,
 } from "../../../common/languages.js";
 
@@ -202,11 +204,13 @@ export class RenameWidget
 		private readonly _editor: ICodeEditor,
 		private readonly _acceptKeybindings: [string, string],
 		@IThemeService private readonly _themeService: IThemeService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILogService private readonly _logService: ILogService,
 	) {
-		this._visibleContextKey = CONTEXT_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
+		this._visibleContextKey =
+			CONTEXT_RENAME_INPUT_VISIBLE.bindTo(contextKeyService);
 
 		this._isEditingRenameCandidate = false;
 
@@ -223,13 +227,17 @@ export class RenameWidget
 
 		this._editor.addContentWidget(this);
 
-		this._disposables.add(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.fontInfo)) {
-				this._updateFont();
-			}
-		}));
+		this._disposables.add(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.fontInfo)) {
+					this._updateFont();
+				}
+			}),
+		);
 
-		this._disposables.add(_themeService.onDidColorThemeChange(this._updateStyles, this));
+		this._disposables.add(
+			_themeService.onDidColorThemeChange(this._updateStyles, this),
+		);
 	}
 
 	dispose(): void {
@@ -1348,7 +1356,7 @@ class RenameCandidateView {
 	} {
 		const totalHeight =
 			lineHeight +
-			RenameCandidateView._PADDING * 2 /* top & bottom padding */;
+			RenameCandidateView._PADDING * 2; /* top & bottom padding */
 		return { totalHeight };
 	}
 

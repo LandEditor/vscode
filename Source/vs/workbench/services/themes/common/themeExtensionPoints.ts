@@ -3,34 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../../../nls.js";
-
-import * as resources from "../../../../base/common/resources.js";
-import * as types from "../../../../base/common/types.js";
-import {
-	type ExtensionMessageCollector,
-	ExtensionsRegistry,
-	type IExtensionPoint,
-} from "../../extensions/common/extensionsRegistry.js";
-import {
-	ExtensionData,
-	type IThemeExtensionPoint,
-	VS_DARK_THEME,
-	VS_HC_LIGHT_THEME,
-	VS_HC_THEME,
-	VS_LIGHT_THEME,
-} from "./workbenchThemeService.js";
-
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import {
 	Disposable,
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
+import * as resources from "../../../../base/common/resources.js";
+import * as types from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
+import * as nls from "../../../../nls.js";
 import type { IExtensionManifest } from "../../../../platform/extensions/common/extensions.js";
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
@@ -40,6 +25,19 @@ import {
 	type IExtensionFeaturesRegistry,
 	type IRenderedData,
 } from "../../extensionManagement/common/extensionFeatures.js";
+import {
+	ExtensionsRegistry,
+	type ExtensionMessageCollector,
+	type IExtensionPoint,
+} from "../../extensions/common/extensionsRegistry.js";
+import {
+	ExtensionData,
+	VS_DARK_THEME,
+	VS_HC_LIGHT_THEME,
+	VS_HC_THEME,
+	VS_LIGHT_THEME,
+	type IThemeExtensionPoint,
+} from "./workbenchThemeService.js";
 
 export function registerColorThemeExtensionPoint() {
 	return ExtensionsRegistry.registerExtensionPoint<IThemeExtensionPoint[]>({

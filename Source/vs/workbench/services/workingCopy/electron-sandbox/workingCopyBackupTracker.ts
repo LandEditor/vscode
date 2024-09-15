@@ -5,16 +5,16 @@
 
 import { Promises, raceCancellation } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
 import { localize } from "../../../../nls.js";
 import {
 	ConfirmResult,
+	getFileNamesMessage,
 	IDialogService,
 	IFileDialogService,
-	getFileNamesMessage,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import { HotExitConfiguration } from "../../../../platform/files/common/files.js";
@@ -41,9 +41,9 @@ import {
 	ShutdownReason,
 } from "../../lifecycle/common/lifecycle.js";
 import {
+	WorkingCopyCapabilities,
 	type IWorkingCopy,
 	type IWorkingCopyIdentifier,
-	WorkingCopyCapabilities,
 } from "../common/workingCopy.js";
 import { IWorkingCopyBackupService } from "../common/workingCopyBackup.js";
 import { WorkingCopyBackupTracker } from "../common/workingCopyBackupTracker.js";
@@ -57,22 +57,38 @@ export class NativeWorkingCopyBackupTracker
 	static readonly ID = "workbench.contrib.nativeWorkingCopyBackupTracker";
 
 	constructor(
-		@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyBackupService
+		workingCopyBackupService: IWorkingCopyBackupService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@ILogService logService: ILogService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IProgressService private readonly progressService: IProgressService,
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService editorService: IEditorService,
-		@IEditorGroupsService editorGroupService: IEditorGroupsService
+		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 	) {
-		super(workingCopyBackupService, workingCopyService, logService, lifecycleService, filesConfigurationService, workingCopyEditorService, editorService, editorGroupService);
+		super(
+			workingCopyBackupService,
+			workingCopyService,
+			logService,
+			lifecycleService,
+			filesConfigurationService,
+			workingCopyEditorService,
+			editorService,
+			editorGroupService,
+		);
 	}
 
 	protected async onFinalBeforeShutdown(

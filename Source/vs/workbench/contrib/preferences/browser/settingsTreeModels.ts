@@ -19,10 +19,10 @@ import {
 	type IConfigurationValue,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type ConfigurationDefaultValueSource,
 	ConfigurationScope,
 	EditPresentationTypes,
 	Extensions,
+	type ConfigurationDefaultValueSource,
 	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -37,28 +37,28 @@ import {
 } from "../../../services/configuration/common/configuration.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
+	SettingMatchType,
+	SettingValueType,
 	type IExtensionSetting,
 	type ISearchResult,
 	type ISetting,
 	type ISettingMatch,
-	SettingMatchType,
-	SettingValueType,
 } from "../../../services/preferences/common/preferences.js";
 import { IUserDataProfileService } from "../../../services/userDataProfile/common/userDataProfile.js";
 import {
+	compareTwoNullableNumbers,
 	ENABLE_EXTENSION_TOGGLE_SETTINGS,
 	ENABLE_LANGUAGE_FILTER,
 	MODIFIED_SETTING_TAG,
 	POLICY_SETTING_TAG,
 	REQUIRE_TRUSTED_WORKSPACE_SETTING_TAG,
-	compareTwoNullableNumbers,
 } from "../common/preferences.js";
 import type { SettingsTarget } from "./preferencesWidgets.js";
 import {
-	type ITOCEntry,
 	knownAcronyms,
 	knownTermMappings,
 	tocData,
+	type ITOCEntry,
 } from "./settingsLayout.js";
 
 export const ONLINE_SERVICES_SETTING_TAG = "usesOnlineServices";
@@ -701,12 +701,13 @@ export class SettingsTreeModel {
 	constructor(
 		protected readonly _viewState: ISettingsEditorViewState,
 		private _isWorkspaceTrusted: boolean,
-		@IWorkbenchConfigurationService private readonly _configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		private readonly _configurationService: IWorkbenchConfigurationService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
-		@IProductService private readonly _productService: IProductService
-	) {
-	}
+		@IUserDataProfileService
+		private readonly _userDataProfileService: IUserDataProfileService,
+		@IProductService private readonly _productService: IProductService,
+	) {}
 
 	get root(): SettingsTreeGroupElement {
 		return this._root;
@@ -1173,15 +1174,25 @@ export class SearchResultModel extends SettingsTreeModel {
 		viewState: ISettingsEditorViewState,
 		settingsOrderByTocIndex: Map<string, number> | null,
 		isWorkspaceTrusted: boolean,
-		@IWorkbenchConfigurationService configurationService: IWorkbenchConfigurationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchConfigurationService
+		configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ILanguageService languageService: ILanguageService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IProductService productService: IProductService
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
+		@IProductService productService: IProductService,
 	) {
-		super(viewState, isWorkspaceTrusted, configurationService, languageService, userDataProfileService, productService);
+		super(
+			viewState,
+			isWorkspaceTrusted,
+			configurationService,
+			languageService,
+			userDataProfileService,
+			productService,
+		);
 		this.settingsOrderByTocIndex = settingsOrderByTocIndex;
-		this.update({ id: 'searchResultModel', label: '' });
+		this.update({ id: "searchResultModel", label: "" });
 	}
 
 	private sortResults(filterMatches: ISettingMatch[]): ISettingMatch[] {

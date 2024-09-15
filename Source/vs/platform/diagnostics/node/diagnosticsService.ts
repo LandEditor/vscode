@@ -5,11 +5,12 @@
 
 import * as fs from "fs";
 import * as osLib from "os";
+
 import { Promises } from "../../../base/common/async.js";
 import {
-	type ParseError,
 	getNodeType,
 	parse,
+	type ParseError,
 } from "../../../base/common/json.js";
 import { Schemas } from "../../../base/common/network.js";
 import { basename, join } from "../../../base/common/path.js";
@@ -18,13 +19,14 @@ import type { ProcessItem } from "../../../base/common/processes.js";
 import { StopWatch } from "../../../base/common/stopwatch.js";
 import { URI } from "../../../base/common/uri.js";
 import { virtualMachineHint } from "../../../base/node/id.js";
-import { type IDirent, Promises as pfs } from "../../../base/node/pfs.js";
+import { Promises as pfs, type IDirent } from "../../../base/node/pfs.js";
 import { listProcesses } from "../../../base/node/ps.js";
 import { ByteSize } from "../../files/common/files.js";
 import { IProductService } from "../../product/common/productService.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import type { IWorkspace } from "../../workspace/common/workspace.js";
 import {
+	isRemoteDiagnosticError,
 	type IDiagnosticsService,
 	type IMachineInfo,
 	type IMainProcessDiagnostics,
@@ -35,7 +37,6 @@ import {
 	type SystemInfo,
 	type WorkspaceStatItem,
 	type WorkspaceStats,
-	isRemoteDiagnosticError,
 } from "../common/diagnostics.js";
 
 interface ConfigFilePatterns {
@@ -270,8 +271,8 @@ export class DiagnosticsService implements IDiagnosticsService {
 
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IProductService private readonly productService: IProductService
-	) { }
+		@IProductService private readonly productService: IProductService,
+	) {}
 
 	private formatMachineInfo(info: IMachineInfo): string {
 		const output: string[] = [];

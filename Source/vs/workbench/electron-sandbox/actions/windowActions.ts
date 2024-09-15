@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/actions.css";
+
 import { getZoomLevel } from "../../../base/browser/browser.js";
 import { getActiveWindow } from "../../../base/browser/dom.js";
 import { Codicon } from "../../../base/common/codicons.js";
@@ -18,8 +19,8 @@ import { localize, localize2 } from "../../../nls.js";
 import { Categories } from "../../../platform/action/common/actionCommonCategories.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
+	type IAction2Options,
 } from "../../../platform/actions/common/actions.js";
 import type { ICommandHandler } from "../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../platform/configuration/common/configuration.js";
@@ -29,21 +30,21 @@ import { IKeybindingService } from "../../../platform/keybinding/common/keybindi
 import { KeybindingWeight } from "../../../platform/keybinding/common/keybindingsRegistry.js";
 import { INativeHostService } from "../../../platform/native/common/native.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPickItem,
 	type QuickPickInput,
 } from "../../../platform/quickinput/common/quickInput.js";
 import {
+	isOpenedAuxiliaryWindow,
 	type IOpenedAuxiliaryWindow,
 	type IOpenedMainWindow,
-	isOpenedAuxiliaryWindow,
 } from "../../../platform/window/common/window.js";
 import {
+	applyZoom,
 	ApplyZoomTarget,
 	MAX_ZOOM_LEVEL,
 	MIN_ZOOM_LEVEL,
-	applyZoom,
 } from "../../../platform/window/electron-sandbox/window.js";
 import {
 	isSingleFolderWorkspaceIdentifier,

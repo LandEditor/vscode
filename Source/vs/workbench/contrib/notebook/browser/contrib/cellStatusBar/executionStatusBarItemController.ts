@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	RunOnceScheduler,
 	disposableTimeout,
+	RunOnceScheduler,
 } from "../../../../../../base/common/async.js";
 import type { IMarkdownString } from "../../../../../../base/common/htmlContent.js";
 import {
 	Disposable,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../../../base/common/lifecycle.js";
 import { language } from "../../../../../../base/common/platform.js";
 import { ThemeIcon } from "../../../../../../base/common/themables.js";
@@ -21,14 +21,14 @@ import { IInstantiationService } from "../../../../../../platform/instantiation/
 import { themeColorFromId } from "../../../../../../platform/theme/common/themeService.js";
 import {
 	CellStatusbarAlignment,
-	type INotebookCellStatusBarItem,
 	NotebookCellExecutionState,
+	type INotebookCellStatusBarItem,
 	type NotebookCellInternalMetadata,
 } from "../../../common/notebookCommon.js";
 import {
-	type INotebookCellExecution,
 	INotebookExecutionStateService,
 	NotebookExecutionType,
+	type INotebookCellExecution,
 } from "../../../common/notebookExecutionStateService.js";
 import { INotebookService } from "../../../common/notebookService.js";
 import type {
@@ -49,8 +49,8 @@ import {
 	successStateIcon,
 } from "../../notebookIcons.js";
 import {
-	type ICellVisibilityChangeEvent,
 	NotebookVisibleCellObserver,
+	type ICellVisibilityChangeEvent,
 } from "./notebookVisibleCellObserver.js";
 
 export function formatCellDuration(
@@ -176,17 +176,25 @@ class ExecutionStateCellStatusBarItem extends Disposable {
 	constructor(
 		private readonly _notebookViewModel: INotebookViewModel,
 		private readonly _cell: ICellViewModel,
-		@INotebookExecutionStateService private readonly _executionStateService: INotebookExecutionStateService
+		@INotebookExecutionStateService
+		private readonly _executionStateService: INotebookExecutionStateService,
 	) {
 		super();
 
 		this._update();
-		this._register(this._executionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell && e.affectsCell(this._cell.uri)) {
-				this._update();
-			}
-		}));
-		this._register(this._cell.model.onDidChangeInternalMetadata(() => this._update()));
+		this._register(
+			this._executionStateService.onDidChangeExecution((e) => {
+				if (
+					e.type === NotebookExecutionType.cell &&
+					e.affectsCell(this._cell.uri)
+				) {
+					this._update();
+				}
+			}),
+		);
+		this._register(
+			this._cell.model.onDidChangeInternalMetadata(() => this._update()),
+		);
 	}
 
 	private async _update() {
@@ -359,14 +367,22 @@ class TimerCellStatusBarItem extends Disposable {
 	constructor(
 		private readonly _notebookViewModel: INotebookViewModel,
 		private readonly _cell: ICellViewModel,
-		@INotebookExecutionStateService private readonly _executionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly _executionStateService: INotebookExecutionStateService,
 		@INotebookService private readonly _notebookService: INotebookService,
 	) {
 		super();
 
-		this._scheduler = this._register(new RunOnceScheduler(() => this._update(), TimerCellStatusBarItem.UPDATE_INTERVAL));
+		this._scheduler = this._register(
+			new RunOnceScheduler(
+				() => this._update(),
+				TimerCellStatusBarItem.UPDATE_INTERVAL,
+			),
+		);
 		this._update();
-		this._register(this._cell.model.onDidChangeInternalMetadata(() => this._update()));
+		this._register(
+			this._cell.model.onDidChangeInternalMetadata(() => this._update()),
+		);
 	}
 
 	private async _update() {

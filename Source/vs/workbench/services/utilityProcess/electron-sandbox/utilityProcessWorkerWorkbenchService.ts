@@ -7,13 +7,13 @@ import { Barrier, timeout } from "../../../../base/common/async.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type IPCClient,
 	ProxyChannel,
+	type IPCClient,
 } from "../../../../base/parts/ipc/common/ipc.js";
 import { Client as MessagePortClient } from "../../../../base/parts/ipc/common/ipc.mp.js";
 import { acquirePort } from "../../../../base/parts/ipc/electron-sandbox/ipc.mp.js";
@@ -21,10 +21,10 @@ import { createDecorator } from "../../../../platform/instantiation/common/insta
 import { IMainProcessService } from "../../../../platform/ipc/common/mainProcessService.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
+	ipcUtilityProcessWorkerChannelName,
 	type IOnDidTerminateUtilityrocessWorkerProcess,
 	type IUtilityProcessWorkerProcess,
 	type IUtilityProcessWorkerService,
-	ipcUtilityProcessWorkerChannelName,
 } from "../../../../platform/utilityProcess/common/utilityProcessWorkerService.js";
 
 export const IUtilityProcessWorkerWorkbenchService =
@@ -111,7 +111,8 @@ export class UtilityProcessWorkerWorkbenchService
 	constructor(
 		readonly windowId: number,
 		@ILogService private readonly logService: ILogService,
-		@IMainProcessService private readonly mainProcessService: IMainProcessService
+		@IMainProcessService
+		private readonly mainProcessService: IMainProcessService,
 	) {
 		super();
 	}

@@ -14,18 +14,18 @@ import type {
 import { ICodeEditorService } from "../../../editor/browser/services/codeEditorService.js";
 import type { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import {
-	type IWebviewElement,
 	IWebviewService,
+	type IWebviewElement,
 } from "../../contrib/webview/browser/webview.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostEditorInsetsShape,
 	type IWebviewContentOptions,
-	MainContext,
 	type MainThreadEditorInsetsShape,
 } from "../common/extHost.protocol.js";
 import { reviveWebviewContentOptions } from "./mainThreadWebviews.js";

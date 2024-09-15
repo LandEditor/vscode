@@ -5,6 +5,7 @@
 
 import * as fs from "fs";
 import { tmpdir } from "os";
+
 import { Queue } from "../../../base/common/async.js";
 import { randomPath } from "../../../base/common/extpath.js";
 import { resolveTerminalEncoding } from "../../../base/node/terminalEncoding.js";

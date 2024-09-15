@@ -14,10 +14,10 @@ import { isEqual } from "../../../../../base/common/resources.js";
 import * as strings from "../../../../../base/common/strings.js";
 import { URI } from "../../../../../base/common/uri.js";
 import {
-	type IActiveCodeEditor,
-	type ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
+	type IActiveCodeEditor,
+	type ICodeEditor,
 } from "../../../../../editor/browser/editorBrowser.js";
 import type { ServicesAccessor } from "../../../../../editor/browser/editorExtensions.js";
 import {
@@ -28,12 +28,12 @@ import { ICodeEditorService } from "../../../../../editor/browser/services/codeE
 import { Range } from "../../../../../editor/common/core/range.js";
 import { EditorContextKeys } from "../../../../../editor/common/editorContextKeys.js";
 import {
+	isLocation,
 	type ConversationRequest,
 	type ConversationResponse,
 	type DocumentContextItem,
 	type IWorkspaceFileEdit,
 	type IWorkspaceTextEdit,
-	isLocation,
 } from "../../../../../editor/common/languages.js";
 import { ILanguageService } from "../../../../../editor/common/languages/language.js";
 import type { ITextModel } from "../../../../../editor/common/model.js";
@@ -82,14 +82,14 @@ import {
 } from "../../common/chatContextKeys.js";
 import {
 	ChatCopyKind,
-	type IChatContentReference,
 	IChatService,
+	type IChatContentReference,
 	type IDocumentContext,
 } from "../../common/chatService.js";
 import {
-	type IChatResponseViewModel,
 	isRequestVM,
 	isResponseVM,
+	type IChatResponseViewModel,
 } from "../../common/chatViewModel.js";
 import {
 	IChatCodeBlockContextProviderService,

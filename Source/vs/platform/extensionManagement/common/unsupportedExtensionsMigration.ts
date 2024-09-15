@@ -7,10 +7,10 @@ import { CancellationToken } from "../../../base/common/cancellation.js";
 import { ExtensionType } from "../../extensions/common/extensions.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
+	InstallOperation,
 	type IExtensionGalleryService,
 	type IExtensionManagementService,
 	type IGlobalExtensionEnablementService,
-	InstallOperation,
 } from "./extensionManagement.js";
 import {
 	areSameExtensions,

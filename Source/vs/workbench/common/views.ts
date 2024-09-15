@@ -13,10 +13,10 @@ import type {
 } from "../../base/common/htmlContent.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../base/common/lifecycle.js";
-import { SetMap, getOrSet } from "../../base/common/map.js";
+import { getOrSet, SetMap } from "../../base/common/map.js";
 import { mixin } from "../../base/common/objects.js";
 import type Severity from "../../base/common/severity.js";
 import type { ThemeIcon } from "../../base/common/themables.js";

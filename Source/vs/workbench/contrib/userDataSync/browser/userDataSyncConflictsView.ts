@@ -30,34 +30,34 @@ import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
 	reviveProfile,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	Change,
-	type IResourcePreview,
 	IUserDataSyncEnablementService,
-	type IUserDataSyncResource,
 	IUserDataSyncService,
 	MergeState,
+	type IResourcePreview,
+	type IUserDataSyncResource,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { TreeViewPane } from "../../../browser/parts/views/treeView.js";
 import type { IViewletViewOptions } from "../../../browser/parts/views/viewsViewlet.js";
 import { DEFAULT_EDITOR_ASSOCIATION } from "../../../common/editor.js";
 import {
-	type ITreeItem,
 	IViewDescriptorService,
 	TreeItemCollapsibleState,
+	type ITreeItem,
 	type TreeViewItemHandleArg,
 } from "../../../common/views.js";
 import { IAccessibleViewInformationService } from "../../../services/accessibility/common/accessibleViewInformationService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IUserDataSyncConflictsView,
+	getSyncAreaLabel,
 	IUserDataSyncWorkbenchService,
 	SYNC_CONFLICTS_VIEW_ID,
-	getSyncAreaLabel,
+	type IUserDataSyncConflictsView,
 } from "../../../services/userDataSync/common/userDataSync.js";
 
 type UserDataSyncConflictResource = IUserDataSyncResource & IResourcePreview;
@@ -80,14 +80,37 @@ export class UserDataSyncConflictsViewPane
 		@ITelemetryService telemetryService: ITelemetryService,
 		@INotificationService notificationService: INotificationService,
 		@IHoverService hoverService: IHoverService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IAccessibleViewInformationService accessibleViewVisibilityService: IAccessibleViewInformationService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IAccessibleViewInformationService
+		accessibleViewVisibilityService: IAccessibleViewInformationService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, notificationService, hoverService, accessibleViewVisibilityService);
-		this._register(this.userDataSyncService.onDidChangeConflicts(() => this.treeView.refresh()));
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			notificationService,
+			hoverService,
+			accessibleViewVisibilityService,
+		);
+		this._register(
+			this.userDataSyncService.onDidChangeConflicts(() =>
+				this.treeView.refresh(),
+			),
+		);
 		this.registerActions();
 	}
 

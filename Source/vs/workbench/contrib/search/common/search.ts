@@ -10,7 +10,7 @@ import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import { compare } from "../../../../base/common/strings.js";
 import { isNumber } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type {
 	Location,
 	ProviderResult,

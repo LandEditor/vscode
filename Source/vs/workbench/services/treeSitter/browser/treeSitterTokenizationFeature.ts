@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Parser } from "@vscode/tree-sitter-wasm";
+
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
@@ -12,23 +13,23 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type AppResourcePath,
 	FileAccess,
+	type AppResourcePath,
 } from "../../../../base/common/network.js";
 import {
 	FontStyle,
 	MetadataConsts,
 } from "../../../../editor/common/encodedTokenAttributes.js";
 import {
-	type ITreeSitterTokenizationSupport,
 	LazyTokenizationSupport,
 	TreeSitterTokenizationRegistry,
+	type ITreeSitterTokenizationSupport,
 } from "../../../../editor/common/languages.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import {
 	EDITOR_EXPERIMENTAL_PREFER_TREESITTER,
-	type ITreeSitterParseResult,
 	ITreeSitterParserService,
+	type ITreeSitterParseResult,
 } from "../../../../editor/common/services/treeSitterParserService.js";
 import type { IModelTokensChangedEvent } from "../../../../editor/common/textModelEvents.js";
 import { ColumnRange } from "../../../../editor/contrib/inlineCompletions/browser/utils.js";
@@ -39,8 +40,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import type { TokenStyle } from "../../../../platform/theme/common/tokenClassificationRegistry.js";
@@ -69,18 +70,26 @@ class TreeSitterTokenizationFeature
 	> = new DisposableMap();
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IFileService private readonly _fileService: IFileService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IFileService private readonly _fileService: IFileService,
 	) {
 		super();
 
 		this._handleGrammarsExtPoint();
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(EDITOR_EXPERIMENTAL_PREFER_TREESITTER)) {
-				this._handleGrammarsExtPoint();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						EDITOR_EXPERIMENTAL_PREFER_TREESITTER,
+					)
+				) {
+					this._handleGrammarsExtPoint();
+				}
+			}),
+		);
 	}
 
 	private _getSetting(): string[] {
@@ -160,11 +169,17 @@ class TreeSitterTokenizationSupport
 	constructor(
 		private readonly _queries: TreeSitterQueries,
 		private readonly _languageId: string,
-		@ITreeSitterParserService private readonly _treeSitterService: ITreeSitterParserService,
+		@ITreeSitterParserService
+		private readonly _treeSitterService: ITreeSitterParserService,
 		@IThemeService private readonly _themeService: IThemeService,
 	) {
 		super();
-		this._register(Event.runAndSubscribe(this._themeService.onDidColorThemeChange, () => this.reset()));
+		this._register(
+			Event.runAndSubscribe(
+				this._themeService.onDidColorThemeChange,
+				() => this.reset(),
+			),
+		);
 	}
 
 	private _getTree(

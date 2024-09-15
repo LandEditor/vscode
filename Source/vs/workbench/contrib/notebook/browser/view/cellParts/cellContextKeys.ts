@@ -9,8 +9,8 @@ import {
 } from "../../../../../../base/common/lifecycle.js";
 import { autorun } from "../../../../../../base/common/observable.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../../platform/instantiation/common/instantiation.js";
 import { NotebookCellExecutionState } from "../../../common/notebookCommon.js";
@@ -52,11 +52,18 @@ export class CellContextKeyPart extends CellContentPart {
 
 	constructor(
 		notebookEditor: INotebookEditorDelegate,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this.cellContextKeyManager = this._register(this.instantiationService.createInstance(CellContextKeyManager, notebookEditor, undefined));
+		this.cellContextKeyManager = this._register(
+			this.instantiationService.createInstance(
+				CellContextKeyManager,
+				notebookEditor,
+				undefined,
+			),
+		);
 	}
 
 	override didRenderCell(element: ICellViewModel): void {
@@ -86,37 +93,72 @@ export class CellContextKeyManager extends Disposable {
 	constructor(
 		private readonly notebookEditor: INotebookEditorDelegate,
 		private element: ICellViewModel | undefined,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
 
 		this._contextKeyService.bufferChangeEvents(() => {
 			this.cellType = NOTEBOOK_CELL_TYPE.bindTo(this._contextKeyService);
-			this.cellEditable = NOTEBOOK_CELL_EDITABLE.bindTo(this._contextKeyService);
-			this.cellFocused = NOTEBOOK_CELL_FOCUSED.bindTo(this._contextKeyService);
-			this.cellEditorFocused = NOTEBOOK_CELL_EDITOR_FOCUSED.bindTo(this._contextKeyService);
-			this.markdownEditMode = NOTEBOOK_CELL_MARKDOWN_EDIT_MODE.bindTo(this._contextKeyService);
-			this.cellRunState = NOTEBOOK_CELL_EXECUTION_STATE.bindTo(this._contextKeyService);
-			this.cellExecuting = NOTEBOOK_CELL_EXECUTING.bindTo(this._contextKeyService);
-			this.cellHasOutputs = NOTEBOOK_CELL_HAS_OUTPUTS.bindTo(this._contextKeyService);
-			this.cellContentCollapsed = NOTEBOOK_CELL_INPUT_COLLAPSED.bindTo(this._contextKeyService);
-			this.cellOutputCollapsed = NOTEBOOK_CELL_OUTPUT_COLLAPSED.bindTo(this._contextKeyService);
-			this.cellLineNumbers = NOTEBOOK_CELL_LINE_NUMBERS.bindTo(this._contextKeyService);
-			this.cellGeneratedByChat = NOTEBOOK_CELL_GENERATED_BY_CHAT.bindTo(this._contextKeyService);
-			this.cellResource = NOTEBOOK_CELL_RESOURCE.bindTo(this._contextKeyService);
-			this.cellHasErrorDiagnostics = NOTEBOOK_CELL_HAS_ERROR_DIAGNOSTICS.bindTo(this._contextKeyService);
+			this.cellEditable = NOTEBOOK_CELL_EDITABLE.bindTo(
+				this._contextKeyService,
+			);
+			this.cellFocused = NOTEBOOK_CELL_FOCUSED.bindTo(
+				this._contextKeyService,
+			);
+			this.cellEditorFocused = NOTEBOOK_CELL_EDITOR_FOCUSED.bindTo(
+				this._contextKeyService,
+			);
+			this.markdownEditMode = NOTEBOOK_CELL_MARKDOWN_EDIT_MODE.bindTo(
+				this._contextKeyService,
+			);
+			this.cellRunState = NOTEBOOK_CELL_EXECUTION_STATE.bindTo(
+				this._contextKeyService,
+			);
+			this.cellExecuting = NOTEBOOK_CELL_EXECUTING.bindTo(
+				this._contextKeyService,
+			);
+			this.cellHasOutputs = NOTEBOOK_CELL_HAS_OUTPUTS.bindTo(
+				this._contextKeyService,
+			);
+			this.cellContentCollapsed = NOTEBOOK_CELL_INPUT_COLLAPSED.bindTo(
+				this._contextKeyService,
+			);
+			this.cellOutputCollapsed = NOTEBOOK_CELL_OUTPUT_COLLAPSED.bindTo(
+				this._contextKeyService,
+			);
+			this.cellLineNumbers = NOTEBOOK_CELL_LINE_NUMBERS.bindTo(
+				this._contextKeyService,
+			);
+			this.cellGeneratedByChat = NOTEBOOK_CELL_GENERATED_BY_CHAT.bindTo(
+				this._contextKeyService,
+			);
+			this.cellResource = NOTEBOOK_CELL_RESOURCE.bindTo(
+				this._contextKeyService,
+			);
+			this.cellHasErrorDiagnostics =
+				NOTEBOOK_CELL_HAS_ERROR_DIAGNOSTICS.bindTo(
+					this._contextKeyService,
+				);
 
 			if (element) {
 				this.updateForElement(element);
 			}
 		});
 
-		this._register(this._notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell && this.element && e.affectsCell(this.element.uri)) {
-				this.updateForExecutionState();
-			}
-		}));
+		this._register(
+			this._notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (
+					e.type === NotebookExecutionType.cell &&
+					this.element &&
+					e.affectsCell(this.element.uri)
+				) {
+					this.updateForExecutionState();
+				}
+			}),
+		);
 	}
 
 	public updateForElement(element: ICellViewModel | undefined) {

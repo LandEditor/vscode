@@ -11,12 +11,12 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ISettableObservable,
 	autorun,
 	constObservable,
 	derived,
 	derivedWithSetter,
+	type IObservable,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import { MenuWorkbenchToolBar } from "../../../../platform/actions/browser/toolbar.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
@@ -48,6 +48,7 @@ import { TextModel } from "../../../common/model/textModel.js";
 import { ContextMenuController } from "../../contextmenu/browser/contextmenu.js";
 import { PlaceholderTextContribution } from "../../placeholderText/browser/placeholderTextContribution.js";
 import { SuggestController } from "../../suggest/browser/suggestController.js";
+
 import "./inlineEditsWidget.css";
 
 export class InlineEdit {
@@ -405,80 +406,119 @@ export class InlineEditsWidget extends Disposable {
 		private readonly _editor: ICodeEditor,
 		private readonly _edit: IObservable<InlineEdit | undefined>,
 		private readonly _userPrompt: ISettableObservable<string | undefined>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
-		const visible = derived(this, reader => this._edit.read(reader) !== undefined || this._userPrompt.read(reader) !== undefined);
-		this._register(applyStyle(this._elements.root, {
-			display: derived(this, reader => visible.read(reader) ? 'block' : 'none')
-		}));
-
-		this._register(appendRemoveOnDispose(this._editor.getDomNode()!, this._elements.root));
-
-		this._register(observableCodeEditor(_editor).createOverlayWidget({
-			domNode: this._elements.root,
-			position: constObservable(null),
-			allowEditorOverflow: false,
-			minContentWidthInPx: derived(reader => {
-				const x = this._layout1.read(reader)?.left;
-				if (x === undefined) { return 0; }
-				const width = this._previewEditorObs.contentWidth.read(reader);
-				return x + width;
+		const visible = derived(
+			this,
+			(reader) =>
+				this._edit.read(reader) !== undefined ||
+				this._userPrompt.read(reader) !== undefined,
+		);
+		this._register(
+			applyStyle(this._elements.root, {
+				display: derived(this, (reader) =>
+					visible.read(reader) ? "block" : "none",
+				),
 			}),
-		}));
+		);
+
+		this._register(
+			appendRemoveOnDispose(
+				this._editor.getDomNode()!,
+				this._elements.root,
+			),
+		);
+
+		this._register(
+			observableCodeEditor(_editor).createOverlayWidget({
+				domNode: this._elements.root,
+				position: constObservable(null),
+				allowEditorOverflow: false,
+				minContentWidthInPx: derived((reader) => {
+					const x = this._layout1.read(reader)?.left;
+					if (x === undefined) {
+						return 0;
+					}
+					const width =
+						this._previewEditorObs.contentWidth.read(reader);
+					return x + width;
+				}),
+			}),
+		);
 
 		this._previewEditor.setModel(this._previewTextModel);
 
-		this._register(this._previewEditorObs.setDecorations(this._decorations));
+		this._register(
+			this._previewEditorObs.setDecorations(this._decorations),
+		);
 
-		this._register(autorun(reader => {
-			const layoutInfo = this._layout.read(reader);
-			if (!layoutInfo) { return; }
+		this._register(
+			autorun((reader) => {
+				const layoutInfo = this._layout.read(reader);
+				if (!layoutInfo) {
+					return;
+				}
 
-			const { topCode, bottomCode, topEdit, bottomEdit, editHeight } = layoutInfo;
+				const { topCode, bottomCode, topEdit, bottomEdit, editHeight } =
+					layoutInfo;
 
-			const straightWidthCode = 10;
-			const straightWidthEdit = 0;
-			const bezierDist = 40;
+				const straightWidthCode = 10;
+				const straightWidthEdit = 0;
+				const bezierDist = 40;
 
-			const path = new PathBuilder()
-				.moveTo(topCode)
-				.lineTo(topCode.deltaX(straightWidthCode))
-				.curveTo(
-					topCode.deltaX(straightWidthCode + bezierDist),
-					topEdit.deltaX(-bezierDist - straightWidthEdit),
-					topEdit.deltaX(-straightWidthEdit),
-				)
-				.lineTo(topEdit)
-				.lineTo(bottomEdit)
-				.lineTo(bottomEdit.deltaX(-straightWidthEdit))
-				.curveTo(
-					bottomEdit.deltaX(-bezierDist - straightWidthEdit),
-					bottomCode.deltaX(straightWidthCode + bezierDist),
-					bottomCode.deltaX(straightWidthCode),
-				)
-				.lineTo(bottomCode)
-				.build();
+				const path = new PathBuilder()
+					.moveTo(topCode)
+					.lineTo(topCode.deltaX(straightWidthCode))
+					.curveTo(
+						topCode.deltaX(straightWidthCode + bezierDist),
+						topEdit.deltaX(-bezierDist - straightWidthEdit),
+						topEdit.deltaX(-straightWidthEdit),
+					)
+					.lineTo(topEdit)
+					.lineTo(bottomEdit)
+					.lineTo(bottomEdit.deltaX(-straightWidthEdit))
+					.curveTo(
+						bottomEdit.deltaX(-bezierDist - straightWidthEdit),
+						bottomCode.deltaX(straightWidthCode + bezierDist),
+						bottomCode.deltaX(straightWidthCode),
+					)
+					.lineTo(bottomCode)
+					.build();
 
+				this._elements.path.setAttribute("d", path);
 
-			this._elements.path.setAttribute('d', path);
+				this._elements.editorContainer.style.top = `${topEdit.y}px`;
+				this._elements.editorContainer.style.left = `${topEdit.x}px`;
+				this._elements.editorContainer.style.height = `${editHeight}px`;
 
-			this._elements.editorContainer.style.top = `${topEdit.y}px`;
-			this._elements.editorContainer.style.left = `${topEdit.x}px`;
-			this._elements.editorContainer.style.height = `${editHeight}px`;
-
-			const width = this._previewEditorObs.contentWidth.read(reader);
-			this._previewEditor.layout({ height: editHeight, width });
-		}));
+				const width = this._previewEditorObs.contentWidth.read(reader);
+				this._previewEditor.layout({ height: editHeight, width });
+			}),
+		);
 
 		this._promptEditor.setModel(this._promptTextModel);
 		this._promptEditor.layout();
-		this._register(createTwoWaySync(mapSettableObservable(this._userPrompt, v => v ?? '', v => v), observableCodeEditor(this._promptEditor).value));
+		this._register(
+			createTwoWaySync(
+				mapSettableObservable(
+					this._userPrompt,
+					(v) => v ?? "",
+					(v) => v,
+				),
+				observableCodeEditor(this._promptEditor).value,
+			),
+		);
 
-		this._register(autorun(reader => {
-			const isFocused = observableCodeEditor(this._promptEditor).isFocused.read(reader);
-			this._elements.root.classList.toggle('focused', isFocused);
-		}));
+		this._register(
+			autorun((reader) => {
+				const isFocused = observableCodeEditor(
+					this._promptEditor,
+				).isFocused.read(reader);
+				this._elements.root.classList.toggle("focused", isFocused);
+			}),
+		);
 	}
 }
 

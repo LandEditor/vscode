@@ -8,12 +8,12 @@ import * as platform from "../../../../base/common/platform.js";
 import Severity from "../../../../base/common/severity.js";
 import { localize } from "../../../../nls.js";
 import {
-	type DidUninstallExtensionEvent,
 	IExtensionGalleryService,
 	IExtensionManagementService,
+	InstallOperation,
+	type DidUninstallExtensionEvent,
 	type ILocalExtension,
 	type InstallExtensionResult,
-	InstallOperation,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
 	INotificationService,
@@ -28,8 +28,8 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { ILocaleService } from "../../../services/localization/common/locale.js";
@@ -42,20 +42,32 @@ class NativeLocalizationWorkbenchContribution extends BaseLocalizationWorkbenchC
 		"extensionsAssistant/languagePackSuggestionIgnore";
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ILocaleService private readonly localeService: ILocaleService,
 		@IProductService private readonly productService: IProductService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super();
 
 		this.checkAndInstall();
-		this._register(this.extensionManagementService.onDidInstallExtensions(e => this.onDidInstallExtensions(e)));
-		this._register(this.extensionManagementService.onDidUninstallExtension(e => this.onDidUninstallExtension(e)));
+		this._register(
+			this.extensionManagementService.onDidInstallExtensions((e) =>
+				this.onDidInstallExtensions(e),
+			),
+		);
+		this._register(
+			this.extensionManagementService.onDidUninstallExtension((e) =>
+				this.onDidUninstallExtension(e),
+			),
+		);
 	}
 
 	private async onDidInstallExtensions(

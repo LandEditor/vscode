@@ -14,29 +14,29 @@ import {
 	MessageType,
 } from "../../../../../base/browser/ui/inputbox/inputBox.js";
 import {
-	type IListVirtualDelegate,
 	ListDragOverEffectPosition,
 	ListDragOverEffectType,
+	type IListVirtualDelegate,
 } from "../../../../../base/browser/ui/list/list.js";
 import {
-	type ElementsDragAndDropData,
 	ExternalElementsDragAndDropData,
 	ListViewTargetSector,
 	NativeDragAndDropData,
+	type ElementsDragAndDropData,
 } from "../../../../../base/browser/ui/list/listView.js";
 import type { IListAccessibilityProvider } from "../../../../../base/browser/ui/list/listWidget.js";
 import type { ITreeCompressionDelegate } from "../../../../../base/browser/ui/tree/asyncDataTree.js";
 import type { ICompressedTreeNode } from "../../../../../base/browser/ui/tree/compressedObjectTreeModel.js";
 import type { ICompressibleTreeRenderer } from "../../../../../base/browser/ui/tree/objectTree.js";
 import {
+	TreeDragOverBubble,
+	TreeVisibility,
 	type IAsyncDataSource,
 	type ITreeDragAndDrop,
 	type ITreeDragOverReaction,
 	type ITreeFilter,
 	type ITreeNode,
 	type ITreeSorter,
-	TreeDragOverBubble,
-	TreeVisibility,
 } from "../../../../../base/browser/ui/tree/tree.js";
 import { mainWindow } from "../../../../../base/browser/window.js";
 import { timeout } from "../../../../../base/common/async.js";
@@ -57,8 +57,8 @@ import {
 	EventMultiplexer,
 } from "../../../../../base/common/event.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../../base/common/filters.js";
 import { createSingleCallFunction } from "../../../../../base/common/functional.js";
 import * as glob from "../../../../../base/common/glob.js";
@@ -66,9 +66,9 @@ import { KeyCode } from "../../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { ResourceSet } from "../../../../../base/common/map.js";
 import { Schemas } from "../../../../../base/common/network.js";
@@ -86,16 +86,16 @@ import type { URI } from "../../../../../base/common/uri.js";
 import { ResourceFileEdit } from "../../../../../editor/browser/services/bulkEditService.js";
 import { localize } from "../../../../../nls.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../../platform/configuration/common/configuration.js";
 import {
 	IContextMenuService,
 	IContextViewService,
 } from "../../../../../platform/contextview/browser/contextView.js";
 import {
-	IDialogService,
 	getFileNamesMessage,
+	IDialogService,
 } from "../../../../../platform/dialogs/common/dialogs.js";
 import {
 	CodeDataTransfers,
@@ -105,9 +105,9 @@ import { WebFileSystemAccess } from "../../../../../platform/files/browser/webFi
 import {
 	FileChangeType,
 	FileKind,
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { ILabelService } from "../../../../../platform/label/common/label.js";
@@ -123,9 +123,9 @@ import { defaultInputBoxStyles } from "../../../../../platform/theme/browser/def
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	isTemporaryWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState,
-	isTemporaryWorkspace,
 } from "../../../../../platform/workspace/common/workspace.js";
 import type { IWorkspaceFolderCreationData } from "../../../../../platform/workspaces/common/workspaces.js";
 import { fillEditorsDragData } from "../../../../browser/dnd.js";
@@ -143,12 +143,12 @@ import { IgnoreFile } from "../../../../services/search/common/ignoreFile.js";
 import { IWorkspaceEditingService } from "../../../../services/workspaces/common/workspaceEditing.js";
 import { ExplorerItem, NewExplorerItem } from "../../common/explorerModel.js";
 import {
-	type IFilesConfiguration,
 	UndoConfirmLevel,
+	type IFilesConfiguration,
 } from "../../common/files.js";
 import {
-	type IExplorerFileContribution,
 	explorerFileContribRegistry,
+	type IExplorerFileContribution,
 } from "../explorerFileContrib.js";
 import { findValidPasteFileTarget } from "../fileActions.js";
 import {
@@ -177,14 +177,19 @@ export class ExplorerDataSource
 	constructor(
 		private fileFilter: FilesFilter,
 		@IProgressService private readonly progressService: IProgressService,
-		@IConfigurationService private readonly configService: IConfigurationService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IConfigurationService
+		private readonly configService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IFileService private readonly fileService: IFileService,
 		@IExplorerService private readonly explorerService: IExplorerService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IFilesConfigurationService private readonly filesConfigService: IFilesConfigurationService
-	) { }
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IFilesConfigurationService
+		private readonly filesConfigService: IFilesConfigurationService,
+	) {}
 
 	hasChildren(element: ExplorerItem | ExplorerItem[]): boolean {
 		// don't render nest parents as containing children when all the children are filtered out
@@ -440,31 +445,42 @@ export class FilesRenderer
 		container: HTMLElement,
 		private labels: ResourceLabels,
 		private updateWidth: (stat: ExplorerItem) => void,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IExplorerService private readonly explorerService: IExplorerService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		this.config = this.configurationService.getValue<IFilesConfiguration>();
 
 		const updateOffsetStyles = () => {
-			const indent = this.configurationService.getValue<number>('workbench.tree.indent');
+			const indent = this.configurationService.getValue<number>(
+				"workbench.tree.indent",
+			);
 			const offset = Math.max(22 - indent, 0); // derived via inspection
-			container.style.setProperty(`--vscode-explorer-align-offset-margin-left`, `${offset}px`);
+			container.style.setProperty(
+				`--vscode-explorer-align-offset-margin-left`,
+				`${offset}px`,
+			);
 		};
 
-		this.configListener = this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('explorer')) {
-				this.config = this.configurationService.getValue();
-			}
-			if (e.affectsConfiguration('workbench.tree.indent')) {
-				updateOffsetStyles();
-			}
-		});
+		this.configListener =
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("explorer")) {
+					this.config = this.configurationService.getValue();
+				}
+				if (e.affectsConfiguration("workbench.tree.indent")) {
+					updateOffsetStyles();
+				}
+			});
 
 		updateOffsetStyles();
 	}
@@ -988,64 +1004,93 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 	>();
 
 	constructor(
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IExplorerService private readonly explorerService: IExplorerService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IFileService private readonly fileService: IFileService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IFileService private readonly fileService: IFileService,
 	) {
-		this.toDispose.push(this.contextService.onDidChangeWorkspaceFolders(() => this.updateConfiguration()));
-		this.toDispose.push(this.configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('files.exclude') || e.affectsConfiguration('explorer.excludeGitIgnore')) {
-				this.updateConfiguration();
-			}
-		}));
-		this.toDispose.push(this.fileService.onDidFilesChange(e => {
-			// Check to see if the update contains any of the ignoreFileResources
-			for (const [root, ignoreFileResourceSet] of this.ignoreFileResourcesPerRoot.entries()) {
-				ignoreFileResourceSet.forEach(async ignoreResource => {
-					if (e.contains(ignoreResource, FileChangeType.UPDATED)) {
-						await this.processIgnoreFile(root, ignoreResource, true);
+		this.toDispose.push(
+			this.contextService.onDidChangeWorkspaceFolders(() =>
+				this.updateConfiguration(),
+			),
+		);
+		this.toDispose.push(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("files.exclude") ||
+					e.affectsConfiguration("explorer.excludeGitIgnore")
+				) {
+					this.updateConfiguration();
+				}
+			}),
+		);
+		this.toDispose.push(
+			this.fileService.onDidFilesChange((e) => {
+				// Check to see if the update contains any of the ignoreFileResources
+				for (const [
+					root,
+					ignoreFileResourceSet,
+				] of this.ignoreFileResourcesPerRoot.entries()) {
+					ignoreFileResourceSet.forEach(async (ignoreResource) => {
+						if (
+							e.contains(ignoreResource, FileChangeType.UPDATED)
+						) {
+							await this.processIgnoreFile(
+								root,
+								ignoreResource,
+								true,
+							);
+						}
+						if (
+							e.contains(ignoreResource, FileChangeType.DELETED)
+						) {
+							this.ignoreTreesPerRoot
+								.get(root)
+								?.delete(dirname(ignoreResource));
+							ignoreFileResourceSet.delete(ignoreResource);
+							this._onDidChange.fire();
+						}
+					});
+				}
+			}),
+		);
+		this.toDispose.push(
+			this.editorService.onDidVisibleEditorsChange(() => {
+				const editors = this.editorService.visibleEditors;
+				let shouldFire = false;
+
+				for (const e of editors) {
+					if (!e.resource) {
+						continue;
 					}
-					if (e.contains(ignoreResource, FileChangeType.DELETED)) {
-						this.ignoreTreesPerRoot.get(root)?.delete(dirname(ignoreResource));
-						ignoreFileResourceSet.delete(ignoreResource);
-						this._onDidChange.fire();
+
+					const stat = this.explorerService.findClosest(e.resource);
+					if (stat && stat.isExcluded) {
+						// A filtered resource suddenly became visible since user opened an editor
+						shouldFire = true;
+						break;
 					}
-				});
-			}
-		}));
-		this.toDispose.push(this.editorService.onDidVisibleEditorsChange(() => {
-			const editors = this.editorService.visibleEditors;
-			let shouldFire = false;
-
-			for (const e of editors) {
-				if (!e.resource) {
-					continue;
 				}
 
-				const stat = this.explorerService.findClosest(e.resource);
-				if (stat && stat.isExcluded) {
-					// A filtered resource suddenly became visible since user opened an editor
-					shouldFire = true;
-					break;
+				for (const e of this.editorsAffectingFilter) {
+					if (!editors.includes(e)) {
+						// Editor that was affecting filtering is no longer visible
+						shouldFire = true;
+						break;
+					}
 				}
-			}
 
-			for (const e of this.editorsAffectingFilter) {
-				if (!editors.includes(e)) {
-					// Editor that was affecting filtering is no longer visible
-					shouldFire = true;
-					break;
+				if (shouldFire) {
+					this.editorsAffectingFilter.clear();
+					this._onDidChange.fire();
 				}
-			}
-
-			if (shouldFire) {
-				this.editorsAffectingFilter.clear();
-				this._onDidChange.fire();
-			}
-		}));
+			}),
+		);
 		this.updateConfiguration();
 	}
 
@@ -1259,8 +1304,9 @@ export class FilesFilter implements ITreeFilter<ExplorerItem, FuzzyScore> {
 export class FileSorter implements ITreeSorter<ExplorerItem> {
 	constructor(
 		@IExplorerService private readonly explorerService: IExplorerService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService
-	) { }
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+	) {}
 
 	compare(statA: ExplorerItem, statB: ExplorerItem): number {
 		// Do not sort roots
@@ -1412,20 +1458,33 @@ export class FileDragAndDrop implements ITreeDragAndDrop<ExplorerItem> {
 		@IExplorerService private explorerService: IExplorerService,
 		@IEditorService private editorService: IEditorService,
 		@IDialogService private dialogService: IDialogService,
-		@IWorkspaceContextService private contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private contextService: IWorkspaceContextService,
 		@IFileService private fileService: IFileService,
-		@IConfigurationService private configurationService: IConfigurationService,
-		@IInstantiationService private instantiationService: IInstantiationService,
-		@IWorkspaceEditingService private workspaceEditingService: IWorkspaceEditingService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IConfigurationService
+		private configurationService: IConfigurationService,
+		@IInstantiationService
+		private instantiationService: IInstantiationService,
+		@IWorkspaceEditingService
+		private workspaceEditingService: IWorkspaceEditingService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
-		const updateDropEnablement = (e: IConfigurationChangeEvent | undefined) => {
-			if (!e || e.affectsConfiguration('explorer.enableDragAndDrop')) {
-				this.dropEnabled = this.configurationService.getValue('explorer.enableDragAndDrop');
+		const updateDropEnablement = (
+			e: IConfigurationChangeEvent | undefined,
+		) => {
+			if (!e || e.affectsConfiguration("explorer.enableDragAndDrop")) {
+				this.dropEnabled = this.configurationService.getValue(
+					"explorer.enableDragAndDrop",
+				);
 			}
 		};
 		updateDropEnablement(undefined);
-		this.disposables.add(this.configurationService.onDidChangeConfiguration(e => updateDropEnablement(e)));
+		this.disposables.add(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				updateDropEnablement(e),
+			),
+		);
 	}
 
 	onDragOver(

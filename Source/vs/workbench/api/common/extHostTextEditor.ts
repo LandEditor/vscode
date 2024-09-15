@@ -4,8 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { ok } from "../../../base/common/assert.js";
-import { ReadonlyError, illegalArgument } from "../../../base/common/errors.js";
+import { illegalArgument, ReadonlyError } from "../../../base/common/errors.js";
 import { IdGenerator } from "../../../base/common/idGenerator.js";
 import type { Lazy } from "../../../base/common/lazy.js";
 import type { TextEditorCursorStyle } from "../../../editor/common/config/editorOptions.js";
@@ -24,9 +25,9 @@ import {
 	Position,
 	Range,
 	Selection,
+	TextEditorRevealType,
 	type SnippetString,
 	type TextEditorLineNumbersStyle,
-	TextEditorRevealType,
 } from "./extHostTypes.js";
 
 export class TextEditorDecorationType {

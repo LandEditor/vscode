@@ -10,12 +10,13 @@ import type {
 	IBufferRange,
 	IViewportRange,
 } from "@xterm/xterm";
-import { type IPath, posix, win32 } from "../../../../../base/common/path.js";
+
+import { posix, win32, type IPath } from "../../../../../base/common/path.js";
 import { OperatingSystem } from "../../../../../base/common/platform.js";
 import type { IRange } from "../../../../../editor/common/core/range.js";
 import {
-	type ITerminalCapabilityStore,
 	TerminalCapability,
+	type ITerminalCapabilityStore,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import type { ITerminalLogService } from "../../../../../platform/terminal/common/terminal.js";
 

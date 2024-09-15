@@ -19,9 +19,9 @@ import { ILayoutService } from "../../../../platform/layout/browser/layoutServic
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { IJSONEditingService } from "../../configuration/common/jsonEditing.js";
 import { INativeWorkbenchEnvironmentService } from "../../environment/electron-sandbox/environmentService.js";
@@ -47,15 +47,22 @@ export class NativeAccessibilityService
 	private shouldAlwaysUnderlineAccessKeys: boolean | undefined = undefined;
 
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILayoutService _layoutService: ILayoutService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@INativeHostService private readonly nativeHostService: INativeHostService
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 	) {
 		super(contextKeyService, _layoutService, configurationService);
-		this.setAccessibilitySupport(environmentService.window.accessibilitySupport ? AccessibilitySupport.Enabled : AccessibilitySupport.Disabled);
+		this.setAccessibilitySupport(
+			environmentService.window.accessibilitySupport
+				? AccessibilitySupport.Enabled
+				: AccessibilitySupport.Disabled,
+		);
 	}
 
 	override async alwaysUnderlineAccessKeys(): Promise<boolean> {
@@ -108,7 +115,8 @@ class LinuxAccessibilityContribution implements IWorkbenchContribution {
 	constructor(
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 	) {
 		const forceRendererAccessibility = () => {
 			if (accessibilityService.isScreenReaderOptimized()) {

@@ -5,8 +5,8 @@
 
 import { multibyteAwareBtoa } from "../../../base/browser/dom.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
@@ -47,8 +47,8 @@ import type { IRevertOptions, ISaveOptions } from "../../common/editor.js";
 import { CustomEditorInput } from "../../contrib/customEditor/browser/customEditorInput.js";
 import type { CustomDocumentBackupData } from "../../contrib/customEditor/browser/customEditorInputFactory.js";
 import {
-	type ICustomEditorModel,
 	ICustomEditorService,
+	type ICustomEditorModel,
 } from "../../contrib/customEditor/common/customEditor.js";
 import { CustomTextEditorModel } from "../../contrib/customEditor/common/customTextEditorModel.js";
 import {
@@ -61,16 +61,16 @@ import { editorGroupToColumn } from "../../services/editor/common/editorGroupCol
 import { IEditorGroupsService } from "../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../services/editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../services/environment/common/environmentService.js";
-import type { IExtHostContext } from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
+import type { IExtHostContext } from "../../services/extensions/common/extHostCustomers.js";
 import { IPathService } from "../../services/path/common/pathService.js";
 import { ResourceWorkingCopy } from "../../services/workingCopy/common/resourceWorkingCopy.js";
 import {
+	NO_TYPE_ID,
+	WorkingCopyCapabilities,
 	type IWorkingCopy,
 	type IWorkingCopyBackup,
 	type IWorkingCopySaveEvent,
-	NO_TYPE_ID,
-	WorkingCopyCapabilities,
 } from "../../services/workingCopy/common/workingCopy.js";
 import {
 	IWorkingCopyFileService,
@@ -80,8 +80,8 @@ import { IWorkingCopyService } from "../../services/workingCopy/common/workingCo
 import * as extHostProtocol from "../common/extHost.protocol.js";
 import type { MainThreadWebviewPanels } from "./mainThreadWebviewPanels.js";
 import {
-	type MainThreadWebviews,
 	reviveWebviewExtension,
+	type MainThreadWebviews,
 } from "./mainThreadWebviews.js";
 
 enum CustomEditorModelType {
@@ -113,45 +113,76 @@ export class MainThreadCustomEditors
 		@IExtensionService extensionService: IExtensionService,
 		@IStorageService storageService: IStorageService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
-		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
-		@ICustomEditorService private readonly _customEditorService: ICustomEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
+		@IWorkingCopyFileService
+		workingCopyFileService: IWorkingCopyFileService,
+		@ICustomEditorService
+		private readonly _customEditorService: ICustomEditorService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
 	) {
 		super();
 
-		this._webviewOriginStore = new ExtensionKeyedWebviewOriginStore('mainThreadCustomEditors.origins', storageService);
+		this._webviewOriginStore = new ExtensionKeyedWebviewOriginStore(
+			"mainThreadCustomEditors.origins",
+			storageService,
+		);
 
-		this._proxyCustomEditors = context.getProxy(extHostProtocol.ExtHostContext.ExtHostCustomEditors);
+		this._proxyCustomEditors = context.getProxy(
+			extHostProtocol.ExtHostContext.ExtHostCustomEditors,
+		);
 
-		this._register(workingCopyFileService.registerWorkingCopyProvider((editorResource) => {
-			const matchedWorkingCopies: IWorkingCopy[] = [];
+		this._register(
+			workingCopyFileService.registerWorkingCopyProvider(
+				(editorResource) => {
+					const matchedWorkingCopies: IWorkingCopy[] = [];
 
-			for (const workingCopy of workingCopyService.workingCopies) {
-				if (workingCopy instanceof MainThreadCustomEditorModel) {
-					if (isEqualOrParent(editorResource, workingCopy.editorResource)) {
-						matchedWorkingCopies.push(workingCopy);
+					for (const workingCopy of workingCopyService.workingCopies) {
+						if (
+							workingCopy instanceof MainThreadCustomEditorModel
+						) {
+							if (
+								isEqualOrParent(
+									editorResource,
+									workingCopy.editorResource,
+								)
+							) {
+								matchedWorkingCopies.push(workingCopy);
+							}
+						}
 					}
-				}
-			}
-			return matchedWorkingCopies;
-		}));
+					return matchedWorkingCopies;
+				},
+			),
+		);
 
 		// This reviver's only job is to activate custom editor extensions.
-		this._register(_webviewWorkbenchService.registerResolver({
-			canResolve: (webview: WebviewInput) => {
-				if (webview instanceof CustomEditorInput) {
-					extensionService.activateByEvent(`onCustomEditor:${webview.viewType}`);
-				}
-				return false;
-			},
-			resolveWebview: () => { throw new Error('not implemented'); }
-		}));
+		this._register(
+			_webviewWorkbenchService.registerResolver({
+				canResolve: (webview: WebviewInput) => {
+					if (webview instanceof CustomEditorInput) {
+						extensionService.activateByEvent(
+							`onCustomEditor:${webview.viewType}`,
+						);
+					}
+					return false;
+				},
+				resolveWebview: () => {
+					throw new Error("not implemented");
+				},
+			}),
+		);
 
 		// Working copy operations
-		this._register(workingCopyFileService.onWillRunWorkingCopyFileOperation(async e => this.onWillRunWorkingCopyFileOperation(e)));
+		this._register(
+			workingCopyFileService.onWillRunWorkingCopyFileOperation(
+				async (e) => this.onWillRunWorkingCopyFileOperation(e),
+			),
+		);
 	}
 
 	public $registerTextEditorProvider(
@@ -582,36 +613,53 @@ class MainThreadCustomEditorModel
 		private readonly _editable: boolean,
 		startDirty: boolean,
 		private readonly _getEditors: () => CustomEditorInput[],
-		@IFileDialogService private readonly _fileDialogService: IFileDialogService,
+		@IFileDialogService
+		private readonly _fileDialogService: IFileDialogService,
 		@IFileService fileService: IFileService,
 		@ILabelService private readonly _labelService: ILabelService,
 		@IUndoRedoService private readonly _undoService: IUndoRedoService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
 		@IPathService private readonly _pathService: IPathService,
 		@IExtensionService extensionService: IExtensionService,
 	) {
-		super(MainThreadCustomEditorModel.toWorkingCopyResource(_viewType, _editorResource), fileService);
+		super(
+			MainThreadCustomEditorModel.toWorkingCopyResource(
+				_viewType,
+				_editorResource,
+			),
+			fileService,
+		);
 
 		this._fromBackup = fromBackup;
 
 		if (_editable) {
 			this._register(workingCopyService.registerWorkingCopy(this));
 
-			this._register(extensionService.onWillStop(e => {
-				if (!this.isDirty()) {
-					return;
-				}
-
-				e.veto((async () => {
-					const didSave = await this.save();
-					if (!didSave) {
-						// Veto
-						return true;
+			this._register(
+				extensionService.onWillStop((e) => {
+					if (!this.isDirty()) {
+						return;
 					}
-					return false; // Don't veto
-				})(), localize('vetoExtHostRestart', "Custom editor '{0}' could not be saved.", this.name));
-			}));
+
+					e.veto(
+						(async () => {
+							const didSave = await this.save();
+							if (!didSave) {
+								// Veto
+								return true;
+							}
+							return false; // Don't veto
+						})(),
+						localize(
+							"vetoExtHostRestart",
+							"Custom editor '{0}' could not be saved.",
+							this.name,
+						),
+					);
+				}),
+			);
 		}
 
 		// Normally means we're re-opening an untitled file

@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./minimap.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import { DEFAULT_FONT_FAMILY } from "../../../../base/browser/fonts.js";
 import { GlobalPointerMoveMonitor } from "../../../../base/browser/globalPointerMoveMonitor.js";
@@ -53,8 +54,8 @@ import {
 import type { ModelDecorationMinimapOptions } from "../../../common/model/textModel.js";
 import * as viewEvents from "../../../common/viewEvents.js";
 import {
-	type ViewLineData,
 	ViewModelDecoration,
+	type ViewLineData,
 } from "../../../common/viewModel.js";
 import { MinimapTokensColorTracker } from "../../../common/viewModel/minimapTokensColorTracker.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";
@@ -62,7 +63,7 @@ import type {
 	RenderingContext,
 	RestrictedRenderingContext,
 } from "../../view/renderingContext.js";
-import { type ILine, RenderedLinesCollection } from "../../view/viewLayer.js";
+import { RenderedLinesCollection, type ILine } from "../../view/viewLayer.js";
 import {
 	PartFingerprint,
 	PartFingerprints,

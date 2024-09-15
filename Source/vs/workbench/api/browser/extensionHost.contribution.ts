@@ -5,11 +5,10 @@
 
 import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../common/contributions.js";
-
 import { LanguageConfigurationFileHandler } from "../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js";
 import { ColorExtensionPoint } from "../../services/themes/common/colorExtensionPoint.js";
 import { IconExtensionPoint } from "../../services/themes/common/iconExtensionPoint.js";
@@ -17,7 +16,6 @@ import { TokenClassificationExtensionPoints } from "../../services/themes/common
 // --- other interested parties
 import { JSONValidationExtensionPoint } from "../common/jsonValidationExtensionPoint.js";
 import { StatusBarItemsExtensionPoint } from "./statusBarExtensionPoint.js";
-
 // --- mainThread participants
 import "./mainThreadLocalization.js";
 import "./mainThreadBulkEdits.js";
@@ -97,14 +95,19 @@ export class ExtensionPoints implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.extensionPoints";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		// Classes that handle extension points...
 		this.instantiationService.createInstance(JSONValidationExtensionPoint);
 		this.instantiationService.createInstance(ColorExtensionPoint);
 		this.instantiationService.createInstance(IconExtensionPoint);
-		this.instantiationService.createInstance(TokenClassificationExtensionPoints);
-		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
+		this.instantiationService.createInstance(
+			TokenClassificationExtensionPoints,
+		);
+		this.instantiationService.createInstance(
+			LanguageConfigurationFileHandler,
+		);
 		this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
 	}
 }

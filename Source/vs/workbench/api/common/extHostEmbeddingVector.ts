@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { CancellationToken, EmbeddingVectorProvider } from "vscode";
+
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostAiEmbeddingVectorShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadAiEmbeddingVectorShape,
 } from "./extHost.protocol.js";
 import { Disposable } from "./extHostTypes.js";

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../base/browser/dom.js";
-import type { ActionViewItem } from "../../../base/browser/ui/actionbar/actionViewItems.js";
 import { ActionBar } from "../../../base/browser/ui/actionbar/actionbar.js";
+import type { ActionViewItem } from "../../../base/browser/ui/actionbar/actionViewItems.js";
 import { Button } from "../../../base/browser/ui/button/button.js";
 import { CountBadge } from "../../../base/browser/ui/countBadge/countBadge.js";
 import { ProgressBar } from "../../../base/browser/ui/progressbar/progressbar.js";
@@ -15,8 +15,8 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import { KeyCode } from "../../../base/common/keyCodes.js";
 import {
 	Disposable,
-	type DisposableStore,
 	dispose,
+	type DisposableStore,
 } from "../../../base/common/lifecycle.js";
 import Severity from "../../../base/common/severity.js";
 import { isString } from "../../../base/common/types.js";
@@ -25,6 +25,8 @@ import { IContextKeyService } from "../../contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../instantiation/common/instantiation.js";
 import { ILayoutService } from "../../layout/browser/layoutService.js";
 import {
+	QuickInputHideReason,
+	QuickPickFocus,
 	type IInputBox,
 	type IInputOptions,
 	type IKeyMods,
@@ -35,26 +37,25 @@ import {
 	type IQuickPick,
 	type IQuickPickItem,
 	type IQuickWidget,
-	QuickInputHideReason,
-	QuickPickFocus,
 	type QuickPickInput,
 } from "../common/quickInput.js";
 import {
+	backButton,
 	EndOfQuickInputBoxContextKey,
-	type IQuickInputOptions,
-	type IQuickInputStyles,
-	InQuickInputContextKey,
 	InputBox,
+	InQuickInputContextKey,
 	QuickInputTypeContextKey,
-	type QuickInputUI,
 	QuickPick,
 	QuickWidget,
+	type IQuickInputOptions,
+	type IQuickInputStyles,
+	type QuickInputUI,
 	type Visibilities,
 	type Writeable,
-	backButton,
 } from "./quickInput.js";
 import { QuickInputBox } from "./quickInputBox.js";
 import { QuickInputTree } from "./quickInputTree.js";
+
 import "./quickInputActions.js";
 
 const $ = dom.$;
@@ -106,24 +107,38 @@ export class QuickInputController extends Disposable {
 	constructor(
 		private options: IQuickInputOptions,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 		this.idPrefix = options.idPrefix;
 		this._container = options.container;
 		this.styles = options.styles;
-		this._register(Event.runAndSubscribe(dom.onDidRegisterWindow, ({ window, disposables }) => this.registerKeyModsListeners(window, disposables), { window: mainWindow, disposables: this._store }));
-		this._register(dom.onWillUnregisterWindow(window => {
-			if (this.ui && dom.getWindow(this.ui.container) === window) {
-				// The window this quick input is contained in is about to
-				// close, so we have to make sure to reparent it back to an
-				// existing parent to not loose functionality.
-				// (https://github.com/microsoft/vscode/issues/195870)
-				this.reparentUI(this.layoutService.mainContainer);
-				this.layout(this.layoutService.mainContainerDimension, this.layoutService.mainContainerOffset.quickPickTop);
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				dom.onDidRegisterWindow,
+				({ window, disposables }) =>
+					this.registerKeyModsListeners(window, disposables),
+				{ window: mainWindow, disposables: this._store },
+			),
+		);
+		this._register(
+			dom.onWillUnregisterWindow((window) => {
+				if (this.ui && dom.getWindow(this.ui.container) === window) {
+					// The window this quick input is contained in is about to
+					// close, so we have to make sure to reparent it back to an
+					// existing parent to not loose functionality.
+					// (https://github.com/microsoft/vscode/issues/195870)
+					this.reparentUI(this.layoutService.mainContainer);
+					this.layout(
+						this.layoutService.mainContainerDimension,
+						this.layoutService.mainContainerOffset.quickPickTop,
+					);
+				}
+			}),
+		);
 	}
 
 	private registerKeyModsListeners(

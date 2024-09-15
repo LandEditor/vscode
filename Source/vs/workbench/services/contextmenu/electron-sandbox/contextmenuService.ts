@@ -16,10 +16,10 @@ import {
 } from "../../../../base/browser/ui/contextview/contextview.js";
 import {
 	ActionRunner,
-	type IAction,
-	type IActionRunner,
 	Separator,
 	SubmenuAction,
+	type IAction,
+	type IActionRunner,
 	type WorkbenchActionExecutedClassification,
 	type WorkbenchActionExecutedEvent,
 } from "../../../../base/common/actions.js";
@@ -40,9 +40,9 @@ import {
 	ContextMenuService as HTMLContextMenuService,
 } from "../../../../platform/contextview/browser/contextMenuService.js";
 import {
-	type IContextMenuMenuDelegate,
 	IContextMenuService,
 	IContextViewService,
+	type IContextMenuMenuDelegate,
 } from "../../../../platform/contextview/browser/contextView.js";
 import {
 	InstantiationType,
@@ -126,11 +126,14 @@ class NativeContextMenuService
 	readonly onDidHideContextMenu = this._onDidHideContextMenu.event;
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 	}

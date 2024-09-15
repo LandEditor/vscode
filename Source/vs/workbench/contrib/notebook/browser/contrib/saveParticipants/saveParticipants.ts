@@ -13,16 +13,16 @@ import { isEqual } from "../../../../../../base/common/resources.js";
 import type { ICodeEditor } from "../../../../../../editor/browser/editorBrowser.js";
 import {
 	IBulkEditService,
-	type ResourceEdit,
 	ResourceTextEdit,
+	type ResourceEdit,
 } from "../../../../../../editor/browser/services/bulkEditService.js";
 import { trimTrailingWhitespace } from "../../../../../../editor/common/commands/trimTrailingWhitespaceCommand.js";
 import { Position } from "../../../../../../editor/common/core/position.js";
 import { Range } from "../../../../../../editor/common/core/range.js";
 import type { Selection } from "../../../../../../editor/common/core/selection.js";
 import {
-	type CodeActionProvider,
 	CodeActionTriggerType,
+	type CodeActionProvider,
 	type IWorkspaceTextEdit,
 } from "../../../../../../editor/common/languages.js";
 import type {
@@ -33,14 +33,14 @@ import { IEditorWorkerService } from "../../../../../../editor/common/services/e
 import { ILanguageFeaturesService } from "../../../../../../editor/common/services/languageFeatures.js";
 import { ITextModelService } from "../../../../../../editor/common/services/resolverService.js";
 import {
-	ApplyCodeActionReason,
 	applyCodeAction,
+	ApplyCodeActionReason,
 	getCodeActions,
 } from "../../../../../../editor/contrib/codeAction/browser/codeAction.js";
 import {
-	type CodeActionItem,
 	CodeActionKind,
 	CodeActionTriggerSource,
+	type CodeActionItem,
 } from "../../../../../../editor/contrib/codeAction/common/types.js";
 import {
 	FormattingMode,
@@ -61,9 +61,9 @@ import type {
 import { Registry } from "../../../../../../platform/registry/common/platform.js";
 import { IWorkspaceTrustManagementService } from "../../../../../../platform/workspace/common/workspaceTrust.js";
 import {
+	Extensions as WorkbenchContributionsExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchContributionsExtensions,
 } from "../../../../../common/contributions.js";
 import { SaveReason } from "../../../../../common/editor.js";
 import { IEditorService } from "../../../../../services/editor/common/editorService.js";
@@ -73,9 +73,9 @@ import type {
 	IStoredFileWorkingCopyModel,
 } from "../../../../../services/workingCopy/common/storedFileWorkingCopy.js";
 import {
+	IWorkingCopyFileService,
 	type IStoredFileWorkingCopySaveParticipant,
 	type IStoredFileWorkingCopySaveParticipantContext,
-	IWorkingCopyFileService,
 } from "../../../../../services/workingCopy/common/workingCopyFileService.js";
 import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
 import { CellKind, NotebookSetting } from "../../../common/notebookCommon.js";
@@ -84,13 +84,17 @@ import { getNotebookEditorFromEditorPane } from "../../notebookBrowser.js";
 
 class FormatOnSaveParticipant implements IStoredFileWorkingCopySaveParticipant {
 	constructor(
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextModelService private readonly textModelService: ITextModelService,
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-	) { }
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+	) {}
 
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
@@ -189,11 +193,12 @@ class TrimWhitespaceParticipant
 	implements IStoredFileWorkingCopySaveParticipant
 {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
 		@ITextModelService private readonly textModelService: ITextModelService,
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
-	) { }
+	) {}
 
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
@@ -323,10 +328,11 @@ class TrimFinalNewLinesParticipant
 	implements IStoredFileWorkingCopySaveParticipant
 {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
-	) { }
+	) {}
 
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
@@ -456,10 +462,11 @@ class InsertFinalNewLineParticipant
 	implements IStoredFileWorkingCopySaveParticipant
 {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
 		@IEditorService private readonly editorService: IEditorService,
-	) { }
+	) {}
 
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
@@ -561,13 +568,15 @@ class CodeActionOnSaveParticipant
 	implements IStoredFileWorkingCopySaveParticipant
 {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) {
-	}
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	async participate(
 		workingCopy: IStoredFileWorkingCopy<IStoredFileWorkingCopyModel>,
@@ -1046,9 +1055,11 @@ export class SaveParticipantsContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService) {
-
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
+	) {
 		super();
 		this.registerSaveParticipants();
 	}

@@ -4,25 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Action } from "../../../../base/common/actions.js";
+import type { IStringDictionary } from "../../../../base/common/collections.js";
 import type { Event } from "../../../../base/common/event.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import * as nls from "../../../../nls.js";
-import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
-
-import type { IStringDictionary } from "../../../../base/common/collections.js";
 import {
 	ContextKeyExpr,
 	RawContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import type {
 	IWorkspace,
 	IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
-import type {
-	ITaskSummary,
-	ITaskSystemInfo,
-	ITaskTerminateResponse,
-} from "./taskSystem.js";
 import type {
 	ConfiguringTask,
 	ContributedTask,
@@ -34,6 +28,11 @@ import type {
 	TaskRunSource,
 	TaskSorter,
 } from "./tasks.js";
+import type {
+	ITaskSummary,
+	ITaskSystemInfo,
+	ITaskTerminateResponse,
+} from "./taskSystem.js";
 
 export type {
 	ITaskSummary,

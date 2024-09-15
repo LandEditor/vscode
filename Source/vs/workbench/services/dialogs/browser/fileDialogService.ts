@@ -19,8 +19,8 @@ import type { URI } from "../../../../base/common/uri.js";
 import { EmbeddedCodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js";
 import { localize } from "../../../../nls.js";
 import {
-	type FileFilter,
 	IFileDialogService,
+	type FileFilter,
 	type IOpenDialogOptions,
 	type IPickAndOpenOptions,
 	type IPromptButton,
@@ -76,7 +76,7 @@ export class FileDialogService
 		return schema === Schemas.untitled
 			? [Schemas.file]
 			: schema !== Schemas.file &&
-					(!isFolder || schema !== Schemas.vscodeRemote)
+				  (!isFolder || schema !== Schemas.vscodeRemote)
 				? [schema, Schemas.file]
 				: [schema];
 	}

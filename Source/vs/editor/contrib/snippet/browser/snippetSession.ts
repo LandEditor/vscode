@@ -7,7 +7,9 @@ import { groupBy } from "../../../../base/common/arrays.js";
 import { CharCode } from "../../../../base/common/charCode.js";
 import { dispose } from "../../../../base/common/lifecycle.js";
 import { getLeadingWhitespace } from "../../../../base/common/strings.js";
+
 import "./snippetSession.css";
+
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import type { IActiveCodeEditor } from "../../../browser/editorBrowser.js";
@@ -22,19 +24,19 @@ import { Selection } from "../../../common/core/selection.js";
 import type { TextChange } from "../../../common/core/textChange.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
 import {
+	TrackedRangeStickiness,
 	type IIdentifiedSingleEditOperation,
 	type ITextModel,
-	TrackedRangeStickiness,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import type { OvertypingCapturer } from "../../suggest/browser/suggestOvertypingCapturer.js";
 import {
 	Choice,
-	type Marker,
 	Placeholder,
 	SnippetParser,
 	Text,
 	TextmateSnippet,
+	type Marker,
 } from "./snippetParser.js";
 import {
 	ClipboardBasedVariableResolver,
@@ -898,8 +900,9 @@ export class SnippetSession {
 		private readonly _editor: IActiveCodeEditor,
 		private readonly _template: string | ISnippetEdit[],
 		private readonly _options: ISnippetSessionInsertOptions = _defaultOptions,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
-	) { }
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+	) {}
 
 	dispose(): void {
 		dispose(this._snippets);

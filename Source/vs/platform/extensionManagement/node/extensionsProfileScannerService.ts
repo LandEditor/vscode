@@ -14,9 +14,11 @@ import { AbstractExtensionsProfileScannerService } from "../common/extensionsPro
 
 export class ExtensionsProfileScannerService extends AbstractExtensionsProfileScannerService {
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILogService logService: ILogService,

@@ -5,22 +5,22 @@
 
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
-import { type IDisposable, dispose } from "../../../base/common/lifecycle.js";
+import { dispose, type IDisposable } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
-	type IDecorationData,
 	IDecorationsService,
+	type IDecorationData,
 } from "../../services/decorations/common/decorations.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
+	ExtHostContext,
+	MainContext,
 	type DecorationData,
 	type DecorationRequest,
-	ExtHostContext,
 	type ExtHostDecorationsShape,
-	MainContext,
 	type MainThreadDecorationsShape,
 } from "../common/extHost.protocol.js";
 
@@ -91,7 +91,8 @@ export class MainThreadDecorations implements MainThreadDecorationsShape {
 
 	constructor(
 		context: IExtHostContext,
-		@IDecorationsService private readonly _decorationsService: IDecorationsService
+		@IDecorationsService
+		private readonly _decorationsService: IDecorationsService,
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostDecorations);
 	}

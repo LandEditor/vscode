@@ -20,22 +20,22 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	ProfileResourceType,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { updateIgnoredSettings } from "../../../../platform/userDataSync/common/settingsMerge.js";
 import { IUserDataSyncUtilService } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { API_OPEN_EDITOR_COMMAND_ID } from "../../../browser/parts/editor/editorCommands.js";
 import {
-	type ITreeItemCheckboxState,
 	TreeItemCollapsibleState,
+	type ITreeItemCheckboxState,
 } from "../../../common/views.js";
 import {
+	IUserDataProfileService,
 	type IProfileResource,
 	type IProfileResourceChildTreeItem,
 	type IProfileResourceInitializer,
 	type IProfileResourceTreeItem,
-	IUserDataProfileService,
 } from "../common/userDataProfile.js";
 
 interface ISettingsContent {
@@ -46,11 +46,11 @@ export class SettingsResourceInitializer
 	implements IProfileResourceInitializer
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const settingsContent: ISettingsContent = JSON.parse(content);
@@ -70,10 +70,10 @@ export class SettingsResourceInitializer
 export class SettingsResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataSyncUtilService private readonly userDataSyncUtilService: IUserDataSyncUtilService,
+		@IUserDataSyncUtilService
+		private readonly userDataSyncUtilService: IUserDataSyncUtilService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const settingsContent = await this.getSettingsContent(profile);
@@ -171,9 +171,11 @@ export class SettingsResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [

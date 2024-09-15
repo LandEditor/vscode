@@ -11,10 +11,10 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { EditOperation } from "../../../../editor/common/core/editOperation.js";
 import type { IRange } from "../../../../editor/common/core/range.js";
 import {
+	TrackedRangeStickiness,
 	type IIdentifiedSingleEditOperation,
 	type ITextModel,
 	type IValidEditOperation,
-	TrackedRangeStickiness,
 } from "../../../../editor/common/model.js";
 import type { IProgress } from "../../../../platform/progress/common/progress.js";
 import { getNWords } from "../../chat/common/chatWordCounter.js";

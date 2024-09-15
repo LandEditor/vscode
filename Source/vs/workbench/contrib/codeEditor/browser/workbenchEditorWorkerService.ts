@@ -14,10 +14,13 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 export class WorkbenchEditorWorkerService extends EditorWorkerService {
 	constructor(
 		@IModelService modelService: IModelService,
-		@ITextResourceConfigurationService configurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		configurationService: ITextResourceConfigurationService,
 		@ILogService logService: ILogService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		const workerDescriptor = new WorkerDescriptor(
 			"vs/editor/common/services/editorSimpleWorker",

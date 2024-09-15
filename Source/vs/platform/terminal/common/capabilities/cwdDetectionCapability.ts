@@ -6,8 +6,8 @@
 import { Emitter } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type ICwdDetectionCapability,
 	TerminalCapability,
+	type ICwdDetectionCapability,
 } from "./capabilities.js";
 
 export class CwdDetectionCapability

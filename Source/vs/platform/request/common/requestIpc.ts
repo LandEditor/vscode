@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type VSBuffer,
 	bufferToStream,
 	streamToBuffer,
+	type VSBuffer,
 } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import type { Event } from "../../../base/common/event.js";

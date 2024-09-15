@@ -14,7 +14,7 @@ import {
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
 import { Schemas } from "../../../base/common/network.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
-import { type IRange, Range } from "../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../editor/common/core/range.js";
 import * as languages from "../../../editor/common/languages.js";
 import { localize } from "../../../nls.js";
 import type { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
@@ -25,18 +25,18 @@ import { IUriIdentityService } from "../../../platform/uriIdentity/common/uriIde
 import { ViewPaneContainer } from "../../browser/parts/views/viewPaneContainer.js";
 import type { MarshalledCommentThread } from "../../common/comments.js";
 import {
-	type IViewContainersRegistry,
 	IViewDescriptorService,
-	type IViewsRegistry,
-	type ViewContainer,
 	ViewContainerLocation,
 	Extensions as ViewExtensions,
+	type IViewContainersRegistry,
+	type IViewsRegistry,
+	type ViewContainer,
 } from "../../common/views.js";
-import {
-	type ICommentController,
-	ICommentService,
-} from "../../contrib/comments/browser/commentService.js";
 import { revealCommentThread } from "../../contrib/comments/browser/commentsController.js";
+import {
+	ICommentService,
+	type ICommentController,
+} from "../../contrib/comments/browser/commentService.js";
 import {
 	COMMENTS_VIEW_ID,
 	COMMENTS_VIEW_STORAGE_ID,
@@ -46,16 +46,16 @@ import { CommentsPanel } from "../../contrib/comments/browser/commentsView.js";
 import type { ICellRange } from "../../contrib/notebook/common/notebookRange.js";
 import { IEditorService } from "../../services/editor/common/editorService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import { IViewsService } from "../../services/views/common/viewsService.js";
 import {
+	ExtHostContext,
+	MainContext,
 	type CommentProviderFeatures,
 	type CommentThreadChanges,
 	type ExtHostCommentsShape,
-	ExtHostContext,
-	MainContext,
 	type MainThreadCommentsShape,
 } from "../common/extHost.protocol.js";
 
@@ -108,9 +108,9 @@ export class MainThreadCommentThread<T> implements languages.CommentThread<T> {
 		return this._comments;
 	}
 
-	public set comments(newComments:
-		| ReadonlyArray<languages.Comment>
-		| undefined) {
+	public set comments(
+		newComments: ReadonlyArray<languages.Comment> | undefined,
+	) {
 		this._comments = newComments;
 		this._onDidChangeComments.fire(this._comments);
 	}
@@ -150,9 +150,9 @@ export class MainThreadCommentThread<T> implements languages.CommentThread<T> {
 		return this._collapsibleState;
 	}
 
-	set collapsibleState(newState:
-		| languages.CommentThreadCollapsibleState
-		| undefined) {
+	set collapsibleState(
+		newState: languages.CommentThreadCollapsibleState | undefined,
+	) {
 		if (newState !== this._collapsibleState) {
 			this._collapsibleState = newState;
 			this._onDidChangeCollapsibleState.fire(this._collapsibleState);
@@ -166,9 +166,11 @@ export class MainThreadCommentThread<T> implements languages.CommentThread<T> {
 		return this._initialCollapsibleState;
 	}
 
-	private set initialCollapsibleState(initialCollapsibleState:
-		| languages.CommentThreadCollapsibleState
-		| undefined) {
+	private set initialCollapsibleState(
+		initialCollapsibleState:
+			| languages.CommentThreadCollapsibleState
+			| undefined,
+	) {
 		this._initialCollapsibleState = initialCollapsibleState;
 		if (this.collapsibleState === undefined) {
 			this.collapsibleState = this.initialCollapsibleState;
@@ -682,26 +684,36 @@ export class MainThreadComments
 		extHostContext: IExtHostContext,
 		@ICommentService private readonly _commentService: ICommentService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
-		@IEditorService private readonly _editorService: IEditorService
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService,
+		@IEditorService private readonly _editorService: IEditorService,
 	) {
 		super();
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostComments);
 		this._commentService.unregisterCommentController();
 
-		this._register(this._commentService.onDidChangeActiveEditingCommentThread(async thread => {
-			const handle = (thread as MainThreadCommentThread<IRange | ICellRange>).controllerHandle;
-			const controller = this._commentControllers.get(handle);
+		this._register(
+			this._commentService.onDidChangeActiveEditingCommentThread(
+				async (thread) => {
+					const handle = (
+						thread as MainThreadCommentThread<IRange | ICellRange>
+					).controllerHandle;
+					const controller = this._commentControllers.get(handle);
 
-			if (!controller) {
-				return;
-			}
+					if (!controller) {
+						return;
+					}
 
-			this._activeEditingCommentThreadDisposables.clear();
-			this._activeEditingCommentThread = thread as MainThreadCommentThread<IRange | ICellRange>;
-			controller.activeEditingCommentThread = this._activeEditingCommentThread;
-		}));
+					this._activeEditingCommentThreadDisposables.clear();
+					this._activeEditingCommentThread =
+						thread as MainThreadCommentThread<IRange | ICellRange>;
+					controller.activeEditingCommentThread =
+						this._activeEditingCommentThread;
+				},
+			),
+		);
 	}
 
 	$registerCommentController(

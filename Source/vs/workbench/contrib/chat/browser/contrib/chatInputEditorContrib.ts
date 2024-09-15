@@ -15,24 +15,24 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { inputPlaceholderForeground } from "../../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import {
+	IChatAgentService,
 	type IChatAgentCommand,
 	type IChatAgentData,
-	IChatAgentService,
 } from "../../common/chatAgents.js";
 import {
 	chatSlashCommandBackground,
 	chatSlashCommandForeground,
 } from "../../common/chatColors.js";
 import {
+	chatAgentLeader,
 	ChatRequestAgentPart,
 	ChatRequestAgentSubcommandPart,
 	ChatRequestSlashCommandPart,
 	ChatRequestTextPart,
 	ChatRequestToolPart,
 	ChatRequestVariablePart,
-	type IParsedChatRequestPart,
-	chatAgentLeader,
 	chatSubcommandLeader,
+	type IParsedChatRequestPart,
 } from "../../common/chatParserTypes.js";
 import { ChatRequestParser } from "../../common/chatRequestParser.js";
 import type { IChatWidget } from "../chat.js";
@@ -62,29 +62,56 @@ class InputEditorDecorations extends Disposable {
 
 	constructor(
 		private readonly widget: IChatWidget,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@IThemeService private readonly themeService: IThemeService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
 
-		this.codeEditorService.registerDecorationType(decorationDescription, placeholderDecorationType, {});
+		this.codeEditorService.registerDecorationType(
+			decorationDescription,
+			placeholderDecorationType,
+			{},
+		);
 
-		this._register(this.themeService.onDidColorThemeChange(() => this.updateRegisteredDecorationTypes()));
+		this._register(
+			this.themeService.onDidColorThemeChange(() =>
+				this.updateRegisteredDecorationTypes(),
+			),
+		);
 		this.updateRegisteredDecorationTypes();
 
 		this.updateInputEditorDecorations();
-		this._register(this.widget.inputEditor.onDidChangeModelContent(() => this.updateInputEditorDecorations()));
-		this._register(this.widget.onDidChangeParsedInput(() => this.updateInputEditorDecorations()));
-		this._register(this.widget.onDidChangeViewModel(() => {
-			this.registerViewModelListeners();
-			this.previouslyUsedAgents.clear();
-			this.updateInputEditorDecorations();
-		}));
-		this._register(this.widget.onDidSubmitAgent((e) => {
-			this.previouslyUsedAgents.add(agentAndCommandToKey(e.agent, e.slashCommand?.name));
-		}));
-		this._register(this.chatAgentService.onDidChangeAgents(() => this.updateInputEditorDecorations()));
+		this._register(
+			this.widget.inputEditor.onDidChangeModelContent(() =>
+				this.updateInputEditorDecorations(),
+			),
+		);
+		this._register(
+			this.widget.onDidChangeParsedInput(() =>
+				this.updateInputEditorDecorations(),
+			),
+		);
+		this._register(
+			this.widget.onDidChangeViewModel(() => {
+				this.registerViewModelListeners();
+				this.previouslyUsedAgents.clear();
+				this.updateInputEditorDecorations();
+			}),
+		);
+		this._register(
+			this.widget.onDidSubmitAgent((e) => {
+				this.previouslyUsedAgents.add(
+					agentAndCommandToKey(e.agent, e.slashCommand?.name),
+				);
+			}),
+		);
+		this._register(
+			this.chatAgentService.onDidChangeAgents(() =>
+				this.updateInputEditorDecorations(),
+			),
+		);
 
 		this.registerViewModelListeners();
 	}
@@ -448,49 +475,83 @@ class ChatTokenDeleter extends Disposable {
 
 	constructor(
 		private readonly widget: IChatWidget,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		const parser = this.instantiationService.createInstance(ChatRequestParser);
+		const parser =
+			this.instantiationService.createInstance(ChatRequestParser);
 		const inputValue = this.widget.inputEditor.getValue();
 		let previousInputValue: string | undefined;
 		let previousSelectedAgent: IChatAgentData | undefined;
 
 		// A simple heuristic to delete the previous token when the user presses backspace.
 		// The sophisticated way to do this would be to have a parse tree that can be updated incrementally.
-		this._register(this.widget.inputEditor.onDidChangeModelContent(e => {
-			if (!previousInputValue) {
-				previousInputValue = inputValue;
+		this._register(
+			this.widget.inputEditor.onDidChangeModelContent((e) => {
+				if (!previousInputValue) {
+					previousInputValue = inputValue;
+					previousSelectedAgent = this.widget.lastSelectedAgent;
+				}
+
+				// Don't try to handle multicursor edits right now
+				const change = e.changes[0];
+
+				// If this was a simple delete, try to find out whether it was inside a token
+				if (!change.text && this.widget.viewModel) {
+					const previousParsedValue = parser.parseChatRequest(
+						this.widget.viewModel.sessionId,
+						previousInputValue,
+						widget.location,
+						{ selectedAgent: previousSelectedAgent },
+					);
+
+					// For dynamic variables, this has to happen in ChatDynamicVariableModel with the other bookkeeping
+					const deletableTokens = previousParsedValue.parts.filter(
+						(p) =>
+							p instanceof ChatRequestAgentPart ||
+							p instanceof ChatRequestAgentSubcommandPart ||
+							p instanceof ChatRequestSlashCommandPart ||
+							p instanceof ChatRequestVariablePart ||
+							p instanceof ChatRequestToolPart,
+					);
+					deletableTokens.forEach((token) => {
+						const deletedRangeOfToken = Range.intersectRanges(
+							token.editorRange,
+							change.range,
+						);
+						// Part of this token was deleted, or the space after it was deleted, and the deletion range doesn't go off the front of the token, for simpler math
+						if (
+							deletedRangeOfToken &&
+							Range.compareRangesUsingStarts(
+								token.editorRange,
+								change.range,
+							) < 0
+						) {
+							// Assume single line tokens
+							const length =
+								deletedRangeOfToken.endColumn -
+								deletedRangeOfToken.startColumn;
+							const rangeToDelete = new Range(
+								token.editorRange.startLineNumber,
+								token.editorRange.startColumn,
+								token.editorRange.endLineNumber,
+								token.editorRange.endColumn - length,
+							);
+							this.widget.inputEditor.executeEdits(this.id, [
+								{
+									range: rangeToDelete,
+									text: "",
+								},
+							]);
+						}
+					});
+				}
+
+				previousInputValue = this.widget.inputEditor.getValue();
 				previousSelectedAgent = this.widget.lastSelectedAgent;
-			}
-
-			// Don't try to handle multicursor edits right now
-			const change = e.changes[0];
-
-			// If this was a simple delete, try to find out whether it was inside a token
-			if (!change.text && this.widget.viewModel) {
-				const previousParsedValue = parser.parseChatRequest(this.widget.viewModel.sessionId, previousInputValue, widget.location, { selectedAgent: previousSelectedAgent });
-
-				// For dynamic variables, this has to happen in ChatDynamicVariableModel with the other bookkeeping
-				const deletableTokens = previousParsedValue.parts.filter(p => p instanceof ChatRequestAgentPart || p instanceof ChatRequestAgentSubcommandPart || p instanceof ChatRequestSlashCommandPart || p instanceof ChatRequestVariablePart || p instanceof ChatRequestToolPart);
-				deletableTokens.forEach(token => {
-					const deletedRangeOfToken = Range.intersectRanges(token.editorRange, change.range);
-					// Part of this token was deleted, or the space after it was deleted, and the deletion range doesn't go off the front of the token, for simpler math
-					if (deletedRangeOfToken && Range.compareRangesUsingStarts(token.editorRange, change.range) < 0) {
-						// Assume single line tokens
-						const length = deletedRangeOfToken.endColumn - deletedRangeOfToken.startColumn;
-						const rangeToDelete = new Range(token.editorRange.startLineNumber, token.editorRange.startColumn, token.editorRange.endLineNumber, token.editorRange.endColumn - length);
-						this.widget.inputEditor.executeEdits(this.id, [{
-							range: rangeToDelete,
-							text: '',
-						}]);
-					}
-				});
-			}
-
-			previousInputValue = this.widget.inputEditor.getValue();
-			previousSelectedAgent = this.widget.lastSelectedAgent;
-		}));
+			}),
+		);
 	}
 }
 ChatWidget.CONTRIBS.push(ChatTokenDeleter);

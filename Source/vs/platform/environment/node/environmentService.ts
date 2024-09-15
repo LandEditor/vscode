@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { homedir, tmpdir } from "os";
+
 import type { IProductService } from "../../product/common/productService.js";
 import type { NativeParsedArgs } from "../common/argv.js";
 import type { IDebugParams } from "../common/environment.js";

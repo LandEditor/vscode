@@ -6,10 +6,11 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import {
 	DebounceEmitter,
-	type Emitter,
 	Event,
+	type Emitter,
 } from "../../../base/common/event.js";
 import { ResourceMap } from "../../../base/common/map.js";
 import type { IExtUri } from "../../../base/common/resources.js";
@@ -18,13 +19,13 @@ import { localize } from "../../../nls.js";
 import type { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
-	type IMarkerData,
 	MarkerSeverity,
+	type IMarkerData,
 } from "../../../platform/markers/common/markers.js";
 import {
+	MainContext,
 	type ExtHostDiagnosticsShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadDiagnosticsShape,
 } from "./extHost.protocol.js";
 import type { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";
@@ -316,7 +317,8 @@ export class ExtHostDiagnostics implements ExtHostDiagnosticsShape {
 	constructor(
 		mainContext: IMainContext,
 		@ILogService private readonly _logService: ILogService,
-		@IExtHostFileSystemInfo private readonly _fileSystemInfoService: IExtHostFileSystemInfo,
+		@IExtHostFileSystemInfo
+		private readonly _fileSystemInfoService: IExtHostFileSystemInfo,
 		private readonly _extHostDocumentsAndEditors: ExtHostDocumentsAndEditors,
 	) {
 		this._proxy = mainContext.getProxy(MainContext.MainThreadDiagnostics);

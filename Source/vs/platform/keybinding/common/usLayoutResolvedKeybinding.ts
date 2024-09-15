@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	KeyCodeChord,
+	type Chord,
+	type Keybinding,
+	type SingleModifierChord,
+} from "../../../base/common/keybindings.js";
+import {
 	IMMUTABLE_CODE_TO_KEY_CODE,
 	KeyCode,
 	KeyCodeUtils,
 	ScanCode,
 } from "../../../base/common/keyCodes.js";
-import {
-	type Chord,
-	KeyCodeChord,
-	type Keybinding,
-	type SingleModifierChord,
-} from "../../../base/common/keybindings.js";
 import { OperatingSystem } from "../../../base/common/platform.js";
 import { BaseResolvedKeybinding } from "./baseResolvedKeybinding.js";
 import { toEmptyArrayIfContainsNull } from "./resolvedKeybindingItem.js";

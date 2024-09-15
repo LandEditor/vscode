@@ -19,10 +19,19 @@ export class SaveAccessibilitySignalContribution
 	static readonly ID = "workbench.contrib.saveAccessibilitySignal";
 
 	constructor(
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@IWorkingCopyService private readonly _workingCopyService: IWorkingCopyService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IWorkingCopyService
+		private readonly _workingCopyService: IWorkingCopyService,
 	) {
 		super();
-		this._register(this._workingCopyService.onDidSave(e => this._accessibilitySignalService.playSignal(AccessibilitySignal.save, { userGesture: e.reason === SaveReason.EXPLICIT })));
+		this._register(
+			this._workingCopyService.onDidSave((e) =>
+				this._accessibilitySignalService.playSignal(
+					AccessibilitySignal.save,
+					{ userGesture: e.reason === SaveReason.EXPLICIT },
+				),
+			),
+		);
 	}
 }

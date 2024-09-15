@@ -33,10 +33,10 @@ import {
 import { isHighContrast } from "../../../../platform/theme/common/theme.js";
 import { registerThemingParticipant } from "../../../../platform/theme/common/themeService.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 import {
-	type IEditorContribution,
 	ScrollType,
+	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import { CodeActionTriggerType } from "../../../common/languages.js";
 import type { IModelDeltaDecoration } from "../../../common/model.js";
@@ -45,14 +45,14 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import { MessageController } from "../../message/browser/messageController.js";
 import {
 	CodeActionAutoApply,
+	CodeActionKind,
+	CodeActionTriggerSource,
 	type CodeActionFilter,
 	type CodeActionItem,
-	CodeActionKind,
 	type CodeActionSet,
 	type CodeActionTrigger,
-	CodeActionTriggerSource,
 } from "../common/types.js";
-import { ApplyCodeActionReason, applyCodeAction } from "./codeAction.js";
+import { applyCodeAction, ApplyCodeActionReason } from "./codeAction.js";
 import { CodeActionKeybindingResolver } from "./codeActionKeybindingResolver.js";
 import { toMenuItems } from "./codeActionMenu.js";
 import { CodeActionModel, CodeActionsState } from "./codeActionModel.js";
@@ -95,31 +95,60 @@ export class CodeActionController
 		@IMarkerService markerService: IMarkerService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IEditorProgressService progressService: IEditorProgressService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IActionWidgetService private readonly _actionWidgetService: IActionWidgetService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IActionWidgetService
+		private readonly _actionWidgetService: IActionWidgetService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		super();
 
 		this._editor = editor;
-		this._model = this._register(new CodeActionModel(this._editor, languageFeaturesService.codeActionProvider, markerService, contextKeyService, progressService, _configurationService, this._telemetryService));
-		this._register(this._model.onDidChangeState(newState => this.update(newState)));
+		this._model = this._register(
+			new CodeActionModel(
+				this._editor,
+				languageFeaturesService.codeActionProvider,
+				markerService,
+				contextKeyService,
+				progressService,
+				_configurationService,
+				this._telemetryService,
+			),
+		);
+		this._register(
+			this._model.onDidChangeState((newState) => this.update(newState)),
+		);
 
 		this._lightBulbWidget = new Lazy(() => {
-			const widget = this._editor.getContribution<LightBulbWidget>(LightBulbWidget.ID);
+			const widget = this._editor.getContribution<LightBulbWidget>(
+				LightBulbWidget.ID,
+			);
 			if (widget) {
-				this._register(widget.onClick(e => this.showCodeActionsFromLightbulb(e.actions, e)));
+				this._register(
+					widget.onClick((e) =>
+						this.showCodeActionsFromLightbulb(e.actions, e),
+					),
+				);
 			}
 			return widget;
 		});
 
-		this._resolver = instantiationService.createInstance(CodeActionKeybindingResolver);
+		this._resolver = instantiationService.createInstance(
+			CodeActionKeybindingResolver,
+		);
 
-		this._register(this._editor.onDidLayoutChange(() => this._actionWidgetService.hide()));
+		this._register(
+			this._editor.onDidLayoutChange(() =>
+				this._actionWidgetService.hide(),
+			),
+		);
 	}
 
 	override dispose() {

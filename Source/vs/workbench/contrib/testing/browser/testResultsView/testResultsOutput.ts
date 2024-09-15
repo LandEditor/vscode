@@ -10,12 +10,12 @@ import { Event } from "../../../../../base/common/event.js";
 import { Iterable } from "../../../../../base/common/iterator.js";
 import { Lazy } from "../../../../../base/common/lazy.js";
 import {
+	combinedDisposable,
 	Disposable,
+	MutableDisposable,
+	toDisposable,
 	type IDisposable,
 	type IReference,
-	MutableDisposable,
-	combinedDisposable,
-	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import type {
@@ -32,8 +32,8 @@ import type {
 	IEditorOptions,
 } from "../../../../../editor/common/config/editorOptions.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../../editor/common/services/resolverService.js";
 import { peekViewResultsBackground } from "../../../../../editor/contrib/peekView/browser/peekView.js";
 import { localize } from "../../../../../nls.js";
@@ -53,31 +53,31 @@ import {
 } from "../../../../common/views.js";
 import { DetachedProcessInfo } from "../../../terminal/browser/detachedTerminal.js";
 import {
-	type IDetachedTerminalInstance,
 	ITerminalService,
+	type IDetachedTerminalInstance,
 } from "../../../terminal/browser/terminal.js";
 import { getXtermScaledDimensions } from "../../../terminal/browser/xterm/xtermTerminal.js";
 import { TERMINAL_BACKGROUND_COLOR } from "../../../terminal/common/terminalColorRegistry.js";
 import { Testing } from "../../common/constants.js";
 import { MutableObservableValue } from "../../common/observableValue.js";
 import {
+	LiveTestResult,
+	TestResultItemChangeReason,
 	type ITaskRawOutput,
 	type ITestResult,
 	type ITestRunTaskResults,
-	LiveTestResult,
-	TestResultItemChangeReason,
 } from "../../common/testResult.js";
 import {
+	getMarkId,
 	ITestMessage,
 	TestMessageType,
-	getMarkId,
 } from "../../common/testTypes.js";
 import { colorizeTestMessageInEditor } from "../testMessageColorizer.js";
 import {
-	type InspectSubject,
 	MessageSubject,
 	TaskSubject,
 	TestOutputSubject,
+	type InspectSubject,
 } from "./testResultsSubject.js";
 
 class SimpleDiffEditorModel extends EditorModel {
@@ -162,7 +162,8 @@ export class DiffContentProvider
 	constructor(
 		private readonly editor: ICodeEditor | undefined,
 		private readonly container: HTMLElement,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextModelService private readonly modelService: ITextModelService,
 	) {
 		super();
@@ -266,7 +267,11 @@ export class MarkdownTestMessagePeek
 
 	private element?: HTMLElement;
 
-	constructor(private readonly container: HTMLElement, @IInstantiationService private readonly instantiationService: IInstantiationService) {
+	constructor(
+		private readonly container: HTMLElement,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {
 		super();
 		this._register(toDisposable(() => this.clear()));
 	}
@@ -333,7 +338,8 @@ export class PlainTextMessagePeek
 	constructor(
 		private readonly editor: ICodeEditor | undefined,
 		private readonly container: HTMLElement,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextModelService private readonly modelService: ITextModelService,
 	) {
 		super();
@@ -434,8 +440,10 @@ export class TerminalMessagePeek
 		private readonly container: HTMLElement,
 		private readonly isInPeekView: boolean,
 		@ITerminalService private readonly terminalService: ITerminalService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IWorkspaceContextService private readonly workspaceContext: IWorkspaceContextService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IWorkspaceContextService
+		private readonly workspaceContext: IWorkspaceContextService,
 	) {
 		super();
 	}

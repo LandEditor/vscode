@@ -8,23 +8,23 @@ import { EditorActivation } from "../../../../platform/editor/common/editor.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	EditorInputCapabilities,
-	type EditorInputWithOptions,
-	type IUntypedEditorInput,
 	isEditorInput,
 	isEditorInputWithOptions,
+	type EditorInputWithOptions,
+	type IUntypedEditorInput,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
 	preferredSideBySideGroupDirection,
+	type IEditorGroup,
 } from "./editorGroupsService.js";
 import {
 	AUX_WINDOW_GROUP,
+	SIDE_GROUP,
 	type AUX_WINDOW_GROUP_TYPE,
 	type PreferredGroup,
-	SIDE_GROUP,
 } from "./editorService.js";
 
 /**

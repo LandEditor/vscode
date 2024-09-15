@@ -6,17 +6,17 @@
 import { addDisposableListener, getWindow } from "../../../base/browser/dom.js";
 import { StandardMouseEvent } from "../../../base/browser/mouseEvent.js";
 import {
-	type IToolBarOptions,
 	ToggleMenuAction,
 	ToolBar,
+	type IToolBarOptions,
 } from "../../../base/browser/ui/toolbar/toolbar.js";
 import {
-	type IAction,
 	Separator,
+	toAction,
+	type IAction,
 	type SubmenuAction,
 	type WorkbenchActionExecutedClassification,
 	type WorkbenchActionExecutedEvent,
-	toAction,
 } from "../../../base/common/actions.js";
 import { coalesceInPlace } from "../../../base/common/arrays.js";
 import { intersection } from "../../../base/common/collections.js";
@@ -31,11 +31,11 @@ import { IContextMenuService } from "../../contextview/browser/contextView.js";
 import { IKeybindingService } from "../../keybinding/common/keybinding.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type IMenuActionOptions,
 	IMenuService,
-	type MenuId,
 	MenuItemAction,
 	SubmenuItemAction,
+	type IMenuActionOptions,
+	type MenuId,
 } from "../common/actions.js";
 import { createConfigureKeybindingAction } from "../common/menuService.js";
 import { createAndFillInActionBarActions } from "./menuEntryActionViewItem.js";
@@ -107,29 +107,40 @@ export class WorkbenchToolBar extends ToolBar {
 		container: HTMLElement,
 		private _options: IWorkbenchToolBarOptions | undefined,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super(container, _contextMenuService, {
 			// defaults
-			getKeyBinding: (action) => _keybindingService.lookupKeybinding(action.id) ?? undefined,
+			getKeyBinding: (action) =>
+				_keybindingService.lookupKeybinding(action.id) ?? undefined,
 			// options (override defaults)
 			..._options,
 			// mandatory (overide options)
 			allowContextMenu: true,
-			skipTelemetry: typeof _options?.telemetrySource === 'string',
+			skipTelemetry: typeof _options?.telemetrySource === "string",
 		});
 
 		// telemetry logic
 		const telemetrySource = _options?.telemetrySource;
 		if (telemetrySource) {
-			this._store.add(this.actionBar.onDidRun(e => telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
-				'workbenchActionExecuted',
-				{ id: e.action.id, from: telemetrySource })
-			));
+			this._store.add(
+				this.actionBar.onDidRun((e) =>
+					telemetryService.publicLog2<
+						WorkbenchActionExecutedEvent,
+						WorkbenchActionExecutedClassification
+					>("workbenchActionExecuted", {
+						id: e.action.id,
+						from: telemetrySource,
+					}),
+				),
+			);
 		}
 	}
 

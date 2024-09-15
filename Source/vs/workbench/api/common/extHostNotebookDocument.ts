@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Schemas } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 import * as notebookCommon from "../../contrib/notebook/common/notebookCommon.js";

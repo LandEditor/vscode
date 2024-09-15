@@ -5,17 +5,17 @@
 
 import * as arrays from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { canceled } from "../../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
-	type FuzzyScorerCache,
-	type IItemAccessor,
 	compareItemsByFuzzyScore,
 	prepareQuery,
+	type FuzzyScorerCache,
+	type IItemAccessor,
 } from "../../../../base/common/fuzzyScorer.js";
 import { revive } from "../../../../base/common/marshalling.js";
 import { basename, dirname, join, sep } from "../../../../base/common/path.js";
@@ -24,6 +24,7 @@ import { URI, type UriComponents } from "../../../../base/common/uri.js";
 import { ByteSize } from "../../../../platform/files/common/files.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
+	isFilePatternMatch,
 	type ICachedSearchStats,
 	type IFileQuery,
 	type IFileSearchProgressItem,
@@ -42,7 +43,6 @@ import {
 	type ISerializedSearchProgressItem,
 	type ISerializedSearchSuccess,
 	type ITextQuery,
-	isFilePatternMatch,
 } from "../common/search.js";
 import { Engine as FileSearchEngine } from "./fileSearch.js";
 import { TextSearchEngineAdapter } from "./textSearchAdapter.js";

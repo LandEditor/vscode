@@ -5,10 +5,7 @@
 
 import { editorOverviewRulerBorder } from "../../../../editor/common/core/editorColorRegistry.js";
 import * as nls from "../../../../nls.js";
-
 import {
-	type ColorDefaults,
-	type ColorIdentifier,
 	editorFindMatch,
 	editorFindMatchHighlight,
 	editorHoverHighlight,
@@ -16,6 +13,8 @@ import {
 	overviewRulerFindMatchForeground,
 	registerColor,
 	transparent,
+	type ColorDefaults,
+	type ColorIdentifier,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
 	EDITOR_DRAG_AND_DROP_BACKGROUND,

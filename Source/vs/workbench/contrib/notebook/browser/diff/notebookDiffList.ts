@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./notebookDiff.css";
+
 import * as DOM from "../../../../../base/browser/dom.js";
 import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";
 import { PixelRatio } from "../../../../../base/browser/pixelRatio.js";
@@ -13,11 +14,11 @@ import type {
 	IListVirtualDelegate,
 } from "../../../../../base/browser/ui/list/list.js";
 import {
+	isMonacoEditor,
+	MouseController,
 	type IListOptions,
 	type IListStyles,
 	type IStyleController,
-	MouseController,
-	isMonacoEditor,
 } from "../../../../../base/browser/ui/list/listWidget.js";
 import {
 	DisposableStore,
@@ -41,8 +42,8 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
 import {
 	IListService,
-	type IWorkbenchListOptions,
 	WorkbenchList,
+	type IWorkbenchListOptions,
 } from "../../../../../platform/list/browser/listService.js";
 import { INotificationService } from "../../../../../platform/notification/common/notification.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
@@ -55,10 +56,10 @@ import {
 	CellDiffPlaceholderElement,
 	CollapsedCellOverlayWidget,
 	DeletedElement,
+	getOptimizedNestedCodeEditorWidgetOptions,
 	InsertElement,
 	ModifiedElement,
 	UnchangedCellOverlayWidget,
-	getOptimizedNestedCodeEditorWidgetOptions,
 } from "./diffComponents.js";
 import type {
 	DiffElementPlaceholderViewModel,
@@ -67,10 +68,10 @@ import type {
 	SingleSideDiffElementViewModel,
 } from "./diffElementViewModel.js";
 import {
+	DIFF_CELL_MARGIN,
 	type CellDiffPlaceholderRenderTemplate,
 	type CellDiffSideBySideRenderTemplate,
 	type CellDiffSingleSideRenderTemplate,
-	DIFF_CELL_MARGIN,
 	type INotebookTextDiffEditor,
 } from "./notebookDiffEditorBrowser.js";
 
@@ -81,10 +82,15 @@ export class NotebookCellTextDiffListDelegate
 
 	constructor(
 		targetWindow: Window,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
-		const editorOptions = this.configurationService.getValue<IEditorOptions>('editor');
-		this.lineHeight = BareFontInfo.createFromRawSettings(editorOptions, PixelRatio.getInstance(targetWindow).value).lineHeight;
+		const editorOptions =
+			this.configurationService.getValue<IEditorOptions>("editor");
+		this.lineHeight = BareFontInfo.createFromRawSettings(
+			editorOptions,
+			PixelRatio.getInstance(targetWindow).value,
+		).lineHeight;
 	}
 
 	getHeight(element: IDiffElementViewModelBase): number {
@@ -120,8 +126,9 @@ export class CellDiffPlaceholderRenderer
 
 	constructor(
 		readonly notebookEditor: INotebookTextDiffEditor,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService
-	) { }
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+	) {}
 
 	get templateId() {
 		return CellDiffPlaceholderRenderer.TEMPLATE_ID;
@@ -193,8 +200,9 @@ export class CellDiffSingleSideRenderer
 
 	constructor(
 		readonly notebookEditor: INotebookTextDiffEditor,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService
-	) { }
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+	) {}
 
 	get templateId() {
 		return CellDiffSingleSideRenderer.TEMPLATE_ID;
@@ -356,15 +364,21 @@ export class CellDiffSideBySideRenderer
 
 	constructor(
 		readonly notebookEditor: INotebookTextDiffEditor,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IContextMenuService protected readonly contextMenuService: IContextMenuService,
-		@IKeybindingService protected readonly keybindingService: IKeybindingService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		protected readonly contextMenuService: IContextMenuService,
+		@IKeybindingService
+		protected readonly keybindingService: IKeybindingService,
 		@IMenuService protected readonly menuService: IMenuService,
-		@IContextKeyService protected readonly contextKeyService: IContextKeyService,
-		@INotificationService protected readonly notificationService: INotificationService,
+		@IContextKeyService
+		protected readonly contextKeyService: IContextKeyService,
+		@INotificationService
+		protected readonly notificationService: INotificationService,
 		@IThemeService protected readonly themeService: IThemeService,
-		@IAccessibilityService protected readonly accessibilityService: IAccessibilityService
-	) { }
+		@IAccessibilityService
+		protected readonly accessibilityService: IAccessibilityService,
+	) {}
 
 	get templateId() {
 		return CellDiffSideBySideRenderer.TEMPLATE_ID;

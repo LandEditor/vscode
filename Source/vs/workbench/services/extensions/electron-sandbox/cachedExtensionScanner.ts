@@ -10,8 +10,8 @@ import Severity from "../../../../base/common/severity.js";
 import { localize } from "../../../../nls.js";
 import {
 	IExtensionsScannerService,
-	type IScannedExtension,
 	toExtensionDescription as toExtensionDescriptionFromScannedExtension,
+	type IScannedExtension,
 } from "../../../../platform/extensionManagement/common/extensionsScannerService.js";
 import type {
 	IExtension,
@@ -34,18 +34,25 @@ export class CachedExtensionScanner {
 	private _scannedExtensionsReject!: (err: any) => void;
 
 	constructor(
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IHostService private readonly _hostService: IHostService,
-		@IExtensionsScannerService private readonly _extensionsScannerService: IExtensionsScannerService,
-		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
-		@IWorkbenchExtensionManagementService private readonly _extensionManagementService: IWorkbenchExtensionManagementService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IExtensionsScannerService
+		private readonly _extensionsScannerService: IExtensionsScannerService,
+		@IUserDataProfileService
+		private readonly _userDataProfileService: IUserDataProfileService,
+		@IWorkbenchExtensionManagementService
+		private readonly _extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@ILogService private readonly _logService: ILogService,
 	) {
-		this.scannedExtensions = new Promise<IExtensionDescription[]>((resolve, reject) => {
-			this._scannedExtensionsResolve = resolve;
-			this._scannedExtensionsReject = reject;
-		});
+		this.scannedExtensions = new Promise<IExtensionDescription[]>(
+			(resolve, reject) => {
+				this._scannedExtensionsResolve = resolve;
+				this._scannedExtensionsReject = reject;
+			},
+		);
 	}
 
 	public async startScanningExtensions(): Promise<void> {

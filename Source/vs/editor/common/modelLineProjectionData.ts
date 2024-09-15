@@ -9,8 +9,8 @@ import type { FontInfo } from "./config/fontInfo.js";
 import { Position } from "./core/position.js";
 import {
 	InjectedTextCursorStops,
-	type InjectedTextOptions,
 	PositionAffinity,
+	type InjectedTextOptions,
 } from "./model.js";
 import type { LineInjectedText } from "./textModelEvents.js";
 
@@ -382,9 +382,7 @@ export class ModelLineProjectionData {
 		};
 	}
 
-	private getInjectedTextAtOffset(
-		offsetInInputWithInjections: number,
-	):
+	private getInjectedTextAtOffset(offsetInInputWithInjections: number):
 		| {
 				injectedTextIndex: number;
 				offsetInInputWithInjections: number;

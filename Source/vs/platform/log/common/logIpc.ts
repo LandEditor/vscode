@@ -15,13 +15,13 @@ import {
 	AbstractLoggerService,
 	AbstractMessageLogger,
 	AdapterLogger,
+	isLogLevel,
 	type DidChangeLoggersEvent,
 	type ILogger,
 	type ILoggerOptions,
 	type ILoggerResource,
 	type ILoggerService,
 	type LogLevel,
-	isLogLevel,
 } from "./log.js";
 
 export class LoggerChannelClient

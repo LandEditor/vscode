@@ -8,8 +8,8 @@ import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { IFileService } from "../../../platform/files/common/files.js";
 import { ILanguagePackService } from "../../../platform/languagePacks/common/languagePacks.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	MainContext,
@@ -24,7 +24,8 @@ export class MainThreadLocalization
 	constructor(
 		extHostContext: IExtHostContext,
 		@IFileService private readonly fileService: IFileService,
-		@ILanguagePackService private readonly languagePackService: ILanguagePackService
+		@ILanguagePackService
+		private readonly languagePackService: ILanguagePackService,
 	) {
 		super();
 	}

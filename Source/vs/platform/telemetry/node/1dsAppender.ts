@@ -5,6 +5,7 @@
 
 import * as https from "https";
 import type { IPayloadData, IXHROverride } from "@microsoft/1ds-post-js";
+
 import { streamToBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import type { IRequestOptions } from "../../../base/parts/request/common/request.js";

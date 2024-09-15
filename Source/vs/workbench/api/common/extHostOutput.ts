@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { toLocalISOString } from "../../../base/common/date.js";
 import { Emitter } from "../../../base/common/event.js";
@@ -21,17 +22,17 @@ import {
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
 	AbstractMessageLogger,
-	ILogService,
-	type ILogger,
 	ILoggerService,
-	type LogLevel,
+	ILogService,
 	log,
 	parseLogLevel,
+	type ILogger,
+	type LogLevel,
 } from "../../../platform/log/common/log.js";
 import { OutputChannelUpdateMode } from "../../services/output/common/output.js";
 import {
-	type ExtHostOutputServiceShape,
 	MainContext,
+	type ExtHostOutputServiceShape,
 	type MainThreadOutputServiceShape,
 } from "./extHost.protocol.js";
 import { IExtHostConsumerFileSystem } from "./extHostFileSystemConsumer.js";
@@ -156,14 +157,20 @@ export class ExtHostOutputService implements ExtHostOutputServiceShape {
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostInitDataService private readonly initData: IExtHostInitDataService,
-		@IExtHostConsumerFileSystem private readonly extHostFileSystem: IExtHostConsumerFileSystem,
-		@IExtHostFileSystemInfo private readonly extHostFileSystemInfo: IExtHostFileSystemInfo,
+		@IExtHostInitDataService
+		private readonly initData: IExtHostInitDataService,
+		@IExtHostConsumerFileSystem
+		private readonly extHostFileSystem: IExtHostConsumerFileSystem,
+		@IExtHostFileSystemInfo
+		private readonly extHostFileSystemInfo: IExtHostFileSystemInfo,
 		@ILoggerService private readonly loggerService: ILoggerService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		this.proxy = extHostRpc.getProxy(MainContext.MainThreadOutputService);
-		this.outputsLocation = this.extHostFileSystemInfo.extUri.joinPath(initData.logsLocation, `output_logging_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')}`);
+		this.outputsLocation = this.extHostFileSystemInfo.extUri.joinPath(
+			initData.logsLocation,
+			`output_logging_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, "")}`,
+		);
 	}
 
 	$setVisibleChannel(visibleChannelId: string | null): void {

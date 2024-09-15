@@ -104,7 +104,8 @@ export class SearchDelegate implements IListVirtualDelegate<RenderableMatch> {
 }
 export class FolderMatchRenderer
 	extends Disposable
-	implements ICompressibleTreeRenderer<FolderMatch, any, IFolderMatchTemplate>
+	implements
+		ICompressibleTreeRenderer<FolderMatch, any, IFolderMatchTemplate>
 {
 	static readonly TEMPLATE_ID = "folderMatch";
 
@@ -113,10 +114,13 @@ export class FolderMatchRenderer
 	constructor(
 		private searchView: SearchView,
 		private labels: ResourceLabels,
-		@IWorkspaceContextService protected contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		protected contextService: IWorkspaceContextService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 	}
@@ -314,10 +318,14 @@ export class FileMatchRenderer
 	constructor(
 		private searchView: SearchView,
 		private labels: ResourceLabels,
-		@IWorkspaceContextService protected contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IWorkspaceContextService
+		protected contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 	}
@@ -473,11 +481,15 @@ export class MatchRenderer
 
 	constructor(
 		private searchView: SearchView,
-		@IWorkspaceContextService protected contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IHoverService private readonly hoverService: IHoverService
+		@IWorkspaceContextService
+		protected contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super();
 	}
@@ -647,9 +659,8 @@ export class SearchAccessibilityProvider
 {
 	constructor(
 		private searchView: SearchView,
-		@ILabelService private readonly labelService: ILabelService
-	) {
-	}
+		@ILabelService private readonly labelService: ILabelService,
+	) {}
 
 	getWidgetAriaLabel(): string {
 		return nls.localize("search", "Search");

@@ -22,7 +22,7 @@ import {
 	type ISingleEditOperation,
 } from "./core/editOperation.js";
 import type { IPosition, Position } from "./core/position.js";
-import { type IRange, Range } from "./core/range.js";
+import { Range, type IRange } from "./core/range.js";
 import type { Selection } from "./core/selection.js";
 import type { LanguageId } from "./encodedTokenAttributes.js";
 import type { LanguageSelector } from "./languageSelector.js";

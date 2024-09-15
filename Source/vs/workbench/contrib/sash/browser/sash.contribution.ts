@@ -12,8 +12,8 @@ import {
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { workbenchConfigurationNodeBase } from "../../../common/configuration.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { SashSettingsController } from "./sash.js";

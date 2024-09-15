@@ -11,8 +11,8 @@ import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	ConfirmResult,
@@ -20,10 +20,10 @@ import {
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IShellLaunchConfig,
 	TerminalExitReason,
 	TerminalLocation,
 	TerminalSettingId,
+	type IShellLaunchConfig,
 } from "../../../../platform/terminal/common/terminal.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
@@ -44,9 +44,9 @@ import {
 import type { ConfirmOnKill } from "../common/terminal.js";
 import { TerminalContextKeys } from "../common/terminalContextKey.js";
 import {
-	type ITerminalInstance,
 	ITerminalInstanceService,
 	terminalEditorId,
+	type ITerminalInstance,
 } from "./terminal.js";
 import { getColorClass, getUriClasses } from "./terminalIcon.js";
 
@@ -195,16 +195,21 @@ export class TerminalEditorInput
 		public readonly resource: URI,
 		private _terminalInstance: ITerminalInstance | undefined,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@IContextKeyService private _contextKeyService: IContextKeyService,
-		@IDialogService private readonly _dialogService: IDialogService
+		@IDialogService private readonly _dialogService: IDialogService,
 	) {
 		super();
 
-		this._terminalEditorFocusContextKey = TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
+		this._terminalEditorFocusContextKey =
+			TerminalContextKeys.editorFocus.bindTo(_contextKeyService);
 
 		if (_terminalInstance) {
 			this._setupInstanceListeners();

@@ -3,19 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as path from "../../../base/common/path.js";
-
 import { homedir } from "os";
 import type * as vscode from "vscode";
+
 import { Schemas } from "../../../base/common/network.js";
+import * as path from "../../../base/common/path.js";
 import * as resources from "../../../base/common/resources.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { win32 } from "../../../base/node/processes.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
-	type IWorkspaceFolder,
 	WorkspaceFolder,
+	type IWorkspaceFolder,
 } from "../../../platform/workspace/common/workspace.js";
 import { IExtHostApiDeprecationService } from "../common/extHostApiDeprecationService.js";
 import { IExtHostConfiguration } from "../common/extHostConfiguration.js";
@@ -25,9 +25,9 @@ import { IExtHostRpcService } from "../common/extHostRpcService.js";
 import {
 	CustomExecutionDTO,
 	ExtHostTaskBase,
-	type HandlerData,
 	TaskDTO,
 	TaskHandleDTO,
+	type HandlerData,
 } from "../common/extHostTask.js";
 import { IExtHostTerminalService } from "../common/extHostTerminalService.js";
 import type * as types from "../common/extHostTypes.js";
@@ -42,23 +42,35 @@ export class ExtHostTask extends ExtHostTaskBase {
 		@IExtHostWorkspace private readonly workspaceService: IExtHostWorkspace,
 		@IExtHostDocumentsAndEditors editorService: IExtHostDocumentsAndEditors,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
-		@IExtHostTerminalService extHostTerminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		extHostTerminalService: IExtHostTerminalService,
 		@ILogService logService: ILogService,
-		@IExtHostApiDeprecationService deprecationService: IExtHostApiDeprecationService,
-		@IExtHostVariableResolverProvider private readonly variableResolver: IExtHostVariableResolverProvider,
+		@IExtHostApiDeprecationService
+		deprecationService: IExtHostApiDeprecationService,
+		@IExtHostVariableResolverProvider
+		private readonly variableResolver: IExtHostVariableResolverProvider,
 	) {
-		super(extHostRpc, initData, workspaceService, editorService, configurationService, extHostTerminalService, logService, deprecationService);
+		super(
+			extHostRpc,
+			initData,
+			workspaceService,
+			editorService,
+			configurationService,
+			extHostTerminalService,
+			logService,
+			deprecationService,
+		);
 		if (initData.remote.isRemote && initData.remote.authority) {
 			this.registerTaskSystem(Schemas.vscodeRemote, {
 				scheme: Schemas.vscodeRemote,
 				authority: initData.remote.authority,
-				platform: process.platform
+				platform: process.platform,
 			});
 		} else {
 			this.registerTaskSystem(Schemas.file, {
 				scheme: Schemas.file,
-				authority: '',
-				platform: process.platform
+				authority: "",
+				platform: process.platform,
 			});
 		}
 		this._proxy.$registerSupportedExecutions(true, true, true);

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IViewportRange } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import type {
 	IHoverAction,
@@ -39,7 +40,8 @@ export class TerminalHover extends Disposable implements ITerminalWidget {
 		private readonly _actions: IHoverAction[] | undefined,
 		private readonly _linkHandler: (url: string) => any,
 		@IHoverService private readonly _hoverService: IHoverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 	}

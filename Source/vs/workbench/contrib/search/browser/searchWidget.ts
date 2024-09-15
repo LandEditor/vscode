@@ -14,13 +14,13 @@ import type { IFindInputOptions } from "../../../../base/browser/ui/findinput/fi
 import type { ReplaceInput } from "../../../../base/browser/ui/findinput/replaceInput.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import {
+	InputBox,
 	type IInputBoxStyles,
 	type IMessage,
-	InputBox,
 } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import {
-	type IToggleStyles,
 	Toggle,
+	type IToggleStyles,
 } from "../../../../base/browser/ui/toggle/toggle.js";
 import { Widget } from "../../../../base/browser/ui/widget.js";
 import { Action } from "../../../../base/common/actions.js";
@@ -28,8 +28,8 @@ import { Delayer } from "../../../../base/common/async.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -40,8 +40,8 @@ import { IClipboardService } from "../../../../platform/clipboard/common/clipboa
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -52,8 +52,8 @@ import { showHistoryKeybindingHint } from "../../../../platform/history/browser/
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
 	defaultInputBoxStyles,
@@ -252,27 +252,41 @@ export class SearchWidget extends Widget {
 	constructor(
 		container: HTMLElement,
 		options: ISearchWidgetOptions,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IClipboardService private readonly clipboardServce: IClipboardService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IEditorService private readonly editorService: IEditorService,
 	) {
 		super();
-		this.replaceActive = Constants.SearchContext.ReplaceActiveKey.bindTo(this.contextKeyService);
-		this.searchInputBoxFocused = Constants.SearchContext.SearchInputBoxFocusedKey.bindTo(this.contextKeyService);
-		this.replaceInputBoxFocused = Constants.SearchContext.ReplaceInputBoxFocusedKey.bindTo(this.contextKeyService);
+		this.replaceActive = Constants.SearchContext.ReplaceActiveKey.bindTo(
+			this.contextKeyService,
+		);
+		this.searchInputBoxFocused =
+			Constants.SearchContext.SearchInputBoxFocusedKey.bindTo(
+				this.contextKeyService,
+			);
+		this.replaceInputBoxFocused =
+			Constants.SearchContext.ReplaceInputBoxFocusedKey.bindTo(
+				this.contextKeyService,
+			);
 
-		const notebookOptions = options.notebookOptions ??
-		{
+		const notebookOptions = options.notebookOptions ?? {
 			isInNotebookMarkdownInput: true,
 			isInNotebookMarkdownPreview: true,
 			isInNotebookCellInput: true,
-			isInNotebookCellOutput: true
+			isInNotebookCellOutput: true,
 		};
 		this._notebookFilters = this._register(
 			new NotebookFindFilters(
@@ -280,35 +294,50 @@ export class SearchWidget extends Widget {
 				notebookOptions.isInNotebookMarkdownPreview,
 				notebookOptions.isInNotebookCellInput,
 				notebookOptions.isInNotebookCellOutput,
-				{ findScopeType: NotebookFindScopeType.None }
-			));
+				{ findScopeType: NotebookFindScopeType.None },
+			),
+		);
 
 		this._register(
 			this._notebookFilters.onDidChange(() => {
 				if (this.searchInput) {
 					this.searchInput.updateFilterStyles();
 				}
-			}));
-		this._register(this.editorService.onDidEditorsChange((e) => {
-			if (this.searchInput &&
-				e.event.editor instanceof NotebookEditorInput &&
-				(e.event.kind === GroupModelChangeKind.EDITOR_OPEN || e.event.kind === GroupModelChangeKind.EDITOR_CLOSE)) {
-				this.searchInput.filterVisible = this._hasNotebookOpen();
-			}
-		}));
+			}),
+		);
+		this._register(
+			this.editorService.onDidEditorsChange((e) => {
+				if (
+					this.searchInput &&
+					e.event.editor instanceof NotebookEditorInput &&
+					(e.event.kind === GroupModelChangeKind.EDITOR_OPEN ||
+						e.event.kind === GroupModelChangeKind.EDITOR_CLOSE)
+				) {
+					this.searchInput.filterVisible = this._hasNotebookOpen();
+				}
+			}),
+		);
 
 		this._replaceHistoryDelayer = new Delayer<void>(500);
-		this._toggleReplaceButtonListener = this._register(new MutableDisposable<IDisposable>());
+		this._toggleReplaceButtonListener = this._register(
+			new MutableDisposable<IDisposable>(),
+		);
 
 		this.render(container, options);
 
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('editor.accessibilitySupport')) {
-				this.updateAccessibilitySupport();
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("editor.accessibilitySupport")) {
+					this.updateAccessibilitySupport();
+				}
+			}),
+		);
 
-		this._register(this.accessibilityService.onDidChangeScreenReaderOptimized(() => this.updateAccessibilitySupport()));
+		this._register(
+			this.accessibilityService.onDidChangeScreenReaderOptimized(() =>
+				this.updateAccessibilitySupport(),
+			),
+		);
 		this.updateAccessibilitySupport();
 	}
 

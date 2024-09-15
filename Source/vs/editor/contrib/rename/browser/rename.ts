@@ -41,15 +41,15 @@ import {
 	EditorAction,
 	EditorCommand,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
 	registerModelAndPositionCommand,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { IBulkEditService } from "../../../browser/services/bulkEditService.js";
 import { ICodeEditorService } from "../../../browser/services/codeEditorService.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
@@ -71,8 +71,8 @@ import {
 import { MessageController } from "../../message/browser/messageController.js";
 import {
 	CONTEXT_RENAME_INPUT_VISIBLE,
-	type NewNameSource,
 	RenameWidget,
+	type NewNameSource,
 	type RenameWidgetResult,
 } from "./renameWidget.js";
 
@@ -226,16 +226,27 @@ class RenameController implements IEditorContribution {
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
-		@IEditorProgressService private readonly _progressService: IEditorProgressService,
+		@IEditorProgressService
+		private readonly _progressService: IEditorProgressService,
 		@ILogService private readonly _logService: ILogService,
-		@ITextResourceConfigurationService private readonly _configService: ITextResourceConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITextResourceConfigurationService
+		private readonly _configService: ITextResourceConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
-		this._renameWidget = this._disposableStore.add(this._instaService.createInstance(RenameWidget, this.editor, ['acceptRenameInput', 'acceptRenameInputWithPreview']));
+		this._renameWidget = this._disposableStore.add(
+			this._instaService.createInstance(RenameWidget, this.editor, [
+				"acceptRenameInput",
+				"acceptRenameInputWithPreview",
+			]),
+		);
 	}
 
 	dispose(): void {

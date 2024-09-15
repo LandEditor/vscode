@@ -4,25 +4,25 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IObservable,
-	type ISettableObservable,
 	derived,
 	derivedConstOnceDefined,
 	observableFromEvent,
 	observableValue,
+	type IObservable,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import { Constants } from "../../../../base/common/uint.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { diffEditorDefaultOptions } from "../../../common/config/diffEditor.js";
 import {
-	type IDiffEditorBaseOptions,
-	type IDiffEditorOptions,
-	type IEditorOptions,
-	type ValidDiffEditorBaseOptions,
 	clampedFloat,
 	clampedInt,
 	boolean as validateBooleanOption,
 	stringSet as validateStringSetOption,
+	type IDiffEditorBaseOptions,
+	type IDiffEditorOptions,
+	type IEditorOptions,
+	type ValidDiffEditorBaseOptions,
 } from "../../../common/config/editorOptions.js";
 import type { LineRangeMapping } from "../../../common/diff/rangeMapping.js";
 import { allowsTrueInlineDiffRendering } from "./components/diffEditorViewZones/diffEditorViewZones.js";
@@ -51,9 +51,13 @@ export class DiffEditorOptions {
 
 	constructor(
 		options: Readonly<IDiffEditorOptions>,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 	) {
-		const optionsCopy = { ...options, ...validateDiffEditorOptions(options, diffEditorDefaultOptions) };
+		const optionsCopy = {
+			...options,
+			...validateDiffEditorOptions(options, diffEditorDefaultOptions),
+		};
 		this._options = observableValue(this, optionsCopy);
 	}
 

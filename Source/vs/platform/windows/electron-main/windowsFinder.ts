@@ -7,11 +7,11 @@ import { extUriBiasedIgnorePathCase } from "../../../base/common/resources.js";
 import { URI } from "../../../base/common/uri.js";
 import type { ICodeWindow } from "../../window/electron-main/window.js";
 import {
+	isSingleFolderWorkspaceIdentifier,
+	isWorkspaceIdentifier,
 	type IResolvedWorkspace,
 	type ISingleFolderWorkspaceIdentifier,
 	type IWorkspaceIdentifier,
-	isSingleFolderWorkspaceIdentifier,
-	isWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 
 export async function findWindowOnFile(

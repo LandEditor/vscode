@@ -5,10 +5,10 @@
 
 import type { IDisposable } from "../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
 	autorunOpts,
 	observableFromEventOpts,
+	type IObservable,
+	type IReader,
 } from "../../../base/common/observable.js";
 import type { IConfigurationService } from "../../configuration/common/configuration.js";
 import type {

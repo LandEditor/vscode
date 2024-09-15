@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	trackFocus,
 	type Dimension,
 	type IDomPosition,
-	trackFocus,
 } from "../../base/browser/dom.js";
-import type { IBaseActionViewItemOptions } from "../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IActionViewItem } from "../../base/browser/ui/actionbar/actionbar.js";
+import type { IBaseActionViewItemOptions } from "../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IBoundarySashes } from "../../base/browser/ui/sash/sash.js";
 import {
 	ActionRunner,

@@ -5,8 +5,8 @@
 
 import { Emitter } from "../../../../../base/common/event.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { localize } from "../../../../../nls.js";
 import { ILogService } from "../../../../../platform/log/common/log.js";
@@ -41,18 +41,33 @@ export class TerminalQuickFixService implements ITerminalQuickFixService {
 
 	readonly extensionQuickFixes: Promise<Array<ITerminalCommandSelector>>;
 
-	constructor(
-		@ILogService private readonly _logService: ILogService,
-	) {
-		this.extensionQuickFixes = new Promise((r) => quickFixExtensionPoint.setHandler(fixes => {
-			r(fixes.filter(c => isProposedApiEnabled(c.description, 'terminalQuickFixProvider')).flatMap(c => {
-				if (!c.value) {
-					return [];
-				}
-				return c.value.map(fix => { return { ...fix, extensionIdentifier: c.description.identifier.value }; });
-			}));
-		}));
-		this.extensionQuickFixes.then(selectors => {
+	constructor(@ILogService private readonly _logService: ILogService) {
+		this.extensionQuickFixes = new Promise((r) =>
+			quickFixExtensionPoint.setHandler((fixes) => {
+				r(
+					fixes
+						.filter((c) =>
+							isProposedApiEnabled(
+								c.description,
+								"terminalQuickFixProvider",
+							),
+						)
+						.flatMap((c) => {
+							if (!c.value) {
+								return [];
+							}
+							return c.value.map((fix) => {
+								return {
+									...fix,
+									extensionIdentifier:
+										c.description.identifier.value,
+								};
+							});
+						}),
+				);
+			}),
+		);
+		this.extensionQuickFixes.then((selectors) => {
 			for (const selector of selectors) {
 				this.registerCommandSelector(selector);
 			}

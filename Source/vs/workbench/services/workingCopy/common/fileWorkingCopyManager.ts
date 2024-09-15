@@ -31,13 +31,13 @@ import { IProgressService } from "../../../../platform/progress/common/progress.
 import { listErrorForeground } from "../../../../platform/theme/common/colorRegistry.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type ISaveOptions,
 	SaveSourceRegistry,
+	type ISaveOptions,
 } from "../../../common/editor.js";
 import {
+	IDecorationsService,
 	type IDecorationData,
 	type IDecorationsProvider,
-	IDecorationsService,
 } from "../../decorations/common/decorations.js";
 import { IEditorService } from "../../editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
@@ -46,31 +46,31 @@ import { IFilesConfigurationService } from "../../filesConfiguration/common/file
 import { ILifecycleService } from "../../lifecycle/common/lifecycle.js";
 import { IPathService } from "../../path/common/pathService.js";
 import type { IBaseFileWorkingCopyManager } from "./abstractFileWorkingCopyManager.js";
-import { type IFileWorkingCopy, SnapshotContext } from "./fileWorkingCopy.js";
+import { SnapshotContext, type IFileWorkingCopy } from "./fileWorkingCopy.js";
 import {
+	StoredFileWorkingCopyState,
 	type IStoredFileWorkingCopy,
 	type IStoredFileWorkingCopyModel,
 	type IStoredFileWorkingCopyModelFactory,
 	type IStoredFileWorkingCopyResolveOptions,
-	StoredFileWorkingCopyState,
 } from "./storedFileWorkingCopy.js";
 import {
+	StoredFileWorkingCopyManager,
 	type IStoredFileWorkingCopyManager,
 	type IStoredFileWorkingCopyManagerResolveOptions,
-	StoredFileWorkingCopyManager,
 } from "./storedFileWorkingCopyManager.js";
 import {
+	UntitledFileWorkingCopy,
 	type IUntitledFileWorkingCopy,
 	type IUntitledFileWorkingCopyModel,
 	type IUntitledFileWorkingCopyModelFactory,
-	UntitledFileWorkingCopy,
 } from "./untitledFileWorkingCopy.js";
 import {
+	UntitledFileWorkingCopyManager,
 	type INewOrExistingUntitledFileWorkingCopyOptions,
 	type INewUntitledFileWorkingCopyOptions,
 	type INewUntitledFileWorkingCopyWithAssociatedResourceOptions,
 	type IUntitledFileWorkingCopyManager,
-	UntitledFileWorkingCopyManager,
 } from "./untitledFileWorkingCopyManager.js";
 import { IWorkingCopyBackupService } from "./workingCopyBackup.js";
 import { IWorkingCopyEditorService } from "./workingCopyEditorService.js";
@@ -218,47 +218,81 @@ export class FileWorkingCopyManager<
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@ILabelService labelService: ILabelService,
 		@ILogService private readonly logService: ILogService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService,
-		@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyBackupService
+		workingCopyBackupService: IWorkingCopyBackupService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
 		@INotificationService notificationService: INotificationService,
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService editorService: IEditorService,
 		@IElevatedFileService elevatedFileService: IElevatedFileService,
 		@IPathService private readonly pathService: IPathService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IDecorationsService private readonly decorationsService: IDecorationsService,
-		@IProgressService progressService: IProgressService
+		@IDecorationsService
+		private readonly decorationsService: IDecorationsService,
+		@IProgressService progressService: IProgressService,
 	) {
 		super();
 
 		// Stored file working copies manager
-		this.stored = this._register(new StoredFileWorkingCopyManager(
-			this.workingCopyTypeId,
-			this.storedWorkingCopyModelFactory,
-			fileService, lifecycleService, labelService, logService, workingCopyFileService,
-			workingCopyBackupService, uriIdentityService, filesConfigurationService, workingCopyService,
-			notificationService, workingCopyEditorService, editorService, elevatedFileService, progressService
-		));
+		this.stored = this._register(
+			new StoredFileWorkingCopyManager(
+				this.workingCopyTypeId,
+				this.storedWorkingCopyModelFactory,
+				fileService,
+				lifecycleService,
+				labelService,
+				logService,
+				workingCopyFileService,
+				workingCopyBackupService,
+				uriIdentityService,
+				filesConfigurationService,
+				workingCopyService,
+				notificationService,
+				workingCopyEditorService,
+				editorService,
+				elevatedFileService,
+				progressService,
+			),
+		);
 
 		// Untitled file working copies manager
-		this.untitled = this._register(new UntitledFileWorkingCopyManager(
-			this.workingCopyTypeId,
-			this.untitledWorkingCopyModelFactory,
-			async (workingCopy, options) => {
-				const result = await this.saveAs(workingCopy.resource, undefined, options);
+		this.untitled = this._register(
+			new UntitledFileWorkingCopyManager(
+				this.workingCopyTypeId,
+				this.untitledWorkingCopyModelFactory,
+				async (workingCopy, options) => {
+					const result = await this.saveAs(
+						workingCopy.resource,
+						undefined,
+						options,
+					);
 
-				return result ? true : false;
-			},
-			fileService, labelService, logService, workingCopyBackupService, workingCopyService
-		));
+					return result ? true : false;
+				},
+				fileService,
+				labelService,
+				logService,
+				workingCopyBackupService,
+				workingCopyService,
+			),
+		);
 
 		// Events
-		this.onDidCreate = Event.any<IFileWorkingCopy<S | U>>(this.stored.onDidCreate, this.untitled.onDidCreate);
+		this.onDidCreate = Event.any<IFileWorkingCopy<S | U>>(
+			this.stored.onDidCreate,
+			this.untitled.onDidCreate,
+		);
 
 		// Decorations
 		this.provideDecorations();

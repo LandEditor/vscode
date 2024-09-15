@@ -16,8 +16,8 @@ import { IWorkspaceContextService } from "../../../../platform/workspace/common/
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
-	type ServicesAccessor,
 	registerEditorAction,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ensureNonNullable } from "../../../browser/gpu/gpuUtils.js";
 import { GlyphRasterizer } from "../../../browser/gpu/raster/glyphRasterizer.js";

@@ -12,15 +12,17 @@ import type {
 } from "../../../base/browser/ui/list/list.js";
 import { List } from "../../../base/browser/ui/list/listWidget.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import { Codicon } from "../../../base/common/codicons.js";
 import type { ResolvedKeybinding } from "../../../base/common/keybindings.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { OS } from "../../../base/common/platform.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
+
 import "./actionWidget.css";
+
 import { localize } from "../../../nls.js";
 import { IContextViewService } from "../../contextview/browser/contextView.js";
 import { IKeybindingService } from "../../keybinding/common/keybinding.js";
@@ -105,8 +107,9 @@ class ActionItemRenderer<T>
 
 	constructor(
 		private readonly _supportsPreview: boolean,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
-	) { }
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IActionMenuTemplateData {
 		container.classList.add(this.templateId);
@@ -233,48 +236,90 @@ export class ActionList<T> extends Disposable {
 		preview: boolean,
 		items: readonly IActionListItem<T>[],
 		private readonly _delegate: IActionListDelegate<T>,
-		@IContextViewService private readonly _contextViewService: IContextViewService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
-		this.domNode = document.createElement('div');
-		this.domNode.classList.add('actionList');
+		this.domNode = document.createElement("div");
+		this.domNode.classList.add("actionList");
 		const virtualDelegate: IListVirtualDelegate<IActionListItem<T>> = {
-			getHeight: element => element.kind === ActionListItemKind.Header ? this._headerLineHeight : this._actionLineHeight,
-			getTemplateId: element => element.kind
+			getHeight: (element) =>
+				element.kind === ActionListItemKind.Header
+					? this._headerLineHeight
+					: this._actionLineHeight,
+			getTemplateId: (element) => element.kind,
 		};
 
-		this._list = this._register(new List(user, this.domNode, virtualDelegate, [
-			new ActionItemRenderer<IActionListItem<T>>(preview, this._keybindingService),
-			new HeaderRenderer(),
-		], {
-			keyboardSupport: false,
-			typeNavigationEnabled: true,
-			keyboardNavigationLabelProvider: { getKeyboardNavigationLabel },
-			accessibilityProvider: {
-				getAriaLabel: element => {
-					if (element.kind === ActionListItemKind.Action) {
-						let label = element.label ? stripNewlines(element?.label) : '';
-						if (element.disabled) {
-							label = localize({ key: 'customQuickFixWidget.labels', comment: [`Action widget labels for accessibility.`] }, "{0}, Disabled Reason: {1}", label, element.disabled);
-						}
-						return label;
-					}
-					return null;
+		this._list = this._register(
+			new List(
+				user,
+				this.domNode,
+				virtualDelegate,
+				[
+					new ActionItemRenderer<IActionListItem<T>>(
+						preview,
+						this._keybindingService,
+					),
+					new HeaderRenderer(),
+				],
+				{
+					keyboardSupport: false,
+					typeNavigationEnabled: true,
+					keyboardNavigationLabelProvider: {
+						getKeyboardNavigationLabel,
+					},
+					accessibilityProvider: {
+						getAriaLabel: (element) => {
+							if (element.kind === ActionListItemKind.Action) {
+								let label = element.label
+									? stripNewlines(element?.label)
+									: "";
+								if (element.disabled) {
+									label = localize(
+										{
+											key: "customQuickFixWidget.labels",
+											comment: [
+												`Action widget labels for accessibility.`,
+											],
+										},
+										"{0}, Disabled Reason: {1}",
+										label,
+										element.disabled,
+									);
+								}
+								return label;
+							}
+							return null;
+						},
+						getWidgetAriaLabel: () =>
+							localize(
+								{
+									key: "customQuickFixWidget",
+									comment: [`An action widget option`],
+								},
+								"Action Widget",
+							),
+						getRole: (e) =>
+							e.kind === ActionListItemKind.Action
+								? "option"
+								: "separator",
+						getWidgetRole: () => "listbox",
+					},
 				},
-				getWidgetAriaLabel: () => localize({ key: 'customQuickFixWidget', comment: [`An action widget option`] }, "Action Widget"),
-				getRole: (e) => e.kind === ActionListItemKind.Action ? 'option' : 'separator',
-				getWidgetRole: () => 'listbox',
-			},
-		}));
+			),
+		);
 
 		this._list.style(defaultListStyles);
 
-		this._register(this._list.onMouseClick(e => this.onListClick(e)));
-		this._register(this._list.onMouseOver(e => this.onListHover(e)));
+		this._register(this._list.onMouseClick((e) => this.onListClick(e)));
+		this._register(this._list.onMouseOver((e) => this.onListHover(e)));
 		this._register(this._list.onDidChangeFocus(() => this.onFocus()));
-		this._register(this._list.onDidChangeSelection(e => this.onListSelection(e)));
+		this._register(
+			this._list.onDidChangeSelection((e) => this.onListSelection(e)),
+		);
 
 		this._allMenuItems = items;
 		this._list.splice(0, this._list.length, this._allMenuItems);

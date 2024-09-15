@@ -33,17 +33,22 @@ export class ExtensionHostStarter
 
 	constructor(
 		@ILogService private readonly _logService: ILogService,
-		@ILifecycleMainService private readonly _lifecycleMainService: ILifecycleMainService,
-		@IWindowsMainService private readonly _windowsMainService: IWindowsMainService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ILifecycleMainService
+		private readonly _lifecycleMainService: ILifecycleMainService,
+		@IWindowsMainService
+		private readonly _windowsMainService: IWindowsMainService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		super();
 
 		// On shutdown: gracefully await extension host shutdowns
-		this._register(this._lifecycleMainService.onWillShutdown(e => {
-			this._shutdown = true;
-			e.join('extHostStarter', this._waitForAllExit(6000));
-		}));
+		this._register(
+			this._lifecycleMainService.onWillShutdown((e) => {
+				this._shutdown = true;
+				e.join("extHostStarter", this._waitForAllExit(6000));
+			}),
+		);
 	}
 
 	override dispose(): void {

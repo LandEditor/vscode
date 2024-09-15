@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from "os";
+
 import * as path from "../common/path.js";
 import * as pfs from "./pfs.js";
 

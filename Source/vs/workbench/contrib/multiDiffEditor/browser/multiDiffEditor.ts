@@ -31,13 +31,13 @@ import type { ICompositeControl } from "../../../common/composite.js";
 import type { IEditorOpenContext } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IDocumentDiffItemWithMultiDiffEditorItem,
 	MultiDiffEditorInput,
+	type IDocumentDiffItemWithMultiDiffEditorItem,
 } from "./multiDiffEditorInput.js";
 import type { MultiDiffEditorItem } from "./multiDiffSourceResolverService.js";
 
@@ -60,7 +60,8 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 		@IStorageService storageService: IStorageService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 	) {
 		super(
 			MultiDiffEditor.ID,
@@ -190,8 +191,9 @@ export class MultiDiffEditor extends AbstractEditorWithViewState<IMultiDiffEdito
 
 class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+	) {}
 
 	createResourceLabel(element: HTMLElement): IResourceLabel {
 		const label = this._instantiationService.createInstance(

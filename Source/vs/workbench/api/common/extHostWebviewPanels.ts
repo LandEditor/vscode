@@ -6,6 +6,7 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { URI } from "../../../base/common/uri.js";
@@ -16,11 +17,11 @@ import * as extHostProtocol from "./extHost.protocol.js";
 import * as typeConverters from "./extHostTypeConverters.js";
 import * as extHostTypes from "./extHostTypes.js";
 import {
-	type ExtHostWebview,
-	type ExtHostWebviews,
 	serializeWebviewOptions,
 	shouldSerializeBuffersForPostMessage,
 	toExtensionData,
+	type ExtHostWebview,
+	type ExtHostWebviews,
 } from "./extHostWebview.js";
 import type { IExtHostWorkspace } from "./extHostWorkspace.js";
 

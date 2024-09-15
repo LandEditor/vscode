@@ -6,8 +6,8 @@
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -20,12 +20,12 @@ import {
 	type IBaseFileWorkingCopyManager,
 } from "./abstractFileWorkingCopyManager.js";
 import {
+	UntitledFileWorkingCopy,
 	type IUntitledFileWorkingCopy,
 	type IUntitledFileWorkingCopyInitialContents,
 	type IUntitledFileWorkingCopyModel,
 	type IUntitledFileWorkingCopyModelFactory,
 	type IUntitledFileWorkingCopySaveDelegate,
-	UntitledFileWorkingCopy,
 } from "./untitledFileWorkingCopy.js";
 import { IWorkingCopyBackupService } from "./workingCopyBackup.js";
 import { IWorkingCopyService } from "./workingCopyService.js";
@@ -159,8 +159,10 @@ export class UntitledFileWorkingCopyManager<
 		@IFileService fileService: IFileService,
 		@ILabelService private readonly labelService: ILabelService,
 		@ILogService logService: ILogService,
-		@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService
+		@IWorkingCopyBackupService
+		workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
 	) {
 		super(fileService, logService, workingCopyBackupService);
 	}

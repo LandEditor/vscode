@@ -13,8 +13,8 @@ import { Schemas } from "../../../../base/common/network.js";
 import { isEqual } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ITextEditorModel,
 	ITextModelService,
+	type ITextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
@@ -77,8 +77,10 @@ export class WalkThroughInput extends EditorInput {
 
 	constructor(
 		private readonly options: WalkThroughInputOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 	) {
 		super();
 	}

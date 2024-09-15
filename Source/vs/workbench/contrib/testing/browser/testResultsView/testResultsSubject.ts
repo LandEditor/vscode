@@ -7,19 +7,19 @@ import { MarshalledId } from "../../../../../base/common/marshallingIds.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import { Range } from "../../../../../editor/common/core/range.js";
 import { TestId } from "../../common/testId.js";
+import { buildTestUri, TestUriType } from "../../common/testingUri.js";
 import type { ITestResult } from "../../common/testResult.js";
 import {
+	InternalTestItem,
+	ITestMessage,
+	TestMessageType,
 	type IRichLocation,
 	type ITestItem,
-	ITestMessage,
 	type ITestMessageMenuArgs,
 	type ITestRunTask,
 	type ITestTaskState,
-	InternalTestItem,
-	TestMessageType,
 	type TestResultItem,
 } from "../../common/testTypes.js";
-import { TestUriType, buildTestUri } from "../../common/testingUri.js";
 
 export const getMessageArgs = (
 	test: TestResultItem,

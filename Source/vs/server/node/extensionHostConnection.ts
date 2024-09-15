@@ -5,6 +5,7 @@
 
 import * as cp from "child_process";
 import * as net from "net";
+
 import { VSBuffer } from "../../base/common/buffer.js";
 import { Emitter, Event } from "../../base/common/event.js";
 import {
@@ -15,14 +16,14 @@ import {
 import { FileAccess } from "../../base/common/network.js";
 import { delimiter, join } from "../../base/common/path.js";
 import {
-	type IProcessEnvironment,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../base/common/platform.js";
 import { removeDangerousEnvVariables } from "../../base/common/processes.js";
 import {
+	createRandomIPCHandle,
 	NodeSocket,
 	type WebSocketNodeSocket,
-	createRandomIPCHandle,
 } from "../../base/parts/ipc/node/ipc.net.js";
 import { IConfigurationService } from "../../platform/configuration/common/configuration.js";
 import { ILogService } from "../../platform/log/common/log.js";
@@ -162,13 +163,17 @@ export class ExtensionHostConnection extends Disposable {
 		remoteAddress: string,
 		socket: NodeSocket | WebSocketNodeSocket,
 		initialDataChunk: VSBuffer,
-		@IServerEnvironmentService private readonly _environmentService: IServerEnvironmentService,
+		@IServerEnvironmentService
+		private readonly _environmentService: IServerEnvironmentService,
 		@ILogService private readonly _logService: ILogService,
-		@IExtensionHostStatusService private readonly _extensionHostStatusService: IExtensionHostStatusService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IExtensionHostStatusService
+		private readonly _extensionHostStatusService: IExtensionHostStatusService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
-		this._canSendSocket = (!isWindows || !this._environmentService.args['socket-path']);
+		this._canSendSocket =
+			!isWindows || !this._environmentService.args["socket-path"];
 		this._disposed = false;
 		this._remoteAddress = remoteAddress;
 		this._extensionHostProcess = null;

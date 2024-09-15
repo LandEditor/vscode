@@ -11,8 +11,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { extname, joinPath } from "../../../../base/common/resources.js";
@@ -26,9 +26,9 @@ import { createTextBufferFactoryFromSnapshot } from "../../../../editor/common/m
 import { localize } from "../../../../nls.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	FileOperation,
 	IFileService,
+	type FileChangesEvent,
 	type IFileSystemProviderCapabilitiesChangeEvent,
 	type IFileSystemProviderRegistrationEvent,
 } from "../../../../platform/files/common/files.js";
@@ -40,12 +40,11 @@ import type {
 } from "../../../../platform/progress/common/progress.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IStoredFileWorkingCopySaveParticipantContext,
 	IWorkingCopyFileService,
+	type IStoredFileWorkingCopySaveParticipantContext,
 	type WorkingCopyFileEvent,
 } from "../../workingCopy/common/workingCopyFileService.js";
 import { TextFileEditorModel } from "./textFileEditorModel.js";
-import { TextFileSaveParticipant } from "./textFileSaveParticipant.js";
 import type {
 	ITextFileEditorModel,
 	ITextFileEditorModelManager,
@@ -54,6 +53,7 @@ import type {
 	ITextFileSaveEvent,
 	ITextFileSaveParticipant,
 } from "./textfiles.js";
+import { TextFileSaveParticipant } from "./textFileSaveParticipant.js";
 
 export class TextFileEditorModelManager
 	extends Disposable
@@ -148,11 +148,15 @@ export class TextFileEditorModelManager
 	}
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 

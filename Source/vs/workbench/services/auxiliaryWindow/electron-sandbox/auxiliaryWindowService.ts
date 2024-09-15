@@ -34,8 +34,8 @@ import {
 	AuxiliaryWindow,
 	AuxiliaryWindowMode,
 	BrowserAuxiliaryWindowService,
-	type IAuxiliaryWindowOpenOptions,
 	IAuxiliaryWindowService,
+	type IAuxiliaryWindowOpenOptions,
 } from "../browser/auxiliaryWindowService.js";
 
 type NativeCodeWindow = CodeWindow & {
@@ -52,13 +52,23 @@ export class NativeAuxiliaryWindow extends AuxiliaryWindow {
 		container: HTMLElement,
 		stylesHaveLoaded: Barrier,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IDialogService private readonly dialogService: IDialogService
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IDialogService private readonly dialogService: IDialogService,
 	) {
-		super(window, container, stylesHaveLoaded, configurationService, hostService, environmentService);
+		super(
+			window,
+			container,
+			stylesHaveLoaded,
+			configurationService,
+			hostService,
+			environmentService,
+		);
 
 		if (!isMacintosh) {
 			// For now, limit this to platforms that have clear maximised
@@ -165,14 +175,24 @@ export class NativeAuxiliaryWindowService extends BrowserAuxiliaryWindowService 
 	constructor(
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IDialogService dialogService: IDialogService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 	) {
-		super(layoutService, dialogService, configurationService, telemetryService, hostService, environmentService);
+		super(
+			layoutService,
+			dialogService,
+			configurationService,
+			telemetryService,
+			hostService,
+			environmentService,
+		);
 	}
 
 	protected override async resolveWindowId(

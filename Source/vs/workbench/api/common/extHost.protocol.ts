@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { TerminalShellExecutionCommandLineConfidence } from "vscode";
+
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import type { IRemoteConsoleLog } from "../../../base/common/console.js";
@@ -132,17 +133,17 @@ import type {
 	IChatVariableResolverProgress,
 } from "../../contrib/chat/common/chatVariables.js";
 import type {
-	IToolData,
-	IToolInvocation,
-	IToolResult,
-} from "../../contrib/chat/common/languageModelToolsService.js";
-import type {
 	IChatMessage,
 	IChatResponseFragment,
 	ILanguageModelChatMetadata,
 	ILanguageModelChatSelector,
 	ILanguageModelsChangeEvent,
 } from "../../contrib/chat/common/languageModels.js";
+import type {
+	IToolData,
+	IToolInvocation,
+	IToolResult,
+} from "../../contrib/chat/common/languageModelToolsService.js";
 import type {
 	DebugConfigurationProviderTriggerKind,
 	IAdapterDescriptor,
@@ -221,10 +222,10 @@ import type {
 	MissingExtensionDependency,
 } from "../../services/extensions/common/extensions.js";
 import {
+	createProxyIdentifier,
 	type Dto,
 	type IRPCProtocol,
 	type SerializableObjectWithBuffers,
-	createProxyIdentifier,
 } from "../../services/extensions/common/proxyIdentifier.js";
 import type { ILanguageStatus } from "../../services/languageStatus/common/languageStatusService.js";
 import type { OutputChannelUpdateMode } from "../../services/output/common/output.js";
@@ -1221,7 +1222,10 @@ export interface MainThreadTelemetryShape extends IDisposable {
 	$publicLog2<
 		E extends ClassifiedEvent<OmitMetadata<T>> = never,
 		T extends IGDPRProperty = never,
-	>(eventName: string, data?: StrictPropertyCheck<T, E>): void;
+	>(
+		eventName: string,
+		data?: StrictPropertyCheck<T, E>,
+	): void;
 }
 
 export interface MainThreadEditorInsetsShape extends IDisposable {
@@ -4543,7 +4547,7 @@ export type NotebookRawContentEventDto =
 	| notebookCommon.NotebookCellsChangeInternalMetadataEvent
 	// | notebookCommon.NotebookDocumentChangeMetadataEvent
 	| notebookCommon.NotebookCellContentChangeEvent;
-	// | notebookCommon.NotebookDocumentUnknownChangeEvent
+// | notebookCommon.NotebookDocumentUnknownChangeEvent
 
 export type NotebookCellsChangedEventDto = {
 	readonly rawEvents: NotebookRawContentEventDto[];

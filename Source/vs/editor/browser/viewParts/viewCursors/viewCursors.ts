@@ -4,17 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./viewCursors.css";
+
 import {
-	WindowIntervalTimer,
 	getWindow,
+	WindowIntervalTimer,
 } from "../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import {
-	type IntervalTimer,
 	TimeoutTimer,
+	type IntervalTimer,
 } from "../../../../base/common/async.js";
 import { isHighContrast } from "../../../../platform/theme/common/theme.js";
 import { registerThemingParticipant } from "../../../../platform/theme/common/themeService.js";
@@ -42,8 +43,8 @@ import type {
 import { ViewPart } from "../../view/viewPart.js";
 import {
 	CursorPlurality,
-	type IViewCursorRenderData,
 	ViewCursor,
+	type IViewCursorRenderData,
 } from "./viewCursor.js";
 
 /**

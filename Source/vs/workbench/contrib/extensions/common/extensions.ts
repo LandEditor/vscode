@@ -20,9 +20,9 @@ import type {
 	IExtensionQueryOptions,
 	IGalleryExtension,
 	ILocalExtension,
-	IQueryOptions,
 	InstallExtensionResult,
 	InstallOptions,
+	IQueryOptions,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import type {
@@ -268,7 +268,8 @@ export interface IExtensionContainer extends IDisposable {
 export class ExtensionContainers extends Disposable {
 	constructor(
 		private readonly containers: IExtensionContainer[],
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		super();
 		this._register(extensionsWorkbenchService.onChange(this.update, this));

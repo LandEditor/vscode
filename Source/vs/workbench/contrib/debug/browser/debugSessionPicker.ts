@@ -5,19 +5,18 @@ import { DisposableStore } from "../../../../base/common/lifecycle.js";
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as nls from "../../../../nls.js";
+import { ICommandService } from "../../../../platform/commands/common/commands.js";
+import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	IQuickInputService,
 	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
+import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	IDebugService,
-	type IDebugSession,
 	REPL_VIEW_ID,
+	type IDebugSession,
 } from "../common/debug.js";
-
-import { ICommandService } from "../../../../platform/commands/common/commands.js";
-import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
-import { IViewsService } from "../../../services/views/common/viewsService.js";
 import type { IPickerDebugItem } from "../common/loadedScriptsPicker.js";
 
 export async function showDebugSessionMenu(

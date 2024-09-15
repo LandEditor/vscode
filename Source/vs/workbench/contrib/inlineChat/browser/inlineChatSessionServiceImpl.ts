@@ -6,9 +6,9 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { isEqual } from "../../../../base/common/resources.js";
@@ -26,8 +26,8 @@ import { IEditorWorkerService } from "../../../../editor/common/services/editorW
 import { IModelService } from "../../../../editor/common/services/model.js";
 import { ITextModelService } from "../../../../editor/common/services/resolverService.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -107,18 +107,23 @@ export class InlineChatSessionServiceImpl implements IInlineChatSessionService {
 	private readonly _keyComputers = new Map<string, ISessionKeyComputer>();
 
 	constructor(
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 		@ILogService private readonly _logService: ILogService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IChatService private readonly _chatService: IChatService,
-		@IChatAgentService private readonly _chatAgentService: IChatAgentService
-	) { }
+		@IChatAgentService
+		private readonly _chatAgentService: IChatAgentService,
+	) {}
 
 	dispose() {
 		this._store.dispose();

@@ -17,8 +17,8 @@ import {
 	isWindows,
 } from "../../../base/common/platform.js";
 import {
-	type IExtUri,
 	isEqualAuthority,
+	type IExtUri,
 } from "../../../base/common/resources.js";
 import { URI } from "../../../base/common/uri.js";
 import type {
@@ -29,11 +29,11 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 import type { ILogService } from "../../log/common/log.js";
 import { getRemoteAuthority } from "../../remote/common/remoteHosts.js";
 import {
+	WorkspaceFolder,
 	type IBaseWorkspace,
 	type IRawFileWorkspaceFolder,
 	type IRawUriWorkspaceFolder,
 	type IWorkspaceIdentifier,
-	WorkspaceFolder,
 } from "../../workspace/common/workspace.js";
 
 export const IWorkspacesService =

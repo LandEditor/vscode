@@ -14,8 +14,8 @@ import { IInstantiationService } from "../../../../../../platform/instantiation/
 import { IKeybindingService } from "../../../../../../platform/keybinding/common/keybinding.js";
 import { Registry } from "../../../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../../../common/contributions.js";
 import {
 	ILanguageDetectionService,
@@ -45,7 +45,7 @@ class CellStatusBarLanguagePickerProvider
 	constructor(
 		@INotebookService private readonly _notebookService: INotebookService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-	) { }
+	) {}
 
 	async provideCellStatusBarItems(
 		uri: URI,
@@ -123,12 +123,16 @@ class CellStatusBarLanguageDetectionProvider
 
 	constructor(
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageDetectionService private readonly _languageDetectionService: ILanguageDetectionService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-	) { }
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageDetectionService
+		private readonly _languageDetectionService: ILanguageDetectionService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+	) {}
 
 	async provideCellStatusBarItems(
 		uri: URI,
@@ -229,7 +233,8 @@ class CellStatusBarLanguageDetectionProvider
 class BuiltinCellStatusBarProviders extends Disposable {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@INotebookCellStatusBarService notebookCellStatusBarService: INotebookCellStatusBarService,
+		@INotebookCellStatusBarService
+		notebookCellStatusBarService: INotebookCellStatusBarService,
 	) {
 		super();
 

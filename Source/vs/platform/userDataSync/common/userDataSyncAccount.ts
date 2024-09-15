@@ -51,21 +51,37 @@ export class UserDataSyncAccountService
 	private wasTokenFailed = false;
 
 	constructor(
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
 	) {
 		super();
-		this._register(userDataSyncStoreService.onTokenFailed(code => {
-			this.logService.info('Settings Sync auth token failed', this.account?.authenticationProviderId, this.wasTokenFailed, code);
-			this.updateAccount(undefined);
-			if (code === UserDataSyncErrorCode.Forbidden) {
-				this._onTokenFailed.fire(true /*bail out immediately*/);
-			} else {
-				this._onTokenFailed.fire(this.wasTokenFailed /* bail out if token failed before */);
-			}
-			this.wasTokenFailed = true;
-		}));
-		this._register(userDataSyncStoreService.onTokenSucceed(() => this.wasTokenFailed = false));
+		this._register(
+			userDataSyncStoreService.onTokenFailed((code) => {
+				this.logService.info(
+					"Settings Sync auth token failed",
+					this.account?.authenticationProviderId,
+					this.wasTokenFailed,
+					code,
+				);
+				this.updateAccount(undefined);
+				if (code === UserDataSyncErrorCode.Forbidden) {
+					this._onTokenFailed.fire(true /*bail out immediately*/);
+				} else {
+					this._onTokenFailed.fire(
+						this
+							.wasTokenFailed /* bail out if token failed before */,
+					);
+				}
+				this.wasTokenFailed = true;
+			}),
+		);
+		this._register(
+			userDataSyncStoreService.onTokenSucceed(
+				() => (this.wasTokenFailed = false),
+			),
+		);
 	}
 
 	async updateAccount(

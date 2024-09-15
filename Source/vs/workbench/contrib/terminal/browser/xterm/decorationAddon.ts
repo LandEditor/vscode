@@ -4,15 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IDecoration, ITerminalAddon, Terminal } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
-import { type IAction, Separator } from "../../../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../../../base/common/actions.js";
 import { Emitter } from "../../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../../base/common/themables.js";
 import { localize } from "../../../../../nls.js";
@@ -36,11 +37,11 @@ import {
 } from "../../../../../platform/quickinput/common/quickInput.js";
 import {
 	CommandInvalidationReason,
+	TerminalCapability,
 	type ICommandDetectionCapability,
 	type IMarkProperties,
 	type ITerminalCapabilityStore,
 	type ITerminalCommand,
-	TerminalCapability,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import { TerminalSettingId } from "../../../../../platform/terminal/common/terminal.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
@@ -86,36 +87,73 @@ export class DecorationAddon extends Disposable implements ITerminalAddon {
 
 	constructor(
 		private readonly _capabilities: ITerminalCapabilityStore,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IThemeService private readonly _themeService: IThemeService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@INotificationService private readonly _notificationService: INotificationService
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 	) {
 		super();
 		this._register(toDisposable(() => this._dispose()));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSettingId.FontSize) || e.affectsConfiguration(TerminalSettingId.LineHeight)) {
-				this.refreshLayouts();
-			} else if (e.affectsConfiguration('workbench.colorCustomizations')) {
-				this._refreshStyles(true);
-			} else if (e.affectsConfiguration(TerminalSettingId.ShellIntegrationDecorationsEnabled)) {
-				this._removeCapabilityDisposables(TerminalCapability.CommandDetection);
-				this._updateDecorationVisibility();
-			}
-		}));
-		this._register(this._themeService.onDidColorThemeChange(() => this._refreshStyles(true)));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(TerminalSettingId.FontSize) ||
+					e.affectsConfiguration(TerminalSettingId.LineHeight)
+				) {
+					this.refreshLayouts();
+				} else if (
+					e.affectsConfiguration("workbench.colorCustomizations")
+				) {
+					this._refreshStyles(true);
+				} else if (
+					e.affectsConfiguration(
+						TerminalSettingId.ShellIntegrationDecorationsEnabled,
+					)
+				) {
+					this._removeCapabilityDisposables(
+						TerminalCapability.CommandDetection,
+					);
+					this._updateDecorationVisibility();
+				}
+			}),
+		);
+		this._register(
+			this._themeService.onDidColorThemeChange(() =>
+				this._refreshStyles(true),
+			),
+		);
 		this._updateDecorationVisibility();
-		this._register(this._capabilities.onDidAddCapabilityType(c => this._createCapabilityDisposables(c)));
-		this._register(this._capabilities.onDidRemoveCapabilityType(c => this._removeCapabilityDisposables(c)));
-		this._register(lifecycleService.onWillShutdown(() => this._disposeAllDecorations()));
-		this._terminalDecorationHoverManager = this._register(instantiationService.createInstance(TerminalDecorationHoverManager));
+		this._register(
+			this._capabilities.onDidAddCapabilityType((c) =>
+				this._createCapabilityDisposables(c),
+			),
+		);
+		this._register(
+			this._capabilities.onDidRemoveCapabilityType((c) =>
+				this._removeCapabilityDisposables(c),
+			),
+		);
+		this._register(
+			lifecycleService.onWillShutdown(() =>
+				this._disposeAllDecorations(),
+			),
+		);
+		this._terminalDecorationHoverManager = this._register(
+			instantiationService.createInstance(TerminalDecorationHoverManager),
+		);
 	}
 
 	private _removeCapabilityDisposables(c: TerminalCapability): void {

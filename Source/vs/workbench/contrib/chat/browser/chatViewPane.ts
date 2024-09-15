@@ -23,8 +23,8 @@ import { ITelemetryService } from "../../../../platform/telemetry/common/telemet
 import { editorBackground } from "../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { Memento } from "../../../common/memento.js";
 import { SIDE_BAR_FOREGROUND } from "../../../common/theme.js";
@@ -70,37 +70,66 @@ export class ChatViewPane extends ViewPane {
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 		@ILogService private readonly logService: ILogService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
 		// View state for the ViewPane is currently global per-provider basically, but some other strictly per-model state will require a separate memento.
-		this.memento = new Memento('interactive-session-view-' + CHAT_PROVIDER_ID, this.storageService);
-		this.viewState = this.memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE) as IViewPaneState;
-		this._register(this.chatAgentService.onDidChangeAgents(() => {
-			if (this.chatAgentService.getDefaultAgent(ChatAgentLocation.Panel)) {
-				if (!this._widget?.viewModel) {
-					const sessionId = this.getSessionId();
-					const model = sessionId ? this.chatService.getOrRestoreSession(sessionId) : undefined;
+		this.memento = new Memento(
+			"interactive-session-view-" + CHAT_PROVIDER_ID,
+			this.storageService,
+		);
+		this.viewState = this.memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		) as IViewPaneState;
+		this._register(
+			this.chatAgentService.onDidChangeAgents(() => {
+				if (
+					this.chatAgentService.getDefaultAgent(
+						ChatAgentLocation.Panel,
+					)
+				) {
+					if (!this._widget?.viewModel) {
+						const sessionId = this.getSessionId();
+						const model = sessionId
+							? this.chatService.getOrRestoreSession(sessionId)
+							: undefined;
 
-					// The widget may be hidden at this point, because welcome views were allowed. Use setVisible to
-					// avoid doing a render while the widget is hidden. This is changing the condition in `shouldShowWelcome`
-					// so it should fire onDidChangeViewWelcomeState.
-					try {
-						this._widget.setVisible(false);
-						this.updateModel(model);
-						this.didProviderRegistrationFail = false;
-						this.didUnregisterProvider = false;
-						this._onDidChangeViewWelcomeState.fire();
-					} finally {
-						this.widget.setVisible(true);
+						// The widget may be hidden at this point, because welcome views were allowed. Use setVisible to
+						// avoid doing a render while the widget is hidden. This is changing the condition in `shouldShowWelcome`
+						// so it should fire onDidChangeViewWelcomeState.
+						try {
+							this._widget.setVisible(false);
+							this.updateModel(model);
+							this.didProviderRegistrationFail = false;
+							this.didUnregisterProvider = false;
+							this._onDidChangeViewWelcomeState.fire();
+						} finally {
+							this.widget.setVisible(true);
+						}
 					}
+				} else if (
+					this._widget?.viewModel?.initState ===
+					ChatModelInitState.Initialized
+				) {
+					// Model is initialized, and the default agent disappeared, so show welcome view
+					this.didUnregisterProvider = true;
 				}
-			} else if (this._widget?.viewModel?.initState === ChatModelInitState.Initialized) {
-				// Model is initialized, and the default agent disappeared, so show welcome view
-				this.didUnregisterProvider = true;
-			}
 
-			this._onDidChangeViewWelcomeState.fire();
-		}));
+				this._onDidChangeViewWelcomeState.fire();
+			}),
+		);
 	}
 
 	override getActionsContext(): IChatViewTitleActionContext {

@@ -5,20 +5,21 @@
 
 import type { IListVirtualDelegate } from "../../../../base/browser/ui/list/list.js";
 import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
+import { TreeFindMode } from "../../../../base/browser/ui/tree/abstractTree.js";
 import type { ICompressedTreeNode } from "../../../../base/browser/ui/tree/compressedObjectTreeModel.js";
 import type { ICompressibleTreeRenderer } from "../../../../base/browser/ui/tree/objectTree.js";
 import {
+	TreeVisibility,
 	type ITreeElement,
 	type ITreeFilter,
 	type ITreeNode,
 	type TreeFilterResult,
-	TreeVisibility,
 } from "../../../../base/browser/ui/tree/tree.js";
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import {
 	normalizeDriveLetter,
@@ -37,11 +38,12 @@ import {
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { FileKind } from "../../../../platform/files/common/files.js";
+import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import {
 	IInstantiationService,
 	type ServicesAccessor,
@@ -49,36 +51,33 @@ import {
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { WorkbenchCompressibleObjectTree } from "../../../../platform/list/browser/listService.js";
+import { IOpenerService } from "../../../../platform/opener/common/opener.js";
+import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
+import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
 	IWorkspaceContextService,
 	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	ResourceLabels,
 	type IResourceLabel,
 	type IResourceLabelOptions,
 	type IResourceLabelProps,
-	ResourceLabels,
 } from "../../../browser/labels.js";
 import { ViewAction, ViewPane } from "../../../browser/parts/views/viewPane.js";
 import type { IViewletViewOptions } from "../../../browser/parts/views/viewsViewlet.js";
+import { IViewDescriptorService } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
+import { IPathService } from "../../../services/path/common/pathService.js";
 import {
 	CONTEXT_LOADED_SCRIPTS_ITEM_TYPE,
 	IDebugService,
-	type IDebugSession,
 	LOADED_SCRIPTS_VIEW_ID,
+	type IDebugSession,
 } from "../common/debug.js";
 import { DebugContentProvider } from "../common/debugContentProvider.js";
 import type { Source } from "../common/debugSource.js";
 import { renderViewTree } from "./baseDebugView.js";
-
-import { TreeFindMode } from "../../../../base/browser/ui/tree/abstractTree.js";
-import { IHoverService } from "../../../../platform/hover/browser/hover.js";
-import { IOpenerService } from "../../../../platform/opener/common/opener.js";
-import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
-import { IThemeService } from "../../../../platform/theme/common/themeService.js";
-import { IViewDescriptorService } from "../../../common/views.js";
-import { IPathService } from "../../../services/path/common/pathService.js";
 
 const NEW_STYLE_COMPRESS = true;
 
@@ -524,17 +523,31 @@ export class LoadedScriptsView extends ViewPane {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IDebugService private readonly debugService: IDebugService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IPathService private readonly pathService: IPathService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IHoverService hoverService: IHoverService
+		@IHoverService hoverService: IHoverService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
-		this.loadedScriptsItemType = CONTEXT_LOADED_SCRIPTS_ITEM_TYPE.bindTo(contextKeyService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
+		this.loadedScriptsItemType =
+			CONTEXT_LOADED_SCRIPTS_ITEM_TYPE.bindTo(contextKeyService);
 	}
 
 	protected override renderBody(container: HTMLElement): void {

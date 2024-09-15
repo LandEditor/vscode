@@ -23,15 +23,15 @@ import {
 } from "../../../../platform/externalTerminal/common/externalTerminal.js";
 import { IExternalTerminalService } from "../../../../platform/externalTerminal/electron-sandbox/externalTerminalService.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IRemoteAuthorityResolverService } from "../../../../platform/remote/common/remoteAuthorityResolver.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IHistoryService } from "../../../services/history/common/history.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -116,7 +116,10 @@ MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 
 export class ExternalTerminalContribution implements IWorkbenchContribution {
 	public _serviceBrand: undefined;
-	constructor(@IExternalTerminalService private readonly _externalTerminalService: IExternalTerminalService) {
+	constructor(
+		@IExternalTerminalService
+		private readonly _externalTerminalService: IExternalTerminalService,
+	) {
 		this._updateConfiguration();
 	}
 

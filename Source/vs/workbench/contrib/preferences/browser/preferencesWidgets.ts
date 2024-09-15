@@ -6,13 +6,13 @@
 import * as DOM from "../../../../base/browser/dom.js";
 import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
 import {
-	BaseActionViewItem,
-	type IActionViewItemOptions,
-} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
-import {
 	ActionBar,
 	ActionsOrientation,
 } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import {
+	BaseActionViewItem,
+	type IActionViewItemOptions,
+} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IManagedHover } from "../../../../base/browser/ui/hover/hover.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import type {
@@ -30,20 +30,20 @@ import { isEqual } from "../../../../base/common/resources.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../editor/browser/editorBrowser.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import {
-	type IModelDeltaDecoration,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
 } from "../../../../editor/common/model.js";
 import { localize } from "../../../../nls.js";
 import { ConfigurationTarget } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -62,10 +62,10 @@ import {
 	contrastBorder,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	IWorkspaceContextService,
-	type IWorkspaceFolder,
-	WorkbenchState,
 	isWorkspaceFolder,
+	IWorkspaceContextService,
+	WorkbenchState,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
@@ -86,14 +86,21 @@ export class FolderSettingsActionViewItem extends BaseActionViewItem {
 
 	constructor(
 		action: IAction,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super(null, action);
 		const workspace = this.contextService.getWorkspace();
-		this._folder = workspace.folders.length === 1 ? workspace.folders[0] : null;
-		this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.onWorkspaceFoldersChanged()));
+		this._folder =
+			workspace.folders.length === 1 ? workspace.folders[0] : null;
+		this._register(
+			this.contextService.onDidChangeWorkspaceFolders(() =>
+				this.onWorkspaceFoldersChanged(),
+			),
+		);
 	}
 
 	get folder(): IWorkspaceFolder | null {
@@ -328,17 +335,28 @@ export class SettingsTargetsWidget extends Widget {
 	constructor(
 		parent: HTMLElement,
 		options: ISettingsTargetsWidgetOptions | undefined,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ILabelService private readonly labelService: ILabelService,
-		@ILanguageService private readonly languageService: ILanguageService
+		@ILanguageService private readonly languageService: ILanguageService,
 	) {
 		super();
 		this.options = options ?? {};
 		this.create(parent);
-		this._register(this.contextService.onDidChangeWorkbenchState(() => this.onWorkbenchStateChanged()));
-		this._register(this.contextService.onDidChangeWorkspaceFolders(() => this.update()));
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(() =>
+				this.onWorkbenchStateChanged(),
+			),
+		);
+		this._register(
+			this.contextService.onDidChangeWorkspaceFolders(() =>
+				this.update(),
+			),
+		);
 	}
 
 	private resetLabels() {
@@ -578,11 +596,17 @@ export class SearchWidget extends Widget {
 	);
 	readonly onFocus: Event<void> = this._onFocus.event;
 
-	constructor(parent: HTMLElement, protected options: SearchOptions,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IInstantiationService protected instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IKeybindingService protected readonly keybindingService: IKeybindingService
+	constructor(
+		parent: HTMLElement,
+		protected options: SearchOptions,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IKeybindingService
+		protected readonly keybindingService: IKeybindingService,
 	) {
 		super();
 		this.create(parent);

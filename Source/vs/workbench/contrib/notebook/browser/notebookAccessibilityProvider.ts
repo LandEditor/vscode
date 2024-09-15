@@ -17,10 +17,10 @@ import {
 	NotebookCellExecutionState,
 } from "../common/notebookCommon.js";
 import {
+	NotebookExecutionType,
 	type ICellExecutionStateChangedEvent,
 	type IExecutionStateChangedEvent,
 	type INotebookExecutionStateService,
-	NotebookExecutionType,
 } from "../common/notebookExecutionStateService.js";
 import type {
 	CellViewModel,

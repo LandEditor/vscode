@@ -6,20 +6,21 @@
 import { exec } from "child_process";
 import * as fs from "fs";
 import {
+	spawn,
 	type IPty,
 	type IPtyForkOptions,
 	type IWindowsPtyForkOptions,
-	spawn,
 } from "node-pty";
+
 import { timeout } from "../../../base/common/async.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable, toDisposable } from "../../../base/common/lifecycle.js";
 import * as path from "../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
 	isLinux,
 	isMacintosh,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
@@ -28,6 +29,8 @@ import { IProductService } from "../../product/common/productService.js";
 import {
 	FlowControlConstants,
 	GeneralShellType,
+	PosixShellType,
+	ProcessPropertyType,
 	type IProcessProperty,
 	type IProcessPropertyMap,
 	type IProcessReadyEvent,
@@ -36,17 +39,15 @@ import {
 	type ITerminalChildProcess,
 	type ITerminalLaunchError,
 	type ITerminalProcessOptions,
-	PosixShellType,
-	ProcessPropertyType,
 	type TerminalShellType,
 } from "../common/terminal.js";
 import { chunkInput } from "../common/terminalProcess.js";
 import { ChildProcessMonitor } from "./childProcessMonitor.js";
 import {
-	type IShellIntegrationConfigInjection,
 	findExecutable,
 	getShellIntegrationInjection,
 	getWindowsBuildNumber,
+	type IShellIntegrationConfigInjection,
 } from "./terminalEnvironment.js";
 import { WindowsShellHelper } from "./windowsShellHelper.js";
 
@@ -189,21 +190,24 @@ export class TerminalProcess
 		private readonly _executableEnv: IProcessEnvironment,
 		private readonly _options: ITerminalProcessOptions,
 		@ILogService private readonly _logService: ILogService,
-		@IProductService private readonly _productService: IProductService
+		@IProductService private readonly _productService: IProductService,
 	) {
 		super();
 		let name: string;
 		if (isWindows) {
-			name = path.basename(this.shellLaunchConfig.executable || '');
+			name = path.basename(this.shellLaunchConfig.executable || "");
 		} else {
 			// Using 'xterm-256color' here helps ensure that the majority of Linux distributions will use a
 			// color prompt as defined in the default ~/.bashrc file.
-			name = 'xterm-256color';
+			name = "xterm-256color";
 		}
 		this._initialCwd = cwd;
 		this._properties[ProcessPropertyType.InitialCwd] = this._initialCwd;
 		this._properties[ProcessPropertyType.Cwd] = this._initialCwd;
-		const useConpty = this._options.windowsEnableConpty && process.platform === 'win32' && getWindowsBuildNumber() >= 18309;
+		const useConpty =
+			this._options.windowsEnableConpty &&
+			process.platform === "win32" &&
+			getWindowsBuildNumber() >= 18309;
 		const useConptyDll = useConpty && this._options.windowsUseConptyDll;
 		this._ptyOptions = {
 			name,
@@ -215,33 +219,60 @@ export class TerminalProcess
 			useConpty,
 			useConptyDll,
 			// This option will force conpty to not redraw the whole viewport on launch
-			conptyInheritCursor: useConpty && !!shellLaunchConfig.initialText
+			conptyInheritCursor: useConpty && !!shellLaunchConfig.initialText,
 		};
 		// Delay resizes to avoid conpty not respecting very early resize calls
 		if (isWindows) {
-			if (useConpty && cols === 0 && rows === 0 && this.shellLaunchConfig.executable?.endsWith('Git\\bin\\bash.exe')) {
+			if (
+				useConpty &&
+				cols === 0 &&
+				rows === 0 &&
+				this.shellLaunchConfig.executable?.endsWith(
+					"Git\\bin\\bash.exe",
+				)
+			) {
 				this._delayedResizer = new DelayedResizer();
-				this._register(this._delayedResizer.onTrigger(dimensions => {
-					this._delayedResizer?.dispose();
-					this._delayedResizer = undefined;
-					if (dimensions.cols && dimensions.rows) {
-						this.resize(dimensions.cols, dimensions.rows);
-					}
-				}));
+				this._register(
+					this._delayedResizer.onTrigger((dimensions) => {
+						this._delayedResizer?.dispose();
+						this._delayedResizer = undefined;
+						if (dimensions.cols && dimensions.rows) {
+							this.resize(dimensions.cols, dimensions.rows);
+						}
+					}),
+				);
 			}
 			// WindowsShellHelper is used to fetch the process title and shell type
-			this.onProcessReady(e => {
-				this._windowsShellHelper = this._register(new WindowsShellHelper(e.pid));
-				this._register(this._windowsShellHelper.onShellTypeChanged(e => this._onDidChangeProperty.fire({ type: ProcessPropertyType.ShellType, value: e })));
-				this._register(this._windowsShellHelper.onShellNameChanged(e => this._onDidChangeProperty.fire({ type: ProcessPropertyType.Title, value: e })));
+			this.onProcessReady((e) => {
+				this._windowsShellHelper = this._register(
+					new WindowsShellHelper(e.pid),
+				);
+				this._register(
+					this._windowsShellHelper.onShellTypeChanged((e) =>
+						this._onDidChangeProperty.fire({
+							type: ProcessPropertyType.ShellType,
+							value: e,
+						}),
+					),
+				);
+				this._register(
+					this._windowsShellHelper.onShellNameChanged((e) =>
+						this._onDidChangeProperty.fire({
+							type: ProcessPropertyType.Title,
+							value: e,
+						}),
+					),
+				);
 			});
 		}
-		this._register(toDisposable(() => {
-			if (this._titleInterval) {
-				clearInterval(this._titleInterval);
-				this._titleInterval = null;
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				if (this._titleInterval) {
+					clearInterval(this._titleInterval);
+					this._titleInterval = null;
+				}
+			}),
+		);
 	}
 
 	async start(): Promise<

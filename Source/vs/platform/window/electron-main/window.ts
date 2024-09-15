@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import electron from "electron";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import type { Event } from "../../../base/common/event.js";
 import type { IDisposable } from "../../../base/common/lifecycle.js";

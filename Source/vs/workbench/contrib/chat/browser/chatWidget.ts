@@ -12,25 +12,27 @@ import { disposableTimeout, timeout } from "../../../../base/common/async.js";
 import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
-	combinedDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { extUri, isEqual } from "../../../../base/common/resources.js";
 import { isDefined } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
+
 import "./media/chat.css";
 import "./media/chatAgentHover.css";
+
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import type { ITextResourceEditorInput } from "../../../../platform/editor/common/editor.js";
@@ -40,10 +42,10 @@ import { WorkbenchObjectTree } from "../../../../platform/list/browser/listServi
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
+	IChatAgentService,
 	type ChatAgentLocation,
 	type IChatAgentCommand,
 	type IChatAgentData,
-	IChatAgentService,
 } from "../common/chatAgents.js";
 import {
 	CONTEXT_CHAT_INPUT_HAS_AGENT,
@@ -60,35 +62,35 @@ import {
 	type IChatResponseModel,
 } from "../common/chatModel.js";
 import {
-	ChatRequestAgentPart,
-	type IParsedChatRequest,
 	chatAgentLeader,
+	ChatRequestAgentPart,
 	chatSubcommandLeader,
 	formatChatQuestion,
+	type IParsedChatRequest,
 } from "../common/chatParserTypes.js";
 import { ChatRequestParser } from "../common/chatRequestParser.js";
 import {
+	IChatService,
 	type IChatFollowup,
 	type IChatLocationData,
-	IChatService,
 } from "../common/chatService.js";
 import { IChatSlashCommandService } from "../common/chatSlashCommands.js";
 import {
 	ChatViewModel,
-	type IChatResponseViewModel,
 	isRequestVM,
 	isResponseVM,
 	isWelcomeVM,
+	type IChatResponseViewModel,
 } from "../common/chatViewModel.js";
 import { CodeBlockModelCollection } from "../common/codeBlockModelCollection.js";
 import {
-	type ChatTreeItem,
 	IChatAccessibilityService,
+	IChatWidgetService,
+	type ChatTreeItem,
 	type IChatCodeBlockInfo,
 	type IChatFileTreeInfo,
 	type IChatListItemRendererOptions,
 	type IChatWidget,
-	IChatWidgetService,
 	type IChatWidgetViewContext,
 	type IChatWidgetViewOptions,
 } from "./chat.js";
@@ -295,92 +297,129 @@ export class ChatWidget extends Disposable implements IChatWidget {
 		private readonly viewOptions: IChatWidgetViewOptions,
 		private readonly styles: IChatWidgetStyles,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IChatService private readonly chatService: IChatService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 		@IChatWidgetService chatWidgetService: IChatWidgetService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IChatAccessibilityService private readonly chatAccessibilityService: IChatAccessibilityService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IChatAccessibilityService
+		private readonly chatAccessibilityService: IChatAccessibilityService,
 		@ILogService private readonly logService: ILogService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IChatSlashCommandService private readonly chatSlashCommandService: IChatSlashCommandService,
+		@IChatSlashCommandService
+		private readonly chatSlashCommandService: IChatSlashCommandService,
 	) {
 		super();
 
 		this.viewContext = _viewContext ?? {};
 
-		if (typeof location === 'object') {
+		if (typeof location === "object") {
 			this._location = location;
 		} else {
 			this._location = { location };
 		}
 
 		CONTEXT_IN_CHAT_SESSION.bindTo(contextKeyService).set(true);
-		CONTEXT_CHAT_LOCATION.bindTo(contextKeyService).set(this._location.location);
+		CONTEXT_CHAT_LOCATION.bindTo(contextKeyService).set(
+			this._location.location,
+		);
 		CONTEXT_IN_QUICK_CHAT.bindTo(contextKeyService).set(isQuickChat(this));
-		this.agentInInput = CONTEXT_CHAT_INPUT_HAS_AGENT.bindTo(contextKeyService);
-		this.requestInProgress = CONTEXT_CHAT_REQUEST_IN_PROGRESS.bindTo(contextKeyService);
+		this.agentInInput =
+			CONTEXT_CHAT_INPUT_HAS_AGENT.bindTo(contextKeyService);
+		this.requestInProgress =
+			CONTEXT_CHAT_REQUEST_IN_PROGRESS.bindTo(contextKeyService);
 
 		this._register((chatWidgetService as ChatWidgetService).register(this));
 
-		this._codeBlockModelCollection = this._register(instantiationService.createInstance(CodeBlockModelCollection));
+		this._codeBlockModelCollection = this._register(
+			instantiationService.createInstance(CodeBlockModelCollection),
+		);
 
-		this._register(codeEditorService.registerCodeEditorOpenHandler(async (input: ITextResourceEditorInput, _source: ICodeEditor | null, _sideBySide?: boolean): Promise<ICodeEditor | null> => {
-			const resource = input.resource;
-			if (resource.scheme !== Schemas.vscodeChatCodeBlock) {
-				return null;
-			}
+		this._register(
+			codeEditorService.registerCodeEditorOpenHandler(
+				async (
+					input: ITextResourceEditorInput,
+					_source: ICodeEditor | null,
+					_sideBySide?: boolean,
+				): Promise<ICodeEditor | null> => {
+					const resource = input.resource;
+					if (resource.scheme !== Schemas.vscodeChatCodeBlock) {
+						return null;
+					}
 
-			const responseId = resource.path.split('/').at(1);
-			if (!responseId) {
-				return null;
-			}
+					const responseId = resource.path.split("/").at(1);
+					if (!responseId) {
+						return null;
+					}
 
-			const item = this.viewModel?.getItems().find(item => item.id === responseId);
-			if (!item) {
-				return null;
-			}
+					const item = this.viewModel
+						?.getItems()
+						.find((item) => item.id === responseId);
+					if (!item) {
+						return null;
+					}
 
-			// TODO: needs to reveal the chat view
+					// TODO: needs to reveal the chat view
 
-			this.reveal(item);
+					this.reveal(item);
 
-			await timeout(0); // wait for list to actually render
+					await timeout(0); // wait for list to actually render
 
-			for (const codeBlockPart of this.renderer.editorsInUse()) {
-				if (extUri.isEqual(codeBlockPart.uri, resource, true)) {
-					const editor = codeBlockPart.editor;
+					for (const codeBlockPart of this.renderer.editorsInUse()) {
+						if (extUri.isEqual(codeBlockPart.uri, resource, true)) {
+							const editor = codeBlockPart.editor;
 
-					let relativeTop = 0;
-					const editorDomNode = editor.getDomNode();
-					if (editorDomNode) {
-						const row = dom.findParentWithClass(editorDomNode, 'monaco-list-row');
-						if (row) {
-							relativeTop = dom.getTopLeftOffset(editorDomNode).top - dom.getTopLeftOffset(row).top;
+							let relativeTop = 0;
+							const editorDomNode = editor.getDomNode();
+							if (editorDomNode) {
+								const row = dom.findParentWithClass(
+									editorDomNode,
+									"monaco-list-row",
+								);
+								if (row) {
+									relativeTop =
+										dom.getTopLeftOffset(editorDomNode)
+											.top -
+										dom.getTopLeftOffset(row).top;
+								}
+							}
+
+							if (input.options?.selection) {
+								const editorSelectionTopOffset =
+									editor.getTopForPosition(
+										input.options.selection.startLineNumber,
+										input.options.selection.startColumn,
+									);
+								relativeTop += editorSelectionTopOffset;
+
+								editor.focus();
+								editor.setSelection({
+									startLineNumber:
+										input.options.selection.startLineNumber,
+									startColumn:
+										input.options.selection.startColumn,
+									endLineNumber:
+										input.options.selection.endLineNumber ??
+										input.options.selection.startLineNumber,
+									endColumn:
+										input.options.selection.endColumn ??
+										input.options.selection.startColumn,
+								});
+							}
+
+							this.reveal(item, relativeTop);
+
+							return editor;
 						}
 					}
-
-					if (input.options?.selection) {
-						const editorSelectionTopOffset = editor.getTopForPosition(input.options.selection.startLineNumber, input.options.selection.startColumn);
-						relativeTop += editorSelectionTopOffset;
-
-						editor.focus();
-						editor.setSelection({
-							startLineNumber: input.options.selection.startLineNumber,
-							startColumn: input.options.selection.startColumn,
-							endLineNumber: input.options.selection.endLineNumber ?? input.options.selection.startLineNumber,
-							endColumn: input.options.selection.endColumn ?? input.options.selection.startColumn
-						});
-					}
-
-					this.reveal(item, relativeTop);
-
-					return editor;
-				}
-			}
-			return null;
-		}));
+					return null;
+				},
+			),
+		);
 	}
 
 	private _lastSelectedAgent: IChatAgentData | undefined;

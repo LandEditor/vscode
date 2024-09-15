@@ -23,10 +23,10 @@ import {
 } from "../../../../platform/files/common/files.js";
 import {
 	ChangeType,
-	EDIT_SESSIONS_SCHEME,
-	type EditSession,
-	IEditSessionsStorageService,
 	decodeEditSessionFileContent,
+	EDIT_SESSIONS_SCHEME,
+	IEditSessionsStorageService,
+	type EditSession,
 } from "../common/editSessions.js";
 
 export class EditSessionsFileSystemProvider
@@ -35,8 +35,9 @@ export class EditSessionsFileSystemProvider
 	static readonly SCHEMA = EDIT_SESSIONS_SCHEME;
 
 	constructor(
-		@IEditSessionsStorageService private editSessionsStorageService: IEditSessionsStorageService,
-	) { }
+		@IEditSessionsStorageService
+		private editSessionsStorageService: IEditSessionsStorageService,
+	) {}
 
 	readonly capabilities: FileSystemProviderCapabilities =
 		FileSystemProviderCapabilities.Readonly +

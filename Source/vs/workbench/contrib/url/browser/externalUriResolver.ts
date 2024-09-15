@@ -16,7 +16,8 @@ export class ExternalUriResolverContribution
 
 	constructor(
 		@IOpenerService _openerService: IOpenerService,
-		@IBrowserWorkbenchEnvironmentService _workbenchEnvironmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		_workbenchEnvironmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 

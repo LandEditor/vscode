@@ -6,13 +6,13 @@
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { INotebookRendererMessagingService } from "../../contrib/notebook/common/notebookRendererMessagingService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostNotebookRenderersShape,
 	MainContext,
+	type ExtHostNotebookRenderersShape,
 	type MainThreadNotebookRenderersShape,
 } from "../common/extHost.protocol.js";
 
@@ -25,13 +25,22 @@ export class MainThreadNotebookRenderers
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotebookRendererMessagingService private readonly messaging: INotebookRendererMessagingService,
+		@INotebookRendererMessagingService
+		private readonly messaging: INotebookRendererMessagingService,
 	) {
 		super();
-		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookRenderers);
-		this._register(messaging.onShouldPostMessage(e => {
-			this.proxy.$postRendererMessage(e.editorId, e.rendererId, e.message);
-		}));
+		this.proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookRenderers,
+		);
+		this._register(
+			messaging.onShouldPostMessage((e) => {
+				this.proxy.$postRendererMessage(
+					e.editorId,
+					e.rendererId,
+					e.message,
+				);
+			}),
+		);
 	}
 
 	$postMessage(

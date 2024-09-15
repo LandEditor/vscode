@@ -9,8 +9,8 @@ import { Iterable } from "../../../../base/common/iterator.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isFalsyOrWhitespace } from "../../../../base/common/strings.js";
 import { localize } from "../../../../nls.js";
@@ -227,49 +227,75 @@ export class LanguageModelsService implements ILanguageModelsService {
 		this._onDidChangeProviders.event;
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@ILogService private readonly _logService: ILogService,
 	) {
+		this._store.add(
+			languageModelExtensionPoint.setHandler((extensions) => {
+				this._vendors.clear();
 
-		this._store.add(languageModelExtensionPoint.setHandler((extensions) => {
-
-			this._vendors.clear();
-
-			for (const extension of extensions) {
-
-				if (!isProposedApiEnabled(extension.description, 'chatProvider')) {
-					extension.collector.error(localize('vscode.extension.contributes.languageModels.chatProviderRequired', "This contribution point requires the 'chatProvider' proposal."));
-					continue;
-				}
-
-				for (const item of Iterable.wrap(extension.value)) {
-					if (this._vendors.has(item.vendor)) {
-						extension.collector.error(localize('vscode.extension.contributes.languageModels.vendorAlreadyRegistered', "The vendor '{0}' is already registered and cannot be registered twice", item.vendor));
+				for (const extension of extensions) {
+					if (
+						!isProposedApiEnabled(
+							extension.description,
+							"chatProvider",
+						)
+					) {
+						extension.collector.error(
+							localize(
+								"vscode.extension.contributes.languageModels.chatProviderRequired",
+								"This contribution point requires the 'chatProvider' proposal.",
+							),
+						);
 						continue;
 					}
-					if (isFalsyOrWhitespace(item.vendor)) {
-						extension.collector.error(localize('vscode.extension.contributes.languageModels.emptyVendor', "The vendor field cannot be empty."));
-						continue;
-					}
-					if (item.vendor.trim() !== item.vendor) {
-						extension.collector.error(localize('vscode.extension.contributes.languageModels.whitespaceVendor', "The vendor field cannot start or end with whitespace."));
-						continue;
-					}
-					this._vendors.add(item.vendor);
-				}
-			}
 
-			const removed: string[] = [];
-			for (const [identifier, value] of this._providers) {
-				if (!this._vendors.has(value.metadata.vendor)) {
-					this._providers.delete(identifier);
-					removed.push(identifier);
+					for (const item of Iterable.wrap(extension.value)) {
+						if (this._vendors.has(item.vendor)) {
+							extension.collector.error(
+								localize(
+									"vscode.extension.contributes.languageModels.vendorAlreadyRegistered",
+									"The vendor '{0}' is already registered and cannot be registered twice",
+									item.vendor,
+								),
+							);
+							continue;
+						}
+						if (isFalsyOrWhitespace(item.vendor)) {
+							extension.collector.error(
+								localize(
+									"vscode.extension.contributes.languageModels.emptyVendor",
+									"The vendor field cannot be empty.",
+								),
+							);
+							continue;
+						}
+						if (item.vendor.trim() !== item.vendor) {
+							extension.collector.error(
+								localize(
+									"vscode.extension.contributes.languageModels.whitespaceVendor",
+									"The vendor field cannot start or end with whitespace.",
+								),
+							);
+							continue;
+						}
+						this._vendors.add(item.vendor);
+					}
 				}
-			}
-			if (removed.length > 0) {
-				this._onDidChangeProviders.fire({ removed });
-			}
-		}));
+
+				const removed: string[] = [];
+				for (const [identifier, value] of this._providers) {
+					if (!this._vendors.has(value.metadata.vendor)) {
+						this._providers.delete(identifier);
+						removed.push(identifier);
+					}
+				}
+				if (removed.length > 0) {
+					this._onDidChangeProviders.fire({ removed });
+				}
+			}),
+		);
 	}
 
 	dispose() {

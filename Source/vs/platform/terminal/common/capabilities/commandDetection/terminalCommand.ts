@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBuffer, IBufferLine, Terminal } from "@xterm/headless";
+
 import type {
 	ITerminalOutputMatch,
 	ITerminalOutputMatcher,
 } from "../../terminal.js";
 import type {
-	IMarkProperties,
 	IMarker,
+	IMarkProperties,
 	ISerializedTerminalCommand,
 	ITerminalCommand,
 	IXtermMarker,

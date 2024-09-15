@@ -17,9 +17,9 @@ import {
 	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type ITransaction,
 	autorun,
 	observableValue,
+	type ITransaction,
 } from "../../../../base/common/observable.js";
 import { isDefined } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -33,10 +33,10 @@ import {
 	type IExplorerFileContributionRegistry,
 } from "../../files/browser/explorerFileContrib.js";
 import {
-	type ITestingCoverageBarThresholds,
-	TestingConfigKeys,
 	getTestingConfiguration,
 	observeTestingConfiguration,
+	TestingConfigKeys,
+	type ITestingCoverageBarThresholds,
 } from "../common/configuration.js";
 import type { AbstractFileCoverage } from "../common/testCoverage.js";
 import { ITestCoverageService } from "../common/testCoverageService.js";
@@ -98,7 +98,8 @@ export class ManagedTestCoverageBars extends Disposable {
 
 	constructor(
 		protected readonly options: TestCoverageBarsOptions,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super();

@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import electron from "electron";
+
 import { Color } from "../../../base/common/color.js";
 import type { Event } from "../../../base/common/event.js";
 import { join } from "../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
 	isLinux,
 	isMacintosh,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import type { URI } from "../../../base/common/uri.js";
 import type { IAuxiliaryWindow } from "../../auxiliaryWindow/electron-main/auxiliaryWindow.js";
@@ -19,28 +20,28 @@ import { IConfigurationService } from "../../configuration/common/configuration.
 import type { NativeParsedArgs } from "../../environment/common/argv.js";
 import { IEnvironmentMainService } from "../../environment/electron-main/environmentMainService.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../instantiation/common/instantiation.js";
 import type { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import { IThemeMainService } from "../../theme/electron-main/themeMainService.js";
 import {
+	hasNativeTitlebar,
+	TitlebarStyle,
+	useNativeFullScreen,
+	useWindowControlsOverlay,
+	WindowMinimumSize,
+	zoomLevelToZoomFactor,
 	type IOpenEmptyWindowOptions,
 	type IWindowOpenable,
 	type IWindowSettings,
-	TitlebarStyle,
-	WindowMinimumSize,
-	hasNativeTitlebar,
-	useNativeFullScreen,
-	useWindowControlsOverlay,
-	zoomLevelToZoomFactor,
 } from "../../window/common/window.js";
 import {
+	defaultWindowState,
+	WindowMode,
 	type ICodeWindow,
 	type IWindowState,
-	WindowMode,
-	defaultWindowState,
 } from "../../window/electron-main/window.js";
 
 export const IWindowsMainService =

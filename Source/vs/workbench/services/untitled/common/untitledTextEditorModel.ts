@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	bufferToReadable,
+	bufferToStream,
 	VSBuffer,
 	type VSBufferReadable,
 	type VSBufferReadableStream,
-	bufferToReadable,
-	bufferToStream,
 } from "../../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
@@ -25,8 +25,8 @@ import {
 import { IModelService } from "../../../../editor/common/services/model.js";
 import type { ITextEditorModel } from "../../../../editor/common/services/resolverService.js";
 import {
-	type ITextResourceConfigurationChangeEvent,
 	ITextResourceConfigurationService,
+	type ITextResourceConfigurationChangeEvent,
 } from "../../../../editor/common/services/textResourceConfiguration.js";
 import type { IModelContentChangedEvent } from "../../../../editor/common/textModelEvents.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
@@ -37,16 +37,16 @@ import { IEditorService } from "../../editor/common/editorService.js";
 import { ILanguageDetectionService } from "../../languageDetection/common/languageDetectionWorkerService.js";
 import { UTF8 } from "../../textfile/common/encoding.js";
 import {
+	ITextFileService,
 	type IEncodingSupport,
 	type ILanguageSupport,
-	ITextFileService,
 } from "../../textfile/common/textfiles.js";
 import {
+	NO_TYPE_ID,
+	WorkingCopyCapabilities,
 	type IWorkingCopy,
 	type IWorkingCopyBackup,
 	type IWorkingCopySaveEvent,
-	NO_TYPE_ID,
-	WorkingCopyCapabilities,
 } from "../../workingCopy/common/workingCopy.js";
 import { IWorkingCopyBackupService } from "../../workingCopy/common/workingCopyBackup.js";
 import { IWorkingCopyService } from "../../workingCopy/common/workingCopyService.js";
@@ -167,16 +167,25 @@ export class UntitledTextEditorModel
 		private preferredEncoding: string | undefined,
 		@ILanguageService languageService: ILanguageService,
 		@IModelService modelService: IModelService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
-		@ITextResourceConfigurationService private readonly textResourceConfigurationService: ITextResourceConfigurationService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@ITextResourceConfigurationService
+		private readonly textResourceConfigurationService: ITextResourceConfigurationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ILanguageDetectionService languageDetectionService: ILanguageDetectionService,
+		@ILanguageDetectionService
+		languageDetectionService: ILanguageDetectionService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 	) {
-		super(modelService, languageService, languageDetectionService, accessibilityService);
+		super(
+			modelService,
+			languageService,
+			languageDetectionService,
+			accessibilityService,
+		);
 
 		// Make known to working copy service
 		this._register(this.workingCopyService.registerWorkingCopy(this));

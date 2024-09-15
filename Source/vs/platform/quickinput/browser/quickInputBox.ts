@@ -8,9 +8,9 @@ import type { StandardKeyboardEvent } from "../../../base/browser/keyboardEvent.
 import type { StandardMouseEvent } from "../../../base/browser/mouseEvent.js";
 import { FindInput } from "../../../base/browser/ui/findinput/findInput.js";
 import {
+	MessageType,
 	type IInputBoxStyles,
 	type IRange,
-	MessageType,
 } from "../../../base/browser/ui/inputbox/inputBox.js";
 import type {
 	IToggleStyles,
@@ -21,6 +21,7 @@ import {
 	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import Severity from "../../../base/common/severity.js";
+
 import "./media/quickInput.css";
 
 const $ = dom.$;

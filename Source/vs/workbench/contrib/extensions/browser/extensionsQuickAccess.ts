@@ -14,8 +14,8 @@ import {
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	type IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
+	type IPickerQuickAccessItem,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import type { IQuickPickSeparator } from "../../../../platform/quickinput/common/quickInput.js";
 import { IExtensionsWorkbenchService } from "../common/extensions.js";
@@ -24,11 +24,15 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 	static PREFIX = "ext install ";
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IExtensionManagementService private readonly extensionsService: IExtensionManagementService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@ILogService private readonly logService: ILogService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IExtensionManagementService
+		private readonly extensionsService: IExtensionManagementService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super(InstallExtensionQuickAccessProvider.PREFIX);
 	}
@@ -130,7 +134,10 @@ export class InstallExtensionQuickAccessProvider extends PickerQuickAccessProvid
 export class ManageExtensionsQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
 	static PREFIX = "ext ";
 
-	constructor(@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService) {
+	constructor(
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+	) {
 		super(ManageExtensionsQuickAccessProvider.PREFIX);
 	}
 

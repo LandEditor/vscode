@@ -13,12 +13,12 @@ import type { IEditorSerializer } from "../../../../common/editor.js";
 import type { EditorInput } from "../../../../common/editor/editorInput.js";
 import { ITextEditorService } from "../../../../services/textfile/common/textEditorService.js";
 import {
-	type IWorkingCopyIdentifier,
 	NO_TYPE_ID,
+	type IWorkingCopyIdentifier,
 } from "../../../../services/workingCopy/common/workingCopy.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../../../services/workingCopy/common/workingCopyEditorService.js";
 import type { FileEditorInput } from "./fileEditorInput.js";
 
@@ -96,9 +96,11 @@ export class FileEditorWorkingCopyEditorHandler
 	static readonly ID = "workbench.contrib.fileEditorWorkingCopyEditorHandler";
 
 	constructor(
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService,
-		@IFileService private readonly fileService: IFileService
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
+		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 

@@ -34,9 +34,12 @@ export class TextFileEditorTracker
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IHostService private readonly hostService: IHostService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IWorkingCopyEditorService private readonly workingCopyEditorService: IWorkingCopyEditorService
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyEditorService
+		private readonly workingCopyEditorService: IWorkingCopyEditorService,
 	) {
 		super();
 

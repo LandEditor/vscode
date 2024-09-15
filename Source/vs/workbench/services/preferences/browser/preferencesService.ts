@@ -8,8 +8,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import { parse } from "../../../../base/common/json.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceSet } from "../../../../base/common/map.js";
 import * as network from "../../../../base/common/network.js";
@@ -19,8 +19,8 @@ import { isObject } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import { CoreEditingCommands } from "../../../../editor/browser/coreCommands.js";
 import {
-	type ICodeEditor,
 	getCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import type { IPosition } from "../../../../editor/common/core/position.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
@@ -33,13 +33,13 @@ import {
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	Extensions,
-	type IConfigurationRegistry,
-	OVERRIDE_PROPERTY_REGEX,
 	getDefaultValue,
+	OVERRIDE_PROPERTY_REGEX,
+	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
+	type FileOperationError,
 } from "../../../../platform/files/common/files.js";
 import {
 	InstantiationType,
@@ -84,20 +84,21 @@ import { IUserDataProfileService } from "../../userDataProfile/common/userDataPr
 import {
 	DEFAULT_SETTINGS_EDITOR_SETTING,
 	FOLDER_SETTINGS_PATH,
+	IPreferencesService,
+	SETTINGS_AUTHORITY,
+	USE_SPLIT_JSON_SETTING,
+	validateSettingsEditorOptions,
 	type IKeybindingsEditorOptions,
 	type IKeybindingsEditorPane,
 	type IOpenSettingsOptions,
 	type IPreferencesEditorModel,
-	IPreferencesService,
 	type ISetting,
 	type ISettingsEditorOptions,
 	type ISettingsGroup,
-	SETTINGS_AUTHORITY,
-	USE_SPLIT_JSON_SETTING,
-	validateSettingsEditorOptions,
 } from "../common/preferences.js";
 import { SettingsEditor2Input } from "../common/preferencesEditorInput.js";
 import {
+	defaultKeybindingsContents,
 	DefaultKeybindingsEditorModel,
 	DefaultRawSettingsEditorModel,
 	DefaultSettings,
@@ -105,7 +106,6 @@ import {
 	Settings2EditorModel,
 	SettingsEditorModel,
 	WorkspaceConfigurationEditorModel,
-	defaultKeybindingsContents,
 } from "../common/preferencesModels.js";
 import { KeybindingsEditorInput } from "./keybindingsEditorInput.js";
 
@@ -139,36 +139,54 @@ export class PreferencesService
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IModelService modelService: IModelService,
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
 		@IURLService urlService: IURLService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IProgressService private readonly progressService: IProgressService
+		@IProgressService private readonly progressService: IProgressService,
 	) {
 		super();
 		// The default keybindings.json updates based on keyboard layouts, so here we make sure
 		// if a model has been given out we update it accordingly.
-		this._register(keybindingService.onDidUpdateKeybindings(() => {
-			const model = modelService.getModel(this.defaultKeybindingsResource);
-			if (!model) {
-				// model has not been given out => nothing to do
-				return;
-			}
-			modelService.updateModel(model, defaultKeybindingsContents(keybindingService));
-		}));
+		this._register(
+			keybindingService.onDidUpdateKeybindings(() => {
+				const model = modelService.getModel(
+					this.defaultKeybindingsResource,
+				);
+				if (!model) {
+					// model has not been given out => nothing to do
+					return;
+				}
+				modelService.updateModel(
+					model,
+					defaultKeybindingsContents(keybindingService),
+				);
+			}),
+		);
 
 		this._register(urlService.registerHandler(this));
 	}
@@ -966,7 +984,7 @@ export class PreferencesService
 		let position = null;
 		const type =
 			schema?.type ??
-			"object" /* Type not defined or is an Override Identifier */;
+			"object"; /* Type not defined or is an Override Identifier */
 		let setting = settingsModel.getPreference(settingKey);
 		if (!setting && edit) {
 			let defaultValue =

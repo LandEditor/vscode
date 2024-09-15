@@ -13,8 +13,8 @@ import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import type severity from "../../../../base/common/severity.js";
 import {
 	URI,
-	type UriComponents,
 	type URI as uri,
+	type UriComponents,
 } from "../../../../base/common/uri.js";
 import type {
 	IPosition,

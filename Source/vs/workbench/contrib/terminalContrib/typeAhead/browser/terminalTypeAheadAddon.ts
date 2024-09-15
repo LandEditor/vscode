@@ -10,6 +10,7 @@ import type {
 	ITerminalAddon,
 	Terminal,
 } from "@xterm/xterm";
+
 import { disposableTimeout } from "../../../../../base/common/async.js";
 import { Color, RGBA } from "../../../../../base/common/color.js";
 import { debounce } from "../../../../../base/common/decorators.js";
@@ -26,9 +27,9 @@ import type {
 	XtermAttributes,
 } from "../../../terminal/browser/xterm-private.js";
 import {
+	TERMINAL_CONFIG_SECTION,
 	type IBeforeProcessDataEvent,
 	type ITerminalProcessManager,
-	TERMINAL_CONFIG_SECTION,
 } from "../../../terminal/common/terminal.js";
 import {
 	DEFAULT_LOCAL_ECHO_EXCLUDE,
@@ -1476,11 +1477,15 @@ export class TypeAheadAddon extends Disposable implements ITerminalAddon {
 
 	constructor(
 		private _processManager: ITerminalProcessManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		super();
-		this._register(toDisposable(() => this._clearPredictionDebounce?.dispose()));
+		this._register(
+			toDisposable(() => this._clearPredictionDebounce?.dispose()),
+		);
 	}
 
 	activate(terminal: Terminal): void {

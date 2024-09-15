@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./rulers.css";
+
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import {
 	EditorOption,

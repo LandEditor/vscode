@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IAction,
 	Separator,
 	toAction,
+	type IAction,
 } from "../../../base/common/actions.js";
 import { removeFastWithoutKeepingOrder } from "../../../base/common/arrays.js";
 import { RunOnceScheduler } from "../../../base/common/async.js";
@@ -23,8 +23,8 @@ import type {
 } from "../../action/common/action.js";
 import { ICommandService } from "../../commands/common/commands.js";
 import {
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../contextkey/common/contextkey.js";
 import { IKeybindingService } from "../../keybinding/common/keybinding.js";
 import {
@@ -33,6 +33,11 @@ import {
 	StorageTarget,
 } from "../../storage/common/storage.js";
 import {
+	isIMenuItem,
+	isISubmenuItem,
+	MenuItemAction,
+	MenuRegistry,
+	SubmenuItemAction,
 	type IMenu,
 	type IMenuActionOptions,
 	type IMenuChangeEvent,
@@ -42,11 +47,6 @@ import {
 	type IMenuService,
 	type ISubmenuItem,
 	type MenuId,
-	MenuItemAction,
-	MenuRegistry,
-	SubmenuItemAction,
-	isIMenuItem,
-	isISubmenuItem,
 } from "./actions.js";
 
 export class MenuService implements IMenuService {
@@ -56,7 +56,8 @@ export class MenuService implements IMenuService {
 
 	constructor(
 		@ICommandService private readonly _commandService: ICommandService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IStorageService storageService: IStorageService,
 	) {
 		this._hiddenStates = new PersistedMenuHideState(storageService);
@@ -129,25 +130,41 @@ class PersistedMenuHideState {
 
 	private _hiddenByDefaultCache = new Map<string, boolean>();
 
-	constructor(@IStorageService private readonly _storageService: IStorageService) {
+	constructor(
+		@IStorageService private readonly _storageService: IStorageService,
+	) {
 		try {
-			const raw = _storageService.get(PersistedMenuHideState._key, StorageScope.PROFILE, '{}');
+			const raw = _storageService.get(
+				PersistedMenuHideState._key,
+				StorageScope.PROFILE,
+				"{}",
+			);
 			this._data = JSON.parse(raw);
 		} catch (err) {
 			this._data = Object.create(null);
 		}
 
-		this._disposables.add(_storageService.onDidChangeValue(StorageScope.PROFILE, PersistedMenuHideState._key, this._disposables)(() => {
-			if (!this._ignoreChangeEvent) {
-				try {
-					const raw = _storageService.get(PersistedMenuHideState._key, StorageScope.PROFILE, '{}');
-					this._data = JSON.parse(raw);
-				} catch (err) {
-					console.log('FAILED to read storage after UPDATE', err);
+		this._disposables.add(
+			_storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				PersistedMenuHideState._key,
+				this._disposables,
+			)(() => {
+				if (!this._ignoreChangeEvent) {
+					try {
+						const raw = _storageService.get(
+							PersistedMenuHideState._key,
+							StorageScope.PROFILE,
+							"{}",
+						);
+						this._data = JSON.parse(raw);
+					} catch (err) {
+						console.log("FAILED to read storage after UPDATE", err);
+					}
 				}
-			}
-			this._onDidChange.fire();
-		}));
+				this._onDidChange.fire();
+			}),
+		);
 	}
 
 	dispose() {
@@ -356,8 +373,10 @@ class MenuInfo extends MenuInfoSnapshot {
 		private readonly _hiddenStates: PersistedMenuHideState,
 		_collectContextKeysForSubmenus: boolean,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super(_id, _collectContextKeysForSubmenus);
 		this.refresh();

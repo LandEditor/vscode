@@ -7,19 +7,19 @@ import * as dom from "../../../../base/browser/dom.js";
 import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
 import {
 	BaseActionViewItem,
-	type IBaseActionViewItemOptions,
 	SelectActionViewItem,
+	type IBaseActionViewItemOptions,
 } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import {
-	type ISelectOptionItem,
 	SelectBox,
+	type ISelectOptionItem,
 } from "../../../../base/browser/ui/selectBox/selectBox.js";
 import type { IAction } from "../../../../base/common/actions.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import * as nls from "../../../../nls.js";
@@ -42,12 +42,12 @@ import {
 import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
 import { AccessibilityCommandId } from "../../accessibility/common/accessibilityCommands.js";
 import {
+	IDebugService,
+	State,
 	type IConfig,
 	type IDebugConfiguration,
-	IDebugService,
 	type IDebugSession,
 	type ILaunch,
-	State,
 } from "../common/debug.js";
 import { ADD_CONFIGURATION_ID } from "./debugCommands.js";
 import { debugStart } from "./debugIcons.js";
@@ -76,17 +76,32 @@ export class StartDebugActionViewItem extends BaseActionViewItem {
 		action: IAction,
 		options: IBaseActionViewItemOptions,
 		@IDebugService private readonly debugService: IDebugService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IContextViewService contextViewService: IContextViewService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super(context, action, options);
 		this.toDispose = [];
-		this.selectBox = new SelectBox([], -1, contextViewService, defaultSelectBoxStyles, { ariaLabel: nls.localize('debugLaunchConfigurations', 'Debug Launch Configurations') });
+		this.selectBox = new SelectBox(
+			[],
+			-1,
+			contextViewService,
+			defaultSelectBoxStyles,
+			{
+				ariaLabel: nls.localize(
+					"debugLaunchConfigurations",
+					"Debug Launch Configurations",
+				),
+			},
+		);
 		this.selectBox.setFocusable(false);
 		this.toDispose.push(this.selectBox);
 
@@ -441,30 +456,49 @@ export class FocusSessionActionViewItem extends SelectActionViewItem<IDebugSessi
 		session: IDebugSession | undefined,
 		@IDebugService protected readonly debugService: IDebugService,
 		@IContextViewService contextViewService: IContextViewService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
-		super(null, action, [], -1, contextViewService, defaultSelectBoxStyles, { ariaLabel: nls.localize('debugSession', 'Debug Session') });
+		super(
+			null,
+			action,
+			[],
+			-1,
+			contextViewService,
+			defaultSelectBoxStyles,
+			{ ariaLabel: nls.localize("debugSession", "Debug Session") },
+		);
 
-		this._register(this.debugService.getViewModel().onDidFocusSession(() => {
-			const session = this.getSelectedSession();
-			if (session) {
-				const index = this.getSessions().indexOf(session);
-				this.select(index);
-			}
-		}));
+		this._register(
+			this.debugService.getViewModel().onDidFocusSession(() => {
+				const session = this.getSelectedSession();
+				if (session) {
+					const index = this.getSessions().indexOf(session);
+					this.select(index);
+				}
+			}),
+		);
 
-		this._register(this.debugService.onDidNewSession(session => {
-			const sessionListeners: IDisposable[] = [];
-			sessionListeners.push(session.onDidChangeName(() => this.update()));
-			sessionListeners.push(session.onDidEndAdapter(() => dispose(sessionListeners)));
-			this.update();
-		}));
-		this.getSessions().forEach(session => {
+		this._register(
+			this.debugService.onDidNewSession((session) => {
+				const sessionListeners: IDisposable[] = [];
+				sessionListeners.push(
+					session.onDidChangeName(() => this.update()),
+				);
+				sessionListeners.push(
+					session.onDidEndAdapter(() => dispose(sessionListeners)),
+				);
+				this.update();
+			}),
+		);
+		this.getSessions().forEach((session) => {
 			this._register(session.onDidChangeName(() => this.update()));
 		});
 		this._register(this.debugService.onDidEndSession(() => this.update()));
 
-		const selectedSession = session ? this.mapFocusedSessionToSelected(session) : undefined;
+		const selectedSession = session
+			? this.mapFocusedSessionToSelected(session)
+			: undefined;
 		this.update(selectedSession);
 	}
 

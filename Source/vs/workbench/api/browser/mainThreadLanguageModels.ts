@@ -9,47 +9,47 @@ import {
 } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	type SerializedError,
 	transformErrorForSerialization,
 	transformErrorFromSerialization,
+	type SerializedError,
 } from "../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";
 import type { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../platform/log/common/log.js";
-import { ILanguageModelStatsService } from "../../contrib/chat/common/languageModelStats.js";
 import {
+	ILanguageModelsService,
 	type IChatMessage,
 	type IChatResponseFragment,
 	type ILanguageModelChatMetadata,
 	type ILanguageModelChatResponse,
 	type ILanguageModelChatSelector,
-	ILanguageModelsService,
 } from "../../contrib/chat/common/languageModels.js";
+import { ILanguageModelStatsService } from "../../contrib/chat/common/languageModelStats.js";
 import { IAuthenticationAccessService } from "../../services/authentication/browser/authenticationAccessService.js";
 import {
+	IAuthenticationService,
+	INTERNAL_AUTH_PROVIDER_PREFIX,
 	type AuthenticationSession,
 	type AuthenticationSessionsChangeEvent,
 	type IAuthenticationProvider,
-	IAuthenticationService,
-	INTERNAL_AUTH_PROVIDER_PREFIX,
 } from "../../services/authentication/common/authentication.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
 import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
 	ExtHostContext,
-	type ExtHostLanguageModelsShape,
 	MainContext,
+	type ExtHostLanguageModelsShape,
 	type MainThreadLanguageModelsShape,
 } from "../common/extHost.protocol.js";
 
@@ -68,16 +68,35 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ILanguageModelsService private readonly _chatProviderService: ILanguageModelsService,
-		@ILanguageModelStatsService private readonly _languageModelStatsService: ILanguageModelStatsService,
+		@ILanguageModelsService
+		private readonly _chatProviderService: ILanguageModelsService,
+		@ILanguageModelStatsService
+		private readonly _languageModelStatsService: ILanguageModelStatsService,
 		@ILogService private readonly _logService: ILogService,
-		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
-		@IAuthenticationAccessService private readonly _authenticationAccessService: IAuthenticationAccessService,
-		@IExtensionService private readonly _extensionService: IExtensionService
+		@IAuthenticationService
+		private readonly _authenticationService: IAuthenticationService,
+		@IAuthenticationAccessService
+		private readonly _authenticationAccessService: IAuthenticationAccessService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostChatProvider);
-		this._proxy.$acceptChatModelMetadata({ added: _chatProviderService.getLanguageModelIds().map(id => ({ identifier: id, metadata: _chatProviderService.lookupLanguageModel(id)! })) });
-		this._store.add(_chatProviderService.onDidChangeLanguageModels(this._proxy.$acceptChatModelMetadata, this._proxy));
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostChatProvider,
+		);
+		this._proxy.$acceptChatModelMetadata({
+			added: _chatProviderService
+				.getLanguageModelIds()
+				.map((id) => ({
+					identifier: id,
+					metadata: _chatProviderService.lookupLanguageModel(id)!,
+				})),
+		});
+		this._store.add(
+			_chatProviderService.onDidChangeLanguageModels(
+				this._proxy.$acceptChatModelMetadata,
+				this._proxy,
+			),
+		);
 	}
 
 	dispose(): void {

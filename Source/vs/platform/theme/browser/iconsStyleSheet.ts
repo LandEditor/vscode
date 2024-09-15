@@ -11,9 +11,9 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
 import {
+	getIconRegistry,
 	type IconContribution,
 	type IconFontDefinition,
-	getIconRegistry,
 } from "../common/iconRegistry.js";
 import type {
 	IProductIconTheme,

@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	ResourceTextEdit,
 	type IBulkEditService,
 	type ResourceEdit,
-	ResourceTextEdit,
 } from "../../../../../editor/browser/services/bulkEditService.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../../../editor/common/core/position.js";
 import { Range } from "../../../../../editor/common/core/range.js";
 import type { ILanguageService } from "../../../../../editor/common/languages/language.js";
@@ -26,24 +26,24 @@ import { cloneNotebookCellTextModel } from "../../common/model/notebookCellTextM
 import {
 	CellEditType,
 	CellKind,
+	SelectionStateType,
 	type ICellEditOperation,
 	type ICellReplaceEdit,
 	type IOutputDto,
 	type ISelectionState,
 	type NotebookCellMetadata,
-	SelectionStateType,
 } from "../../common/notebookCommon.js";
 import {
-	type ICellRange,
 	cellRangeContains,
 	cellRangesToIndexes,
+	type ICellRange,
 } from "../../common/notebookRange.js";
 import {
 	CellEditState,
 	CellFocusMode,
+	expandCellRangesWithHiddenCells,
 	type IActiveNotebookEditor,
 	type ICellViewModel,
-	expandCellRangesWithHiddenCells,
 } from "../notebookBrowser.js";
 import type {
 	CellViewModel,

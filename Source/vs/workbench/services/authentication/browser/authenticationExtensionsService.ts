@@ -6,9 +6,9 @@
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as nls from "../../../../nls.js";
 import {
@@ -33,11 +33,11 @@ import {
 	NumberBadge,
 } from "../../activity/common/activity.js";
 import {
+	IAuthenticationExtensionsService,
+	IAuthenticationService,
 	type AuthenticationSession,
 	type AuthenticationSessionAccount,
-	IAuthenticationExtensionsService,
 	type IAuthenticationProvider,
-	IAuthenticationService,
 } from "../common/authentication.js";
 import { IAuthenticationAccessService } from "./authenticationAccessService.js";
 import { IAuthenticationUsageService } from "./authenticationUsageService.js";
@@ -78,10 +78,14 @@ export class AuthenticationExtensionsService
 		@IActivityService private readonly activityService: IActivityService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
-		@IAuthenticationUsageService private readonly _authenticationUsageService: IAuthenticationUsageService,
-		@IAuthenticationAccessService private readonly _authenticationAccessService: IAuthenticationAccessService
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IAuthenticationService
+		private readonly _authenticationService: IAuthenticationService,
+		@IAuthenticationUsageService
+		private readonly _authenticationUsageService: IAuthenticationUsageService,
+		@IAuthenticationAccessService
+		private readonly _authenticationAccessService: IAuthenticationAccessService,
 	) {
 		super();
 		this.registerListeners();

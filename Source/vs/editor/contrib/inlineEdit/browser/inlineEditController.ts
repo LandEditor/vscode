@@ -5,8 +5,8 @@
 
 import { createStyleSheet2 } from "../../../../base/browser/dom.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
 import {
@@ -14,7 +14,6 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type ISettableObservable,
 	autorun,
 	constObservable,
 	derivedDisposable,
@@ -22,6 +21,7 @@ import {
 	observableSignalFromEvent,
 	observableValue,
 	transaction,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -37,8 +37,8 @@ import { EditOperation } from "../../../common/core/editOperation.js";
 import { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import {
-	type IInlineEdit,
 	InlineEditTriggerKind,
+	type IInlineEdit,
 } from "../../../common/languages.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { IModelService } from "../../../common/services/model.js";
@@ -141,12 +141,17 @@ export class InlineEditController extends Disposable {
 
 	constructor(
 		public readonly editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IDiffProviderFactoryService private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IDiffProviderFactoryService
+		private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
 		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
@@ -154,92 +159,139 @@ export class InlineEditController extends Disposable {
 		//Automatically request inline edit when the content was changed
 		//Cancel the previous request if there is one
 		//Remove the previous ghost text
-		const modelChangedSignal = observableSignalFromEvent('InlineEditController.modelContentChangedSignal', editor.onDidChangeModelContent);
-		this._register(autorun(reader => {
-			/** @description InlineEditController.modelContentChanged model */
-			if (!this._enabled.read(reader)) {
-				return;
-			}
-			modelChangedSignal.read(reader);
-			if (this._isAccepting.read(reader)) {
-				return;
-			}
-			this.getInlineEdit(editor, true);
-		}));
+		const modelChangedSignal = observableSignalFromEvent(
+			"InlineEditController.modelContentChangedSignal",
+			editor.onDidChangeModelContent,
+		);
+		this._register(
+			autorun((reader) => {
+				/** @description InlineEditController.modelContentChanged model */
+				if (!this._enabled.read(reader)) {
+					return;
+				}
+				modelChangedSignal.read(reader);
+				if (this._isAccepting.read(reader)) {
+					return;
+				}
+				this.getInlineEdit(editor, true);
+			}),
+		);
 
 		//Check if the cursor is at the ghost text
-		const cursorPosition = observableFromEvent(this, editor.onDidChangeCursorPosition, () => editor.getPosition());
-		this._register(autorun(reader => {
-			/** @description InlineEditController.cursorPositionChanged model */
-			if (!this._enabled.read(reader)) {
-				return;
-			}
+		const cursorPosition = observableFromEvent(
+			this,
+			editor.onDidChangeCursorPosition,
+			() => editor.getPosition(),
+		);
+		this._register(
+			autorun((reader) => {
+				/** @description InlineEditController.cursorPositionChanged model */
+				if (!this._enabled.read(reader)) {
+					return;
+				}
 
-			const pos = cursorPosition.read(reader);
-			if (pos) {
-				this.checkCursorPosition(pos);
-			}
-		}));
+				const pos = cursorPosition.read(reader);
+				if (pos) {
+					this.checkCursorPosition(pos);
+				}
+			}),
+		);
 
 		//Perform stuff when the current edit has changed
-		this._register(autorun((reader) => {
-			/** @description InlineEditController.update model */
-			const currentEdit = this._currentEdit.read(reader);
-			this._isCursorAtInlineEditContext.set(false);
-			if (!currentEdit) {
-				this._isVisibleContext.set(false);
-				return;
-			}
-			this._isVisibleContext.set(true);
-			const pos = editor.getPosition();
-			if (pos) {
-				this.checkCursorPosition(pos);
-			}
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description InlineEditController.update model */
+				const currentEdit = this._currentEdit.read(reader);
+				this._isCursorAtInlineEditContext.set(false);
+				if (!currentEdit) {
+					this._isVisibleContext.set(false);
+					return;
+				}
+				this._isVisibleContext.set(true);
+				const pos = editor.getPosition();
+				if (pos) {
+					this.checkCursorPosition(pos);
+				}
+			}),
+		);
 
 		//Clear suggestions on lost focus
-		const editorBlurSingal = observableSignalFromEvent('InlineEditController.editorBlurSignal', editor.onDidBlurEditorWidget);
-		this._register(autorun(async reader => {
-			/** @description InlineEditController.editorBlur */
-			if (!this._enabled.read(reader)) {
-				return;
-			}
-			editorBlurSingal.read(reader);
-			// This is a hidden setting very useful for debugging
-			if (this._configurationService.getValue('editor.experimentalInlineEdit.keepOnBlur') || editor.getOption(EditorOption.inlineEdit).keepOnBlur) {
-				return;
-			}
-			this._currentRequestCts?.dispose(true);
-			this._currentRequestCts = undefined;
-			await this.clear(false);
-		}));
+		const editorBlurSingal = observableSignalFromEvent(
+			"InlineEditController.editorBlurSignal",
+			editor.onDidBlurEditorWidget,
+		);
+		this._register(
+			autorun(async (reader) => {
+				/** @description InlineEditController.editorBlur */
+				if (!this._enabled.read(reader)) {
+					return;
+				}
+				editorBlurSingal.read(reader);
+				// This is a hidden setting very useful for debugging
+				if (
+					this._configurationService.getValue(
+						"editor.experimentalInlineEdit.keepOnBlur",
+					) ||
+					editor.getOption(EditorOption.inlineEdit).keepOnBlur
+				) {
+					return;
+				}
+				this._currentRequestCts?.dispose(true);
+				this._currentRequestCts = undefined;
+				await this.clear(false);
+			}),
+		);
 
 		//Invoke provider on focus
-		const editorFocusSignal = observableSignalFromEvent('InlineEditController.editorFocusSignal', editor.onDidFocusEditorText);
-		this._register(autorun(reader => {
-			/** @description InlineEditController.editorFocus */
-			if (!this._enabled.read(reader)) {
-				return;
-			}
-			editorFocusSignal.read(reader);
-			this.getInlineEdit(editor, true);
-		}));
-
+		const editorFocusSignal = observableSignalFromEvent(
+			"InlineEditController.editorFocusSignal",
+			editor.onDidFocusEditorText,
+		);
+		this._register(
+			autorun((reader) => {
+				/** @description InlineEditController.editorFocus */
+				if (!this._enabled.read(reader)) {
+					return;
+				}
+				editorFocusSignal.read(reader);
+				this.getInlineEdit(editor, true);
+			}),
+		);
 
 		//handle changes of font setting
 		const styleElement = this._register(createStyleSheet2());
-		this._register(autorun(reader => {
-			const fontFamily = this._fontFamily.read(reader);
-			styleElement.setStyle(fontFamily === '' || fontFamily === 'default' ? `` : `
+		this._register(
+			autorun((reader) => {
+				const fontFamily = this._fontFamily.read(reader);
+				styleElement.setStyle(
+					fontFamily === "" || fontFamily === "default"
+						? ``
+						: `
 .monaco-editor .inline-edit-decoration,
 .monaco-editor .inline-edit-decoration-preview,
 .monaco-editor .inline-edit {
 	font-family: ${fontFamily};
-}`);
-		}));
+}`,
+				);
+			}),
+		);
 
-		this._register(new InlineEditHintsWidget(this.editor, this._currentWidget, this.instantiationService));
-		this._register(new InlineEditSideBySideWidget(this.editor, this._currentEdit, this.instantiationService, this._diffProviderFactoryService, this._modelService));
+		this._register(
+			new InlineEditHintsWidget(
+				this.editor,
+				this._currentWidget,
+				this.instantiationService,
+			),
+		);
+		this._register(
+			new InlineEditSideBySideWidget(
+				this.editor,
+				this._currentEdit,
+				this.instantiationService,
+				this._diffProviderFactoryService,
+				this._modelService,
+			),
+		);
 	}
 
 	private checkCursorPosition(position: Position) {

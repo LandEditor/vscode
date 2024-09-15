@@ -11,9 +11,9 @@ import { RemoteAuthorities } from "../../../base/common/network.js";
 import type { URI } from "../../../base/common/uri.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
+	RemoteConnectionType,
 	type IRemoteAuthorityResolverService,
 	type IRemoteConnectionData,
-	RemoteConnectionType,
 	type ResolvedAuthority,
 	type ResolvedOptions,
 	type ResolverResult,

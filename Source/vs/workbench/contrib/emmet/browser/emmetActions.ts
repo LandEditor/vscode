@@ -11,12 +11,12 @@ import {
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
-	type ExtensionPointContribution,
 	IExtensionService,
+	type ExtensionPointContribution,
 } from "../../../services/extensions/common/extensions.js";
 import {
-	type ITMSyntaxExtensionPoint,
 	grammarsExtPoint,
+	type ITMSyntaxExtensionPoint,
 } from "../../../services/textMate/common/TMGrammars.js";
 
 interface ModeScopeMap {

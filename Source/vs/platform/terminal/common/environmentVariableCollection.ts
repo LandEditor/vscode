@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IProcessEnvironment,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import {
 	EnvironmentVariableMutatorType,

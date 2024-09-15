@@ -9,8 +9,6 @@ import {
 	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ITransaction,
 	constObservable,
 	derived,
 	derivedObservableWithWritableCache,
@@ -18,6 +16,8 @@ import {
 	observableFromValueWithChangeEvent,
 	observableValue,
 	transaction,
+	type IObservable,
+	type ITransaction,
 } from "../../../../base/common/observable.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { ContextKeyValue } from "../../../../platform/contextkey/common/contextkey.js";
@@ -158,18 +158,25 @@ export class DocumentDiffItemViewModel extends Disposable {
 	constructor(
 		documentDiffItem: RefCounted<IDocumentDiffItem>,
 		private readonly _editorViewModel: MultiDiffEditorViewModel,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
 
-		this._register(toDisposable(() => {
-			this.isAlive.set(false, undefined);
-		}));
+		this._register(
+			toDisposable(() => {
+				this.isAlive.set(false, undefined);
+			}),
+		);
 
-		this.documentDiffItemRef = this._register(documentDiffItem.createNewRef(this));
+		this.documentDiffItemRef = this._register(
+			documentDiffItem.createNewRef(this),
+		);
 
-		function updateOptions(options: IDiffEditorOptions): IDiffEditorOptions {
+		function updateOptions(
+			options: IDiffEditorOptions,
+		): IDiffEditorOptions {
 			return {
 				...options,
 				hideUnchangedRegions: {
@@ -178,26 +185,49 @@ export class DocumentDiffItemViewModel extends Disposable {
 			};
 		}
 
-		const options = this._instantiationService.createInstance(DiffEditorOptions, updateOptions(this.documentDiffItem.options || {}));
+		const options = this._instantiationService.createInstance(
+			DiffEditorOptions,
+			updateOptions(this.documentDiffItem.options || {}),
+		);
 		if (this.documentDiffItem.onOptionsDidChange) {
-			this._register(this.documentDiffItem.onOptionsDidChange(() => {
-				options.updateOptions(updateOptions(this.documentDiffItem.options || {}));
-			}));
+			this._register(
+				this.documentDiffItem.onOptionsDidChange(() => {
+					options.updateOptions(
+						updateOptions(this.documentDiffItem.options || {}),
+					);
+				}),
+			);
 		}
 
 		const diffEditorViewModelStore = new DisposableStore();
-		const originalTextModel = this.documentDiffItem.original ?? diffEditorViewModelStore.add(this._modelService.createModel('', null));
-		const modifiedTextModel = this.documentDiffItem.modified ?? diffEditorViewModelStore.add(this._modelService.createModel('', null));
-		diffEditorViewModelStore.add(this.documentDiffItemRef.createNewRef(this));
+		const originalTextModel =
+			this.documentDiffItem.original ??
+			diffEditorViewModelStore.add(
+				this._modelService.createModel("", null),
+			);
+		const modifiedTextModel =
+			this.documentDiffItem.modified ??
+			diffEditorViewModelStore.add(
+				this._modelService.createModel("", null),
+			);
+		diffEditorViewModelStore.add(
+			this.documentDiffItemRef.createNewRef(this),
+		);
 
-		this.diffEditorViewModelRef = this._register(RefCounted.createWithDisposable(
-			this._instantiationService.createInstance(DiffEditorViewModel, {
-				original: originalTextModel,
-				modified: modifiedTextModel,
-			}, options),
-			diffEditorViewModelStore,
-			this
-		));
+		this.diffEditorViewModelRef = this._register(
+			RefCounted.createWithDisposable(
+				this._instantiationService.createInstance(
+					DiffEditorViewModel,
+					{
+						original: originalTextModel,
+						modified: modifiedTextModel,
+					},
+					options,
+				),
+				diffEditorViewModelStore,
+				this,
+			),
+		);
 	}
 
 	public getKey(): string {

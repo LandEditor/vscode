@@ -11,7 +11,7 @@ export class DebugTelemetry {
 	constructor(
 		private readonly model: IDebugModel,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-	) { }
+	) {}
 
 	logDebugSessionStart(dbgr: Debugger, launchJsonExists: boolean) {
 		const extension = dbgr.getMainExtensionDescriptor();

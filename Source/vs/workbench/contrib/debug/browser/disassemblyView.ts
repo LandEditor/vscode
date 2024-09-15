@@ -5,9 +5,9 @@
 
 import {
 	$,
-	type Dimension,
 	addStandardDisposableListener,
 	append,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import { PixelRatio } from "../../../../base/browser/pixelRatio.js";
 import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
@@ -20,8 +20,8 @@ import type { Color } from "../../../../base/common/color.js";
 import { Emitter } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isAbsolute } from "../../../../base/common/path.js";
 import { Constants } from "../../../../base/common/uint.js";
@@ -29,15 +29,15 @@ import { URI } from "../../../../base/common/uri.js";
 import { applyFontInfo } from "../../../../editor/browser/config/domFontInfo.js";
 import { isCodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import { BareFontInfo } from "../../../../editor/common/config/fontInfo.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { StringBuilder } from "../../../../editor/common/core/stringBuilder.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { ITextModelService } from "../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { TextEditorSelectionRevealType } from "../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -55,11 +55,11 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import {
 	CONTEXT_LANGUAGE_SUPPORTS_DISASSEMBLE_REQUEST,
 	DISASSEMBLY_VIEW_ID,
-	type IDebugConfiguration,
 	IDebugService,
+	State,
+	type IDebugConfiguration,
 	type IDebugSession,
 	type IInstructionBreakpoint,
-	State,
 } from "../common/debug.js";
 import { InstructionBreakpoint } from "../common/debugModel.js";
 import { getUriFromSource } from "../common/debugSource.js";
@@ -126,27 +126,42 @@ export class DisassemblyView extends EditorPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IDebugService private readonly _debugService: IDebugService,
 	) {
-		super(DISASSEMBLY_VIEW_ID, group, telemetryService, themeService, storageService);
+		super(
+			DISASSEMBLY_VIEW_ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 
 		this._disassembledInstructions = undefined;
-		this._onDidChangeStackFrame = this._register(new Emitter<void>({ leakWarningThreshold: 1000 }));
+		this._onDidChangeStackFrame = this._register(
+			new Emitter<void>({ leakWarningThreshold: 1000 }),
+		);
 		this._previousDebuggingState = _debugService.state;
-		this._register(_configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('debug')) {
-				// show/hide source code requires changing height which WorkbenchTable doesn't support dynamic height, thus force a total reload.
-				const newValue = this._configurationService.getValue<IDebugConfiguration>('debug').disassemblyView.showSourceCode;
-				if (this._enableSourceCodeRender !== newValue) {
-					this._enableSourceCodeRender = newValue;
-					// todo: trigger rerender
-				} else {
-					this._disassembledInstructions?.rerender();
+		this._register(
+			_configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("debug")) {
+					// show/hide source code requires changing height which WorkbenchTable doesn't support dynamic height, thus force a total reload.
+					const newValue =
+						this._configurationService.getValue<IDebugConfiguration>(
+							"debug",
+						).disassemblyView.showSourceCode;
+					if (this._enableSourceCodeRender !== newValue) {
+						this._enableSourceCodeRender = newValue;
+						// todo: trigger rerender
+					} else {
+						this._disassembledInstructions?.rerender();
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	get fontInfo() {
@@ -887,9 +902,8 @@ class BreakpointRenderer
 
 	constructor(
 		private readonly _disassemblyView: DisassemblyView,
-		@IDebugService private readonly _debugService: IDebugService
-	) {
-	}
+		@IDebugService private readonly _debugService: IDebugService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IBreakpointColumnTemplateData {
 		// align from the bottom so that it lines up with instruction when source code is present.
@@ -1043,13 +1057,21 @@ class InstructionRenderer
 	) {
 		super();
 
-		this._topStackFrameColor = themeService.getColorTheme().getColor(topStackFrameColor);
-		this._focusedStackFrameColor = themeService.getColorTheme().getColor(focusedStackFrameColor);
+		this._topStackFrameColor = themeService
+			.getColorTheme()
+			.getColor(topStackFrameColor);
+		this._focusedStackFrameColor = themeService
+			.getColorTheme()
+			.getColor(focusedStackFrameColor);
 
-		this._register(themeService.onDidColorThemeChange(e => {
-			this._topStackFrameColor = e.getColor(topStackFrameColor);
-			this._focusedStackFrameColor = e.getColor(focusedStackFrameColor);
-		}));
+		this._register(
+			themeService.onDidColorThemeChange((e) => {
+				this._topStackFrameColor = e.getColor(topStackFrameColor);
+				this._focusedStackFrameColor = e.getColor(
+					focusedStackFrameColor,
+				);
+			}),
+		);
 	}
 
 	renderTemplate(container: HTMLElement): IInstructionColumnTemplateData {

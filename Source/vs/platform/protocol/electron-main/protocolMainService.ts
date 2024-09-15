@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { session } from "electron";
+
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { COI, FileAccess, Schemas } from "../../../base/common/network.js";
 import { basename, extname, normalize } from "../../../base/common/path.js";
@@ -44,9 +45,11 @@ export class ProtocolMainService
 	]); // https://github.com/microsoft/vscode/issues/119384
 
 	constructor(
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@ILogService private readonly logService: ILogService
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
@@ -56,8 +59,16 @@ export class ProtocolMainService
 		// - storage    : all files in global and workspace storage (https://github.com/microsoft/vscode/issues/116735)
 		this.addValidFileRoot(environmentService.appRoot);
 		this.addValidFileRoot(environmentService.extensionsPath);
-		this.addValidFileRoot(userDataProfilesService.defaultProfile.globalStorageHome.with({ scheme: Schemas.file }).fsPath);
-		this.addValidFileRoot(environmentService.workspaceStorageHome.with({ scheme: Schemas.file }).fsPath);
+		this.addValidFileRoot(
+			userDataProfilesService.defaultProfile.globalStorageHome.with({
+				scheme: Schemas.file,
+			}).fsPath,
+		);
+		this.addValidFileRoot(
+			environmentService.workspaceStorageHome.with({
+				scheme: Schemas.file,
+			}).fsPath,
+		);
 
 		// Handle protocols
 		this.handleProtocols();

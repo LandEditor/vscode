@@ -3,10 +3,10 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, toAction } from "../../../../base/common/actions.js";
+import { toAction, type IAction } from "../../../../base/common/actions.js";
 import {
-	TaskSequentializer,
 	raceCancellation,
+	TaskSequentializer,
 	timeout,
 } from "../../../../base/common/async.js";
 import type { VSBufferReadableStream } from "../../../../base/common/buffer.js";
@@ -27,14 +27,14 @@ import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import {
 	ETAG_DISABLED,
-	type FileOperationError,
 	FileOperationResult,
-	type IFileReadLimits,
 	IFileService,
+	NotModifiedSinceFileOperationError,
+	type FileOperationError,
+	type IFileReadLimits,
 	type IFileStatWithMetadata,
 	type IFileStreamContent,
 	type IWriteFileOptions,
-	NotModifiedSinceFileOperationError,
 } from "../../../../platform/files/common/files.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
@@ -42,38 +42,38 @@ import {
 	Severity,
 } from "../../../../platform/notification/common/notification.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import {
+	SaveReason,
 	type IRevertOptions,
 	type ISaveOptions,
-	SaveReason,
 } from "../../../common/editor.js";
 import { IEditorService } from "../../editor/common/editorService.js";
 import { IElevatedFileService } from "../../files/common/elevatedFileService.js";
 import { IFilesConfigurationService } from "../../filesConfiguration/common/filesConfigurationService.js";
 import {
+	SnapshotContext,
 	type IFileWorkingCopy,
 	type IFileWorkingCopyModel,
 	type IFileWorkingCopyModelFactory,
-	SnapshotContext,
 } from "./fileWorkingCopy.js";
 import {
-	type IResourceWorkingCopy,
 	ResourceWorkingCopy,
+	type IResourceWorkingCopy,
 } from "./resourceWorkingCopy.js";
 import {
+	WorkingCopyCapabilities,
 	type IWorkingCopyBackup,
 	type IWorkingCopyBackupMeta,
 	type IWorkingCopySaveEvent,
-	WorkingCopyCapabilities,
 } from "./workingCopy.js";
 import {
-	type IResolvedWorkingCopyBackup,
 	IWorkingCopyBackupService,
+	type IResolvedWorkingCopyBackup,
 } from "./workingCopyBackup.js";
 import { IWorkingCopyEditorService } from "./workingCopyEditorService.js";
 import { IWorkingCopyFileService } from "./workingCopyFileService.js";
@@ -410,15 +410,21 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 		private readonly externalResolver: IStoredFileWorkingCopyResolver,
 		@IFileService fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IWorkingCopyEditorService private readonly workingCopyEditorService: IWorkingCopyEditorService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IWorkingCopyEditorService
+		private readonly workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IElevatedFileService private readonly elevatedFileService: IElevatedFileService,
-		@IProgressService private readonly progressService: IProgressService
+		@IElevatedFileService
+		private readonly elevatedFileService: IElevatedFileService,
+		@IProgressService private readonly progressService: IProgressService,
 	) {
 		super(resource, fileService);
 
@@ -954,8 +960,7 @@ export class StoredFileWorkingCopy<M extends IStoredFileWorkingCopyModel>
 
 	private versionId = 0;
 
-	private static readonly UNDO_REDO_SAVE_PARTICIPANTS_AUTO_SAVE_THROTTLE_THRESHOLD =
-		500;
+	private static readonly UNDO_REDO_SAVE_PARTICIPANTS_AUTO_SAVE_THROTTLE_THRESHOLD = 500;
 	private lastContentChangeFromUndoRedo: number | undefined = undefined;
 
 	private readonly saveSequentializer = new TaskSequentializer();

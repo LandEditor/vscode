@@ -22,18 +22,20 @@ import { RunOnceScheduler } from "../../../../base/common/async.js";
 import * as errors from "../../../../base/common/errors.js";
 import {
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
 	markAsSingleton,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
+
 import "./media/debugToolBar.css";
+
 import { PixelRatio } from "../../../../base/browser/pixelRatio.js";
 import type { IBaseActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import {
-	type CodeWindow,
 	mainWindow,
+	type CodeWindow,
 } from "../../../../base/browser/window.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { clamp } from "../../../../base/common/numbers.js";
@@ -53,17 +55,17 @@ import {
 	createAndFillInActionBarActions,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
-	type MenuItemAction,
 	MenuRegistry,
+	type IMenu,
+	type MenuItemAction,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -98,10 +100,10 @@ import {
 	CONTEXT_STEP_BACK_SUPPORTED,
 	CONTEXT_SUSPEND_DEBUGGEE_SUPPORTED,
 	CONTEXT_TERMINATE_DEBUGGEE_SUPPORTED,
-	type IDebugConfiguration,
 	IDebugService,
 	State,
 	VIEWLET_ID,
+	type IDebugConfiguration,
 } from "../common/debug.js";
 import { FocusSessionActionViewItem } from "./debugActionViewItems.js";
 import { debugToolBarBackground, debugToolBarBorder } from "./debugColors.js";
@@ -159,68 +161,129 @@ export class DebugToolBar extends Themable implements IWorkbenchContribution {
 	);
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IDebugService private readonly debugService: IDebugService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IThemeService themeService: IThemeService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IMenuService menuService: IMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super(themeService);
 
-		this.$el = dom.$('div.debug-toolbar');
+		this.$el = dom.$("div.debug-toolbar");
 		this.$el.style.top = `${layoutService.mainContainerOffset.top}px`;
 
-		this.dragArea = dom.append(this.$el, dom.$('div.drag-area' + ThemeIcon.asCSSSelector(icons.debugGripper)));
+		this.dragArea = dom.append(
+			this.$el,
+			dom.$(
+				"div.drag-area" + ThemeIcon.asCSSSelector(icons.debugGripper),
+			),
+		);
 
-		const actionBarContainer = dom.append(this.$el, dom.$('div.action-bar-container'));
-		this.debugToolBarMenu = menuService.createMenu(MenuId.DebugToolBar, contextKeyService);
+		const actionBarContainer = dom.append(
+			this.$el,
+			dom.$("div.action-bar-container"),
+		);
+		this.debugToolBarMenu = menuService.createMenu(
+			MenuId.DebugToolBar,
+			contextKeyService,
+		);
 		this._register(this.debugToolBarMenu);
 
 		this.activeActions = [];
-		this.actionBar = this._register(new ActionBar(actionBarContainer, {
-			orientation: ActionsOrientation.HORIZONTAL,
-			actionViewItemProvider: (action: IAction, options: IBaseActionViewItemOptions) => {
-				if (action.id === FOCUS_SESSION_ID) {
-					return this.instantiationService.createInstance(FocusSessionActionViewItem, action, undefined);
-				} else if (action.id === STOP_ID || action.id === DISCONNECT_ID) {
-					this.stopActionViewItemDisposables.clear();
-					const item = this.instantiationService.invokeFunction(accessor => createDisconnectMenuItemAction(action as MenuItemAction, this.stopActionViewItemDisposables, accessor, { hoverDelegate: options.hoverDelegate }));
-					if (item) {
-						return item;
+		this.actionBar = this._register(
+			new ActionBar(actionBarContainer, {
+				orientation: ActionsOrientation.HORIZONTAL,
+				actionViewItemProvider: (
+					action: IAction,
+					options: IBaseActionViewItemOptions,
+				) => {
+					if (action.id === FOCUS_SESSION_ID) {
+						return this.instantiationService.createInstance(
+							FocusSessionActionViewItem,
+							action,
+							undefined,
+						);
+					} else if (
+						action.id === STOP_ID ||
+						action.id === DISCONNECT_ID
+					) {
+						this.stopActionViewItemDisposables.clear();
+						const item = this.instantiationService.invokeFunction(
+							(accessor) =>
+								createDisconnectMenuItemAction(
+									action as MenuItemAction,
+									this.stopActionViewItemDisposables,
+									accessor,
+									{ hoverDelegate: options.hoverDelegate },
+								),
+						);
+						if (item) {
+							return item;
+						}
 					}
+
+					return createActionViewItem(
+						this.instantiationService,
+						action,
+						options,
+					);
+				},
+			}),
+		);
+
+		this.updateScheduler = this._register(
+			new RunOnceScheduler(() => {
+				const state = this.debugService.state;
+				const toolBarLocation =
+					this.configurationService.getValue<IDebugConfiguration>(
+						"debug",
+					).toolBarLocation;
+				if (
+					state === State.Inactive ||
+					toolBarLocation !== "floating" ||
+					this.debugService
+						.getModel()
+						.getSessions()
+						.every((s) => s.suppressDebugToolbar) ||
+					(state === State.Initializing &&
+						this.debugService.initializingOptions
+							?.suppressDebugToolbar)
+				) {
+					return this.hide();
 				}
 
-				return createActionViewItem(this.instantiationService, action, options);
-			}
-		}));
+				const actions: IAction[] = [];
+				createAndFillInActionBarActions(
+					this.debugToolBarMenu,
+					{ shouldForwardArgs: true },
+					actions,
+				);
+				if (
+					!arrays.equals(
+						actions,
+						this.activeActions,
+						(first, second) =>
+							first.id === second.id &&
+							first.enabled === second.enabled,
+					)
+				) {
+					this.actionBar.clear();
+					this.actionBar.push(actions, { icon: true, label: false });
+					this.activeActions = actions;
+				}
 
-		this.updateScheduler = this._register(new RunOnceScheduler(() => {
-			const state = this.debugService.state;
-			const toolBarLocation = this.configurationService.getValue<IDebugConfiguration>('debug').toolBarLocation;
-			if (
-				state === State.Inactive ||
-				toolBarLocation !== 'floating' ||
-				this.debugService.getModel().getSessions().every(s => s.suppressDebugToolbar) ||
-				(state === State.Initializing && this.debugService.initializingOptions?.suppressDebugToolbar)
-			) {
-				return this.hide();
-			}
-
-			const actions: IAction[] = [];
-			createAndFillInActionBarActions(this.debugToolBarMenu, { shouldForwardArgs: true }, actions);
-			if (!arrays.equals(actions, this.activeActions, (first, second) => first.id === second.id && first.enabled === second.enabled)) {
-				this.actionBar.clear();
-				this.actionBar.push(actions, { icon: true, label: false });
-				this.activeActions = actions;
-			}
-
-			this.show();
-		}, 20));
+				this.show();
+			}, 20),
+		);
 
 		this.updateStyles();
 		this.registerListeners();

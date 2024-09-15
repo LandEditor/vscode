@@ -18,12 +18,12 @@ import { IRemoteAuthorityResolverService } from "../../../../platform/remote/com
 import { ISharedProcessTunnelService } from "../../../../platform/remote/common/sharedProcessTunnelService.js";
 import {
 	AbstractTunnelService,
-	type ITunnelProvider,
-	ITunnelService,
-	type RemoteTunnel,
-	TunnelPrivacyId,
 	isPortPrivileged,
 	isTunnelProvider,
+	ITunnelService,
+	TunnelPrivacyId,
+	type ITunnelProvider,
+	type RemoteTunnel,
 } from "../../../../platform/tunnel/common/tunnel.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { INativeWorkbenchEnvironmentService } from "../../environment/electron-sandbox/environmentService.js";
@@ -41,12 +41,18 @@ class SharedProcessTunnel extends Disposable implements RemoteTunnel {
 		public readonly tunnelLocalPort: number | undefined,
 		public readonly localAddress: string,
 		private readonly _onBeforeDispose: () => void,
-		@ISharedProcessTunnelService private readonly _sharedProcessTunnelService: ISharedProcessTunnelService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@ISharedProcessTunnelService
+		private readonly _sharedProcessTunnelService: ISharedProcessTunnelService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 	) {
 		super();
 		this._updateAddress();
-		this._register(this._remoteAuthorityResolverService.onDidChangeConnectionData(() => this._updateAddress()));
+		this._register(
+			this._remoteAuthorityResolverService.onDidChangeConnectionData(() =>
+				this._updateAddress(),
+			),
+		);
 	}
 
 	private _updateAddress(): void {
@@ -67,21 +73,27 @@ export class TunnelService extends AbstractTunnelService {
 
 	public constructor(
 		@ILogService logService: ILogService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ISharedProcessTunnelService private readonly _sharedProcessTunnelService: ISharedProcessTunnelService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ISharedProcessTunnelService
+		private readonly _sharedProcessTunnelService: ISharedProcessTunnelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@INativeWorkbenchEnvironmentService private readonly _nativeWorkbenchEnvironmentService: INativeWorkbenchEnvironmentService,
-		@IConfigurationService configurationService: IConfigurationService
+		@INativeWorkbenchEnvironmentService
+		private readonly _nativeWorkbenchEnvironmentService: INativeWorkbenchEnvironmentService,
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(logService, configurationService);
 
 		// Destroy any shared process tunnels that might still be active
-		this._register(lifecycleService.onDidShutdown(() => {
-			this._activeSharedProcessTunnels.forEach((id) => {
-				this._sharedProcessTunnelService.destroyTunnel(id);
-			});
-		}));
+		this._register(
+			lifecycleService.onDidShutdown(() => {
+				this._activeSharedProcessTunnels.forEach((id) => {
+					this._sharedProcessTunnelService.destroyTunnel(id);
+				});
+			}),
+		);
 	}
 
 	public isPortPrivileged(port: number): boolean {

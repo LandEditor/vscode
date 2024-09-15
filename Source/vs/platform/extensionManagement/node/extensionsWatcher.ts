@@ -6,9 +6,9 @@
 import { getErrorMessage } from "../../../base/common/errors.js";
 import { Emitter } from "../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableMap,
-	combinedDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ResourceSet } from "../../../base/common/map.js";
 import type { URI } from "../../../base/common/uri.js";

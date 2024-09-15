@@ -6,12 +6,13 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import { isNonEmptyArray } from "../../../base/common/arrays.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { toErrorMessage } from "../../../base/common/errorMessage.js";
 import {
-	type DisposableStore,
 	toDisposable,
+	type DisposableStore,
 } from "../../../base/common/lifecycle.js";
 import { revive } from "../../../base/common/marshalling.js";
 import { cloneAndChange } from "../../../base/common/objects.js";
@@ -20,10 +21,10 @@ import { validateConstraint } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import { generateUuid } from "../../../base/common/uuid.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../editor/common/core/range.js";
 import type { ISelection } from "../../../editor/common/core/selection.js";
 import type * as languages from "../../../editor/common/languages.js";
 import type { ICommandMetadata } from "../../../platform/commands/common/commands.js";
@@ -36,10 +37,10 @@ import { ILogService } from "../../../platform/log/common/log.js";
 import { TelemetryTrustedValue } from "../../../platform/telemetry/common/telemetryUtils.js";
 import { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
+	MainContext,
 	type ExtHostCommandsShape,
 	type ICommandDto,
 	type ICommandMetadataDto,
-	MainContext,
 	type MainThreadCommandsShape,
 	type MainThreadTelemetryShape,
 } from "./extHost.protocol.js";

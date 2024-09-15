@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Barrier } from "../../../base/common/async.js";
 import * as errors from "../../../base/common/errors.js";
 import {
@@ -11,14 +12,14 @@ import {
 	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
-	type ExtensionIdentifier,
 	ExtensionIdentifierMap,
+	type ExtensionIdentifier,
 } from "../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import { ExtensionDescriptionRegistry } from "../../services/extensions/common/extensionDescriptionRegistry.js";
 import {
-	type ExtensionActivationReason,
 	MissingExtensionDependency,
+	type ExtensionActivationReason,
 } from "../../services/extensions/common/extensions.js";
 
 /**
@@ -240,7 +241,7 @@ export class ExtensionsActivator implements IDisposable {
 		registry: ExtensionDescriptionRegistry,
 		globalRegistry: ExtensionDescriptionRegistry,
 		host: IExtensionsActivatorHost,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		this._registry = registry;
 		this._globalRegistry = globalRegistry;
@@ -500,7 +501,7 @@ class ActivationOperation {
 		private readonly _deps: ActivationOperation[],
 		private _value: ActivatedExtension | null,
 		private readonly _host: IExtensionsActivatorHost,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		this._initialize();
 	}

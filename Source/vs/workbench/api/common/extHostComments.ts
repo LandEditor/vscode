@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { asPromise } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { debounce } from "../../../base/common/decorators.js";
@@ -23,11 +24,11 @@ import {
 import type { MarshalledCommentThread } from "../../common/comments.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type CommentChanges,
 	type CommentThreadChanges,
 	type ExtHostCommentsShape,
 	type IMainContext,
-	MainContext,
 } from "./extHost.protocol.js";
 import type { ExtHostCommands } from "./extHostCommands.js";
 import type { ExtHostDocuments } from "./extHostDocuments.js";
@@ -433,7 +434,8 @@ export function createExtHostComments(
 		set range(range: vscode.Range | undefined) {
 			if (
 				(range === undefined) !== (this._range === undefined) ||
-				!range || !this._range ||
+				!range ||
+				!this._range ||
 				!range.isEqual(this._range)
 			) {
 				this._range = range;
@@ -522,12 +524,14 @@ export function createExtHostComments(
 			return this._state!;
 		}
 
-		set state(newState:
-			| vscode.CommentThreadState
-			| {
-					resolved?: vscode.CommentThreadState;
-					applicability?: vscode.CommentThreadApplicability;
-			  }) {
+		set state(
+			newState:
+				| vscode.CommentThreadState
+				| {
+						resolved?: vscode.CommentThreadState;
+						applicability?: vscode.CommentThreadApplicability;
+				  },
+		) {
 			this._state = newState;
 			if (typeof newState === "object") {
 				checkProposedApiEnabled(
@@ -634,7 +638,9 @@ export function createExtHostComments(
 				get collapsibleState() {
 					return that.collapsibleState;
 				},
-				set collapsibleState(value: vscode.CommentThreadCollapsibleState) {
+				set collapsibleState(
+					value: vscode.CommentThreadCollapsibleState,
+				) {
 					that.collapsibleState = value;
 				},
 				get canReply() {
@@ -664,12 +670,14 @@ export function createExtHostComments(
 					| undefined {
 					return that.state;
 				},
-				set state(value:
-					| vscode.CommentThreadState
-					| {
-							resolved?: vscode.CommentThreadState;
-							applicability?: vscode.CommentThreadApplicability;
-					  }) {
+				set state(
+					value:
+						| vscode.CommentThreadState
+						| {
+								resolved?: vscode.CommentThreadState;
+								applicability?: vscode.CommentThreadApplicability;
+						  },
+				) {
 					that.state = value;
 				},
 				reveal: (
@@ -859,9 +867,9 @@ export function createExtHostComments(
 			return this._commentingRangeProvider;
 		}
 
-		set commentingRangeProvider(provider:
-			| vscode.CommentingRangeProvider
-			| undefined) {
+		set commentingRangeProvider(
+			provider: vscode.CommentingRangeProvider | undefined,
+		) {
 			this._commentingRangeProvider = provider;
 			if (provider?.resourceHints) {
 				checkProposedApiEnabled(this._extension, "commentingRangeHint");
@@ -942,9 +950,11 @@ export function createExtHostComments(
 					| undefined {
 					return that.commentingRangeProvider;
 				},
-				set commentingRangeProvider(commentingRangeProvider:
-					| vscode.CommentingRangeProvider
-					| undefined) {
+				set commentingRangeProvider(
+					commentingRangeProvider:
+						| vscode.CommentingRangeProvider
+						| undefined,
+				) {
 					that.commentingRangeProvider = commentingRangeProvider;
 				},
 				get reactionHandler(): ReactionHandler | undefined {

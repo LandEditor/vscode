@@ -22,10 +22,10 @@ import {
 } from "../../../browser/controller/editContext/clipboardUtils.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
-	type Command,
 	EditorAction,
 	MultiCommand,
 	registerEditorAction,
+	type Command,
 } from "../../../browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../browser/services/codeEditorService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";

@@ -10,12 +10,13 @@ import type {
 	Registry,
 	StateStack,
 } from "vscode-textmate";
+
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
+	TMScopeRegistry,
 	type IValidEmbeddedLanguagesMap,
 	type IValidGrammarDefinition,
-	TMScopeRegistry,
 } from "./TMScopeRegistry.js";
 
 interface ITMGrammarFactoryHost {

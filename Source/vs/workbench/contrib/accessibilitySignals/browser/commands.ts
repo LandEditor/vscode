@@ -275,7 +275,7 @@ export class ShowAccessibilityAnnouncementHelp extends Action2 {
 					announcement = userGestureSignals.includes(signal)
 						? "userGesture"
 						: signal.announcementMessage &&
-								accessibilityService.isScreenReaderOptimized()
+							  accessibilityService.isScreenReaderOptimized()
 							? "auto"
 							: undefined;
 					configurationService.updateValue(signal.settingsKey, {

@@ -13,8 +13,8 @@ import { isEqual } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type IContextKeyService,
 	RawContextKey,
+	type IContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";

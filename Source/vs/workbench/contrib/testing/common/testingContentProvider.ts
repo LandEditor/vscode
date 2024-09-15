@@ -8,20 +8,20 @@ import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { removeAnsiEscapeCodes } from "../../../../base/common/strings.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ILanguageSelection,
 	ILanguageService,
+	type ILanguageSelection,
 } from "../../../../editor/common/languages/language.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../nls.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
+import { parseTestUri, TEST_DATA_SCHEME, TestUriType } from "./testingUri.js";
 import { ITestResultService } from "./testResultService.js";
 import { TestMessageType } from "./testTypes.js";
-import { TEST_DATA_SCHEME, TestUriType, parseTestUri } from "./testingUri.js";
 
 /**
  * A content provider that returns various outputs for tests. This is used
@@ -36,7 +36,10 @@ export class TestingContentProvider
 		@IModelService private readonly modelService: IModelService,
 		@ITestResultService private readonly resultService: ITestResultService,
 	) {
-		textModelResolverService.registerTextModelContentProvider(TEST_DATA_SCHEME, this);
+		textModelResolverService.registerTextModelContentProvider(
+			TEST_DATA_SCHEME,
+			this,
+		);
 	}
 
 	/**

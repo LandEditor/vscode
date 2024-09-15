@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IDiffChange,
 	LcsDiff,
+	type IDiffChange,
 } from "../../../../../base/common/diff/diff.js";
 import { getLeadingWhitespace } from "../../../../../base/common/strings.js";
 import type { Position } from "../../../../common/core/position.js";

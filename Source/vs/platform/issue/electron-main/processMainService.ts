@@ -5,19 +5,20 @@
 
 import {
 	BrowserWindow,
+	contentTracing,
+	screen,
 	type BrowserWindowConstructorOptions,
 	type Display,
 	type IpcMainEvent,
-	contentTracing,
-	screen,
 } from "electron";
+
 import { isESM } from "../../../base/common/amd.js";
 import { randomPath } from "../../../base/common/extpath.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { FileAccess } from "../../../base/common/network.js";
 import {
-	type IProcessEnvironment,
 	isMacintosh,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import { listProcesses } from "../../../base/node/ps.js";
 import { validatedIpcMain } from "../../../base/parts/ipc/electron-main/ipcMain.js";
@@ -25,9 +26,9 @@ import { getNLSLanguage, getNLSMessages, localize } from "../../../nls.js";
 import { ICSSDevelopmentService } from "../../cssDev/node/cssDevService.js";
 import {
 	IDiagnosticsService,
+	isRemoteDiagnosticError,
 	type PerformanceInfo,
 	type SystemInfo,
-	isRemoteDiagnosticError,
 } from "../../diagnostics/common/diagnostics.js";
 import { IDiagnosticsMainService } from "../../diagnostics/electron-main/diagnosticsMainService.js";
 import { IDialogMainService } from "../../dialogs/electron-main/dialogMainService.js";
@@ -37,8 +38,8 @@ import { INativeHostMainService } from "../../native/electron-main/nativeHostMai
 import product from "../../product/common/product.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	type IIPCObjectUrl,
 	IProtocolMainService,
+	type IIPCObjectUrl,
 } from "../../protocol/electron-main/protocol.js";
 import { IStateService } from "../../state/node/state.js";
 import { UtilityProcess } from "../../utilityProcess/electron-main/utilityProcess.js";
@@ -73,16 +74,23 @@ export class ProcessMainService implements IProcessMainService {
 
 	constructor(
 		private userEnv: IProcessEnvironment,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@ILogService private readonly logService: ILogService,
-		@IDiagnosticsService private readonly diagnosticsService: IDiagnosticsService,
-		@IDiagnosticsMainService private readonly diagnosticsMainService: IDiagnosticsMainService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
-		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
+		@IDiagnosticsService
+		private readonly diagnosticsService: IDiagnosticsService,
+		@IDiagnosticsMainService
+		private readonly diagnosticsMainService: IDiagnosticsMainService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
+		@IProtocolMainService
+		private readonly protocolMainService: IProtocolMainService,
 		@IProductService private readonly productService: IProductService,
 		@IStateService private readonly stateService: IStateService,
-		@ICSSDevelopmentService private readonly cssDevelopmentService: ICSSDevelopmentService
+		@ICSSDevelopmentService
+		private readonly cssDevelopmentService: ICSSDevelopmentService,
 	) {
 		this.registerListeners();
 	}

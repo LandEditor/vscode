@@ -5,8 +5,8 @@
 
 import * as dom from "../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../base/browser/fastDomNode.js";
 import type { IMouseWheelEvent } from "../../base/browser/mouseEvent.js";
 import { inputLatency } from "../../base/browser/performance.js";
@@ -18,8 +18,8 @@ import {
 import type { IDisposable } from "../../base/common/lifecycle.js";
 import { IInstantiationService } from "../../platform/instantiation/common/instantiation.js";
 import {
-	type IColorTheme,
 	getThemeTypeSelector,
+	type IColorTheme,
 } from "../../platform/theme/common/themeService.js";
 import type { IEditorConfiguration } from "../common/config/editorConfiguration.js";
 import { EditorOption } from "../common/config/editorOptions.js";
@@ -39,8 +39,8 @@ import { ViewContext } from "../common/viewModel/viewContext.js";
 import type { AbstractEditContext } from "./controller/editContext/editContextUtils.js";
 import { NativeEditContext } from "./controller/editContext/native/nativeEditContext.js";
 import {
-	type IVisibleRangeProvider,
 	TextAreaEditContext,
+	type IVisibleRangeProvider,
 } from "./controller/editContext/textArea/textAreaEditContext.js";
 import type { IPointerHandlerHelper } from "./controller/mouseHandler.js";
 import { PointerHandlerLastRenderData } from "./controller/mouseTarget.js";
@@ -62,8 +62,8 @@ import {
 	type RestrictedRenderingContext,
 } from "./view/renderingContext.js";
 import {
-	type ICommandDelegate,
 	ViewController,
+	type ICommandDelegate,
 } from "./view/viewController.js";
 import {
 	ContentViewOverlays,
@@ -156,13 +156,19 @@ export class View extends ViewEventHandler {
 		model: IViewModel,
 		userInputEvents: ViewUserInputEvents,
 		overflowWidgetsDomNode: HTMLElement | undefined,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 		this._selections = [new Selection(1, 1, 1, 1)];
 		this._renderAnimationFrame = null;
 
-		this._viewController = new ViewController(configuration, model, userInputEvents, commandDelegate);
+		this._viewController = new ViewController(
+			configuration,
+			model,
+			userInputEvents,
+			commandDelegate,
+		);
 
 		// The view context is passed on to most classes (basically to reduce param. counts in ctors)
 		this._context = new ViewContext(configuration, colorTheme, model);
@@ -173,36 +179,61 @@ export class View extends ViewEventHandler {
 		this._viewParts = [];
 
 		// Keyboard handler
-		this._experimentalEditContextEnabled = this._context.configuration.options.get(EditorOption.experimentalEditContextEnabled);
-		this._editContext = this._instantiateEditContext(this._experimentalEditContextEnabled);
+		this._experimentalEditContextEnabled =
+			this._context.configuration.options.get(
+				EditorOption.experimentalEditContextEnabled,
+			);
+		this._editContext = this._instantiateEditContext(
+			this._experimentalEditContextEnabled,
+		);
 
 		this._viewParts.push(this._editContext);
 
 		// These two dom nodes must be constructed up front, since references are needed in the layout provider (scrolling & co.)
-		this._linesContent = createFastDomNode(document.createElement('div'));
-		this._linesContent.setClassName('lines-content' + ' monaco-editor-background');
-		this._linesContent.setPosition('absolute');
+		this._linesContent = createFastDomNode(document.createElement("div"));
+		this._linesContent.setClassName(
+			"lines-content" + " monaco-editor-background",
+		);
+		this._linesContent.setPosition("absolute");
 
-		this.domNode = createFastDomNode(document.createElement('div'));
+		this.domNode = createFastDomNode(document.createElement("div"));
 		this.domNode.setClassName(this._getEditorClassName());
 		// Set role 'code' for better screen reader support https://github.com/microsoft/vscode/issues/93438
-		this.domNode.setAttribute('role', 'code');
+		this.domNode.setAttribute("role", "code");
 
-		if (this._context.configuration.options.get(EditorOption.experimentalGpuAcceleration) === 'on') {
+		if (
+			this._context.configuration.options.get(
+				EditorOption.experimentalGpuAcceleration,
+			) === "on"
+		) {
 			this._viewGpuContext = new ViewGpuContext();
 		}
 
-		this._overflowGuardContainer = createFastDomNode(document.createElement('div'));
-		PartFingerprints.write(this._overflowGuardContainer, PartFingerprint.OverflowGuard);
-		this._overflowGuardContainer.setClassName('overflow-guard');
+		this._overflowGuardContainer = createFastDomNode(
+			document.createElement("div"),
+		);
+		PartFingerprints.write(
+			this._overflowGuardContainer,
+			PartFingerprint.OverflowGuard,
+		);
+		this._overflowGuardContainer.setClassName("overflow-guard");
 
-		this._scrollbar = new EditorScrollbar(this._context, this._linesContent, this.domNode, this._overflowGuardContainer);
+		this._scrollbar = new EditorScrollbar(
+			this._context,
+			this._linesContent,
+			this.domNode,
+			this._overflowGuardContainer,
+		);
 		this._viewParts.push(this._scrollbar);
 
 		// View Lines
 		this._viewLines = new ViewLines(this._context, this._linesContent);
 		if (this._viewGpuContext) {
-			this._viewLinesGpu = this._instantiationService.createInstance(ViewLinesGpu, this._context, this._viewGpuContext);
+			this._viewLinesGpu = this._instantiationService.createInstance(
+				ViewLinesGpu,
+				this._context,
+				this._viewGpuContext,
+			);
 		}
 
 		// View Zones
@@ -210,27 +241,46 @@ export class View extends ViewEventHandler {
 		this._viewParts.push(this._viewZones);
 
 		// Decorations overview ruler
-		const decorationsOverviewRuler = new DecorationsOverviewRuler(this._context);
+		const decorationsOverviewRuler = new DecorationsOverviewRuler(
+			this._context,
+		);
 		this._viewParts.push(decorationsOverviewRuler);
-
 
 		const scrollDecoration = new ScrollDecorationViewPart(this._context);
 		this._viewParts.push(scrollDecoration);
 
 		const contentViewOverlays = new ContentViewOverlays(this._context);
 		this._viewParts.push(contentViewOverlays);
-		contentViewOverlays.addDynamicOverlay(new CurrentLineHighlightOverlay(this._context));
-		contentViewOverlays.addDynamicOverlay(new SelectionsOverlay(this._context));
-		contentViewOverlays.addDynamicOverlay(new IndentGuidesOverlay(this._context));
-		contentViewOverlays.addDynamicOverlay(new DecorationsOverlay(this._context));
-		contentViewOverlays.addDynamicOverlay(new WhitespaceOverlay(this._context));
+		contentViewOverlays.addDynamicOverlay(
+			new CurrentLineHighlightOverlay(this._context),
+		);
+		contentViewOverlays.addDynamicOverlay(
+			new SelectionsOverlay(this._context),
+		);
+		contentViewOverlays.addDynamicOverlay(
+			new IndentGuidesOverlay(this._context),
+		);
+		contentViewOverlays.addDynamicOverlay(
+			new DecorationsOverlay(this._context),
+		);
+		contentViewOverlays.addDynamicOverlay(
+			new WhitespaceOverlay(this._context),
+		);
 
 		const marginViewOverlays = new MarginViewOverlays(this._context);
 		this._viewParts.push(marginViewOverlays);
-		marginViewOverlays.addDynamicOverlay(new CurrentLineMarginHighlightOverlay(this._context));
-		marginViewOverlays.addDynamicOverlay(new MarginViewLineDecorationsOverlay(this._context));
-		marginViewOverlays.addDynamicOverlay(new LinesDecorationsOverlay(this._context));
-		marginViewOverlays.addDynamicOverlay(new LineNumbersOverlay(this._context));
+		marginViewOverlays.addDynamicOverlay(
+			new CurrentLineMarginHighlightOverlay(this._context),
+		);
+		marginViewOverlays.addDynamicOverlay(
+			new MarginViewLineDecorationsOverlay(this._context),
+		);
+		marginViewOverlays.addDynamicOverlay(
+			new LinesDecorationsOverlay(this._context),
+		);
+		marginViewOverlays.addDynamicOverlay(
+			new LineNumbersOverlay(this._context),
+		);
 
 		// Glyph margin widgets
 		this._glyphMarginWidgets = new GlyphMarginWidgets(this._context);
@@ -243,14 +293,20 @@ export class View extends ViewEventHandler {
 		this._viewParts.push(margin);
 
 		// Content widgets
-		this._contentWidgets = new ViewContentWidgets(this._context, this.domNode);
+		this._contentWidgets = new ViewContentWidgets(
+			this._context,
+			this.domNode,
+		);
 		this._viewParts.push(this._contentWidgets);
 
 		this._viewCursors = new ViewCursors(this._context);
 		this._viewParts.push(this._viewCursors);
 
 		// Overlay widgets
-		this._overlayWidgets = new ViewOverlayWidgets(this._context, this.domNode);
+		this._overlayWidgets = new ViewOverlayWidgets(
+			this._context,
+			this.domNode,
+		);
 		this._viewParts.push(this._overlayWidgets);
 
 		const rulers = new Rulers(this._context);
@@ -265,8 +321,12 @@ export class View extends ViewEventHandler {
 		// -------------- Wire dom nodes up
 
 		if (decorationsOverviewRuler) {
-			const overviewRulerData = this._scrollbar.getOverviewRulerLayoutInfo();
-			overviewRulerData.parent.insertBefore(decorationsOverviewRuler.getDomNode(), overviewRulerData.insertBefore);
+			const overviewRulerData =
+				this._scrollbar.getOverviewRulerLayoutInfo();
+			overviewRulerData.parent.insertBefore(
+				decorationsOverviewRuler.getDomNode(),
+				overviewRulerData.insertBefore,
+			);
 		}
 
 		this._linesContent.appendChild(contentViewOverlays.getDomNode());
@@ -278,27 +338,45 @@ export class View extends ViewEventHandler {
 		this._overflowGuardContainer.appendChild(margin.getDomNode());
 		this._overflowGuardContainer.appendChild(this._scrollbar.getDomNode());
 		if (this._viewGpuContext) {
-			this._overflowGuardContainer.appendChild(this._viewGpuContext.canvas);
+			this._overflowGuardContainer.appendChild(
+				this._viewGpuContext.canvas,
+			);
 		}
 		this._overflowGuardContainer.appendChild(scrollDecoration.getDomNode());
 		this._editContext.appendTo(this._overflowGuardContainer);
-		this._overflowGuardContainer.appendChild(this._overlayWidgets.getDomNode());
+		this._overflowGuardContainer.appendChild(
+			this._overlayWidgets.getDomNode(),
+		);
 		this._overflowGuardContainer.appendChild(minimap.getDomNode());
 		this._overflowGuardContainer.appendChild(blockOutline.domNode);
 		this.domNode.appendChild(this._overflowGuardContainer);
 
 		if (overflowWidgetsDomNode) {
-			overflowWidgetsDomNode.appendChild(this._contentWidgets.overflowingContentWidgetsDomNode.domNode);
-			overflowWidgetsDomNode.appendChild(this._overlayWidgets.overflowingOverlayWidgetsDomNode.domNode);
+			overflowWidgetsDomNode.appendChild(
+				this._contentWidgets.overflowingContentWidgetsDomNode.domNode,
+			);
+			overflowWidgetsDomNode.appendChild(
+				this._overlayWidgets.overflowingOverlayWidgetsDomNode.domNode,
+			);
 		} else {
-			this.domNode.appendChild(this._contentWidgets.overflowingContentWidgetsDomNode);
-			this.domNode.appendChild(this._overlayWidgets.overflowingOverlayWidgetsDomNode);
+			this.domNode.appendChild(
+				this._contentWidgets.overflowingContentWidgetsDomNode,
+			);
+			this.domNode.appendChild(
+				this._overlayWidgets.overflowingOverlayWidgetsDomNode,
+			);
 		}
 
 		this._applyLayout();
 
 		// Pointer handler
-		this._pointerHandler = this._register(new PointerHandler(this._context, this._viewController, this._createPointerHandlerHelper()));
+		this._pointerHandler = this._register(
+			new PointerHandler(
+				this._context,
+				this._viewController,
+				this._createPointerHandlerHelper(),
+			),
+		);
 	}
 
 	private _instantiateEditContext(

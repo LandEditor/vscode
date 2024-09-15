@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./emptyTextEditorHint.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import {
-	type IContentActionHandler,
 	renderFormattedText,
+	type IContentActionHandler,
 } from "../../../../../base/browser/formattedTextRenderer.js";
 import { StandardMouseEvent } from "../../../../../base/browser/mouseEvent.js";
 import { status } from "../../../../../base/browser/ui/aria/aria.js";
@@ -20,8 +21,8 @@ import type {
 import { Event } from "../../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { OS } from "../../../../../base/common/platform.js";
@@ -36,8 +37,8 @@ import {
 	registerEditorContribution,
 } from "../../../../../editor/browser/editorExtensions.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../../../editor/common/config/editorOptions.js";
 import type { IEditorContribution } from "../../../../../editor/common/editorCommon.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../../../editor/common/languages/modesRegistry.js";
@@ -59,8 +60,8 @@ import { SEARCH_RESULT_LANGUAGE_ID } from "../../../../services/search/common/se
 import { AccessibilityVerbositySettingId } from "../../../accessibility/browser/accessibilityConfiguration.js";
 import {
 	ChatAgentLocation,
-	type IChatAgent,
 	IChatAgentService,
+	type IChatAgent,
 } from "../../../chat/common/chatAgents.js";
 import { IInlineChatSessionService } from "../../../inlineChat/browser/inlineChatSessionService.js";
 import { ApplyFileSnippetAction } from "../../../snippets/browser/commands/fileTemplateSnippets.js";
@@ -80,43 +81,66 @@ export class EmptyTextEditorHintContribution implements IEditorContribution {
 
 	constructor(
 		protected readonly editor: ICodeEditor,
-		@IEditorGroupsService private readonly editorGroupsService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly editorGroupsService: IEditorGroupsService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IHoverService protected readonly hoverService: IHoverService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IInlineChatSessionService private readonly inlineChatSessionService: IInlineChatSessionService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IInlineChatSessionService
+		private readonly inlineChatSessionService: IInlineChatSessionService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService protected readonly productService: IProductService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 	) {
 		this.toDispose = [];
 		this.toDispose.push(this.editor.onDidChangeModel(() => this.update()));
-		this.toDispose.push(this.editor.onDidChangeModelLanguage(() => this.update()));
-		this.toDispose.push(this.editor.onDidChangeModelContent(() => this.update()));
-		this.toDispose.push(this.chatAgentService.onDidChangeAgents(() => this.update()));
-		this.toDispose.push(this.editor.onDidChangeModelDecorations(() => this.update()));
-		this.toDispose.push(this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.readOnly)) {
-				this.update();
-			}
-		}));
-		this.toDispose.push(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(emptyTextEditorHintSetting)) {
-				this.update();
-			}
-		}));
-		this.toDispose.push(inlineChatSessionService.onWillStartSession(editor => {
-			if (this.editor === editor) {
-				this.textHintContentWidget?.dispose();
-			}
-		}));
-		this.toDispose.push(inlineChatSessionService.onDidEndSession(e => {
-			if (this.editor === e.editor) {
-				this.update();
-			}
-		}));
+		this.toDispose.push(
+			this.editor.onDidChangeModelLanguage(() => this.update()),
+		);
+		this.toDispose.push(
+			this.editor.onDidChangeModelContent(() => this.update()),
+		);
+		this.toDispose.push(
+			this.chatAgentService.onDidChangeAgents(() => this.update()),
+		);
+		this.toDispose.push(
+			this.editor.onDidChangeModelDecorations(() => this.update()),
+		);
+		this.toDispose.push(
+			this.editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (e.hasChanged(EditorOption.readOnly)) {
+						this.update();
+					}
+				},
+			),
+		);
+		this.toDispose.push(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(emptyTextEditorHintSetting)) {
+					this.update();
+				}
+			}),
+		);
+		this.toDispose.push(
+			inlineChatSessionService.onWillStartSession((editor) => {
+				if (this.editor === editor) {
+					this.textHintContentWidget?.dispose();
+				}
+			}),
+		);
+		this.toDispose.push(
+			inlineChatSessionService.onDidEndSession((e) => {
+				if (this.editor === e.editor) {
+					this.update();
+				}
+			}),
+		);
 	}
 
 	protected _getOptions(): IEmptyTextEditorHintOptions {

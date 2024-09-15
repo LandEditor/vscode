@@ -12,8 +12,8 @@ import { SyncDescriptor } from "../../../../platform/instantiation/common/descri
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
 	Extensions as ExtensionFeaturesExtensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,

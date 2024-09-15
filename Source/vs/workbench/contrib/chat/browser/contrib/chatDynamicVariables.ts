@@ -5,13 +5,13 @@
 
 import { coalesce } from "../../../../../base/common/arrays.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../../base/common/htmlContent.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { basename } from "../../../../../base/common/resources.js";
 import { URI } from "../../../../../base/common/uri.js";
-import { type IRange, Range } from "../../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../../editor/common/core/range.js";
 import type { IDecorationOptions } from "../../../../../editor/common/editorCommon.js";
 import type { Command } from "../../../../../editor/common/languages.js";
 import { ITextModelService } from "../../../../../editor/common/services/resolverService.js";
@@ -30,8 +30,8 @@ import type {
 } from "../../../../../platform/quickinput/common/quickAccess.js";
 import { IQuickInputService } from "../../../../../platform/quickinput/common/quickInput.js";
 import {
-	type IChatRequestVariableValue,
 	IChatVariablesService,
+	type IChatRequestVariableValue,
 	type IDynamicVariable,
 } from "../../common/chatVariables.js";
 import type { IChatWidget } from "../chat.js";
@@ -59,41 +59,65 @@ export class ChatDynamicVariableModel
 		@ILabelService private readonly labelService: ILabelService,
 	) {
 		super();
-		this._register(widget.inputEditor.onDidChangeModelContent(e => {
-			e.changes.forEach(c => {
-				// Don't mutate entries in _variables, since they will be returned from the getter
-				this._variables = coalesce(this._variables.map(ref => {
-					const intersection = Range.intersectRanges(ref.range, c.range);
-					if (intersection && !intersection.isEmpty()) {
-						// The reference text was changed, it's broken.
-						// But if the whole reference range was deleted (eg history navigation) then don't try to change the editor.
-						if (!Range.containsRange(c.range, ref.range)) {
-							const rangeToDelete = new Range(ref.range.startLineNumber, ref.range.startColumn, ref.range.endLineNumber, ref.range.endColumn - 1);
-							this.widget.inputEditor.executeEdits(this.id, [{
-								range: rangeToDelete,
-								text: '',
-							}]);
-						}
-						return null;
-					} else if (Range.compareRangesUsingStarts(ref.range, c.range) > 0) {
-						const delta = c.text.length - c.rangeLength;
-						return {
-							...ref,
-							range: {
-								startLineNumber: ref.range.startLineNumber,
-								startColumn: ref.range.startColumn + delta,
-								endLineNumber: ref.range.endLineNumber,
-								endColumn: ref.range.endColumn + delta
+		this._register(
+			widget.inputEditor.onDidChangeModelContent((e) => {
+				e.changes.forEach((c) => {
+					// Don't mutate entries in _variables, since they will be returned from the getter
+					this._variables = coalesce(
+						this._variables.map((ref) => {
+							const intersection = Range.intersectRanges(
+								ref.range,
+								c.range,
+							);
+							if (intersection && !intersection.isEmpty()) {
+								// The reference text was changed, it's broken.
+								// But if the whole reference range was deleted (eg history navigation) then don't try to change the editor.
+								if (!Range.containsRange(c.range, ref.range)) {
+									const rangeToDelete = new Range(
+										ref.range.startLineNumber,
+										ref.range.startColumn,
+										ref.range.endLineNumber,
+										ref.range.endColumn - 1,
+									);
+									this.widget.inputEditor.executeEdits(
+										this.id,
+										[
+											{
+												range: rangeToDelete,
+												text: "",
+											},
+										],
+									);
+								}
+								return null;
+							} else if (
+								Range.compareRangesUsingStarts(
+									ref.range,
+									c.range,
+								) > 0
+							) {
+								const delta = c.text.length - c.rangeLength;
+								return {
+									...ref,
+									range: {
+										startLineNumber:
+											ref.range.startLineNumber,
+										startColumn:
+											ref.range.startColumn + delta,
+										endLineNumber: ref.range.endLineNumber,
+										endColumn: ref.range.endColumn + delta,
+									},
+								};
 							}
-						};
-					}
 
-					return ref;
-				}));
-			});
+							return ref;
+						}),
+					);
+				});
 
-			this.updateDecorations();
-		}));
+				this.updateDecorations();
+			}),
+		);
 	}
 
 	getInputState(): any {

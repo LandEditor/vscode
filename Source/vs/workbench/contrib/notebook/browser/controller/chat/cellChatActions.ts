@@ -44,11 +44,11 @@ import {
 import { CellEditState } from "../../notebookBrowser.js";
 import {
 	CELL_TITLE_CELL_GROUP_ID,
-	type INotebookActionContext,
-	type INotebookCellActionContext,
+	getEditorFromArgsOrActivePane,
 	NotebookAction,
 	NotebookCellAction,
-	getEditorFromArgsOrActivePane,
+	type INotebookActionContext,
+	type INotebookCellActionContext,
 } from "../coreActions.js";
 import { insertNewCell } from "../insertCellActions.js";
 import {

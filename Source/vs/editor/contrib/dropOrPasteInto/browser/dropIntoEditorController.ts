@@ -5,13 +5,13 @@
 
 import { coalesce } from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	raceCancellation,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import {
-	VSDataTransfer,
 	matchesMimeType,
+	VSDataTransfer,
 } from "../../../../base/common/dataTransfer.js";
 import { HierarchicalKind } from "../../../../base/common/hierarchicalKind.js";
 import {
@@ -79,16 +79,43 @@ export class DropIntoEditorController
 	constructor(
 		editor: ICodeEditor,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ITreeViewsDnDService private readonly _treeViewsDragAndDropService: ITreeViewsDnDService
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ITreeViewsDnDService
+		private readonly _treeViewsDragAndDropService: ITreeViewsDnDService,
 	) {
 		super();
 
-		this._dropProgressManager = this._register(instantiationService.createInstance(InlineProgressManager, 'dropIntoEditor', editor));
-		this._postDropWidgetManager = this._register(instantiationService.createInstance(PostEditWidgetManager, 'dropIntoEditor', editor, dropWidgetVisibleCtx, { id: changeDropTypeCommandId, label: localize('postDropWidgetTitle', "Show drop options...") }));
+		this._dropProgressManager = this._register(
+			instantiationService.createInstance(
+				InlineProgressManager,
+				"dropIntoEditor",
+				editor,
+			),
+		);
+		this._postDropWidgetManager = this._register(
+			instantiationService.createInstance(
+				PostEditWidgetManager,
+				"dropIntoEditor",
+				editor,
+				dropWidgetVisibleCtx,
+				{
+					id: changeDropTypeCommandId,
+					label: localize(
+						"postDropWidgetTitle",
+						"Show drop options...",
+					),
+				},
+			),
+		);
 
-		this._register(editor.onDropIntoEditor(e => this.onDropIntoEditor(editor, e.position, e.event)));
+		this._register(
+			editor.onDropIntoEditor((e) =>
+				this.onDropIntoEditor(editor, e.position, e.event),
+			),
+		);
 	}
 
 	public clearWidgets() {

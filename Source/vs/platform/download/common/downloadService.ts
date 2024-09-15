@@ -8,8 +8,8 @@ import { Schemas } from "../../../base/common/network.js";
 import type { URI } from "../../../base/common/uri.js";
 import { IFileService } from "../../files/common/files.js";
 import {
-	IRequestService,
 	asTextOrError,
+	IRequestService,
 } from "../../request/common/request.js";
 import type { IDownloadService } from "./download.js";
 
@@ -18,8 +18,8 @@ export class DownloadService implements IDownloadService {
 
 	constructor(
 		@IRequestService private readonly requestService: IRequestService,
-		@IFileService private readonly fileService: IFileService
-	) { }
+		@IFileService private readonly fileService: IFileService,
+	) {}
 
 	async download(
 		resource: URI,

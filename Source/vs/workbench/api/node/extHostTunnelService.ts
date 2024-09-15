@@ -6,6 +6,7 @@
 import { exec } from "child_process";
 import * as fs from "fs";
 import type * as vscode from "vscode";
+
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { Emitter } from "../../../base/common/event.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
@@ -15,14 +16,14 @@ import * as resources from "../../../base/common/resources.js";
 import { URI } from "../../../base/common/uri.js";
 import * as pfs from "../../../base/node/pfs.js";
 import {
-	type ISocket,
 	SocketCloseEventType,
+	type ISocket,
 } from "../../../base/parts/ipc/common/ipc.net.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
+	connectManagedSocket,
 	ManagedSocket,
 	type RemoteSocketHalf,
-	connectManagedSocket,
 } from "../../../platform/remote/common/managedSocket.js";
 import { ManagedRemoteConnection } from "../../../platform/remote/common/remoteAuthorityResolver.js";
 import { ISignService } from "../../../platform/sign/common/sign.js";
@@ -32,8 +33,8 @@ import {
 } from "../../../platform/tunnel/common/tunnel.js";
 import { NodeRemoteTunnel } from "../../../platform/tunnel/node/tunnelService.js";
 import {
-	type CandidatePort,
 	parseAddress,
+	type CandidatePort,
 } from "../../services/remote/common/tunnelModel.js";
 import { IExtHostInitDataService } from "../common/extHostInitDataService.js";
 import { IExtHostRpcService } from "../common/extHostRpcService.js";
@@ -248,7 +249,8 @@ export class NodeExtHostTunnelService extends ExtHostTunnelService {
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostInitDataService private readonly initData: IExtHostInitDataService,
+		@IExtHostInitDataService
+		private readonly initData: IExtHostInitDataService,
 		@ILogService logService: ILogService,
 		@ISignService private readonly signService: ISignService,
 	) {

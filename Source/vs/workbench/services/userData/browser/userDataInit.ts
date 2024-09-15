@@ -6,8 +6,8 @@
 import { mark } from "../../../../base/common/performance.js";
 import { isWeb } from "../../../../base/common/platform.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -104,7 +104,8 @@ export class UserDataInitializationService
 
 class InitializeOtherResourcesContribution implements IWorkbenchContribution {
 	constructor(
-		@IUserDataInitializationService userDataInitializeService: IUserDataInitializationService,
+		@IUserDataInitializationService
+		userDataInitializeService: IUserDataInitializationService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IExtensionService extensionService: IExtensionService,
 	) {

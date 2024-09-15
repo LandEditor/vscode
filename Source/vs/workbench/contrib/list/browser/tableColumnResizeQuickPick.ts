@@ -19,7 +19,8 @@ interface IColumnResizeQuickPickItem extends IQuickPickItem {
 export class TableColumnResizeQuickPick extends Disposable {
 	constructor(
 		private readonly _table: Table<any>,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
 	}

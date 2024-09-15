@@ -8,8 +8,8 @@ import type { CodeWindow } from "../../../../../base/browser/window.js";
 import type { Event } from "../../../../../base/common/event.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../../platform/instantiation/common/instantiation.js";
 import type { NotebookEditorInput } from "../../common/notebookEditorInput.js";
 import type {

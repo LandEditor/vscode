@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./markersFileDecorations.js";
+
 import { Codicon } from "../../../../base/common/codicons.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { localize, localize2 } from "../../../../nls.js";
 import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
@@ -28,8 +29,8 @@ import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextke
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
 	IMarkerService,
@@ -46,16 +47,16 @@ import {
 	getVisbileViewContextKey,
 } from "../../../common/contextkeys.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import {
+	Extensions as ViewContainerExtensions,
+	ViewContainerLocation,
 	type IViewContainersRegistry,
 	type IViewsRegistry,
 	type ViewContainer,
-	Extensions as ViewContainerExtensions,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import {
 	IActivityService,
@@ -63,10 +64,10 @@ import {
 } from "../../../services/activity/common/activity.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
@@ -763,39 +764,58 @@ class MarkersStatusBarContributions
 	constructor(
 		@IMarkerService private readonly markerService: IMarkerService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
-		this.markersStatusItem = this._register(this.statusbarService.addEntry(this.getMarkersItem(), 'status.problems', StatusbarAlignment.LEFT, 50 /* Medium Priority */));
+		this.markersStatusItem = this._register(
+			this.statusbarService.addEntry(
+				this.getMarkersItem(),
+				"status.problems",
+				StatusbarAlignment.LEFT,
+				50 /* Medium Priority */,
+			),
+		);
 
 		const addStatusBarEntry = () => {
-			this.markersStatusItemOff = this.statusbarService.addEntry(this.getMarkersItemTurnedOff(), 'status.problemsVisibility', StatusbarAlignment.LEFT, 49);
+			this.markersStatusItemOff = this.statusbarService.addEntry(
+				this.getMarkersItemTurnedOff(),
+				"status.problemsVisibility",
+				StatusbarAlignment.LEFT,
+				49,
+			);
 		};
 
 		// Add the status bar entry if the problems is not visible
-		let config = this.configurationService.getValue('problems.visibility');
+		let config = this.configurationService.getValue("problems.visibility");
 		if (!config) {
 			addStatusBarEntry();
 		}
 
-		this._register(this.markerService.onMarkerChanged(() => {
-			this.markersStatusItem.update(this.getMarkersItem());
-		}));
-
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('problems.visibility')) {
+		this._register(
+			this.markerService.onMarkerChanged(() => {
 				this.markersStatusItem.update(this.getMarkersItem());
+			}),
+		);
 
-				// Update based on what setting was changed to.
-				config = this.configurationService.getValue('problems.visibility');
-				if (!config && !this.markersStatusItemOff) {
-					addStatusBarEntry();
-				} else if (config && this.markersStatusItemOff) {
-					this.markersStatusItemOff.dispose();
-					this.markersStatusItemOff = undefined;
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("problems.visibility")) {
+					this.markersStatusItem.update(this.getMarkersItem());
+
+					// Update based on what setting was changed to.
+					config = this.configurationService.getValue(
+						"problems.visibility",
+					);
+					if (!config && !this.markersStatusItemOff) {
+						addStatusBarEntry();
+					} else if (config && this.markersStatusItemOff) {
+						this.markersStatusItemOff.dispose();
+						this.markersStatusItemOff = undefined;
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	private getMarkersItem(): IStatusbarEntry {
@@ -904,10 +924,12 @@ class ActivityUpdater extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IActivityService private readonly activityService: IActivityService,
-		@IMarkerService private readonly markerService: IMarkerService
+		@IMarkerService private readonly markerService: IMarkerService,
 	) {
 		super();
-		this._register(this.markerService.onMarkerChanged(() => this.updateBadge()));
+		this._register(
+			this.markerService.onMarkerChanged(() => this.updateBadge()),
+		);
 		this.updateBadge();
 	}
 

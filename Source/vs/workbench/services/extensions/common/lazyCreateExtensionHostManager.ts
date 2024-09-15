@@ -25,8 +25,8 @@ import type { IResolveAuthorityResult } from "./extensionHostProxy.js";
 import type { ExtensionRunningLocation } from "./extensionRunningLocation.js";
 import {
 	ActivationKind,
-	type ExtensionActivationReason,
 	ExtensionHostExtensions,
+	type ExtensionActivationReason,
 	type ExtensionHostStartup,
 	type IExtensionHost,
 	type IInternalExtensionService,
@@ -73,8 +73,9 @@ export class LazyCreateExtensionHostManager
 	constructor(
 		extensionHost: IExtensionHost,
 		private readonly _internalExtensionService: IInternalExtensionService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ILogService private readonly _logService: ILogService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 		this._extensionHost = extensionHost;

@@ -10,20 +10,20 @@ import {
 	type DisposableStore,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	autorunWithStore,
 	derived,
 	observableFromEvent,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { basename } from "../../../../base/common/resources.js";
 import type { Command } from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { observableConfigValue } from "../../../../platform/observable/common/platformObservableUtils.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
@@ -35,20 +35,20 @@ import {
 	NumberBadge,
 } from "../../../services/activity/common/activity.js";
 import {
-	type IEditorGroupContextKeyProvider,
 	IEditorGroupsService,
+	type IEditorGroupContextKeyProvider,
 } from "../../../services/editor/common/editorGroupsService.js";
 import {
-	type IStatusbarEntry,
 	IStatusbarService,
 	StatusbarAlignment as MainThreadStatusBarAlignment,
+	type IStatusbarEntry,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { ITitleService } from "../../../services/title/browser/titleService.js";
 import {
-	type ISCMRepository,
 	ISCMService,
 	ISCMViewService,
 	VIEW_PANE_ID,
+	type ISCMRepository,
 } from "../common/scm.js";
 import { getRepositoryResourceCount } from "./util.js";
 
@@ -140,40 +140,72 @@ export class SCMActiveRepositoryController
 
 	constructor(
 		@IActivityService private readonly activityService: IActivityService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ISCMService private readonly scmService: ISCMService,
 		@ISCMViewService private readonly scmViewService: ISCMViewService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
-		@ITitleService private readonly titleService: ITitleService
+		@ITitleService private readonly titleService: ITitleService,
 	) {
 		super();
 
-		this._activeRepositoryNameContextKey = ActiveRepositoryContextKeys.ActiveRepositoryName.bindTo(this.contextKeyService);
-		this._activeRepositoryBranchNameContextKey = ActiveRepositoryContextKeys.ActiveRepositoryBranchName.bindTo(this.contextKeyService);
+		this._activeRepositoryNameContextKey =
+			ActiveRepositoryContextKeys.ActiveRepositoryName.bindTo(
+				this.contextKeyService,
+			);
+		this._activeRepositoryBranchNameContextKey =
+			ActiveRepositoryContextKeys.ActiveRepositoryBranchName.bindTo(
+				this.contextKeyService,
+			);
 
 		this.titleService.registerVariables([
-			{ name: 'activeRepositoryName', contextKey: ActiveRepositoryContextKeys.ActiveRepositoryName.key },
-			{ name: 'activeRepositoryBranchName', contextKey: ActiveRepositoryContextKeys.ActiveRepositoryBranchName.key, }
+			{
+				name: "activeRepositoryName",
+				contextKey:
+					ActiveRepositoryContextKeys.ActiveRepositoryName.key,
+			},
+			{
+				name: "activeRepositoryBranchName",
+				contextKey:
+					ActiveRepositoryContextKeys.ActiveRepositoryBranchName.key,
+			},
 		]);
 
-		this._register(autorunWithStore((reader, store) => {
-			this._updateActivityCountBadge(this._countBadge.read(reader), store);
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				this._updateActivityCountBadge(
+					this._countBadge.read(reader),
+					store,
+				);
+			}),
+		);
 
-		this._register(autorunWithStore((reader, store) => {
-			const repository = this.scmViewService.activeRepository.read(reader);
-			const commands = repository?.provider.statusBarCommands.read(reader);
+		this._register(
+			autorunWithStore((reader, store) => {
+				const repository =
+					this.scmViewService.activeRepository.read(reader);
+				const commands =
+					repository?.provider.statusBarCommands.read(reader);
 
-			this._updateStatusBar(repository, commands ?? [], store);
-		}));
+				this._updateStatusBar(repository, commands ?? [], store);
+			}),
+		);
 
-		this._register(autorun(reader => {
-			const repository = this.scmViewService.activeRepository.read(reader);
-			const historyItemRefName = this._activeRepositoryHistoryItemRefName.read(reader);
+		this._register(
+			autorun((reader) => {
+				const repository =
+					this.scmViewService.activeRepository.read(reader);
+				const historyItemRefName =
+					this._activeRepositoryHistoryItemRefName.read(reader);
 
-			this._updateActiveRepositoryContextKeys(repository?.provider.name, historyItemRefName);
-		}));
+				this._updateActiveRepositoryContextKeys(
+					repository?.provider.name,
+					historyItemRefName,
+				);
+			}),
+		);
 	}
 
 	private _getRepositoryResourceCount(
@@ -302,36 +334,73 @@ export class SCMActiveResourceContextKeyController
 	constructor(
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
 		@ISCMService private readonly scmService: ISCMService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 
-		const activeResourceHasChangesContextKey = new RawContextKey<boolean>('scmActiveResourceHasChanges', false, localize('scmActiveResourceHasChanges', "Whether the active resource has changes"));
-		const activeResourceRepositoryContextKey = new RawContextKey<string | undefined>('scmActiveResourceRepository', undefined, localize('scmActiveResourceRepository', "The active resource's repository"));
+		const activeResourceHasChangesContextKey = new RawContextKey<boolean>(
+			"scmActiveResourceHasChanges",
+			false,
+			localize(
+				"scmActiveResourceHasChanges",
+				"Whether the active resource has changes",
+			),
+		);
+		const activeResourceRepositoryContextKey = new RawContextKey<
+			string | undefined
+		>(
+			"scmActiveResourceRepository",
+			undefined,
+			localize(
+				"scmActiveResourceRepository",
+				"The active resource's repository",
+			),
+		);
 
-		this._store.add(autorunWithStore((reader, store) => {
-			for (const repository of this._repositories.read(reader)) {
-				store.add(Event.runAndSubscribe(repository.provider.onDidChangeResources, () => {
-					this._onDidRepositoryChange.fire();
-				}));
-			}
-		}));
+		this._store.add(
+			autorunWithStore((reader, store) => {
+				for (const repository of this._repositories.read(reader)) {
+					store.add(
+						Event.runAndSubscribe(
+							repository.provider.onDidChangeResources,
+							() => {
+								this._onDidRepositoryChange.fire();
+							},
+						),
+					);
+				}
+			}),
+		);
 
 		// Create context key providers which will update the context keys based on each groups active editor
-		const hasChangesContextKeyProvider: IEditorGroupContextKeyProvider<boolean> = {
-			contextKey: activeResourceHasChangesContextKey,
-			getGroupContextKeyValue: (group) => this._getEditorHasChanges(group.activeEditor),
-			onDidChange: this._onDidRepositoryChange.event
-		};
+		const hasChangesContextKeyProvider: IEditorGroupContextKeyProvider<boolean> =
+			{
+				contextKey: activeResourceHasChangesContextKey,
+				getGroupContextKeyValue: (group) =>
+					this._getEditorHasChanges(group.activeEditor),
+				onDidChange: this._onDidRepositoryChange.event,
+			};
 
-		const repositoryContextKeyProvider: IEditorGroupContextKeyProvider<string | undefined> = {
+		const repositoryContextKeyProvider: IEditorGroupContextKeyProvider<
+			string | undefined
+		> = {
 			contextKey: activeResourceRepositoryContextKey,
-			getGroupContextKeyValue: (group) => this._getEditorRepositoryId(group.activeEditor),
-			onDidChange: this._onDidRepositoryChange.event
+			getGroupContextKeyValue: (group) =>
+				this._getEditorRepositoryId(group.activeEditor),
+			onDidChange: this._onDidRepositoryChange.event,
 		};
 
-		this._store.add(editorGroupsService.registerContextKeyProvider(hasChangesContextKeyProvider));
-		this._store.add(editorGroupsService.registerContextKeyProvider(repositoryContextKeyProvider));
+		this._store.add(
+			editorGroupsService.registerContextKeyProvider(
+				hasChangesContextKeyProvider,
+			),
+		);
+		this._store.add(
+			editorGroupsService.registerContextKeyProvider(
+				repositoryContextKeyProvider,
+			),
+		);
 	}
 
 	private _getEditorHasChanges(activeEditor: EditorInput | null): boolean {

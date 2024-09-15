@@ -8,15 +8,15 @@ import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import { MutableDisposable } from "../../../base/common/lifecycle.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
-	type ILanguageSelection,
 	ILanguageService,
+	type ILanguageSelection,
 } from "../../../editor/common/languages/language.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../editor/common/languages/modesRegistry.js";
 import {
+	ModelConstants,
 	type ITextBufferFactory,
 	type ITextModel,
 	type ITextSnapshot,
-	ModelConstants,
 } from "../../../editor/common/model.js";
 import { IModelService } from "../../../editor/common/services/model.js";
 import type {
@@ -57,9 +57,11 @@ export class BaseTextEditorModel
 	constructor(
 		@IModelService protected modelService: IModelService,
 		@ILanguageService protected languageService: ILanguageService,
-		@ILanguageDetectionService private readonly languageDetectionService: ILanguageDetectionService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		textEditorModelHandle?: URI
+		@ILanguageDetectionService
+		private readonly languageDetectionService: ILanguageDetectionService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		textEditorModelHandle?: URI,
 	) {
 		super();
 

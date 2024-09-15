@@ -5,8 +5,8 @@
 
 import { DisposableStore } from "../../../../../base/common/lifecycle.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
 	ChatAgentLocation,

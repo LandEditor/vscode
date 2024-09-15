@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IRemoteConsoleLog,
 	parse,
+	type IRemoteConsoleLog,
 } from "../../../../base/common/console.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
 

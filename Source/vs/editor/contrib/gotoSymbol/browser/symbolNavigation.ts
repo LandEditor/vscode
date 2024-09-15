@@ -6,17 +6,17 @@
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
-	DisposableStore,
-	type IDisposable,
 	combinedDisposable,
+	DisposableStore,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isEqual } from "../../../../base/common/resources.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { TextEditorSelectionRevealType } from "../../../../platform/editor/common/editor.js";
 import {
@@ -24,13 +24,13 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
@@ -75,8 +75,10 @@ class SymbolNavigationService implements ISymbolNavigationService {
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		this._ctxHasSymbols = ctxHasSymbols.bindTo(contextKeyService);
 	}
@@ -244,8 +246,12 @@ class EditorState {
 		this._onDidChange.event;
 
 	constructor(@ICodeEditorService editorService: ICodeEditorService) {
-		this._disposables.add(editorService.onCodeEditorRemove(this._onDidRemoveEditor, this));
-		this._disposables.add(editorService.onCodeEditorAdd(this._onDidAddEditor, this));
+		this._disposables.add(
+			editorService.onCodeEditorRemove(this._onDidRemoveEditor, this),
+		);
+		this._disposables.add(
+			editorService.onCodeEditorAdd(this._onDidAddEditor, this),
+		);
 		editorService.listCodeEditors().forEach(this._onDidAddEditor, this);
 	}
 

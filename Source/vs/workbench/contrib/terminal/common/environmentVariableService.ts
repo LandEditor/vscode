@@ -57,20 +57,32 @@ export class EnvironmentVariableService
 	}
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IStorageService private readonly _storageService: IStorageService
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
 
-		this._storageService.remove(TerminalStorageKeys.DeprecatedEnvironmentVariableCollections, StorageScope.WORKSPACE);
-		const serializedPersistedCollections = this._storageService.get(TerminalStorageKeys.EnvironmentVariableCollections, StorageScope.WORKSPACE);
+		this._storageService.remove(
+			TerminalStorageKeys.DeprecatedEnvironmentVariableCollections,
+			StorageScope.WORKSPACE,
+		);
+		const serializedPersistedCollections = this._storageService.get(
+			TerminalStorageKeys.EnvironmentVariableCollections,
+			StorageScope.WORKSPACE,
+		);
 		if (serializedPersistedCollections) {
-			const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] = JSON.parse(serializedPersistedCollections);
-			collectionsJson.forEach(c => this.collections.set(c.extensionIdentifier, {
-				persistent: true,
-				map: deserializeEnvironmentVariableCollection(c.collection),
-				descriptionMap: deserializeEnvironmentDescriptionMap(c.description)
-			}));
+			const collectionsJson: ISerializableExtensionEnvironmentVariableCollection[] =
+				JSON.parse(serializedPersistedCollections);
+			collectionsJson.forEach((c) =>
+				this.collections.set(c.extensionIdentifier, {
+					persistent: true,
+					map: deserializeEnvironmentVariableCollection(c.collection),
+					descriptionMap: deserializeEnvironmentDescriptionMap(
+						c.description,
+					),
+				}),
+			);
 
 			// Asynchronously invalidate collections where extensions have been uninstalled, this is
 			// async to avoid making all functions on the service synchronous and because extensions
@@ -80,7 +92,11 @@ export class EnvironmentVariableService
 		this.mergedCollection = this._resolveMergedCollection();
 
 		// Listen for uninstalled/disabled extensions
-		this._register(this._extensionService.onDidChangeExtensions(() => this._invalidateExtensionCollections()));
+		this._register(
+			this._extensionService.onDidChangeExtensions(() =>
+				this._invalidateExtensionCollections(),
+			),
+		);
 	}
 
 	set(

@@ -5,6 +5,7 @@
 
 import * as fs from "fs";
 import electron from "electron";
+
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { parse } from "../../../base/common/json.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
@@ -28,22 +29,22 @@ import { IUserDataProfilesMainService } from "../../userDataProfile/electron-mai
 import type { ICodeWindow } from "../../window/electron-main/window.js";
 import { findWindowOnWorkspaceOrFolder } from "../../windows/electron-main/windowsFinder.js";
 import {
-	type IResolvedWorkspace,
-	type IWorkspaceIdentifier,
-	UNTITLED_WORKSPACE_NAME,
 	hasWorkspaceFileExtension,
 	isUntitledWorkspace,
 	isWorkspaceIdentifier,
+	UNTITLED_WORKSPACE_NAME,
+	type IResolvedWorkspace,
+	type IWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import {
+	getStoredWorkspaceFolder,
+	isStoredWorkspaceFolder,
+	toWorkspaceFolders,
 	type IEnterWorkspaceResult,
 	type IStoredWorkspace,
 	type IStoredWorkspaceFolder,
 	type IUntitledWorkspaceInfo,
 	type IWorkspaceFolderCreationData,
-	getStoredWorkspaceFolder,
-	isStoredWorkspaceFolder,
-	toWorkspaceFolders,
 } from "../common/workspaces.js";
 import { getWorkspaceIdentifier } from "../node/workspaces.js";
 
@@ -108,11 +109,15 @@ export class WorkspacesManagementMainService
 	private untitledWorkspaces: IUntitledWorkspaceInfo[] = [];
 
 	constructor(
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@ILogService private readonly logService: ILogService,
-		@IUserDataProfilesMainService private readonly userDataProfilesMainService: IUserDataProfilesMainService,
-		@IBackupMainService private readonly backupMainService: IBackupMainService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesMainService: IUserDataProfilesMainService,
+		@IBackupMainService
+		private readonly backupMainService: IBackupMainService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
 	) {
 		super();
 	}

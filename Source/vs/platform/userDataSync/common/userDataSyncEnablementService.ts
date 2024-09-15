@@ -8,18 +8,18 @@ import { Disposable, DisposableStore } from "../../../base/common/lifecycle.js";
 import { isWeb } from "../../../base/common/platform.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
-	type IApplicationStorageValueChangeEvent,
 	IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IApplicationStorageValueChangeEvent,
 } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
 	ALL_SYNC_RESOURCES,
-	type IUserDataSyncEnablementService,
-	IUserDataSyncStoreManagementService,
-	type SyncResource,
 	getEnablementKey,
+	IUserDataSyncStoreManagementService,
+	type IUserDataSyncEnablementService,
+	type SyncResource,
 } from "./userDataSync.js";
 
 type SyncEnablementClassification = {
@@ -53,11 +53,19 @@ export class UserDataSyncEnablementService
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentService protected readonly environmentService: IEnvironmentService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IEnvironmentService
+		protected readonly environmentService: IEnvironmentService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 	) {
 		super();
-		this._register(storageService.onDidChangeValue(StorageScope.APPLICATION, undefined, this._register(new DisposableStore()))(e => this.onDidStorageChange(e)));
+		this._register(
+			storageService.onDidChangeValue(
+				StorageScope.APPLICATION,
+				undefined,
+				this._register(new DisposableStore()),
+			)((e) => this.onDidStorageChange(e)),
+		);
 	}
 
 	isEnabled(): boolean {

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../../base/browser/dom.js";
-import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { CountBadge } from "../../../../base/browser/ui/countBadge/countBadge.js";
 import { HighlightedLabel } from "../../../../base/browser/ui/highlightedlabel/highlightedLabel.js";
 import type { IManagedHover } from "../../../../base/browser/ui/hover/hover.js";
@@ -13,17 +13,17 @@ import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hover
 import type { IListVirtualDelegate } from "../../../../base/browser/ui/list/list.js";
 import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
 import {
+	TreeVisibility,
 	type ITreeFilter,
 	type ITreeNode,
 	type ITreeRenderer,
 	type TreeFilterResult,
-	TreeVisibility,
 } from "../../../../base/browser/ui/tree/tree.js";
 import { Action, type IAction } from "../../../../base/common/actions.js";
 import {
-	type CancelablePromise,
-	Delayer,
 	createCancelablePromise,
+	Delayer,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
@@ -31,9 +31,9 @@ import type { IMatch } from "../../../../base/common/filters.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as paths from "../../../../base/common/path.js";
 import { basename, isEqual } from "../../../../base/common/resources.js";
@@ -47,28 +47,28 @@ import type { ITextModel } from "../../../../editor/common/model.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	ApplyCodeActionReason,
 	applyCodeAction,
+	ApplyCodeActionReason,
 	getCodeActions,
 } from "../../../../editor/contrib/codeAction/browser/codeAction.js";
 import {
 	CodeActionKind,
-	type CodeActionSet,
 	CodeActionTriggerSource,
+	type CodeActionSet,
 } from "../../../../editor/contrib/codeAction/common/types.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
-import { unsupportedSchemas } from "../../../../platform/markers/common/markerService.js";
 import {
-	type IMarker,
 	MarkerSeverity,
+	type IMarker,
 } from "../../../../platform/markers/common/markers.js";
+import { unsupportedSchemas } from "../../../../platform/markers/common/markerService.js";
 import { Link } from "../../../../platform/opener/browser/link.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { Progress } from "../../../../platform/progress/common/progress.js";
@@ -87,10 +87,10 @@ import { MarkersContextKeys, MarkersViewMode } from "../common/markers.js";
 import { FilterOptions } from "./markersFilterOptions.js";
 import {
 	Marker,
-	type MarkerElement,
 	MarkerTableItem,
 	RelatedInformation,
 	ResourceMarkers,
+	type MarkerElement,
 } from "./markersModel.js";
 import {
 	QuickFixAction,
@@ -116,7 +116,7 @@ interface IRelatedInformationTemplateData {
 export class MarkersWidgetAccessibilityProvider
 	implements IListAccessibilityProvider<MarkerElement | MarkerTableItem>
 {
-	constructor(@ILabelService private readonly labelService: ILabelService) { }
+	constructor(@ILabelService private readonly labelService: ILabelService) {}
 
 	getWidgetAriaLabel(): string {
 		return localize("problemsView", "Problems View");
@@ -333,9 +333,10 @@ export class MarkerRenderer
 	constructor(
 		private readonly markersViewState: MarkersViewModel,
 		@IHoverService protected hoverService: IHoverService,
-		@IInstantiationService protected instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
 		@IOpenerService protected openerService: IOpenerService,
-	) { }
+	) {}
 
 	templateId = TemplateId.Marker;
 
@@ -653,9 +654,7 @@ export class RelatedInformationRenderer
 			IRelatedInformationTemplateData
 		>
 {
-	constructor(
-		@ILabelService private readonly labelService: ILabelService
-	) { }
+	constructor(@ILabelService private readonly labelService: ILabelService) {}
 
 	templateId = TemplateId.RelatedInformation;
 
@@ -921,19 +920,23 @@ export class MarkerViewModel extends Disposable {
 	constructor(
 		private readonly marker: Marker,
 		@IModelService private modelService: IModelService,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService
+		private instantiationService: IInstantiationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
-		this._register(toDisposable(() => {
-			if (this.modelPromise) {
-				this.modelPromise.cancel();
-			}
-			if (this.codeActionsPromise) {
-				this.codeActionsPromise.cancel();
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				if (this.modelPromise) {
+					this.modelPromise.cancel();
+				}
+				if (this.codeActionsPromise) {
+					this.codeActionsPromise.cancel();
+				}
+			}),
+		);
 	}
 
 	private _multiline = true;
@@ -1125,14 +1128,19 @@ export class MarkersViewModel extends Disposable {
 	constructor(
 		multiline = true,
 		viewMode: MarkersViewMode = MarkersViewMode.Tree,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 		this._multiline = multiline;
 		this._viewMode = viewMode;
 
-		this.viewModeContextKey = MarkersContextKeys.MarkersViewModeContextKey.bindTo(this.contextKeyService);
+		this.viewModeContextKey =
+			MarkersContextKeys.MarkersViewModeContextKey.bindTo(
+				this.contextKeyService,
+			);
 		this.viewModeContextKey.set(viewMode);
 	}
 

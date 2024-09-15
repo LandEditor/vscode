@@ -7,10 +7,12 @@ import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { isIOS, isWindows } from "../../../../base/common/platform.js";
 import { URI } from "../../../../base/common/uri.js";
+
 import "./media/terminal.css";
 import "./media/terminalVoice.css";
 import "./media/widgets.css";
 import "./media/xterm.css";
+
 import * as nls from "../../../../nls.js";
 import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "../../../../platform/accessibility/common/accessibility.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
@@ -29,13 +31,13 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IKeybindings,
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
+	type IKeybindings,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IQuickAccessRegistry,
 	Extensions as QuickAccessExtensions,
+	type IQuickAccessRegistry,
 } from "../../../../platform/quickinput/common/quickAccess.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -52,19 +54,22 @@ import {
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import { getQuickNavigateHandler } from "../../../browser/quickaccess.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
 	type IEditorFactoryRegistry,
 } from "../../../common/editor.js";
 import {
-	type IViewContainersRegistry,
-	type IViewsRegistry,
 	Extensions as ViewContainerExtensions,
 	ViewContainerLocation,
+	type IViewContainersRegistry,
+	type IViewsRegistry,
 } from "../../../common/views.js";
+// HACK: This file should not depend on terminalContrib
+// eslint-disable-next-line local/code-import-patterns
+import { TerminalSuggestSettingId } from "../../terminalContrib/suggest/common/terminalSuggestConfiguration.js";
 import {
 	ITerminalProfileService,
 	TERMINAL_VIEW_ID,
@@ -73,8 +78,8 @@ import {
 import { registerColors } from "../common/terminalColorRegistry.js";
 import { registerTerminalConfiguration } from "../common/terminalConfiguration.js";
 import {
-	TerminalContextKeyStrings,
 	TerminalContextKeys,
+	TerminalContextKeyStrings,
 } from "../common/terminalContextKey.js";
 import { terminalStrings } from "../common/terminalStrings.js";
 import { RemoteTerminalBackendContribution } from "./remoteTerminalBackend.js";
@@ -107,10 +112,6 @@ import { TerminalQuickAccessProvider } from "./terminalQuickAccess.js";
 import { TerminalService } from "./terminalService.js";
 import { TerminalViewPane } from "./terminalView.js";
 import { TerminalWslRecommendationContribution } from "./terminalWslRecommendationContribution.js";
-
-// HACK: This file should not depend on terminalContrib
-// eslint-disable-next-line local/code-import-patterns
-import { TerminalSuggestSettingId } from "../../terminalContrib/suggest/common/terminalSuggestConfiguration.js";
 
 // Register services
 registerSingleton(

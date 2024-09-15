@@ -12,9 +12,9 @@ import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextke
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
+	Extensions as ViewContainerExtensions,
 	type IViewContentDescriptor,
 	type IViewsRegistry,
-	Extensions as ViewContainerExtensions,
 } from "../../../common/views.js";
 import { isProposedApiEnabled } from "../../../services/extensions/common/extensions.js";
 import type {
@@ -23,8 +23,8 @@ import type {
 } from "../../../services/extensions/common/extensionsRegistry.js";
 import {
 	ViewIdentifierMap,
-	type ViewWelcome,
 	type ViewsWelcomeExtensionPoint,
+	type ViewWelcome,
 } from "./viewsWelcomeExtensionPoint.js";
 
 const viewsRegistry = Registry.as<IViewsRegistry>(

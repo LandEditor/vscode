@@ -22,8 +22,8 @@ import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Utils } from "../../../../platform/profiling/common/profiling.js";
 import {
-	IRequestService,
 	asText,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
 import type { IExtensionHostProfile } from "../../../services/extensions/common/extensions.js";
@@ -84,9 +84,14 @@ export class SlowExtensionAction extends Action {
 	constructor(
 		readonly extension: IExtensionDescription,
 		readonly profile: IExtensionHostProfile,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
-		super('report.slow', localize('cmd.reportOrShow', "Performance Issue"), 'extension-action report-issue');
+		super(
+			"report.slow",
+			localize("cmd.reportOrShow", "Performance Issue"),
+			"extension-action report-issue",
+		);
 		this.enabled = Boolean(RepoInfo.fromExtension(extension));
 	}
 
@@ -154,11 +159,13 @@ class ReportExtensionSlowAction extends Action {
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IProductService private readonly _productService: IProductService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@IFileService private readonly _fileService: IFileService,
 	) {
-		super('report.slow', localize('cmd.report', "Report Issue"));
+		super("report.slow", localize("cmd.report", "Report Issue"));
 	}
 
 	override async run(): Promise<void> {
@@ -208,11 +215,11 @@ class ShowExtensionSlowAction extends Action {
 		readonly profile: IExtensionHostProfile,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@INativeWorkbenchEnvironmentService private readonly _environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		private readonly _environmentService: INativeWorkbenchEnvironmentService,
 		@IFileService private readonly _fileService: IFileService,
-
 	) {
-		super('show.slow', localize('cmd.show', "Show Issues"));
+		super("show.slow", localize("cmd.show", "Show Issues"));
 	}
 
 	override async run(): Promise<void> {

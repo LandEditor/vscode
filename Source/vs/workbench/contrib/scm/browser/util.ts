@@ -4,21 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { reset } from "../../../../base/browser/dom.js";
-import {
-	ActionViewItem,
-	type IBaseActionViewItemOptions,
-} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type {
 	ActionBar,
 	IActionViewItemProvider,
 } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import {
+	ActionViewItem,
+	type IBaseActionViewItemOptions,
+} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { renderLabelWithIcons } from "../../../../base/browser/ui/iconLabel/iconLabels.js";
 import { Action, type IAction } from "../../../../base/common/actions.js";
 import { equals } from "../../../../base/common/arrays.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IResourceNode,
 	ResourceTree,
+	type IResourceNode,
 } from "../../../../base/common/resourceTree.js";
 import type { Command } from "../../../../editor/common/languages.js";
 import {
@@ -27,8 +27,8 @@ import {
 	createAndFillInContextMenuActions,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	MenuItemAction,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import type { ICommandService } from "../../../../platform/commands/common/commands.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";

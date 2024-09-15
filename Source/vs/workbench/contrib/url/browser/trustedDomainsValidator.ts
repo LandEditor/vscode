@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schemas, matchesScheme } from "../../../../base/common/network.js";
+import { matchesScheme, Schemas } from "../../../../base/common/network.js";
 import Severity from "../../../../base/common/severity.js";
 import { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
@@ -23,13 +23,13 @@ import { IWorkspaceTrustManagementService } from "../../../../platform/workspace
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	ITrustedDomainService,
-	isURLDomainTrusted,
-} from "./trustedDomainService.js";
-import {
 	configureOpenerTrustedDomainsHandler,
 	readStaticTrustedDomains,
 } from "./trustedDomains.js";
+import {
+	isURLDomainTrusted,
+	ITrustedDomainService,
+} from "./trustedDomainService.js";
 
 export class OpenerValidatorContributions implements IWorkbenchContribution {
 	constructor(
@@ -37,16 +37,25 @@ export class OpenerValidatorContributions implements IWorkbenchContribution {
 		@IStorageService private readonly _storageService: IStorageService,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IProductService private readonly _productService: IProductService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
-		@ITrustedDomainService private readonly _trustedDomainService: ITrustedDomainService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
+		@ITrustedDomainService
+		private readonly _trustedDomainService: ITrustedDomainService,
 	) {
-		this._openerService.registerValidator({ shouldOpen: (uri, options) => this.validateLink(uri, options) });
+		this._openerService.registerValidator({
+			shouldOpen: (uri, options) => this.validateLink(uri, options),
+		});
 	}
 
 	async validateLink(

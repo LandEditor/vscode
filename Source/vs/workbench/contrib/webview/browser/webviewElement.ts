@@ -5,27 +5,27 @@
 
 import { isFirefox } from "../../../../base/browser/browser.js";
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	getWindowById,
 } from "../../../../base/browser/dom.js";
 import { parentOriginHash } from "../../../../base/browser/iframe.js";
 import type { IMouseWheelEvent } from "../../../../base/browser/mouseEvent.js";
 import type { CodeWindow } from "../../../../base/browser/window.js";
 import {
-	ThrottledDelayer,
 	promiseWithResolvers,
+	ThrottledDelayer,
 } from "../../../../base/common/async.js";
 import {
-	type VSBufferReadableStream,
 	streamToBuffer,
+	type VSBufferReadableStream,
 } from "../../../../base/common/buffer.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { COI } from "../../../../base/common/network.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -52,22 +52,22 @@ import {
 	webviewRootResourceAuthority,
 } from "../common/webview.js";
 import {
-	WebviewResourceResponse,
 	loadLocalResource,
+	WebviewResourceResponse,
 } from "./resourceLoading.js";
 import type { WebviewThemeDataProvider } from "./themeing.js";
 import {
+	areWebviewContentOptionsEqual,
 	type IWebview,
 	type WebviewContentOptions,
 	type WebviewExtensionDescription,
 	type WebviewInitInfo,
 	type WebviewMessageReceivedEvent,
 	type WebviewOptions,
-	areWebviewContentOptionsEqual,
 } from "./webview.js";
 import {
-	type WebviewFindDelegate,
 	WebviewFindWidget,
+	type WebviewFindDelegate,
 } from "./webviewFindWidget.js";
 import type {
 	FromWebviewMessage,
@@ -213,14 +213,18 @@ export class WebviewElement
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@INotificationService notificationService: INotificationService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly _fileService: IFileService,
 		@ILogService private readonly _logService: ILogService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ITunnelService private readonly _tunnelService: ITunnelService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 	) {
 		super();
 
@@ -231,150 +235,230 @@ export class WebviewElement
 		this.extension = initInfo.extension;
 
 		this._content = {
-			html: '',
+			html: "",
 			title: initInfo.title,
 			options: initInfo.contentOptions,
-			state: undefined
+			state: undefined,
 		};
 
-		this._portMappingManager = this._register(new WebviewPortMappingManager(
-			() => this.extension?.location,
-			() => this._content.options.portMapping || [],
-			this._tunnelService
-		));
+		this._portMappingManager = this._register(
+			new WebviewPortMappingManager(
+				() => this.extension?.location,
+				() => this._content.options.portMapping || [],
+				this._tunnelService,
+			),
+		);
 
-		this._element = this._createElement(initInfo.options, initInfo.contentOptions);
+		this._element = this._createElement(
+			initInfo.options,
+			initInfo.contentOptions,
+		);
 
-		this._register(this.on('no-csp-found', () => {
-			this.handleNoCspFound();
-		}));
+		this._register(
+			this.on("no-csp-found", () => {
+				this.handleNoCspFound();
+			}),
+		);
 
-		this._register(this.on('did-click-link', ({ uri }) => {
-			this._onDidClickLink.fire(uri);
-		}));
+		this._register(
+			this.on("did-click-link", ({ uri }) => {
+				this._onDidClickLink.fire(uri);
+			}),
+		);
 
-		this._register(this.on('onmessage', ({ message, transfer }) => {
-			this._onMessage.fire({ message, transfer });
-		}));
+		this._register(
+			this.on("onmessage", ({ message, transfer }) => {
+				this._onMessage.fire({ message, transfer });
+			}),
+		);
 
-		this._register(this.on('did-scroll', ({ scrollYPercentage }) => {
-			this._onDidScroll.fire({ scrollYPercentage });
-		}));
+		this._register(
+			this.on("did-scroll", ({ scrollYPercentage }) => {
+				this._onDidScroll.fire({ scrollYPercentage });
+			}),
+		);
 
-		this._register(this.on('do-reload', () => {
-			this.reload();
-		}));
+		this._register(
+			this.on("do-reload", () => {
+				this.reload();
+			}),
+		);
 
-		this._register(this.on('do-update-state', (state) => {
-			this.state = state;
-			this._onDidUpdateState.fire(state);
-		}));
+		this._register(
+			this.on("do-update-state", (state) => {
+				this.state = state;
+				this._onDidUpdateState.fire(state);
+			}),
+		);
 
-		this._register(this.on('did-focus', () => {
-			this.handleFocusChange(true);
-		}));
+		this._register(
+			this.on("did-focus", () => {
+				this.handleFocusChange(true);
+			}),
+		);
 
-		this._register(this.on('did-blur', () => {
-			this.handleFocusChange(false);
-		}));
+		this._register(
+			this.on("did-blur", () => {
+				this.handleFocusChange(false);
+			}),
+		);
 
-		this._register(this.on('did-scroll-wheel', (event) => {
-			this._onDidWheel.fire(event);
-		}));
+		this._register(
+			this.on("did-scroll-wheel", (event) => {
+				this._onDidWheel.fire(event);
+			}),
+		);
 
-		this._register(this.on('did-find', ({ didFind }) => {
-			this._hasFindResult.fire(didFind);
-		}));
+		this._register(
+			this.on("did-find", ({ didFind }) => {
+				this._hasFindResult.fire(didFind);
+			}),
+		);
 
-		this._register(this.on('fatal-error', (e) => {
-			notificationService.error(localize('fatalErrorMessage', "Error loading webview: {0}", e.message));
-			this._onFatalError.fire({ message: e.message });
-		}));
+		this._register(
+			this.on("fatal-error", (e) => {
+				notificationService.error(
+					localize(
+						"fatalErrorMessage",
+						"Error loading webview: {0}",
+						e.message,
+					),
+				);
+				this._onFatalError.fire({ message: e.message });
+			}),
+		);
 
-		this._register(this.on('did-keydown', (data) => {
-			// Electron: workaround for https://github.com/electron/electron/issues/14258
-			// We have to detect keyboard events in the <webview> and dispatch them to our
-			// keybinding service because these events do not bubble to the parent window anymore.
-			this.handleKeyEvent('keydown', data);
-		}));
+		this._register(
+			this.on("did-keydown", (data) => {
+				// Electron: workaround for https://github.com/electron/electron/issues/14258
+				// We have to detect keyboard events in the <webview> and dispatch them to our
+				// keybinding service because these events do not bubble to the parent window anymore.
+				this.handleKeyEvent("keydown", data);
+			}),
+		);
 
-		this._register(this.on('did-keyup', (data) => {
-			this.handleKeyEvent('keyup', data);
-		}));
+		this._register(
+			this.on("did-keyup", (data) => {
+				this.handleKeyEvent("keyup", data);
+			}),
+		);
 
-		this._register(this.on('did-context-menu', (data) => {
-			if (!this.element) {
-				return;
-			}
-			if (!this._contextKeyService) {
-				return;
-			}
-			const elementBox = this.element.getBoundingClientRect();
-			const contextKeyService = this._contextKeyService.createOverlay([
-				...Object.entries(data.context),
-				[webviewIdContext, this.providedViewType],
-			]);
-			contextMenuService.showContextMenu({
-				menuId: MenuId.WebviewContext,
-				menuActionOptions: { shouldForwardArgs: true },
-				contextKeyService,
-				getActionsContext: (): WebviewActionContext => ({ ...data.context, webview: this.providedViewType }),
-				getAnchor: () => ({
-					x: elementBox.x + data.clientX,
-					y: elementBox.y + data.clientY
-				})
-			});
-			this._send('set-context-menu-visible', { visible: true });
-		}));
-
-		this._register(this.on('load-resource', async (entry) => {
-			try {
-				// Restore the authority we previously encoded
-				const authority = decodeAuthority(entry.authority);
-				const uri = URI.from({
-					scheme: entry.scheme,
-					authority: authority,
-					path: decodeURIComponent(entry.path), // This gets re-encoded
-					query: entry.query ? decodeURIComponent(entry.query) : entry.query,
+		this._register(
+			this.on("did-context-menu", (data) => {
+				if (!this.element) {
+					return;
+				}
+				if (!this._contextKeyService) {
+					return;
+				}
+				const elementBox = this.element.getBoundingClientRect();
+				const contextKeyService = this._contextKeyService.createOverlay(
+					[
+						...Object.entries(data.context),
+						[webviewIdContext, this.providedViewType],
+					],
+				);
+				contextMenuService.showContextMenu({
+					menuId: MenuId.WebviewContext,
+					menuActionOptions: { shouldForwardArgs: true },
+					contextKeyService,
+					getActionsContext: (): WebviewActionContext => ({
+						...data.context,
+						webview: this.providedViewType,
+					}),
+					getAnchor: () => ({
+						x: elementBox.x + data.clientX,
+						y: elementBox.y + data.clientY,
+					}),
 				});
-				this.loadResource(entry.id, uri, entry.ifNoneMatch);
-			} catch (e) {
-				this._send('did-load-resource', {
-					id: entry.id,
-					status: 404,
-					path: entry.path,
-				});
-			}
-		}));
+				this._send("set-context-menu-visible", { visible: true });
+			}),
+		);
 
-		this._register(this.on('load-localhost', (entry) => {
-			this.localLocalhost(entry.id, entry.origin);
-		}));
+		this._register(
+			this.on("load-resource", async (entry) => {
+				try {
+					// Restore the authority we previously encoded
+					const authority = decodeAuthority(entry.authority);
+					const uri = URI.from({
+						scheme: entry.scheme,
+						authority: authority,
+						path: decodeURIComponent(entry.path), // This gets re-encoded
+						query: entry.query
+							? decodeURIComponent(entry.query)
+							: entry.query,
+					});
+					this.loadResource(entry.id, uri, entry.ifNoneMatch);
+				} catch (e) {
+					this._send("did-load-resource", {
+						id: entry.id,
+						status: 404,
+						path: entry.path,
+					});
+				}
+			}),
+		);
 
-		this._register(Event.runAndSubscribe(webviewThemeDataProvider.onThemeDataChanged, () => this.style()));
-		this._register(_accessibilityService.onDidChangeReducedMotion(() => this.style()));
-		this._register(_accessibilityService.onDidChangeScreenReaderOptimized(() => this.style()));
-		this._register(contextMenuService.onDidHideContextMenu(() => this._send('set-context-menu-visible', { visible: false })));
+		this._register(
+			this.on("load-localhost", (entry) => {
+				this.localLocalhost(entry.id, entry.origin);
+			}),
+		);
 
-		this._confirmBeforeClose = configurationService.getValue<string>('window.confirmBeforeClose');
+		this._register(
+			Event.runAndSubscribe(
+				webviewThemeDataProvider.onThemeDataChanged,
+				() => this.style(),
+			),
+		);
+		this._register(
+			_accessibilityService.onDidChangeReducedMotion(() => this.style()),
+		);
+		this._register(
+			_accessibilityService.onDidChangeScreenReaderOptimized(() =>
+				this.style(),
+			),
+		);
+		this._register(
+			contextMenuService.onDidHideContextMenu(() =>
+				this._send("set-context-menu-visible", { visible: false }),
+			),
+		);
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('window.confirmBeforeClose')) {
-				this._confirmBeforeClose = configurationService.getValue('window.confirmBeforeClose');
-				this._send('set-confirm-before-close', this._confirmBeforeClose);
-			}
-		}));
+		this._confirmBeforeClose = configurationService.getValue<string>(
+			"window.confirmBeforeClose",
+		);
 
-		this._register(this.on('drag-start', () => {
-			this._startBlockingIframeDragEvents();
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("window.confirmBeforeClose")) {
+					this._confirmBeforeClose = configurationService.getValue(
+						"window.confirmBeforeClose",
+					);
+					this._send(
+						"set-confirm-before-close",
+						this._confirmBeforeClose,
+					);
+				}
+			}),
+		);
 
-		this._register(this.on('drag', (event) => {
-			this.handleDragEvent('drag', event);
-		}));
+		this._register(
+			this.on("drag-start", () => {
+				this._startBlockingIframeDragEvents();
+			}),
+		);
+
+		this._register(
+			this.on("drag", (event) => {
+				this.handleDragEvent("drag", event);
+			}),
+		);
 
 		if (initInfo.options.enableFindWidget) {
-			this._webviewFindWidget = this._register(instantiationService.createInstance(WebviewFindWidget, this));
+			this._webviewFindWidget = this._register(
+				instantiationService.createInstance(WebviewFindWidget, this),
+			);
 		}
 	}
 

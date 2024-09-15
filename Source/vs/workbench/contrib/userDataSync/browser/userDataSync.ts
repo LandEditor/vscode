@@ -14,9 +14,9 @@ import { Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isWeb } from "../../../../base/common/platform.js";
 import { isEqual } from "../../../../base/common/resources.js";
@@ -26,8 +26,8 @@ import { ILanguageService } from "../../../../editor/common/languages/language.j
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { localize, localize2 } from "../../../../nls.js";
 import type { ILocalizedString } from "../../../../platform/action/common/action.js";
@@ -42,9 +42,9 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import {
 	ContextKeyExpr,
 	ContextKeyTrueExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
@@ -63,23 +63,23 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
-	type IResourcePreview,
 	IUserDataAutoSyncService,
 	IUserDataSyncEnablementService,
-	type IUserDataSyncResource,
-	type IUserDataSyncResourceConflicts,
-	type IUserDataSyncResourceError,
 	IUserDataSyncService,
-	type IUserDataSyncStore,
 	IUserDataSyncStoreManagementService,
+	registerConfiguration,
 	SyncResource,
 	SyncStatus,
 	USER_DATA_SYNC_LOG_ID,
 	USER_DATA_SYNC_SCHEME,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
+	type IResourcePreview,
+	type IUserDataSyncResource,
+	type IUserDataSyncResourceConflicts,
+	type IUserDataSyncResourceError,
+	type IUserDataSyncStore,
 	type UserDataSyncStoreType,
-	registerConfiguration,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
@@ -89,15 +89,15 @@ import {
 } from "../../../common/editor.js";
 import {
 	Extensions,
+	ViewContainerLocation,
 	type IViewContainersRegistry,
 	type ViewContainer,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import {
 	IActivityService,
-	type IBadge,
 	NumberBadge,
 	ProgressBadge,
+	type IBadge,
 } from "../../../services/activity/common/activity.js";
 import { IAuthenticationService } from "../../../services/authentication/common/authentication.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
@@ -114,12 +114,12 @@ import {
 	CONTEXT_SYNC_ENABLEMENT,
 	CONTEXT_SYNC_STATE,
 	DOWNLOAD_ACTIVITY_ACTION_DESCRIPTOR,
+	getSyncAreaLabel,
 	IUserDataSyncWorkbenchService,
 	SHOW_SYNC_LOG_COMMAND_ID,
 	SYNC_TITLE,
 	SYNC_VIEW_CONTAINER_ID,
 	SYNC_VIEW_ICON,
-	getSyncAreaLabel,
 } from "../../../services/userDataSync/common/userDataSync.js";
 import { IWorkbenchIssueService } from "../../issue/common/issue.js";
 import {
@@ -203,34 +203,48 @@ export class UserDataSyncWorkbenchContribution
 	);
 
 	constructor(
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IActivityService private readonly activityService: IActivityService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IOutputService private readonly outputService: IOutputService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
 		@ITextModelService textModelResolverService: ITextModelService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@IHostService private readonly hostService: IHostService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkbenchIssueService private readonly workbenchIssueService: IWorkbenchIssueService
+		@IWorkbenchIssueService
+		private readonly workbenchIssueService: IWorkbenchIssueService,
 	) {
 		super();
 
-		this.turningOnSyncContext = CONTEXT_TURNING_ON_STATE.bindTo(contextKeyService);
+		this.turningOnSyncContext =
+			CONTEXT_TURNING_ON_STATE.bindTo(contextKeyService);
 
 		if (userDataSyncWorkbenchService.enabled) {
 			registerConfiguration();
@@ -239,26 +253,66 @@ export class UserDataSyncWorkbenchContribution
 			this.updateGlobalActivityBadge();
 			this.onDidChangeConflicts(this.userDataSyncService.conflicts);
 
-			this._register(Event.any(
-				Event.debounce(userDataSyncService.onDidChangeStatus, () => undefined, 500),
-				this.userDataSyncEnablementService.onDidChangeEnablement,
-				this.userDataSyncWorkbenchService.onDidChangeAccountStatus
-			)(() => {
-				this.updateAccountBadge();
-				this.updateGlobalActivityBadge();
-			}));
-			this._register(userDataSyncService.onDidChangeConflicts(() => this.onDidChangeConflicts(this.userDataSyncService.conflicts)));
-			this._register(userDataSyncEnablementService.onDidChangeEnablement(() => this.onDidChangeConflicts(this.userDataSyncService.conflicts)));
-			this._register(userDataSyncService.onSyncErrors(errors => this.onSynchronizerErrors(errors)));
-			this._register(userDataAutoSyncService.onError(error => this.onAutoSyncError(error)));
+			this._register(
+				Event.any(
+					Event.debounce(
+						userDataSyncService.onDidChangeStatus,
+						() => undefined,
+						500,
+					),
+					this.userDataSyncEnablementService.onDidChangeEnablement,
+					this.userDataSyncWorkbenchService.onDidChangeAccountStatus,
+				)(() => {
+					this.updateAccountBadge();
+					this.updateGlobalActivityBadge();
+				}),
+			);
+			this._register(
+				userDataSyncService.onDidChangeConflicts(() =>
+					this.onDidChangeConflicts(
+						this.userDataSyncService.conflicts,
+					),
+				),
+			);
+			this._register(
+				userDataSyncEnablementService.onDidChangeEnablement(() =>
+					this.onDidChangeConflicts(
+						this.userDataSyncService.conflicts,
+					),
+				),
+			);
+			this._register(
+				userDataSyncService.onSyncErrors((errors) =>
+					this.onSynchronizerErrors(errors),
+				),
+			);
+			this._register(
+				userDataAutoSyncService.onError((error) =>
+					this.onAutoSyncError(error),
+				),
+			);
 
 			this.registerActions();
 			this.registerViews();
 
-			textModelResolverService.registerTextModelContentProvider(USER_DATA_SYNC_SCHEME, instantiationService.createInstance(UserDataRemoteContentProvider));
+			textModelResolverService.registerTextModelContentProvider(
+				USER_DATA_SYNC_SCHEME,
+				instantiationService.createInstance(
+					UserDataRemoteContentProvider,
+				),
+			);
 
-			this._register(Event.any(userDataSyncService.onDidChangeStatus, userDataSyncEnablementService.onDidChangeEnablement)
-				(() => this.turningOnSync = !userDataSyncEnablementService.isEnabled() && userDataSyncService.status !== SyncStatus.Idle));
+			this._register(
+				Event.any(
+					userDataSyncService.onDidChangeStatus,
+					userDataSyncEnablementService.onDidChangeEnablement,
+				)(
+					() =>
+						(this.turningOnSync =
+							!userDataSyncEnablementService.isEnabled() &&
+							userDataSyncService.status !== SyncStatus.Idle),
+				),
+			);
 		}
 	}
 
@@ -1886,12 +1940,10 @@ export class UserDataSyncWorkbenchContribution
 						});
 					}
 					run(accessor: ServicesAccessor): any {
-						accessor
-							.get(IPreferencesService)
-							.openUserSettings({
-								jsonEditor: false,
-								query: "@tag:sync",
-							});
+						accessor.get(IPreferencesService).openUserSettings({
+							jsonEditor: false,
+							query: "@tag:sync",
+						});
 					}
 				},
 			),
@@ -2109,11 +2161,11 @@ export class UserDataSyncWorkbenchContribution
 
 class UserDataRemoteContentProvider implements ITextModelContentProvider {
 	constructor(
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-	) {
-	}
+	) {}
 
 	provideTextContent(uri: URI): Promise<ITextModel> | null {
 		if (uri.scheme === USER_DATA_SYNC_SCHEME) {

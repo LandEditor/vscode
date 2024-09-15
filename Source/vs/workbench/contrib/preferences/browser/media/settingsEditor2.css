@@ -418,7 +418,7 @@
 	.setting-toolbar-container
 	> .monaco-toolbar
 	.codicon {
-	transition: opacity .3s;
+	transition: opacity 0.3s;
 }
 
 .settings-editor > .settings-body .settings-toc-container {

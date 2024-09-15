@@ -41,13 +41,12 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { FolderThemeIcon } from "../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	ALL_SYNC_RESOURCES,
-	type ISyncResourceHandle as IResourceHandle,
-	type ISyncUserDataProfile,
+	getLastSyncResourceUri,
 	IUserDataAutoSyncService,
 	IUserDataSyncEnablementService,
 	IUserDataSyncResourceProviderService,
@@ -56,12 +55,13 @@ import {
 	SyncStatus,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
-	getLastSyncResourceUri,
+	type ISyncResourceHandle as IResourceHandle,
+	type ISyncUserDataProfile,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import {
-	type IUserDataSyncMachine,
-	IUserDataSyncMachinesService,
 	isWebPlatform,
+	IUserDataSyncMachinesService,
+	type IUserDataSyncMachine,
 } from "../../../../platform/userDataSync/common/userDataSyncMachines.js";
 import {
 	API_OPEN_DIFF_EDITOR_COMMAND_ID,
@@ -73,11 +73,11 @@ import {
 } from "../../../browser/parts/views/treeView.js";
 import {
 	Extensions,
+	TreeItemCollapsibleState,
 	type ITreeItem,
 	type ITreeViewDataProvider,
 	type ITreeViewDescriptor,
 	type IViewsRegistry,
-	TreeItemCollapsibleState,
 	type TreeViewItemHandleArg,
 	type ViewContainer,
 } from "../../../common/views.js";
@@ -89,20 +89,24 @@ import {
 	CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW,
 	CONTEXT_HAS_CONFLICTS,
 	CONTEXT_SYNC_STATE,
+	getSyncAreaLabel,
 	IUserDataSyncWorkbenchService,
 	SYNC_CONFLICTS_VIEW_ID,
 	SYNC_TITLE,
-	getSyncAreaLabel,
 } from "../../../services/userDataSync/common/userDataSync.js";
 import { UserDataSyncConflictsViewPane } from "./userDataSyncConflictsView.js";
 
 export class UserDataSyncDataViews extends Disposable {
 	constructor(
 		container: ViewContainer,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
 	) {
 		super();
 		this.registerViews(container);
@@ -624,13 +628,19 @@ abstract class UserDataSyncActivityViewDataProvider<T = Profile>
 	>();
 
 	constructor(
-		@IUserDataSyncService protected readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncResourceProviderService protected readonly userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataAutoSyncService protected readonly userDataAutoSyncService: IUserDataAutoSyncService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IUserDataProfilesService protected readonly userDataProfilesService: IUserDataProfilesService,
-	) { }
+		@IUserDataSyncService
+		protected readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncResourceProviderService
+		protected readonly userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataAutoSyncService
+		protected readonly userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IUserDataProfilesService
+		protected readonly userDataProfilesService: IUserDataProfilesService,
+	) {}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		try {
@@ -854,14 +864,26 @@ class RemoteUserDataSyncActivityViewDataProvider extends UserDataSyncActivityVie
 
 	constructor(
 		@IUserDataSyncService userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncResourceProviderService userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IUserDataSyncWorkbenchService userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncResourceProviderService
+		userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IUserDataSyncWorkbenchService
+		userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 		@INotificationService notificationService: INotificationService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 	) {
-		super(userDataSyncService, userDataSyncResourceProviderService, userDataAutoSyncService, userDataSyncWorkbenchService, notificationService, userDataProfilesService);
+		super(
+			userDataSyncService,
+			userDataSyncResourceProviderService,
+			userDataAutoSyncService,
+			userDataSyncWorkbenchService,
+			notificationService,
+			userDataProfilesService,
+		);
 	}
 
 	override async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
@@ -930,15 +952,27 @@ class ExtractedUserDataSyncActivityViewDataProvider extends UserDataSyncActivity
 	constructor(
 		public activityDataResource: URI | undefined,
 		@IUserDataSyncService userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncResourceProviderService userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@IUserDataSyncWorkbenchService userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncResourceProviderService
+		userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncWorkbenchService
+		userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
 		@INotificationService notificationService: INotificationService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
-		super(userDataSyncService, userDataSyncResourceProviderService, userDataAutoSyncService, userDataSyncWorkbenchService, notificationService, userDataProfilesService);
+		super(
+			userDataSyncService,
+			userDataSyncResourceProviderService,
+			userDataAutoSyncService,
+			userDataSyncWorkbenchService,
+			notificationService,
+			userDataProfilesService,
+		);
 	}
 
 	override async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
@@ -1037,13 +1071,16 @@ class UserDataSyncMachinesViewDataProvider implements ITreeViewDataProvider {
 
 	constructor(
 		private readonly treeView: TreeView,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-	) {
-	}
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+	) {}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {
@@ -1218,11 +1255,13 @@ class UserDataSyncTroubleshootViewDataProvider
 {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) {
-	}
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {
 		if (!element) {

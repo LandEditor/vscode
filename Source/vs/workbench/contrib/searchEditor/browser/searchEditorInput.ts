@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/searchEditor.css";
-import { VSBuffer, bufferToReadable } from "../../../../base/common/buffer.js";
+
+import { bufferToReadable, VSBuffer } from "../../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
@@ -19,8 +20,8 @@ import type { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { Range } from "../../../../editor/common/core/range.js";
 import {
-	type ITextModel,
 	TrackedRangeStickiness,
+	type ITextModel,
 } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import { localize } from "../../../../nls.js";
@@ -55,14 +56,14 @@ import type {
 	ISearchConfigurationProperties,
 } from "../../../services/search/common/search.js";
 import {
-	type ITextFileSaveOptions,
 	ITextFileService,
+	type ITextFileSaveOptions,
 } from "../../../services/textfile/common/textfiles.js";
 import {
+	WorkingCopyCapabilities,
 	type IWorkingCopy,
 	type IWorkingCopyBackup,
 	type IWorkingCopySaveEvent,
-	WorkingCopyCapabilities,
 } from "../../../services/workingCopy/common/workingCopy.js";
 import { IWorkingCopyService } from "../../../services/workingCopy/common/workingCopyService.js";
 import {
@@ -72,9 +73,9 @@ import {
 	SearchEditorWorkingCopyTypeId,
 } from "./constants.js";
 import {
-	type SearchConfigurationModel,
 	SearchEditorModel,
 	searchEditorModelFactory,
+	type SearchConfigurationModel,
 } from "./searchEditorModel.js";
 import {
 	defaultSearchConfig,
@@ -164,41 +165,69 @@ export class SearchEditorInput extends EditorInput {
 		public readonly backingUri: URI | undefined,
 		@IModelService private readonly modelService: IModelService,
 		@ITextFileService protected readonly textFileService: ITextFileService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IPathService private readonly pathService: IPathService,
 		@IStorageService storageService: IStorageService,
 	) {
 		super();
 
-		this.model = instantiationService.createInstance(SearchEditorModel, modelUri);
+		this.model = instantiationService.createInstance(
+			SearchEditorModel,
+			modelUri,
+		);
 
 		if (this.modelUri.scheme !== SearchEditorScheme) {
-			throw Error('SearchEditorInput must be invoked with a SearchEditorScheme uri');
+			throw Error(
+				"SearchEditorInput must be invoked with a SearchEditorScheme uri",
+			);
 		}
 
 		this.memento = new Memento(SearchEditorInput.ID, storageService);
-		this._register(storageService.onWillSaveState(() => this.memento.saveMemento()));
+		this._register(
+			storageService.onWillSaveState(() => this.memento.saveMemento()),
+		);
 
 		const input = this;
-		const workingCopyAdapter = new class implements IWorkingCopy {
+		const workingCopyAdapter = new (class implements IWorkingCopy {
 			readonly typeId = SearchEditorWorkingCopyTypeId;
 			readonly resource = input.modelUri;
-			get name() { return input.getName(); }
-			readonly capabilities = input.hasCapability(EditorInputCapabilities.Untitled) ? WorkingCopyCapabilities.Untitled : WorkingCopyCapabilities.None;
+			get name() {
+				return input.getName();
+			}
+			readonly capabilities = input.hasCapability(
+				EditorInputCapabilities.Untitled,
+			)
+				? WorkingCopyCapabilities.Untitled
+				: WorkingCopyCapabilities.None;
 			readonly onDidChangeDirty = input.onDidChangeDirty;
 			readonly onDidChangeContent = input.onDidChangeContent;
 			readonly onDidSave = input.onDidSave;
-			isDirty(): boolean { return input.isDirty(); }
-			isModified(): boolean { return input.isDirty(); }
-			backup(token: CancellationToken): Promise<IWorkingCopyBackup> { return input.backup(token); }
-			save(options?: ISaveOptions): Promise<boolean> { return input.save(0, options).then(editor => !!editor); }
-			revert(options?: IRevertOptions): Promise<void> { return input.revert(0, options); }
-		};
+			isDirty(): boolean {
+				return input.isDirty();
+			}
+			isModified(): boolean {
+				return input.isDirty();
+			}
+			backup(token: CancellationToken): Promise<IWorkingCopyBackup> {
+				return input.backup(token);
+			}
+			save(options?: ISaveOptions): Promise<boolean> {
+				return input.save(0, options).then((editor) => !!editor);
+			}
+			revert(options?: IRevertOptions): Promise<void> {
+				return input.revert(0, options);
+			}
+		})();
 
-		this._register(this.workingCopyService.registerWorkingCopy(workingCopyAdapter));
+		this._register(
+			this.workingCopyService.registerWorkingCopy(workingCopyAdapter),
+		);
 	}
 
 	override async save(

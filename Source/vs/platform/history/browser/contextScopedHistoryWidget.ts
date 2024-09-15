@@ -11,8 +11,8 @@ import {
 	type IFindInputOptions,
 } from "../../../base/browser/ui/findinput/findInput.js";
 import {
-	type IReplaceInputOptions,
 	ReplaceInput,
+	type IReplaceInputOptions,
 } from "../../../base/browser/ui/findinput/replaceInput.js";
 import {
 	HistoryInputBox,
@@ -21,19 +21,19 @@ import {
 import { KeyCode, KeyMod } from "../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../contextkey/common/contextkey.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../keybinding/common/keybindingsRegistry.js";
 
 export const historyNavigationVisible = new RawContextKey<boolean>(

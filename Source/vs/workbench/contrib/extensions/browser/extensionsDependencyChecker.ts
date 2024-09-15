@@ -29,18 +29,26 @@ export class ExtensionDependencyChecker
 {
 	constructor(
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IHostService private readonly hostService: IHostService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IHostService private readonly hostService: IHostService,
 	) {
 		super();
-		CommandsRegistry.registerCommand('workbench.extensions.installMissingDependencies', () => this.installMissingDependencies());
+		CommandsRegistry.registerCommand(
+			"workbench.extensions.installMissingDependencies",
+			() => this.installMissingDependencies(),
+		);
 		MenuRegistry.appendMenuItem(MenuId.CommandPalette, {
 			command: {
-				id: 'workbench.extensions.installMissingDependencies',
-				category: localize('extensions', "Extensions"),
-				title: localize('auto install missing deps', "Install Missing Dependencies")
-			}
+				id: "workbench.extensions.installMissingDependencies",
+				category: localize("extensions", "Extensions"),
+				title: localize(
+					"auto install missing deps",
+					"Install Missing Dependencies",
+				),
+			},
 		});
 	}
 

@@ -66,35 +66,57 @@ export class MarkupCell extends Disposable {
 		private readonly notebookEditor: IActiveNotebookEditorDelegate,
 		private readonly viewCell: MarkupCellViewModel,
 		private readonly templateData: MarkdownCellRenderTemplate,
-		private readonly renderedEditors: Map<ICellViewModel, ICodeEditor | undefined>,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		private readonly renderedEditors: Map<
+			ICellViewModel,
+			ICodeEditor | undefined
+		>,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
 		@IKeybindingService private keybindingService: IKeybindingService,
 	) {
 		super();
 
 		this.constructDOM();
 		this.editorPart = templateData.editorPart;
-		this.cellEditorOptions = this._register(new CellEditorOptions(this.notebookEditor.getBaseCellEditorOptions(viewCell.language), this.notebookEditor.notebookOptions, this.configurationService));
+		this.cellEditorOptions = this._register(
+			new CellEditorOptions(
+				this.notebookEditor.getBaseCellEditorOptions(viewCell.language),
+				this.notebookEditor.notebookOptions,
+				this.configurationService,
+			),
+		);
 		this.cellEditorOptions.setLineNumbers(this.viewCell.lineNumbers);
-		this.editorOptions = this.cellEditorOptions.getValue(this.viewCell.internalMetadata, this.viewCell.uri);
+		this.editorOptions = this.cellEditorOptions.getValue(
+			this.viewCell.internalMetadata,
+			this.viewCell.uri,
+		);
 
-		this._register(toDisposable(() => renderedEditors.delete(this.viewCell)));
+		this._register(
+			toDisposable(() => renderedEditors.delete(this.viewCell)),
+		);
 		this.registerListeners();
 
 		// update for init state
 		this.templateData.cellParts.scheduleRenderCell(this.viewCell);
 
-		this._register(toDisposable(() => {
-			this.templateData.cellParts.unrenderCell(this.viewCell);
-		}));
+		this._register(
+			toDisposable(() => {
+				this.templateData.cellParts.unrenderCell(this.viewCell);
+			}),
+		);
 
-		this._register(this.accessibilityService.onDidChangeScreenReaderOptimized(() => {
-			this.viewUpdate();
-		}));
+		this._register(
+			this.accessibilityService.onDidChangeScreenReaderOptimized(() => {
+				this.viewUpdate();
+			}),
+		);
 
 		this.updateForHover();
 		this.updateForFocusModeChange();
@@ -111,9 +133,11 @@ export class MarkupCell extends Disposable {
 		this.viewUpdate();
 
 		this.layoutCellParts();
-		this._register(this.viewCell.onDidChangeLayout(() => {
-			this.layoutCellParts();
-		}));
+		this._register(
+			this.viewCell.onDidChangeLayout(() => {
+				this.layoutCellParts();
+			}),
+		);
 	}
 
 	layoutCellParts() {

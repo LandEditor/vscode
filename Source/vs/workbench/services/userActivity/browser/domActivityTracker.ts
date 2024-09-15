@@ -29,7 +29,8 @@ const MIN_INTERVALS_WITHOUT_ACTIVITY = 2;
 
 const eventListenerOptions: AddEventListenerOptions = {
 	passive: true /** does not preventDefault() */,
-	capture: true /** should dispatch first (before anyone stopPropagation()) */,
+	capture:
+		true /** should dispatch first (before anyone stopPropagation()) */,
 };
 
 export class DomActivityTracker extends Disposable {

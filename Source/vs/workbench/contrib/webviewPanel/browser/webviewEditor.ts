@@ -8,16 +8,16 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isWeb } from "../../../../base/common/platform.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import * as nls from "../../../../nls.js";
 import {
 	IContextKeyService,
-	type IScopedContextKeyService,
 	RawContextKey,
+	type IScopedContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
@@ -27,8 +27,8 @@ import { EditorPane } from "../../../browser/parts/editor/editorPane.js";
 import type { IEditorOpenContext } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IHostService } from "../../../services/host/browser/host.js";
@@ -84,20 +84,36 @@ export class WebviewEditor extends EditorPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IWorkbenchLayoutService private readonly _workbenchLayoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly _workbenchLayoutService: IWorkbenchLayoutService,
 		@IHostService private readonly _hostService: IHostService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
-		super(WebviewEditor.ID, group, telemetryService, themeService, storageService);
+		super(
+			WebviewEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 
 		const part = _editorGroupsService.getPart(group);
-		this._register(Event.any(part.onDidScroll, part.onDidAddGroup, part.onDidRemoveGroup, part.onDidMoveGroup)(() => {
-			if (this.webview && this._visible) {
-				this.synchronizeWebviewContainerDimensions(this.webview);
-			}
-		}));
+		this._register(
+			Event.any(
+				part.onDidScroll,
+				part.onDidAddGroup,
+				part.onDidRemoveGroup,
+				part.onDidMoveGroup,
+			)(() => {
+				if (this.webview && this._visible) {
+					this.synchronizeWebviewContainerDimensions(this.webview);
+				}
+			}),
+		);
 	}
 
 	private get webview(): IOverlayWebview | undefined {

@@ -5,8 +5,8 @@
 
 import { Disposable } from "../../../base/common/lifecycle.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../instantiation/common/instantiation.js";
 import {
 	ILifecycleMainService,
@@ -32,9 +32,11 @@ export class MenubarMainService
 	private readonly menubar = this.installMenuBarAfterWindowOpen();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@ILogService private readonly logService: ILogService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 	}

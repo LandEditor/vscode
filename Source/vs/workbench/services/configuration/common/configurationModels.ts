@@ -9,11 +9,11 @@ import { equals } from "../../../../base/common/objects.js";
 import { isBoolean } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
+	toValuesTree,
 	type IConfigurationChange,
 	type IConfigurationModel,
 	type IConfigurationOverrides,
 	type IConfigurationValue,
-	toValuesTree,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	Configuration as BaseConfiguration,

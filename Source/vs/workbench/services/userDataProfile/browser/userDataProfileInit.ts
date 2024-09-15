@@ -11,8 +11,8 @@ import { IFileService } from "../../../../platform/files/common/files.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	IRequestService,
 	asJson,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import {
 	IStorageService,
@@ -23,8 +23,8 @@ import { ProfileResourceType } from "../../../../platform/userDataProfile/common
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
 import type { IUserDataInitializer } from "../../userData/browser/userDataInit.js";
 import {
-	type IProfileResourceInitializer,
 	IUserDataProfileService,
+	type IProfileResourceInitializer,
 	type IUserDataProfileTemplate,
 } from "../common/userDataProfile.js";
 import { ExtensionsResourceInitializer } from "./extensionsResource.js";
@@ -41,15 +41,17 @@ export class UserDataProfileInitializer implements IUserDataInitializer {
 	private readonly initializationFinished = new Barrier();
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IRequestService private readonly requestService: IRequestService,
-	) {
-	}
+	) {}
 
 	async whenInitializationFinished(): Promise<void> {
 		await this.initializationFinished.wait();

@@ -21,8 +21,8 @@ import {
 } from "../../../../platform/request/common/request.js";
 import { RequestChannelClient } from "../../../../platform/request/common/requestIpc.js";
 import {
-	type IRemoteAgentConnection,
 	IRemoteAgentService,
+	type IRemoteAgentConnection,
 } from "../../remote/common/remoteAgentService.js";
 
 export class BrowserRequestService
@@ -32,8 +32,10 @@ export class BrowserRequestService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService logService: ILogService,
 	) {
 		super(logService);

@@ -9,8 +9,8 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorunOpts,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import { Position } from "../../../common/core/position.js";

@@ -9,8 +9,8 @@ import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
-	type IActionOptions,
 	registerEditorAction,
+	type IActionOptions,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import { Position } from "../../../../editor/common/core/position.js";
@@ -38,8 +38,8 @@ import {
 	BREAKPOINT_EDITOR_CONTRIBUTION_ID,
 	BreakpointWidgetContext,
 	CONTEXT_CALLSTACK_ITEM_TYPE,
-	CONTEXT_DEBUGGERS_AVAILABLE,
 	CONTEXT_DEBUG_STATE,
+	CONTEXT_DEBUGGERS_AVAILABLE,
 	CONTEXT_DISASSEMBLE_REQUEST_SUPPORTED,
 	CONTEXT_DISASSEMBLY_VIEW_FOCUS,
 	CONTEXT_EXCEPTION_WIDGET_VISIBLE,
@@ -48,12 +48,12 @@ import {
 	CONTEXT_LANGUAGE_SUPPORTS_DISASSEMBLE_REQUEST,
 	CONTEXT_STEP_INTO_TARGETS_SUPPORTED,
 	EDITOR_CONTRIBUTION_ID,
-	type IBreakpointEditorContribution,
-	type IDebugConfiguration,
-	type IDebugEditorContribution,
 	IDebugService,
 	REPL_VIEW_ID,
 	WATCH_VIEW_ID,
+	type IBreakpointEditorContribution,
+	type IDebugConfiguration,
+	type IDebugEditorContribution,
 } from "../common/debug.js";
 import { getEvaluatableExpressionAtPosition } from "../common/debugUtils.js";
 import { DisassemblyViewInput } from "../common/disassemblyViewInput.js";

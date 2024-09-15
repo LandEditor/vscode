@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as spdlog from "@vscode/spdlog";
+
 import { ByteSize } from "../../files/common/files.js";
 import {
 	AbstractMessageLogger,
-	type ILogger,
 	LogLevel,
+	type ILogger,
 } from "../common/log.js";
 
 enum SpdLogLevel {

@@ -9,8 +9,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import { Lazy } from "../../../../base/common/lazy.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	observableValue,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { language } from "../../../../base/common/platform.js";
 import type { WellDefinedPrefixTree } from "../../../../base/common/prefixTree.js";
@@ -18,12 +18,24 @@ import { localize } from "../../../../nls.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import type { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IComputedStateAccessor,
 	refreshComputedState,
+	type IComputedStateAccessor,
 } from "./getComputedState.js";
 import type { TestCoverage } from "./testCoverage.js";
 import { TestId } from "./testId.js";
 import {
+	makeEmptyCounts,
+	maxPriority,
+	statesInOrder,
+	terminalStatePriorities,
+	type TestStateCount,
+} from "./testingStates.js";
+import {
+	getMarkId,
+	TestItemExpandState,
+	TestMessageType,
+	TestResultItem,
+	TestResultState,
 	type IRichLocation,
 	type ISerializedTestResults,
 	type ITestItem,
@@ -32,19 +44,7 @@ import {
 	type ITestRunTask,
 	type ITestTaskState,
 	type ResolvedTestRunRequest,
-	TestItemExpandState,
-	TestMessageType,
-	TestResultItem,
-	TestResultState,
-	getMarkId,
 } from "./testTypes.js";
-import {
-	type TestStateCount,
-	makeEmptyCounts,
-	maxPriority,
-	statesInOrder,
-	terminalStatePriorities,
-} from "./testingStates.js";
 
 export interface ITestRunTaskResults extends ITestRunTask {
 	/**

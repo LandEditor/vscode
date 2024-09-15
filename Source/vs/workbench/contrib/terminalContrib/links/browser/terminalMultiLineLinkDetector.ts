@@ -4,19 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBufferLine, Terminal } from "@xterm/xterm";
+
 import type { URI } from "../../../../../base/common/uri.js";
 import {
-	type ITerminalBackend,
 	ITerminalLogService,
+	type ITerminalBackend,
 } from "../../../../../platform/terminal/common/terminal.js";
 import { IUriIdentityService } from "../../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IWorkspaceContextService } from "../../../../../platform/workspace/common/workspace.js";
 import type { ITerminalProcessManager } from "../../../terminal/common/terminal.js";
 import {
+	TerminalBuiltinLinkType,
 	type ITerminalLinkDetector,
 	type ITerminalLinkResolver,
 	type ITerminalSimpleLink,
-	TerminalBuiltinLinkType,
 } from "./links.js";
 import {
 	convertLinkRangeToBuffer,
@@ -65,13 +66,17 @@ export class TerminalMultiLineLinkDetector implements ITerminalLinkDetector {
 
 	constructor(
 		readonly xterm: Terminal,
-		private readonly _processManager: Pick<ITerminalProcessManager, 'initialCwd' | 'os' | 'remoteAuthority' | 'userHome'> & { backend?: Pick<ITerminalBackend, 'getWslPath'> },
+		private readonly _processManager: Pick<
+			ITerminalProcessManager,
+			"initialCwd" | "os" | "remoteAuthority" | "userHome"
+		> & { backend?: Pick<ITerminalBackend, "getWslPath"> },
 		private readonly _linkResolver: ITerminalLinkResolver,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
-	) {
-	}
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+	) {}
 
 	async detect(
 		lines: IBufferLine[],

@@ -23,14 +23,14 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { IUndoRedoService } from "../../../../platform/undoRedo/common/undoRedo.js";
 import {
+	createEditorOpenError,
 	EditorInputCapabilities,
+	Verbosity,
 	type GroupIdentifier,
 	type IMoveResult,
 	type IRevertOptions,
 	type ISaveOptions,
 	type IUntypedEditorInput,
-	Verbosity,
-	createEditorOpenError,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import { ICustomEditorLabelService } from "../../../services/editor/common/customEditorLabelService.js";
@@ -39,16 +39,16 @@ import { IFilesConfigurationService } from "../../../services/filesConfiguration
 import { IWorkbenchLayoutService } from "../../../services/layout/browser/layoutService.js";
 import { IUntitledTextEditorService } from "../../../services/untitled/common/untitledTextEditorService.js";
 import {
-	type IOverlayWebview,
 	IWebviewService,
+	type IOverlayWebview,
 } from "../../webview/browser/webview.js";
 import {
 	IWebviewWorkbenchService,
 	LazilyResolvedWebviewEditorInput,
 } from "../../webviewPanel/browser/webviewWorkbenchService.js";
 import {
-	type ICustomEditorModel,
 	ICustomEditorService,
+	type ICustomEditorModel,
 } from "../common/customEditor.js";
 
 interface CustomEditorInputInitInfo {
@@ -117,20 +117,37 @@ export class CustomEditorInput extends LazilyResolvedWebviewEditorInput {
 	constructor(
 		init: CustomEditorInputInitInfo,
 		webview: IOverlayWebview,
-		options: { startsDirty?: boolean; backupId?: string; untitledDocumentData?: VSBuffer; readonly oldResource?: URI },
-		@IWebviewWorkbenchService webviewWorkbenchService: IWebviewWorkbenchService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		options: {
+			startsDirty?: boolean;
+			backupId?: string;
+			untitledDocumentData?: VSBuffer;
+			readonly oldResource?: URI;
+		},
+		@IWebviewWorkbenchService
+		webviewWorkbenchService: IWebviewWorkbenchService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILabelService private readonly labelService: ILabelService,
-		@ICustomEditorService private readonly customEditorService: ICustomEditorService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
+		@ICustomEditorService
+		private readonly customEditorService: ICustomEditorService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
 		@IUndoRedoService private readonly undoRedoService: IUndoRedoService,
 		@IFileService private readonly fileService: IFileService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IEditorGroupsService private readonly editorGroupsService: IEditorGroupsService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@ICustomEditorLabelService private readonly customEditorLabelService: ICustomEditorLabelService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IEditorGroupsService
+		private readonly editorGroupsService: IEditorGroupsService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@ICustomEditorLabelService
+		private readonly customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super({ providedId: init.viewType, viewType: init.viewType, name: '' }, webview, webviewWorkbenchService);
+		super(
+			{ providedId: init.viewType, viewType: init.viewType, name: "" },
+			webview,
+			webviewWorkbenchService,
+		);
 		this._editorResource = init.resource;
 		this.oldResource = options.oldResource;
 		this._defaultDirtyState = options.startsDirty;

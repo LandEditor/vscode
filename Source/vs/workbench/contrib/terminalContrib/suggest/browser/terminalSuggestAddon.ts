@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ITerminalAddon, Terminal } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { Codicon } from "../../../../../base/common/codicons.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	MutableDisposable,
-	combinedDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { sep } from "../../../../../base/common/path.js";
 import { commonPrefixLength } from "../../../../../base/common/strings.js";
@@ -25,8 +26,8 @@ import {
 	StorageTarget,
 } from "../../../../../platform/storage/common/storage.js";
 import {
-	type ITerminalCapabilityStore,
 	TerminalCapability,
+	type ITerminalCapabilityStore,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import type {
 	IPromptInputModel,
@@ -36,24 +37,24 @@ import { ShellIntegrationOscPs } from "../../../../../platform/terminal/common/x
 import { getListStyles } from "../../../../../platform/theme/browser/defaultStyles.js";
 import { activeContrastBorder } from "../../../../../platform/theme/common/colorRegistry.js";
 import {
-	type ISimpleCompletion,
 	SimpleCompletionItem,
+	type ISimpleCompletion,
 } from "../../../../services/suggest/browser/simpleCompletionItem.js";
 import {
 	LineContext,
 	SimpleCompletionModel,
 } from "../../../../services/suggest/browser/simpleCompletionModel.js";
 import {
-	type ISimpleSelectedSuggestion,
 	SimpleSuggestWidget,
+	type ISimpleSelectedSuggestion,
 } from "../../../../services/suggest/browser/simpleSuggestWidget.js";
 import type { ISimpleSuggestWidgetFontInfo } from "../../../../services/suggest/browser/simpleSuggestWidgetRenderer.js";
 import { ITerminalConfigurationService } from "../../../terminal/browser/terminal.js";
 import type { IXtermCore } from "../../../terminal/browser/xterm-private.js";
 import { TerminalStorageKeys } from "../../../terminal/common/terminalStorageKeys.js";
 import {
-	type ITerminalSuggestConfiguration,
 	terminalSuggestConfigSection,
+	type ITerminalSuggestConfiguration,
 } from "../common/terminalSuggestConfiguration.js";
 
 export enum VSCodeSuggestOscPt {
@@ -188,29 +189,48 @@ export class SuggestAddon
 		private readonly _cachedPwshCommands: Set<SimpleCompletionItem>,
 		private readonly _capabilities: ITerminalCapabilityStore,
 		private readonly _terminalSuggestWidgetVisibleContextKey: IContextKey<boolean>,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
 	) {
 		super();
 
-		this._register(Event.runAndSubscribe(Event.any(
-			this._capabilities.onDidAddCapabilityType,
-			this._capabilities.onDidRemoveCapabilityType
-		), () => {
-			const commandDetection = this._capabilities.get(TerminalCapability.CommandDetection);
-			if (commandDetection) {
-				if (this._promptInputModel !== commandDetection.promptInputModel) {
-					this._promptInputModel = commandDetection.promptInputModel;
-					this._promptInputModelSubscriptions.value = combinedDisposable(
-						this._promptInputModel.onDidChangeInput(e => this._sync(e)),
-						this._promptInputModel.onDidFinishInput(() => this.hideSuggestWidget()),
+		this._register(
+			Event.runAndSubscribe(
+				Event.any(
+					this._capabilities.onDidAddCapabilityType,
+					this._capabilities.onDidRemoveCapabilityType,
+				),
+				() => {
+					const commandDetection = this._capabilities.get(
+						TerminalCapability.CommandDetection,
 					);
-				}
-			} else {
-				this._promptInputModel = undefined;
-			}
-		}));
+					if (commandDetection) {
+						if (
+							this._promptInputModel !==
+							commandDetection.promptInputModel
+						) {
+							this._promptInputModel =
+								commandDetection.promptInputModel;
+							this._promptInputModelSubscriptions.value =
+								combinedDisposable(
+									this._promptInputModel.onDidChangeInput(
+										(e) => this._sync(e),
+									),
+									this._promptInputModel.onDidFinishInput(
+										() => this.hideSuggestWidget(),
+									),
+								);
+						}
+					} else {
+						this._promptInputModel = undefined;
+					}
+				},
+			),
+		);
 	}
 
 	activate(xterm: Terminal): void {
@@ -979,9 +999,8 @@ class PersistedWidgetSize {
 	private readonly _key = TerminalStorageKeys.TerminalSuggestSize;
 
 	constructor(
-		@IStorageService private readonly _storageService: IStorageService
-	) {
-	}
+		@IStorageService private readonly _storageService: IStorageService,
+	) {}
 
 	restore(): dom.Dimension | undefined {
 		const raw =

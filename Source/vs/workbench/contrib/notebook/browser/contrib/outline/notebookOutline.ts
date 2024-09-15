@@ -5,8 +5,8 @@
 
 import * as DOM from "../../../../../../base/browser/dom.js";
 import {
-	type IIconLabelValueOptions,
 	IconLabel,
+	type IIconLabelValueOptions,
 } from "../../../../../../base/browser/ui/iconLabel/iconLabel.js";
 import type {
 	IKeyboardNavigationLabelProvider,
@@ -29,15 +29,15 @@ import { CancellationToken } from "../../../../../../base/common/cancellation.js
 import { Codicon } from "../../../../../../base/common/codicons.js";
 import { Emitter, type Event } from "../../../../../../base/common/event.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../../../base/common/filters.js";
 import {
 	Disposable,
 	DisposableStore,
+	toDisposable,
 	type IDisposable,
 	type IReference,
-	toDisposable,
 } from "../../../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../../../base/common/themables.js";
 import type { URI } from "../../../../../../base/common/uri.js";
@@ -47,17 +47,17 @@ import { getIconClassesForLanguageId } from "../../../../../../editor/common/ser
 import { ILanguageFeaturesService } from "../../../../../../editor/common/services/languageFeatures.js";
 import { localize } from "../../../../../../nls.js";
 import {
-	MenuEntryActionViewItem,
 	createAndFillInActionBarActions,
+	MenuEntryActionViewItem,
 } from "../../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	Action2,
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
 	registerAction2,
+	type IMenu,
 } from "../../../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
 import {
@@ -84,8 +84,8 @@ import {
 } from "../../../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../../../platform/theme/common/themeService.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../../../common/contributions.js";
 import type { IEditorPane } from "../../../../../common/editor.js";
 import {
@@ -94,18 +94,18 @@ import {
 } from "../../../../../services/editor/common/editorService.js";
 import { LifecyclePhase } from "../../../../../services/lifecycle/common/lifecycle.js";
 import {
+	IOutlineService,
+	OutlineConfigCollapseItemsValues,
+	OutlineConfigKeys,
+	OutlineTarget,
 	type IBreadcrumbsDataSource,
 	type IOutline,
 	type IOutlineComparator,
 	type IOutlineCreator,
 	type IOutlineListConfig,
-	IOutlineService,
 	type IQuickPickDataSource,
 	type IQuickPickOutlineElement,
 	type OutlineChangeEvent,
-	OutlineConfigCollapseItemsValues,
-	OutlineConfigKeys,
-	OutlineTarget,
 } from "../../../../../services/outline/browser/outline.js";
 import { IOutlinePane } from "../../../../outline/browser/outline.js";
 import {
@@ -131,7 +131,6 @@ import {
 	type INotebookViewModel,
 } from "../../notebookBrowser.js";
 import { NotebookEditor } from "../../notebookEditor.js";
-import type { OutlineEntry } from "../../viewModel/OutlineEntry.js";
 import type { MarkupCellViewModel } from "../../viewModel/markupCellViewModel.js";
 import type {
 	INotebookCellOutlineDataSource,
@@ -139,6 +138,7 @@ import type {
 } from "../../viewModel/notebookOutlineDataSource.js";
 import { INotebookCellOutlineDataSourceFactory } from "../../viewModel/notebookOutlineDataSourceFactory.js";
 import { NotebookOutlineConstants } from "../../viewModel/notebookOutlineEntryFactory.js";
+import type { OutlineEntry } from "../../viewModel/OutlineEntry.js";
 
 class NotebookOutlineTemplate {
 	static readonly templateId = "NotebookOutlineRenderer";
@@ -162,12 +162,16 @@ class NotebookOutlineRenderer
 		private readonly _editor: INotebookEditor | undefined,
 		private readonly _target: OutlineTarget,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): NotebookOutlineTemplate {
 		const elementDisposables = new DisposableStore();
@@ -531,17 +535,32 @@ export class NotebookQuickPickProvider
 	private gotoShowCodeCellSymbols: boolean;
 
 	constructor(
-		private readonly notebookCellOutlineDataSourceRef: IReference<INotebookCellOutlineDataSource> | undefined,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IThemeService private readonly _themeService: IThemeService
+		private readonly notebookCellOutlineDataSourceRef:
+			| IReference<INotebookCellOutlineDataSource>
+			| undefined,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IThemeService private readonly _themeService: IThemeService,
 	) {
-		this.gotoShowCodeCellSymbols = this._configurationService.getValue<boolean>(NotebookSetting.gotoSymbolsAllSymbols);
+		this.gotoShowCodeCellSymbols =
+			this._configurationService.getValue<boolean>(
+				NotebookSetting.gotoSymbolsAllSymbols,
+			);
 
-		this._disposables.add(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(NotebookSetting.gotoSymbolsAllSymbols)) {
-				this.gotoShowCodeCellSymbols = this._configurationService.getValue<boolean>(NotebookSetting.gotoSymbolsAllSymbols);
-			}
-		}));
+		this._disposables.add(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						NotebookSetting.gotoSymbolsAllSymbols,
+					)
+				) {
+					this.gotoShowCodeCellSymbols =
+						this._configurationService.getValue<boolean>(
+							NotebookSetting.gotoSymbolsAllSymbols,
+						);
+				}
+			}),
+		);
 	}
 
 	getQuickPickElements(): IQuickPickOutlineElement<OutlineEntry>[] {
@@ -606,24 +625,55 @@ export class NotebookOutlinePaneProvider
 	private showMarkdownHeadersOnly: boolean;
 
 	constructor(
-		private readonly outlineDataSourceRef: IReference<INotebookCellOutlineDataSource> | undefined,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		private readonly outlineDataSourceRef:
+			| IReference<INotebookCellOutlineDataSource>
+			| undefined,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
-		this.showCodeCells = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCells);
-		this.showCodeCellSymbols = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCellSymbols);
-		this.showMarkdownHeadersOnly = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowMarkdownHeadersOnly);
+		this.showCodeCells = this._configurationService.getValue<boolean>(
+			NotebookSetting.outlineShowCodeCells,
+		);
+		this.showCodeCellSymbols = this._configurationService.getValue<boolean>(
+			NotebookSetting.outlineShowCodeCellSymbols,
+		);
+		this.showMarkdownHeadersOnly =
+			this._configurationService.getValue<boolean>(
+				NotebookSetting.outlineShowMarkdownHeadersOnly,
+			);
 
-		this._disposables.add(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(NotebookSetting.outlineShowCodeCells)) {
-				this.showCodeCells = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCells);
-			}
-			if (e.affectsConfiguration(NotebookSetting.outlineShowCodeCellSymbols)) {
-				this.showCodeCellSymbols = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCellSymbols);
-			}
-			if (e.affectsConfiguration(NotebookSetting.outlineShowMarkdownHeadersOnly)) {
-				this.showMarkdownHeadersOnly = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowMarkdownHeadersOnly);
-			}
-		}));
+		this._disposables.add(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(NotebookSetting.outlineShowCodeCells)
+				) {
+					this.showCodeCells =
+						this._configurationService.getValue<boolean>(
+							NotebookSetting.outlineShowCodeCells,
+						);
+				}
+				if (
+					e.affectsConfiguration(
+						NotebookSetting.outlineShowCodeCellSymbols,
+					)
+				) {
+					this.showCodeCellSymbols =
+						this._configurationService.getValue<boolean>(
+							NotebookSetting.outlineShowCodeCellSymbols,
+						);
+				}
+				if (
+					e.affectsConfiguration(
+						NotebookSetting.outlineShowMarkdownHeadersOnly,
+					)
+				) {
+					this.showMarkdownHeadersOnly =
+						this._configurationService.getValue<boolean>(
+							NotebookSetting.outlineShowMarkdownHeadersOnly,
+						);
+				}
+			}),
+		);
 	}
 
 	public getActiveEntry(): OutlineEntry | undefined {
@@ -720,15 +770,29 @@ export class NotebookBreadcrumbsProvider
 	private showCodeCells: boolean;
 
 	constructor(
-		private readonly outlineDataSourceRef: IReference<INotebookCellOutlineDataSource> | undefined,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		private readonly outlineDataSourceRef:
+			| IReference<INotebookCellOutlineDataSource>
+			| undefined,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
-		this.showCodeCells = this._configurationService.getValue<boolean>(NotebookSetting.breadcrumbsShowCodeCells);
-		this._disposables.add(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(NotebookSetting.breadcrumbsShowCodeCells)) {
-				this.showCodeCells = this._configurationService.getValue<boolean>(NotebookSetting.breadcrumbsShowCodeCells);
-			}
-		}));
+		this.showCodeCells = this._configurationService.getValue<boolean>(
+			NotebookSetting.breadcrumbsShowCodeCells,
+		);
+		this._disposables.add(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						NotebookSetting.breadcrumbsShowCodeCells,
+					)
+				) {
+					this.showCodeCells =
+						this._configurationService.getValue<boolean>(
+							NotebookSetting.breadcrumbsShowCodeCells,
+						);
+				}
+			}),
+		);
 	}
 
 	getBreadcrumbElements(): readonly OutlineEntry[] {
@@ -838,26 +902,47 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 		private readonly _target: OutlineTarget,
 		@IThemeService private readonly _themeService: IThemeService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
-		this.outlineShowCodeCellSymbols = this._configurationService.getValue<boolean>(NotebookSetting.outlineShowCodeCellSymbols);
+		this.outlineShowCodeCellSymbols =
+			this._configurationService.getValue<boolean>(
+				NotebookSetting.outlineShowCodeCellSymbols,
+			);
 
 		this.initializeOutline();
 
 		const delegate = new NotebookOutlineVirtualDelegate();
-		const renderers = [this._instantiationService.createInstance(NotebookOutlineRenderer, this._editor.getControl(), this._target)];
+		const renderers = [
+			this._instantiationService.createInstance(
+				NotebookOutlineRenderer,
+				this._editor.getControl(),
+				this._target,
+			),
+		];
 		const comparator = new NotebookComparator();
 
 		const options: IWorkbenchDataTreeOptions<OutlineEntry, FuzzyScore> = {
-			collapseByDefault: this._target === OutlineTarget.Breadcrumbs || (this._target === OutlineTarget.OutlinePane && this._configurationService.getValue(OutlineConfigKeys.collapseItems) === OutlineConfigCollapseItemsValues.Collapsed),
+			collapseByDefault:
+				this._target === OutlineTarget.Breadcrumbs ||
+				(this._target === OutlineTarget.OutlinePane &&
+					this._configurationService.getValue(
+						OutlineConfigKeys.collapseItems,
+					) === OutlineConfigCollapseItemsValues.Collapsed),
 			expandOnlyOnTwistieClick: true,
 			multipleSelectionSupport: false,
 			accessibilityProvider: new NotebookOutlineAccessibility(),
-			identityProvider: { getId: element => element.cell.uri.toString() },
-			keyboardNavigationLabelProvider: new NotebookNavigationLabelProvider()
+			identityProvider: {
+				getId: (element) => element.cell.uri.toString(),
+			},
+			keyboardNavigationLabelProvider:
+				new NotebookNavigationLabelProvider(),
 		};
 
 		this.config = {
@@ -867,7 +952,7 @@ export class NotebookCellOutline implements IOutline<OutlineEntry> {
 			delegate,
 			renderers,
 			comparator,
-			options
+			options,
 		};
 	}
 
@@ -1199,7 +1284,8 @@ export class NotebookOutlineCreator
 
 	constructor(
 		@IOutlineService outlineService: IOutlineService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		const reg = outlineService.registerOutlineCreator(this);
 		this.dispose = () => reg.dispose();

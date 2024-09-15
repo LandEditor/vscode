@@ -5,8 +5,8 @@
 
 import * as DOM from "../../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../../base/browser/fastDomNode.js";
 import { PixelRatio } from "../../../../../base/browser/pixelRatio.js";
 import { Color } from "../../../../../base/common/color.js";
@@ -23,9 +23,9 @@ import {
 	diffRemoved,
 } from "../../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
 	Themable,
+	type IColorTheme,
 } from "../../../../../platform/theme/common/themeService.js";
 import type { IDiffElementViewModelBase } from "./diffElementViewModel.js";
 import type { NotebookDiffEditorEventDispatcher } from "./eventDispatcher.js";

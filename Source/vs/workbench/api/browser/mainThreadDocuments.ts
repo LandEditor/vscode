@@ -8,20 +8,20 @@ import { ErrorNoTelemetry } from "../../../base/common/errors.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IReference,
 	dispose,
+	type IReference,
 } from "../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../base/common/map.js";
 import { Schemas } from "../../../base/common/network.js";
 import {
-	type IExtUri,
 	extUri,
 	toLocalResource,
+	type IExtUri,
 } from "../../../base/common/resources.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
-	type ITextModel,
 	shouldSynchronizeModel,
+	type ITextModel,
 } from "../../../editor/common/model.js";
 import { IModelService } from "../../../editor/common/services/model.js";
 import { ITextModelService } from "../../../editor/common/services/resolverService.js";
@@ -150,42 +150,62 @@ export class MainThreadDocuments
 		@IModelService private readonly _modelService: IModelService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
 		@IFileService private readonly _fileService: IFileService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IUriIdentityService private readonly _uriIdentityService: IUriIdentityService,
-		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
-		@IPathService private readonly _pathService: IPathService
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IUriIdentityService
+		private readonly _uriIdentityService: IUriIdentityService,
+		@IWorkingCopyFileService
+		workingCopyFileService: IWorkingCopyFileService,
+		@IPathService private readonly _pathService: IPathService,
 	) {
 		super();
 
-		this._modelReferenceCollection = this._store.add(new BoundModelReferenceCollection(_uriIdentityService.extUri));
+		this._modelReferenceCollection = this._store.add(
+			new BoundModelReferenceCollection(_uriIdentityService.extUri),
+		);
 
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocuments);
 
-		this._store.add(_modelService.onModelLanguageChanged(this._onModelModeChanged, this));
+		this._store.add(
+			_modelService.onModelLanguageChanged(
+				this._onModelModeChanged,
+				this,
+			),
+		);
 
-		this._store.add(_textFileService.files.onDidSave(e => {
-			if (this._shouldHandleFileEvent(e.model.resource)) {
-				this._proxy.$acceptModelSaved(e.model.resource);
-			}
-		}));
-		this._store.add(_textFileService.files.onDidChangeDirty(m => {
-			if (this._shouldHandleFileEvent(m.resource)) {
-				this._proxy.$acceptDirtyStateChanged(m.resource, m.isDirty());
-			}
-		}));
+		this._store.add(
+			_textFileService.files.onDidSave((e) => {
+				if (this._shouldHandleFileEvent(e.model.resource)) {
+					this._proxy.$acceptModelSaved(e.model.resource);
+				}
+			}),
+		);
+		this._store.add(
+			_textFileService.files.onDidChangeDirty((m) => {
+				if (this._shouldHandleFileEvent(m.resource)) {
+					this._proxy.$acceptDirtyStateChanged(
+						m.resource,
+						m.isDirty(),
+					);
+				}
+			}),
+		);
 
-		this._store.add(workingCopyFileService.onDidRunWorkingCopyFileOperation(e => {
-			const isMove = e.operation === FileOperation.MOVE;
-			if (isMove || e.operation === FileOperation.DELETE) {
-				for (const pair of e.files) {
-					const removed = isMove ? pair.source : pair.target;
-					if (removed) {
-						this._modelReferenceCollection.remove(removed);
+		this._store.add(
+			workingCopyFileService.onDidRunWorkingCopyFileOperation((e) => {
+				const isMove = e.operation === FileOperation.MOVE;
+				if (isMove || e.operation === FileOperation.DELETE) {
+					for (const pair of e.files) {
+						const removed = isMove ? pair.source : pair.target;
+						if (removed) {
+							this._modelReferenceCollection.remove(removed);
+						}
 					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	override dispose(): void {

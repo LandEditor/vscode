@@ -12,8 +12,8 @@ import {
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
 	BaseSecretStorageService,
-	type ISecretStorageProvider,
 	ISecretStorageService,
+	type ISecretStorageProvider,
 } from "../../../../platform/secrets/common/secrets.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
@@ -25,7 +25,8 @@ export class BrowserSecretStorageService extends BaseSecretStorageService {
 	constructor(
 		@IStorageService storageService: IStorageService,
 		@IEncryptionService encryptionService: IEncryptionService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@ILogService logService: ILogService,
 	) {
 		// We don't have encryption in the browser so instead we use the

@@ -36,15 +36,19 @@ interface IConfigurationExport {
 
 export class DefaultConfigurationExportHelper {
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IFileService private readonly fileService: IFileService,
-		@IProductService private readonly productService: IProductService
+		@IProductService private readonly productService: IProductService,
 	) {
-		const exportDefaultConfigurationPath = environmentService.args['export-default-configuration'];
+		const exportDefaultConfigurationPath =
+			environmentService.args["export-default-configuration"];
 		if (exportDefaultConfigurationPath) {
-			this.writeConfigModelAndQuit(URI.file(exportDefaultConfigurationPath));
+			this.writeConfigModelAndQuit(
+				URI.file(exportDefaultConfigurationPath),
+			);
 		}
 	}
 

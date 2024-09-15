@@ -5,9 +5,9 @@
 
 import { Emitter } from "../../../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	type IDisposable,
-	combinedDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../../base/common/map.js";
 import { isEqual } from "../../../../../base/common/resources.js";
@@ -23,10 +23,10 @@ import type { NotebookTextModel } from "../../common/model/notebookTextModel.js"
 import {
 	CellEditType,
 	CellUri,
-	type ICellEditOperation,
 	NotebookCellExecutionState,
-	type NotebookCellInternalMetadata,
 	NotebookExecutionState,
+	type ICellEditOperation,
+	type NotebookCellInternalMetadata,
 	type NotebookTextModelWillAddRemoveEvent,
 } from "../../common/notebookCommon.js";
 import {
@@ -34,6 +34,8 @@ import {
 	INotebookExecutionService,
 } from "../../common/notebookExecutionService.js";
 import {
+	INotebookExecutionStateService,
+	NotebookExecutionType,
 	type ICellExecuteUpdate,
 	type ICellExecutionComplete,
 	type ICellExecutionStateChangedEvent,
@@ -42,9 +44,7 @@ import {
 	type IFailedCellInfo,
 	type INotebookCellExecution,
 	type INotebookExecution,
-	INotebookExecutionStateService,
 	type INotebookFailStateChangedEvent,
-	NotebookExecutionType,
 } from "../../common/notebookExecutionStateService.js";
 import { INotebookKernelService } from "../../common/notebookKernelService.js";
 import { INotebookService } from "../../common/notebookService.js";
@@ -79,10 +79,12 @@ export class NotebookExecutionStateService
 	onDidChangeLastRunFailState = this._onDidChangeLastRunFailState.event;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super();
 	}
@@ -483,22 +485,34 @@ class NotebookExecutionListeners extends Disposable {
 	constructor(
 		notebook: URI,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookExecutionService private readonly _notebookExecutionService: INotebookExecutionService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookExecutionService
+		private readonly _notebookExecutionService: INotebookExecutionService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 		this._logService.debug(`NotebookExecution#ctor ${notebook.toString()}`);
 
-		const notebookModel = this._notebookService.getNotebookTextModel(notebook);
+		const notebookModel =
+			this._notebookService.getNotebookTextModel(notebook);
 		if (!notebookModel) {
-			throw new Error('Notebook not found: ' + notebook);
+			throw new Error("Notebook not found: " + notebook);
 		}
 
 		this._notebookModel = notebookModel;
-		this._register(this._notebookModel.onWillAddRemoveCells(e => this.onWillAddRemoveCells(e)));
-		this._register(this._notebookModel.onWillDispose(() => this.onWillDisposeDocument()));
+		this._register(
+			this._notebookModel.onWillAddRemoveCells((e) =>
+				this.onWillAddRemoveCells(e),
+			),
+		);
+		this._register(
+			this._notebookModel.onWillDispose(() =>
+				this.onWillDisposeDocument(),
+			),
+		);
 	}
 
 	private cancelAll(): void {
@@ -708,8 +722,9 @@ class CellExecution extends Disposable implements INotebookCellExecution {
 					typeof u.isPaused === "boolean",
 			);
 		if (lastIsPausedUpdate) {
-			this._isPaused = (lastIsPausedUpdate as ICellExecutionStateUpdate)
-				.isPaused!;
+			this._isPaused = (
+				lastIsPausedUpdate as ICellExecutionStateUpdate
+			).isPaused!;
 		}
 
 		const cellModel = this._notebookModel.cells.find(

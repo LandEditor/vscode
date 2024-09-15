@@ -5,14 +5,15 @@
 
 import { StringDecoder } from "string_decoder";
 import {
+	app,
+	MessageChannelMain,
+	utilityProcess,
 	type BrowserWindow,
 	type Details,
 	type UtilityProcess as ElectronUtilityProcess,
 	type ForkOptions,
-	MessageChannelMain,
-	app,
-	utilityProcess,
 } from "electron";
+
 import { timeout } from "../../../base/common/async.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
@@ -203,7 +204,8 @@ export class UtilityProcess extends Disposable {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@ILifecycleMainService protected readonly lifecycleMainService: ILifecycleMainService
+		@ILifecycleMainService
+		protected readonly lifecycleMainService: ILifecycleMainService,
 	) {
 		super();
 	}
@@ -612,9 +614,10 @@ export class UtilityProcess extends Disposable {
 export class WindowUtilityProcess extends UtilityProcess {
 	constructor(
 		@ILogService logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@ILifecycleMainService lifecycleMainService: ILifecycleMainService
+		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 	) {
 		super(logService, telemetryService, lifecycleMainService);
 	}

@@ -9,8 +9,8 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import { isEqual } from "../../../../base/common/extpath.js";
 import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { posix } from "../../../../base/common/path.js";
@@ -36,7 +36,7 @@ import type { IUriIdentityService } from "../../../../platform/uriIdentity/commo
 import type { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import type { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
 import { ExplorerFileNestingTrie } from "./explorerFileNestingTrie.js";
-import { type IFilesConfiguration, SortOrder } from "./files.js";
+import { SortOrder, type IFilesConfiguration } from "./files.js";
 
 export class ExplorerModel implements IDisposable {
 	private _roots!: ExplorerItem[];

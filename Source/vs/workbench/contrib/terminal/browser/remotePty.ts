@@ -5,10 +5,10 @@
 
 import { Barrier } from "../../../../base/common/async.js";
 import {
+	ITerminalLogService,
 	type IProcessPropertyMap,
 	type ITerminalChildProcess,
 	type ITerminalLaunchError,
-	ITerminalLogService,
 	type ProcessPropertyType,
 } from "../../../../platform/terminal/common/terminal.js";
 import { IRemoteAgentService } from "../../../services/remote/common/remoteAgentService.js";
@@ -22,8 +22,9 @@ export class RemotePty extends BasePty implements ITerminalChildProcess {
 		id: number,
 		shouldPersist: boolean,
 		private readonly _remoteTerminalChannel: RemoteTerminalChannelClient,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
-		@ITerminalLogService private readonly _logService: ITerminalLogService
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
+		@ITerminalLogService private readonly _logService: ITerminalLogService,
 	) {
 		super(id, shouldPersist);
 		this._startBarrier = new Barrier();

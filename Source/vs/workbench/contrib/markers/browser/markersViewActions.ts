@@ -18,6 +18,7 @@ import { IContextMenuService } from "../../../../platform/contextview/browser/co
 import { MarkersContextKeys } from "../common/markers.js";
 import type { Marker } from "./markersModel.js";
 import Messages from "./messages.js";
+
 import "./markersViewActions.css";
 
 export interface IMarkersFiltersChangeEvent {
@@ -175,7 +176,8 @@ export class QuickFixActionViewItem extends ActionViewItem {
 	constructor(
 		action: QuickFixAction,
 		options: IActionViewItemOptions,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 	) {
 		super(null, action, { ...options, icon: true, label: false });
 	}

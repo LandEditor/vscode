@@ -11,27 +11,27 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI, UriComponents } from "../../../../base/common/uri.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type {
 	Comment,
 	CommentInfo,
+	CommentingRangeResourceHint,
+	CommentingRanges,
 	CommentOptions,
 	CommentReaction,
 	CommentThread,
 	CommentThreadChangedEvent,
-	CommentingRangeResourceHint,
-	CommentingRanges,
 	PendingCommentThread,
 } from "../../../../editor/common/languages.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
@@ -309,63 +309,92 @@ export class CommentService extends Disposable implements ICommentService {
 	private _commentingRangeResourceHintSchemes = new Set<string>(); // schemes
 
 	constructor(
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
-		@IModelService private readonly modelService: IModelService
+		@IModelService private readonly modelService: IModelService,
 	) {
 		super();
 		this._handleConfiguration();
 		this._handleZenMode();
-		this._workspaceHasCommenting = CommentContextKeys.WorkspaceHasCommenting.bindTo(contextKeyService);
+		this._workspaceHasCommenting =
+			CommentContextKeys.WorkspaceHasCommenting.bindTo(contextKeyService);
 		const storageListener = this._register(new DisposableStore());
 
-		const storageEvent = Event.debounce(this.storageService.onDidChangeValue(StorageScope.WORKSPACE, CONTINUE_ON_COMMENTS, storageListener), (last, event) => last?.external ? last : event, 500);
-		storageListener.add(storageEvent(v => {
-			if (!v.external) {
-				return;
-			}
-			const commentsToRestore: PendingCommentThread[] | undefined = this.storageService.getObject(CONTINUE_ON_COMMENTS, StorageScope.WORKSPACE);
-			if (!commentsToRestore) {
-				return;
-			}
-			this.logService.debug(`Comments: URIs of continue on comments from storage ${commentsToRestore.map(thread => thread.uri.toString()).join(', ')}.`);
-			const changedOwners = this._addContinueOnComments(commentsToRestore, this._continueOnComments);
-			for (const uniqueOwner of changedOwners) {
-				const control = this._commentControls.get(uniqueOwner);
-				if (!control) {
-					continue;
+		const storageEvent = Event.debounce(
+			this.storageService.onDidChangeValue(
+				StorageScope.WORKSPACE,
+				CONTINUE_ON_COMMENTS,
+				storageListener,
+			),
+			(last, event) => (last?.external ? last : event),
+			500,
+		);
+		storageListener.add(
+			storageEvent((v) => {
+				if (!v.external) {
+					return;
 				}
-				const evt: ICommentThreadChangedEvent = {
-					uniqueOwner: uniqueOwner,
-					owner: control.owner,
-					ownerLabel: control.label,
-					pending: this._continueOnComments.get(uniqueOwner) || [],
-					added: [],
-					removed: [],
-					changed: []
-				};
-				this.updateModelThreads(evt);
-			}
-		}));
-		this._register(storageService.onWillSaveState(() => {
-			const map: Map<string, PendingCommentThread[]> = new Map();
-			for (const provider of this._continueOnCommentProviders) {
-				const pendingComments = provider.provideContinueOnComments();
-				this._addContinueOnComments(pendingComments, map);
-			}
-			this._saveContinueOnComments(map);
-		}));
+				const commentsToRestore: PendingCommentThread[] | undefined =
+					this.storageService.getObject(
+						CONTINUE_ON_COMMENTS,
+						StorageScope.WORKSPACE,
+					);
+				if (!commentsToRestore) {
+					return;
+				}
+				this.logService.debug(
+					`Comments: URIs of continue on comments from storage ${commentsToRestore.map((thread) => thread.uri.toString()).join(", ")}.`,
+				);
+				const changedOwners = this._addContinueOnComments(
+					commentsToRestore,
+					this._continueOnComments,
+				);
+				for (const uniqueOwner of changedOwners) {
+					const control = this._commentControls.get(uniqueOwner);
+					if (!control) {
+						continue;
+					}
+					const evt: ICommentThreadChangedEvent = {
+						uniqueOwner: uniqueOwner,
+						owner: control.owner,
+						ownerLabel: control.label,
+						pending:
+							this._continueOnComments.get(uniqueOwner) || [],
+						added: [],
+						removed: [],
+						changed: [],
+					};
+					this.updateModelThreads(evt);
+				}
+			}),
+		);
+		this._register(
+			storageService.onWillSaveState(() => {
+				const map: Map<string, PendingCommentThread[]> = new Map();
+				for (const provider of this._continueOnCommentProviders) {
+					const pendingComments =
+						provider.provideContinueOnComments();
+					this._addContinueOnComments(pendingComments, map);
+				}
+				this._saveContinueOnComments(map);
+			}),
+		);
 
-		this._register(this.modelService.onModelAdded(model => {
-			// Allows comment providers to cause their commenting ranges to be prefetched by opening text documents in the background.
-			if (!this._commentingRangeResources.has(model.uri.toString())) {
-				this.getDocumentComments(model.uri);
-			}
-		}));
+		this._register(
+			this.modelService.onModelAdded((model) => {
+				// Allows comment providers to cause their commenting ranges to be prefetched by opening text documents in the background.
+				if (!this._commentingRangeResources.has(model.uri.toString())) {
+					this.getDocumentComments(model.uri);
+				}
+			}),
+		);
 	}
 
 	private _updateResourcesWithCommentingRanges(

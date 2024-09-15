@@ -9,34 +9,34 @@ import { throttle } from "../../../../base/common/decorators.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as objects from "../../../../base/common/objects.js";
 import {
-	OS,
-	OperatingSystem,
 	isMacintosh,
 	isWeb,
 	isWindows,
+	OperatingSystem,
+	OS,
 } from "../../../../base/common/platform.js";
 import {
 	ConfigurationTarget,
 	IConfigurationService,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
+	TerminalSettingId,
+	TerminalSettingPrefix,
 	type IExtensionTerminalProfile,
 	type IShellLaunchConfig,
 	type ITerminalExecutable,
 	type ITerminalProfile,
 	type ITerminalProfileObject,
-	TerminalSettingId,
-	TerminalSettingPrefix,
 } from "../../../../platform/terminal/common/terminal.js";
 import { registerTerminalDefaultProfileConfiguration } from "../../../../platform/terminal/common/terminalPlatformConfiguration.js";
 import {
@@ -110,29 +110,43 @@ export class TerminalProfileService
 	}
 
 	constructor(
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITerminalContributionService private readonly _terminalContributionService: ITerminalContributionService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITerminalContributionService
+		private readonly _terminalContributionService: ITerminalContributionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IRemoteAgentService private _remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
 	) {
 		super();
 
 		// in web, we don't want to show the dropdown unless there's a web extension
 		// that contributes a profile
-		this._register(this._extensionService.onDidChangeExtensions(() => this.refreshAvailableProfiles()));
+		this._register(
+			this._extensionService.onDidChangeExtensions(() =>
+				this.refreshAvailableProfiles(),
+			),
+		);
 
-		this._webExtensionContributedProfileContextKey = TerminalContextKeys.webExtensionContributedProfile.bindTo(this._contextKeyService);
+		this._webExtensionContributedProfileContextKey =
+			TerminalContextKeys.webExtensionContributedProfile.bindTo(
+				this._contextKeyService,
+			);
 		this._updateWebContextKey();
-		this._profilesReadyPromise = this._remoteAgentService.getEnvironment()
+		this._profilesReadyPromise = this._remoteAgentService
+			.getEnvironment()
 			.then(() => {
 				// Wait up to 20 seconds for profiles to be ready so it's assured that we know the actual
 				// default terminal before launching the first terminal. This isn't expected to ever take
 				// this long.
 				this._profilesReadyBarrier = new AutoOpenBarrier(20000);
-				return this._profilesReadyBarrier.wait().then(() => { });
+				return this._profilesReadyBarrier.wait().then(() => {});
 			});
 		this.refreshAvailableProfiles();
 		this._setupConfigListener();

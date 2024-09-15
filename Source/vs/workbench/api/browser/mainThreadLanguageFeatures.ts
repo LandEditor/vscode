@@ -6,17 +6,17 @@
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	type IReadonlyVSDataTransfer,
-	VSDataTransfer,
 	createStringDataTransferItem,
+	VSDataTransfer,
+	type IReadonlyVSDataTransfer,
 } from "../../../base/common/dataTransfer.js";
 import { CancellationError } from "../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { HierarchicalKind } from "../../../base/common/hierarchicalKind.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableMap,
-	combinedDisposable,
 	toDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../base/common/map.js";
@@ -50,16 +50,22 @@ import * as callh from "../../contrib/callHierarchy/common/callHierarchy.js";
 import * as search from "../../contrib/search/common/search.js";
 import * as typeh from "../../contrib/typeHierarchy/common/typeHierarchy.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	ISuggestDataDtoField,
+	ISuggestResultDtoField,
+	MainContext,
 	type ExtHostLanguageFeaturesShape,
 	type HoverWithId,
 	type ICallHierarchyItemDto,
 	type ICodeActionDto,
 	type ICodeActionProviderMetadataDto,
+	type IdentifiableInlineCompletion,
+	type IdentifiableInlineCompletions,
+	type IdentifiableInlineEdit,
 	type IDocumentDropEditDto,
 	type IDocumentDropEditProviderMetadata,
 	type IDocumentFilterDto,
@@ -76,14 +82,8 @@ import {
 	type IRegExpDto,
 	type ISignatureHelpProviderMetadataDto,
 	type ISuggestDataDto,
-	ISuggestDataDtoField,
-	ISuggestResultDtoField,
 	type ITypeHierarchyItemDto,
 	type IWorkspaceSymbolDto,
-	type IdentifiableInlineCompletion,
-	type IdentifiableInlineCompletions,
-	type IdentifiableInlineEdit,
-	MainContext,
 	type MainThreadLanguageFeaturesShape,
 } from "../common/extHost.protocol.js";
 import * as typeConvert from "../common/extHostTypeConverters.js";
@@ -103,39 +103,53 @@ export class MainThreadLanguageFeatures
 	constructor(
 		extHostContext: IExtHostContext,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
 	) {
 		super();
 
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostLanguageFeatures);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostLanguageFeatures,
+		);
 
 		if (this._languageService) {
 			const updateAllWordDefinitions = () => {
 				const wordDefinitionDtos: ILanguageWordDefinitionDto[] = [];
 				for (const languageId of _languageService.getRegisteredLanguageIds()) {
-					const wordDefinition = this._languageConfigurationService.getLanguageConfiguration(languageId).getWordDefinition();
+					const wordDefinition = this._languageConfigurationService
+						.getLanguageConfiguration(languageId)
+						.getWordDefinition();
 					wordDefinitionDtos.push({
 						languageId: languageId,
 						regexSource: wordDefinition.source,
-						regexFlags: wordDefinition.flags
+						regexFlags: wordDefinition.flags,
 					});
 				}
 				this._proxy.$setWordDefinitions(wordDefinitionDtos);
 			};
-			this._register(this._languageConfigurationService.onDidChange((e) => {
-				if (e.languageId) {
-					const wordDefinition = this._languageConfigurationService.getLanguageConfiguration(e.languageId).getWordDefinition();
-					this._proxy.$setWordDefinitions([{
-						languageId: e.languageId,
-						regexSource: wordDefinition.source,
-						regexFlags: wordDefinition.flags
-					}]);
-				} else {
-					updateAllWordDefinitions();
-				}
-			}));
+			this._register(
+				this._languageConfigurationService.onDidChange((e) => {
+					if (e.languageId) {
+						const wordDefinition =
+							this._languageConfigurationService
+								.getLanguageConfiguration(e.languageId)
+								.getWordDefinition();
+						this._proxy.$setWordDefinitions([
+							{
+								languageId: e.languageId,
+								regexSource: wordDefinition.source,
+								regexFlags: wordDefinition.flags,
+							},
+						]);
+					} else {
+						updateAllWordDefinitions();
+					}
+				}),
+			);
 			updateAllWordDefinitions();
 		}
 	}
@@ -2052,60 +2066,112 @@ class MainThreadPasteEditProvider
 		private readonly _handle: number,
 		private readonly _proxy: ExtHostLanguageFeaturesShape,
 		metadata: IPasteEditProviderMetadataDto,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
 	) {
 		this.copyMimeTypes = metadata.copyMimeTypes;
 		this.pasteMimeTypes = metadata.pasteMimeTypes;
-		this.providedPasteEditKinds = metadata.providedPasteEditKinds?.map(kind => new HierarchicalKind(kind));
+		this.providedPasteEditKinds = metadata.providedPasteEditKinds?.map(
+			(kind) => new HierarchicalKind(kind),
+		);
 
 		if (metadata.supportsCopy) {
-			this.prepareDocumentPaste = async (model: ITextModel, selections: readonly IRange[], dataTransfer: IReadonlyVSDataTransfer, token: CancellationToken): Promise<IReadonlyVSDataTransfer | undefined> => {
-				const dataTransferDto = await typeConvert.DataTransfer.from(dataTransfer);
+			this.prepareDocumentPaste = async (
+				model: ITextModel,
+				selections: readonly IRange[],
+				dataTransfer: IReadonlyVSDataTransfer,
+				token: CancellationToken,
+			): Promise<IReadonlyVSDataTransfer | undefined> => {
+				const dataTransferDto =
+					await typeConvert.DataTransfer.from(dataTransfer);
 				if (token.isCancellationRequested) {
 					return undefined;
 				}
 
-				const newDataTransfer = await this._proxy.$prepareDocumentPaste(_handle, model.uri, selections, dataTransferDto, token);
+				const newDataTransfer = await this._proxy.$prepareDocumentPaste(
+					_handle,
+					model.uri,
+					selections,
+					dataTransferDto,
+					token,
+				);
 				if (!newDataTransfer) {
 					return undefined;
 				}
 
 				const dataTransferOut = new VSDataTransfer();
 				for (const [type, item] of newDataTransfer.items) {
-					dataTransferOut.replace(type, createStringDataTransferItem(item.asString));
+					dataTransferOut.replace(
+						type,
+						createStringDataTransferItem(item.asString),
+					);
 				}
 				return dataTransferOut;
 			};
 		}
 
 		if (metadata.supportsPaste) {
-			this.provideDocumentPasteEdits = async (model: ITextModel, selections: Selection[], dataTransfer: IReadonlyVSDataTransfer, context: languages.DocumentPasteContext, token: CancellationToken) => {
+			this.provideDocumentPasteEdits = async (
+				model: ITextModel,
+				selections: Selection[],
+				dataTransfer: IReadonlyVSDataTransfer,
+				context: languages.DocumentPasteContext,
+				token: CancellationToken,
+			) => {
 				const request = this.dataTransfers.add(dataTransfer);
 				try {
-					const dataTransferDto = await typeConvert.DataTransfer.from(dataTransfer);
+					const dataTransferDto =
+						await typeConvert.DataTransfer.from(dataTransfer);
 					if (token.isCancellationRequested) {
 						return;
 					}
 
-					const edits = await this._proxy.$providePasteEdits(this._handle, request.id, model.uri, selections, dataTransferDto, {
-						only: context.only?.value,
-						triggerKind: context.triggerKind,
-					}, token);
+					const edits = await this._proxy.$providePasteEdits(
+						this._handle,
+						request.id,
+						model.uri,
+						selections,
+						dataTransferDto,
+						{
+							only: context.only?.value,
+							triggerKind: context.triggerKind,
+						},
+						token,
+					);
 					if (!edits) {
 						return;
 					}
 
 					return {
-						edits: edits.map((edit): languages.DocumentPasteEdit => {
-							return {
-								...edit,
-								kind: edit.kind ? new HierarchicalKind(edit.kind.value) : new HierarchicalKind(''),
-								yieldTo: edit.yieldTo?.map(x => ({ kind: new HierarchicalKind(x) })),
-								additionalEdit: edit.additionalEdit ? reviveWorkspaceEditDto(edit.additionalEdit, this._uriIdentService, dataId => this.resolveFileData(request.id, dataId)) : undefined,
-							};
-						}),
+						edits: edits.map(
+							(edit): languages.DocumentPasteEdit => {
+								return {
+									...edit,
+									kind: edit.kind
+										? new HierarchicalKind(edit.kind.value)
+										: new HierarchicalKind(""),
+									yieldTo: edit.yieldTo?.map((x) => ({
+										kind: new HierarchicalKind(x),
+									})),
+									additionalEdit: edit.additionalEdit
+										? reviveWorkspaceEditDto(
+												edit.additionalEdit,
+												this._uriIdentService,
+												(dataId) =>
+													this.resolveFileData(
+														request.id,
+														dataId,
+													),
+											)
+										: undefined,
+								};
+							},
+						),
 						dispose: () => {
-							this._proxy.$releasePasteEdits(this._handle, request.id);
+							this._proxy.$releasePasteEdits(
+								this._handle,
+								request.id,
+							);
 						},
 					};
 				} finally {
@@ -2114,10 +2180,20 @@ class MainThreadPasteEditProvider
 			};
 		}
 		if (metadata.supportsResolve) {
-			this.resolveDocumentPasteEdit = async (edit: languages.DocumentPasteEdit, token: CancellationToken) => {
-				const resolved = await this._proxy.$resolvePasteEdit(this._handle, (<IPasteEditDto>edit)._cacheId!, token);
+			this.resolveDocumentPasteEdit = async (
+				edit: languages.DocumentPasteEdit,
+				token: CancellationToken,
+			) => {
+				const resolved = await this._proxy.$resolvePasteEdit(
+					this._handle,
+					(<IPasteEditDto>edit)._cacheId!,
+					token,
+				);
 				if (resolved.additionalEdit) {
-					edit.additionalEdit = reviveWorkspaceEditDto(resolved.additionalEdit, this._uriIdentService);
+					edit.additionalEdit = reviveWorkspaceEditDto(
+						resolved.additionalEdit,
+						this._uriIdentService,
+					);
 				}
 				return edit;
 			};
@@ -2142,15 +2218,23 @@ class MainThreadDocumentOnDropEditProvider
 		private readonly _handle: number,
 		private readonly _proxy: ExtHostLanguageFeaturesShape,
 		metadata: IDocumentDropEditProviderMetadata | undefined,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
 	) {
-		this.dropMimeTypes = metadata?.dropMimeTypes ?? ['*/*'];
+		this.dropMimeTypes = metadata?.dropMimeTypes ?? ["*/*"];
 
 		if (metadata?.supportsResolve) {
 			this.resolveDocumentDropEdit = async (edit, token) => {
-				const resolved = await this._proxy.$resolvePasteEdit(this._handle, (<IDocumentDropEditDto>edit)._cacheId!, token);
+				const resolved = await this._proxy.$resolvePasteEdit(
+					this._handle,
+					(<IDocumentDropEditDto>edit)._cacheId!,
+					token,
+				);
 				if (resolved.additionalEdit) {
-					edit.additionalEdit = reviveWorkspaceEditDto(resolved.additionalEdit, this._uriIdentService);
+					edit.additionalEdit = reviveWorkspaceEditDto(
+						resolved.additionalEdit,
+						this._uriIdentService,
+					);
 				}
 				return edit;
 			};

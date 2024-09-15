@@ -12,8 +12,8 @@ import { isUndefined } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { ITextEditorOptions } from "../../../../platform/editor/common/editor.js";
 import {
-	type ExtensionKind,
 	IEnvironmentService,
+	type ExtensionKind,
 	type IExtensionHostDebugParams,
 } from "../../../../platform/environment/common/environment.js";
 import { EXTENSION_IDENTIFIER_WITH_LOG_REGEX } from "../../../../platform/environment/common/environmentService.js";
@@ -410,7 +410,8 @@ export class BrowserWorkbenchEnvironmentService
 						extensionHostDebugEnvironment.extensionDevelopmentLocationURI.push(
 							URI.parse(value),
 						);
-						extensionHostDebugEnvironment.isExtensionDevelopment = true;
+						extensionHostDebugEnvironment.isExtensionDevelopment =
+							true;
 						break;
 					case "extensionDevelopmentKind":
 						extensionHostDebugEnvironment.extensionDevelopmentKind =

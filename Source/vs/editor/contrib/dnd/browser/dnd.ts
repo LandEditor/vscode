@@ -8,13 +8,15 @@ import type { IMouseEvent } from "../../../../base/browser/mouseEvent.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
+
 import "./dnd.css";
+
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
 	type IMouseTarget,
 	type IPartialEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorContributionInstantiation,
@@ -27,9 +29,9 @@ import { Range } from "../../../common/core/range.js";
 import { Selection } from "../../../common/core/selection.js";
 import { CursorChangeReason } from "../../../common/cursorEvents.js";
 import {
+	ScrollType,
 	type IEditorContribution,
 	type IEditorDecorationsCollection,
-	ScrollType,
 } from "../../../common/editorCommon.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import { DragAndDropCommand } from "./dragAndDropCommand.js";

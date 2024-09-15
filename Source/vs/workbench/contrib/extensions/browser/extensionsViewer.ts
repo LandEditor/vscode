@@ -24,9 +24,9 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -44,15 +44,15 @@ import {
 	listFocusForeground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
+	registerThemingParticipant,
 	type IColorTheme,
 	type ICssStyleCollector,
-	registerThemingParticipant,
 } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../common/extensions.js";
-import { type Delegate, Renderer } from "./extensionsList.js";
+import { Renderer, type Delegate } from "./extensionsList.js";
 import { getAriaLabelForExtension } from "./extensionsViews.js";
 
 export class ExtensionsGridView extends Disposable {
@@ -64,11 +64,22 @@ export class ExtensionsGridView extends Disposable {
 	constructor(
 		parent: HTMLElement,
 		delegate: Delegate,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		this.element = dom.append(parent, dom.$('.extensions-grid-view'));
-		this.renderer = this.instantiationService.createInstance(Renderer, { onFocus: Event.None, onBlur: Event.None }, { hoverOptions: { position() { return HoverPosition.BELOW; } } });
+		this.element = dom.append(parent, dom.$(".extensions-grid-view"));
+		this.renderer = this.instantiationService.createInstance(
+			Renderer,
+			{ onFocus: Event.None, onBlur: Event.None },
+			{
+				hoverOptions: {
+					position() {
+						return HoverPosition.BELOW;
+					},
+				},
+			},
+		);
 		this.delegate = delegate;
 		this.disposableStore = this._register(new DisposableStore());
 	}
@@ -183,8 +194,10 @@ class ExtensionRenderer
 {
 	static readonly TEMPLATE_ID = "extension-template";
 
-	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) {
-	}
+	constructor(
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	public get templateId(): string {
 		return ExtensionRenderer.TEMPLATE_ID;
@@ -299,8 +312,11 @@ class UnknownExtensionRenderer
 class OpenExtensionAction extends Action {
 	private _extension: IExtension | undefined;
 
-	constructor(@IExtensionsWorkbenchService private readonly extensionsWorkdbenchService: IExtensionsWorkbenchService) {
-		super('extensions.action.openExtension', '');
+	constructor(
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkdbenchService: IExtensionsWorkbenchService,
+	) {
+		super("extensions.action.openExtension", "");
 	}
 
 	public set extension(extension: IExtension) {
@@ -329,7 +345,8 @@ export class ExtensionsTree extends WorkbenchAsyncDataTree<
 		@IListService listService: IListService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IExtensionsWorkbenchService extensionsWorkdbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkdbenchService: IExtensionsWorkbenchService,
 	) {
 		const delegate = new VirualDelegate();
 		const dataSource = new AsyncDataSource();

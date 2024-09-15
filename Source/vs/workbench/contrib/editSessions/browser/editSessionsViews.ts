@@ -37,11 +37,11 @@ import {
 } from "../../../browser/parts/views/treeView.js";
 import {
 	Extensions,
+	TreeItemCollapsibleState,
 	type ITreeItem,
 	type ITreeViewDataProvider,
 	type ITreeViewDescriptor,
 	type IViewsRegistry,
-	TreeItemCollapsibleState,
 	type TreeViewItemHandleArg,
 	type ViewContainer,
 } from "../../../common/views.js";
@@ -51,8 +51,8 @@ import {
 	EDIT_SESSIONS_SCHEME,
 	EDIT_SESSIONS_SHOW_VIEW,
 	EDIT_SESSIONS_TITLE,
-	type EditSession,
 	IEditSessionsStorageService,
+	type EditSession,
 } from "../common/editSessions.js";
 
 const EDIT_SESSIONS_COUNT_KEY = "editSessionsCount";
@@ -64,7 +64,8 @@ const EDIT_SESSIONS_COUNT_CONTEXT_KEY = new RawContextKey<number>(
 export class EditSessionsDataViews extends Disposable {
 	constructor(
 		container: ViewContainer,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 		this.registerViews(container);
@@ -306,12 +307,17 @@ class EditSessionDataViewDataProvider implements ITreeViewDataProvider {
 	private editSessionsCount;
 
 	constructor(
-		@IEditSessionsStorageService private readonly editSessionsStorageService: IEditSessionsStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IEditSessionsStorageService
+		private readonly editSessionsStorageService: IEditSessionsStorageService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IFileService private readonly fileService: IFileService,
 	) {
-		this.editSessionsCount = EDIT_SESSIONS_COUNT_CONTEXT_KEY.bindTo(this.contextKeyService);
+		this.editSessionsCount = EDIT_SESSIONS_COUNT_CONTEXT_KEY.bindTo(
+			this.contextKeyService,
+		);
 	}
 
 	async getChildren(element?: ITreeItem): Promise<ITreeItem[]> {

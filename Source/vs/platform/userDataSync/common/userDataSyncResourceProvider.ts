@@ -16,8 +16,8 @@ import { IInstantiationService } from "../../instantiation/common/instantiation.
 import { IStorageService } from "../../storage/common/storage.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import { isSyncData } from "./abstractSynchronizer.js";
 import {
@@ -39,19 +39,19 @@ import {
 } from "./userDataProfilesManifestSync.js";
 import {
 	CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM,
-	type ISyncData,
-	type ISyncResourceHandle,
-	type ISyncUserDataProfile,
-	type IUserData,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
-	type IUserDataSyncResource,
-	type IUserDataSyncResourceProviderService,
 	IUserDataSyncStoreService,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
+	type ISyncData,
+	type ISyncResourceHandle,
+	type ISyncUserDataProfile,
+	type IUserData,
+	type IUserDataSyncResource,
+	type IUserDataSyncResourceProviderService,
 } from "./userDataSync.js";
 import type {
 	IMachinesData,
@@ -80,16 +80,23 @@ export class UserDataSyncResourceProviderService
 	private readonly extUri: IExtUri;
 
 	constructor(
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService private readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
-		@IUserDataSyncLogService protected readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		private readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncLogService
+		protected readonly logService: IUserDataSyncLogService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		this.extUri = uriIdentityService.extUri;
 	}

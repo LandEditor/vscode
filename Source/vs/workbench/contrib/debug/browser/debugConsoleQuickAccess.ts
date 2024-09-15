@@ -8,17 +8,17 @@ import type { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
+	PickerQuickAccessProvider,
 	type FastAndSlowPicks,
 	type IPickerQuickAccessItem,
-	PickerQuickAccessProvider,
 	type Picks,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import type { IQuickPickSeparator } from "../../../../platform/quickinput/common/quickInput.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	IDebugService,
-	type IDebugSession,
 	REPL_VIEW_ID,
+	type IDebugSession,
 } from "../common/debug.js";
 import {
 	DEBUG_CONSOLE_QUICK_ACCESS_PREFIX,
@@ -31,7 +31,9 @@ export class DebugConsoleQuickAccess extends PickerQuickAccessProvider<IPickerQu
 		@IViewsService private readonly _viewsService: IViewsService,
 		@ICommandService private readonly _commandService: ICommandService,
 	) {
-		super(DEBUG_CONSOLE_QUICK_ACCESS_PREFIX, { canAcceptInBackground: true });
+		super(DEBUG_CONSOLE_QUICK_ACCESS_PREFIX, {
+			canAcceptInBackground: true,
+		});
 	}
 
 	protected _getPicks(

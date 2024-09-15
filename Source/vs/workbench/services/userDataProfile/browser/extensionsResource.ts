@@ -11,9 +11,9 @@ import { GlobalExtensionEnablementService } from "../../../../platform/extension
 import {
 	EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT,
 	IExtensionGalleryService,
-	type IExtensionIdentifier,
 	IExtensionManagementService,
 	IGlobalExtensionEnablementService,
+	type IExtensionIdentifier,
 	type ILocalExtension,
 	type InstallExtensionInfo,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
@@ -24,20 +24,20 @@ import { ServiceCollection } from "../../../../platform/instantiation/common/ser
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import {
-	type IUserDataProfile,
 	ProfileResourceType,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { IUserDataProfileStorageService } from "../../../../platform/userDataProfile/common/userDataProfileStorageService.js";
 import {
-	type ITreeItemCheckboxState,
 	TreeItemCollapsibleState,
+	type ITreeItemCheckboxState,
 } from "../../../common/views.js";
 import {
+	IUserDataProfileService,
 	type IProfileResource,
 	type IProfileResourceChildTreeItem,
 	type IProfileResourceInitializer,
 	type IProfileResourceTreeItem,
-	IUserDataProfileService,
 } from "../common/userDataProfile.js";
 
 interface IProfileExtension {
@@ -52,13 +52,16 @@ export class ExtensionsResourceInitializer
 	implements IProfileResourceInitializer
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IGlobalExtensionEnablementService private readonly extensionEnablementService: IGlobalExtensionEnablementService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IGlobalExtensionEnablementService
+		private readonly extensionEnablementService: IGlobalExtensionEnablementService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const profileExtensions: IProfileExtension[] = JSON.parse(content);
@@ -165,7 +168,8 @@ export class ExtensionsResourceInitializer
 						await this.extensionManagementService.installFromGallery(
 							extension,
 							{
-								isMachineScoped: false /* set isMachineScoped value to prevent install and sync dialog in web */,
+								isMachineScoped:
+									false /* set isMachineScoped value to prevent install and sync dialog in web */,
 								donotIncludePackAndDependencies: true,
 								installGivenVersion: !!e.version,
 								installPreReleaseVersion: e.preRelease,
@@ -173,7 +177,8 @@ export class ExtensionsResourceInitializer
 									this.userDataProfileService.currentProfile
 										.extensionsResource,
 								context: {
-									[EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT]: true,
+									[EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT]:
+										true,
 								},
 							},
 						);
@@ -203,13 +208,16 @@ export class ExtensionsResourceInitializer
 
 export class ExtensionsResource implements IProfileResource {
 	constructor(
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IUserDataProfileStorageService private readonly userDataProfileStorageService: IUserDataProfileStorageService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IUserDataProfileStorageService
+		private readonly userDataProfileStorageService: IUserDataProfileStorageService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async getContent(
 		profile: IUserDataProfile,
@@ -355,14 +363,16 @@ export class ExtensionsResource implements IProfileResource {
 								installExtensionInfos.push({
 									extension,
 									options: {
-										isMachineScoped: false /* set isMachineScoped value to prevent install and sync dialog in web */,
+										isMachineScoped:
+											false /* set isMachineScoped value to prevent install and sync dialog in web */,
 										donotIncludePackAndDependencies: true,
 										installGivenVersion: !!e.version,
 										installPreReleaseVersion: e.preRelease,
 										profileLocation:
 											profile.extensionsResource,
 										context: {
-											[EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT]: true,
+											[EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT]:
+												true,
 										},
 									},
 								});
@@ -630,7 +640,8 @@ export abstract class ExtensionsResourceTreeItem
 export class ExtensionsResourceExportTreeItem extends ExtensionsResourceTreeItem {
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -658,7 +669,8 @@ export class ExtensionsResourceExportTreeItem extends ExtensionsResourceTreeItem
 export class ExtensionsResourceImportTreeItem extends ExtensionsResourceTreeItem {
 	constructor(
 		private readonly content: string,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}

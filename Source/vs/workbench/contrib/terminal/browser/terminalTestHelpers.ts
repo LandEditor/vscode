@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal } from "@xterm/xterm";
+
 import { timeout } from "../../../../base/common/async.js";
 
 export async function writeP(terminal: Terminal, data: string): Promise<void> {

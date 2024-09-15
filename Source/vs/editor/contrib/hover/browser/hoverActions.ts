@@ -35,6 +35,7 @@ import {
 	SHOW_OR_FOCUS_HOVER_ACTION_ID,
 } from "./hoverActionIds.js";
 import { HoverStartMode, HoverStartSource } from "./hoverOperation.js";
+
 import "./hover.css";
 
 enum HoverFocusBehavior {

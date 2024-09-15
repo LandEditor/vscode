@@ -7,13 +7,10 @@ import { equalsIfDefined, itemsEquals } from "../../base/common/equals.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ITransaction,
-	TransactionImpl,
 	autorun,
 	autorunOpts,
 	derived,
@@ -23,6 +20,9 @@ import {
 	observableSignal,
 	observableValue,
 	observableValueOpts,
+	TransactionImpl,
+	type IObservable,
+	type ITransaction,
 } from "../../base/common/observable.js";
 import {
 	EditorOption,

@@ -3,17 +3,17 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer, encodeBase64 } from "../../../base/common/buffer.js";
+import { encodeBase64, VSBuffer } from "../../../base/common/buffer.js";
 import {
 	Emitter,
-	type Event,
 	PauseableEmitter,
+	type Event,
 } from "../../../base/common/event.js";
 import { Disposable, DisposableStore } from "../../../base/common/lifecycle.js";
 import {
+	SocketDiagnostics,
 	type ISocket,
 	type SocketCloseEvent,
-	SocketDiagnostics,
 	type SocketDiagnosticsEventType,
 } from "../../../base/parts/ipc/common/ipc.net.js";
 

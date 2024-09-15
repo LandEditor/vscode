@@ -6,25 +6,26 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { isNumber } from "../../../base/common/types.js";
 import { localize } from "../../../nls.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostStatusBarShape,
 	type ICommandDto,
 	type IMainContext,
-	MainContext,
 	type MainThreadStatusBarShape,
 	type StatusBarItemDto,
 } from "./extHost.protocol.js";
 import type { CommandsConverter } from "./extHostCommands.js";
 import { MarkdownString } from "./extHostTypeConverters.js";
 import {
+	asStatusBarItemIdentifier,
 	Disposable,
 	StatusBarAlignment as ExtHostStatusBarAlignment,
 	ThemeColor,
-	asStatusBarItemIdentifier,
 } from "./extHostTypes.js";
 
 export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
@@ -256,9 +257,9 @@ export class ExtHostStatusBarEntry implements vscode.StatusBarItem {
 		this.update();
 	}
 
-	public set accessibilityInformation(accessibilityInformation:
-		| vscode.AccessibilityInformation
-		| undefined) {
+	public set accessibilityInformation(
+		accessibilityInformation: vscode.AccessibilityInformation | undefined,
+	) {
 		this._accessibilityInformation = accessibilityInformation;
 		this.update();
 	}

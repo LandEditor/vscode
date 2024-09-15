@@ -8,11 +8,11 @@ import { ResourceMap } from "../../../base/common/map.js";
 import { URI } from "../../../base/common/uri.js";
 import type { IServerChannel } from "../../../base/parts/ipc/common/ipc.js";
 import {
-	type ILogger,
-	type ILoggerOptions,
-	LogLevel,
 	isLogLevel,
 	log,
+	LogLevel,
+	type ILogger,
+	type ILoggerOptions,
 } from "../common/log.js";
 import type { ILoggerMainService } from "./loggerService.js";
 

@@ -4,19 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./overlayWidgets.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type * as viewEvents from "../../../common/viewEvents.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";
 import {
+	OverlayWidgetPositionPreference,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
 	type IOverlayWidgetPositionCoordinates,
-	OverlayWidgetPositionPreference,
 } from "../../editorBrowser.js";
 import type {
 	RenderingContext,

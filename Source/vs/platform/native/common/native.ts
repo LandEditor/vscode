@@ -22,10 +22,10 @@ import type { AuthInfo, Credentials } from "../../request/common/request.js";
 import type { IPartsSplash } from "../../theme/common/themeService.js";
 import type {
 	IColorScheme,
-	IOpenEmptyWindowOptions,
-	IOpenWindowOptions,
 	IOpenedAuxiliaryWindow,
 	IOpenedMainWindow,
+	IOpenEmptyWindowOptions,
+	IOpenWindowOptions,
 	IPoint,
 	IRectangle,
 	IWindowOpenable,
@@ -95,12 +95,12 @@ export interface ICommonNativeHostService {
 	}>;
 
 	// Window
-	getWindows(options: { includeAuxiliaryWindows: true }): Promise<
-		Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>
-	>;
-	getWindows(options: { includeAuxiliaryWindows: false }): Promise<
-		Array<IOpenedMainWindow>
-	>;
+	getWindows(options: {
+		includeAuxiliaryWindows: true;
+	}): Promise<Array<IOpenedMainWindow | IOpenedAuxiliaryWindow>>;
+	getWindows(options: {
+		includeAuxiliaryWindows: false;
+	}): Promise<Array<IOpenedMainWindow>>;
 	getWindowCount(): Promise<number>;
 	getActiveWindowId(): Promise<number | undefined>;
 	getActiveWindowPosition(): Promise<IRectangle | undefined>;

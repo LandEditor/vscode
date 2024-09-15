@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	app,
 	type AuthenticationResponseDetails,
 	type AuthInfo as ElectronAuthInfo,
 	type Event as ElectronEvent,
 	type WebContents,
-	app,
 } from "electron";
+
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { Event } from "../../../base/common/event.js";
 import { hash } from "../../../base/common/hash.js";
@@ -62,11 +63,16 @@ export class ProxyAuthService extends Disposable implements IProxyAuthService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IEncryptionMainService private readonly encryptionMainService: IEncryptionMainService,
-		@IApplicationStorageMainService private readonly applicationStorageMainService: IApplicationStorageMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@IEncryptionMainService
+		private readonly encryptionMainService: IEncryptionMainService,
+		@IApplicationStorageMainService
+		private readonly applicationStorageMainService: IApplicationStorageMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 	) {
 		super();
 

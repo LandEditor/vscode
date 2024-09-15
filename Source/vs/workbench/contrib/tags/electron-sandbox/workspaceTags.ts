@@ -30,9 +30,9 @@ import { IWorkspaceContextService } from "../../../../platform/workspace/common/
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { ITextFileService } from "../../../services/textfile/common/textfiles.js";
 import {
+	getHashedRemotesFromConfig as baseGetHashedRemotesFromConfig,
 	IWorkspaceTagsService,
 	type Tags,
-	getHashedRemotesFromConfig as baseGetHashedRemotesFromConfig,
 } from "../common/workspaceTags.js";
 
 export async function getHashedRemotesFromConfig(
@@ -47,14 +47,18 @@ export async function getHashedRemotesFromConfig(
 export class WorkspaceTags implements IWorkbenchContribution {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IRequestService private readonly requestService: IRequestService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IWorkspaceTagsService private readonly workspaceTagsService: IWorkspaceTagsService,
-		@IDiagnosticsService private readonly diagnosticsService: IDiagnosticsService,
+		@IWorkspaceTagsService
+		private readonly workspaceTagsService: IWorkspaceTagsService,
+		@IDiagnosticsService
+		private readonly diagnosticsService: IDiagnosticsService,
 		@IProductService private readonly productService: IProductService,
-		@INativeHostService private readonly nativeHostService: INativeHostService
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 	) {
 		if (this.telemetryService.telemetryLevel === TelemetryLevel.USAGE) {
 			this.report();

@@ -41,8 +41,8 @@ import {
 	openSearchView,
 } from "./searchActionsBase.js";
 import {
-	type FileMatchOrMatch,
 	FolderMatch,
+	type FileMatchOrMatch,
 	type RenderableMatch,
 } from "./searchModel.js";
 

@@ -5,7 +5,7 @@
 
 import { Emitter } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../../base/common/platform.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	InstantiationType,
@@ -17,8 +17,8 @@ import {
 	readKeyboardConfig,
 } from "../../../../platform/keyboardLayout/common/keyboardConfig.js";
 import {
-	type IKeyboardLayoutInfo,
 	IKeyboardLayoutService,
+	type IKeyboardLayoutInfo,
 	type IKeyboardMapping,
 	type ILinuxKeyboardLayoutInfo,
 	type IMacKeyboardLayoutInfo,
@@ -49,23 +49,31 @@ export class KeyboardLayoutService
 	private _keyboardMapper: IKeyboardMapper | null;
 
 	constructor(
-		@INativeKeyboardLayoutService private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@INativeKeyboardLayoutService
+		private readonly _nativeKeyboardLayoutService: INativeKeyboardLayoutService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 		this._keyboardMapper = null;
 
-		this._register(this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(async () => {
-			this._keyboardMapper = null;
-			this._onDidChangeKeyboardLayout.fire();
-		}));
+		this._register(
+			this._nativeKeyboardLayoutService.onDidChangeKeyboardLayout(
+				async () => {
+					this._keyboardMapper = null;
+					this._onDidChangeKeyboardLayout.fire();
+				},
+			),
+		);
 
-		this._register(_configurationService.onDidChangeConfiguration(async (e) => {
-			if (e.affectsConfiguration('keyboard')) {
-				this._keyboardMapper = null;
-				this._onDidChangeKeyboardLayout.fire();
-			}
-		}));
+		this._register(
+			_configurationService.onDidChangeConfiguration(async (e) => {
+				if (e.affectsConfiguration("keyboard")) {
+					this._keyboardMapper = null;
+					this._onDidChangeKeyboardLayout.fire();
+				}
+			}),
+		);
 	}
 
 	public getRawKeyboardMapping(): IKeyboardMapping | null {

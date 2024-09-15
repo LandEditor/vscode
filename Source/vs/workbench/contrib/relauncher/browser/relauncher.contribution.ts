@@ -6,9 +6,9 @@
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	isLinux,
@@ -20,26 +20,26 @@ import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import {
 	ConfigurationTarget,
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWindowSettings,
-	type IWindowsConfiguration,
 	TitleBarSetting,
 	TitlebarStyle,
+	type IWindowsConfiguration,
+	type IWindowSettings,
 } from "../../../../platform/window/common/window.js";
 import {
 	IWorkspaceContextService,
 	WorkbenchState,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
@@ -103,14 +103,19 @@ export class SettingsChangeRelauncher
 
 	constructor(
 		@IHostService private readonly hostService: IHostService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IProductService private readonly productService: IProductService,
-		@IDialogService private readonly dialogService: IDialogService
+		@IDialogService private readonly dialogService: IDialogService,
 	) {
 		super();
 
 		this.onConfigurationChange(undefined);
-		this._register(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationChange(e)));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.onConfigurationChange(e),
+			),
+		);
 	}
 
 	private onConfigurationChange(
@@ -333,38 +338,55 @@ export class WorkspaceChangeExtHostRelauncher
 	private onDidChangeWorkspaceFoldersUnbind: IDisposable | undefined;
 
 	constructor(
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IExtensionService extensionService: IExtensionService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
 
-		this.extensionHostRestarter = this._register(new RunOnceScheduler(async () => {
-			if (!!environmentService.extensionTestsLocationURI) {
-				return; // no restart when in tests: see https://github.com/microsoft/vscode/issues/66936
-			}
-
-			if (environmentService.remoteAuthority) {
-				hostService.reload(); // TODO@aeschli, workaround
-			} else if (isNative) {
-				const stopped = await extensionService.stopExtensionHosts(localize('restartExtensionHost.reason', "Restarting extension host due to a workspace folder change."));
-				if (stopped) {
-					extensionService.startExtensionHosts();
+		this.extensionHostRestarter = this._register(
+			new RunOnceScheduler(async () => {
+				if (!!environmentService.extensionTestsLocationURI) {
+					return; // no restart when in tests: see https://github.com/microsoft/vscode/issues/66936
 				}
-			}
-		}, 10));
 
-		this.contextService.getCompleteWorkspace()
-			.then(workspace => {
-				this.firstFolderResource = workspace.folders.length > 0 ? workspace.folders[0].uri : undefined;
-				this.handleWorkbenchState();
-				this._register(this.contextService.onDidChangeWorkbenchState(() => setTimeout(() => this.handleWorkbenchState())));
-			});
+				if (environmentService.remoteAuthority) {
+					hostService.reload(); // TODO@aeschli, workaround
+				} else if (isNative) {
+					const stopped = await extensionService.stopExtensionHosts(
+						localize(
+							"restartExtensionHost.reason",
+							"Restarting extension host due to a workspace folder change.",
+						),
+					);
+					if (stopped) {
+						extensionService.startExtensionHosts();
+					}
+				}
+			}, 10),
+		);
 
-		this._register(toDisposable(() => {
-			this.onDidChangeWorkspaceFoldersUnbind?.dispose();
-		}));
+		this.contextService.getCompleteWorkspace().then((workspace) => {
+			this.firstFolderResource =
+				workspace.folders.length > 0
+					? workspace.folders[0].uri
+					: undefined;
+			this.handleWorkbenchState();
+			this._register(
+				this.contextService.onDidChangeWorkbenchState(() =>
+					setTimeout(() => this.handleWorkbenchState()),
+				),
+			);
+		});
+
+		this._register(
+			toDisposable(() => {
+				this.onDidChangeWorkspaceFoldersUnbind?.dispose();
+			}),
+		);
 	}
 
 	private handleWorkbenchState(): void {

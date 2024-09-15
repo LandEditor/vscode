@@ -13,8 +13,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type ITextEditorOptions,
 	TextEditorSelectionRevealType,
+	type ITextEditorOptions,
 } from "../../../../platform/editor/common/editor.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { IListService } from "../../../../platform/list/browser/listService.js";

@@ -45,20 +45,32 @@ export class WorkbenchHoverDelegate
 	private readonly hoverDisposables = this._register(new DisposableStore());
 
 	constructor(
-		public readonly placement: 'mouse' | 'element',
+		public readonly placement: "mouse" | "element",
 		private readonly instantHover: boolean,
-		private overrideOptions: Partial<IHoverOptions> | ((options: IHoverDelegateOptions, focus?: boolean) => Partial<IHoverOptions>) = {},
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		private overrideOptions:
+			| Partial<IHoverOptions>
+			| ((
+					options: IHoverDelegateOptions,
+					focus?: boolean,
+			  ) => Partial<IHoverOptions>) = {},
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super();
 
-		this._delay = this.configurationService.getValue<number>('workbench.hover.delay');
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('workbench.hover.delay')) {
-				this._delay = this.configurationService.getValue<number>('workbench.hover.delay');
-			}
-		}));
+		this._delay = this.configurationService.getValue<number>(
+			"workbench.hover.delay",
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("workbench.hover.delay")) {
+					this._delay = this.configurationService.getValue<number>(
+						"workbench.hover.delay",
+					);
+				}
+			}),
+		);
 	}
 
 	showHover(

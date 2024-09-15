@@ -14,19 +14,21 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IJSONEditingService } from "../../../services/configuration/common/jsonEditing.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 
 class EncryptionContribution implements IWorkbenchContribution {
 	constructor(
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IStorageService private readonly storageService: IStorageService
+		@IStorageService private readonly storageService: IStorageService,
 	) {
 		this.migrateToGnomeLibsecret();
 	}

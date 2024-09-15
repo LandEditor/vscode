@@ -5,10 +5,10 @@
 
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {

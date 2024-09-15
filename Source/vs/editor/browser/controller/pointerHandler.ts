@@ -15,11 +15,11 @@ import { Disposable } from "../../../base/common/lifecycle.js";
 import * as platform from "../../../base/common/platform.js";
 import type { ViewContext } from "../../common/viewModel/viewContext.js";
 import { NavigationCommandRevealType } from "../coreCommands.js";
-import { type IMouseTarget, MouseTargetType } from "../editorBrowser.js";
+import { MouseTargetType, type IMouseTarget } from "../editorBrowser.js";
 import { EditorMouseEvent, EditorPointerEventFactory } from "../editorDom.js";
 import type { ViewController } from "../view/viewController.js";
 import { TextAreaSyntethicEvents } from "./editContext/textArea/textAreaEditContextInput.js";
-import { type IPointerHandlerHelper, MouseHandler } from "./mouseHandler.js";
+import { MouseHandler, type IPointerHandlerHelper } from "./mouseHandler.js";
 
 /**
  * Currently only tested on iOS 13/ iPadOS.

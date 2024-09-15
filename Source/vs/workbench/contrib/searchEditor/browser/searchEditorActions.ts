@@ -5,10 +5,12 @@
 
 import { Schemas } from "../../../../base/common/network.js";
 import type { URI } from "../../../../base/common/uri.js";
+
 import "./media/searchEditor.css";
+
 import {
-	type ICodeEditor,
 	isDiffEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import type { IEditorOptions } from "../../../../editor/common/config/editorOptions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -35,8 +37,8 @@ import type { SearchResult } from "../../search/browser/searchModel.js";
 import type { OpenSearchEditorArgs } from "./searchEditor.contribution.js";
 import type { SearchEditor } from "./searchEditor.js";
 import {
-	SearchEditorInput,
 	getOrMakeSearchEditorInput,
+	SearchEditorInput,
 } from "./searchEditorInput.js";
 import { serializeSearchResultForEditor } from "./searchEditorSerialization.js";
 

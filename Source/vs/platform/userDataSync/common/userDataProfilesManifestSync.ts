@@ -13,8 +13,8 @@ import { IStorageService } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	AbstractSynchroniser,
@@ -25,19 +25,19 @@ import {
 import { merge } from "./userDataProfilesManifestMerge.js";
 import {
 	Change,
-	type IRemoteUserData,
-	type ISyncData,
-	type ISyncUserDataProfile,
-	type IUserDataResourceManifest,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
-	type IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
+	type IRemoteUserData,
+	type ISyncData,
+	type ISyncUserDataProfile,
+	type IUserDataResourceManifest,
+	type IUserDataSynchroniser,
 } from "./userDataSync.js";
 
 interface IUserDataProfileManifestResourceMergeResult extends IAcceptResult {
@@ -87,20 +87,41 @@ export class UserDataProfilesManifestSynchroniser
 	constructor(
 		profile: IUserDataProfile,
 		collection: string | undefined,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
-		super({ syncResource: SyncResource.Profiles, profile }, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, configurationService, uriIdentityService);
-		this._register(userDataProfilesService.onDidChangeProfiles(() => this.triggerLocalChange()));
+		super(
+			{ syncResource: SyncResource.Profiles, profile },
+			collection,
+			fileService,
+			environmentService,
+			storageService,
+			userDataSyncStoreService,
+			userDataSyncLocalStoreService,
+			userDataSyncEnablementService,
+			telemetryService,
+			logService,
+			configurationService,
+			uriIdentityService,
+		);
+		this._register(
+			userDataProfilesService.onDidChangeProfiles(() =>
+				this.triggerLocalChange(),
+			),
+		);
 	}
 
 	async getLastSyncedProfiles(): Promise<ISyncUserDataProfile[] | null> {

@@ -7,8 +7,8 @@ import { Disposable } from "../../../../base/common/lifecycle.js";
 import { basename } from "../../../../base/common/resources.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IConfirmationResult,
 	IDialogService,
+	type IConfirmationResult,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
@@ -56,29 +56,40 @@ export class UnusualLineTerminatorsDetector
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
 	) {
 		super();
 
-		this._config = this._editor.getOption(EditorOption.unusualLineTerminators);
-		this._register(this._editor.onDidChangeConfiguration((e) => {
-			if (e.hasChanged(EditorOption.unusualLineTerminators)) {
-				this._config = this._editor.getOption(EditorOption.unusualLineTerminators);
+		this._config = this._editor.getOption(
+			EditorOption.unusualLineTerminators,
+		);
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.unusualLineTerminators)) {
+					this._config = this._editor.getOption(
+						EditorOption.unusualLineTerminators,
+					);
+					this._checkForUnusualLineTerminators();
+				}
+			}),
+		);
+
+		this._register(
+			this._editor.onDidChangeModel(() => {
 				this._checkForUnusualLineTerminators();
-			}
-		}));
+			}),
+		);
 
-		this._register(this._editor.onDidChangeModel(() => {
-			this._checkForUnusualLineTerminators();
-		}));
-
-		this._register(this._editor.onDidChangeModelContent((e) => {
-			if (e.isUndoing) {
-				// skip checking in case of undoing
-				return;
-			}
-			this._checkForUnusualLineTerminators();
-		}));
+		this._register(
+			this._editor.onDidChangeModelContent((e) => {
+				if (e.isUndoing) {
+					// skip checking in case of undoing
+					return;
+				}
+				this._checkForUnusualLineTerminators();
+			}),
+		);
 
 		this._checkForUnusualLineTerminators();
 	}

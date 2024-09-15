@@ -23,16 +23,16 @@ import { parse } from "../../../../base/common/marshalling.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { deepClone } from "../../../../base/common/objects.js";
 import {
-	ObservableLazyPromise,
-	ValueWithChangeEventFromObservable,
 	autorun,
 	constObservable,
 	derived,
 	mapObservableArrayCached,
 	observableFromEvent,
 	observableFromValueWithChangeEvent,
+	ObservableLazyPromise,
 	observableValue,
 	recomputeInitiallyAndOnChange,
+	ValueWithChangeEventFromObservable,
 } from "../../../../base/common/observable.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
 import { isDefined, isObject } from "../../../../base/common/types.js";
@@ -45,8 +45,8 @@ import type {
 import { MultiDiffEditorViewModel } from "../../../../editor/browser/widget/multiDiffEditor/multiDiffEditorViewModel.js";
 import type { IDiffEditorOptions } from "../../../../editor/common/config/editorOptions.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { ITextResourceConfigurationService } from "../../../../editor/common/services/textResourceConfiguration.js";
 import { localize } from "../../../../nls.js";
@@ -73,15 +73,15 @@ import {
 	RegisteredEditorPriority,
 } from "../../../services/editor/common/editorResolverService.js";
 import {
+	ITextFileService,
 	type ILanguageSupport,
 	type ITextFileEditorModel,
-	ITextFileService,
 } from "../../../services/textfile/common/textfiles.js";
 import { MultiDiffEditorIcon } from "./icons.contribution.js";
 import {
 	IMultiDiffSourceResolverService,
-	type IResolvedMultiDiffSource,
 	MultiDiffEditorItem,
+	type IResolvedMultiDiffSource,
 } from "./multiDiffSourceResolverService.js";
 
 export class MultiDiffEditorInput
@@ -171,30 +171,45 @@ export class MultiDiffEditorInput
 	constructor(
 		public readonly multiDiffSource: URI,
 		public readonly label: string | undefined,
-		public readonly initialResources: readonly MultiDiffEditorItem[] | undefined,
+		public readonly initialResources:
+			| readonly MultiDiffEditorItem[]
+			| undefined,
 		public readonly isTransient: boolean = false,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@ITextResourceConfigurationService private readonly _textResourceConfigurationService: ITextResourceConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IMultiDiffSourceResolverService private readonly _multiDiffSourceResolverService: IMultiDiffSourceResolverService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@ITextResourceConfigurationService
+		private readonly _textResourceConfigurationService: ITextResourceConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IMultiDiffSourceResolverService
+		private readonly _multiDiffSourceResolverService: IMultiDiffSourceResolverService,
 		@ITextFileService private readonly _textFileService: ITextFileService,
 	) {
 		super();
 
-		this._register(autorun((reader) => {
-			/** @description Updates name */
-			const resources = this.resources.read(reader);
-			const label = this.label ?? localize('name', "Multi Diff Editor");
-			if (resources) {
-				this._name = label + localize({
-					key: 'files',
-					comment: ['the number of files being shown']
-				}, " ({0} files)", resources.length);
-			} else {
-				this._name = label;
-			}
-			this._onDidChangeLabel.fire();
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description Updates name */
+				const resources = this.resources.read(reader);
+				const label =
+					this.label ?? localize("name", "Multi Diff Editor");
+				if (resources) {
+					this._name =
+						label +
+						localize(
+							{
+								key: "files",
+								comment: ["the number of files being shown"],
+							},
+							" ({0} files)",
+							resources.length,
+						);
+				} else {
+					this._name = label;
+				}
+				this._onDidChangeLabel.fire();
+			}),
+		);
 	}
 
 	public serialize(): ISerializedMultiDiffEditorInput {

@@ -14,8 +14,8 @@ import { IStorageService } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	AbstractFileSynchroniser,
@@ -26,15 +26,15 @@ import {
 } from "./abstractSynchronizer.js";
 import {
 	Change,
-	type IRemoteUserData,
-	type IUserDataSyncConfiguration,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
-	type IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
+	type IRemoteUserData,
+	type IUserDataSyncConfiguration,
+	type IUserDataSynchroniser,
 } from "./userDataSync.js";
 
 interface ITasksSyncContent {
@@ -87,11 +87,14 @@ export class TasksSynchroniser
 	constructor(
 		profile: IUserDataProfile,
 		collection: string | undefined,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IStorageService storageService: IStorageService,
@@ -384,7 +387,8 @@ export class TasksInitializer extends AbstractInitializer {
 
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,

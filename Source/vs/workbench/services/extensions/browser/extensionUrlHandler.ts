@@ -7,8 +7,8 @@ import { disposableWindowInterval } from "../../../../base/browser/dom.js";
 import { mainWindow } from "../../../../base/browser/window.js";
 import { isCancellationError } from "../../../../base/common/errors.js";
 import {
-	type IDisposable,
 	combinedDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { URI } from "../../../../base/common/uri.js";
 import { localize, localize2 } from "../../../../nls.js";
@@ -27,8 +27,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -43,14 +43,14 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	IURLService,
 	type IOpenURLOptions,
 	type IURLHandler,
-	IURLService,
 } from "../../../../platform/url/common/url.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { IHostService } from "../../host/browser/host.js";
@@ -181,28 +181,44 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 		@ICommandService private readonly commandService: ICommandService,
 		@IHostService private readonly hostService: IHostService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IProductService private readonly productService: IProductService,
-		@IWorkbenchEnvironmentService private readonly workbenchEnvironmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		private readonly workbenchEnvironmentService: IWorkbenchEnvironmentService,
 	) {
-		this.userTrustedExtensionsStorage = new UserTrustedExtensionIdStorage(storageService);
+		this.userTrustedExtensionsStorage = new UserTrustedExtensionIdStorage(
+			storageService,
+		);
 
-		const interval = disposableWindowInterval(mainWindow, () => this.garbageCollect(), THIRTY_SECONDS);
-		const urlToHandleValue = this.storageService.get(URL_TO_HANDLE, StorageScope.WORKSPACE);
+		const interval = disposableWindowInterval(
+			mainWindow,
+			() => this.garbageCollect(),
+			THIRTY_SECONDS,
+		);
+		const urlToHandleValue = this.storageService.get(
+			URL_TO_HANDLE,
+			StorageScope.WORKSPACE,
+		);
 		if (urlToHandleValue) {
 			this.storageService.remove(URL_TO_HANDLE, StorageScope.WORKSPACE);
-			this.handleURL(URI.revive(JSON.parse(urlToHandleValue)), { trusted: true });
+			this.handleURL(URI.revive(JSON.parse(urlToHandleValue)), {
+				trusted: true,
+			});
 		}
 
 		this.disposable = combinedDisposable(
 			urlService.registerHandler(this),
-			interval
+			interval,
 		);
 
 		const cache = ExtensionUrlBootstrapHandler.cache;
-		setTimeout(() => cache.forEach(([uri, option]) => this.handleURL(uri, option)));
+		setTimeout(() =>
+			cache.forEach(([uri, option]) => this.handleURL(uri, option)),
+		);
 	}
 
 	async handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {
@@ -407,8 +423,7 @@ class ExtensionUrlHandler implements IExtensionUrlHandler, IURLHandler {
 		if (extension) {
 			await this.handleURL(uri, { ...options, trusted: true });
 		} else {
-
-		/* Extension cannot be added and require window reload */
+			/* Extension cannot be added and require window reload */
 			this.telemetryService.publicLog2<
 				ExtensionUrlReloadHandlerEvent,
 				ExtensionUrlReloadHandlerClassification
@@ -521,7 +536,8 @@ class ExtensionUrlBootstrapHandler
 	}
 
 	constructor(@IURLService urlService: IURLService) {
-		ExtensionUrlBootstrapHandler.disposable = urlService.registerHandler(this);
+		ExtensionUrlBootstrapHandler.disposable =
+			urlService.registerHandler(this);
 	}
 
 	async handleURL(uri: URI, options?: IOpenURLOptions): Promise<boolean> {

@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	TimeoutTimer,
 	createCancelablePromise,
+	TimeoutTimer,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { RGBA } from "../../../../base/common/color.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
@@ -30,11 +30,11 @@ import type {
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
-import { type IColorData, getColors } from "./color.js";
+import { getColors, type IColorData } from "./color.js";
 
 export const ColorDecorationInjectedTextMarker = Object.create({});
 
@@ -63,38 +63,65 @@ export class ColorDetector extends Disposable implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
 	) {
 		super();
-		this._debounceInformation = languageFeatureDebounceService.for(_languageFeaturesService.colorProvider, 'Document Colors', { min: ColorDetector.RECOMPUTE_TIME });
-		this._register(_editor.onDidChangeModel(() => {
-			this._isColorDecoratorsEnabled = this.isEnabled();
-			this.updateColors();
-		}));
-		this._register(_editor.onDidChangeModelLanguage(() => this.updateColors()));
-		this._register(_languageFeaturesService.colorProvider.onDidChange(() => this.updateColors()));
-		this._register(_editor.onDidChangeConfiguration((e) => {
-			const prevIsEnabled = this._isColorDecoratorsEnabled;
-			this._isColorDecoratorsEnabled = this.isEnabled();
-			this._isDefaultColorDecoratorsEnabled = this._editor.getOption(EditorOption.defaultColorDecorators);
-			const updatedColorDecoratorsSetting = prevIsEnabled !== this._isColorDecoratorsEnabled || e.hasChanged(EditorOption.colorDecoratorsLimit);
-			const updatedDefaultColorDecoratorsSetting = e.hasChanged(EditorOption.defaultColorDecorators);
-			if (updatedColorDecoratorsSetting || updatedDefaultColorDecoratorsSetting) {
-				if (this._isColorDecoratorsEnabled) {
-					this.updateColors();
+		this._debounceInformation = languageFeatureDebounceService.for(
+			_languageFeaturesService.colorProvider,
+			"Document Colors",
+			{ min: ColorDetector.RECOMPUTE_TIME },
+		);
+		this._register(
+			_editor.onDidChangeModel(() => {
+				this._isColorDecoratorsEnabled = this.isEnabled();
+				this.updateColors();
+			}),
+		);
+		this._register(
+			_editor.onDidChangeModelLanguage(() => this.updateColors()),
+		);
+		this._register(
+			_languageFeaturesService.colorProvider.onDidChange(() =>
+				this.updateColors(),
+			),
+		);
+		this._register(
+			_editor.onDidChangeConfiguration((e) => {
+				const prevIsEnabled = this._isColorDecoratorsEnabled;
+				this._isColorDecoratorsEnabled = this.isEnabled();
+				this._isDefaultColorDecoratorsEnabled = this._editor.getOption(
+					EditorOption.defaultColorDecorators,
+				);
+				const updatedColorDecoratorsSetting =
+					prevIsEnabled !== this._isColorDecoratorsEnabled ||
+					e.hasChanged(EditorOption.colorDecoratorsLimit);
+				const updatedDefaultColorDecoratorsSetting = e.hasChanged(
+					EditorOption.defaultColorDecorators,
+				);
+				if (
+					updatedColorDecoratorsSetting ||
+					updatedDefaultColorDecoratorsSetting
+				) {
+					if (this._isColorDecoratorsEnabled) {
+						this.updateColors();
+					} else {
+						this.removeAllDecorations();
+					}
 				}
-				else {
-					this.removeAllDecorations();
-				}
-			}
-		}));
+			}),
+		);
 
 		this._timeoutTimer = null;
 		this._computePromise = null;
 		this._isColorDecoratorsEnabled = this.isEnabled();
-		this._isDefaultColorDecoratorsEnabled = this._editor.getOption(EditorOption.defaultColorDecorators);
+		this._isDefaultColorDecoratorsEnabled = this._editor.getOption(
+			EditorOption.defaultColorDecorators,
+		);
 		this.updateColors();
 	}
 

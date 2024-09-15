@@ -9,9 +9,9 @@ import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { EditorFontLigatures } from "../../common/config/editorOptions.js";
 import {
-	type BareFontInfo,
 	FontInfo,
 	SERIALIZED_FONT_INFO_VERSION,
+	type BareFontInfo,
 } from "../../common/config/fontInfo.js";
 import {
 	CharWidthRequest,

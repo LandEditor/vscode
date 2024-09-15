@@ -5,6 +5,7 @@
 
 import type { ITerminalAddon } from "@xterm/headless";
 import type { IDecoration, Terminal } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import type { IAnchor } from "../../../../../base/browser/ui/contextview/contextview.js";
 import type { IAction } from "../../../../../base/common/actions.js";
@@ -34,9 +35,9 @@ import { ILabelService } from "../../../../../platform/label/common/label.js";
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
 import {
+	TerminalCapability,
 	type ITerminalCapabilityStore,
 	type ITerminalCommand,
-	TerminalCapability,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import { getLinesForCommand } from "../../../../../platform/terminal/common/capabilities/commandDetectionCapability.js";
 import type { ITerminalCommandSelector } from "../../../../../platform/terminal/common/terminal.js";
@@ -46,6 +47,8 @@ import {
 	updateLayout,
 } from "../../../terminal/browser/xterm/decorationStyles.js";
 import {
+	ITerminalQuickFixService,
+	TerminalQuickFixType,
 	type ITerminalQuickFix,
 	type ITerminalQuickFixCommandAction,
 	type ITerminalQuickFixInternalOptions,
@@ -53,10 +56,8 @@ import {
 	type ITerminalQuickFixOptions,
 	type ITerminalQuickFixProviderSelector,
 	type ITerminalQuickFixResolvedExtensionOptions,
-	ITerminalQuickFixService,
 	type ITerminalQuickFixTerminalCommandAction,
 	type ITerminalQuickFixUnresolvedExtensionOptions,
-	TerminalQuickFixType,
 } from "./quickFix.js";
 
 enum QuickFixDecorationSelector {
@@ -123,35 +124,59 @@ export class TerminalQuickFixAddon
 	constructor(
 		private readonly _aliases: string[][] | undefined,
 		private readonly _capabilities: ITerminalCapabilityStore,
-		@ITerminalQuickFixService private readonly _quickFixService: ITerminalQuickFixService,
+		@ITerminalQuickFixService
+		private readonly _quickFixService: ITerminalQuickFixService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IActionWidgetService private readonly _actionWidgetService: IActionWidgetService,
-		@ILabelService private readonly _labelService: ILabelService
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IActionWidgetService
+		private readonly _actionWidgetService: IActionWidgetService,
+		@ILabelService private readonly _labelService: ILabelService,
 	) {
 		super();
-		const commandDetectionCapability = this._capabilities.get(TerminalCapability.CommandDetection);
+		const commandDetectionCapability = this._capabilities.get(
+			TerminalCapability.CommandDetection,
+		);
 		if (commandDetectionCapability) {
 			this._registerCommandHandlers();
 		} else {
-			this._register(this._capabilities.onDidAddCapabilityType(c => {
-				if (c === TerminalCapability.CommandDetection) {
-					this._registerCommandHandlers();
-				}
-			}));
+			this._register(
+				this._capabilities.onDidAddCapabilityType((c) => {
+					if (c === TerminalCapability.CommandDetection) {
+						this._registerCommandHandlers();
+					}
+				}),
+			);
 		}
-		this._register(this._quickFixService.onDidRegisterProvider(result => this.registerCommandFinishedListener(convertToQuickFixOptions(result))));
-		this._quickFixService.extensionQuickFixes.then(quickFixSelectors => {
+		this._register(
+			this._quickFixService.onDidRegisterProvider((result) =>
+				this.registerCommandFinishedListener(
+					convertToQuickFixOptions(result),
+				),
+			),
+		);
+		this._quickFixService.extensionQuickFixes.then((quickFixSelectors) => {
 			for (const selector of quickFixSelectors) {
 				this.registerCommandSelector(selector);
 			}
 		});
-		this._register(this._quickFixService.onDidRegisterCommandSelector(selector => this.registerCommandSelector(selector)));
-		this._register(this._quickFixService.onDidUnregisterProvider(id => this._commandListeners.delete(id)));
+		this._register(
+			this._quickFixService.onDidRegisterCommandSelector((selector) =>
+				this.registerCommandSelector(selector),
+			),
+		);
+		this._register(
+			this._quickFixService.onDidUnregisterProvider((id) =>
+				this._commandListeners.delete(id),
+			),
+		);
 	}
 
 	activate(terminal: Terminal): void {

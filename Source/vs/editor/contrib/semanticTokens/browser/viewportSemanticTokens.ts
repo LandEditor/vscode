@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	RunOnceScheduler,
 	createCancelablePromise,
+	RunOnceScheduler,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
@@ -23,8 +23,8 @@ import type { LanguageFeatureRegistry } from "../../../common/languageFeatureReg
 import type { DocumentRangeSemanticTokensProvider } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { toMultilineTokens2 } from "../../../common/services/semanticTokensProviderStyling.js";
@@ -34,8 +34,8 @@ import {
 	hasDocumentRangeSemanticTokensProvider,
 } from "../common/getSemanticTokens.js";
 import {
-	SEMANTIC_HIGHLIGHTING_SETTING_ID,
 	isSemanticColoringEnabled,
+	SEMANTIC_HIGHLIGHTING_SETTING_ID,
 } from "../common/semanticTokensConfig.js";
 
 export class ViewportSemanticTokensContribution
@@ -60,48 +60,73 @@ export class ViewportSemanticTokensContribution
 
 	constructor(
 		editor: ICodeEditor,
-		@ISemanticTokensStylingService private readonly _semanticTokensStylingService: ISemanticTokensStylingService,
+		@ISemanticTokensStylingService
+		private readonly _semanticTokensStylingService: ISemanticTokensStylingService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this._editor = editor;
-		this._provider = languageFeaturesService.documentRangeSemanticTokensProvider;
-		this._debounceInformation = languageFeatureDebounceService.for(this._provider, 'DocumentRangeSemanticTokens', { min: 100, max: 500 });
-		this._tokenizeViewport = this._register(new RunOnceScheduler(() => this._tokenizeViewportNow(), 100));
+		this._provider =
+			languageFeaturesService.documentRangeSemanticTokensProvider;
+		this._debounceInformation = languageFeatureDebounceService.for(
+			this._provider,
+			"DocumentRangeSemanticTokens",
+			{ min: 100, max: 500 },
+		);
+		this._tokenizeViewport = this._register(
+			new RunOnceScheduler(() => this._tokenizeViewportNow(), 100),
+		);
 		this._outstandingRequests = [];
 		const scheduleTokenizeViewport = () => {
 			if (this._editor.hasModel()) {
-				this._tokenizeViewport.schedule(this._debounceInformation.get(this._editor.getModel()));
+				this._tokenizeViewport.schedule(
+					this._debounceInformation.get(this._editor.getModel()),
+				);
 			}
 		};
-		this._register(this._editor.onDidScrollChange(() => {
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._editor.onDidChangeModel(() => {
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._editor.onDidChangeModelContent((e) => {
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._provider.onDidChange(() => {
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
+		this._register(
+			this._editor.onDidScrollChange(() => {
+				scheduleTokenizeViewport();
+			}),
+		);
+		this._register(
+			this._editor.onDidChangeModel(() => {
 				this._cancelAll();
 				scheduleTokenizeViewport();
-			}
-		}));
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			this._cancelAll();
-			scheduleTokenizeViewport();
-		}));
+			}),
+		);
+		this._register(
+			this._editor.onDidChangeModelContent((e) => {
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			}),
+		);
+		this._register(
+			this._provider.onDidChange(() => {
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			}),
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(SEMANTIC_HIGHLIGHTING_SETTING_ID)) {
+					this._cancelAll();
+					scheduleTokenizeViewport();
+				}
+			}),
+		);
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
+				this._cancelAll();
+				scheduleTokenizeViewport();
+			}),
+		);
 		scheduleTokenizeViewport();
 	}
 

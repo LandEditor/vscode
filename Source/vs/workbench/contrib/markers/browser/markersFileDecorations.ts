@@ -5,8 +5,8 @@
 
 import type { Event } from "../../../../base/common/event.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
@@ -16,9 +16,9 @@ import {
 	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
-	type IMarker,
 	IMarkerService,
 	MarkerSeverity,
+	type IMarker,
 } from "../../../../platform/markers/common/markers.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -26,14 +26,14 @@ import {
 	listWarningForeground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import {
+	IDecorationsService,
 	type IDecorationData,
 	type IDecorationsProvider,
-	IDecorationsService,
 } from "../../../services/decorations/common/decorations.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 
@@ -88,12 +88,14 @@ class MarkersFileDecorations implements IWorkbenchContribution {
 
 	constructor(
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IDecorationsService private readonly _decorationsService: IDecorationsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IDecorationsService
+		private readonly _decorationsService: IDecorationsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		this._disposables = [
-			this._configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration('problems.visibility')) {
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("problems.visibility")) {
 					this._updateEnablement();
 				}
 			}),

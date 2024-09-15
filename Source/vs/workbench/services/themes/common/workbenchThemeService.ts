@@ -14,10 +14,10 @@ import type {
 } from "../../../../platform/theme/common/iconRegistry.js";
 import type { ColorScheme } from "../../../../platform/theme/common/theme.js";
 import {
+	IThemeService,
 	type IColorTheme,
 	type IFileIconTheme,
 	type IProductIconTheme,
-	IThemeService,
 } from "../../../../platform/theme/common/themeService.js";
 
 export const IWorkbenchThemeService = refineServiceDecorator<

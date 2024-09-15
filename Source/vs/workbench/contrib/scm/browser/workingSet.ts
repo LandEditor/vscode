@@ -29,7 +29,7 @@ import {
 	IWorkbenchLayoutService,
 	Parts,
 } from "../../../services/layout/browser/layoutService.js";
-import { type ISCMRepository, ISCMService } from "../common/scm.js";
+import { ISCMService, type ISCMRepository } from "../common/scm.js";
 import { getProviderKey } from "./util.js";
 
 type ISCMSerializedWorkingSet = {
@@ -60,30 +60,46 @@ export class SCMWorkingSetController
 		new DisposableMap<ISCMRepository>();
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEditorGroupsService private readonly editorGroupsService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEditorGroupsService
+		private readonly editorGroupsService: IEditorGroupsService,
 		@ISCMService private readonly scmService: ISCMService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 	) {
 		super();
 
-		this._store.add(autorunWithStore((reader, store) => {
-			if (!this._enabledConfig.read(reader)) {
-				this.storageService.remove('scm.workingSets', StorageScope.WORKSPACE);
-				this._repositoryDisposables.clearAndDisposeAll();
-				return;
-			}
+		this._store.add(
+			autorunWithStore((reader, store) => {
+				if (!this._enabledConfig.read(reader)) {
+					this.storageService.remove(
+						"scm.workingSets",
+						StorageScope.WORKSPACE,
+					);
+					this._repositoryDisposables.clearAndDisposeAll();
+					return;
+				}
 
-			this._workingSets = this._loadWorkingSets();
+				this._workingSets = this._loadWorkingSets();
 
-			this.scmService.onDidAddRepository(this._onDidAddRepository, this, store);
-			this.scmService.onDidRemoveRepository(this._onDidRemoveRepository, this, store);
+				this.scmService.onDidAddRepository(
+					this._onDidAddRepository,
+					this,
+					store,
+				);
+				this.scmService.onDidRemoveRepository(
+					this._onDidRemoveRepository,
+					this,
+					store,
+				);
 
-			for (const repository of this.scmService.repositories) {
-				this._onDidAddRepository(repository);
-			}
-		}));
+				for (const repository of this.scmService.repositories) {
+					this._onDidAddRepository(repository);
+				}
+			}),
+		);
 	}
 
 	private _onDidAddRepository(repository: ISCMRepository): void {

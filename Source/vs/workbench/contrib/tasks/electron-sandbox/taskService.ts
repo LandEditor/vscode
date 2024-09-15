@@ -13,8 +13,8 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IConfirmationResult,
 	IDialogService,
+	type IConfirmationResult,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import {
@@ -60,9 +60,9 @@ import { ITerminalProfileResolverService } from "../../terminal/common/terminal.
 import { AbstractTaskService } from "../browser/abstractTaskService.js";
 import { TerminalTaskSystem } from "../browser/terminalTaskSystem.js";
 import type * as TaskConfig from "../common/taskConfiguration.js";
-import { type ITaskFilter, ITaskService } from "../common/taskService.js";
-import type { ITaskSystem } from "../common/taskSystem.js";
 import { ExecutionEngine } from "../common/tasks.js";
+import { ITaskService, type ITaskFilter } from "../common/taskService.js";
+import type { ITaskSystem } from "../common/taskSystem.js";
 
 interface IWorkspaceFolderConfigurationResult {
 	workspaceFolder: IWorkspaceFolder;
@@ -75,7 +75,8 @@ export class TaskService extends AbstractTaskService {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IMarkerService markerService: IMarkerService,
 		@IOutputService outputService: IOutputService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
 		@IViewsService viewsService: IViewsService,
 		@ICommandService commandService: ICommandService,
 		@IEditorService editorService: IEditorService,
@@ -87,7 +88,8 @@ export class TaskService extends AbstractTaskService {
 		@IModelService modelService: IModelService,
 		@IExtensionService extensionService: IExtensionService,
 		@IQuickInputService quickInputService: IQuickInputService,
-		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
+		@IConfigurationResolverService
+		configurationResolverService: IConfigurationResolverService,
 		@ITerminalService terminalService: ITerminalService,
 		@ITerminalGroupService terminalGroupService: ITerminalGroupService,
 		@IStorageService storageService: IStorageService,
@@ -96,19 +98,24 @@ export class TaskService extends AbstractTaskService {
 		@IDialogService dialogService: IDialogService,
 		@INotificationService notificationService: INotificationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@ITerminalProfileResolverService terminalProfileResolverService: ITerminalProfileResolverService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@ITerminalProfileResolverService
+		terminalProfileResolverService: ITerminalProfileResolverService,
 		@IPathService pathService: IPathService,
 		@ITextModelService textModelResolverService: ITextModelService,
 		@IPreferencesService preferencesService: IPreferencesService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustRequestService
+		workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@ILogService logService: ILogService,
 		@IThemeService themeService: IThemeService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IAccessibilitySignalService accessibilitySignalService: IAccessibilitySignalService,
+		@IAccessibilitySignalService
+		accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super(
 			configurationService,

@@ -9,14 +9,14 @@ import { Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
-	type ISettableObservable,
 	observableValue,
 	transaction,
+	type ISettableObservable,
 } from "../../../base/common/observable.js";
 import { WellDefinedPrefixTree } from "../../../base/common/prefixTree.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
@@ -28,33 +28,33 @@ import { ITestProfileService } from "../../contrib/testing/common/testProfileSer
 import { LiveTestResult } from "../../contrib/testing/common/testResult.js";
 import { ITestResultService } from "../../contrib/testing/common/testResultService.js";
 import {
-	type IMainThreadTestController,
 	ITestService,
+	type IMainThreadTestController,
 } from "../../contrib/testing/common/testService.js";
 import {
 	CoverageDetails,
-	type ExtensionRunTestsRequest,
 	IFileCoverage,
 	ITestItem,
 	ITestMessage,
+	TestRunProfileBitset,
+	TestsDiffOp,
+	type ExtensionRunTestsRequest,
 	type ITestRunProfile,
 	type ITestRunTask,
 	type ResolvedTestRunRequest,
 	type TestControllerCapability,
 	type TestResultState,
-	TestRunProfileBitset,
-	TestsDiffOp,
 } from "../../contrib/testing/common/testTypes.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostTestingShape,
 	type ILocationDto,
 	type ITestControllerPatch,
-	MainContext,
 	type MainThreadTestingShape,
 } from "../common/extHost.protocol.js";
 
@@ -77,7 +77,8 @@ export class MainThreadTesting
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ITestService private readonly testService: ITestService,
 		@ITestProfileService private readonly testProfiles: ITestProfileService,
 		@ITestResultService private readonly resultService: ITestResultService,
@@ -85,43 +86,67 @@ export class MainThreadTesting
 		super();
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostTesting);
 
-		this._register(this.testService.registerExtHost({
-			provideTestFollowups: (req, token) => this.proxy.$provideTestFollowups(req, token),
-			executeTestFollowup: id => this.proxy.$executeTestFollowup(id),
-			disposeTestFollowups: ids => this.proxy.$disposeTestFollowups(ids),
-			getTestsRelatedToCode: (uri, position, token) => this.proxy.$getTestsRelatedToCode(uri, position, token),
-		}));
+		this._register(
+			this.testService.registerExtHost({
+				provideTestFollowups: (req, token) =>
+					this.proxy.$provideTestFollowups(req, token),
+				executeTestFollowup: (id) =>
+					this.proxy.$executeTestFollowup(id),
+				disposeTestFollowups: (ids) =>
+					this.proxy.$disposeTestFollowups(ids),
+				getTestsRelatedToCode: (uri, position, token) =>
+					this.proxy.$getTestsRelatedToCode(uri, position, token),
+			}),
+		);
 
-		this._register(this.testService.onDidCancelTestRun(({ runId, taskId }) => {
-			this.proxy.$cancelExtensionTestRun(runId, taskId);
-		}));
+		this._register(
+			this.testService.onDidCancelTestRun(({ runId, taskId }) => {
+				this.proxy.$cancelExtensionTestRun(runId, taskId);
+			}),
+		);
 
-		this._register(Event.debounce(testProfiles.onDidChange, (_last, e) => e)(() => {
-			const obj: Record</* controller id */string, /* profile id */ number[]> = {};
-			for (const group of [TestRunProfileBitset.Run, TestRunProfileBitset.Debug, TestRunProfileBitset.Coverage]) {
-				for (const profile of this.testProfiles.getGroupDefaultProfiles(group)) {
-					obj[profile.controllerId] ??= [];
-					obj[profile.controllerId].push(profile.profileId);
-				}
-			}
-
-			this.proxy.$setDefaultRunProfiles(obj);
-		}));
-
-		this._register(resultService.onResultsChanged(evt => {
-			if ('completed' in evt) {
-				const serialized = evt.completed.toJSONWithMessages();
-				if (serialized) {
-					this.proxy.$publishTestResults([serialized]);
-				}
-			} else if ('removed' in evt) {
-				evt.removed.forEach(r => {
-					if (r instanceof LiveTestResult) {
-						this.proxy.$disposeRun(r.id);
+		this._register(
+			Event.debounce(
+				testProfiles.onDidChange,
+				(_last, e) => e,
+			)(() => {
+				const obj: Record<
+					/* controller id */ string,
+					/* profile id */ number[]
+				> = {};
+				for (const group of [
+					TestRunProfileBitset.Run,
+					TestRunProfileBitset.Debug,
+					TestRunProfileBitset.Coverage,
+				]) {
+					for (const profile of this.testProfiles.getGroupDefaultProfiles(
+						group,
+					)) {
+						obj[profile.controllerId] ??= [];
+						obj[profile.controllerId].push(profile.profileId);
 					}
-				});
-			}
-		}));
+				}
+
+				this.proxy.$setDefaultRunProfiles(obj);
+			}),
+		);
+
+		this._register(
+			resultService.onResultsChanged((evt) => {
+				if ("completed" in evt) {
+					const serialized = evt.completed.toJSONWithMessages();
+					if (serialized) {
+						this.proxy.$publishTestResults([serialized]);
+					}
+				} else if ("removed" in evt) {
+					evt.removed.forEach((r) => {
+						if (r instanceof LiveTestResult) {
+							this.proxy.$disposeRun(r.id);
+						}
+					});
+				}
+			}),
+		);
 	}
 
 	/**

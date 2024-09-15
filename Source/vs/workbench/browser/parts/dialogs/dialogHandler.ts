@@ -57,10 +57,12 @@ export class BrowserDialogHandler extends AbstractDialogHandler {
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IProductService private readonly productService: IProductService,
-		@IClipboardService private readonly clipboardService: IClipboardService
+		@IClipboardService private readonly clipboardService: IClipboardService,
 	) {
 		super();
 	}

@@ -601,7 +601,9 @@ have to be updated for changes to the rules above, or to support more deeply nes
 	.interactive-result-editor
 	.monaco-editor
 	.monaco-editor-background {
-	background-color: var(--vscode-interactive-result-editor-background-color) !important;
+	background-color: var(
+		--vscode-interactive-result-editor-background-color
+	) !important;
 }
 
 .interactive-item-compact .interactive-result-code-block {
@@ -656,7 +658,9 @@ have to be updated for changes to the rules above, or to support more deeply nes
 }
 
 .chat-used-context-list .codicon-warning {
-	color: var(--vscode-notificationsWarningIcon-foreground); /* Have to override default styles which apply to all lists */
+	color: var(
+		--vscode-notificationsWarningIcon-foreground
+	); /* Have to override default styles which apply to all lists */
 }
 
 .chat-used-context-list .monaco-icon-label-container {
@@ -680,17 +684,23 @@ have to be updated for changes to the rules above, or to support more deeply nes
 }
 
 .chat-notification-widget .chat-warning-codicon .codicon-warning {
-	color: var(--vscode-notificationsWarningIcon-foreground) !important; /* Have to override default styles which apply to all lists */
+	color: var(
+		--vscode-notificationsWarningIcon-foreground
+	) !important; /* Have to override default styles which apply to all lists */
 }
 
 .chat-notification-widget .chat-error-codicon .codicon-error,
 .interactive-response .interactive-response-error-details .codicon-error {
-	color: var(--vscode-errorForeground) !important; /* Have to override default styles which apply to all lists */
+	color: var(
+		--vscode-errorForeground
+	) !important; /* Have to override default styles which apply to all lists */
 }
 
 .chat-notification-widget .chat-info-codicon .codicon-info,
 .interactive-response .interactive-response-error-details .codicon-info {
-	color: var(--vscode-notificationsInfoIcon-foreground) !important; /* Have to override default styles which apply to all lists */
+	color: var(
+		--vscode-notificationsInfoIcon-foreground
+	) !important; /* Have to override default styles which apply to all lists */
 }
 
 .interactive-session .interactive-input-part {

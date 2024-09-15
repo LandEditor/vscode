@@ -5,38 +5,38 @@
 
 import * as net from "net";
 import * as os from "os";
-import {
-	BROWSER_RESTRICTED_PORTS,
-	findFreePortFaster,
-} from "../../../base/node/ports.js";
-import { NodeSocket } from "../../../base/parts/ipc/node/ipc.net.js";
 
 import { Barrier } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { OS } from "../../../base/common/platform.js";
+import {
+	BROWSER_RESTRICTED_PORTS,
+	findFreePortFaster,
+} from "../../../base/node/ports.js";
 import type { ISocket } from "../../../base/parts/ipc/common/ipc.net.js";
+import { NodeSocket } from "../../../base/parts/ipc/node/ipc.net.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
+	connectRemoteAgentTunnel,
 	type IAddressProvider,
 	type IConnectionOptions,
-	connectRemoteAgentTunnel,
 } from "../../remote/common/remoteAgentConnection.js";
 import { IRemoteSocketFactoryService } from "../../remote/common/remoteSocketFactoryService.js";
 import { ISignService } from "../../sign/common/sign.js";
 import {
 	AbstractTunnelService,
-	type ISharedTunnelsService,
-	type ITunnelProvider,
-	type ITunnelService,
-	type RemoteTunnel,
-	TunnelPrivacyId,
 	isAllInterfaces,
 	isLocalhost,
 	isPortPrivileged,
 	isTunnelProvider,
+	TunnelPrivacyId,
+	type ISharedTunnelsService,
+	type ITunnelProvider,
+	type ITunnelService,
+	type RemoteTunnel,
 } from "../common/tunnel.js";
 
 async function createRemoteTunnel(
@@ -233,11 +233,12 @@ export class NodeRemoteTunnel extends Disposable implements RemoteTunnel {
 
 export class BaseTunnelService extends AbstractTunnelService {
 	public constructor(
-		@IRemoteSocketFactoryService private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@ILogService logService: ILogService,
 		@ISignService private readonly signService: ISignService,
 		@IProductService private readonly productService: IProductService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(logService, configurationService);
 	}
@@ -304,7 +305,8 @@ export class BaseTunnelService extends AbstractTunnelService {
 
 export class TunnelService extends BaseTunnelService {
 	public constructor(
-		@IRemoteSocketFactoryService remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@ILogService logService: ILogService,
 		@ISignService signService: ISignService,
 		@IProductService productService: IProductService,
@@ -328,11 +330,13 @@ export class SharedTunnelsService
 	private readonly _tunnelServices: Map<string, ITunnelService> = new Map();
 
 	public constructor(
-		@IRemoteSocketFactoryService protected readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IRemoteSocketFactoryService
+		protected readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
 		@ILogService protected readonly logService: ILogService,
 		@IProductService private readonly productService: IProductService,
 		@ISignService private readonly signService: ISignService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 	}

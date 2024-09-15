@@ -14,11 +14,11 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { annotateVulnerabilitiesInText } from "./annotations.js";
 import {
+	getFullyQualifiedId,
+	IChatAgentNameService,
 	type IChatAgentCommand,
 	type IChatAgentData,
-	IChatAgentNameService,
 	type IChatAgentResult,
-	getFullyQualifiedId,
 } from "./chatAgents.js";
 import {
 	ChatModelInitState,
@@ -271,12 +271,16 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 	constructor(
 		private readonly _model: IChatModel,
 		public readonly codeBlockModelCollection: CodeBlockModelCollection,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
 		_model.getRequests().forEach((request, i) => {
-			const requestModel = this.instantiationService.createInstance(ChatRequestViewModel, request);
+			const requestModel = this.instantiationService.createInstance(
+				ChatRequestViewModel,
+				request,
+			);
 			this._items.push(requestModel);
 			this.updateCodeBlockTextModels(requestModel);
 
@@ -285,39 +289,57 @@ export class ChatViewModel extends Disposable implements IChatViewModel {
 			}
 		});
 
-		this._register(_model.onDidDispose(() => this._onDidDisposeModel.fire()));
-		this._register(_model.onDidChange(e => {
-			if (e.kind === 'addRequest') {
-				const requestModel = this.instantiationService.createInstance(ChatRequestViewModel, e.request);
-				this._items.push(requestModel);
-				this.updateCodeBlockTextModels(requestModel);
+		this._register(
+			_model.onDidDispose(() => this._onDidDisposeModel.fire()),
+		);
+		this._register(
+			_model.onDidChange((e) => {
+				if (e.kind === "addRequest") {
+					const requestModel =
+						this.instantiationService.createInstance(
+							ChatRequestViewModel,
+							e.request,
+						);
+					this._items.push(requestModel);
+					this.updateCodeBlockTextModels(requestModel);
 
-				if (e.request.response) {
-					this.onAddResponse(e.request.response);
-				}
-			} else if (e.kind === 'addResponse') {
-				this.onAddResponse(e.response);
-			} else if (e.kind === 'removeRequest') {
-				const requestIdx = this._items.findIndex(item => isRequestVM(item) && item.id === e.requestId);
-				if (requestIdx >= 0) {
-					this._items.splice(requestIdx, 1);
-				}
+					if (e.request.response) {
+						this.onAddResponse(e.request.response);
+					}
+				} else if (e.kind === "addResponse") {
+					this.onAddResponse(e.response);
+				} else if (e.kind === "removeRequest") {
+					const requestIdx = this._items.findIndex(
+						(item) => isRequestVM(item) && item.id === e.requestId,
+					);
+					if (requestIdx >= 0) {
+						this._items.splice(requestIdx, 1);
+					}
 
-				const responseIdx = e.responseId && this._items.findIndex(item => isResponseVM(item) && item.id === e.responseId);
-				if (typeof responseIdx === 'number' && responseIdx >= 0) {
-					const items = this._items.splice(responseIdx, 1);
-					const item = items[0];
-					if (item instanceof ChatResponseViewModel) {
-						item.dispose();
+					const responseIdx =
+						e.responseId &&
+						this._items.findIndex(
+							(item) =>
+								isResponseVM(item) && item.id === e.responseId,
+						);
+					if (typeof responseIdx === "number" && responseIdx >= 0) {
+						const items = this._items.splice(responseIdx, 1);
+						const item = items[0];
+						if (item instanceof ChatResponseViewModel) {
+							item.dispose();
+						}
 					}
 				}
-			}
 
-			const modelEventToVmEvent: IChatViewModelChangeEvent = e.kind === 'addRequest' ? { kind: 'addRequest' } :
-				e.kind === 'initialize' ? { kind: 'initialize' } :
-					null;
-			this._onDidChange.fire(modelEventToVmEvent);
-		}));
+				const modelEventToVmEvent: IChatViewModelChangeEvent =
+					e.kind === "addRequest"
+						? { kind: "addRequest" }
+						: e.kind === "initialize"
+							? { kind: "initialize" }
+							: null;
+				this._onDidChange.fire(modelEventToVmEvent);
+			}),
+		);
 	}
 
 	private onAddResponse(responseModel: IChatResponseModel) {
@@ -590,7 +612,8 @@ export class ChatResponseViewModel
 	constructor(
 		private readonly _model: IChatResponseModel,
 		@ILogService private readonly logService: ILogService,
-		@IChatAgentNameService private readonly chatAgentNameService: IChatAgentNameService,
+		@IChatAgentNameService
+		private readonly chatAgentNameService: IChatAgentNameService,
 	) {
 		super();
 
@@ -599,35 +622,53 @@ export class ChatResponseViewModel
 				firstWordTime: 0,
 				lastUpdateTime: Date.now(),
 				impliedWordLoadRate: 0,
-				lastWordCount: 0
+				lastWordCount: 0,
 			};
 		}
 
-		this._register(_model.onDidChange(() => {
-			// This should be true, if the model is changing
-			if (this._contentUpdateTimings) {
-				const now = Date.now();
-				const wordCount = countWords(_model.response.toString());
+		this._register(
+			_model.onDidChange(() => {
+				// This should be true, if the model is changing
+				if (this._contentUpdateTimings) {
+					const now = Date.now();
+					const wordCount = countWords(_model.response.toString());
 
-				// Apply a min time difference, or the rate is typically too high for first few words
-				const timeDiff = Math.max(now - this._contentUpdateTimings.firstWordTime, 250);
-				const impliedWordLoadRate = this._contentUpdateTimings.lastWordCount / (timeDiff / 1000);
-				this.trace('onDidChange', `Update- got ${this._contentUpdateTimings.lastWordCount} words over last ${timeDiff}ms = ${impliedWordLoadRate} words/s. ${wordCount} words are now available.`);
-				this._contentUpdateTimings = {
-					firstWordTime: this._contentUpdateTimings.firstWordTime === 0 && this.response.value.some(v => v.kind === 'markdownContent') ? now : this._contentUpdateTimings.firstWordTime,
-					lastUpdateTime: now,
-					impliedWordLoadRate,
-					lastWordCount: wordCount
-				};
-			} else {
-				this.logService.warn('ChatResponseViewModel#onDidChange: got model update but contentUpdateTimings is not initialized');
-			}
+					// Apply a min time difference, or the rate is typically too high for first few words
+					const timeDiff = Math.max(
+						now - this._contentUpdateTimings.firstWordTime,
+						250,
+					);
+					const impliedWordLoadRate =
+						this._contentUpdateTimings.lastWordCount /
+						(timeDiff / 1000);
+					this.trace(
+						"onDidChange",
+						`Update- got ${this._contentUpdateTimings.lastWordCount} words over last ${timeDiff}ms = ${impliedWordLoadRate} words/s. ${wordCount} words are now available.`,
+					);
+					this._contentUpdateTimings = {
+						firstWordTime:
+							this._contentUpdateTimings.firstWordTime === 0 &&
+							this.response.value.some(
+								(v) => v.kind === "markdownContent",
+							)
+								? now
+								: this._contentUpdateTimings.firstWordTime,
+						lastUpdateTime: now,
+						impliedWordLoadRate,
+						lastWordCount: wordCount,
+					};
+				} else {
+					this.logService.warn(
+						"ChatResponseViewModel#onDidChange: got model update but contentUpdateTimings is not initialized",
+					);
+				}
 
-			// new data -> new id, new content to render
-			this._modelChangeCount++;
+				// new data -> new id, new content to render
+				this._modelChangeCount++;
 
-			this._onDidChange.fire();
-		}));
+				this._onDidChange.fire();
+			}),
+		);
 	}
 
 	private trace(tag: string, message: string) {

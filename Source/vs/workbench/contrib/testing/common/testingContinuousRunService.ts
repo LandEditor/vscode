@@ -9,13 +9,13 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { WellDefinedPrefixTree } from "../../../../base/common/prefixTree.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import {
@@ -25,11 +25,11 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { StoredValue } from "./storedValue.js";
 import { TestId } from "./testId.js";
+import { TestingContextKeys } from "./testingContextKeys.js";
 import { ITestProfileService } from "./testProfileService.js";
 import { ITestService } from "./testService.js";
 import type { TestService } from "./testServiceImpl.js";
 import type { ITestRunProfile, TestRunProfileBitset } from "./testTypes.js";
-import { TestingContextKeys } from "./testingContextKeys.js";
 
 export const ITestingContinuousRunService =
 	createDecorator<ITestingContinuousRunService>(
@@ -111,26 +111,35 @@ export class TestingContinuousRunService
 		@ITestService private readonly testService: TestService,
 		@IStorageService storageService: IStorageService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ITestProfileService private readonly testProfileService: ITestProfileService,
+		@ITestProfileService
+		private readonly testProfileService: ITestProfileService,
 	) {
 		super();
-		this.isGloballyOn = TestingContextKeys.isContinuousModeOn.bindTo(contextKeyService);
-		this.lastRun = this._register(new StoredValue<Set<number>>({
-			key: 'lastContinuousRunProfileIds',
-			scope: StorageScope.WORKSPACE,
-			target: StorageTarget.MACHINE,
-			serialization: {
-				deserialize: v => new Set(JSON.parse(v)),
-				serialize: v => JSON.stringify([...v])
-			},
-		}, storageService));
+		this.isGloballyOn =
+			TestingContextKeys.isContinuousModeOn.bindTo(contextKeyService);
+		this.lastRun = this._register(
+			new StoredValue<Set<number>>(
+				{
+					key: "lastContinuousRunProfileIds",
+					scope: StorageScope.WORKSPACE,
+					target: StorageTarget.MACHINE,
+					serialization: {
+						deserialize: (v) => new Set(JSON.parse(v)),
+						serialize: (v) => JSON.stringify([...v]),
+					},
+				},
+				storageService,
+			),
+		);
 
-		this._register(toDisposable(() => {
-			this.globallyRunning?.dispose();
-			for (const cts of this.running.values()) {
-				cts.dispose();
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				this.globallyRunning?.dispose();
+				for (const cts of this.running.values()) {
+					cts.dispose();
+				}
+			}),
+		);
 	}
 
 	/** @inheritdoc */

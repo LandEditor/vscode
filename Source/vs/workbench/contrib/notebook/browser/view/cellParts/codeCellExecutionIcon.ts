@@ -13,9 +13,9 @@ import {
 	type NotebookCellInternalMetadata,
 } from "../../../common/notebookCommon.js";
 import {
-	type INotebookCellExecution,
 	INotebookExecutionStateService,
 	NotebookExecutionType,
+	type INotebookCellExecution,
 } from "../../../common/notebookExecutionStateService.js";
 import type {
 	ICellViewModel,
@@ -40,17 +40,25 @@ export class CollapsedCodeCellExecutionIcon extends Disposable {
 		_notebookEditor: INotebookEditorDelegate,
 		private readonly _cell: ICellViewModel,
 		private readonly _element: HTMLElement,
-		@INotebookExecutionStateService private _executionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private _executionStateService: INotebookExecutionStateService,
 	) {
 		super();
 
 		this._update();
-		this._register(this._executionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell && e.affectsCell(this._cell.uri)) {
-				this._update();
-			}
-		}));
-		this._register(this._cell.model.onDidChangeInternalMetadata(() => this._update()));
+		this._register(
+			this._executionStateService.onDidChangeExecution((e) => {
+				if (
+					e.type === NotebookExecutionType.cell &&
+					e.affectsCell(this._cell.uri)
+				) {
+					this._update();
+				}
+			}),
+		);
+		this._register(
+			this._cell.model.onDidChangeInternalMetadata(() => this._update()),
+		);
 	}
 
 	setVisibility(visible: boolean): void {

@@ -9,8 +9,8 @@ import {
 	type ResourceLabelFormatter,
 } from "../../../platform/label/common/label.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	MainContext,
@@ -28,7 +28,7 @@ export class MainThreadLabelService
 
 	constructor(
 		_: IExtHostContext,
-		@ILabelService private readonly _labelService: ILabelService
+		@ILabelService private readonly _labelService: ILabelService,
 	) {
 		super();
 	}

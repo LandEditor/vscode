@@ -28,10 +28,10 @@ import {
 import type { ICellRange } from "../../common/notebookRange.js";
 import {
 	CellFoldingState,
+	getNotebookEditorFromEditorPane,
 	type INotebookEditor,
 	type INotebookEditorContribution,
 	type INotebookEditorMouseEvent,
-	getNotebookEditorFromEditorPane,
 } from "../notebookBrowser.js";
 import { registerNotebookContribution } from "../notebookEditorExtensions.js";
 import { FoldingModel } from "../viewModel/foldingModel.js";

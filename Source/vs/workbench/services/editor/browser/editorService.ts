@@ -10,23 +10,23 @@ import { indexOfPath } from "../../../../base/common/extpath.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap, ResourceSet } from "../../../../base/common/map.js";
 import { joinPath } from "../../../../base/common/resources.js";
 import { isUndefined } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
-	type IDiffEditor,
 	isCodeEditor,
 	isCompositeEditor,
 	isDiffEditor,
+	type ICodeEditor,
+	type IDiffEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import type {
 	EditorActivation,
@@ -36,11 +36,11 @@ import type {
 	ITextResourceEditorInput,
 } from "../../../../platform/editor/common/editor.js";
 import {
-	FileChangeType,
 	FileChangesEvent,
+	FileChangeType,
 	FileOperation,
-	type FileOperationEvent,
 	IFileService,
+	type FileOperationEvent,
 } from "../../../../platform/files/common/files.js";
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { registerSingleton } from "../../../../platform/instantiation/common/extensions.js";
@@ -59,9 +59,17 @@ import { EditorsObserver } from "../../../browser/parts/editor/editorsObserver.j
 import { SideBySideEditor as SideBySideEditorPane } from "../../../browser/parts/editor/sideBySideEditor.js";
 import {
 	EditorInputCapabilities,
-	type EditorInputWithOptions,
 	EditorResourceAccessor,
 	EditorsOrder,
+	isEditorInput,
+	isEditorInputWithOptions,
+	isEditorInputWithOptionsAndGroup,
+	isResourceDiffEditorInput,
+	isResourceEditorInput,
+	isResourceMergeEditorInput,
+	SaveReason,
+	SideBySideEditor,
+	type EditorInputWithOptions,
 	type GroupIdentifier,
 	type IEditorCloseEvent,
 	type IEditorControl,
@@ -76,14 +84,6 @@ import {
 	type IUntypedEditorInput,
 	type IVisibleEditorPane,
 	type IWorkbenchEditorConfiguration,
-	SaveReason,
-	SideBySideEditor,
-	isEditorInput,
-	isEditorInputWithOptions,
-	isEditorInputWithOptionsAndGroup,
-	isResourceDiffEditorInput,
-	isResourceEditorInput,
-	isResourceMergeEditorInput,
 } from "../../../common/editor.js";
 import { DiffEditorInput } from "../../../common/editor/diffEditorInput.js";
 import { EditorInput } from "../../../common/editor/editorInput.js";
@@ -93,20 +93,21 @@ import { ITextEditorService } from "../../textfile/common/textEditorService.js";
 import { findGroup } from "../common/editorGroupFinder.js";
 import {
 	GroupsOrder,
+	IEditorGroupsService,
+	isEditorReplacement,
 	type ICloseEditorOptions,
 	type IEditorGroup,
 	type IEditorGroupsContainer,
-	IEditorGroupsService,
 	type IEditorReplacement,
-	isEditorReplacement,
 } from "../common/editorGroupsService.js";
 import {
 	IEditorResolverService,
 	ResolvedStatus,
 } from "../common/editorResolverService.js";
 import {
-	type IBaseSaveRevertAllEditorOptions,
 	IEditorService,
+	isPreferredGroup,
+	type IBaseSaveRevertAllEditorOptions,
 	type IEditorsChangeEvent,
 	type IOpenEditorsOptions,
 	type IRevertAllEditorsOptions,
@@ -115,7 +116,6 @@ import {
 	type ISaveEditorsResult,
 	type IUntypedEditorReplacement,
 	type PreferredGroup,
-	isPreferredGroup,
 } from "../common/editorService.js";
 
 export class EditorService extends Disposable implements EditorServiceImpl {
@@ -165,21 +165,35 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 
 	constructor(
 		editorGroupsContainer: IEditorGroupsContainer | undefined,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
 		@IHostService private readonly hostService: IHostService,
-		@ITextEditorService private readonly textEditorService: ITextEditorService
+		@ITextEditorService
+		private readonly textEditorService: ITextEditorService,
 	) {
 		super();
 
-		this.editorGroupsContainer = editorGroupsContainer ?? editorGroupService;
-		this.editorsObserver = this._register(this.instantiationService.createInstance(EditorsObserver, this.editorGroupsContainer));
+		this.editorGroupsContainer =
+			editorGroupsContainer ?? editorGroupService;
+		this.editorsObserver = this._register(
+			this.instantiationService.createInstance(
+				EditorsObserver,
+				this.editorGroupsContainer,
+			),
+		);
 
 		this.onConfigurationUpdated();
 
@@ -935,10 +949,9 @@ export class EditorService extends Disposable implements EditorServiceImpl {
 				typedEditor = isEditorInputWithOptions(editor)
 					? editor
 					: {
-							editor:
-								await this.textEditorService.resolveTextEditor(
-									editor,
-								),
+							editor: await this.textEditorService.resolveTextEditor(
+								editor,
+							),
 							options: editor.options,
 						};
 			}

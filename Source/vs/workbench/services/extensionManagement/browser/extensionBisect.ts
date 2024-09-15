@@ -25,23 +25,23 @@ import {
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
 	ExtensionType,
-	type IExtension,
 	isResolverExtension,
+	type IExtension,
 } from "../../../../platform/extensions/common/extensions.js";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
 	INotificationService,
-	type IPromptChoice,
 	NotificationPriority,
 	Severity,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
@@ -114,9 +114,13 @@ class ExtensionBisectService implements IExtensionBisectService {
 	constructor(
 		@ILogService logService: ILogService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IWorkbenchEnvironmentService private readonly _envService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		private readonly _envService: IWorkbenchEnvironmentService,
 	) {
-		const raw = _storageService.get(ExtensionBisectService._storageKey, StorageScope.APPLICATION);
+		const raw = _storageService.get(
+			ExtensionBisectService._storageKey,
+			StorageScope.APPLICATION,
+		);
 		this._state = BisectState.fromJSON(raw);
 
 		if (this._state) {
@@ -125,7 +129,7 @@ class ExtensionBisectService implements IExtensionBisectService {
 				const isDisabled = i >= mid && i < high;
 				this._disabled.set(this._state.extensions[i], isDisabled);
 			}
-			logService.warn('extension BISECT active', [...this._disabled]);
+			logService.warn("extension BISECT active", [...this._disabled]);
 		}
 	}
 
@@ -252,12 +256,16 @@ class ExtensionBisectUi {
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IExtensionBisectService private readonly _extensionBisectService: IExtensionBisectService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IExtensionBisectService
+		private readonly _extensionBisectService: IExtensionBisectService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@ICommandService private readonly _commandService: ICommandService,
 	) {
 		if (_extensionBisectService.isActive) {
-			ExtensionBisectUi.ctxIsBisectActive.bindTo(contextKeyService).set(true);
+			ExtensionBisectUi.ctxIsBisectActive
+				.bindTo(contextKeyService)
+				.set(true);
 			this._showBisectPrompt();
 		}
 	}

@@ -20,9 +20,9 @@ import { ConfigurationService } from "../../platform/configuration/common/config
 import { IDownloadService } from "../../platform/download/common/download.js";
 import { DownloadService } from "../../platform/download/common/downloadService.js";
 import {
-	type OptionDescriptions,
 	buildHelpMessage,
 	buildVersionMessage,
+	type OptionDescriptions,
 } from "../../platform/environment/node/argv.js";
 import { ExtensionGalleryServiceWithNoStorageService } from "../../platform/extensionManagement/common/extensionGalleryService.js";
 import {
@@ -41,8 +41,8 @@ import {
 	IExtensionSignatureVerificationService,
 } from "../../platform/extensionManagement/node/extensionSignatureVerificationService.js";
 import { ExtensionsProfileScannerService } from "../../platform/extensionManagement/node/extensionsProfileScannerService.js";
-import { FileService } from "../../platform/files/common/fileService.js";
 import { IFileService } from "../../platform/files/common/files.js";
+import { FileService } from "../../platform/files/common/fileService.js";
 import { DiskFileSystemProvider } from "../../platform/files/node/diskFileSystemProvider.js";
 import { SyncDescriptor } from "../../platform/instantiation/common/descriptors.js";
 import type { IInstantiationService } from "../../platform/instantiation/common/instantiation.js";
@@ -52,10 +52,10 @@ import { ILanguagePackService } from "../../platform/languagePacks/common/langua
 import { NativeLanguagePackService } from "../../platform/languagePacks/node/languagePacks.js";
 import {
 	ConsoleLogger,
-	ILogService,
-	ILoggerService,
-	NullLogger,
 	getLogLevel,
+	ILoggerService,
+	ILogService,
+	NullLogger,
 } from "../../platform/log/common/log.js";
 import { LogService } from "../../platform/log/common/logService.js";
 import { LoggerService } from "../../platform/log/node/loggerService.js";

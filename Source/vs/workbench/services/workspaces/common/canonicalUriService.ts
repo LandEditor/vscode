@@ -11,8 +11,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ICanonicalUriProvider,
 	ICanonicalUriService,
+	type ICanonicalUriProvider,
 } from "../../../../platform/workspace/common/canonicalUri.js";
 
 export class CanonicalUriService implements ICanonicalUriService {

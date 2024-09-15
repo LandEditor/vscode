@@ -7,9 +7,9 @@ import { Schemas } from "../../../../base/common/network.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { IChannel } from "../../../../base/parts/ipc/common/ipc.js";
 import {
+	IExtensionTipsService,
 	type IConfigBasedExtensionTip,
 	type IExecutableBasedExtensionTip,
-	IExtensionTipsService,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { ExtensionTipsService } from "../../../../platform/extensionManagement/common/extensionTipsService.js";
 import { IFileService } from "../../../../platform/files/common/files.js";

@@ -2,9 +2,9 @@ import { CancellationTokenSource } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ILogService } from "../../log/common/log.js";
 
@@ -29,15 +29,17 @@ export class RequestStore<T, RequestArgs> extends Disposable {
 	 */
 	constructor(
 		timeout: number | undefined,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 		this._timeout = timeout === undefined ? 15000 : timeout;
-		this._register(toDisposable(() => {
-			for (const d of this._pendingRequestDisposables.values()) {
-				dispose(d);
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				for (const d of this._pendingRequestDisposables.values()) {
+					dispose(d);
+				}
+			}),
+		);
 	}
 
 	/**

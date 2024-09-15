@@ -6,14 +6,14 @@
 import { coalesce } from "../../../../base/common/arrays.js";
 import { Promises, ResourceQueue } from "../../../../base/common/async.js";
 import {
-	VSBuffer,
-	type VSBufferReadable,
-	type VSBufferReadableStream,
 	bufferToStream,
 	prefixedBufferReadable,
 	prefixedBufferStream,
 	readableToBuffer,
 	streamToBuffer,
+	VSBuffer,
+	type VSBufferReadable,
+	type VSBufferReadableStream,
 } from "../../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { hash } from "../../../../base/common/hash.js";
@@ -29,15 +29,15 @@ import {
 import { isEmptyObject } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../../../platform/files/common/files.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
+	NO_TYPE_ID,
 	type IWorkingCopyBackupMeta,
 	type IWorkingCopyIdentifier,
-	NO_TYPE_ID,
 } from "./workingCopy.js";
 import type {
 	IResolvedWorkingCopyBackup,
@@ -170,7 +170,7 @@ export abstract class WorkingCopyBackupService
 	constructor(
 		backupWorkspaceHome: URI | undefined,
 		@IFileService protected fileService: IFileService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
@@ -275,7 +275,7 @@ class WorkingCopyBackupServiceImpl
 	constructor(
 		private backupWorkspaceHome: URI,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 

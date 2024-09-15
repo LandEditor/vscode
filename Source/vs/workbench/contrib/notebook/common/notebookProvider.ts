@@ -9,9 +9,9 @@ import type { URI } from "../../../../base/common/uri.js";
 import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import type { RegisteredEditorPriority } from "../../../services/editor/common/editorResolverService.js";
 import {
+	isDocumentExcludePattern,
 	type INotebookExclusiveDocumentFilter,
 	type TransientOptions,
-	isDocumentExcludePattern,
 } from "./notebookCommon.js";
 
 type NotebookSelector =

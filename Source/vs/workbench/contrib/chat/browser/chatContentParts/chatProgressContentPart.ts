@@ -15,8 +15,8 @@ import type {
 	IChatTask,
 } from "../../common/chatService.js";
 import {
-	type IChatRendererContent,
 	isResponseVM,
+	type IChatRendererContent,
 } from "../../common/chatViewModel.js";
 import type { ChatTreeItem } from "../chat.js";
 import type {

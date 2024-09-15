@@ -9,23 +9,23 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { IPosition } from "../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../editor/common/core/range.js";
 import type { StandardTokenType } from "../../../editor/common/encodedTokenAttributes.js";
 import { ILanguageService } from "../../../editor/common/languages/language.js";
 import { IModelService } from "../../../editor/common/services/model.js";
 import { ITextModelService } from "../../../editor/common/services/resolverService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type ILanguageStatus,
 	ILanguageStatusService,
+	type ILanguageStatus,
 } from "../../services/languageStatus/common/languageStatusService.js";
 import {
 	ExtHostContext,
-	type ExtHostLanguagesShape,
 	MainContext,
+	type ExtHostLanguagesShape,
 	type MainThreadLanguagesShape,
 } from "../common/extHost.protocol.js";
 
@@ -41,14 +41,21 @@ export class MainThreadLanguages implements MainThreadLanguagesShape {
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
 		@ITextModelService private _resolverService: ITextModelService,
-		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
+		@ILanguageStatusService
+		private readonly _languageStatusService: ILanguageStatusService,
 	) {
 		this._proxy = _extHostContext.getProxy(ExtHostContext.ExtHostLanguages);
 
-		this._proxy.$acceptLanguageIds(_languageService.getRegisteredLanguageIds());
-		this._disposables.add(_languageService.onDidChange(_ => {
-			this._proxy.$acceptLanguageIds(_languageService.getRegisteredLanguageIds());
-		}));
+		this._proxy.$acceptLanguageIds(
+			_languageService.getRegisteredLanguageIds(),
+		);
+		this._disposables.add(
+			_languageService.onDidChange((_) => {
+				this._proxy.$acceptLanguageIds(
+					_languageService.getRegisteredLanguageIds(),
+				);
+			}),
+		);
 	}
 
 	dispose(): void {

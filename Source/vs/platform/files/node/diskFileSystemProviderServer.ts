@@ -8,13 +8,13 @@ import { CancellationTokenSource } from "../../../base/common/cancellation.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
-	type ReadableStreamEventPayload,
 	listenStream,
+	type ReadableStreamEventPayload,
 } from "../../../base/common/stream.js";
 import type { URI, UriComponents } from "../../../base/common/uri.js";
 import type { IURITransformer } from "../../../base/common/uriIpc.js";

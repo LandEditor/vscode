@@ -7,6 +7,7 @@ import type {
 	IExperimentationTelemetry,
 	IKeyValueStorage,
 } from "tas-client-umd";
+
 import type { ITelemetryData } from "../../../../base/common/actions.js";
 import { localize } from "../../../../nls.js";
 import type { IAssignmentService } from "../../../../platform/assignment/common/assignment.js";
@@ -111,16 +112,20 @@ export class WorkbenchAssignmentService extends BaseAssignmentService {
 		@IStorageService storageService: IStorageService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IProductService productService: IProductService,
-		@IEnvironmentService environmentService: IEnvironmentService
+		@IEnvironmentService environmentService: IEnvironmentService,
 	) {
-
 		super(
 			telemetryService.machineId,
 			configurationService,
 			productService,
 			environmentService,
-			new WorkbenchAssignmentServiceTelemetry(telemetryService, productService),
-			new MementoKeyValueStorage(new Memento('experiment.service.memento', storageService))
+			new WorkbenchAssignmentServiceTelemetry(
+				telemetryService,
+				productService,
+			),
+			new MementoKeyValueStorage(
+				new Memento("experiment.service.memento", storageService),
+			),
 		);
 	}
 

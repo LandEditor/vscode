@@ -15,9 +15,9 @@ import {
 import { IRemoteSocketFactoryService } from "../../../../platform/remote/common/remoteSocketFactoryService.js";
 import { ISignService } from "../../../../platform/sign/common/sign.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { IHostService } from "../../host/browser/host.js";
@@ -30,11 +30,15 @@ export class RemoteAgentService
 	implements IRemoteAgentService
 {
 	constructor(
-		@IRemoteSocketFactoryService remoteSocketFactoryService: IRemoteSocketFactoryService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IRemoteSocketFactoryService
+		remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IProductService productService: IProductService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ISignService signService: ISignService,
 		@ILogService logService: ILogService,
 	) {
@@ -62,12 +66,11 @@ class RemoteConnectionFailureNotificationContribution
 		@IHostService private readonly _hostService: IHostService,
 	) {
 		// Let's cover the case where connecting to fetch the remote extension info fails
-		remoteAgentService.getRawEnvironment()
-			.then(undefined, (err) => {
-				if (!RemoteAuthorityResolverError.isHandled(err)) {
-					this._presentConnectionError(err);
-				}
-			});
+		remoteAgentService.getRawEnvironment().then(undefined, (err) => {
+			if (!RemoteAuthorityResolverError.isHandled(err)) {
+				this._presentConnectionError(err);
+			}
+		});
 	}
 
 	private async _presentConnectionError(err: any): Promise<void> {

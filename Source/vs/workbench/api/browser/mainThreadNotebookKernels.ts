@@ -5,8 +5,8 @@
 
 import { isNonEmptyArray } from "../../../base/common/arrays.js";
 import {
-	type AsyncIterableObject,
 	AsyncIterableSource,
+	type AsyncIterableObject,
 } from "../../../base/common/async.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../base/common/errors.js";
@@ -14,8 +14,8 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { ILanguageService } from "../../../editor/common/languages/language.js";
@@ -23,32 +23,32 @@ import type { ExtensionIdentifier } from "../../../platform/extensions/common/ex
 import type { INotebookEditor } from "../../contrib/notebook/browser/notebookBrowser.js";
 import { INotebookEditorService } from "../../contrib/notebook/browser/services/notebookEditorService.js";
 import {
-	type INotebookCellExecution,
-	type INotebookExecution,
 	INotebookExecutionStateService,
 	NotebookExecutionType,
+	type INotebookCellExecution,
+	type INotebookExecution,
 } from "../../contrib/notebook/common/notebookExecutionStateService.js";
 import {
+	INotebookKernelService,
 	type IKernelSourceActionProvider,
 	type INotebookKernel,
 	type INotebookKernelChangeEvent,
 	type INotebookKernelDetectionTask,
-	INotebookKernelService,
 	type VariablesResult,
 } from "../../contrib/notebook/common/notebookKernelService.js";
 import { INotebookService } from "../../contrib/notebook/common/notebookService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import type { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostNotebookKernelsShape,
 	type ICellExecuteUpdateDto,
 	type ICellExecutionCompleteDto,
 	type INotebookKernelDto2,
-	MainContext,
 	type MainThreadNotebookKernelsShape,
 } from "../common/extHost.protocol.js";
 import { NotebookDto } from "./mainThreadNotebookDto.js";
@@ -196,40 +196,72 @@ export class MainThreadNotebookKernels
 	constructor(
 		extHostContext: IExtHostContext,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookEditorService notebookEditorService: INotebookEditorService
+		@INotebookEditorService notebookEditorService: INotebookEditorService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookKernels);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookKernels,
+		);
 
-		notebookEditorService.listNotebookEditors().forEach(this._onEditorAdd, this);
-		notebookEditorService.onDidAddNotebookEditor(this._onEditorAdd, this, this._disposables);
-		notebookEditorService.onDidRemoveNotebookEditor(this._onEditorRemove, this, this._disposables);
+		notebookEditorService
+			.listNotebookEditors()
+			.forEach(this._onEditorAdd, this);
+		notebookEditorService.onDidAddNotebookEditor(
+			this._onEditorAdd,
+			this,
+			this._disposables,
+		);
+		notebookEditorService.onDidRemoveNotebookEditor(
+			this._onEditorRemove,
+			this,
+			this._disposables,
+		);
 
-		this._disposables.add(toDisposable(() => {
-			// EH shut down, complete all executions started by this EH
-			this._executions.forEach(e => {
-				e.complete({});
-			});
-			this._notebookExecutions.forEach(e => e.complete());
-		}));
+		this._disposables.add(
+			toDisposable(() => {
+				// EH shut down, complete all executions started by this EH
+				this._executions.forEach((e) => {
+					e.complete({});
+				});
+				this._notebookExecutions.forEach((e) => e.complete());
+			}),
+		);
 
-		this._disposables.add(this._notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell) {
-				this._proxy.$cellExecutionChanged(e.notebook, e.cellHandle, e.changed?.state);
-			}
-		}));
-
-		this._disposables.add(this._notebookKernelService.onDidChangeSelectedNotebooks(e => {
-			for (const [handle, [kernel,]] of this._kernels) {
-				if (e.oldKernel === kernel.id) {
-					this._proxy.$acceptNotebookAssociation(handle, e.notebook, false);
-				} else if (e.newKernel === kernel.id) {
-					this._proxy.$acceptNotebookAssociation(handle, e.notebook, true);
+		this._disposables.add(
+			this._notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (e.type === NotebookExecutionType.cell) {
+					this._proxy.$cellExecutionChanged(
+						e.notebook,
+						e.cellHandle,
+						e.changed?.state,
+					);
 				}
-			}
-		}));
+			}),
+		);
+
+		this._disposables.add(
+			this._notebookKernelService.onDidChangeSelectedNotebooks((e) => {
+				for (const [handle, [kernel]] of this._kernels) {
+					if (e.oldKernel === kernel.id) {
+						this._proxy.$acceptNotebookAssociation(
+							handle,
+							e.notebook,
+							false,
+						);
+					} else if (e.newKernel === kernel.id) {
+						this._proxy.$acceptNotebookAssociation(
+							handle,
+							e.notebook,
+							true,
+						);
+					}
+				}
+			}),
+		);
 	}
 
 	dispose(): void {

@@ -8,10 +8,10 @@ import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import { ILanguageService } from "../../../../../editor/common/languages/language.js";
 import { localize } from "../../../../../nls.js";
 import {
-	type IAction2Options,
 	MenuId,
 	MenuRegistry,
 	registerAction2,
+	type IAction2Options,
 } from "../../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../../platform/contextkey/common/contextkey.js";
 import { InputFocusedContext } from "../../../../../platform/contextkey/common/contextkeys.js";
@@ -25,7 +25,7 @@ import {
 import type { CellViewModel } from "../viewModel/notebookViewModelImpl.js";
 import { insertCell } from "./cellOperations.js";
 import { CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION } from "./chat/notebookChatContext.js";
-import { type INotebookActionContext, NotebookAction } from "./coreActions.js";
+import { NotebookAction, type INotebookActionContext } from "./coreActions.js";
 
 const INSERT_CODE_CELL_ABOVE_COMMAND_ID = "notebook.cell.insertCodeCellAbove";
 const INSERT_CODE_CELL_BELOW_COMMAND_ID = "notebook.cell.insertCodeCellBelow";

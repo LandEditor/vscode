@@ -8,24 +8,24 @@ import { VSBuffer } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { Event } from "../../../base/common/event.js";
 import { parse } from "../../../base/common/json.js";
-import { OS, OperatingSystem } from "../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../base/common/platform.js";
 import { isUndefined } from "../../../base/common/types.js";
 import type { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../files/common/files.js";
 import type { ILogService } from "../../log/common/log.js";
 import { IStorageService } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	AbstractInitializer,
@@ -36,20 +36,20 @@ import {
 } from "./abstractSynchronizer.js";
 import { merge } from "./keybindingsMerge.js";
 import {
-	CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM,
 	Change,
-	type IRemoteUserData,
-	type IUserDataSyncConfiguration,
+	CONFIG_SYNC_KEYBINDINGS_PER_PLATFORM,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
 	IUserDataSyncUtilService,
-	type IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
+	type IRemoteUserData,
+	type IUserDataSyncConfiguration,
+	type IUserDataSynchroniser,
 } from "./userDataSync.js";
 
 interface ISyncContent {
@@ -121,15 +121,19 @@ export class KeybindingsSynchroniser
 	constructor(
 		profile: IUserDataProfile,
 		collection: string | undefined,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncUtilService userDataSyncUtilService: IUserDataSyncUtilService,
+		@IUserDataSyncUtilService
+		userDataSyncUtilService: IUserDataSyncUtilService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
@@ -532,7 +536,8 @@ export class KeybindingsSynchroniser
 export class KeybindingsInitializer extends AbstractInitializer {
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,

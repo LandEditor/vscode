@@ -5,9 +5,9 @@
 
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../browser/editorBrowser.js";
 import { EditorOption } from "../../../../common/config/editorOptions.js";
 import { Range } from "../../../../common/core/range.js";

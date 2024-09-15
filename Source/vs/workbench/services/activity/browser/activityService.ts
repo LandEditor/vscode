@@ -6,8 +6,8 @@
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isUndefined } from "../../../../base/common/types.js";
 import {
@@ -23,7 +23,7 @@ import {
 	IViewDescriptorService,
 	type ViewContainer,
 } from "../../../common/views.js";
-import { type IActivity, IActivityService } from "../common/activity.js";
+import { IActivityService, type IActivity } from "../common/activity.js";
 
 class ViewContainerActivityByView extends Disposable {
 	private activity: IActivity | undefined = undefined;
@@ -31,12 +31,21 @@ class ViewContainerActivityByView extends Disposable {
 
 	constructor(
 		private readonly viewId: string,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
 		@IActivityService private readonly activityService: IActivityService,
 	) {
 		super();
-		this._register(Event.filter(this.viewDescriptorService.onDidChangeContainer, e => e.views.some(view => view.id === viewId))(() => this.update()));
-		this._register(Event.filter(this.viewDescriptorService.onDidChangeLocation, e => e.views.some(view => view.id === viewId))(() => this.update()));
+		this._register(
+			Event.filter(this.viewDescriptorService.onDidChangeContainer, (e) =>
+				e.views.some((view) => view.id === viewId),
+			)(() => this.update()),
+		);
+		this._register(
+			Event.filter(this.viewDescriptorService.onDidChangeLocation, (e) =>
+				e.views.some((view) => view.id === viewId),
+			)(() => this.update()),
+		);
 	}
 
 	setActivity(activity: IActivity): void {
@@ -88,8 +97,10 @@ export class ActivityService extends Disposable implements IActivityService {
 	private readonly globalActivities = new Map<string, IActivity[]>();
 
 	constructor(
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}

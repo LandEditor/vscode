@@ -13,16 +13,16 @@ import { Emitter, type Event } from "../../../../../../base/common/event.js";
 import { MarshalledId } from "../../../../../../base/common/marshallingIds.js";
 import type { ServicesAccessor } from "../../../../../../editor/browser/editorExtensions.js";
 import {
-	MenuEntryActionViewItem,
 	createActionViewItem,
 	createAndFillInActionBarActions,
+	MenuEntryActionViewItem,
 } from "../../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import { WorkbenchToolBar } from "../../../../../../platform/actions/browser/toolbar.js";
 import {
-	type IMenu,
 	IMenuService,
-	type MenuId,
 	MenuItemAction,
+	type IMenu,
+	type MenuId,
 } from "../../../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../../../platform/contextview/browser/contextView.js";
@@ -44,10 +44,13 @@ export class BetweenCellToolbar extends CellOverlayPart {
 		private readonly _notebookEditor: INotebookEditorDelegate,
 		_titleToolbarContainer: HTMLElement,
 		private readonly _bottomCellToolbarContainer: HTMLElement,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IMenuService private readonly menuService: IMenuService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IMenuService private readonly menuService: IMenuService,
 	) {
 		super();
 	}
@@ -181,9 +184,11 @@ export class CellTitleToolbarPart extends CellOverlayPart {
 		private readonly toolbarId: MenuId,
 		private readonly deleteToolbarId: MenuId,
 		private readonly _notebookEditor: INotebookEditorDelegate,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}

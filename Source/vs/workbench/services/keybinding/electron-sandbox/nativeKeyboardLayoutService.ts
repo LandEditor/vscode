@@ -5,17 +5,17 @@
 
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../../base/common/platform.js";
 import { ProxyChannel } from "../../../../base/parts/ipc/common/ipc.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { IMainProcessService } from "../../../../platform/ipc/common/mainProcessService.js";
 import {
+	macLinuxKeyboardMappingEquals,
+	windowsKeyboardMappingEquals,
 	type IKeyboardLayoutInfo,
 	type IKeyboardMapping,
 	type IMacLinuxKeyboardMapping,
 	type IWindowsKeyboardMapping,
-	macLinuxKeyboardMappingEquals,
-	windowsKeyboardMappingEquals,
 } from "../../../../platform/keyboardLayout/common/keyboardLayout.js";
 import type { INativeKeyboardLayoutService as IBaseNativeKeyboardLayoutService } from "../../../../platform/keyboardLayout/common/keyboardLayoutService.js";
 
@@ -47,26 +47,36 @@ export class NativeKeyboardLayoutService
 	private _keyboardMapping: IKeyboardMapping | null;
 	private _keyboardLayoutInfo: IKeyboardLayoutInfo | null;
 
-	constructor(
-		@IMainProcessService mainProcessService: IMainProcessService
-	) {
+	constructor(@IMainProcessService mainProcessService: IMainProcessService) {
 		super();
-		this._keyboardLayoutService = ProxyChannel.toService<IBaseNativeKeyboardLayoutService>(mainProcessService.getChannel('keyboardLayout'));
+		this._keyboardLayoutService =
+			ProxyChannel.toService<IBaseNativeKeyboardLayoutService>(
+				mainProcessService.getChannel("keyboardLayout"),
+			);
 		this._initPromise = null;
 		this._keyboardMapping = null;
 		this._keyboardLayoutInfo = null;
 
-		this._register(this._keyboardLayoutService.onDidChangeKeyboardLayout(async ({ keyboardLayoutInfo, keyboardMapping }) => {
-			await this.initialize();
-			if (keyboardMappingEquals(this._keyboardMapping, keyboardMapping)) {
-				// the mappings are equal
-				return;
-			}
+		this._register(
+			this._keyboardLayoutService.onDidChangeKeyboardLayout(
+				async ({ keyboardLayoutInfo, keyboardMapping }) => {
+					await this.initialize();
+					if (
+						keyboardMappingEquals(
+							this._keyboardMapping,
+							keyboardMapping,
+						)
+					) {
+						// the mappings are equal
+						return;
+					}
 
-			this._keyboardMapping = keyboardMapping;
-			this._keyboardLayoutInfo = keyboardLayoutInfo;
-			this._onDidChangeKeyboardLayout.fire();
-		}));
+					this._keyboardMapping = keyboardMapping;
+					this._keyboardLayoutInfo = keyboardLayoutInfo;
+					this._onDidChangeKeyboardLayout.fire();
+				},
+			),
+		);
 	}
 
 	public initialize(): Promise<void> {

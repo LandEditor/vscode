@@ -14,13 +14,13 @@ import {
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ITransaction,
 	autorun,
 	observableSignal,
 	observableValue,
 	transaction,
+	type IObservable,
+	type IReader,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import type { ITextModel } from "../../../../../editor/common/model.js";
 import type { UndoRedoGroup } from "../../../../../platform/undoRedo/common/undoRedo.js";

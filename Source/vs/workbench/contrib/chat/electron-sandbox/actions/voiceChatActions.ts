@@ -4,15 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/voiceChatActions.css";
+
 import { renderStringAsPlaintext } from "../../../../../base/browser/markdownRenderer.js";
 import {
-	RunOnceScheduler,
 	disposableTimeout,
 	raceCancellation,
+	RunOnceScheduler,
 } from "../../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../../base/common/codicons.js";
 import type { Color } from "../../../../../base/common/color.js";
@@ -31,8 +32,8 @@ import { localize, localize2 } from "../../../../../nls.js";
 import { IAccessibilityService } from "../../../../../platform/accessibility/common/accessibility.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
+	type IAction2Options,
 } from "../../../../../platform/actions/common/actions.js";
 import {
 	CommandsRegistry,
@@ -76,16 +77,16 @@ import {
 	Parts,
 } from "../../../../services/layout/browser/layoutService.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../../services/statusbar/browser/statusbar.js";
 import { IViewsService } from "../../../../services/views/common/viewsService.js";
 import {
+	accessibilityConfigurationNodeBase,
 	AccessibilityVoiceSettingId,
 	SpeechTimeoutDefault,
-	accessibilityConfigurationNodeBase,
 } from "../../../accessibility/browser/accessibilityConfiguration.js";
 import { IExtensionsWorkbenchService } from "../../../extensions/common/extensions.js";
 import { InlineChatController } from "../../../inlineChat/browser/inlineChatController.js";
@@ -111,10 +112,10 @@ import {
 import { CHAT_CATEGORY } from "../../browser/actions/chatActions.js";
 import type { IChatExecuteActionContext } from "../../browser/actions/chatExecuteActions.js";
 import {
-	type IChatWidget,
 	IChatWidgetService,
 	IQuickChatService,
 	showChatView,
+	type IChatWidget,
 } from "../../browser/chat.js";
 import {
 	ChatAgentLocation,
@@ -447,10 +448,13 @@ class VoiceChatSessions {
 
 	constructor(
 		@IVoiceChatService private readonly voiceChatService: IVoiceChatService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
-	) { }
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+	) {}
 
 	async start(
 		controller: IVoiceChatSessionController,
@@ -1105,8 +1109,9 @@ class ChatSynthesizerSessions {
 
 	constructor(
 		@ISpeechService private readonly speechService: ISpeechService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	async start(controller: IChatSynthesizerSessionController): Promise<void> {
 		// Stop running text-to-speech or speech-to-text sessions in chats
@@ -1442,7 +1447,8 @@ export class KeywordActivationContribution
 
 	constructor(
 		@ISpeechService private readonly speechService: ISpeechService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IEditorService private readonly editorService: IEditorService,
@@ -1451,7 +1457,9 @@ export class KeywordActivationContribution
 	) {
 		super();
 
-		this._register(instantiationService.createInstance(KeywordActivationStatusEntry));
+		this._register(
+			instantiationService.createInstance(KeywordActivationStatusEntry),
+		);
 
 		this.registerListeners();
 	}
@@ -1667,12 +1675,22 @@ class KeywordActivationStatusEntry extends Disposable {
 		@ISpeechService private readonly speechService: ISpeechService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IChatAgentService private readonly chatAgentService: IChatAgentService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 	) {
 		super();
 
-		this._register(CommandsRegistry.registerCommand(KeywordActivationStatusEntry.STATUS_COMMAND, () => this.commandService.executeCommand('workbench.action.openSettings', KEYWORD_ACTIVIATION_SETTING_ID)));
+		this._register(
+			CommandsRegistry.registerCommand(
+				KeywordActivationStatusEntry.STATUS_COMMAND,
+				() =>
+					this.commandService.executeCommand(
+						"workbench.action.openSettings",
+						KEYWORD_ACTIVIATION_SETTING_ID,
+					),
+			),
+		);
 
 		this.registerListeners();
 		this.updateStatusEntry();

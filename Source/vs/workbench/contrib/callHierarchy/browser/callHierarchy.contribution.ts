@@ -28,9 +28,9 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IInstantiationService,
@@ -107,17 +107,34 @@ class CallHierarchyController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
-		this._ctxIsVisible = _ctxCallHierarchyVisible.bindTo(this._contextKeyService);
-		this._ctxHasProvider = _ctxHasCallHierarchyProvider.bindTo(this._contextKeyService);
-		this._ctxDirection = _ctxCallHierarchyDirection.bindTo(this._contextKeyService);
-		this._dispoables.add(Event.any<any>(_editor.onDidChangeModel, _editor.onDidChangeModelLanguage, CallHierarchyProviderRegistry.onDidChange)(() => {
-			this._ctxHasProvider.set(_editor.hasModel() && CallHierarchyProviderRegistry.has(_editor.getModel()));
-		}));
+		this._ctxIsVisible = _ctxCallHierarchyVisible.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxHasProvider = _ctxHasCallHierarchyProvider.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxDirection = _ctxCallHierarchyDirection.bindTo(
+			this._contextKeyService,
+		);
+		this._dispoables.add(
+			Event.any<any>(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelLanguage,
+				CallHierarchyProviderRegistry.onDidChange,
+			)(() => {
+				this._ctxHasProvider.set(
+					_editor.hasModel() &&
+						CallHierarchyProviderRegistry.has(_editor.getModel()),
+				);
+			}),
+		);
 		this._dispoables.add(this._sessionDisposables);
 	}
 

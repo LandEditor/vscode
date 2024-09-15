@@ -3,6 +3,7 @@
  * @import { NativeParsedArgs } from './vs/platform/environment/common/argv'
  */
 
+import * as fs from "original-fs";
 import * as os from "os";
 // ESM-comment-begin
 // const path = require('path');
@@ -21,9 +22,9 @@ import * as os from "os";
 // ESM-uncomment-begin
 import * as path from "path";
 import { fileURLToPath } from "url";
-import { Menu, app, contentTracing, crashReporter, protocol } from "electron";
+import { app, contentTracing, crashReporter, Menu, protocol } from "electron";
 import minimist from "minimist";
-import * as fs from "original-fs";
+
 import * as bootstrapAmd from "./bootstrap-amd.js";
 import { product } from "./bootstrap-meta.js";
 import * as bootstrapNode from "./bootstrap-node.js";

@@ -21,8 +21,8 @@ import {
 import * as JSONContributionRegistry from "../../../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { ConfigureSnippetsAction } from "./commands/configureSnippets.js";
@@ -34,6 +34,7 @@ import { ISnippetsService } from "./snippets.js";
 import { SnippetsService } from "./snippetsService.js";
 
 import "./tabCompletion.js";
+
 import { editorConfigurationBaseNode } from "../../../../editor/common/config/editorConfigurationSchema.js";
 
 // service

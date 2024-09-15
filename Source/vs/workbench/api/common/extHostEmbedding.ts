@@ -4,17 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostEmbeddingsShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadEmbeddingsShape,
 } from "./extHost.protocol.js";
 

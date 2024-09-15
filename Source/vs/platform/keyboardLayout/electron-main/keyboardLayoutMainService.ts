@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as nativeKeymap from "native-keymap";
+
 import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import * as platform from "../../../base/common/platform.js";
@@ -38,7 +39,7 @@ export class KeyboardLayoutMainService
 	private _keyboardLayoutData: IKeyboardLayoutData | null;
 
 	constructor(
-		@ILifecycleMainService lifecycleMainService: ILifecycleMainService
+		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 	) {
 		super();
 		this._initPromise = null;
@@ -47,7 +48,9 @@ export class KeyboardLayoutMainService
 		// perf: automatically trigger initialize after windows
 		// have opened so that we can do this work in parallel
 		// to the window load.
-		lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen).then(() => this._initialize());
+		lifecycleMainService
+			.when(LifecycleMainPhase.AfterWindowOpen)
+			.then(() => this._initialize());
 	}
 
 	private _initialize(): Promise<void> {

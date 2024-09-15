@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../../base/browser/dom.js";
+import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import {
 	BaseActionViewItem,
 	type IActionViewItemOptions,
 	type IBaseActionViewItemOptions,
 } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
-import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { AnchorAlignment } from "../../../../base/browser/ui/contextview/contextview.js";
 import { DropdownMenuActionViewItem } from "../../../../base/browser/ui/dropdown/dropdownActionViewItem.js";
 import {
 	Action,
+	Separator,
 	type IAction,
 	type IActionRunner,
-	Separator,
 } from "../../../../base/common/actions.js";
 import { Delayer } from "../../../../base/common/async.js";
 import { Emitter } from "../../../../base/common/event.js";
@@ -90,13 +90,20 @@ export class TestingExplorerFilter extends BaseActionViewItem {
 	constructor(
 		action: IAction,
 		options: IBaseActionViewItemOptions,
-		@ITestExplorerFilterState private readonly state: ITestExplorerFilterState,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@ITestExplorerFilterState
+		private readonly state: ITestExplorerFilterState,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITestService private readonly testService: ITestService,
 	) {
 		super(null, action, options);
 		this.updateFilterActiveState();
-		this._register(testService.excluded.onTestExclusionsChanged(this.updateFilterActiveState, this));
+		this._register(
+			testService.excluded.onTestExclusionsChanged(
+				this.updateFilterActiveState,
+				this,
+			),
+		);
 	}
 
 	/**
@@ -272,15 +279,16 @@ class FiltersDropdownMenuActionViewItem extends DropdownMenuActionViewItem {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@ITestService private readonly testService: ITestService,
 	) {
-		super(action,
+		super(
+			action,
 			{ getActions: () => this.getActions() },
 			contextMenuService,
 			{
 				actionRunner,
 				classNames: action.class,
 				anchorAlignmentProvider: () => AnchorAlignment.RIGHT,
-				menuAsChild: true
-			}
+				menuAsChild: true,
+			},
 		);
 	}
 

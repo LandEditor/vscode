@@ -6,9 +6,9 @@
 import { Codicon } from "../../../../base/common/codicons.js";
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import { EditorAction2 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";

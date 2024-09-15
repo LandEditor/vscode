@@ -19,8 +19,8 @@ import { IQuickInputService } from "../../../../../platform/quickinput/common/qu
 import type { IResourceMergeEditorInput } from "../../../../common/editor.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import {
-	type MergeEditorContents,
 	ctxIsMergeEditor,
+	type MergeEditorContents,
 } from "../../common/mergeEditor.js";
 import { MergeEditor } from "../view/mergeEditor.js";
 

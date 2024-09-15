@@ -11,11 +11,12 @@ import {
 } from "../../../base/common/lifecycle.js";
 import * as resources from "../../../base/common/resources.js";
 import {
-	type ReadableStreamEvents,
 	newWriteableStream,
+	type ReadableStreamEvents,
 } from "../../../base/common/stream.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
+	createFileSystemProviderError,
 	FileChangeType,
 	FileSystemProviderCapabilities,
 	FileSystemProviderErrorCode,
@@ -33,7 +34,6 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	createFileSystemProviderError,
 } from "./files.js";
 
 class File implements IStat {

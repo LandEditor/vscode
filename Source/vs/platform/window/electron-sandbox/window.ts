@@ -11,9 +11,9 @@ import {
 import { getActiveWindow, getWindows } from "../../../base/browser/dom.js";
 import { mainWindow } from "../../../base/browser/window.js";
 import {
-	type ISandboxGlobals,
 	ipcRenderer,
 	webFrame,
+	type ISandboxGlobals,
 } from "../../../base/parts/sandbox/electron-sandbox/globals.js";
 import { zoomLevelToZoomFactor } from "../common/window.js";
 

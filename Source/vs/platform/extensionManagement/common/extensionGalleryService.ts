@@ -18,29 +18,29 @@ import { StopWatch } from "../../../base/common/stopwatch.js";
 import { isBoolean } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import {
+	isOfflineError,
 	type IHeaders,
 	type IRequestContext,
 	type IRequestOptions,
-	isOfflineError,
 } from "../../../base/parts/request/common/request.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
+	TargetPlatform,
+	type IExtensionManifest,
+} from "../../extensions/common/extensions.js";
+import {
 	areApiProposalsCompatible,
 	isEngineValid,
 } from "../../extensions/common/extensionValidator.js";
-import {
-	type IExtensionManifest,
-	TargetPlatform,
-} from "../../extensions/common/extensions.js";
 import { resolveMarketplaceHeaders } from "../../externalServices/common/marketplace.js";
 import { IFileService } from "../../files/common/files.js";
 import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	IRequestService,
 	asJson,
 	asTextOrError,
+	IRequestService,
 	isSuccess,
 } from "../../request/common/request.js";
 import { IStorageService } from "../../storage/common/storage.js";
@@ -48,6 +48,15 @@ import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
 	ExtensionGalleryError,
 	ExtensionGalleryErrorCode,
+	getTargetPlatform,
+	InstallOperation,
+	isNotWebExtensionInWebTargetPlatform,
+	isTargetPlatformCompatible,
+	SortBy,
+	SortOrder,
+	StatisticType,
+	toTargetPlatform,
+	WEB_EXTENSION_TAG,
 	type IDeprecationInfo,
 	type IExtensionGalleryService,
 	type IExtensionIdentifier,
@@ -62,15 +71,6 @@ import {
 	type IQueryOptions,
 	type ISearchPrefferedResults,
 	type ITranslation,
-	InstallOperation,
-	SortBy,
-	SortOrder,
-	StatisticType,
-	WEB_EXTENSION_TAG,
-	getTargetPlatform,
-	isNotWebExtensionInWebTargetPlatform,
-	isTargetPlatformCompatible,
-	toTargetPlatform,
 } from "./extensionManagement.js";
 import {
 	adoptToGalleryExtensionId,
@@ -862,18 +862,29 @@ abstract class AbstractExtensionGalleryService
 		storageService: IStorageService | undefined,
 		@IRequestService private readonly requestService: IRequestService,
 		@ILogService private readonly logService: ILogService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IFileService private readonly fileService: IFileService,
 		@IProductService private readonly productService: IProductService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		const config = productService.extensionsGallery;
-		const isPPEEnabled = config?.servicePPEUrl && configurationService.getValue('_extensionsGallery.enablePPE');
-		this.extensionsGalleryUrl = isPPEEnabled ? config.servicePPEUrl : config?.serviceUrl;
-		this.extensionsGallerySearchUrl = isPPEEnabled ? undefined : config?.searchUrl;
+		const isPPEEnabled =
+			config?.servicePPEUrl &&
+			configurationService.getValue("_extensionsGallery.enablePPE");
+		this.extensionsGalleryUrl = isPPEEnabled
+			? config.servicePPEUrl
+			: config?.serviceUrl;
+		this.extensionsGallerySearchUrl = isPPEEnabled
+			? undefined
+			: config?.searchUrl;
 		this.extensionsControlUrl = config?.controlUrl;
-		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
+		this.extensionsEnabledWithApiProposalVersion =
+			productService.extensionsEnabledWithApiProposalVersion?.map((id) =>
+				id.toLowerCase(),
+			) ?? [];
 		this.commonHeadersPromise = resolveMarketplaceHeaders(
 			productService.version,
 			productService,
@@ -881,7 +892,8 @@ abstract class AbstractExtensionGalleryService
 			this.configurationService,
 			this.fileService,
 			storageService,
-			this.telemetryService);
+			this.telemetryService,
+		);
 	}
 
 	private api(path = ""): string {

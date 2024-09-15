@@ -16,18 +16,18 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { countEOL } from "../core/eolCounter.js";
 import { LineRange } from "../core/lineRange.js";
-import { type IPosition, Position } from "../core/position.js";
+import { Position, type IPosition } from "../core/position.js";
 import type { Range } from "../core/range.js";
-import { type IWordAtPosition, getWordAtText } from "../core/wordHelper.js";
+import { getWordAtText, type IWordAtPosition } from "../core/wordHelper.js";
 import { StandardTokenType } from "../encodedTokenAttributes.js";
 import {
+	TokenizationRegistry,
+	TreeSitterTokenizationRegistry,
 	type IBackgroundTokenizationStore,
 	type IBackgroundTokenizer,
 	type ILanguageIdCodec,
 	type IState,
 	type ITokenizationSupport,
-	TokenizationRegistry,
-	TreeSitterTokenizationRegistry,
 } from "../languages.js";
 import { ILanguageService } from "../languages/language.js";
 import {
@@ -104,23 +104,31 @@ export class TokenizationTextModelPart
 		private _languageId: string,
 		private readonly _attachedViews: AttachedViews,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
-		@ITreeSitterParserService private readonly _treeSitterService: ITreeSitterParserService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ITreeSitterParserService
+		private readonly _treeSitterService: ITreeSitterParserService,
 	) {
 		super();
 
-		this._register(this._languageConfigurationService.onDidChange(e => {
-			if (e.affects(this._languageId)) {
-				this._onDidChangeLanguageConfiguration.fire({});
-			}
-		}));
+		this._register(
+			this._languageConfigurationService.onDidChange((e) => {
+				if (e.affects(this._languageId)) {
+					this._onDidChangeLanguageConfiguration.fire({});
+				}
+			}),
+		);
 
 		// We just look at registry changes to determine whether to use tree sitter.
 		// This means that removing a language from the setting will not cause a switch to textmate and will require a reload.
 		// Adding a language to the setting will not need a reload, however.
-		this._register(Event.filter(TreeSitterTokenizationRegistry.onDidChange, (e) => e.changedLanguages.includes(this._languageId))(() => {
-			this.createPreferredTokenProvider();
-		}));
+		this._register(
+			Event.filter(TreeSitterTokenizationRegistry.onDidChange, (e) =>
+				e.changedLanguages.includes(this._languageId),
+			)(() => {
+				this.createPreferredTokenProvider();
+			}),
+		);
 		this.createPreferredTokenProvider();
 	}
 

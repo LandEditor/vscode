@@ -4,20 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { promises, watch } from "fs";
+
 import {
 	RunOnceWorker,
 	ThrottledWorker,
 } from "../../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { isEqualOrParent } from "../../../../../base/common/extpath.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { normalizeNFC } from "../../../../../base/common/normalization.js";
 import { basename, dirname, join } from "../../../../../base/common/path.js";
@@ -28,13 +29,13 @@ import { realcase } from "../../../../../base/node/extpath.js";
 import { Promises } from "../../../../../base/node/pfs.js";
 import { FileChangeType, type IFileChange } from "../../../common/files.js";
 import {
-	type ILogMessage,
-	type INonRecursiveWatchRequest,
-	type IRecursiveWatcherWithSubscribe,
 	coalesceEvents,
 	isFiltered,
 	isWatchRequestWithCorrelation,
 	parseWatcherPatterns,
+	type ILogMessage,
+	type INonRecursiveWatchRequest,
+	type IRecursiveWatcherWithSubscribe,
 } from "../../../common/watcher.js";
 
 export class NodeJSFileWatcherLibrary extends Disposable {

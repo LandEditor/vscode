@@ -13,8 +13,8 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { TelemetryTrustedValue } from "../../../../platform/telemetry/common/telemetryUtils.js";
 import {
-	type ITerminalBackendRegistry,
 	TerminalExtensions,
+	type ITerminalBackendRegistry,
 } from "../../../../platform/terminal/common/terminal.js";
 import { IUpdateService } from "../../../../platform/update/common/update.js";
 import {
@@ -520,41 +520,54 @@ export abstract class AbstractTimerService implements ITimerService {
 	readonly perfBaseline: Promise<number>;
 
 	constructor(
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IUpdateService private readonly _updateService: IUpdateService,
-		@IPaneCompositePartService private readonly _paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly _paneCompositeService: IPaneCompositePartService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 	) {
 		Promise.all([
 			this._extensionService.whenInstalledExtensionsRegistered(), // extensions registered
-			_lifecycleService.when(LifecyclePhase.Restored),			// workbench created and parts restored
-			layoutService.whenRestored,									// layout restored (including visible editors resolved)
-			Promise.all(Array.from(Registry.as<ITerminalBackendRegistry>(TerminalExtensions.Backend).backends.values()).map(e => e.whenReady))
-		]).then(() => {
-			// set perf mark from renderer
-			this.setPerformanceMarks('renderer', perf.getMarks());
-			return this._computeStartupMetrics();
-		}).then(metrics => {
-			this._startupMetrics = metrics;
-			this._reportStartupTimes(metrics);
-			this._barrier.open();
-		});
+			_lifecycleService.when(LifecyclePhase.Restored), // workbench created and parts restored
+			layoutService.whenRestored, // layout restored (including visible editors resolved)
+			Promise.all(
+				Array.from(
+					Registry.as<ITerminalBackendRegistry>(
+						TerminalExtensions.Backend,
+					).backends.values(),
+				).map((e) => e.whenReady),
+			),
+		])
+			.then(() => {
+				// set perf mark from renderer
+				this.setPerformanceMarks("renderer", perf.getMarks());
+				return this._computeStartupMetrics();
+			})
+			.then((metrics) => {
+				this._startupMetrics = metrics;
+				this._reportStartupTimes(metrics);
+				this._barrier.open();
+			});
 
-
-		this.perfBaseline = this._barrier.wait()
+		this.perfBaseline = this._barrier
+			.wait()
 			.then(() => this._lifecycleService.when(LifecyclePhase.Eventually))
 			.then(() => timeout(this._startupMetrics!.timers.ellapsedRequire))
 			.then(() => {
-
 				// we use fibonacci numbers to have a performance baseline that indicates
 				// how slow/fast THIS machine actually is.
 
-				const jsSrc = (function (this: WindowOrWorkerGlobalScope) {
+				const jsSrc = function (this: WindowOrWorkerGlobalScope) {
 					// the following operation took ~16ms (one frame at 64FPS) to complete on my machine. We derive performance observations
 					// from that. We also bail if that took too long (>1s)
 					let tooSlow = false;
@@ -575,16 +588,18 @@ export abstract class AbstractTimerService implements ITimerService {
 					fib(24);
 					const value = Math.round(performance.now() - t1);
 					self.postMessage({ value: tooSlow ? -1 : value });
+				}.toString();
 
-				}).toString();
-
-				const blob = new Blob([`(${jsSrc})();`], { type: 'application/javascript' });
+				const blob = new Blob([`(${jsSrc})();`], {
+					type: "application/javascript",
+				});
 				const blobUrl = URL.createObjectURL(blob);
 
-				const worker = createBlobWorker(blobUrl, { name: 'perfBaseline' });
-				return new Promise<number>(resolve => {
-					worker.onmessage = e => resolve(e.data.value);
-
+				const worker = createBlobWorker(blobUrl, {
+					name: "perfBaseline",
+				});
+				return new Promise<number>((resolve) => {
+					worker.onmessage = (e) => resolve(e.data.value);
 				}).finally(() => {
 					worker.terminate();
 					URL.revokeObjectURL(blobUrl);

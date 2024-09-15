@@ -6,11 +6,11 @@
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import Severity from "../../../../base/common/severity.js";
 import {
+	IDialogService,
 	type IAsyncPromptResult,
 	type IAsyncPromptResultWithCancel,
 	type IConfirmation,
 	type IConfirmationResult,
-	IDialogService,
 	type IInput,
 	type IInputResult,
 	type IPrompt,
@@ -37,8 +37,9 @@ export class DialogService extends Disposable implements IDialogService {
 	readonly onDidShowDialog = this.model.onDidShowDialog;
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@ILogService private readonly logService: ILogService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 	}

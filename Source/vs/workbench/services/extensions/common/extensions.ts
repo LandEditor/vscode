@@ -17,10 +17,10 @@ import {
 	ExtensionIdentifierMap,
 	ExtensionIdentifierSet,
 	ExtensionType,
+	TargetPlatform,
 	type IExtension,
 	type IExtensionContributions,
 	type IExtensionDescription,
-	TargetPlatform,
 } from "../../../../platform/extensions/common/extensions.js";
 import type { ApiProposalName } from "../../../../platform/extensions/common/extensionsApiProposals.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
@@ -571,7 +571,9 @@ export interface IExtensionService {
 	 */
 	readExtensionPointContributions<
 		T extends IExtensionContributions[keyof IExtensionContributions],
-	>(extPoint: IExtensionPoint<T>): Promise<ExtensionPointContribution<T>[]>;
+	>(
+		extPoint: IExtensionPoint<T>,
+	): Promise<ExtensionPointContribution<T>[]>;
 
 	/**
 	 * Get information about extensions status.

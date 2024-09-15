@@ -12,9 +12,9 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	type IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 	TriggerAction,
+	type IPickerQuickAccessItem,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import {
 	IQuickInputService,
@@ -23,15 +23,15 @@ import {
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
-import { ITaskService, type Task } from "../common/taskService.js";
 import {
 	ConfiguringTask,
 	ContributedTask,
 	CustomTask,
 } from "../common/tasks.js";
+import { ITaskService, type Task } from "../common/taskService.js";
 import {
-	type ITaskTwoLevelQuickPickEntry,
 	TaskQuickPick,
+	type ITaskTwoLevelQuickPickEntry,
 } from "./taskQuickPick.js";
 
 export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
@@ -40,17 +40,19 @@ export class TasksQuickAccessProvider extends PickerQuickAccessProvider<IPickerQ
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
 		@ITaskService private _taskService: ITaskService,
-		@IConfigurationService private _configurationService: IConfigurationService,
+		@IConfigurationService
+		private _configurationService: IConfigurationService,
 		@IQuickInputService private _quickInputService: IQuickInputService,
-		@INotificationService private _notificationService: INotificationService,
+		@INotificationService
+		private _notificationService: INotificationService,
 		@IDialogService private _dialogService: IDialogService,
 		@IThemeService private _themeService: IThemeService,
-		@IStorageService private _storageService: IStorageService
+		@IStorageService private _storageService: IStorageService,
 	) {
 		super(TasksQuickAccessProvider.PREFIX, {
 			noResultsPick: {
-				label: localize('noTaskResults', "No matching tasks")
-			}
+				label: localize("noTaskResults", "No matching tasks"),
+			},
 		});
 	}
 

@@ -13,13 +13,13 @@ import type {
 	StrictPropertyCheck,
 } from "./gdprTypings.js";
 import {
-	type ITelemetryData,
 	ITelemetryService,
 	TelemetryLevel,
+	type ITelemetryData,
 } from "./telemetry.js";
 import {
-	type ITelemetryServiceConfig,
 	TelemetryService,
+	type ITelemetryServiceConfig,
 } from "./telemetryService.js";
 import { NullTelemetryServiceShape } from "./telemetryUtils.js";
 

@@ -19,12 +19,12 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { getNotebookEditorFromEditorPane } from "../../notebook/browser/notebookBrowser.js";
 import {
 	CellUri,
+	SelectionStateType,
 	type ICellPartialMetadataEdit,
 	type ICellReplaceEdit,
 	type IDocumentMetadataEdit,
 	type ISelectionState,
 	type IWorkspaceNotebookCellEdit,
-	SelectionStateType,
 } from "../../notebook/common/notebookCommon.js";
 import { INotebookEditorModelResolverService } from "../../notebook/common/notebookEditorModelResolverService.js";
 
@@ -75,16 +75,22 @@ export class BulkCellEdits {
 		private readonly _token: CancellationToken,
 		private readonly _edits: ResourceNotebookCellEdit[],
 		@IEditorService private readonly _editorService: IEditorService,
-		@INotebookEditorModelResolverService private readonly _notebookModelService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		private readonly _notebookModelService: INotebookEditorModelResolverService,
 	) {
-		this._edits = this._edits.map(e => {
+		this._edits = this._edits.map((e) => {
 			if (e.resource.scheme === CellUri.scheme) {
 				const uri = CellUri.parse(e.resource)?.notebook;
 				if (!uri) {
 					throw new Error(`Invalid notebook URI: ${e.resource}`);
 				}
 
-				return new ResourceNotebookCellEdit(uri, e.cellEdit, e.notebookVersionId, e.metadata);
+				return new ResourceNotebookCellEdit(
+					uri,
+					e.cellEdit,
+					e.notebookVersionId,
+					e.metadata,
+				);
 			} else {
 				return e;
 			}

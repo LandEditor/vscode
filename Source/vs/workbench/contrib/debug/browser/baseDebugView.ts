@@ -12,8 +12,8 @@ import {
 } from "../../../../base/browser/ui/highlightedlabel/highlightedLabel.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import {
-	type IInputValidationOptions,
 	InputBox,
+	type IInputValidationOptions,
 } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import type {
 	IAsyncDataSource,
@@ -22,16 +22,16 @@ import type {
 } from "../../../../base/browser/ui/tree/tree.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import { createSingleCallFunction } from "../../../../base/common/functional.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { localize } from "../../../../nls.js";
@@ -105,8 +105,9 @@ export abstract class AbstractExpressionDataSource<
 {
 	constructor(
 		@IDebugService protected debugService: IDebugService,
-		@IDebugVisualizerService protected debugVisualizer: IDebugVisualizerService,
-	) { }
+		@IDebugVisualizerService
+		protected debugVisualizer: IDebugVisualizerService,
+	) {}
 
 	public abstract hasChildren(element: Input | Element): boolean;
 
@@ -144,9 +145,10 @@ export abstract class AbstractExpressionsRenderer<T = IExpression>
 {
 	constructor(
 		@IDebugService protected debugService: IDebugService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@IHoverService protected readonly hoverService: IHoverService,
-	) { }
+	) {}
 
 	abstract get templateId(): string;
 

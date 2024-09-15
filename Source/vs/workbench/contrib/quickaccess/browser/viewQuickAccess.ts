@@ -14,19 +14,19 @@ import type { ServicesAccessor } from "../../../../platform/instantiation/common
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
+	type IPickerQuickAccessItem,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import {
 	IQuickInputService,
-	type IQuickPickSeparator,
 	ItemActivation,
+	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import type { PaneCompositeDescriptor } from "../../../browser/panecomposite.js";
 import {
 	IViewDescriptorService,
-	type ViewContainer,
 	ViewContainerLocation,
+	type ViewContainer,
 } from "../../../common/views.js";
 import { IOutputService } from "../../../services/output/common/output.js";
 import { IPaneCompositePartService } from "../../../services/panecomposite/browser/panecomposite.js";
@@ -45,20 +45,24 @@ export class ViewQuickAccessProvider extends PickerQuickAccessProvider<IViewQuic
 	static PREFIX = "view ";
 
 	constructor(
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
 		@IViewsService private readonly viewsService: IViewsService,
 		@IOutputService private readonly outputService: IOutputService,
 		@ITerminalService private readonly terminalService: ITerminalService,
-		@ITerminalGroupService private readonly terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly terminalGroupService: ITerminalGroupService,
 		@IDebugService private readonly debugService: IDebugService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super(ViewQuickAccessProvider.PREFIX, {
 			noResultsPick: {
-				label: localize('noViewResults', "No matching views"),
-				containerLabel: ''
-			}
+				label: localize("noViewResults", "No matching views"),
+				containerLabel: "",
+			},
 		});
 	}
 

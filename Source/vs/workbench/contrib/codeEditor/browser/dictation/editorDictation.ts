@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./editorDictation.css";
+
 import type { IDimension } from "../../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../../base/browser/ui/actionbar/actionbar.js";
 import { toAction } from "../../../../../base/common/actions.js";
@@ -252,8 +253,10 @@ export class EditorDictation extends Disposable implements IEditorContribution {
 	constructor(
 		private readonly editor: ICodeEditor,
 		@ISpeechService private readonly speechService: ISpeechService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
 	}

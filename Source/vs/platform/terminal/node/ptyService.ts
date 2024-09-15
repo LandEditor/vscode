@@ -15,6 +15,7 @@ import type { Unicode11Addon as XtermUnicode11Addon } from "@xterm/addon-unicode
 // ESM-comment-end
 // ESM-uncomment-begin
 import pkg from "@xterm/headless";
+
 import {
 	AutoOpenBarrier,
 	ProcessTimeRunOnceScheduler,
@@ -28,19 +29,21 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable, toDisposable } from "../../../base/common/lifecycle.js";
 import * as performance from "../../../base/common/performance.js";
 import {
-	type IProcessEnvironment,
-	OS,
-	type OperatingSystem,
 	isWindows,
+	OS,
+	type IProcessEnvironment,
+	type OperatingSystem,
 } from "../../../base/common/platform.js";
 import type { URI } from "../../../base/common/uri.js";
 import { getSystemShell } from "../../../base/node/shell.js";
 import { localize } from "../../../nls.js";
-import { type ILogService, LogLevel } from "../../log/common/log.js";
+import { LogLevel, type ILogService } from "../../log/common/log.js";
 import type { IProductService } from "../../product/common/productService.js";
 import type { IPtyHostProcessReplayEvent } from "../common/capabilities/capabilities.js";
 import { RequestStore } from "../common/requestStore.js";
 import {
+	ProcessPropertyType,
+	TitleEventSource,
 	type ICrossVersionSerializedTerminalState,
 	type IFixedTerminalDimensions,
 	type IPersistentTerminalProcessLaunchConfig,
@@ -57,11 +60,9 @@ import {
 	type ITerminalInstanceLayoutInfoById,
 	type ITerminalLaunchError,
 	type ITerminalProcessOptions,
-	type ITerminalTabLayoutInfoById,
 	type ITerminalsLayoutInfo,
-	ProcessPropertyType,
+	type ITerminalTabLayoutInfoById,
 	type TerminalIcon,
-	TitleEventSource,
 } from "../common/terminal.js";
 import { TerminalAutoResponder } from "../common/terminalAutoResponder.js";
 import { TerminalDataBufferer } from "../common/terminalDataBuffering.js";
@@ -77,6 +78,7 @@ import { ShellIntegrationAddon } from "../common/xterm/shellIntegrationAddon.js"
 import { ignoreProcessNames } from "./childProcessMonitor.js";
 import { getWindowsBuildNumber } from "./terminalEnvironment.js";
 import { TerminalProcess } from "./terminalProcess.js";
+
 type XtermTerminal = pkg.Terminal;
 const { Terminal: XtermTerminal } = pkg;
 // ESM-uncomment-end

@@ -5,8 +5,8 @@
 
 import { $, append, hide, show } from "../../../../base/browser/dom.js";
 import {
-	type IIconLabelValueOptions,
 	IconLabel,
+	type IIconLabelValueOptions,
 } from "../../../../base/browser/ui/iconLabel/iconLabel.js";
 import type { IListRenderer } from "../../../../base/browser/ui/list/list.js";
 import { Codicon } from "../../../../base/common/codicons.js";
@@ -125,8 +125,8 @@ export class ItemRenderer
 		private readonly _editor: ICodeEditor,
 		@IModelService private readonly _modelService: IModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IThemeService private readonly _themeService: IThemeService
-	) { }
+		@IThemeService private readonly _themeService: IThemeService,
+	) {}
 
 	dispose(): void {
 		this._onDidToggleDetails.dispose();

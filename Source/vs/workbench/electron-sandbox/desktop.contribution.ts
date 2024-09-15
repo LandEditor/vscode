@@ -24,12 +24,12 @@ import { ContextKeyExpr } from "../../platform/contextkey/common/contextkey.js";
 import { IsMacContext } from "../../platform/contextkey/common/contextkeys.js";
 import type { ServicesAccessor } from "../../platform/instantiation/common/instantiation.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../platform/keybinding/common/keybindingsRegistry.js";
 import { INativeHostService } from "../../platform/native/common/native.js";
 import { Registry } from "../../platform/registry/common/platform.js";

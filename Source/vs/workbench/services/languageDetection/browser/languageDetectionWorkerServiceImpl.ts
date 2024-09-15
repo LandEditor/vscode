@@ -8,11 +8,11 @@ import { canASAR } from "../../../../base/common/amd.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { LRUCache } from "../../../../base/common/map.js";
 import {
-	type AppResourcePath,
 	FileAccess,
-	Schemas,
 	nodeModulesAsarPath,
 	nodeModulesPath,
+	Schemas,
+	type AppResourcePath,
 } from "../../../../base/common/network.js";
 import { isWeb } from "../../../../base/common/platform.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -38,13 +38,13 @@ import { IEditorService } from "../../editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import {
 	ILanguageDetectionService,
+	LanguageDetectionStatsId,
 	type ILanguageDetectionStats,
 	type LanguageDetectionStatsClassification,
-	LanguageDetectionStatsId,
 } from "../common/languageDetectionWorkerService.js";
 import {
-	type ILanguageDetectionWorker,
 	LanguageDetectionWorkerHost,
+	type ILanguageDetectionWorker,
 } from "./languageDetectionWorker.protocol.js";
 
 const TOP_LANG_COUNTS = 12;
@@ -85,38 +85,60 @@ export class LanguageDetectionService
 	private langBiases: Record<string, number> = {};
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
 		@ILanguageService languageService: ILanguageService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IDiagnosticsService private readonly _diagnosticsService: IDiagnosticsService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IDiagnosticsService
+		private readonly _diagnosticsService: IDiagnosticsService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 		@IModelService modelService: IModelService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService storageService: IStorageService,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 
 		const useAsar = canASAR && this._environmentService.isBuilt && !isWeb;
-		this._languageDetectionWorkerClient = this._register(new LanguageDetectionWorkerClient(
-			modelService,
-			languageService,
-			telemetryService,
-			// TODO@esm: See if it's possible to bundle vscode-languagedetection
-			useAsar
-				? FileAccess.asBrowserUri(`${moduleLocationAsar}/dist/lib/index.js`).toString(true)
-				: FileAccess.asBrowserUri(`${moduleLocation}/dist/lib/index.js`).toString(true),
-			useAsar
-				? FileAccess.asBrowserUri(`${moduleLocationAsar}/model/model.json`).toString(true)
-				: FileAccess.asBrowserUri(`${moduleLocation}/model/model.json`).toString(true),
-			useAsar
-				? FileAccess.asBrowserUri(`${moduleLocationAsar}/model/group1-shard1of1.bin`).toString(true)
-				: FileAccess.asBrowserUri(`${moduleLocation}/model/group1-shard1of1.bin`).toString(true),
-			useAsar
-				? FileAccess.asBrowserUri(`${regexpModuleLocationAsar}/dist/index.js`).toString(true)
-				: FileAccess.asBrowserUri(`${regexpModuleLocation}/dist/index.js`).toString(true),
-		));
+		this._languageDetectionWorkerClient = this._register(
+			new LanguageDetectionWorkerClient(
+				modelService,
+				languageService,
+				telemetryService,
+				// TODO@esm: See if it's possible to bundle vscode-languagedetection
+				useAsar
+					? FileAccess.asBrowserUri(
+							`${moduleLocationAsar}/dist/lib/index.js`,
+						).toString(true)
+					: FileAccess.asBrowserUri(
+							`${moduleLocation}/dist/lib/index.js`,
+						).toString(true),
+				useAsar
+					? FileAccess.asBrowserUri(
+							`${moduleLocationAsar}/model/model.json`,
+						).toString(true)
+					: FileAccess.asBrowserUri(
+							`${moduleLocation}/model/model.json`,
+						).toString(true),
+				useAsar
+					? FileAccess.asBrowserUri(
+							`${moduleLocationAsar}/model/group1-shard1of1.bin`,
+						).toString(true)
+					: FileAccess.asBrowserUri(
+							`${moduleLocation}/model/group1-shard1of1.bin`,
+						).toString(true),
+				useAsar
+					? FileAccess.asBrowserUri(
+							`${regexpModuleLocationAsar}/dist/index.js`,
+						).toString(true)
+					: FileAccess.asBrowserUri(
+							`${regexpModuleLocation}/dist/index.js`,
+						).toString(true),
+			),
+		);
 
 		this.initEditorOpenedListeners(storageService);
 	}

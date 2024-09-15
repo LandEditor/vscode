@@ -36,9 +36,9 @@ import {
 } from "../../../browser/editor.js";
 import { ActiveEditorContext } from "../../../common/contextkeys.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
@@ -56,8 +56,8 @@ import { VIEW_ID } from "../../../services/search/common/search.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import type { IWorkingCopyIdentifier } from "../../../services/workingCopy/common/workingCopy.js";
 import {
-	type IWorkingCopyEditorHandler,
 	IWorkingCopyEditorService,
+	type IWorkingCopyEditorHandler,
 } from "../../../services/workingCopy/common/workingCopyEditorService.js";
 import { getSearchView } from "../../search/browser/searchActionsBase.js";
 import {
@@ -79,10 +79,10 @@ import {
 	toggleSearchEditorWholeWordCommand,
 } from "./searchEditorActions.js";
 import {
-	SEARCH_EDITOR_EXT,
-	type SearchConfiguration,
-	SearchEditorInput,
 	getOrMakeSearchEditorInput,
+	SEARCH_EDITOR_EXT,
+	SearchEditorInput,
+	type SearchConfiguration,
 } from "./searchEditorInput.js";
 
 const OpenInEditorCommandId = "search.action.openInEditor";
@@ -852,8 +852,10 @@ class SearchEditorWorkingCopyEditorHandler
 		"workbench.contrib.searchEditorWorkingCopyEditorHandler";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
 	) {
 		super();
 

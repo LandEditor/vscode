@@ -14,13 +14,14 @@ import type {
 	IXHROverride,
 	PostChannel,
 } from "@microsoft/1ds-post-js";
+
 import { importAMDNodeModule } from "../../../amdX.js";
 import { onUnexpectedError } from "../../../base/common/errors.js";
 import { mixin } from "../../../base/common/objects.js";
 import { isWeb } from "../../../base/common/platform.js";
 import {
-	type ITelemetryAppender,
 	validateTelemetryData,
+	type ITelemetryAppender,
 } from "./telemetryUtils.js";
 
 // Interface type which is a subset of @microsoft/1ds-core-js AppInsightsCore.

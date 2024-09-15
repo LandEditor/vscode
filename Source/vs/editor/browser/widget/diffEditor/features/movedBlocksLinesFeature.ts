@@ -19,7 +19,6 @@ import {
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	autorunHandleChanges,
 	autorunWithStore,
@@ -30,6 +29,7 @@ import {
 	observableSignalFromEvent,
 	observableValue,
 	recomputeInitiallyAndOnChange,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import { ThemeIcon } from "../../../../../base/common/themables.js";
 import { localize } from "../../../../../nls.js";
@@ -44,10 +44,10 @@ import type { ICodeEditor } from "../../../editorBrowser.js";
 import type { DiffEditorEditors } from "../components/diffEditorEditors.js";
 import type { DiffEditorViewModel } from "../diffEditorViewModel.js";
 import {
-	PlaceholderViewZone,
-	ViewZoneOverlayWidget,
 	applyStyle,
 	applyViewZones,
+	PlaceholderViewZone,
+	ViewZoneOverlayWidget,
 } from "../utils.js";
 
 export class MovedBlocksLinesFeature extends Disposable {

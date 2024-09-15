@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import minimist from "minimist";
+
 import { isWindows } from "../../../base/common/platform.js";
 import { localize } from "../../../nls.js";
 import type { NativeParsedArgs } from "../common/argv.js";
@@ -692,7 +693,7 @@ function formatUsageTexts(usageTexts: [string, string][], columns: number) {
 		(previous, e) => Math.max(previous, e[0].length),
 		12,
 	);
-	const argLength = maxLength + 2 /*left padding*/ + 1 /*right padding*/;
+	const argLength = maxLength + 2 /*left padding*/ + 1; /*right padding*/
 	if (columns - argLength < 25) {
 		// Use a condensed version on narrow terminals
 		return usageTexts.reduce<string[]>(

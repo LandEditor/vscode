@@ -7,17 +7,18 @@ import * as cp from "child_process";
 import * as fs from "fs";
 import * as http from "http";
 import * as url from "url";
+
 import { DeferredPromise } from "../../base/common/async.js";
 import { dirname, extname, join, resolve } from "../../base/common/path.js";
 import { cwd } from "../../base/common/process.js";
 import type { NativeParsedArgs } from "../../platform/environment/common/argv.js";
 import {
-	type ErrorReporter,
-	OPTIONS,
-	type OptionDescriptions,
 	buildHelpMessage,
 	buildVersionMessage,
+	OPTIONS,
 	parseArgs,
+	type ErrorReporter,
+	type OptionDescriptions,
 } from "../../platform/environment/node/argv.js";
 import {
 	getStdinFilePath,

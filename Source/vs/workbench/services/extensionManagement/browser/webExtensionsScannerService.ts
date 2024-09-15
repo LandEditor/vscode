@@ -12,7 +12,7 @@ import { getErrorMessage } from "../../../../base/common/errors.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { basename } from "../../../../base/common/path.js";
-import { Language, isWeb } from "../../../../base/common/platform.js";
+import { isWeb, Language } from "../../../../base/common/platform.js";
 import { joinPath } from "../../../../base/common/resources.js";
 import * as semver from "../../../../base/common/semver/semver.js";
 import Severity from "../../../../base/common/severity.js";
@@ -38,29 +38,29 @@ import {
 	getGalleryExtensionId,
 } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
-	type ITranslations,
 	localizeManifest,
+	type ITranslations,
 } from "../../../../platform/extensionManagement/common/extensionNls.js";
 import { IExtensionStorageService } from "../../../../platform/extensionManagement/common/extensionStorage.js";
 import {
 	IExtensionResourceLoaderService,
 	migratePlatformSpecificExtensionGalleryResourceURL,
 } from "../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js";
-import { validateExtensionManifest } from "../../../../platform/extensions/common/extensionValidator.js";
 import {
 	ExtensionType,
 	IBuiltinExtensionsScannerService,
+	parseEnabledApiProposalNames,
+	TargetPlatform,
 	type IExtension,
 	type IExtensionIdentifier,
 	type IExtensionManifest,
 	type IRelaxedExtensionManifest,
-	TargetPlatform,
-	parseEnabledApiProposalNames,
 } from "../../../../platform/extensions/common/extensions.js";
+import { validateExtensionManifest } from "../../../../platform/extensions/common/extensionValidator.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../../../platform/files/common/files.js";
 import {
 	InstantiationType,
@@ -85,8 +85,8 @@ import {
 } from "../../lifecycle/common/lifecycle.js";
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type IScannedExtension,
 	IWebExtensionsScannerService,
+	type IScannedExtension,
 	type ScanOptions,
 } from "../common/extensionManagement.js";
 
@@ -160,29 +160,48 @@ export class WebExtensionsScannerService
 	private readonly extensionsEnabledWithApiProposalVersion: string[];
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@IBuiltinExtensionsScannerService private readonly builtinExtensionsScannerService: IBuiltinExtensionsScannerService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBuiltinExtensionsScannerService
+		private readonly builtinExtensionsScannerService: IBuiltinExtensionsScannerService,
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IExtensionResourceLoaderService private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
-		@IExtensionStorageService private readonly extensionStorageService: IExtensionStorageService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionResourceLoaderService
+		private readonly extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionStorageService
+		private readonly extensionStorageService: IExtensionStorageService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IProductService private readonly productService: IProductService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 	) {
 		super();
 		if (isWeb) {
-			this.systemExtensionsCacheResource = joinPath(environmentService.userRoamingDataHome, 'systemExtensionsCache.json');
-			this.customBuiltinExtensionsCacheResource = joinPath(environmentService.userRoamingDataHome, 'customBuiltinExtensionsCache.json');
+			this.systemExtensionsCacheResource = joinPath(
+				environmentService.userRoamingDataHome,
+				"systemExtensionsCache.json",
+			);
+			this.customBuiltinExtensionsCacheResource = joinPath(
+				environmentService.userRoamingDataHome,
+				"customBuiltinExtensionsCache.json",
+			);
 
 			// Eventually update caches
-			lifecycleService.when(LifecyclePhase.Eventually).then(() => this.updateCaches());
+			lifecycleService
+				.when(LifecyclePhase.Eventually)
+				.then(() => this.updateCaches());
 		}
-		this.extensionsEnabledWithApiProposalVersion = productService.extensionsEnabledWithApiProposalVersion?.map(id => id.toLowerCase()) ?? [];
+		this.extensionsEnabledWithApiProposalVersion =
+			productService.extensionsEnabledWithApiProposalVersion?.map((id) =>
+				id.toLowerCase(),
+			) ?? [];
 	}
 
 	private _customBuiltinExtensionsInfoPromise:

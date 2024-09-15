@@ -5,31 +5,32 @@
 
 import "../common/walkThroughUtils.js";
 import "./media/walkThroughPart.css";
+
 import {
-	type Dimension,
 	addDisposableListener,
 	isHTMLAnchorElement,
 	isHTMLButtonElement,
 	isHTMLElement,
 	safeInnerHtml,
 	size,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import {
 	Gesture,
-	type GestureEvent,
 	EventType as TouchEventType,
+	type GestureEvent,
 } from "../../../../base/browser/touch.js";
 import { DomScrollableElement } from "../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { UILabelProvider } from "../../../../base/common/keybindingLabels.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { deepClone } from "../../../../base/common/objects.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../../base/common/platform.js";
 import { ScrollbarVisibility } from "../../../../base/common/scrollable.js";
 import * as strings from "../../../../base/common/strings.js";
 import { isObject } from "../../../../base/common/types.js";
@@ -44,9 +45,9 @@ import { localize } from "../../../../nls.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -62,8 +63,8 @@ import type {
 	IEditorOpenContext,
 } from "../../../common/editor.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { WalkThroughInput } from "./walkThroughInput.js";
@@ -102,20 +103,36 @@ export class WalkThroughPart extends EditorPane {
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IStorageService storageService: IStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 	) {
-		super(WalkThroughPart.ID, group, telemetryService, themeService, storageService);
+		super(
+			WalkThroughPart.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 		this.editorFocus = WALK_THROUGH_FOCUS.bindTo(this.contextKeyService);
-		this.editorMemento = this.getEditorMemento<IWalkThroughEditorViewState>(editorGroupService, textResourceConfigurationService, WALK_THROUGH_EDITOR_VIEW_STATE_PREFERENCE_KEY);
+		this.editorMemento = this.getEditorMemento<IWalkThroughEditorViewState>(
+			editorGroupService,
+			textResourceConfigurationService,
+			WALK_THROUGH_EDITOR_VIEW_STATE_PREFERENCE_KEY,
+		);
 	}
 
 	protected createEditor(container: HTMLElement): void {

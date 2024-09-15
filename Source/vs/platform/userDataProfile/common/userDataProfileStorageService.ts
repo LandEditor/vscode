@@ -7,34 +7,34 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableMap,
-	MutableDisposable,
 	isDisposable,
+	MutableDisposable,
 	toDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
+	Storage,
 	type IStorage,
 	type IStorageDatabase,
-	Storage,
 } from "../../../base/parts/storage/common/storage.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 import type { IRemoteService } from "../../ipc/common/services.js";
 import type { ILogService } from "../../log/common/log.js";
 import {
 	AbstractStorageService,
+	isProfileUsingDefaultStorage,
 	IStorageService,
-	type IStorageValueChangeEvent,
 	StorageScope,
 	StorageTarget,
-	isProfileUsingDefaultStorage,
+	type IStorageValueChangeEvent,
 } from "../../storage/common/storage.js";
 import {
 	ApplicationStorageDatabaseClient,
 	ProfileStorageDatabaseClient,
 } from "../../storage/common/storageIpc.js";
 import {
+	reviveProfile,
 	type IUserDataProfile,
 	type IUserDataProfilesService,
-	reviveProfile,
 } from "./userDataProfile.js";
 
 export interface IProfileStorageValueChanges {
@@ -107,11 +107,13 @@ export abstract class AbstractUserDataProfileStorageService
 
 	constructor(
 		persistStorages: boolean,
-		@IStorageService protected readonly storageService: IStorageService
+		@IStorageService protected readonly storageService: IStorageService,
 	) {
 		super();
 		if (persistStorages) {
-			this.storageServicesMap = this._register(new DisposableMap<string, StorageService>());
+			this.storageServicesMap = this._register(
+				new DisposableMap<string, StorageService>(),
+			);
 		}
 	}
 

@@ -30,8 +30,8 @@ import { removeAnsiEscapeCodes } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI as uri } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
@@ -48,11 +48,11 @@ import { Range } from "../../../../editor/common/core/range.js";
 import type { IDecorationOptions } from "../../../../editor/common/editorCommon.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import {
-	type CompletionContext,
-	type CompletionItem,
 	CompletionItemInsertTextRule,
 	CompletionItemKind,
 	CompletionItemKinds,
+	type CompletionContext,
+	type CompletionItem,
 	type CompletionList,
 } from "../../../../editor/common/languages.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
@@ -68,17 +68,17 @@ import {
 import { createAndFillInContextMenuActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	Action2,
-	type IMenu,
 	IMenuService,
 	MenuId,
 	registerAction2,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { registerAndCreateHistoryNavigationContext } from "../../../../platform/history/browser/contextScopedHistoryWidget.js";
@@ -107,8 +107,8 @@ import { IThemeService } from "../../../../platform/theme/common/themeService.js
 import { registerNavigableContainer } from "../../../browser/actions/widgetNavigationCommands.js";
 import {
 	FilterViewPane,
-	type IViewPaneOptions,
 	ViewAction,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { IViewDescriptorService } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
@@ -124,15 +124,15 @@ import {
 	CONTEXT_IN_DEBUG_REPL,
 	CONTEXT_MULTI_SESSION_REPL,
 	DEBUG_SCHEME,
-	type IDebugConfiguration,
+	getStateLabel,
 	IDebugService,
+	REPL_VIEW_ID,
+	State,
+	type IDebugConfiguration,
 	type IDebugSession,
 	type IReplConfiguration,
 	type IReplElement,
 	type IReplOptions,
-	REPL_VIEW_ID,
-	State,
-	getStateLabel,
 } from "../common/debug.js";
 import { Variable } from "../common/debugModel.js";
 import { ReplEvaluationResult, ReplGroup } from "../common/replModel.js";
@@ -142,7 +142,9 @@ import {
 	debugConsoleClearAll,
 	debugConsoleEvaluationPrompt,
 } from "./debugIcons.js";
+
 import "./media/repl.css";
+
 import { ReplFilter } from "./replFilter.js";
 import {
 	ReplAccessibilityProvider,
@@ -219,37 +221,96 @@ export class Repl extends FilterViewPane implements IHistoryNavigationWidget {
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IConfigurationService protected override readonly configurationService: IConfigurationService,
-		@ITextResourcePropertiesService private readonly textResourcePropertiesService: ITextResourcePropertiesService,
+		@IConfigurationService
+		protected override readonly configurationService: IConfigurationService,
+		@ITextResourcePropertiesService
+		private readonly textResourcePropertiesService: ITextResourcePropertiesService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IKeybindingService protected override readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		protected override readonly keybindingService: IKeybindingService,
 		@IOpenerService openerService: IOpenerService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 		@IMenuService menuService: IMenuService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 		@ILogService private readonly logService: ILogService,
 	) {
-		const filterText = storageService.get(FILTER_VALUE_STORAGE_KEY, StorageScope.WORKSPACE, '');
-		super({
-			...options,
-			filterOptions: {
-				placeholder: localize({ key: 'workbench.debug.filter.placeholder', comment: ['Text in the brackets after e.g. is not localizable'] }, "Filter (e.g. text, !exclude, \\escape)"),
-				text: filterText,
-				history: JSON.parse(storageService.get(FILTER_HISTORY_STORAGE_KEY, StorageScope.WORKSPACE, '[]')) as string[],
-			}
-		}, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		const filterText = storageService.get(
+			FILTER_VALUE_STORAGE_KEY,
+			StorageScope.WORKSPACE,
+			"",
+		);
+		super(
+			{
+				...options,
+				filterOptions: {
+					placeholder: localize(
+						{
+							key: "workbench.debug.filter.placeholder",
+							comment: [
+								"Text in the brackets after e.g. is not localizable",
+							],
+						},
+						"Filter (e.g. text, !exclude, \\escape)",
+					),
+					text: filterText,
+					history: JSON.parse(
+						storageService.get(
+							FILTER_HISTORY_STORAGE_KEY,
+							StorageScope.WORKSPACE,
+							"[]",
+						),
+					) as string[],
+				},
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this.menu = menuService.createMenu(MenuId.DebugConsoleContext, contextKeyService);
+		this.menu = menuService.createMenu(
+			MenuId.DebugConsoleContext,
+			contextKeyService,
+		);
 		this._register(this.menu);
-		this.history = new HistoryNavigator(JSON.parse(this.storageService.get(HISTORY_STORAGE_KEY, StorageScope.WORKSPACE, '[]')), 100);
+		this.history = new HistoryNavigator(
+			JSON.parse(
+				this.storageService.get(
+					HISTORY_STORAGE_KEY,
+					StorageScope.WORKSPACE,
+					"[]",
+				),
+			),
+			100,
+		);
 		this.filter = new ReplFilter();
 		this.filter.filterQuery = filterText;
-		this.multiSessionRepl = CONTEXT_MULTI_SESSION_REPL.bindTo(contextKeyService);
-		this.replOptions = this._register(this.instantiationService.createInstance(ReplOptions, this.id, () => this.getLocationBasedColors().background));
-		this._register(this.replOptions.onDidChange(() => this.onDidStyleChange()));
+		this.multiSessionRepl =
+			CONTEXT_MULTI_SESSION_REPL.bindTo(contextKeyService);
+		this.replOptions = this._register(
+			this.instantiationService.createInstance(
+				ReplOptions,
+				this.id,
+				() => this.getLocationBasedColors().background,
+			),
+		);
+		this._register(
+			this.replOptions.onDidChange(() => this.onDidStyleChange()),
+		);
 
-		codeEditorService.registerDecorationType('repl-decoration', DECORATION_KEY, {});
+		codeEditorService.registerDecorationType(
+			"repl-decoration",
+			DECORATION_KEY,
+			{},
+		);
 		this.multiSessionRepl.set(this.isMultiSessionView);
 		this.registerListeners();
 	}
@@ -1348,23 +1409,35 @@ class ReplOptions extends Disposable implements IReplOptions {
 	constructor(
 		viewId: string,
 		private readonly backgroundColorDelegate: () => string,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
 	) {
 		super();
 
-		this._register(this.themeService.onDidColorThemeChange(e => this.update()));
-		this._register(this.viewDescriptorService.onDidChangeLocation(e => {
-			if (e.views.some(v => v.id === viewId)) {
-				this.update();
-			}
-		}));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('debug.console.lineHeight') || e.affectsConfiguration('debug.console.fontSize') || e.affectsConfiguration('debug.console.fontFamily')) {
-				this.update();
-			}
-		}));
+		this._register(
+			this.themeService.onDidColorThemeChange((e) => this.update()),
+		);
+		this._register(
+			this.viewDescriptorService.onDidChangeLocation((e) => {
+				if (e.views.some((v) => v.id === viewId)) {
+					this.update();
+				}
+			}),
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("debug.console.lineHeight") ||
+					e.affectsConfiguration("debug.console.fontSize") ||
+					e.affectsConfiguration("debug.console.fontFamily")
+				) {
+					this.update();
+				}
+			}),
+		);
 		this.update();
 	}
 

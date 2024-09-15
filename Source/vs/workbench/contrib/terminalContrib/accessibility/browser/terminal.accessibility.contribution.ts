@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal } from "@xterm/xterm";
+
 import { Event } from "../../../../../base/common/event.js";
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { isWindows } from "../../../../../base/common/platform.js";
 import { Position } from "../../../../../editor/common/core/position.js";
@@ -40,8 +41,8 @@ import {
 } from "../../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type ITerminalCommand,
 	TerminalCapability,
+	type ITerminalCommand,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import type { ICurrentPartialCommand } from "../../../../../platform/terminal/common/capabilities/commandDetection/terminalCommand.js";
 import { TerminalSettingId } from "../../../../../platform/terminal/common/terminal.js";
@@ -54,9 +55,9 @@ import {
 	AccessibleViewAction,
 } from "../../../accessibility/browser/accessibleViewActions.js";
 import {
+	ITerminalService,
 	type ITerminalContribution,
 	type ITerminalInstance,
-	ITerminalService,
 	type IXtermTerminal,
 } from "../../../terminal/browser/terminal.js";
 import { registerTerminalAction } from "../../../terminal/browser/terminalActions.js";
@@ -69,8 +70,8 @@ import { TerminalAccessibilitySettingId } from "../common/terminalAccessibilityC
 import { BufferContentTracker } from "./bufferContentTracker.js";
 import { TerminalAccessibilityHelpProvider } from "./terminalAccessibilityHelp.js";
 import {
-	type ICommandWithEditorLine,
 	TerminalAccessibleBufferProvider,
+	type ICommandWithEditorLine,
 } from "./terminalAccessibleBufferProvider.js";
 import { TextAreaSyncAddon } from "./textAreaSyncAddon.js";
 
@@ -91,7 +92,8 @@ class TextAreaSyncContribution
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -140,38 +142,65 @@ export class TerminalAccessibleViewContribution
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IAccessibleViewService private readonly _accessibleViewService: IAccessibleViewService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IAccessibleViewService
+		private readonly _accessibleViewService: IAccessibleViewService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService) {
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+	) {
 		super();
-		this._register(AccessibleViewAction.addImplementation(90, 'terminal', () => {
-			if (this._terminalService.activeInstance !== this._instance) {
-				return false;
-			}
-			this.show();
-			return true;
-		}, TerminalContextKeys.focus));
-		this._register(_instance.onDidExecuteText(() => {
-			const focusAfterRun = _configurationService.getValue(TerminalSettingId.FocusAfterRun);
-			if (focusAfterRun === 'terminal') {
-				_instance.focus(true);
-			} else if (focusAfterRun === 'accessible-buffer') {
-				this.show();
-			}
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalAccessibilitySettingId.AccessibleViewFocusOnCommandExecution)) {
-				this._updateCommandExecutedListener();
-			}
-		}));
-		this._register(this._instance.capabilities.onDidAddCapability(e => {
-			if (e.capability.type === TerminalCapability.CommandDetection) {
-				this._updateCommandExecutedListener();
-			}
-		}));
+		this._register(
+			AccessibleViewAction.addImplementation(
+				90,
+				"terminal",
+				() => {
+					if (
+						this._terminalService.activeInstance !== this._instance
+					) {
+						return false;
+					}
+					this.show();
+					return true;
+				},
+				TerminalContextKeys.focus,
+			),
+		);
+		this._register(
+			_instance.onDidExecuteText(() => {
+				const focusAfterRun = _configurationService.getValue(
+					TerminalSettingId.FocusAfterRun,
+				);
+				if (focusAfterRun === "terminal") {
+					_instance.focus(true);
+				} else if (focusAfterRun === "accessible-buffer") {
+					this.show();
+				}
+			}),
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						TerminalAccessibilitySettingId.AccessibleViewFocusOnCommandExecution,
+					)
+				) {
+					this._updateCommandExecutedListener();
+				}
+			}),
+		);
+		this._register(
+			this._instance.capabilities.onDidAddCapability((e) => {
+				if (e.capability.type === TerminalCapability.CommandDetection) {
+					this._updateCommandExecutedListener();
+				}
+			}),
+		);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: Terminal }): void {

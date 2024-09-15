@@ -21,8 +21,8 @@ import type {
 	IUtilityProcessWorkerService,
 } from "../common/utilityProcessWorkerService.js";
 import {
-	type IWindowUtilityProcessConfiguration,
 	WindowUtilityProcess,
+	type IWindowUtilityProcessConfiguration,
 } from "./utilityProcess.js";
 
 export const IUtilityProcessWorkerMainService =
@@ -43,10 +43,13 @@ export class UtilityProcessWorkerMainService
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 	}
@@ -147,11 +150,14 @@ class UtilityProcessWorker extends Disposable {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		private readonly configuration: IUtilityProcessWorkerCreateConfiguration
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		private readonly configuration: IUtilityProcessWorkerCreateConfiguration,
 	) {
 		super();
 

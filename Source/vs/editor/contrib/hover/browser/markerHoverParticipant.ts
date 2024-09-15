@@ -6,9 +6,9 @@
 import * as dom from "../../../../base/browser/dom.js";
 import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	disposableTimeout,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import {
@@ -20,9 +20,9 @@ import { basename } from "../../../../base/common/resources.js";
 import * as nls from "../../../../nls.js";
 import type { ITextEditorOptions } from "../../../../platform/editor/common/editor.js";
 import {
-	type IMarker,
 	IMarkerData,
 	MarkerSeverity,
+	type IMarker,
 } from "../../../../platform/markers/common/markers.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { Progress } from "../../../../platform/progress/common/progress.js";
@@ -40,23 +40,23 @@ import {
 import { CodeActionController } from "../../codeAction/browser/codeActionController.js";
 import {
 	CodeActionKind,
+	CodeActionTriggerSource,
 	type CodeActionSet,
 	type CodeActionTrigger,
-	CodeActionTriggerSource,
 } from "../../codeAction/common/types.js";
 import {
 	MarkerController,
 	NextMarkerAction,
 } from "../../gotoError/browser/gotoError.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
+	RenderedHoverParts,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "./hoverTypes.js";
 
 const $ = dom.$;
@@ -94,10 +94,12 @@ export class MarkerHoverParticipant
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IMarkerDecorationsService private readonly _markerDecorationsService: IMarkerDecorationsService,
+		@IMarkerDecorationsService
+		private readonly _markerDecorationsService: IMarkerDecorationsService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-	) { }
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+	) {}
 
 	public computeSync(
 		anchor: HoverAnchor,

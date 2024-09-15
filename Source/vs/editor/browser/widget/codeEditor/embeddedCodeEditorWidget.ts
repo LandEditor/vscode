@@ -39,8 +39,10 @@ export class EmbeddedCodeEditorWidget extends CodeEditorWidget {
 		@IThemeService themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super(
 			domElement,

@@ -37,21 +37,21 @@ import type { ServicesAccessor } from "../../../../../../platform/instantiation/
 import { KeybindingWeight } from "../../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { ILogService } from "../../../../../../platform/log/common/log.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../../../common/contributions.js";
 import { IEditorService } from "../../../../../services/editor/common/editorService.js";
 import { showWindowLogActionId } from "../../../../../services/log/common/logConstants.js";
 import type { IWebview } from "../../../../webview/browser/webview.js";
 import {
-	type NotebookCellTextModel,
 	cloneNotebookCellTextModel,
+	type NotebookCellTextModel,
 } from "../../../common/model/notebookCellTextModel.js";
 import {
 	CellEditType,
+	SelectionStateType,
 	type ICellEditOperation,
 	type ISelectionState,
-	SelectionStateType,
 } from "../../../common/notebookCommon.js";
 import {
 	NOTEBOOK_CELL_EDITABLE,
@@ -62,19 +62,19 @@ import {
 import { INotebookService } from "../../../common/notebookService.js";
 import {
 	CellOverflowToolbarGroups,
-	type INotebookActionContext,
-	type INotebookCellActionContext,
 	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
 	NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT,
 	NotebookAction,
 	NotebookCellAction,
+	type INotebookActionContext,
+	type INotebookCellActionContext,
 } from "../../controller/coreActions.js";
 import {
-	type ICellViewModel,
-	type INotebookEditor,
 	cellRangeToViewCells,
 	expandCellRangesWithHiddenCells,
 	getNotebookEditorFromEditorPane,
+	type ICellViewModel,
+	type INotebookEditor,
 } from "../../notebookBrowser.js";
 
 let _logging = false;
@@ -505,27 +505,47 @@ export function runCutCells(
 export class NotebookClipboardContribution extends Disposable {
 	static readonly ID = "workbench.contrib.notebookClipboard";
 
-	constructor(@IEditorService private readonly _editorService: IEditorService) {
+	constructor(
+		@IEditorService private readonly _editorService: IEditorService,
+	) {
 		super();
 
 		const PRIORITY = 105;
 
 		if (CopyAction) {
-			this._register(CopyAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
-				return this.runCopyAction(accessor);
-			}));
+			this._register(
+				CopyAction.addImplementation(
+					PRIORITY,
+					"notebook-clipboard",
+					(accessor) => {
+						return this.runCopyAction(accessor);
+					},
+				),
+			);
 		}
 
 		if (PasteAction) {
-			this._register(PasteAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
-				return this.runPasteAction(accessor);
-			}));
+			this._register(
+				PasteAction.addImplementation(
+					PRIORITY,
+					"notebook-clipboard",
+					(accessor) => {
+						return this.runPasteAction(accessor);
+					},
+				),
+			);
 		}
 
 		if (CutAction) {
-			this._register(CutAction.addImplementation(PRIORITY, 'notebook-clipboard', accessor => {
-				return this.runCutAction(accessor);
-			}));
+			this._register(
+				CutAction.addImplementation(
+					PRIORITY,
+					"notebook-clipboard",
+					(accessor) => {
+						return this.runCutAction(accessor);
+					},
+				),
+			);
 		}
 	}
 

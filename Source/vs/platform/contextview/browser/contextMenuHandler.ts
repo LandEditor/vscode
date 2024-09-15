@@ -6,8 +6,8 @@
 import type { IContextMenuDelegate } from "../../../base/browser/contextmenu.js";
 import {
 	$,
-	EventType,
 	addDisposableListener,
+	EventType,
 	getActiveElement,
 	getWindow,
 	isAncestor,
@@ -23,9 +23,9 @@ import {
 } from "../../../base/common/actions.js";
 import { isCancellationError } from "../../../base/common/errors.js";
 import {
+	combinedDisposable,
 	DisposableStore,
 	type IDisposable,
-	combinedDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { IKeybindingService } from "../../keybinding/common/keybinding.js";
 import type { INotificationService } from "../../notification/common/notification.js";

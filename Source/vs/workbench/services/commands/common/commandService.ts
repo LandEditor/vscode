@@ -8,8 +8,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
 	CommandsRegistry,
-	type ICommandEvent,
 	ICommandService,
+	type ICommandEvent,
 } from "../../../../platform/commands/common/commands.js";
 import {
 	InstantiationType,
@@ -36,12 +36,16 @@ export class CommandService extends Disposable implements ICommandService {
 		this._onDidExecuteCommand.event;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@ILogService private readonly _logService: ILogService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
-		this._extensionService.whenInstalledExtensionsRegistered().then(value => this._extensionHostIsReady = value);
+		this._extensionService
+			.whenInstalledExtensionsRegistered()
+			.then((value) => (this._extensionHostIsReady = value));
 		this._starActivation = null;
 	}
 

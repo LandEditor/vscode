@@ -14,7 +14,7 @@ import { TerminalCapabilityStore } from "../../../../platform/terminal/common/ca
 import type { IMergedEnvironmentVariableCollection } from "../../../../platform/terminal/common/environmentVariable.js";
 import type { ITerminalBackend } from "../../../../platform/terminal/common/terminal.js";
 import type { IEnvironmentVariableInfo } from "../common/environmentVariable.js";
-import { type ITerminalProcessInfo, ProcessState } from "../common/terminal.js";
+import { ProcessState, type ITerminalProcessInfo } from "../common/terminal.js";
 import type {
 	IDetachedTerminalInstance,
 	IDetachedXTermOptions,

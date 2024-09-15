@@ -34,7 +34,9 @@ export class TestExclusions extends Disposable {
 		),
 	);
 
-	constructor(@IStorageService private readonly storageService: IStorageService) {
+	constructor(
+		@IStorageService private readonly storageService: IStorageService,
+	) {
 		super();
 	}
 

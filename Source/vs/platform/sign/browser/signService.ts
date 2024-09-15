@@ -53,7 +53,9 @@ const IV_SIZE = 16;
 const STEP_SIZE = KEY_SIZE + IV_SIZE;
 
 export class SignService extends AbstractSignService implements ISignService {
-	constructor(@IProductService private readonly productService: IProductService) {
+	constructor(
+		@IProductService private readonly productService: IProductService,
+	) {
 		super();
 	}
 	protected override getValidator(): Promise<IVsdaValidator> {

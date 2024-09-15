@@ -7,9 +7,9 @@ import type { ProgressBar } from "../../../../base/browser/ui/progressbar/progre
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
+	emptyProgressRunner,
 	type IProgressIndicator,
 	type IProgressRunner,
-	emptyProgressRunner,
 } from "../../../../platform/progress/common/progress.js";
 import type { IEditorGroupView } from "../../../browser/parts/editor/editor.js";
 import { GroupModelChangeKind } from "../../../common/editor.js";
@@ -294,12 +294,12 @@ export class ScopedProgressIndicator
 				if (!this.scope.isActive || this.progressBar.hasTotal()) {
 					this.progressState = new ProgressIndicatorState.Work(
 						this.progressState.type ===
-							ProgressIndicatorState.Type.Work
+						ProgressIndicatorState.Type.Work
 							? this.progressState.total
 							: undefined,
 						this.progressState.type ===
 							ProgressIndicatorState.Type.Work &&
-							typeof this.progressState.worked === "number"
+						typeof this.progressState.worked === "number"
 							? this.progressState.worked + worked
 							: worked,
 					);

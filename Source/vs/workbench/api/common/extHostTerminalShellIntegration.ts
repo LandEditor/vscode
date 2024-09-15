@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
-	type AsyncIterableEmitter,
 	AsyncIterableObject,
 	Barrier,
+	type AsyncIterableEmitter,
 } from "../../../base/common/async.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
@@ -18,8 +19,8 @@ import {
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type ExtHostTerminalShellIntegrationShape,
 	MainContext,
+	type ExtHostTerminalShellIntegrationShape,
 	type MainThreadTerminalShellIntegrationShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -67,19 +68,24 @@ export class ExtHostTerminalShellIntegration
 
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
-		@IExtHostTerminalService private readonly _extHostTerminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		private readonly _extHostTerminalService: IExtHostTerminalService,
 	) {
 		super();
 
-		this._proxy = extHostRpc.getProxy(MainContext.MainThreadTerminalShellIntegration);
+		this._proxy = extHostRpc.getProxy(
+			MainContext.MainThreadTerminalShellIntegration,
+		);
 
 		// Clean up listeners
-		this._register(toDisposable(() => {
-			for (const [_, integration] of this._activeShellIntegrations) {
-				integration.dispose();
-			}
-			this._activeShellIntegrations.clear();
-		}));
+		this._register(
+			toDisposable(() => {
+				for (const [_, integration] of this._activeShellIntegrations) {
+					integration.dispose();
+				}
+				this._activeShellIntegrations.clear();
+			}),
+		);
 
 		// Convenient test code:
 		// this.onDidChangeTerminalShellIntegration(e => {

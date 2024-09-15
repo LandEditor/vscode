@@ -4,22 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/keybindings.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import {
-	type IKeyboardEvent,
 	StandardKeyboardEvent,
+	type IKeyboardEvent,
 } from "../../../../base/browser/keyboardEvent.js";
 import * as aria from "../../../../base/browser/ui/aria/aria.js";
 import { KeybindingLabel } from "../../../../base/browser/ui/keybindingLabel/keybindingLabel.js";
 import { Widget } from "../../../../base/browser/ui/widget.js";
 import { Promises, timeout } from "../../../../base/common/async.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
-import { KeyCode } from "../../../../base/common/keyCodes.js";
 import type { ResolvedKeybinding } from "../../../../base/common/keybindings.js";
+import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
@@ -47,7 +48,7 @@ import {
 	editorWidgetForeground,
 	widgetShadow,
 } from "../../../../platform/theme/common/colorRegistry.js";
-import { type SearchOptions, SearchWidget } from "./preferencesWidgets.js";
+import { SearchWidget, type SearchOptions } from "./preferencesWidgets.js";
 
 export interface KeybindingsSearchOptions extends SearchOptions {
 	recordEnter?: boolean;
@@ -219,32 +220,64 @@ export class DefineKeybindingWidget extends Widget {
 
 	constructor(
 		parent: HTMLElement | null,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._domNode = createFastDomNode(document.createElement('div'));
-		this._domNode.setDisplay('none');
-		this._domNode.setClassName('defineKeybindingWidget');
+		this._domNode = createFastDomNode(document.createElement("div"));
+		this._domNode.setDisplay("none");
+		this._domNode.setClassName("defineKeybindingWidget");
 		this._domNode.setWidth(DefineKeybindingWidget.WIDTH);
 		this._domNode.setHeight(DefineKeybindingWidget.HEIGHT);
 
-		const message = nls.localize('defineKeybinding.initial', "Press desired key combination and then press ENTER.");
-		dom.append(this._domNode.domNode, dom.$('.message', undefined, message));
+		const message = nls.localize(
+			"defineKeybinding.initial",
+			"Press desired key combination and then press ENTER.",
+		);
+		dom.append(
+			this._domNode.domNode,
+			dom.$(".message", undefined, message),
+		);
 
-		this._domNode.domNode.style.backgroundColor = asCssVariable(editorWidgetBackground);
-		this._domNode.domNode.style.color = asCssVariable(editorWidgetForeground);
+		this._domNode.domNode.style.backgroundColor = asCssVariable(
+			editorWidgetBackground,
+		);
+		this._domNode.domNode.style.color = asCssVariable(
+			editorWidgetForeground,
+		);
 		this._domNode.domNode.style.boxShadow = `0 2px 8px ${asCssVariable(widgetShadow)}`;
 
-		this._keybindingInputWidget = this._register(this.instantiationService.createInstance(KeybindingsSearchWidget, this._domNode.domNode, { ariaLabel: message, history: [], inputBoxStyles: defaultInputBoxStyles }));
+		this._keybindingInputWidget = this._register(
+			this.instantiationService.createInstance(
+				KeybindingsSearchWidget,
+				this._domNode.domNode,
+				{
+					ariaLabel: message,
+					history: [],
+					inputBoxStyles: defaultInputBoxStyles,
+				},
+			),
+		);
 		this._keybindingInputWidget.startRecordingKeys();
-		this._register(this._keybindingInputWidget.onKeybinding(keybinding => this.onKeybinding(keybinding)));
+		this._register(
+			this._keybindingInputWidget.onKeybinding((keybinding) =>
+				this.onKeybinding(keybinding),
+			),
+		);
 		this._register(this._keybindingInputWidget.onEnter(() => this.hide()));
-		this._register(this._keybindingInputWidget.onEscape(() => this.clearOrHide()));
-		this._register(this._keybindingInputWidget.onBlur(() => this.onCancel()));
+		this._register(
+			this._keybindingInputWidget.onEscape(() => this.clearOrHide()),
+		);
+		this._register(
+			this._keybindingInputWidget.onBlur(() => this.onCancel()),
+		);
 
-		this._outputNode = dom.append(this._domNode.domNode, dom.$('.output'));
-		this._showExistingKeybindingsNode = dom.append(this._domNode.domNode, dom.$('.existing'));
+		this._outputNode = dom.append(this._domNode.domNode, dom.$(".output"));
+		this._showExistingKeybindingsNode = dom.append(
+			this._domNode.domNode,
+			dom.$(".existing"),
+		);
 
 		if (parent) {
 			dom.append(parent, this._domNode.domNode);

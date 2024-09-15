@@ -34,8 +34,7 @@
 
 .monaco-workbench .repl .repl-tree .monaco-tl-twistie {
 	background-position-y: calc(
-		100% -
-		(var(--vscode-repl-font-size-for-twistie))
+		100% - (var(--vscode-repl-font-size-for-twistie))
 	);
 }
 

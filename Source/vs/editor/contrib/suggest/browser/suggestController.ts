@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { WindowIdleValue, getWindow } from "../../../../base/browser/dom.js";
+import { getWindow, WindowIdleValue } from "../../../../base/browser/dom.js";
 import { alert } from "../../../../base/browser/ui/aria/aria.js";
 import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
@@ -13,14 +13,14 @@ import {
 } from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import { hash } from "../../../../base/common/hash.js";
-import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { KeyCodeChord } from "../../../../base/common/keybindings.js";
+import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as platform from "../../../../base/common/platform.js";
 import { basename, extname } from "../../../../base/common/resources.js";
@@ -44,45 +44,45 @@ import {
 	EditorAction,
 	EditorCommand,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { StableEditorScrollState } from "../../../browser/stableEditorScroll.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { EditOperation } from "../../../common/core/editOperation.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import {
-	type IEditorContribution,
 	ScrollType,
+	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import {
 	CompletionItemInsertTextRule,
-	type CompletionItemProvider,
 	CompletionTriggerKind,
+	type CompletionItemProvider,
 } from "../../../common/languages.js";
 import {
-	type ITextModel,
 	TrackedRangeStickiness,
+	type ITextModel,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import { SnippetController2 } from "../../snippet/browser/snippetController2.js";
 import { SnippetParser } from "../../snippet/browser/snippetParser.js";
 import {
-	type CompletionItem,
-	type ISuggestItemPreselector,
 	Context as SuggestContext,
 	suggestWidgetStatusbarMenu,
+	type CompletionItem,
+	type ISuggestItemPreselector,
 } from "./suggest.js";
 import { SuggestAlternatives } from "./suggestAlternatives.js";
 import { CommitCharacterController } from "./suggestCommitCharacters.js";
 import { ISuggestMemoryService } from "./suggestMemory.js";
 import { State, SuggestModel } from "./suggestModel.js";
 import { OvertypingCapturer } from "./suggestOvertypingCapturer.js";
-import { type ISelectedSuggestion, SuggestWidget } from "./suggestWidget.js";
+import { SuggestWidget, type ISelectedSuggestion } from "./suggestWidget.js";
 import { WordContextKey } from "./wordContextKey.js";
 
 // sticky suggest widget which doesn't disappear on focus out and such
@@ -187,173 +187,309 @@ export class SuggestController implements IEditorContribution {
 
 	constructor(
 		editor: ICodeEditor,
-		@ISuggestMemoryService private readonly _memoryService: ISuggestMemoryService,
+		@ISuggestMemoryService
+		private readonly _memoryService: ISuggestMemoryService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		this.editor = editor;
-		this.model = _instantiationService.createInstance(SuggestModel, this.editor,);
+		this.model = _instantiationService.createInstance(
+			SuggestModel,
+			this.editor,
+		);
 
 		// default selector
 		this._selectors.register({
 			priority: 0,
-			select: (model, pos, items) => this._memoryService.select(model, pos, items)
+			select: (model, pos, items) =>
+				this._memoryService.select(model, pos, items),
 		});
 
 		// context key: update insert/replace mode
-		const ctxInsertMode = SuggestContext.InsertMode.bindTo(_contextKeyService);
+		const ctxInsertMode =
+			SuggestContext.InsertMode.bindTo(_contextKeyService);
 		ctxInsertMode.set(editor.getOption(EditorOption.suggest).insertMode);
-		this._toDispose.add(this.model.onDidTrigger(() => ctxInsertMode.set(editor.getOption(EditorOption.suggest).insertMode)));
+		this._toDispose.add(
+			this.model.onDidTrigger(() =>
+				ctxInsertMode.set(
+					editor.getOption(EditorOption.suggest).insertMode,
+				),
+			),
+		);
 
-		this.widget = this._toDispose.add(new WindowIdleValue(getWindow(editor.getDomNode()), () => {
+		this.widget = this._toDispose.add(
+			new WindowIdleValue(getWindow(editor.getDomNode()), () => {
+				const widget = this._instantiationService.createInstance(
+					SuggestWidget,
+					this.editor,
+				);
 
-			const widget = this._instantiationService.createInstance(SuggestWidget, this.editor);
+				this._toDispose.add(widget);
+				this._toDispose.add(
+					widget.onDidSelect(
+						(item) =>
+							this._insertSuggestion(item, InsertFlags.None),
+						this,
+					),
+				);
 
-			this._toDispose.add(widget);
-			this._toDispose.add(widget.onDidSelect(item => this._insertSuggestion(item, InsertFlags.None), this));
+				// Wire up logic to accept a suggestion on certain characters
+				const commitCharacterController = new CommitCharacterController(
+					this.editor,
+					widget,
+					this.model,
+					(item) =>
+						this._insertSuggestion(
+							item,
+							InsertFlags.NoAfterUndoStop,
+						),
+				);
+				this._toDispose.add(commitCharacterController);
 
-			// Wire up logic to accept a suggestion on certain characters
-			const commitCharacterController = new CommitCharacterController(this.editor, widget, this.model, item => this._insertSuggestion(item, InsertFlags.NoAfterUndoStop));
-			this._toDispose.add(commitCharacterController);
+				// Wire up makes text edit context key
+				const ctxMakesTextEdit = SuggestContext.MakesTextEdit.bindTo(
+					this._contextKeyService,
+				);
+				const ctxHasInsertAndReplace =
+					SuggestContext.HasInsertAndReplaceRange.bindTo(
+						this._contextKeyService,
+					);
+				const ctxCanResolve = SuggestContext.CanResolve.bindTo(
+					this._contextKeyService,
+				);
 
+				this._toDispose.add(
+					toDisposable(() => {
+						ctxMakesTextEdit.reset();
+						ctxHasInsertAndReplace.reset();
+						ctxCanResolve.reset();
+					}),
+				);
 
-			// Wire up makes text edit context key
-			const ctxMakesTextEdit = SuggestContext.MakesTextEdit.bindTo(this._contextKeyService);
-			const ctxHasInsertAndReplace = SuggestContext.HasInsertAndReplaceRange.bindTo(this._contextKeyService);
-			const ctxCanResolve = SuggestContext.CanResolve.bindTo(this._contextKeyService);
+				this._toDispose.add(
+					widget.onDidFocus(({ item }) => {
+						// (ctx: makesTextEdit)
+						const position = this.editor.getPosition()!;
+						const startColumn = item.editStart.column;
+						const endColumn = position.column;
+						let value = true;
+						if (
+							this.editor.getOption(
+								EditorOption.acceptSuggestionOnEnter,
+							) === "smart" &&
+							this.model.state === State.Auto &&
+							!item.completion.additionalTextEdits &&
+							!(
+								item.completion.insertTextRules! &
+								CompletionItemInsertTextRule.InsertAsSnippet
+							) &&
+							endColumn - startColumn ===
+								item.completion.insertText.length
+						) {
+							const oldText = this.editor
+								.getModel()!
+								.getValueInRange({
+									startLineNumber: position.lineNumber,
+									startColumn,
+									endLineNumber: position.lineNumber,
+									endColumn,
+								});
+							value = oldText !== item.completion.insertText;
+						}
+						ctxMakesTextEdit.set(value);
 
-			this._toDispose.add(toDisposable(() => {
-				ctxMakesTextEdit.reset();
-				ctxHasInsertAndReplace.reset();
-				ctxCanResolve.reset();
-			}));
+						// (ctx: hasInsertAndReplaceRange)
+						ctxHasInsertAndReplace.set(
+							!Position.equals(
+								item.editInsertEnd,
+								item.editReplaceEnd,
+							),
+						);
 
-			this._toDispose.add(widget.onDidFocus(({ item }) => {
+						// (ctx: canResolve)
+						ctxCanResolve.set(
+							Boolean(item.provider.resolveCompletionItem) ||
+								Boolean(item.completion.documentation) ||
+								item.completion.detail !==
+									item.completion.label,
+						);
+					}),
+				);
 
-				// (ctx: makesTextEdit)
-				const position = this.editor.getPosition()!;
-				const startColumn = item.editStart.column;
-				const endColumn = position.column;
-				let value = true;
-				if (
-					this.editor.getOption(EditorOption.acceptSuggestionOnEnter) === 'smart'
-					&& this.model.state === State.Auto
-					&& !item.completion.additionalTextEdits
-					&& !(item.completion.insertTextRules! & CompletionItemInsertTextRule.InsertAsSnippet)
-					&& endColumn - startColumn === item.completion.insertText.length
-				) {
-					const oldText = this.editor.getModel()!.getValueInRange({
-						startLineNumber: position.lineNumber,
-						startColumn,
-						endLineNumber: position.lineNumber,
-						endColumn
-					});
-					value = oldText !== item.completion.insertText;
-				}
-				ctxMakesTextEdit.set(value);
+				this._toDispose.add(
+					widget.onDetailsKeyDown((e) => {
+						// cmd + c on macOS, ctrl + c on Win / Linux
+						if (
+							e
+								.toKeyCodeChord()
+								.equals(
+									new KeyCodeChord(
+										true,
+										false,
+										false,
+										false,
+										KeyCode.KeyC,
+									),
+								) ||
+							(platform.isMacintosh &&
+								e
+									.toKeyCodeChord()
+									.equals(
+										new KeyCodeChord(
+											false,
+											false,
+											false,
+											true,
+											KeyCode.KeyC,
+										),
+									))
+						) {
+							e.stopPropagation();
+							return;
+						}
 
-				// (ctx: hasInsertAndReplaceRange)
-				ctxHasInsertAndReplace.set(!Position.equals(item.editInsertEnd, item.editReplaceEnd));
+						if (!e.toKeyCodeChord().isModifierKey()) {
+							this.editor.focus();
+						}
+					}),
+				);
 
-				// (ctx: canResolve)
-				ctxCanResolve.set(Boolean(item.provider.resolveCompletionItem) || Boolean(item.completion.documentation) || item.completion.detail !== item.completion.label);
-			}));
-
-			this._toDispose.add(widget.onDetailsKeyDown(e => {
-				// cmd + c on macOS, ctrl + c on Win / Linux
-				if (
-					e.toKeyCodeChord().equals(new KeyCodeChord(true, false, false, false, KeyCode.KeyC)) ||
-					(platform.isMacintosh && e.toKeyCodeChord().equals(new KeyCodeChord(false, false, false, true, KeyCode.KeyC)))
-				) {
-					e.stopPropagation();
-					return;
-				}
-
-				if (!e.toKeyCodeChord().isModifierKey()) {
-					this.editor.focus();
-				}
-			}));
-
-			return widget;
-		}));
+				return widget;
+			}),
+		);
 
 		// Wire up text overtyping capture
-		this._overtypingCapturer = this._toDispose.add(new WindowIdleValue(getWindow(editor.getDomNode()), () => {
-			return this._toDispose.add(new OvertypingCapturer(this.editor, this.model));
-		}));
+		this._overtypingCapturer = this._toDispose.add(
+			new WindowIdleValue(getWindow(editor.getDomNode()), () => {
+				return this._toDispose.add(
+					new OvertypingCapturer(this.editor, this.model),
+				);
+			}),
+		);
 
-		this._alternatives = this._toDispose.add(new WindowIdleValue(getWindow(editor.getDomNode()), () => {
-			return this._toDispose.add(new SuggestAlternatives(this.editor, this._contextKeyService));
-		}));
+		this._alternatives = this._toDispose.add(
+			new WindowIdleValue(getWindow(editor.getDomNode()), () => {
+				return this._toDispose.add(
+					new SuggestAlternatives(
+						this.editor,
+						this._contextKeyService,
+					),
+				);
+			}),
+		);
 
-		this._toDispose.add(_instantiationService.createInstance(WordContextKey, editor));
+		this._toDispose.add(
+			_instantiationService.createInstance(WordContextKey, editor),
+		);
 
-		this._toDispose.add(this.model.onDidTrigger(e => {
-			this.widget.value.showTriggered(e.auto, e.shy ? 250 : 50);
-			this._lineSuffix.value = new LineSuffix(this.editor.getModel()!, e.position);
-		}));
-		this._toDispose.add(this.model.onDidSuggest(e => {
-			if (e.triggerOptions.shy) {
-				return;
-			}
-			let index = -1;
-			for (const selector of this._selectors.itemsOrderedByPriorityDesc) {
-				index = selector.select(this.editor.getModel()!, this.editor.getPosition()!, e.completionModel.items);
-				if (index !== -1) {
-					break;
+		this._toDispose.add(
+			this.model.onDidTrigger((e) => {
+				this.widget.value.showTriggered(e.auto, e.shy ? 250 : 50);
+				this._lineSuffix.value = new LineSuffix(
+					this.editor.getModel()!,
+					e.position,
+				);
+			}),
+		);
+		this._toDispose.add(
+			this.model.onDidSuggest((e) => {
+				if (e.triggerOptions.shy) {
+					return;
 				}
-			}
-			if (index === -1) {
-				index = 0;
-			}
-			if (this.model.state === State.Idle) {
-				// selecting an item can "pump" out selection/cursor change events
-				// which can cancel suggest halfway through this function. therefore
-				// we need to check again and bail if the session has been canceled
-				return;
-			}
-			let noFocus = false;
-			if (e.triggerOptions.auto) {
-				// don't "focus" item when configured to do
-				const options = this.editor.getOption(EditorOption.suggest);
-				if (options.selectionMode === 'never' || options.selectionMode === 'always') {
-					// simple: always or never
-					noFocus = options.selectionMode === 'never';
-
-				} else if (options.selectionMode === 'whenTriggerCharacter') {
-					// on with trigger character
-					noFocus = e.triggerOptions.triggerKind !== CompletionTriggerKind.TriggerCharacter;
-
-				} else if (options.selectionMode === 'whenQuickSuggestion') {
-					// without trigger character or when refiltering
-					noFocus = e.triggerOptions.triggerKind === CompletionTriggerKind.TriggerCharacter && !e.triggerOptions.refilter;
+				let index = -1;
+				for (const selector of this._selectors
+					.itemsOrderedByPriorityDesc) {
+					index = selector.select(
+						this.editor.getModel()!,
+						this.editor.getPosition()!,
+						e.completionModel.items,
+					);
+					if (index !== -1) {
+						break;
+					}
 				}
-
-			}
-			this.widget.value.showSuggestions(e.completionModel, index, e.isFrozen, e.triggerOptions.auto, noFocus);
-		}));
-		this._toDispose.add(this.model.onDidCancel(e => {
-			if (!e.retrigger) {
-				this.widget.value.hideWidget();
-			}
-		}));
-		this._toDispose.add(this.editor.onDidBlurEditorWidget(() => {
-			if (!_sticky) {
-				this.model.cancel();
-				this.model.clear();
-			}
-		}));
+				if (index === -1) {
+					index = 0;
+				}
+				if (this.model.state === State.Idle) {
+					// selecting an item can "pump" out selection/cursor change events
+					// which can cancel suggest halfway through this function. therefore
+					// we need to check again and bail if the session has been canceled
+					return;
+				}
+				let noFocus = false;
+				if (e.triggerOptions.auto) {
+					// don't "focus" item when configured to do
+					const options = this.editor.getOption(EditorOption.suggest);
+					if (
+						options.selectionMode === "never" ||
+						options.selectionMode === "always"
+					) {
+						// simple: always or never
+						noFocus = options.selectionMode === "never";
+					} else if (
+						options.selectionMode === "whenTriggerCharacter"
+					) {
+						// on with trigger character
+						noFocus =
+							e.triggerOptions.triggerKind !==
+							CompletionTriggerKind.TriggerCharacter;
+					} else if (
+						options.selectionMode === "whenQuickSuggestion"
+					) {
+						// without trigger character or when refiltering
+						noFocus =
+							e.triggerOptions.triggerKind ===
+								CompletionTriggerKind.TriggerCharacter &&
+							!e.triggerOptions.refilter;
+					}
+				}
+				this.widget.value.showSuggestions(
+					e.completionModel,
+					index,
+					e.isFrozen,
+					e.triggerOptions.auto,
+					noFocus,
+				);
+			}),
+		);
+		this._toDispose.add(
+			this.model.onDidCancel((e) => {
+				if (!e.retrigger) {
+					this.widget.value.hideWidget();
+				}
+			}),
+		);
+		this._toDispose.add(
+			this.editor.onDidBlurEditorWidget(() => {
+				if (!_sticky) {
+					this.model.cancel();
+					this.model.clear();
+				}
+			}),
+		);
 
 		// Manage the acceptSuggestionsOnEnter context key
-		const acceptSuggestionsOnEnter = SuggestContext.AcceptSuggestionsOnEnter.bindTo(_contextKeyService);
+		const acceptSuggestionsOnEnter =
+			SuggestContext.AcceptSuggestionsOnEnter.bindTo(_contextKeyService);
 		const updateFromConfig = () => {
-			const acceptSuggestionOnEnter = this.editor.getOption(EditorOption.acceptSuggestionOnEnter);
-			acceptSuggestionsOnEnter.set(acceptSuggestionOnEnter === 'on' || acceptSuggestionOnEnter === 'smart');
+			const acceptSuggestionOnEnter = this.editor.getOption(
+				EditorOption.acceptSuggestionOnEnter,
+			);
+			acceptSuggestionsOnEnter.set(
+				acceptSuggestionOnEnter === "on" ||
+					acceptSuggestionOnEnter === "smart",
+			);
 		};
-		this._toDispose.add(this.editor.onDidChangeConfiguration(() => updateFromConfig()));
+		this._toDispose.add(
+			this.editor.onDidChangeConfiguration(() => updateFromConfig()),
+		);
 		updateFromConfig();
 	}
 

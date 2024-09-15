@@ -4,15 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { WindowState } from "vscode";
+
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { Schemas } from "../../../base/common/network.js";
 import { isFalsyOrWhitespace } from "../../../base/common/strings.js";
 import { URI } from "../../../base/common/uri.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
+	MainContext,
 	type ExtHostWindowShape,
 	type IOpenUriOptions,
-	MainContext,
 	type MainThreadWindowShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -48,8 +49,8 @@ export class ExtHostWindow implements ExtHostWindowShape {
 	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadWindow);
 		this._proxy.$getInitialState().then(({ isFocused, isActive }) => {
-			this.onDidChangeWindowProperty('focused', isFocused);
-			this.onDidChangeWindowProperty('active', isActive);
+			this.onDidChangeWindowProperty("focused", isFocused);
+			this.onDidChangeWindowProperty("active", isActive);
 		});
 	}
 

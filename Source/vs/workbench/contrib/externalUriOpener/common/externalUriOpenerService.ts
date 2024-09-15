@@ -18,8 +18,8 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IExternalOpener,
 	IOpenerService,
+	type IExternalOpener,
 } from "../../../../platform/opener/common/opener.js";
 import {
 	IQuickInputService,
@@ -29,9 +29,9 @@ import {
 import { IPreferencesService } from "../../../services/preferences/common/preferences.js";
 import { testUrlMatchesGlob } from "../../url/common/urlGlob.js";
 import {
-	type ExternalUriOpenersConfiguration,
 	defaultExternalUriOpenerId,
 	externalUriOpenersSettingId,
+	type ExternalUriOpenersConfiguration,
 } from "./configuration.js";
 
 export const IExternalUriOpenerService =
@@ -87,10 +87,13 @@ export class ExternalUriOpenerService
 
 	constructor(
 		@IOpenerService openerService: IOpenerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 	) {
 		super();
 		this._register(openerService.registerExternalOpener(this));

@@ -4,7 +4,6 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from "../../../../nls.js";
-
 import type { IQuickPickItem } from "../../../../platform/quickinput/common/quickInput.js";
 
 export interface ITaskEntry extends IQuickPickItem {

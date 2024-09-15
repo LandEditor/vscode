@@ -13,7 +13,7 @@ import {
 	type IContentWidgetPosition,
 } from "../../../browser/editorBrowser.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 
 const TOP_HEIGHT = 30;
 const BOTTOM_HEIGHT = 24;

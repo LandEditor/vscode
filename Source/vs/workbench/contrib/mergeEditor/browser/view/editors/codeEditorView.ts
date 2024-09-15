@@ -14,10 +14,10 @@ import {
 	type IDisposable,
 } from "../../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	derived,
 	observableFromEvent,
+	type IObservable,
 } from "../../../../../../base/common/observable.js";
 import {
 	EditorExtensionsRegistry,

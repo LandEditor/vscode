@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { networkInterfaces } from "os";
+
 import { isWindows } from "../common/platform.js";
 import { TernarySearchTree } from "../common/ternarySearchTree.js";
 import * as uuid from "../common/uuid.js";

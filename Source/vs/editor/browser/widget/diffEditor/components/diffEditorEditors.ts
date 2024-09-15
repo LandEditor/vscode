@@ -6,11 +6,11 @@
 import { Emitter } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IReader,
 	autorunHandleChanges,
 	derived,
 	derivedOpts,
 	observableFromEvent,
+	type IReader,
 } from "../../../../../base/common/observable.js";
 import { localize } from "../../../../../nls.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
@@ -89,12 +89,10 @@ export class DiffEditorEditors extends Disposable {
 		() => this.original.getPosition() ?? new Position(1, 1),
 	);
 
-	public readonly isOriginalFocused = observableCodeEditor(
-		this.original,
-	).isFocused;
-	public readonly isModifiedFocused = observableCodeEditor(
-		this.modified,
-	).isFocused;
+	public readonly isOriginalFocused = observableCodeEditor(this.original)
+		.isFocused;
+	public readonly isModifiedFocused = observableCodeEditor(this.modified)
+		.isFocused;
 
 	public readonly isFocused = derived(
 		this,
@@ -108,31 +106,57 @@ export class DiffEditorEditors extends Disposable {
 		private readonly modifiedEditorElement: HTMLElement,
 		private readonly _options: DiffEditorOptions,
 		private _argCodeEditorWidgetOptions: IDiffCodeEditorWidgetOptions,
-		private readonly _createInnerEditor: (instantiationService: IInstantiationService, container: HTMLElement, options: Readonly<IEditorOptions>, editorWidgetOptions: ICodeEditorWidgetOptions) => CodeEditorWidget,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		private readonly _createInnerEditor: (
+			instantiationService: IInstantiationService,
+			container: HTMLElement,
+			options: Readonly<IEditorOptions>,
+			editorWidgetOptions: ICodeEditorWidgetOptions,
+		) => CodeEditorWidget,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
 		this._argCodeEditorWidgetOptions = null as any;
 
-		this._register(autorunHandleChanges({
-			createEmptyChangeSummary: (): IDiffEditorConstructionOptions => ({}),
-			handleChange: (ctx, changeSummary) => {
-				if (ctx.didChange(_options.editorOptions)) {
-					Object.assign(changeSummary, ctx.change.changedOptions);
-				}
-				return true;
-			}
-		}, (reader, changeSummary) => {
-			/** @description update editor options */
-			_options.editorOptions.read(reader);
+		this._register(
+			autorunHandleChanges(
+				{
+					createEmptyChangeSummary:
+						(): IDiffEditorConstructionOptions => ({}),
+					handleChange: (ctx, changeSummary) => {
+						if (ctx.didChange(_options.editorOptions)) {
+							Object.assign(
+								changeSummary,
+								ctx.change.changedOptions,
+							);
+						}
+						return true;
+					},
+				},
+				(reader, changeSummary) => {
+					/** @description update editor options */
+					_options.editorOptions.read(reader);
 
-			this._options.renderSideBySide.read(reader);
+					this._options.renderSideBySide.read(reader);
 
-			this.modified.updateOptions(this._adjustOptionsForRightHandSide(reader, changeSummary));
-			this.original.updateOptions(this._adjustOptionsForLeftHandSide(reader, changeSummary));
-		}));
+					this.modified.updateOptions(
+						this._adjustOptionsForRightHandSide(
+							reader,
+							changeSummary,
+						),
+					);
+					this.original.updateOptions(
+						this._adjustOptionsForLeftHandSide(
+							reader,
+							changeSummary,
+						),
+					);
+				},
+			),
+		);
 	}
 
 	private _createLeftHandSideEditor(

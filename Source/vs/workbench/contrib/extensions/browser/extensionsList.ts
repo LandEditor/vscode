@@ -4,22 +4,23 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/extension.css";
+
 import {
 	$,
 	addDisposableListener,
 	append,
 } from "../../../../base/browser/dom.js";
-import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { HoverPosition } from "../../../../base/browser/ui/hover/hoverWidget.js";
 import type { IListVirtualDelegate } from "../../../../base/browser/ui/list/list.js";
 import type { IPagedRenderer } from "../../../../base/browser/ui/list/listPaging.js";
 import type { IAction } from "../../../../base/common/actions.js";
 import { Event } from "../../../../base/common/event.js";
 import {
-	type IDisposable,
 	combinedDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -27,9 +28,9 @@ import { areSameExtensions } from "../../../../platform/extensionManagement/comm
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
+	registerThemingParticipant,
 	type IColorTheme,
 	type ICssStyleCollector,
-	registerThemingParticipant,
 } from "../../../../platform/theme/common/themeService.js";
 import { WORKBENCH_BACKGROUND } from "../../../common/theme.js";
 import { IWorkbenchExtensionEnablementService } from "../../../services/extensionManagement/common/extensionManagement.js";
@@ -37,8 +38,8 @@ import { IExtensionService } from "../../../services/extensions/common/extension
 import {
 	ExtensionContainers,
 	ExtensionState,
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../common/extensions.js";
 import {
 	ButtonWithDropDownExtensionAction,
@@ -63,6 +64,7 @@ import {
 	ExtensionActivationStatusWidget,
 	ExtensionHoverWidget,
 	ExtensionPackCountWidget as ExtensionPackBadgeWidget,
+	extensionVerifiedPublisherIconColor,
 	InstallCountWidget,
 	PreReleaseBookmarkWidget,
 	RatingsWidget,
@@ -70,7 +72,6 @@ import {
 	RemoteBadgeWidget,
 	SyncIgnoredWidget,
 	VerifiedPublisherWidget,
-	extensionVerifiedPublisherIconColor,
 } from "./extensionsWidgets.js";
 
 const EXTENSION_LIST_ELEMENT_HEIGHT = 72;
@@ -114,13 +115,18 @@ export class Renderer implements IPagedRenderer<IExtension, ITemplateData> {
 	constructor(
 		private extensionViewState: IExtensionsViewState,
 		private readonly options: ExtensionListRendererOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-	) { }
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+	) {}
 
 	get templateId() {
 		return "extension";

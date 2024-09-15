@@ -47,16 +47,28 @@ export class SettingsFileSystemProvider
 	readonly onDidChangeFile = this._onDidChangeFile.event;
 
 	constructor(
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@ILogService private readonly logService: ILogService
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this._register(schemaRegistry.onDidChangeSchema(schemaUri => {
-			this._onDidChangeFile.fire([{ resource: URI.parse(schemaUri), type: FileChangeType.UPDATED }]);
-		}));
-		this._register(preferencesService.onDidDefaultSettingsContentChanged(uri => {
-			this._onDidChangeFile.fire([{ resource: uri, type: FileChangeType.UPDATED }]);
-		}));
+		this._register(
+			schemaRegistry.onDidChangeSchema((schemaUri) => {
+				this._onDidChangeFile.fire([
+					{
+						resource: URI.parse(schemaUri),
+						type: FileChangeType.UPDATED,
+					},
+				]);
+			}),
+		);
+		this._register(
+			preferencesService.onDidDefaultSettingsContentChanged((uri) => {
+				this._onDidChangeFile.fire([
+					{ resource: uri, type: FileChangeType.UPDATED },
+				]);
+			}),
+		);
 	}
 
 	readonly capabilities: FileSystemProviderCapabilities =
@@ -122,7 +134,7 @@ export class SettingsFileSystemProvider
 		const startTime = Date.now();
 		const content =
 			schemaRegistry.getSchemaContent(uri.toString()) ??
-			"{}" /* Use empty schema if not yet registered */;
+			"{}"; /* Use empty schema if not yet registered */
 		const logLevel = this.logService.getLevel();
 		if (logLevel === LogLevel.Debug || logLevel === LogLevel.Trace) {
 			const endTime = Date.now();

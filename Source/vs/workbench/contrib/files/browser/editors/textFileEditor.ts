@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, toAction } from "../../../../../base/common/actions.js";
+import { toAction, type IAction } from "../../../../../base/common/actions.js";
 import type { CancellationToken } from "../../../../../base/common/cancellation.js";
 import { mark } from "../../../../../base/common/performance.js";
 import { assertIsDefined } from "../../../../../base/common/types.js";
 import type { IEditorOptions as ICodeEditorOptions } from "../../../../../editor/common/config/editorOptions.js";
 import {
-	type ICodeEditorViewState,
 	ScrollType,
+	type ICodeEditorViewState,
 } from "../../../../../editor/common/editorCommon.js";
 import { ITextResourceConfigurationService } from "../../../../../editor/common/services/textResourceConfiguration.js";
 import { localize } from "../../../../../nls.js";
@@ -21,13 +21,13 @@ import {
 } from "../../../../../platform/editor/common/editor.js";
 import {
 	ByteSize,
-	type FileChangesEvent,
 	FileOperation,
 	FileOperationError,
-	type FileOperationEvent,
 	FileOperationResult,
 	IFileService,
 	TooLargeFileOperationError,
+	type FileChangesEvent,
+	type FileOperationEvent,
 } from "../../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { IStorageService } from "../../../../../platform/storage/common/storage.js";
@@ -37,20 +37,20 @@ import { IUriIdentityService } from "../../../../../platform/uriIdentity/common/
 import { IWorkspaceContextService } from "../../../../../platform/workspace/common/workspace.js";
 import { AbstractTextCodeEditor } from "../../../../browser/parts/editor/textCodeEditor.js";
 import {
-	DEFAULT_EDITOR_ASSOCIATION,
-	type IEditorOpenContext,
-	type IFileEditorInputOptions,
 	createEditorOpenError,
 	createTooLargeFileError,
+	DEFAULT_EDITOR_ASSOCIATION,
 	isTextEditorViewState,
+	type IEditorOpenContext,
+	type IFileEditorInputOptions,
 } from "../../../../common/editor.js";
 import { BinaryEditorModel } from "../../../../common/editor/binaryEditorModel.js";
 import type { EditorInput } from "../../../../common/editor/editorInput.js";
 import { applyTextEditorOptions } from "../../../../common/editor/editorOptions.js";
 import { ViewContainerLocation } from "../../../../common/views.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import { IFilesConfigurationService } from "../../../../services/filesConfiguration/common/filesConfigurationService.js";
@@ -60,8 +60,8 @@ import { IPathService } from "../../../../services/path/common/pathService.js";
 import { IPreferencesService } from "../../../../services/preferences/common/preferences.js";
 import {
 	ITextFileService,
-	type TextFileOperationError,
 	TextFileOperationResult,
+	type TextFileOperationError,
 } from "../../../../services/textfile/common/textfiles.js";
 import {
 	BINARY_TEXT_FILE_MODE,
@@ -81,30 +81,54 @@ export class TextFileEditor extends AbstractTextCodeEditor<ICodeEditorViewState>
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IFileService fileService: IFileService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IStorageService storageService: IStorageService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IEditorService editorService: IEditorService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IExplorerService private readonly explorerService: IExplorerService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IPathService private readonly pathService: IPathService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IPreferencesService protected readonly preferencesService: IPreferencesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IPreferencesService
+		protected readonly preferencesService: IPreferencesService,
 		@IHostService private readonly hostService: IHostService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 	) {
-		super(TextFileEditor.ID, group, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorService, editorGroupService, fileService);
+		super(
+			TextFileEditor.ID,
+			group,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorService,
+			editorGroupService,
+			fileService,
+		);
 
 		// Clear view state for deleted files
-		this._register(this.fileService.onDidFilesChange(e => this.onDidFilesChange(e)));
+		this._register(
+			this.fileService.onDidFilesChange((e) => this.onDidFilesChange(e)),
+		);
 
 		// Move view state for moved files
-		this._register(this.fileService.onDidRunOperation(e => this.onDidRunOperation(e)));
+		this._register(
+			this.fileService.onDidRunOperation((e) =>
+				this.onDidRunOperation(e),
+			),
+		);
 	}
 
 	private onDidFilesChange(e: FileChangesEvent): void {

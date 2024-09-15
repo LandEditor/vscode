@@ -11,16 +11,16 @@ import { isWindows } from "../../../../base/common/platform.js";
 import { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IMenuItem,
 	MenuId,
 	MenuRegistry,
+	type IMenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IExternalTerminalConfiguration,
 	IExternalTerminalService,
+	type IExternalTerminalConfiguration,
 } from "../../../../platform/externalTerminal/common/externalTerminal.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import { IListService } from "../../../../platform/list/browser/listService.js";
@@ -28,17 +28,17 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { TerminalLocation } from "../../../../platform/terminal/common/terminal.js";
 import { ResourceContextKey } from "../../../common/contextkeys.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IEditorGroupsService } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { IRemoteAgentService } from "../../../services/remote/common/remoteAgentService.js";
 import {
-	IExplorerService,
 	getMultiSelectedResources,
+	IExplorerService,
 } from "../../files/browser/files.js";
 import {
 	ITerminalService as IIntegratedTerminalService,
@@ -161,49 +161,81 @@ export class ExternalTerminalContribution
 	private _openInTerminalMenuItem: IMenuItem;
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 
 		const shouldShowIntegratedOnLocal = ContextKeyExpr.and(
 			ResourceContextKey.Scheme.isEqualTo(Schemas.file),
-			ContextKeyExpr.or(ContextKeyExpr.equals('config.terminal.explorerKind', 'integrated'), ContextKeyExpr.equals('config.terminal.explorerKind', 'both')));
-
+			ContextKeyExpr.or(
+				ContextKeyExpr.equals(
+					"config.terminal.explorerKind",
+					"integrated",
+				),
+				ContextKeyExpr.equals("config.terminal.explorerKind", "both"),
+			),
+		);
 
 		const shouldShowExternalKindOnLocal = ContextKeyExpr.and(
 			ResourceContextKey.Scheme.isEqualTo(Schemas.file),
-			ContextKeyExpr.or(ContextKeyExpr.equals('config.terminal.explorerKind', 'external'), ContextKeyExpr.equals('config.terminal.explorerKind', 'both')));
+			ContextKeyExpr.or(
+				ContextKeyExpr.equals(
+					"config.terminal.explorerKind",
+					"external",
+				),
+				ContextKeyExpr.equals("config.terminal.explorerKind", "both"),
+			),
+		);
 
 		this._openInIntegratedTerminalMenuItem = {
-			group: 'navigation',
+			group: "navigation",
 			order: 30,
 			command: {
 				id: OPEN_IN_INTEGRATED_TERMINAL_COMMAND_ID,
-				title: nls.localize('scopedConsoleAction.Integrated', "Open in Integrated Terminal")
+				title: nls.localize(
+					"scopedConsoleAction.Integrated",
+					"Open in Integrated Terminal",
+				),
 			},
-			when: ContextKeyExpr.or(shouldShowIntegratedOnLocal, ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeRemote))
+			when: ContextKeyExpr.or(
+				shouldShowIntegratedOnLocal,
+				ResourceContextKey.Scheme.isEqualTo(Schemas.vscodeRemote),
+			),
 		};
 
-
 		this._openInTerminalMenuItem = {
-			group: 'navigation',
+			group: "navigation",
 			order: 31,
 			command: {
 				id: OPEN_IN_TERMINAL_COMMAND_ID,
-				title: nls.localize('scopedConsoleAction.external', "Open in External Terminal")
+				title: nls.localize(
+					"scopedConsoleAction.external",
+					"Open in External Terminal",
+				),
 			},
-			when: shouldShowExternalKindOnLocal
+			when: shouldShowExternalKindOnLocal,
 		};
 
+		MenuRegistry.appendMenuItem(
+			MenuId.ExplorerContext,
+			this._openInTerminalMenuItem,
+		);
+		MenuRegistry.appendMenuItem(
+			MenuId.ExplorerContext,
+			this._openInIntegratedTerminalMenuItem,
+		);
 
-		MenuRegistry.appendMenuItem(MenuId.ExplorerContext, this._openInTerminalMenuItem);
-		MenuRegistry.appendMenuItem(MenuId.ExplorerContext, this._openInIntegratedTerminalMenuItem);
-
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('terminal.explorerKind') || e.affectsConfiguration('terminal.external')) {
-				this._refreshOpenInTerminalMenuItemTitle();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("terminal.explorerKind") ||
+					e.affectsConfiguration("terminal.external")
+				) {
+					this._refreshOpenInTerminalMenuItemTitle();
+				}
+			}),
+		);
 
 		this._refreshOpenInTerminalMenuItemTitle();
 	}

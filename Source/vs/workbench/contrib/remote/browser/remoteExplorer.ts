@@ -2,10 +2,10 @@ import { Action } from "../../../../base/common/actions.js";
 import { Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
-import { OperatingSystem, isWeb } from "../../../../base/common/platform.js";
+import { isWeb, OperatingSystem } from "../../../../base/common/platform.js";
 import Severity from "../../../../base/common/severity.js";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -24,8 +24,8 @@ import { IContextKeyService } from "../../../../platform/contextkey/common/conte
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type INotificationHandle,
 	INotificationService,
+	type INotificationHandle,
 	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
@@ -37,17 +37,17 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import {
 	ITunnelService,
-	type RemoteTunnel,
 	TunnelPrivacyId,
+	type RemoteTunnel,
 } from "../../../../platform/tunnel/common/tunnel.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
 	Extensions,
+	ViewContainerLocation,
 	type IViewContainersRegistry,
 	type IViewsRegistry,
 	type ViewContainer,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import {
 	IActivityService,
@@ -70,21 +70,21 @@ import {
 	TUNNEL_VIEW_ID,
 } from "../../../services/remote/common/remoteExplorerService.js";
 import {
-	type Attributes,
 	AutoTunnelSource,
-	OnPortForward,
-	type Tunnel,
-	TunnelCloseReason,
-	TunnelSource,
 	forwardedPortsViewEnabled,
 	makeAddress,
 	mapHasAddressLocalhostOrAllInterfaces,
+	OnPortForward,
+	TunnelCloseReason,
+	TunnelSource,
+	type Attributes,
+	type Tunnel,
 } from "../../../services/remote/common/tunnelModel.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { IDebugService } from "../../debug/common/debug.js";
 import { IExternalUriOpenerService } from "../../externalUriOpener/common/externalUriOpenerService.js";
@@ -94,10 +94,10 @@ import {
 	ForwardPortAction,
 	OpenPortInBrowserAction,
 	OpenPortInPreviewAction,
+	openPreviewEnabledContext,
 	TunnelPanel,
 	TunnelPanelDescriptor,
 	TunnelViewModel,
-	openPreviewEnabledContext,
 } from "./tunnelView.js";
 import { UrlFinder } from "./urlFinder.js";
 
@@ -116,18 +116,34 @@ export class ForwardedPortsView
 	private entryAccessor: IStatusbarEntryAccessor | undefined;
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
 		@IActivityService private readonly activityService: IActivityService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 	) {
 		super();
-		this._register(Registry.as<IViewsRegistry>(Extensions.ViewsRegistry).registerViewWelcomeContent(TUNNEL_VIEW_ID, {
-			content: this.environmentService.remoteAuthority ? nls.localize('remoteNoPorts', "No forwarded ports. Forward a port to access your running services locally.\n[Forward a Port]({0})", `command:${ForwardPortAction.INLINE_ID}`)
-				: nls.localize('noRemoteNoPorts', "No forwarded ports. Forward a port to access your locally running services over the internet.\n[Forward a Port]({0})", `command:${ForwardPortAction.INLINE_ID}`),
-		}));
+		this._register(
+			Registry.as<IViewsRegistry>(
+				Extensions.ViewsRegistry,
+			).registerViewWelcomeContent(TUNNEL_VIEW_ID, {
+				content: this.environmentService.remoteAuthority
+					? nls.localize(
+							"remoteNoPorts",
+							"No forwarded ports. Forward a port to access your running services locally.\n[Forward a Port]({0})",
+							`command:${ForwardPortAction.INLINE_ID}`,
+						)
+					: nls.localize(
+							"noRemoteNoPorts",
+							"No forwarded ports. Forward a port to access your locally running services over the internet.\n[Forward a Port]({0})",
+							`command:${ForwardPortAction.INLINE_ID}`,
+						),
+			}),
+		);
 		this.enableBadgeAndStatusBar();
 		this.enableForwardedPortsView();
 	}
@@ -307,13 +323,16 @@ export class ForwardedPortsView
 
 export class PortRestore implements IWorkbenchContribution {
 	constructor(
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
-		@ILogService private readonly logService: ILogService
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		if (this.remoteExplorerService.tunnelModel.environmentTunnelsSet) {
 			this.restore();
 		} else {
-			Event.once(this.remoteExplorerService.tunnelModel.onEnvironmentTunnelsSet)(async () => {
+			Event.once(
+				this.remoteExplorerService.tunnelModel.onEnvironmentTunnelsSet,
+			)(async () => {
 				await this.restore();
 			});
 		}
@@ -335,39 +354,66 @@ export class AutomaticPortForwarding
 
 	constructor(
 		@ITerminalService private readonly terminalService: ITerminalService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IExternalUriOpenerService private readonly externalOpenerService: IExternalUriOpenerService,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkbenchConfigurationService private readonly configurationService: IWorkbenchConfigurationService,
+		@IExternalUriOpenerService
+		private readonly externalOpenerService: IExternalUriOpenerService,
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkbenchConfigurationService
+		private readonly configurationService: IWorkbenchConfigurationService,
 		@IDebugService private readonly debugService: IDebugService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
 		@IHostService private readonly hostService: IHostService,
 		@ILogService private readonly logService: ILogService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 	) {
 		super();
 		if (!environmentService.remoteAuthority) {
 			return;
 		}
 
-		configurationService.whenRemoteConfigurationLoaded().then(() => remoteAgentService.getEnvironment()).then(environment => {
-			this.setup(environment);
-			this._register(configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration(PORT_AUTO_SOURCE_SETTING)) {
-					this.setup(environment);
-				} else if (e.affectsConfiguration(PORT_AUTO_FALLBACK_SETTING) && !this.portListener) {
-					this.listenForPorts();
-				}
-			}));
-		});
+		configurationService
+			.whenRemoteConfigurationLoaded()
+			.then(() => remoteAgentService.getEnvironment())
+			.then((environment) => {
+				this.setup(environment);
+				this._register(
+					configurationService.onDidChangeConfiguration((e) => {
+						if (e.affectsConfiguration(PORT_AUTO_SOURCE_SETTING)) {
+							this.setup(environment);
+						} else if (
+							e.affectsConfiguration(
+								PORT_AUTO_FALLBACK_SETTING,
+							) &&
+							!this.portListener
+						) {
+							this.listenForPorts();
+						}
+					}),
+				);
+			});
 
-		if (!this.storageService.getBoolean('processPortForwardingFallback', StorageScope.WORKSPACE, true)) {
-			this.configurationService.updateValue(PORT_AUTO_FALLBACK_SETTING, 0, ConfigurationTarget.WORKSPACE);
+		if (
+			!this.storageService.getBoolean(
+				"processPortForwardingFallback",
+				StorageScope.WORKSPACE,
+				true,
+			)
+		) {
+			this.configurationService.updateValue(
+				PORT_AUTO_FALLBACK_SETTING,
+				0,
+				ConfigurationTarget.WORKSPACE,
+			);
 		}
 	}
 

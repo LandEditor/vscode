@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./currentLineHighlight.css";
+
 import * as arrays from "../../../../base/common/arrays.js";
 import { isHighContrast } from "../../../../platform/theme/common/theme.js";
 import { registerThemingParticipant } from "../../../../platform/theme/common/themeService.js";

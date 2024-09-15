@@ -5,11 +5,12 @@
 
 import "./documentSymbolsTree.css";
 import "../../../../../editor/contrib/symbolIcons/browser/symbolIcons.js"; // The codicon symbol colors are defined here and must be loaded to get colors
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { HighlightedLabel } from "../../../../../base/browser/ui/highlightedlabel/highlightedLabel.js";
 import {
-	type IIconLabelValueOptions,
 	IconLabel,
+	type IIconLabelValueOptions,
 } from "../../../../../base/browser/ui/iconLabel/iconLabel.js";
 import type {
 	IIdentityProvider,
@@ -24,17 +25,17 @@ import type {
 } from "../../../../../base/browser/ui/tree/tree.js";
 import { mainWindow } from "../../../../../base/browser/window.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../../base/common/filters.js";
 import { ThemeIcon } from "../../../../../base/common/themables.js";
 import { Range } from "../../../../../editor/common/core/range.js";
 import {
+	getAriaLabelForSymbol,
 	SymbolKind,
+	symbolKindNames,
 	SymbolKinds,
 	SymbolTag,
-	getAriaLabelForSymbol,
-	symbolKindNames,
 } from "../../../../../editor/common/languages.js";
 import { ITextResourceConfigurationService } from "../../../../../editor/common/services/textResourceConfiguration.js";
 import {
@@ -51,8 +52,8 @@ import {
 } from "../../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import {
-	type IOutlineComparator,
 	OutlineConfigKeys,
+	type IOutlineComparator,
 	type OutlineTarget,
 } from "../../../../services/outline/browser/outline.js";
 
@@ -166,16 +167,18 @@ export class DocumentSymbolGroupRenderer
 }
 
 export class DocumentSymbolRenderer
-	implements ITreeRenderer<OutlineElement, FuzzyScore, DocumentSymbolTemplate>
+	implements
+		ITreeRenderer<OutlineElement, FuzzyScore, DocumentSymbolTemplate>
 {
 	readonly templateId: string = DocumentSymbolTemplate.id;
 
 	constructor(
 		private _renderMarker: boolean,
 		target: OutlineTarget,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IThemeService private readonly _themeService: IThemeService,
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement): DocumentSymbolTemplate {
 		container.classList.add("outline-element");
@@ -351,9 +354,10 @@ export class DocumentSymbolFilter implements ITreeFilter<DocumentSymbolItem> {
 	});
 
 	constructor(
-		private readonly _prefix: 'breadcrumbs' | 'outline',
-		@ITextResourceConfigurationService private readonly _textResourceConfigService: ITextResourceConfigurationService,
-	) { }
+		private readonly _prefix: "breadcrumbs" | "outline",
+		@ITextResourceConfigurationService
+		private readonly _textResourceConfigService: ITextResourceConfigurationService,
+	) {}
 
 	filter(element: DocumentSymbolItem): boolean {
 		const outline = OutlineModel.get(element);

@@ -24,8 +24,8 @@ import { IOpenerService } from "../../../../../platform/opener/common/opener.js"
 import { IProductService } from "../../../../../platform/product/common/productService.js";
 import { ProgressLocation } from "../../../../../platform/progress/common/progress.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPick,
 	type IQuickPickItem,
 	type QuickPickInput,
@@ -33,24 +33,24 @@ import {
 import { EnablementState } from "../../../../services/extensionManagement/common/extensionManagement.js";
 import { IExtensionService } from "../../../../services/extensions/common/extensions.js";
 import {
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../../../extensions/common/extensions.js";
 import type { NotebookTextModel } from "../../common/model/notebookTextModel.js";
 import type { INotebookTextModel } from "../../common/notebookCommon.js";
 import {
-	type INotebookKernel,
 	INotebookKernelHistoryService,
-	type INotebookKernelMatchResult,
 	INotebookKernelService,
+	type INotebookKernel,
+	type INotebookKernelMatchResult,
 	type ISourceAction,
 } from "../../common/notebookKernelService.js";
 import { SELECT_KERNEL_ID } from "../controller/coreActions.js";
 import {
-	type IActiveNotebookEditor,
-	type INotebookExtensionRecommendation,
 	JUPYTER_EXTENSION_ID,
 	KERNEL_RECOMMENDATIONS,
+	type IActiveNotebookEditor,
+	type INotebookExtensionRecommendation,
 } from "../notebookBrowser.js";
 import type { NotebookEditorWidget } from "../notebookEditorWidget.js";
 import { executingStateIcon, selectKernelIcon } from "../notebookIcons.js";
@@ -648,12 +648,13 @@ export class KernelPickerMRUStrategy extends KernelPickerStrategyBase {
 		@IQuickInputService _quickInputService: IQuickInputService,
 		@ILabelService _labelService: ILabelService,
 		@ILogService _logService: ILogService,
-		@IExtensionsWorkbenchService _extensionWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		_extensionWorkbenchService: IExtensionsWorkbenchService,
 		@IExtensionService _extensionService: IExtensionService,
 		@ICommandService _commandService: ICommandService,
-		@INotebookKernelHistoryService private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
-		@IOpenerService private readonly _openerService: IOpenerService
-
+		@INotebookKernelHistoryService
+		private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
+		@IOpenerService private readonly _openerService: IOpenerService,
 	) {
 		super(
 			_notebookKernelService,

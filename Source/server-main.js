@@ -21,13 +21,15 @@
 // ESM-comment-end
 // ESM-uncomment-begin
 import "./bootstrap-server.js"; // this MUST come before other imports as it changes global state
+
 import * as http from "http";
 import * as os from "os";
 import * as path from "path";
+import { performance } from "perf_hooks";
 import * as readline from "readline";
 import { fileURLToPath } from "url";
 import minimist from "minimist";
-import { performance } from "perf_hooks";
+
 import * as bootstrapAmd from "./bootstrap-amd.js";
 import { product } from "./bootstrap-meta.js";
 import * as bootstrapNode from "./bootstrap-node.js";

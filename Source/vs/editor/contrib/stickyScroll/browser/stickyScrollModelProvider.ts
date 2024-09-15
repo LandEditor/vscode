@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	Delayer,
 	createCancelablePromise,
+	Delayer,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
@@ -76,8 +76,10 @@ export class StickyModelProvider
 	constructor(
 		private readonly _editor: IActiveCodeEditor,
 		onProviderUpdate: () => void,
-		@IInstantiationService _languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService _languageFeaturesService: ILanguageFeaturesService,
+		@IInstantiationService
+		_languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		_languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 
@@ -271,7 +273,11 @@ abstract class StickyModelCandidateProvider<T>
 }
 
 class StickyModelFromCandidateOutlineProvider extends StickyModelCandidateProvider<OutlineModel> {
-	constructor(_editor: IActiveCodeEditor, @ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService) {
+	constructor(
+		_editor: IActiveCodeEditor,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+	) {
 		super(_editor);
 	}
 
@@ -522,10 +528,18 @@ class StickyModelFromCandidateIndentationFoldingProvider extends StickyModelFrom
 
 	constructor(
 		editor: IActiveCodeEditor,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService) {
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+	) {
 		super(editor);
 
-		this.provider = this._register(new IndentRangeProvider(editor.getModel(), this._languageConfigurationService, this._foldingLimitReporter));
+		this.provider = this._register(
+			new IndentRangeProvider(
+				editor.getModel(),
+				this._languageConfigurationService,
+				this._foldingLimitReporter,
+			),
+		);
 	}
 
 	protected override async createModelFromProvider(
@@ -538,14 +552,27 @@ class StickyModelFromCandidateIndentationFoldingProvider extends StickyModelFrom
 class StickyModelFromCandidateSyntaxFoldingProvider extends StickyModelFromCandidateFoldingProvider {
 	private readonly provider: SyntaxRangeProvider | undefined;
 
-	constructor(editor: IActiveCodeEditor,
+	constructor(
+		editor: IActiveCodeEditor,
 		onProviderUpdate: () => void,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super(editor);
-		const selectedProviders = FoldingController.getFoldingRangeProviders(this._languageFeaturesService, editor.getModel());
+		const selectedProviders = FoldingController.getFoldingRangeProviders(
+			this._languageFeaturesService,
+			editor.getModel(),
+		);
 		if (selectedProviders.length > 0) {
-			this.provider = this._register(new SyntaxRangeProvider(editor.getModel(), selectedProviders, onProviderUpdate, this._foldingLimitReporter, undefined));
+			this.provider = this._register(
+				new SyntaxRangeProvider(
+					editor.getModel(),
+					selectedProviders,
+					onProviderUpdate,
+					this._foldingLimitReporter,
+					undefined,
+				),
+			);
 		}
 	}
 

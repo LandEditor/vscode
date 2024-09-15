@@ -14,6 +14,7 @@ import {
 import { clamp } from "../../../../base/common/numbers.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
+	createFileSystemProviderError,
 	FileChangeType,
 	FilePermission,
 	FileSystemProviderCapabilities,
@@ -24,17 +25,16 @@ import {
 	type IFileSystemProvider,
 	type IStat,
 	type IWatchOptions,
-	createFileSystemProviderError,
 } from "../../../../platform/files/common/files.js";
 import {
 	DEBUG_MEMORY_SCHEME,
+	MemoryRangeType,
+	State,
 	type IDebugService,
 	type IDebugSession,
 	type IMemoryInvalidationEvent,
 	type IMemoryRegion,
 	type MemoryRange,
-	MemoryRangeType,
-	State,
 } from "../common/debug.js";
 
 const rangeRe = /range=([0-9]+):([0-9]+)/;

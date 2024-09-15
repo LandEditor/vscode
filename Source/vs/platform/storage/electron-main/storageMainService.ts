@@ -19,26 +19,26 @@ import {
 import { ILogService } from "../../log/common/log.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import { IUserDataProfilesMainService } from "../../userDataProfile/electron-main/userDataProfile.js";
 import type { IAnyWorkspaceIdentifier } from "../../workspace/common/workspace.js";
 import {
 	AbstractStorageService,
-	type IStorageService,
-	StorageScope,
-	type StorageTarget,
 	isProfileUsingDefaultStorage,
+	StorageScope,
+	type IStorageService,
+	type StorageTarget,
 } from "../common/storage.js";
 import {
 	ApplicationStorageMain,
-	type IStorageChangeEvent,
-	type IStorageMain,
-	type IStorageMainOptions,
 	InMemoryStorageMain,
 	ProfileStorageMain,
 	WorkspaceStorageMain,
+	type IStorageChangeEvent,
+	type IStorageMain,
+	type IStorageMainOptions,
 } from "./storageMain.js";
 
 //#region Storage Main Service (intent: make application, profile and workspace storage accessible to windows from main process)
@@ -108,11 +108,15 @@ export class StorageMainService
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesService: IUserDataProfilesMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 
@@ -463,8 +467,10 @@ export class ApplicationStorageMainService
 	readonly whenReady = this.storageMainService.applicationStorage.whenInit;
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IStorageMainService private readonly storageMainService: IStorageMainService
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IStorageMainService
+		private readonly storageMainService: IStorageMainService,
 	) {
 		super();
 	}

@@ -26,8 +26,8 @@ import {
 import { IsWebContext } from "../../../../platform/contextkey/common/contextkeys.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { WorkbenchListDoubleSelection } from "../../../../platform/list/browser/listService.js";
 import {
@@ -35,8 +35,8 @@ import {
 	ADD_ROOT_FOLDER_LABEL,
 } from "../../../browser/actions/workspaceCommands.js";
 import {
-	CLOSE_EDITORS_IN_GROUP_COMMAND_ID,
 	CLOSE_EDITOR_COMMAND_ID,
+	CLOSE_EDITORS_IN_GROUP_COMMAND_ID,
 	CLOSE_OTHER_EDITORS_IN_GROUP_COMMAND_ID,
 	CLOSE_SAVED_EDITORS_COMMAND_ID,
 	REOPEN_WITH_COMMAND_ID,
@@ -68,42 +68,42 @@ import {
 	FoldersViewVisibleContext,
 } from "../common/files.js";
 import {
-	CONFLICT_RESOLUTION_CONTEXT,
 	acceptLocalChangesCommand,
+	CONFLICT_RESOLUTION_CONTEXT,
 	revertLocalChangesCommand,
 } from "./editors/textFileSaveErrorHandler.js";
 import {
-	COPY_FILE_LABEL,
 	CompareNewUntitledTextFilesAction,
 	CompareWithClipboardAction,
+	COPY_FILE_LABEL,
+	copyFileHandler,
+	cutFileHandler,
+	deleteFileHandler,
 	DOWNLOAD_COMMAND_ID,
 	DOWNLOAD_LABEL,
 	FileCopiedContext,
 	FocusFilesExplorer,
 	GlobalCompareResourcesAction,
 	MOVE_FILE_TO_TRASH_LABEL,
+	moveFileToTrashHandler,
 	NEW_FILE_COMMAND_ID,
 	NEW_FILE_LABEL,
 	NEW_FOLDER_COMMAND_ID,
 	NEW_FOLDER_LABEL,
 	OpenActiveFileInEmptyWorkspace,
+	openFilePreserveFocusHandler,
 	PASTE_FILE_LABEL,
+	pasteFileHandler,
+	renameHandler,
 	ResetActiveEditorReadonlyInSession,
 	SetActiveEditorReadonlyInSession,
 	SetActiveEditorWriteableInSession,
 	ShowActiveFileInExplorer,
-	TRIGGER_RENAME_LABEL,
 	ToggleActiveEditorReadonlyInSession,
 	ToggleAutoSaveAction,
+	TRIGGER_RENAME_LABEL,
 	UPLOAD_COMMAND_ID,
 	UPLOAD_LABEL,
-	copyFileHandler,
-	cutFileHandler,
-	deleteFileHandler,
-	moveFileToTrashHandler,
-	openFilePreserveFocusHandler,
-	pasteFileHandler,
-	renameHandler,
 } from "./fileActions.js";
 import { newWindowCommand, openWindowCommand } from "./fileCommands.js";
 import {
@@ -122,18 +122,18 @@ import {
 	OpenEditorsSelectedFileOrUntitledContext,
 	REMOVE_ROOT_FOLDER_COMMAND_ID,
 	REMOVE_ROOT_FOLDER_LABEL,
+	ResourceSelectedForCompareContext,
 	REVEAL_IN_EXPLORER_COMMAND_ID,
 	REVERT_FILE_COMMAND_ID,
-	ResourceSelectedForCompareContext,
 	SAVE_ALL_COMMAND_ID,
 	SAVE_ALL_IN_GROUP_COMMAND_ID,
-	SAVE_FILES_COMMAND_ID,
 	SAVE_FILE_AS_COMMAND_ID,
 	SAVE_FILE_AS_LABEL,
 	SAVE_FILE_COMMAND_ID,
 	SAVE_FILE_LABEL,
 	SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID,
 	SAVE_FILE_WITHOUT_FORMATTING_LABEL,
+	SAVE_FILES_COMMAND_ID,
 	SELECT_FOR_COMPARE_COMMAND_ID,
 } from "./fileConstants.js";
 import { IExplorerService } from "./files.js";

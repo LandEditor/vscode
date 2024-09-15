@@ -8,9 +8,9 @@ import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { observableValue } from "../../../../../base/common/observable.js";
 import type { NotebookTextModel } from "../../common/model/notebookTextModel.js";
 import {
+	RENDERER_NOT_AVAILABLE,
 	type ICellOutput,
 	type IOrderedMimeType,
-	RENDERER_NOT_AVAILABLE,
 } from "../../common/notebookCommon.js";
 import type { INotebookService } from "../../common/notebookService.js";
 import type {

@@ -3,10 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import "./output.css";
+
 import { Dimension } from "../../../../base/browser/dom.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
@@ -16,8 +17,8 @@ import { ITextResourceConfigurationService } from "../../../../editor/common/ser
 import * as nls from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import type { ITextEditorOptions } from "../../../../platform/editor/common/editor.js";
@@ -34,8 +35,8 @@ import { computeEditorAriaLabel } from "../../../browser/editor.js";
 import type { IEditorConfiguration } from "../../../browser/parts/editor/textEditor.js";
 import { AbstractTextResourceEditor } from "../../../browser/parts/editor/textResourceEditor.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { ResourceContextKey } from "../../../common/contextkeys.js";
 import type { IEditorOpenContext } from "../../../common/editor.js";
@@ -46,8 +47,8 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import {
 	CONTEXT_IN_OUTPUT,
 	CONTEXT_OUTPUT_SCROLL_LOCK,
-	type IOutputChannel,
 	OUTPUT_VIEW_ID,
+	type IOutputChannel,
 } from "../../../services/output/common/output.js";
 
 export class OutputViewPane extends ViewPane {
@@ -227,16 +228,31 @@ class OutputEditor extends AbstractTextResourceEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
-		@IFileService fileService: IFileService
+		@IFileService fileService: IFileService,
 	) {
-		super(OUTPUT_VIEW_ID, editorGroupService.activeGroup /* TODO@bpasero this is wrong */, telemetryService, instantiationService, storageService, textResourceConfigurationService, themeService, editorGroupService, editorService, fileService);
+		super(
+			OUTPUT_VIEW_ID,
+			editorGroupService.activeGroup /* TODO@bpasero this is wrong */,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceConfigurationService,
+			themeService,
+			editorGroupService,
+			editorService,
+			fileService,
+		);
 
-		this.resourceContext = this._register(instantiationService.createInstance(ResourceContextKey));
+		this.resourceContext = this._register(
+			instantiationService.createInstance(ResourceContextKey),
+		);
 	}
 
 	override getId(): string {

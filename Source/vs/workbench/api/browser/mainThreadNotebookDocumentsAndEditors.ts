@@ -5,17 +5,17 @@
 
 import { diffMaps, diffSets } from "../../../base/common/collections.js";
 import {
+	combinedDisposable,
 	DisposableMap,
 	DisposableStore,
-	combinedDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { URI } from "../../../base/common/uri.js";
 import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
+	getNotebookEditorFromEditorPane,
 	type IActiveNotebookEditor,
 	type INotebookEditor,
-	getNotebookEditorFromEditorPane,
 } from "../../contrib/notebook/browser/notebookBrowser.js";
 import { INotebookEditorService } from "../../contrib/notebook/browser/services/notebookEditorService.js";
 import type { NotebookTextModel } from "../../contrib/notebook/common/model/notebookTextModel.js";
@@ -24,17 +24,17 @@ import { editorGroupToColumn } from "../../services/editor/common/editorGroupCol
 import { IEditorGroupsService } from "../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../services/editor/common/editorService.js";
 import {
-	type IExtHostContext,
 	extHostCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostNotebookShape,
 	type INotebookDocumentsAndEditorsDelta,
 	type INotebookEditorAddData,
 	type INotebookModelAddedData,
-	MainContext,
 } from "../common/extHost.protocol.js";
 import { MainThreadNotebookDocuments } from "./mainThreadNotebookDocuments.js";
 import { NotebookDto } from "./mainThreadNotebookDto.js";
@@ -132,25 +132,63 @@ export class MainThreadNotebooksAndEditors {
 		extHostContext: IExtHostContext,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@INotebookEditorService private readonly _notebookEditorService: INotebookEditorService,
+		@INotebookEditorService
+		private readonly _notebookEditorService: INotebookEditorService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebook);
 
-		this._mainThreadNotebooks = instantiationService.createInstance(MainThreadNotebookDocuments, extHostContext);
-		this._mainThreadEditors = instantiationService.createInstance(MainThreadNotebookEditors, extHostContext);
+		this._mainThreadNotebooks = instantiationService.createInstance(
+			MainThreadNotebookDocuments,
+			extHostContext,
+		);
+		this._mainThreadEditors = instantiationService.createInstance(
+			MainThreadNotebookEditors,
+			extHostContext,
+		);
 
-		extHostContext.set(MainContext.MainThreadNotebookDocuments, this._mainThreadNotebooks);
-		extHostContext.set(MainContext.MainThreadNotebookEditors, this._mainThreadEditors);
+		extHostContext.set(
+			MainContext.MainThreadNotebookDocuments,
+			this._mainThreadNotebooks,
+		);
+		extHostContext.set(
+			MainContext.MainThreadNotebookEditors,
+			this._mainThreadEditors,
+		);
 
-		this._notebookService.onWillAddNotebookDocument(() => this._updateState(), this, this._disposables);
-		this._notebookService.onDidRemoveNotebookDocument(() => this._updateState(), this, this._disposables);
-		this._editorService.onDidActiveEditorChange(() => this._updateState(), this, this._disposables);
-		this._editorService.onDidVisibleEditorsChange(() => this._updateState(), this, this._disposables);
-		this._notebookEditorService.onDidAddNotebookEditor(this._handleEditorAdd, this, this._disposables);
-		this._notebookEditorService.onDidRemoveNotebookEditor(this._handleEditorRemove, this, this._disposables);
+		this._notebookService.onWillAddNotebookDocument(
+			() => this._updateState(),
+			this,
+			this._disposables,
+		);
+		this._notebookService.onDidRemoveNotebookDocument(
+			() => this._updateState(),
+			this,
+			this._disposables,
+		);
+		this._editorService.onDidActiveEditorChange(
+			() => this._updateState(),
+			this,
+			this._disposables,
+		);
+		this._editorService.onDidVisibleEditorsChange(
+			() => this._updateState(),
+			this,
+			this._disposables,
+		);
+		this._notebookEditorService.onDidAddNotebookEditor(
+			this._handleEditorAdd,
+			this,
+			this._disposables,
+		);
+		this._notebookEditorService.onDidRemoveNotebookEditor(
+			this._handleEditorRemove,
+			this,
+			this._disposables,
+		);
 		this._updateState();
 	}
 

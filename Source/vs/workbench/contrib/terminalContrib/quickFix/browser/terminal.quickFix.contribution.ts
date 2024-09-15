@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/terminalQuickFix.css";
+
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import { DisposableStore } from "../../../../../base/common/lifecycle.js";
 import { localize2 } from "../../../../../nls.js";
@@ -73,7 +75,8 @@ class TerminalQuickFixContribution
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 	}

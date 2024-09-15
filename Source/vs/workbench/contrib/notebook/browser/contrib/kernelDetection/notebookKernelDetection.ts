@@ -10,9 +10,9 @@ import {
 } from "../../../../../../base/common/lifecycle.js";
 import { Registry } from "../../../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../../../common/contributions.js";
 import { IExtensionService } from "../../../../../services/extensions/common/extensions.js";
 import { LifecyclePhase } from "../../../../../services/lifecycle/common/lifecycle.js";
@@ -29,9 +29,12 @@ class NotebookKernelDetection
 	);
 
 	constructor(
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotebookLoggingService private readonly _notebookLoggingService: INotebookLoggingService
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotebookLoggingService
+		private readonly _notebookLoggingService: INotebookLoggingService,
 	) {
 		super();
 

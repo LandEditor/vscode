@@ -25,11 +25,14 @@ export class ExtensionsScannerService
 	implements IExtensionsScannerService
 {
 	constructor(
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsProfileScannerService extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsProfileScannerService
+		extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
-		@INativeEnvironmentService private readonly nativeEnvironmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		private readonly nativeEnvironmentService: INativeEnvironmentService,
 		@IProductService productService: IProductService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@IInstantiationService instantiationService: IInstantiationService,
@@ -37,9 +40,22 @@ export class ExtensionsScannerService
 		super(
 			URI.file(nativeEnvironmentService.builtinExtensionsPath),
 			URI.file(nativeEnvironmentService.extensionsPath),
-			joinPath(nativeEnvironmentService.userHome, '.vscode-oss-dev', 'extensions', 'control.json'),
+			joinPath(
+				nativeEnvironmentService.userHome,
+				".vscode-oss-dev",
+				"extensions",
+				"control.json",
+			),
 			userDataProfilesService.defaultProfile,
-			userDataProfilesService, extensionsProfileScannerService, fileService, logService, nativeEnvironmentService, productService, uriIdentityService, instantiationService);
+			userDataProfilesService,
+			extensionsProfileScannerService,
+			fileService,
+			logService,
+			nativeEnvironmentService,
+			productService,
+			uriIdentityService,
+			instantiationService,
+		);
 	}
 
 	protected async getTranslations(language: string): Promise<Translations> {

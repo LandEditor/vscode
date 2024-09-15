@@ -10,18 +10,18 @@ import { compareIgnoreCase } from "../../../base/common/strings.js";
 import { URI } from "../../../base/common/uri.js";
 import {
 	ExtensionIdentifier,
-	type IExtension,
 	TargetPlatform,
 	UNDEFINED_PUBLISHER,
+	type IExtension,
 } from "../../extensions/common/extensions.js";
 import type { IFileService } from "../../files/common/files.js";
 import type { ILogService } from "../../log/common/log.js";
 import { TelemetryTrustedValue } from "../../telemetry/common/telemetryUtils.js";
 import {
+	getTargetPlatform,
 	type IExtensionIdentifier,
 	type IGalleryExtension,
 	type ILocalExtension,
-	getTargetPlatform,
 } from "./extensionManagement.js";
 
 export function areSameExtensions(

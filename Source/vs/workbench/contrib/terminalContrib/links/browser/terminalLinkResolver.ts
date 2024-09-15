@@ -5,11 +5,11 @@
 
 import { mainWindow } from "../../../../../base/browser/window.js";
 import { Schemas } from "../../../../../base/common/network.js";
-import { type IPath, posix, win32 } from "../../../../../base/common/path.js";
+import { posix, win32, type IPath } from "../../../../../base/common/path.js";
 import {
-	OS,
-	OperatingSystem,
 	isWindows,
+	OperatingSystem,
+	OS,
 } from "../../../../../base/common/platform.js";
 import { URI } from "../../../../../base/common/uri.js";
 import { IFileService } from "../../../../../platform/files/common/files.js";
@@ -27,10 +27,7 @@ export class TerminalLinkResolver implements ITerminalLinkResolver {
 	// both local and remote terminals are present
 	private readonly _resolvedLinkCaches: Map<string, LinkCache> = new Map();
 
-	constructor(
-		@IFileService private readonly _fileService: IFileService,
-	) {
-	}
+	constructor(@IFileService private readonly _fileService: IFileService) {}
 
 	async resolveLink(
 		processManager: Pick<

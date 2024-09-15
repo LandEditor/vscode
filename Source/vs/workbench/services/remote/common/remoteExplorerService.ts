@@ -14,8 +14,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import type {
 	TunnelInformation,
@@ -37,10 +37,10 @@ import {
 	type IExtensionPointUser,
 } from "../../extensions/common/extensionsRegistry.js";
 import {
+	TunnelModel,
 	type Attributes,
 	type CandidatePort,
 	type TunnelCloseReason,
-	TunnelModel,
 	type TunnelProperties,
 	type TunnelSource,
 } from "./tunnelModel.js";

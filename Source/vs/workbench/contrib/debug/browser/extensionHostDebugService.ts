@@ -30,10 +30,10 @@ import {
 	isWorkspaceToOpen,
 } from "../../../../platform/window/common/window.js";
 import {
-	IWorkspaceContextService,
 	hasWorkspaceFileExtension,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
+	IWorkspaceContextService,
 	toWorkspaceIdentifier,
 } from "../../../../platform/workspace/common/workspace.js";
 import type {
@@ -58,7 +58,8 @@ class BrowserExtensionHostDebugService
 
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@ILogService logService: ILogService,
 		@IHostService hostService: IHostService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,

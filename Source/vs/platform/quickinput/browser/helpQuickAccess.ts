@@ -34,9 +34,11 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 	);
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService
-	) { }
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+	) {}
 
 	provide(
 		picker: IQuickPick<IHelpQuickAccessPickItem, { useSeparators: true }>,
@@ -99,7 +101,7 @@ export class HelpQuickAccessProvider implements IQuickAccessProvider {
 	): IHelpQuickAccessPickItem[] {
 		return provider.helpEntries.map((helpEntry) => {
 			const prefix = helpEntry.prefix || provider.prefix;
-			const label = prefix || "\u2026" /* ... */;
+			const label = prefix || "\u2026"; /* ... */
 
 			return {
 				prefix,

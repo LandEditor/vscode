@@ -28,9 +28,9 @@ import { CommandsRegistry } from "../../../../platform/commands/common/commands.
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IsWebContext } from "../../../../platform/contextkey/common/contextkeys.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -51,9 +51,9 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import {
 	DisablementReason,
-	type IUpdate,
 	IUpdateService,
 	StateType,
+	type IUpdate,
 	type State as UpdateState,
 } from "../../../../platform/update/common/update.js";
 import {
@@ -66,9 +66,9 @@ import {
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
 	IActivityService,
-	type IBadge,
 	NumberBadge,
 	ProgressBadge,
+	type IBadge,
 } from "../../../services/activity/common/activity.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
 import { IHostService } from "../../../services/host/browser/host.js";
@@ -168,7 +168,8 @@ export class ProductContribution implements IWorkbenchContribution {
 		@IStorageService storageService: IStorageService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotificationService notificationService: INotificationService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IOpenerService openerService: IOpenerService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHostService hostService: IHostService,
@@ -267,23 +268,32 @@ export class UpdateContribution
 
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IUpdateService private readonly updateService: IUpdateService,
 		@IActivityService private readonly activityService: IActivityService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IProductService private readonly productService: IProductService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IHostService private readonly hostService: IHostService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IHostService private readonly hostService: IHostService,
 	) {
 		super();
 		this.state = updateService.state;
-		this.updateStateContextKey = CONTEXT_UPDATE_STATE.bindTo(this.contextKeyService);
-		this.majorMinorUpdateAvailableContextKey = MAJOR_MINOR_UPDATE_AVAILABLE.bindTo(this.contextKeyService);
+		this.updateStateContextKey = CONTEXT_UPDATE_STATE.bindTo(
+			this.contextKeyService,
+		);
+		this.majorMinorUpdateAvailableContextKey =
+			MAJOR_MINOR_UPDATE_AVAILABLE.bindTo(this.contextKeyService);
 
-		this._register(updateService.onStateChange(this.onUpdateStateChange, this));
+		this._register(
+			updateService.onStateChange(this.onUpdateStateChange, this),
+		);
 		this.onUpdateStateChange(this.updateService.state);
 
 		/*
@@ -295,12 +305,21 @@ export class UpdateContribution
 		*/
 
 		const currentVersion = this.productService.commit;
-		const lastKnownVersion = this.storageService.get('update/lastKnownVersion', StorageScope.APPLICATION);
+		const lastKnownVersion = this.storageService.get(
+			"update/lastKnownVersion",
+			StorageScope.APPLICATION,
+		);
 
 		// if current version != stored version, clear both fields
 		if (currentVersion !== lastKnownVersion) {
-			this.storageService.remove('update/lastKnownVersion', StorageScope.APPLICATION);
-			this.storageService.remove('update/updateNotificationTime', StorageScope.APPLICATION);
+			this.storageService.remove(
+				"update/lastKnownVersion",
+				StorageScope.APPLICATION,
+			);
+			this.storageService.remove(
+				"update/updateNotificationTime",
+				StorageScope.APPLICATION,
+			);
 		}
 
 		this.registerGlobalActivityActions();
@@ -759,7 +778,8 @@ export class SwitchProductQualityContribution
 {
 	constructor(
 		@IProductService private readonly productService: IProductService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 

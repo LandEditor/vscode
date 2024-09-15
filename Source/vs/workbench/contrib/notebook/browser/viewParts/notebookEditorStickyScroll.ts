@@ -27,10 +27,10 @@ import type { NotebookSectionArgs } from "../controller/sectionActions.js";
 import { CellFoldingState, type INotebookEditor } from "../notebookBrowser.js";
 import type { NotebookOptionsChangeEvent } from "../notebookOptions.js";
 import type { INotebookCellList } from "../view/notebookRenderingCommon.js";
-import type { OutlineEntry } from "../viewModel/OutlineEntry.js";
 import type { MarkupCellViewModel } from "../viewModel/markupCellViewModel.js";
 import type { NotebookCellOutlineDataSource } from "../viewModel/notebookOutlineDataSource.js";
 import { INotebookCellOutlineDataSourceFactory } from "../viewModel/notebookOutlineDataSourceFactory.js";
+import type { OutlineEntry } from "../viewModel/OutlineEntry.js";
 
 export class NotebookStickyLine extends Disposable {
 	constructor(
@@ -203,24 +203,37 @@ export class NotebookStickyScroll extends Disposable {
 		private readonly notebookEditor: INotebookEditor,
 		private readonly notebookCellList: INotebookCellList,
 		private readonly layoutFn: (delta: number) => void,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		if (this.notebookEditor.notebookOptions.getDisplayOptions().stickyScrollEnabled) {
+		if (
+			this.notebookEditor.notebookOptions.getDisplayOptions()
+				.stickyScrollEnabled
+		) {
 			this.init();
 		}
 
-		this._register(this.notebookEditor.notebookOptions.onDidChangeOptions((e) => {
-			if (e.stickyScrollEnabled || e.stickyScrollMode) {
-				this.updateConfig(e);
-			}
-		}));
+		this._register(
+			this.notebookEditor.notebookOptions.onDidChangeOptions((e) => {
+				if (e.stickyScrollEnabled || e.stickyScrollMode) {
+					this.updateConfig(e);
+				}
+			}),
+		);
 
-		this._register(DOM.addDisposableListener(this.domNode, DOM.EventType.CONTEXT_MENU, async (event: MouseEvent) => {
-			this.onContextMenu(event);
-		}));
+		this._register(
+			DOM.addDisposableListener(
+				this.domNode,
+				DOM.EventType.CONTEXT_MENU,
+				async (event: MouseEvent) => {
+					this.onContextMenu(event);
+				},
+			),
+		);
 	}
 
 	private onContextMenu(e: MouseEvent) {

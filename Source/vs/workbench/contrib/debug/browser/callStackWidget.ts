@@ -12,35 +12,37 @@ import type {
 import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
 import { assertNever } from "../../../../base/common/assert.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ISettableObservable,
 	autorun,
 	autorunWithStore,
 	derived,
 	observableValue,
 	transaction,
+	type IObservable,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
 import { Constants } from "../../../../base/common/uint.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
+
 import "./media/callStackWidget.css";
+
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
-	type EditorContributionCtor,
 	EditorContributionInstantiation,
+	type EditorContributionCtor,
 	type IEditorContributionDescription,
 } from "../../../../editor/browser/editorExtensions.js";
 import { CodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
@@ -82,8 +84,8 @@ import {
 	SIDE_GROUP,
 } from "../../../services/editor/common/editorService.js";
 import {
-	TOP_STACK_FRAME_DECORATION,
 	makeStackFrameColumnDecoration,
+	TOP_STACK_FRAME_DECORATION,
 } from "./callStackEditorContribution.js";
 
 export class CallStackFrame {
@@ -302,7 +304,7 @@ export class CallStackWidget extends Disposable {
 class StackAccessibilityProvider
 	implements IListAccessibilityProvider<ListItem>
 {
-	constructor(@ILabelService private readonly labelService: ILabelService) { }
+	constructor(@ILabelService private readonly labelService: ILabelService) {}
 
 	getAriaLabel(e: ListItem): string | IObservable<string> | null {
 		if (e instanceof SkippedCallFrames) {
@@ -423,8 +425,9 @@ abstract class AbstractFrameRenderer<
 	public abstract templateId: string;
 
 	constructor(
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): T {
 		const elements = makeFrameElements();
@@ -710,7 +713,10 @@ class MissingCodeRenderer
 	public static readonly templateId = "m";
 	public readonly templateId = MissingCodeRenderer.templateId;
 
-	constructor(@IInstantiationService private readonly instantiationService: IInstantiationService) { }
+	constructor(
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IMissingTemplateData {
 		const elements = makeFrameElements();
@@ -821,9 +827,12 @@ class SkippedRenderer implements IListRenderer<ListItem, ISkippedTemplateData> {
 	public readonly templateId = SkippedRenderer.templateId;
 
 	constructor(
-		private readonly loadFrames: (fromItem: SkippedCallFrames) => Promise<void>,
-		@INotificationService private readonly notificationService: INotificationService,
-	) { }
+		private readonly loadFrames: (
+			fromItem: SkippedCallFrames,
+		) => Promise<void>,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): ISkippedTemplateData {
 		const store = new DisposableStore();

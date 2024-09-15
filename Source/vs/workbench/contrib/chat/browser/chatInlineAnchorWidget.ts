@@ -14,8 +14,8 @@ import { ICodeEditorService } from "../../../../editor/browser/services/codeEdit
 import type { IRange } from "../../../../editor/common/core/range.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import {
-	type Location,
 	SymbolKinds,
+	type Location,
 } from "../../../../editor/common/languages.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { getIconClasses } from "../../../../editor/common/services/getIconClasses.js";
@@ -53,7 +53,8 @@ export class InlineAnchorWidget extends Disposable {
 		@IModelService modelService: IModelService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IContextKeyService originalContextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IMenuService menuService: IMenuService,
 	) {
 		super();

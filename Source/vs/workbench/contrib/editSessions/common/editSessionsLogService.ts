@@ -8,12 +8,12 @@ import { localize } from "../../../../nls.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import {
 	AbstractLogger,
-	type ILogger,
 	ILoggerService,
+	type ILogger,
 } from "../../../../platform/log/common/log.js";
 import {
-	type IEditSessionsLogService,
 	editSessionsLogId,
+	type IEditSessionsLogService,
 } from "./editSessions.js";
 
 export class EditSessionsLogService

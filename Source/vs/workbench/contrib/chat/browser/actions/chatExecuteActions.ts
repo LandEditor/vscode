@@ -26,7 +26,7 @@ import {
 	extractAgentAndCommand,
 } from "../../common/chatParserTypes.js";
 import { IChatService } from "../../common/chatService.js";
-import { type IChatWidget, IChatWidgetService } from "../chat.js";
+import { IChatWidgetService, type IChatWidget } from "../chat.js";
 import { CHAT_CATEGORY } from "./chatActions.js";
 
 export interface IVoiceChatExecuteActionContext {

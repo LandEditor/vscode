@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type VSBuffer, decodeBase64 } from "../../../base/common/buffer.js";
+import { decodeBase64, type VSBuffer } from "../../../base/common/buffer.js";
 import { revive } from "../../../base/common/marshalling.js";
 import {
 	IBulkEditService,
@@ -16,15 +16,15 @@ import { IUriIdentityService } from "../../../platform/uriIdentity/common/uriIde
 import { ResourceNotebookCellEdit } from "../../contrib/bulkEdit/browser/bulkCellEdits.js";
 import { CellEditType } from "../../contrib/notebook/common/notebookCommon.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import type { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
+	MainContext,
 	type IWorkspaceCellEditDto,
 	type IWorkspaceEditDto,
 	type IWorkspaceFileEditDto,
-	MainContext,
 	type MainThreadBulkEditsShape,
 } from "../common/extHost.protocol.js";
 
@@ -34,8 +34,9 @@ export class MainThreadBulkEdits implements MainThreadBulkEditsShape {
 		_extHostContext: IExtHostContext,
 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
 		@ILogService private readonly _logService: ILogService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService
-	) { }
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
+	) {}
 
 	dispose(): void {}
 

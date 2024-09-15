@@ -7,8 +7,8 @@ import { Action } from "../../../base/common/actions.js";
 import type { VSBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	type SerializedError,
 	transformErrorFromSerialization,
+	type SerializedError,
 } from "../../../base/common/errors.js";
 import { FileAccess } from "../../../base/common/network.js";
 import Severity from "../../../base/common/severity.js";
@@ -23,27 +23,22 @@ import type {
 } from "../../../platform/extensions/common/extensions.js";
 import { INotificationService } from "../../../platform/notification/common/notification.js";
 import {
-	type IRemoteConnectionData,
 	ManagedRemoteConnection,
-	type RemoteConnection,
 	RemoteConnectionType,
-	type ResolvedAuthority,
 	WebSocketRemoteConnection,
+	type IRemoteConnectionData,
+	type RemoteConnection,
+	type ResolvedAuthority,
 } from "../../../platform/remote/common/remoteAuthorityResolver.js";
 import {
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../../contrib/extensions/common/extensions.js";
 import { IWorkbenchEnvironmentService } from "../../services/environment/common/environmentService.js";
 import {
 	EnablementState,
 	IWorkbenchExtensionEnablementService,
 } from "../../services/extensionManagement/common/extensionManagement.js";
-import {
-	type IExtHostContext,
-	type IInternalExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { ExtensionHostKind } from "../../services/extensions/common/extensionHostKind.js";
 import type { IExtensionDescriptionDelta } from "../../services/extensions/common/extensionHostProtocol.js";
 import type {
@@ -51,19 +46,24 @@ import type {
 	IResolveAuthorityResult,
 } from "../../services/extensions/common/extensionHostProxy.js";
 import {
+	IExtensionService,
 	type ActivationKind,
 	type ExtensionActivationReason,
-	IExtensionService,
 	type IInternalExtensionService,
 	type MissingExtensionDependency,
 } from "../../services/extensions/common/extensions.js";
+import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+	type IInternalExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
 import type { Dto } from "../../services/extensions/common/proxyIdentifier.js";
 import { IHostService } from "../../services/host/browser/host.js";
 import { ITimerService } from "../../services/timer/browser/timerService.js";
 import {
 	ExtHostContext,
-	type ExtHostExtensionServiceShape,
 	MainContext,
+	type ExtHostExtensionServiceShape,
 	type MainThreadExtensionServiceShape,
 } from "../common/extHost.protocol.js";
 
@@ -76,23 +76,33 @@ export class MainThreadExtensionService
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IExtensionsWorkbenchService private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IExtensionsWorkbenchService
+		private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IHostService private readonly _hostService: IHostService,
-		@IWorkbenchExtensionEnablementService private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@ITimerService private readonly _timerService: ITimerService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		protected readonly _environmentService: IWorkbenchEnvironmentService,
 	) {
 		this._extensionHostKind = extHostContext.extensionHostKind;
 
-		const internalExtHostContext = (<IInternalExtHostContext>extHostContext);
-		this._internalExtensionService = internalExtHostContext.internalExtensionService;
+		const internalExtHostContext = <IInternalExtHostContext>extHostContext;
+		this._internalExtensionService =
+			internalExtHostContext.internalExtensionService;
 		internalExtHostContext._setExtensionHostProxy(
-			new ExtensionHostProxy(extHostContext.getProxy(ExtHostContext.ExtHostExtensionService))
+			new ExtensionHostProxy(
+				extHostContext.getProxy(ExtHostContext.ExtHostExtensionService),
+			),
 		);
-		internalExtHostContext._setAllMainProxyIdentifiers(Object.keys(MainContext).map((key) => (<any>MainContext)[key]));
+		internalExtHostContext._setAllMainProxyIdentifiers(
+			Object.keys(MainContext).map((key) => (<any>MainContext)[key]),
+		);
 	}
 
 	public dispose(): void {}

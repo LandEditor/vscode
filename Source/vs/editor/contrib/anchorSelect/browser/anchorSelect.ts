@@ -7,21 +7,23 @@ import { alert } from "../../../../base/browser/ui/aria/aria.js";
 import { MarkdownString } from "../../../../base/common/htmlContent.js";
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
+
 import "./anchorSelect.css";
+
 import { localize } from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { Selection } from "../../../common/core/selection.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";

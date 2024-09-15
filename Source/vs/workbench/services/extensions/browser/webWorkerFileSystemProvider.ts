@@ -11,6 +11,7 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
+	createFileSystemProviderError,
 	FileSystemProviderCapabilities,
 	FileSystemProviderErrorCode,
 	FileType,
@@ -19,7 +20,6 @@ import {
 	type IFileSystemProviderWithFileReadWriteCapability,
 	type IFileWriteOptions,
 	type IStat,
-	createFileSystemProviderError,
 } from "../../../../platform/files/common/files.js";
 
 export class FetchFileSystemProvider

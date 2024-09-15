@@ -10,14 +10,14 @@ import { Iterable } from "../../../../base/common/iterator.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
@@ -106,17 +106,21 @@ export class LanguageModelToolsService
 	private _toolContextKeys = new Set<string>();
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super();
 
-		this._register(this._contextKeyService.onDidChangeContext(e => {
-			if (e.affectsSome(this._toolContextKeys)) {
-				// Not worth it to compute a delta here unless we have many tools changing often
-				this._onDidChangeToolsScheduler.schedule();
-			}
-		}));
+		this._register(
+			this._contextKeyService.onDidChangeContext((e) => {
+				if (e.affectsSome(this._toolContextKeys)) {
+					// Not worth it to compute a delta here unless we have many tools changing often
+					this._onDidChangeToolsScheduler.schedule();
+				}
+			}),
+		);
 	}
 
 	registerToolData(toolData: IToolData): IDisposable {

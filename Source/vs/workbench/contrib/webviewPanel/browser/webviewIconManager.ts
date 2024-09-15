@@ -23,15 +23,19 @@ export class WebviewIconManager extends Disposable {
 	private _styleElement: HTMLStyleElement | undefined;
 
 	constructor(
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 	) {
 		super();
-		this._register(this._configService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('workbench.iconTheme')) {
-				this.updateStyleSheet();
-			}
-		}));
+		this._register(
+			this._configService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("workbench.iconTheme")) {
+					this.updateStyleSheet();
+				}
+			}),
+		);
 	}
 	override dispose() {
 		super.dispose();

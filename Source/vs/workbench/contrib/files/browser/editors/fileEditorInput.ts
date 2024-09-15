@@ -7,8 +7,8 @@ import { Event } from "../../../../../base/common/event.js";
 import type { IMarkdownString } from "../../../../../base/common/htmlContent.js";
 import {
 	DisposableStore,
-	type IReference,
 	dispose,
+	type IReference,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { isEqual } from "../../../../../base/common/resources.js";
@@ -23,6 +23,8 @@ import { ILabelService } from "../../../../../platform/label/common/label.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
 	EditorInputCapabilities,
+	findViewStateForEditor,
+	isResourceEditorInput,
 	type GroupIdentifier,
 	type IEditorDescriptor,
 	type IEditorPane,
@@ -32,8 +34,6 @@ import {
 	type IUntypedEditorInput,
 	type IUntypedFileEditorInput,
 	type Verbosity,
-	findViewStateForEditor,
-	isResourceEditorInput,
 } from "../../../../common/editor.js";
 import { BinaryEditorModel } from "../../../../common/editor/binaryEditorModel.js";
 import type {
@@ -46,13 +46,13 @@ import { IEditorService } from "../../../../services/editor/common/editorService
 import { IFilesConfigurationService } from "../../../../services/filesConfiguration/common/filesConfigurationService.js";
 import { IPathService } from "../../../../services/path/common/pathService.js";
 import {
-	type EncodingMode,
-	type ITextFileEditorModel,
 	ITextFileService,
 	TextFileEditorModelState,
-	type TextFileOperationError,
 	TextFileOperationResult,
 	TextFileResolveReason,
+	type EncodingMode,
+	type ITextFileEditorModel,
+	type TextFileOperationError,
 } from "../../../../services/textfile/common/textfiles.js";
 import {
 	BINARY_FILE_EDITOR_ID,
@@ -126,18 +126,32 @@ export class FileEditorInput
 		preferredEncoding: string | undefined,
 		preferredLanguageId: string | undefined,
 		preferredContents: string | undefined,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextFileService textFileService: ITextFileService,
 		@ITextModelService private readonly textModelService: ITextModelService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@IEditorService editorService: IEditorService,
 		@IPathService private readonly pathService: IPathService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super(resource, preferredResource, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			resource,
+			preferredResource,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
 
 		this.model = this.textFileService.files.get(resource);
 
@@ -157,12 +171,16 @@ export class FileEditorInput
 			this.setPreferredLanguageId(preferredLanguageId);
 		}
 
-		if (typeof preferredContents === 'string') {
+		if (typeof preferredContents === "string") {
 			this.setPreferredContents(preferredContents);
 		}
 
 		// Attach to model that matches our resource once created
-		this._register(this.textFileService.files.onDidCreate(model => this.onDidCreateTextFileModel(model)));
+		this._register(
+			this.textFileService.files.onDidCreate((model) =>
+				this.onDidCreateTextFileModel(model),
+			),
+		);
 
 		// If a file model already exists, make sure to wire it in
 		if (this.model) {

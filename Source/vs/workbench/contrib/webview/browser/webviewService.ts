@@ -26,10 +26,12 @@ export class WebviewService extends Disposable implements IWebviewService {
 	protected readonly _webviewThemeDataProvider: WebviewThemeDataProvider;
 
 	constructor(
-		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected readonly _instantiationService: IInstantiationService,
 	) {
 		super();
-		this._webviewThemeDataProvider = this._instantiationService.createInstance(WebviewThemeDataProvider);
+		this._webviewThemeDataProvider =
+			this._instantiationService.createInstance(WebviewThemeDataProvider);
 	}
 
 	private _activeWebview?: IWebview;

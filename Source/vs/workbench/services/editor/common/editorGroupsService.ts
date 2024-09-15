@@ -20,11 +20,12 @@ import type {
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
 import {
-	type IInstantiationService,
 	createDecorator,
+	type IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import type { IRectangle } from "../../../../platform/window/common/window.js";
 import {
+	isEditorInput,
 	type CloseDirection,
 	type EditorInputWithOptions,
 	type EditorsOrder,
@@ -40,7 +41,6 @@ import {
 	type IToolbarActions,
 	type IUntypedEditorInput,
 	type IVisibleEditorPane,
-	isEditorInput,
 } from "../../../common/editor.js";
 import type { IGroupModelChangeEvent } from "../../../common/editor/editorGroupModel.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";

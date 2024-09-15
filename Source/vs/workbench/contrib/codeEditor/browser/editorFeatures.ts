@@ -12,9 +12,9 @@ import { ICodeEditorService } from "../../../../editor/browser/services/codeEdit
 import { getEditorFeatures } from "../../../../editor/common/editorFeatures.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 
 class EditorFeaturesInstantiator
@@ -27,13 +27,21 @@ class EditorFeaturesInstantiator
 
 	constructor(
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._register(codeEditorService.onWillCreateCodeEditor(() => this._instantiate()));
-		this._register(codeEditorService.onWillCreateDiffEditor(() => this._instantiate()));
-		if (codeEditorService.listCodeEditors().length > 0 || codeEditorService.listDiffEditors().length > 0) {
+		this._register(
+			codeEditorService.onWillCreateCodeEditor(() => this._instantiate()),
+		);
+		this._register(
+			codeEditorService.onWillCreateDiffEditor(() => this._instantiate()),
+		);
+		if (
+			codeEditorService.listCodeEditors().length > 0 ||
+			codeEditorService.listDiffEditors().length > 0
+		) {
 			this._instantiate();
 		}
 	}

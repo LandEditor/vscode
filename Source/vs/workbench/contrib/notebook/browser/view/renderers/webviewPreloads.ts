@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as rendererApi from "vscode-notebook-renderer";
+
 import type { Event } from "../../../../../../base/common/event.js";
 import type { IDisposable } from "../../../../../../base/common/lifecycle.js";
 import type { NotebookCellMetadata } from "../../../common/notebookCommon.js";

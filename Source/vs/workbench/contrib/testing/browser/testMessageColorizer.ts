@@ -6,15 +6,17 @@
 import { renderStringAsPlaintext } from "../../../../base/browser/markdownRenderer.js";
 import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	GraphemeIterator,
 	forAnsiStringParts,
+	GraphemeIterator,
 	removeAnsiEscapeCodes,
 } from "../../../../base/common/strings.js";
+
 import "./media/testMessageColorizer.css";
+
 import type { CodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
 import { Position } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";

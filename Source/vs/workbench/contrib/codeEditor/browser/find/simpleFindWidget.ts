@@ -4,15 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./simpleFindWidget.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { status } from "../../../../../base/browser/ui/aria/aria.js";
 import type { FindInput } from "../../../../../base/browser/ui/findinput/findInput.js";
 import type { IMessage as InputBoxMessage } from "../../../../../base/browser/ui/inputbox/inputBox.js";
 import {
-	type ISashEvent,
-	type IVerticalSashLayoutProvider,
 	Orientation,
 	Sash,
+	type ISashEvent,
+	type IVerticalSashLayoutProvider,
 } from "../../../../../base/browser/ui/sash/sash.js";
 import { Widget } from "../../../../../base/browser/ui/widget.js";
 import { Delayer } from "../../../../../base/common/async.js";
@@ -23,11 +24,11 @@ import {
 	type INewFindReplaceState,
 } from "../../../../../editor/contrib/find/browser/findState.js";
 import {
+	findNextMatchIcon,
+	findPreviousMatchIcon,
 	NLS_MATCHES_LOCATION,
 	NLS_NO_RESULTS,
 	SimpleButton,
-	findNextMatchIcon,
-	findPreviousMatchIcon,
 } from "../../../../../editor/contrib/find/browser/findWidget.js";
 import * as nls from "../../../../../nls.js";
 import type { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";

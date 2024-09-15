@@ -11,10 +11,10 @@ import { Platform } from "../../../base/common/platform.js";
 import type { URI } from "../../../base/common/uri.js";
 import { localize2 } from "../../../nls.js";
 import {
+	TargetPlatform,
 	type ExtensionType,
 	type IExtension,
 	type IExtensionManifest,
-	TargetPlatform,
 } from "../../extensions/common/extensions.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 

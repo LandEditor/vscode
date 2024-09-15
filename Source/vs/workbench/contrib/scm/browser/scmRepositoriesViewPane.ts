@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/scm.css";
+
 import { $, append } from "../../../../base/browser/dom.js";
 import type {
 	IListContextMenuEvent,
@@ -27,11 +28,11 @@ import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { IViewDescriptorService } from "../../../common/views.js";
-import { type ISCMRepository, ISCMViewService } from "../common/scm.js";
+import { ISCMViewService, type ISCMRepository } from "../common/scm.js";
 import {
 	RepositoryActionRunner,
 	RepositoryRenderer,
@@ -67,9 +68,21 @@ export class SCMRepositoriesViewPane extends ViewPane {
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IHoverService hoverService: IHoverService
+		@IHoverService hoverService: IHoverService,
 	) {
-		super({ ...options, titleMenuId: MenuId.SCMSourceControlTitle }, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			{ ...options, titleMenuId: MenuId.SCMSourceControlTitle },
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {

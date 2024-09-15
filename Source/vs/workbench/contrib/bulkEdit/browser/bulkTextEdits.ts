@@ -5,9 +5,9 @@
 
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
+	dispose,
 	type IDisposable,
 	type IReference,
-	dispose,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -30,8 +30,8 @@ import {
 import { IEditorWorkerService } from "../../../../editor/common/services/editorWorker.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { SnippetController2 } from "../../../../editor/contrib/snippet/browser/snippetController2.js";
 import { SnippetParser } from "../../../../editor/contrib/snippet/browser/snippetParser.js";
@@ -239,12 +239,13 @@ export class BulkTextEdits {
 		private readonly _progress: IProgress<void>,
 		private readonly _token: CancellationToken,
 		edits: ResourceTextEdit[],
-		@IEditorWorkerService private readonly _editorWorker: IEditorWorkerService,
+		@IEditorWorkerService
+		private readonly _editorWorker: IEditorWorkerService,
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
-		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
+		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService,
 	) {
-
 		for (const edit of edits) {
 			let array = this._edits.get(edit.resource);
 			if (!array) {

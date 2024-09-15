@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, toAction } from "../../../../base/common/actions.js";
+import { toAction, type IAction } from "../../../../base/common/actions.js";
 import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import { isCancellationError } from "../../../../base/common/errors.js";
 import { hash } from "../../../../base/common/hash.js";
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { isWeb, isWindows } from "../../../../base/common/platform.js";
@@ -28,14 +28,14 @@ import * as nls from "../../../../nls.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import {
 	CommandsRegistry,
-	type ICommandHandler,
 	ICommandService,
+	type ICommandHandler,
 } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IFileDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import {
@@ -49,8 +49,8 @@ import {
 	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { IListService } from "../../../../platform/list/browser/listService.js";
@@ -60,10 +60,10 @@ import {
 } from "../../../../platform/notification/common/notification.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	isWorkspaceToOpen,
 	type IOpenEmptyWindowOptions,
 	type IOpenWindowOptions,
 	type IWindowOpenable,
-	isWorkspaceToOpen,
 } from "../../../../platform/window/common/window.js";
 import {
 	IWorkspaceContextService,
@@ -75,22 +75,22 @@ import {
 	EditorInputCapabilities,
 	EditorResourceAccessor,
 	EditorsOrder,
-	type IEditorCommandsContext,
-	type IEditorIdentifier,
 	SaveReason,
 	SideBySideEditor,
+	type IEditorCommandsContext,
+	type IEditorIdentifier,
 } from "../../../common/editor.js";
 import { SideBySideEditorInput } from "../../../common/editor/sideBySideEditorInput.js";
 import { ViewContainerLocation } from "../../../common/views.js";
 import {
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import {
 	IEditorService,
-	type ISaveEditorsOptions,
 	SIDE_GROUP,
+	type ISaveEditorsOptions,
 } from "../../../services/editor/common/editorService.js";
 import { IHostService } from "../../../services/host/browser/host.js";
 import { IPaneCompositePartService } from "../../../services/panecomposite/browser/panecomposite.js";
@@ -105,8 +105,8 @@ import {
 	ExplorerFolderContext,
 	FilesExplorerFocusCondition,
 	TextFileContentProvider,
-	VIEWLET_ID,
 	VIEW_ID,
+	VIEWLET_ID,
 } from "../common/files.js";
 import type { ExplorerViewPaneContainer } from "./explorerViewlet.js";
 import {
@@ -125,22 +125,22 @@ import {
 	OPEN_WITH_EXPLORER_COMMAND_ID,
 	PREVIOUS_COMPRESSED_FOLDER,
 	REMOVE_ROOT_FOLDER_COMMAND_ID,
+	ResourceSelectedForCompareContext,
 	REVEAL_IN_EXPLORER_COMMAND_ID,
 	REVERT_FILE_COMMAND_ID,
-	ResourceSelectedForCompareContext,
 	SAVE_ALL_COMMAND_ID,
 	SAVE_ALL_IN_GROUP_COMMAND_ID,
-	SAVE_FILES_COMMAND_ID,
 	SAVE_FILE_AS_COMMAND_ID,
 	SAVE_FILE_COMMAND_ID,
 	SAVE_FILE_WITHOUT_FORMATTING_COMMAND_ID,
+	SAVE_FILES_COMMAND_ID,
 	SELECT_FOR_COMPARE_COMMAND_ID,
 } from "./fileConstants.js";
 import {
-	IExplorerService,
 	getMultiSelectedResources,
 	getOpenEditorsViewMultiSelection,
 	getResourceForCommand,
+	IExplorerService,
 } from "./files.js";
 import type { ExplorerView } from "./views/explorerView.js";
 import { OpenEditorsView } from "./views/openEditorsView.js";

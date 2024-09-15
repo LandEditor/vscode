@@ -6,6 +6,7 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import { RunOnceScheduler } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import {
@@ -33,8 +34,16 @@ import { TestId, TestPosition } from "../../contrib/testing/common/testId.js";
 import { InvalidTestItemError } from "../../contrib/testing/common/testItemCollection.js";
 import {
 	AbstractIncrementalTestCollection,
+	isStartControllerTests,
+	TestControllerCapability,
+	TestResultState,
+	TestRunProfileBitset,
+	TestsDiffOp,
 	type CoverageDetails,
 	type ICallProfileRunHandler,
+	type IncrementalChangeCollector,
+	type IncrementalTestCollectionItem,
+	type InternalTestItem,
 	type ISerializedTestResults,
 	type IStartControllerTests,
 	type IStartControllerTestsResult,
@@ -43,23 +52,15 @@ import {
 	type ITestItemContext,
 	type ITestMessageMenuArgs,
 	type ITestRunProfile,
-	type IncrementalChangeCollector,
-	type IncrementalTestCollectionItem,
-	type InternalTestItem,
-	TestControllerCapability,
 	type TestMessageFollowupRequest,
 	type TestMessageFollowupResponse,
-	TestResultState,
-	TestRunProfileBitset,
 	type TestsDiff,
-	TestsDiffOp,
-	isStartControllerTests,
 } from "../../contrib/testing/common/testTypes.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostTestingShape,
 	type ILocationDto,
-	MainContext,
 	type MainThreadTestingShape,
 } from "./extHost.protocol.js";
 import { IExtHostCommands } from "./extHostCommands.js";
@@ -128,7 +129,8 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		@IExtHostRpcService rpc: IExtHostRpcService,
 		@ILogService private readonly logService: ILogService,
 		@IExtHostCommands private readonly commands: IExtHostCommands,
-		@IExtHostDocumentsAndEditors private readonly editors: IExtHostDocumentsAndEditors,
+		@IExtHostDocumentsAndEditors
+		private readonly editors: IExtHostDocumentsAndEditors,
 	) {
 		super();
 		this.proxy = rpc.getProxy(MainContext.MainThreadTesting);
@@ -136,45 +138,68 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 		this.runTracker = new TestRunCoordinator(this.proxy, logService);
 
 		commands.registerArgumentProcessor({
-			processArgument: arg => {
+			processArgument: (arg) => {
 				switch (arg?.$mid) {
 					case MarshalledId.TestItemContext: {
 						const cast = arg as ITestItemContext;
-						const targetTest = cast.tests[cast.tests.length - 1].item.extId;
-						const controller = this.controllers.get(TestId.root(targetTest));
-						return controller?.collection.tree.get(targetTest)?.actual ?? toItemFromContext(arg);
+						const targetTest =
+							cast.tests[cast.tests.length - 1].item.extId;
+						const controller = this.controllers.get(
+							TestId.root(targetTest),
+						);
+						return (
+							controller?.collection.tree.get(targetTest)
+								?.actual ?? toItemFromContext(arg)
+						);
 					}
 					case MarshalledId.TestMessageMenuArgs: {
 						const { test, message } = arg as ITestMessageMenuArgs;
 						const extId = test.item.extId;
 						return {
-							test: this.controllers.get(TestId.root(extId))?.collection.tree.get(extId)?.actual
-								?? toItemFromContext({ $mid: MarshalledId.TestItemContext, tests: [test] }),
-							message: Convert.TestMessage.to(message as ITestErrorMessage.Serialized),
+							test:
+								this.controllers
+									.get(TestId.root(extId))
+									?.collection.tree.get(extId)?.actual ??
+								toItemFromContext({
+									$mid: MarshalledId.TestItemContext,
+									tests: [test],
+								}),
+							message: Convert.TestMessage.to(
+								message as ITestErrorMessage.Serialized,
+							),
 						};
 					}
-					default: return arg;
+					default:
+						return arg;
 				}
-			}
+			},
 		});
 
-		commands.registerCommand(false, 'testing.getExplorerSelection', async (): Promise<any> => {
-			const inner = await commands.executeCommand<{
-				include: string[];
-				exclude: string[];
-			}>(TestCommandId.GetExplorerSelection);
+		commands.registerCommand(
+			false,
+			"testing.getExplorerSelection",
+			async (): Promise<any> => {
+				const inner = await commands.executeCommand<{
+					include: string[];
+					exclude: string[];
+				}>(TestCommandId.GetExplorerSelection);
 
-			const lookup = (i: string) => {
-				const controller = this.controllers.get(TestId.root(i));
-				if (!controller) { return undefined; }
-				return TestId.isRoot(i) ? controller.controller : controller.collection.tree.get(i)?.actual;
-			};
+				const lookup = (i: string) => {
+					const controller = this.controllers.get(TestId.root(i));
+					if (!controller) {
+						return undefined;
+					}
+					return TestId.isRoot(i)
+						? controller.controller
+						: controller.collection.tree.get(i)?.actual;
+				};
 
-			return {
-				include: inner?.include.map(lookup).filter(isDefined) || [],
-				exclude: inner?.exclude.map(lookup).filter(isDefined) || [],
-			};
-		});
+				return {
+					include: inner?.include.map(lookup).filter(isDefined) || [],
+					exclude: inner?.exclude.map(lookup).filter(isDefined) || [],
+				};
+			},
+		);
 	}
 
 	//#region public API
@@ -234,9 +259,11 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 			get refreshHandler() {
 				return refreshHandler;
 			},
-			set refreshHandler(value:
-				| ((token: CancellationToken) => Thenable<void> | void)
-				| undefined) {
+			set refreshHandler(
+				value:
+					| ((token: CancellationToken) => Thenable<void> | void)
+					| undefined,
+			) {
 				refreshHandler = value;
 				proxy.$updateController(controllerId, {
 					capabilities: getCapability(),
@@ -248,9 +275,9 @@ export class ExtHostTesting extends Disposable implements ExtHostTestingShape {
 			get relatedCodeProvider() {
 				return info.relatedCodeProvider;
 			},
-			set relatedCodeProvider(value:
-				| vscode.TestRelatedCodeProvider
-				| undefined) {
+			set relatedCodeProvider(
+				value: vscode.TestRelatedCodeProvider | undefined,
+			) {
 				checkProposedApiEnabled(extension, "testRelatedCode");
 				info.relatedCodeProvider = value;
 				proxy.$updateController(controllerId, {

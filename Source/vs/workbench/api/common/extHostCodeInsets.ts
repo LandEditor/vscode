@@ -4,13 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Emitter } from "../../../base/common/event.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
-	type WebviewRemoteInfo,
 	asWebviewUri,
 	webviewGenericCspSource,
+	type WebviewRemoteInfo,
 } from "../../contrib/webview/common/webview.js";
 import type {
 	ExtHostEditorInsetsShape,

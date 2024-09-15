@@ -15,8 +15,8 @@ import type { URI } from "../../../../../base/common/uri.js";
 import type { MarkdownRenderer } from "../../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { Range } from "../../../../../editor/common/core/range.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../../editor/common/services/resolverService.js";
 import { MenuId } from "../../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
@@ -34,11 +34,11 @@ import { ChatMarkdownDecorationsRenderer } from "../chatMarkdownDecorationsRende
 import type { ChatEditorOptions } from "../chatOptions.js";
 import {
 	CodeBlockPart,
-	type ICodeBlockData,
 	localFileLanguageId,
 	parseLocalFileData,
+	type ICodeBlockData,
 } from "../codeBlockPart.js";
-import { type IDisposableReference, ResourcePool } from "./chatCollections.js";
+import { ResourcePool, type IDisposableReference } from "./chatCollections.js";
 import type {
 	IChatContentPart,
 	IChatContentPartRenderContext,
@@ -75,67 +75,112 @@ export class ChatMarkdownContentPart
 		super();
 
 		const element = context.element;
-		const markdownDecorationsRenderer = instantiationService.createInstance(ChatMarkdownDecorationsRenderer);
+		const markdownDecorationsRenderer = instantiationService.createInstance(
+			ChatMarkdownDecorationsRenderer,
+		);
 
 		// We release editors in order so that it's more likely that the same editor will be assigned if this element is re-rendered right away, like it often is during progressive rendering
 		const orderedDisposablesList: IDisposable[] = [];
 		let codeBlockIndex = codeBlockStartIndex;
-		const result = this._register(renderer.render(markdown, {
-			fillInIncompleteTokens,
-			codeBlockRendererSync: (languageId, text) => {
-				const index = codeBlockIndex++;
-				let textModel: Promise<IResolvedTextEditorModel>;
-				let range: Range | undefined;
-				let vulns: readonly IMarkdownVulnerability[] | undefined;
-				let codemapperUri: URI | undefined;
-				if (equalsIgnoreCase(languageId, localFileLanguageId)) {
-					try {
-						const parsedBody = parseLocalFileData(text);
-						range = parsedBody.range && Range.lift(parsedBody.range);
-						textModel = this.textModelService.createModelReference(parsedBody.uri).then(ref => ref.object);
-					} catch (e) {
-						return $('div');
+		const result = this._register(
+			renderer.render(markdown, {
+				fillInIncompleteTokens,
+				codeBlockRendererSync: (languageId, text) => {
+					const index = codeBlockIndex++;
+					let textModel: Promise<IResolvedTextEditorModel>;
+					let range: Range | undefined;
+					let vulns: readonly IMarkdownVulnerability[] | undefined;
+					let codemapperUri: URI | undefined;
+					if (equalsIgnoreCase(languageId, localFileLanguageId)) {
+						try {
+							const parsedBody = parseLocalFileData(text);
+							range =
+								parsedBody.range &&
+								Range.lift(parsedBody.range);
+							textModel = this.textModelService
+								.createModelReference(parsedBody.uri)
+								.then((ref) => ref.object);
+						} catch (e) {
+							return $("div");
+						}
+					} else {
+						if (!isRequestVM(element) && !isResponseVM(element)) {
+							console.error(
+								"Trying to render code block in welcome",
+								element.id,
+								index,
+							);
+							return $("div");
+						}
+
+						const sessionId =
+							isResponseVM(element) || isRequestVM(element)
+								? element.sessionId
+								: "";
+						const modelEntry =
+							this.codeBlockModelCollection.getOrCreate(
+								sessionId,
+								element,
+								index,
+							);
+						vulns = modelEntry.vulns;
+						codemapperUri = modelEntry.codemapperUri;
+						textModel = modelEntry.model;
 					}
-				} else {
-					if (!isRequestVM(element) && !isResponseVM(element)) {
-						console.error('Trying to render code block in welcome', element.id, index);
-						return $('div');
-					}
 
-					const sessionId = isResponseVM(element) || isRequestVM(element) ? element.sessionId : '';
-					const modelEntry = this.codeBlockModelCollection.getOrCreate(sessionId, element, index);
-					vulns = modelEntry.vulns;
-					codemapperUri = modelEntry.codemapperUri;
-					textModel = modelEntry.model;
-				}
+					const hideToolbar =
+						isResponseVM(element) &&
+						element.errorDetails?.responseIsFiltered;
+					const ref = this.renderCodeBlock(
+						{
+							languageId,
+							textModel,
+							codeBlockIndex: index,
+							element,
+							range,
+							hideToolbar,
+							parentContextKeyService: contextKeyService,
+							vulns,
+							codemapperUri,
+						},
+						text,
+						currentWidth,
+						rendererOptions.editableCodeBlock,
+					);
+					this.allRefs.push(ref);
 
-				const hideToolbar = isResponseVM(element) && element.errorDetails?.responseIsFiltered;
-				const ref = this.renderCodeBlock({ languageId, textModel, codeBlockIndex: index, element, range, hideToolbar, parentContextKeyService: contextKeyService, vulns, codemapperUri }, text, currentWidth, rendererOptions.editableCodeBlock);
-				this.allRefs.push(ref);
+					// Attach this after updating text/layout of the editor, so it should only be fired when the size updates later (horizontal scrollbar, wrapping)
+					// not during a renderElement OR a progressive render (when we will be firing this event anyway at the end of the render)
+					this._register(
+						ref.object.onDidChangeContentHeight(() =>
+							this._onDidChangeHeight.fire(),
+						),
+					);
 
-				// Attach this after updating text/layout of the editor, so it should only be fired when the size updates later (horizontal scrollbar, wrapping)
-				// not during a renderElement OR a progressive render (when we will be firing this event anyway at the end of the render)
-				this._register(ref.object.onDidChangeContentHeight(() => this._onDidChangeHeight.fire()));
+					const info: IChatCodeBlockInfo = {
+						codeBlockIndex: index,
+						element,
+						focus() {
+							ref.object.focus();
+						},
+						uri: ref.object.uri,
+						codemapperUri: undefined,
+					};
+					this.codeblocks.push(info);
+					orderedDisposablesList.push(ref);
+					return ref.object.element;
+				},
+				asyncRenderCallback: () => this._onDidChangeHeight.fire(),
+			}),
+		);
 
-				const info: IChatCodeBlockInfo = {
-					codeBlockIndex: index,
-					element,
-					focus() {
-						ref.object.focus();
-					},
-					uri: ref.object.uri,
-					codemapperUri: undefined
-				};
-				this.codeblocks.push(info);
-				orderedDisposablesList.push(ref);
-				return ref.object.element;
-			},
-			asyncRenderCallback: () => this._onDidChangeHeight.fire(),
-		}));
+		this._register(
+			markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(
+				result.element,
+			),
+		);
 
-		this._register(markdownDecorationsRenderer.walkTreeAndAnnotateReferenceLinks(result.element));
-
-		orderedDisposablesList.reverse().forEach(d => this._register(d));
+		orderedDisposablesList.reverse().forEach((d) => this._register(d));
 		this.domNode = result.element;
 	}
 

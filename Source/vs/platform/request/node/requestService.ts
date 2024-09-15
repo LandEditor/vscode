@@ -7,6 +7,7 @@ import type * as http from "http";
 import type * as https from "https";
 import { parse as parseUrl } from "url";
 import { createGunzip } from "zlib";
+
 import { Promises } from "../../../base/common/async.js";
 import { streamToBufferReadableStream } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
@@ -30,7 +31,7 @@ import {
 	type Credentials,
 	type IRequestService,
 } from "../common/request.js";
-import { type Agent, getProxyAgent } from "./proxy.js";
+import { getProxyAgent, type Agent } from "./proxy.js";
 
 interface IHTTPConfiguration {
 	proxy?: string;
@@ -68,17 +69,21 @@ export class RequestService
 	private shellEnvErrorLogged?: boolean;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
 		@ILogService logService: ILogService,
 	) {
 		super(logService);
 		this.configure();
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('http')) {
-				this.configure();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("http")) {
+					this.configure();
+				}
+			}),
+		);
 	}
 
 	private configure() {

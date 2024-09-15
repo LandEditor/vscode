@@ -12,9 +12,9 @@ import { assertType } from "../../../../base/common/types.js";
 import { localize } from "../../../../nls.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -30,8 +30,8 @@ import type { Range } from "../../../common/core/range.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import {
-	type CompletionItem,
 	CompletionItemKind,
+	type CompletionItem,
 	type CompletionItemProvider,
 } from "../../../common/languages.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
@@ -40,7 +40,7 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import { showSimpleSuggestions } from "../../suggest/browser/suggest.js";
 import type { OvertypingCapturer } from "../../suggest/browser/suggestOvertypingCapturer.js";
 import type { Choice } from "./snippetParser.js";
-import { type ISnippetEdit, SnippetSession } from "./snippetSession.js";
+import { SnippetSession, type ISnippetEdit } from "./snippetSession.js";
 
 export interface ISnippetInsertOptions {
 	overwriteBefore: number;
@@ -114,13 +114,18 @@ export class SnippetController2 implements IEditorContribution {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@ILogService private readonly _logService: ILogService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
-		this._inSnippet = SnippetController2.InSnippetMode.bindTo(contextKeyService);
-		this._hasNextTabstop = SnippetController2.HasNextTabstop.bindTo(contextKeyService);
-		this._hasPrevTabstop = SnippetController2.HasPrevTabstop.bindTo(contextKeyService);
+		this._inSnippet =
+			SnippetController2.InSnippetMode.bindTo(contextKeyService);
+		this._hasNextTabstop =
+			SnippetController2.HasNextTabstop.bindTo(contextKeyService);
+		this._hasPrevTabstop =
+			SnippetController2.HasPrevTabstop.bindTo(contextKeyService);
 	}
 
 	dispose(): void {

@@ -11,8 +11,8 @@ import {
 	type ISaveDialogOptions,
 } from "../../../platform/dialogs/common/dialogs.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	MainContext,
@@ -25,7 +25,8 @@ import {
 export class MainThreadDialogs implements MainThreadDiaglogsShape {
 	constructor(
 		context: IExtHostContext,
-		@IFileDialogService private readonly _fileDialogService: IFileDialogService,
+		@IFileDialogService
+		private readonly _fileDialogService: IFileDialogService,
 	) {
 		//
 	}

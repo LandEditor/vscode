@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	spawn,
 	type ChildProcess,
 	type SpawnOptions,
 	type StdioOptions,
-	spawn,
 } from "child_process";
 import {
 	chmodSync,
@@ -19,6 +19,7 @@ import {
 } from "fs";
 import { homedir, release, tmpdir } from "os";
 import type { ProfilingSession, Target } from "v8-inspect-profiler";
+
 import { DeferredPromise } from "../../base/common/async.js";
 import { CancellationTokenSource } from "../../base/common/cancellation.js";
 import { Event } from "../../base/common/event.js";
@@ -26,9 +27,9 @@ import { isUNC, randomPath } from "../../base/common/extpath.js";
 import { FileAccess } from "../../base/common/network.js";
 import { dirname, isAbsolute, join, resolve } from "../../base/common/path.js";
 import {
-	type IProcessEnvironment,
 	isMacintosh,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../base/common/platform.js";
 import { randomPort } from "../../base/common/ports.js";
 import { cwd } from "../../base/common/process.js";
@@ -38,10 +39,10 @@ import { findFreePort } from "../../base/node/ports.js";
 import { addUNCHostToAllowlist } from "../../base/node/unc.js";
 import type { NativeParsedArgs } from "../../platform/environment/common/argv.js";
 import {
-	NATIVE_CLI_COMMANDS,
-	OPTIONS,
 	buildHelpMessage,
 	buildVersionMessage,
+	NATIVE_CLI_COMMANDS,
+	OPTIONS,
 } from "../../platform/environment/node/argv.js";
 import {
 	addArg,

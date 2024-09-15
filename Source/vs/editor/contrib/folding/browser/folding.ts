@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
+	createCancelablePromise,
 	Delayer,
 	RunOnceScheduler,
-	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
@@ -22,7 +22,9 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { escapeRegExpCharacters } from "../../../../base/common/strings.js";
 import * as types from "../../../../base/common/types.js";
+
 import "./folding.css";
+
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -30,55 +32,54 @@ import * as nls from "../../../../nls.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
 	registerInstantiatedEditorAction,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { StableEditorScrollState } from "../../../browser/stableEditorScroll.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../common/config/editorOptions.js";
 import type { IPosition } from "../../../common/core/position.js";
 import type { IRange } from "../../../common/core/range.js";
 import type { Selection } from "../../../common/core/selection.js";
 import {
-	type IEditorContribution,
 	ScrollType,
+	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import {
-	type FoldingRange,
 	FoldingRangeKind,
+	type FoldingRange,
 	type FoldingRangeProvider,
 } from "../../../common/languages.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
 import type { ITextModel } from "../../../common/model.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { IModelService } from "../../../common/services/model.js";
 import type { IModelContentChangedEvent } from "../../../common/textModelEvents.js";
 import { FoldingDecorationProvider } from "./foldingDecorations.js";
 import {
-	type CollapseMemento,
 	FoldingModel,
 	getNextFoldLine,
 	getParentFoldLine,
@@ -91,12 +92,13 @@ import {
 	setCollapseStateLevelsUp,
 	setCollapseStateUp,
 	toggleCollapseState,
+	type CollapseMemento,
 } from "./foldingModel.js";
 import {
-	type FoldRange,
+	FoldingRegions,
 	FoldSource,
 	type FoldingRegion,
-	FoldingRegions,
+	type FoldRange,
 	type ILineRange,
 } from "./foldingRanges.js";
 import { HiddenRangeModel } from "./hiddenRangeModel.js";
@@ -202,11 +204,15 @@ export class FoldingController
 
 	constructor(
 		editor: ICodeEditor,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
 		@INotificationService notificationService: INotificationService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this.editor = editor;
@@ -215,12 +221,21 @@ export class FoldingController
 
 		const options = this.editor.getOptions();
 		this._isEnabled = options.get(EditorOption.folding);
-		this._useFoldingProviders = options.get(EditorOption.foldingStrategy) !== 'indentation';
-		this._unfoldOnClickAfterEndOfLine = options.get(EditorOption.unfoldOnClickAfterEndOfLine);
+		this._useFoldingProviders =
+			options.get(EditorOption.foldingStrategy) !== "indentation";
+		this._unfoldOnClickAfterEndOfLine = options.get(
+			EditorOption.unfoldOnClickAfterEndOfLine,
+		);
 		this._restoringViewState = false;
 		this._currentModelHasFoldedImports = false;
-		this._foldingImportsByDefault = options.get(EditorOption.foldingImportsByDefault);
-		this.updateDebounceInfo = languageFeatureDebounceService.for(languageFeaturesService.foldingRangeProvider, 'Folding', { min: 200 });
+		this._foldingImportsByDefault = options.get(
+			EditorOption.foldingImportsByDefault,
+		);
+		this.updateDebounceInfo = languageFeatureDebounceService.for(
+			languageFeaturesService.foldingRangeProvider,
+			"Folding",
+			{ min: 200 },
+		);
 
 		this.foldingModel = null;
 		this.hiddenRangeModel = null;
@@ -232,39 +247,68 @@ export class FoldingController
 		this.mouseDownInfo = null;
 
 		this.foldingDecorationProvider = new FoldingDecorationProvider(editor);
-		this.foldingDecorationProvider.showFoldingControls = options.get(EditorOption.showFoldingControls);
-		this.foldingDecorationProvider.showFoldingHighlights = options.get(EditorOption.foldingHighlight);
-		this.foldingEnabled = CONTEXT_FOLDING_ENABLED.bindTo(this.contextKeyService);
+		this.foldingDecorationProvider.showFoldingControls = options.get(
+			EditorOption.showFoldingControls,
+		);
+		this.foldingDecorationProvider.showFoldingHighlights = options.get(
+			EditorOption.foldingHighlight,
+		);
+		this.foldingEnabled = CONTEXT_FOLDING_ENABLED.bindTo(
+			this.contextKeyService,
+		);
 		this.foldingEnabled.set(this._isEnabled);
 
-		this._register(this.editor.onDidChangeModel(() => this.onModelChanged()));
+		this._register(
+			this.editor.onDidChangeModel(() => this.onModelChanged()),
+		);
 
-		this._register(this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.folding)) {
-				this._isEnabled = this.editor.getOptions().get(EditorOption.folding);
-				this.foldingEnabled.set(this._isEnabled);
-				this.onModelChanged();
-			}
-			if (e.hasChanged(EditorOption.foldingMaximumRegions)) {
-				this.onModelChanged();
-			}
-			if (e.hasChanged(EditorOption.showFoldingControls) || e.hasChanged(EditorOption.foldingHighlight)) {
-				const options = this.editor.getOptions();
-				this.foldingDecorationProvider.showFoldingControls = options.get(EditorOption.showFoldingControls);
-				this.foldingDecorationProvider.showFoldingHighlights = options.get(EditorOption.foldingHighlight);
-				this.triggerFoldingModelChanged();
-			}
-			if (e.hasChanged(EditorOption.foldingStrategy)) {
-				this._useFoldingProviders = this.editor.getOptions().get(EditorOption.foldingStrategy) !== 'indentation';
-				this.onFoldingStrategyChanged();
-			}
-			if (e.hasChanged(EditorOption.unfoldOnClickAfterEndOfLine)) {
-				this._unfoldOnClickAfterEndOfLine = this.editor.getOptions().get(EditorOption.unfoldOnClickAfterEndOfLine);
-			}
-			if (e.hasChanged(EditorOption.foldingImportsByDefault)) {
-				this._foldingImportsByDefault = this.editor.getOptions().get(EditorOption.foldingImportsByDefault);
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (e.hasChanged(EditorOption.folding)) {
+						this._isEnabled = this.editor
+							.getOptions()
+							.get(EditorOption.folding);
+						this.foldingEnabled.set(this._isEnabled);
+						this.onModelChanged();
+					}
+					if (e.hasChanged(EditorOption.foldingMaximumRegions)) {
+						this.onModelChanged();
+					}
+					if (
+						e.hasChanged(EditorOption.showFoldingControls) ||
+						e.hasChanged(EditorOption.foldingHighlight)
+					) {
+						const options = this.editor.getOptions();
+						this.foldingDecorationProvider.showFoldingControls =
+							options.get(EditorOption.showFoldingControls);
+						this.foldingDecorationProvider.showFoldingHighlights =
+							options.get(EditorOption.foldingHighlight);
+						this.triggerFoldingModelChanged();
+					}
+					if (e.hasChanged(EditorOption.foldingStrategy)) {
+						this._useFoldingProviders =
+							this.editor
+								.getOptions()
+								.get(EditorOption.foldingStrategy) !==
+							"indentation";
+						this.onFoldingStrategyChanged();
+					}
+					if (
+						e.hasChanged(EditorOption.unfoldOnClickAfterEndOfLine)
+					) {
+						this._unfoldOnClickAfterEndOfLine = this.editor
+							.getOptions()
+							.get(EditorOption.unfoldOnClickAfterEndOfLine);
+					}
+					if (e.hasChanged(EditorOption.foldingImportsByDefault)) {
+						this._foldingImportsByDefault = this.editor
+							.getOptions()
+							.get(EditorOption.foldingImportsByDefault);
+					}
+				},
+			),
+		);
 		this.onModelChanged();
 	}
 

@@ -11,9 +11,9 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../editor/browser/editorBrowser.js";
 import { StableEditorScrollState } from "../../../../editor/browser/stableEditorScroll.js";
 import {
@@ -22,7 +22,7 @@ import {
 	type IEditorOptions,
 } from "../../../../editor/common/config/editorOptions.js";
 import type { IPosition } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import * as languages from "../../../../editor/common/languages.js";
 import { peekViewBorder } from "../../../../editor/contrib/peekView/browser/peekView.js";
 import { ZoneWidget } from "../../../../editor/contrib/zoneWidget/browser/zoneWidget.js";
@@ -31,8 +31,8 @@ import { IContextKeyService } from "../../../../platform/contextkey/common/conte
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ServiceCollection } from "../../../../platform/instantiation/common/serviceCollection.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import type { ICellRange } from "../../notebook/common/notebookRange.js";
 import type { ICommentThreadWidget } from "../common/commentThreadWidget.js";
@@ -171,33 +171,46 @@ export class ReviewZoneWidget
 		@IThemeService private themeService: IThemeService,
 		@ICommentService private commentService: ICommentService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super(editor, { keepEditorSelection: true, isAccessible: true });
 		this._contextKeyService = contextKeyService.createScoped(this.domNode);
 
-		this._scopedInstantiationService = this._globalToDispose.add(instantiationService.createChild(new ServiceCollection(
-			[IContextKeyService, this._contextKeyService]
-		)));
+		this._scopedInstantiationService = this._globalToDispose.add(
+			instantiationService.createChild(
+				new ServiceCollection([
+					IContextKeyService,
+					this._contextKeyService,
+				]),
+			),
+		);
 
-		const controller = this.commentService.getCommentController(this._uniqueOwner);
+		const controller = this.commentService.getCommentController(
+			this._uniqueOwner,
+		);
 		if (controller) {
 			this._commentOptions = controller.options;
 		}
 
-		this._initialCollapsibleState = _pendingComment ? languages.CommentThreadCollapsibleState.Expanded : _commentThread.initialCollapsibleState;
+		this._initialCollapsibleState = _pendingComment
+			? languages.CommentThreadCollapsibleState.Expanded
+			: _commentThread.initialCollapsibleState;
 		_commentThread.initialCollapsibleState = this._initialCollapsibleState;
 		this._commentThreadDisposables = [];
 		this.create();
 
-		this._globalToDispose.add(this.themeService.onDidColorThemeChange(this._applyTheme, this));
-		this._globalToDispose.add(this.editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.fontInfo)) {
-				this._applyTheme(this.themeService.getColorTheme());
-			}
-		}));
+		this._globalToDispose.add(
+			this.themeService.onDidColorThemeChange(this._applyTheme, this),
+		);
+		this._globalToDispose.add(
+			this.editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.fontInfo)) {
+					this._applyTheme(this.themeService.getColorTheme());
+				}
+			}),
+		);
 		this._applyTheme(this.themeService.getColorTheme());
-
 	}
 
 	public get onDidClose(): Event<ReviewZoneWidget | undefined> {

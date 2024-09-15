@@ -6,10 +6,10 @@
 import { Emitter } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IChannel,
-	IPCLogger,
-	type IServerChannel,
 	getDelayedChannel,
+	IPCLogger,
+	type IChannel,
+	type IServerChannel,
 } from "../../../../base/parts/ipc/common/ipc.js";
 import type { Client } from "../../../../base/parts/ipc/common/ipc.net.js";
 import type {
@@ -19,10 +19,10 @@ import type {
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
+	connectRemoteAgentManagement,
 	type IConnectionOptions,
 	type ManagementPersistentConnection,
 	type PersistentConnectionEvent,
-	connectRemoteAgentManagement,
 } from "../../../../platform/remote/common/remoteAgentConnection.js";
 import type {
 	IRemoteAgentEnvironment,
@@ -54,17 +54,31 @@ export abstract class AbstractRemoteAgentService
 	private _environment: Promise<IRemoteAgentEnvironment | null> | null;
 
 	constructor(
-		@IRemoteSocketFactoryService private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
+		@IRemoteSocketFactoryService
+		private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IWorkbenchEnvironmentService
+		protected readonly _environmentService: IWorkbenchEnvironmentService,
 		@IProductService productService: IProductService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ISignService signService: ISignService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super();
 		if (this._environmentService.remoteAuthority) {
-			this._connection = this._register(new RemoteAgentConnection(this._environmentService.remoteAuthority, productService.commit, productService.quality, this.remoteSocketFactoryService, this._remoteAuthorityResolverService, signService, logService));
+			this._connection = this._register(
+				new RemoteAgentConnection(
+					this._environmentService.remoteAuthority,
+					productService.commit,
+					productService.quality,
+					this.remoteSocketFactoryService,
+					this._remoteAuthorityResolverService,
+					signService,
+					logService,
+				),
+			);
 		} else {
 			this._connection = null;
 		}

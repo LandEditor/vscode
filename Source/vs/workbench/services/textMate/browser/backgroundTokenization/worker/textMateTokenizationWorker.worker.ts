@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IOnigLib, IRawTheme, StackDiff } from "vscode-textmate";
+
 import { importAMDNodeModule } from "../../../../../../amdX.js";
 import { URI, type UriComponents } from "../../../../../../base/common/uri.js";
 import type {
@@ -13,8 +14,8 @@ import type {
 import type { LanguageId } from "../../../../../../editor/common/encodedTokenAttributes.js";
 import type { IModelChangedEvent } from "../../../../../../editor/common/model/mirrorTextModel.js";
 import {
-	type ICreateGrammarResult,
 	TMGrammarFactory,
+	type ICreateGrammarResult,
 } from "../../../common/TMGrammarFactory.js";
 import type {
 	IValidEmbeddedLanguagesMap,

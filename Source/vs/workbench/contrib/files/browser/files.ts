@@ -10,21 +10,21 @@ import { coalesce } from "../../../../base/common/arrays.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { ResourceFileEdit } from "../../../../editor/browser/services/bulkEditService.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { IListService } from "../../../../platform/list/browser/listService.js";
 import type { ProgressLocation } from "../../../../platform/progress/common/progress.js";
 import {
 	EditorResourceAccessor,
-	type IEditorIdentifier,
 	SideBySideEditor,
+	type IEditorIdentifier,
 } from "../../../common/editor.js";
 import type { IEditableData } from "../../../common/views.js";
 import type { IEditorGroupsService } from "../../../services/editor/common/editorGroupsService.js";
 import type { IEditorService } from "../../../services/editor/common/editorService.js";
 import { ExplorerItem } from "../common/explorerModel.js";
-import { type ISortOrderConfiguration, OpenEditor } from "../common/files.js";
+import { OpenEditor, type ISortOrderConfiguration } from "../common/files.js";
 
 export interface IExplorerService {
 	readonly _serviceBrand: undefined;

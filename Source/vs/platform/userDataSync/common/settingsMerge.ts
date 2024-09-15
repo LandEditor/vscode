@@ -5,23 +5,23 @@
 
 import { distinct } from "../../../base/common/arrays.js";
 import type { IStringDictionary } from "../../../base/common/collections.js";
-import { type JSONVisitor, parse, visit } from "../../../base/common/json.js";
+import { parse, visit, type JSONVisitor } from "../../../base/common/json.js";
 import {
 	applyEdits,
 	setProperty,
 	withFormatting,
 } from "../../../base/common/jsonEdit.js";
 import {
+	getEOL,
 	type Edit,
 	type FormattingOptions,
-	getEOL,
 } from "../../../base/common/jsonFormatter.js";
 import * as objects from "../../../base/common/objects.js";
 import type { IConfigurationService } from "../../configuration/common/configuration.js";
 import * as contentUtil from "./content.js";
 import {
-	type IConflictSetting,
 	getDisallowedIgnoredSettings,
+	type IConflictSetting,
 } from "./userDataSync.js";
 
 export interface IMergeResult {
@@ -575,7 +575,7 @@ function getInsertLocation(
 				};
 			}
 		} else {
-		/* Previous node in source is a comment */
+			/* Previous node in source is a comment */
 			const sourcePreviousSettingNode = findPreviousSettingNode(
 				sourceNodeIndex,
 				sourceTree,
@@ -670,7 +670,7 @@ function getInsertLocation(
 					};
 				}
 			} else {
-			/* Next node in source is a comment */
+				/* Next node in source is a comment */
 				const sourceNextSettingNode = findNextSettingNode(
 					sourceNodeIndex,
 					sourceTree,
@@ -804,8 +804,7 @@ function getEditToInsertAtLocation(
 				content: "," + newProperty,
 			});
 		} else {
-
-		/* Insert after a comment */
+			/* Insert after a comment */
 			const nextSettingNode = findNextSettingNode(location.index, tree);
 			const previousSettingNode = findPreviousSettingNode(
 				location.index,

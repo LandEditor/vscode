@@ -6,6 +6,7 @@
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
+	ProcessPropertyType,
 	type IProcessProperty,
 	type IProcessPropertyMap,
 	type IProcessReadyEvent,
@@ -13,7 +14,6 @@ import {
 	type ITerminalChildProcess,
 	type ITerminalDimensions,
 	type ITerminalLaunchError,
-	ProcessPropertyType,
 } from "../../../../platform/terminal/common/terminal.js";
 import type { ITerminalProcessExtHostProxy } from "../common/terminal.js";
 import { ITerminalService } from "./terminal.js";

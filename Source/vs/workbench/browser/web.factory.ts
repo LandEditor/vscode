@@ -5,8 +5,8 @@
 
 import { asArray } from "../../base/common/arrays.js";
 import { DeferredPromise } from "../../base/common/async.js";
-import { type IDisposable, toDisposable } from "../../base/common/lifecycle.js";
-import { type PerformanceMark, mark } from "../../base/common/performance.js";
+import { toDisposable, type IDisposable } from "../../base/common/lifecycle.js";
+import { mark, type PerformanceMark } from "../../base/common/performance.js";
 import type { URI } from "../../base/common/uri.js";
 import { MenuId, MenuRegistry } from "../../platform/actions/common/actions.js";
 import { CommandsRegistry } from "../../platform/commands/common/commands.js";
@@ -22,11 +22,11 @@ import type {
 } from "../../platform/progress/common/progress.js";
 import type { IEmbedderTerminalOptions } from "../services/terminal/common/embedderTerminalService.js";
 import {
+	Menu,
 	type ITunnel,
 	type ITunnelOptions,
 	type IWorkbench,
 	type IWorkbenchConstructionOptions,
-	Menu,
 } from "./web.api.js";
 import { BrowserMain } from "./web.main.js";
 

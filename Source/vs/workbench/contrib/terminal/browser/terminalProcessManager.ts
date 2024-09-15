@@ -11,17 +11,17 @@ import { mainWindow } from "../../../../base/browser/window.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import {
-	type IProcessEnvironment,
-	OS,
-	OperatingSystem,
 	isMacintosh,
 	isWindows,
+	OperatingSystem,
+	OS,
+	type IProcessEnvironment,
 } from "../../../../base/common/platform.js";
 import Severity from "../../../../base/common/severity.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -34,8 +34,8 @@ import { IProductService } from "../../../../platform/product/common/productServ
 import { getRemoteAuthority } from "../../../../platform/remote/common/remoteHosts.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type ISerializedCommandDetectionCapability,
 	TerminalCapability,
+	type ISerializedCommandDetectionCapability,
 } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import { NaiveCwdDetectionCapability } from "../../../../platform/terminal/common/capabilities/naiveCwdDetectionCapability.js";
 import { TerminalCapabilityStore } from "../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js";
@@ -47,6 +47,9 @@ import { MergedEnvironmentVariableCollection } from "../../../../platform/termin
 import { serializeEnvironmentVariableCollections } from "../../../../platform/terminal/common/environmentVariableShared.js";
 import {
 	FlowControlConstants,
+	ITerminalLogService,
+	ProcessPropertyType,
+	TerminalSettingId,
 	type IProcessDataEvent,
 	type IProcessProperty,
 	type IProcessPropertyMap,
@@ -58,10 +61,7 @@ import {
 	type ITerminalDimensions,
 	type ITerminalEnvironment,
 	type ITerminalLaunchError,
-	ITerminalLogService,
 	type ITerminalProcessOptions,
-	ProcessPropertyType,
-	TerminalSettingId,
 } from "../../../../platform/terminal/common/terminal.js";
 import { shouldUseEnvironmentVariableCollection } from "../../../../platform/terminal/common/terminalEnvironment.js";
 import { TerminalRecorder } from "../../../../platform/terminal/common/terminalRecorder.js";
@@ -76,15 +76,18 @@ import { IHistoryService } from "../../../services/history/common/history.js";
 import { IPathService } from "../../../services/path/common/pathService.js";
 import { IRemoteAgentService } from "../../../services/remote/common/remoteAgentService.js";
 import { TaskSettingId } from "../../tasks/common/tasks.js";
+// HACK: This file should not depend on terminalContrib
+// eslint-disable-next-line local/code-import-patterns
+import { TerminalSuggestSettingId } from "../../terminalContrib/suggest/common/terminalSuggestConfiguration.js";
 import {
-	type IEnvironmentVariableInfo,
 	IEnvironmentVariableService,
+	type IEnvironmentVariableInfo,
 } from "../common/environmentVariable.js";
 import {
-	type IBeforeProcessDataEvent,
-	type ITerminalProcessManager,
 	ITerminalProfileResolverService,
 	ProcessState,
+	type IBeforeProcessDataEvent,
+	type ITerminalProcessManager,
 } from "../common/terminal.js";
 import * as terminalEnvironment from "../common/terminalEnvironment.js";
 import {
@@ -95,10 +98,6 @@ import {
 	ITerminalConfigurationService,
 	ITerminalInstanceService,
 } from "./terminal.js";
-
-// HACK: This file should not depend on terminalContrib
-// eslint-disable-next-line local/code-import-patterns
-import { TerminalSuggestSettingId } from "../../terminalContrib/suggest/common/terminalSuggestConfiguration.js";
 
 enum ProcessConstants {
 	/**
@@ -235,54 +234,109 @@ export class TerminalProcessManager
 	constructor(
 		private readonly _instanceId: number,
 		cwd: string | URI | undefined,
-		environmentVariableCollections: ReadonlyMap<string, IEnvironmentVariableCollection> | undefined,
+		environmentVariableCollections:
+			| ReadonlyMap<string, IEnvironmentVariableCollection>
+			| undefined,
 		shellIntegrationNonce: string | undefined,
 		@IHistoryService private readonly _historyService: IHistoryService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
-		@IConfigurationResolverService private readonly _configurationResolverService: IConfigurationResolverService,
-		@IWorkbenchEnvironmentService private readonly _workbenchEnvironmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationResolverService
+		private readonly _configurationResolverService: IConfigurationResolverService,
+		@IWorkbenchEnvironmentService
+		private readonly _workbenchEnvironmentService: IWorkbenchEnvironmentService,
 		@IProductService private readonly _productService: IProductService,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
 		@IPathService private readonly _pathService: IPathService,
-		@IEnvironmentVariableService private readonly _environmentVariableService: IEnvironmentVariableService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@INotificationService private readonly _notificationService: INotificationService
+		@IEnvironmentVariableService
+		private readonly _environmentVariableService: IEnvironmentVariableService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 	) {
 		super();
-		this._cwdWorkspaceFolder = terminalEnvironment.getWorkspaceForTerminal(cwd, this._workspaceContextService, this._historyService);
+		this._cwdWorkspaceFolder = terminalEnvironment.getWorkspaceForTerminal(
+			cwd,
+			this._workspaceContextService,
+			this._historyService,
+		);
 		this.ptyProcessReady = this._createPtyProcessReadyPromise();
-		this._ackDataBufferer = new AckDataBufferer(e => this._process?.acknowledgeDataEvent(e));
-		this._dataFilter = this._register(this._instantiationService.createInstance(SeamlessRelaunchDataFilter));
-		this._register(this._dataFilter.onProcessData(ev => {
-			const data = (typeof ev === 'string' ? ev : ev.data);
-			const beforeProcessDataEvent: IBeforeProcessDataEvent = { data };
-			this._onBeforeProcessData.fire(beforeProcessDataEvent);
-			if (beforeProcessDataEvent.data && beforeProcessDataEvent.data.length > 0) {
-				// This event is used by the caller so the object must be reused
-				if (typeof ev !== 'string') {
-					ev.data = beforeProcessDataEvent.data;
+		this._ackDataBufferer = new AckDataBufferer((e) =>
+			this._process?.acknowledgeDataEvent(e),
+		);
+		this._dataFilter = this._register(
+			this._instantiationService.createInstance(
+				SeamlessRelaunchDataFilter,
+			),
+		);
+		this._register(
+			this._dataFilter.onProcessData((ev) => {
+				const data = typeof ev === "string" ? ev : ev.data;
+				const beforeProcessDataEvent: IBeforeProcessDataEvent = {
+					data,
+				};
+				this._onBeforeProcessData.fire(beforeProcessDataEvent);
+				if (
+					beforeProcessDataEvent.data &&
+					beforeProcessDataEvent.data.length > 0
+				) {
+					// This event is used by the caller so the object must be reused
+					if (typeof ev !== "string") {
+						ev.data = beforeProcessDataEvent.data;
+					}
+					this._onProcessData.fire(
+						typeof ev !== "string"
+							? ev
+							: {
+									data: beforeProcessDataEvent.data,
+									trackCommit: false,
+								},
+					);
 				}
-				this._onProcessData.fire(typeof ev !== 'string' ? ev : { data: beforeProcessDataEvent.data, trackCommit: false });
-			}
-		}));
+			}),
+		);
 
-		if (cwd && typeof cwd === 'object') {
+		if (cwd && typeof cwd === "object") {
 			this.remoteAuthority = getRemoteAuthority(cwd);
 		} else {
-			this.remoteAuthority = this._workbenchEnvironmentService.remoteAuthority;
+			this.remoteAuthority =
+				this._workbenchEnvironmentService.remoteAuthority;
 		}
 
 		if (environmentVariableCollections) {
-			this._extEnvironmentVariableCollection = new MergedEnvironmentVariableCollection(environmentVariableCollections);
-			this._register(this._environmentVariableService.onDidChangeCollections(newCollection => this._onEnvironmentVariableCollectionChange(newCollection)));
-			this.environmentVariableInfo = this._instantiationService.createInstance(EnvironmentVariableInfoChangesActive, this._extEnvironmentVariableCollection);
-			this._onEnvironmentVariableInfoChange.fire(this.environmentVariableInfo);
+			this._extEnvironmentVariableCollection =
+				new MergedEnvironmentVariableCollection(
+					environmentVariableCollections,
+				);
+			this._register(
+				this._environmentVariableService.onDidChangeCollections(
+					(newCollection) =>
+						this._onEnvironmentVariableCollectionChange(
+							newCollection,
+						),
+				),
+			);
+			this.environmentVariableInfo =
+				this._instantiationService.createInstance(
+					EnvironmentVariableInfoChangesActive,
+					this._extEnvironmentVariableCollection,
+				);
+			this._onEnvironmentVariableInfoChange.fire(
+				this.environmentVariableInfo,
+			);
 		}
 
 		this.shellIntegrationNonce = shellIntegrationNonce ?? generateUuid();
@@ -1085,7 +1139,7 @@ class SeamlessRelaunchDataFilter extends Disposable {
 	}
 
 	constructor(
-		@ITerminalLogService private readonly _logService: ITerminalLogService
+		@ITerminalLogService private readonly _logService: ITerminalLogService,
 	) {
 		super();
 	}

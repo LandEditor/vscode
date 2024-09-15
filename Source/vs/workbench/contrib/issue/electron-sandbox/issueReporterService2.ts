@@ -16,8 +16,8 @@ import { BaseIssueReporterService } from "../browser/baseIssueReporterService.js
 import type { IssueReporterData as IssueReporterModelData } from "../browser/issueReporterModel.js";
 import {
 	IIssueFormService,
-	type IssueReporterData,
 	IssueType,
+	type IssueReporterData,
 } from "../common/issue.js";
 
 // GitHub has let us know that we could up our limit here to 8k. We chose 7500 to play it safe.
@@ -36,14 +36,24 @@ export class IssueReporter2 extends BaseIssueReporterService {
 		},
 		product: IProductConfiguration,
 		window: Window,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IIssueFormService issueFormService: IIssueFormService,
 		@IProcessMainService processMainService: IProcessMainService,
-		@IThemeService themeService: IThemeService
+		@IThemeService themeService: IThemeService,
 	) {
-		super(disableExtensions, data, os, product, window, false, issueFormService, themeService);
+		super(
+			disableExtensions,
+			data,
+			os,
+			product,
+			window,
+			false,
+			issueFormService,
+			themeService,
+		);
 		this.processMainService = processMainService;
-		this.processMainService.$getSystemInfo().then(info => {
+		this.processMainService.$getSystemInfo().then((info) => {
 			this.issueReporterModel.update({ systemInfo: info });
 			this.receivedSystemInfo = true;
 
@@ -51,7 +61,7 @@ export class IssueReporter2 extends BaseIssueReporterService {
 			this.updatePreviewButtonState();
 		});
 		if (this.data.issueType === IssueType.PerformanceIssue) {
-			this.processMainService.$getPerformanceInfo().then(info => {
+			this.processMainService.$getPerformanceInfo().then((info) => {
 				this.updatePerformanceInfo(info as Partial<IssueReporterData>);
 			});
 		}

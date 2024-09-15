@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ProgressOptions } from "vscode";
+
 import {
 	CancellationToken,
 	CancellationTokenSource,
@@ -12,8 +13,8 @@ import { throttle } from "../../../base/common/decorators.js";
 import { onUnexpectedExternalError } from "../../../base/common/errors.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
-	type IProgressStep,
 	Progress,
+	type IProgressStep,
 } from "../../../platform/progress/common/progress.js";
 import type {
 	ExtHostProgressShape,

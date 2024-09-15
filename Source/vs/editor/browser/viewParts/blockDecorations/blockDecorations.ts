@@ -4,10 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
+
 import "./blockDecorations.css";
+
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type * as viewEvents from "../../../common/viewEvents.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";

@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, Separator } from "../../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../../base/common/actions.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { isICommandActionToggleInfo } from "../../../../platform/action/common/action.js";
@@ -34,8 +34,8 @@ import { IUpdateService } from "../../../../platform/update/common/update.js";
 import { IWorkspacesService } from "../../../../platform/workspaces/common/workspaces.js";
 import { OpenRecentAction } from "../../../browser/actions/windowActions.js";
 import {
-	type IOpenRecentAction,
 	MenubarControl,
+	type IOpenRecentAction,
 } from "../../../browser/parts/titlebar/menubarControl.js";
 import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
 import { IHostService } from "../../../services/host/browser/host.js";
@@ -53,17 +53,35 @@ export class NativeMenubarControl extends MenubarControl {
 		@IStorageService storageService: IStorageService,
 		@INotificationService notificationService: INotificationService,
 		@IPreferencesService preferencesService: IPreferencesService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@IMenubarService private readonly menubarService: IMenubarService,
 		@IHostService hostService: IHostService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@ICommandService commandService: ICommandService,
 	) {
-		super(menuService, workspacesService, contextKeyService, keybindingService, configurationService, labelService, updateService, storageService, notificationService, preferencesService, environmentService, accessibilityService, hostService, commandService);
+		super(
+			menuService,
+			workspacesService,
+			contextKeyService,
+			keybindingService,
+			configurationService,
+			labelService,
+			updateService,
+			storageService,
+			notificationService,
+			preferencesService,
+			environmentService,
+			accessibilityService,
+			hostService,
+			commandService,
+		);
 
 		(async () => {
-			this.recentlyOpened = await this.workspacesService.getRecentlyOpened();
+			this.recentlyOpened =
+				await this.workspacesService.getRecentlyOpened();
 
 			this.doUpdateMenubar();
 		})();

@@ -8,8 +8,8 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	InstantiationType,
@@ -18,18 +18,18 @@ import {
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	TerminalExtensions,
 	type IShellLaunchConfig,
 	type ITerminalBackend,
 	type ITerminalBackendRegistry,
 	type ITerminalProfile,
-	TerminalExtensions,
 	type TerminalLocation,
 } from "../../../../platform/terminal/common/terminal.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import { TerminalContextKeys } from "../common/terminalContextKey.js";
 import {
-	type ITerminalInstance,
 	ITerminalInstanceService,
+	type ITerminalInstance,
 } from "./terminal.js";
 import { TerminalInstance } from "./terminalInstance.js";
 
@@ -53,17 +53,30 @@ export class TerminalInstanceService
 	}
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
-		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
-		this._terminalInRunCommandPicker = TerminalContextKeys.inTerminalRunCommandPicker.bindTo(this._contextKeyService);
+		this._terminalShellTypeContextKey =
+			TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+		this._terminalInRunCommandPicker =
+			TerminalContextKeys.inTerminalRunCommandPicker.bindTo(
+				this._contextKeyService,
+			);
 
-		for (const remoteAuthority of [undefined, environmentService.remoteAuthority]) {
+		for (const remoteAuthority of [
+			undefined,
+			environmentService.remoteAuthority,
+		]) {
 			const { promise, resolve } = promiseWithResolvers<void>();
-			this._backendRegistration.set(remoteAuthority, { promise, resolve });
+			this._backendRegistration.set(remoteAuthority, {
+				promise,
+				resolve,
+			});
 		}
 	}
 

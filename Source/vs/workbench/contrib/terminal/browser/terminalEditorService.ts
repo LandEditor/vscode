@@ -6,20 +6,20 @@
 import { Emitter } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { EditorActivation } from "../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IShellLaunchConfig,
 	TerminalLocation,
+	type IShellLaunchConfig,
 } from "../../../../platform/terminal/common/terminal.js";
 import type { IEditorPane } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
@@ -32,10 +32,10 @@ import {
 import { ILifecycleService } from "../../../services/lifecycle/common/lifecycle.js";
 import { TerminalContextKeys } from "../common/terminalContextKey.js";
 import {
+	ITerminalInstanceService,
 	type IDeserializedTerminalEditorInput,
 	type ITerminalEditorService,
 	type ITerminalInstance,
-	ITerminalInstanceService,
 	type TerminalEditorLocation,
 } from "./terminal.js";
 import { TerminalEditorInput } from "./terminalEditorInput.js";
@@ -86,66 +86,104 @@ export class TerminalEditorService
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
-		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(contextKeyService);
-		this._register(toDisposable(() => {
-			for (const d of this._instanceDisposables.values()) {
-				dispose(d);
-			}
-		}));
-		this._register(lifecycleService.onWillShutdown(() => this._isShuttingDown = true));
-		this._register(this._editorService.onDidActiveEditorChange(() => {
-			const activeEditor = this._editorService.activeEditor;
-			const instance = activeEditor instanceof TerminalEditorInput ? activeEditor?.terminalInstance : undefined;
-			const terminalEditorActive = !!instance && activeEditor instanceof TerminalEditorInput;
-			this._terminalEditorActive.set(terminalEditorActive);
-			if (terminalEditorActive) {
-				activeEditor?.setGroup(this._editorService.activeEditorPane?.group);
-				this.setActiveInstance(instance);
-			} else {
-				for (const instance of this.instances) {
-					instance.resetFocusContextKey();
+		this._terminalEditorActive =
+			TerminalContextKeys.terminalEditorActive.bindTo(contextKeyService);
+		this._register(
+			toDisposable(() => {
+				for (const d of this._instanceDisposables.values()) {
+					dispose(d);
 				}
-			}
-		}));
-		this._register(this._editorService.onDidVisibleEditorsChange(() => {
-			// add any terminal editors created via the editor service split command
-			const knownIds = this.instances.map(i => i.instanceId);
-			const terminalEditors = this._getActiveTerminalEditors();
-			const unknownEditor = terminalEditors.find(input => {
-				const inputId = input instanceof TerminalEditorInput ? input.terminalInstance?.instanceId : undefined;
-				if (inputId === undefined) {
-					return false;
+			}),
+		);
+		this._register(
+			lifecycleService.onWillShutdown(
+				() => (this._isShuttingDown = true),
+			),
+		);
+		this._register(
+			this._editorService.onDidActiveEditorChange(() => {
+				const activeEditor = this._editorService.activeEditor;
+				const instance =
+					activeEditor instanceof TerminalEditorInput
+						? activeEditor?.terminalInstance
+						: undefined;
+				const terminalEditorActive =
+					!!instance && activeEditor instanceof TerminalEditorInput;
+				this._terminalEditorActive.set(terminalEditorActive);
+				if (terminalEditorActive) {
+					activeEditor?.setGroup(
+						this._editorService.activeEditorPane?.group,
+					);
+					this.setActiveInstance(instance);
+				} else {
+					for (const instance of this.instances) {
+						instance.resetFocusContextKey();
+					}
 				}
-				return !knownIds.includes(inputId);
-			});
-			if (unknownEditor instanceof TerminalEditorInput && unknownEditor.terminalInstance) {
-				this._editorInputs.set(unknownEditor.terminalInstance.resource.path, unknownEditor);
-				this.instances.push(unknownEditor.terminalInstance);
-			}
-		}));
+			}),
+		);
+		this._register(
+			this._editorService.onDidVisibleEditorsChange(() => {
+				// add any terminal editors created via the editor service split command
+				const knownIds = this.instances.map((i) => i.instanceId);
+				const terminalEditors = this._getActiveTerminalEditors();
+				const unknownEditor = terminalEditors.find((input) => {
+					const inputId =
+						input instanceof TerminalEditorInput
+							? input.terminalInstance?.instanceId
+							: undefined;
+					if (inputId === undefined) {
+						return false;
+					}
+					return !knownIds.includes(inputId);
+				});
+				if (
+					unknownEditor instanceof TerminalEditorInput &&
+					unknownEditor.terminalInstance
+				) {
+					this._editorInputs.set(
+						unknownEditor.terminalInstance.resource.path,
+						unknownEditor,
+					);
+					this.instances.push(unknownEditor.terminalInstance);
+				}
+			}),
+		);
 
 		// Remove the terminal from the managed instances when the editor closes. This fires when
 		// dragging and dropping to another editor or closing the editor via cmd/ctrl+w.
-		this._register(this._editorService.onDidCloseEditor(e => {
-			const instance = e.editor instanceof TerminalEditorInput ? e.editor.terminalInstance : undefined;
-			if (instance) {
-				const instanceIndex = this.instances.findIndex(e => e === instance);
-				if (instanceIndex !== -1) {
-					const wasActiveInstance = this.instances[instanceIndex] === this.activeInstance;
-					this._removeInstance(instance);
-					if (wasActiveInstance) {
-						this.setActiveInstance(undefined);
+		this._register(
+			this._editorService.onDidCloseEditor((e) => {
+				const instance =
+					e.editor instanceof TerminalEditorInput
+						? e.editor.terminalInstance
+						: undefined;
+				if (instance) {
+					const instanceIndex = this.instances.findIndex(
+						(e) => e === instance,
+					);
+					if (instanceIndex !== -1) {
+						const wasActiveInstance =
+							this.instances[instanceIndex] ===
+							this.activeInstance;
+						this._removeInstance(instance);
+						if (wasActiveInstance) {
+							this.setActiveInstance(undefined);
+						}
 					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	private _getActiveTerminalEditors(): EditorInput[] {

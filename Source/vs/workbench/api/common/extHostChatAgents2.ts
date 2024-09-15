@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { coalesce } from "../../../base/common/arrays.js";
 import { raceCancellation } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
@@ -47,13 +48,13 @@ import {
 } from "../../services/extensions/common/extensions.js";
 import type { Dto } from "../../services/extensions/common/proxyIdentifier.js";
 import {
+	MainContext,
 	type ExtHostChatAgentsShape2,
 	type IChatAgentCompletionItem,
 	type IChatAgentHistoryEntryDto,
 	type IChatProgressDto,
 	type IExtensionChatAgentMetadata,
 	type IMainContext,
-	MainContext,
 	type MainThreadChatAgentsShape2,
 } from "./extHost.protocol.js";
 import type { CommandsConverter, ExtHostCommands } from "./extHostCommands.js";

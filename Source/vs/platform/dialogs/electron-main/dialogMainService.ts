@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import electron from "electron";
+
 import { Queue } from "../../../base/common/async.js";
 import { hash } from "../../../base/common/hash.js";
 import { mnemonicButtonLabel } from "../../../base/common/labels.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { normalizeNFC } from "../../../base/common/normalization.js";
 import { isMacintosh } from "../../../base/common/platform.js";
@@ -22,8 +23,8 @@ import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import { WORKSPACE_FILTER } from "../../workspace/common/workspace.js";
 import {
-	type INativeOpenDialogOptions,
 	massageMessageBoxOptions,
+	type INativeOpenDialogOptions,
 } from "../common/dialogs.js";
 
 export const IDialogMainService =
@@ -92,9 +93,8 @@ export class DialogMainService implements IDialogMainService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IProductService private readonly productService: IProductService
-	) {
-	}
+		@IProductService private readonly productService: IProductService,
+	) {}
 
 	pickFileFolder(
 		options: INativeOpenDialogOptions,

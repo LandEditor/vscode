@@ -8,8 +8,8 @@ import { raceCancellation } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import type {
@@ -33,9 +33,7 @@ export class StoredFileWorkingCopySaveParticipant extends Disposable {
 		return this.saveParticipants.length;
 	}
 
-	constructor(
-		@ILogService private readonly logService: ILogService
-	) {
+	constructor(@ILogService private readonly logService: ILogService) {
 		super();
 	}
 

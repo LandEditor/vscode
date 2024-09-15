@@ -58,8 +58,12 @@ export class NotebookVariableRenderer
 		return NotebookVariableRenderer.ID;
 	}
 
-	constructor(@IInstantiationService instantiationService: IInstantiationService) {
-		this.expressionRenderer = instantiationService.createInstance(DebugExpressionRenderer);
+	constructor(
+		@IInstantiationService instantiationService: IInstantiationService,
+	) {
+		this.expressionRenderer = instantiationService.createInstance(
+			DebugExpressionRenderer,
+		);
 	}
 
 	renderTemplate(container: HTMLElement): IVariableTemplateData {

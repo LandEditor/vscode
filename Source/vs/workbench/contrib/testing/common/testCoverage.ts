@@ -7,21 +7,21 @@ import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { deepClone } from "../../../../base/common/objects.js";
 import {
-	type ITransaction,
 	observableSignal,
+	type ITransaction,
 } from "../../../../base/common/observable.js";
 import {
-	type IPrefixTreeNode,
 	WellDefinedPrefixTree,
+	type IPrefixTreeNode,
 } from "../../../../base/common/prefixTree.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import type { TestId } from "./testId.js";
 import type { LiveTestResult } from "./testResult.js";
 import {
-	type CoverageDetails,
 	DetailType,
 	ICoverageCount,
+	type CoverageDetails,
 	type IFileCoverage,
 } from "./testTypes.js";
 

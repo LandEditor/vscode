@@ -5,8 +5,8 @@
 
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	autorunWithStore,
@@ -14,8 +14,8 @@ import {
 } from "../../../../base/common/observable.js";
 import {
 	AccessibilitySignal,
-	type AccessibilitySignalService,
 	IAccessibilitySignalService,
+	type AccessibilitySignalService,
 } from "../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { IDebugService, type IDebugSession } from "../../debug/common/debug.js";
@@ -26,44 +26,66 @@ export class AccessibilitySignalLineDebuggerContribution
 {
 	constructor(
 		@IDebugService debugService: IDebugService,
-		@IAccessibilitySignalService private readonly accessibilitySignalService: AccessibilitySignalService,
+		@IAccessibilitySignalService
+		private readonly accessibilitySignalService: AccessibilitySignalService,
 	) {
 		super();
 
-		const isEnabled = observableFromEvent(this,
-			accessibilitySignalService.onSoundEnabledChanged(AccessibilitySignal.onDebugBreak),
-			() => accessibilitySignalService.isSoundEnabled(AccessibilitySignal.onDebugBreak)
+		const isEnabled = observableFromEvent(
+			this,
+			accessibilitySignalService.onSoundEnabledChanged(
+				AccessibilitySignal.onDebugBreak,
+			),
+			() =>
+				accessibilitySignalService.isSoundEnabled(
+					AccessibilitySignal.onDebugBreak,
+				),
 		);
-		this._register(autorunWithStore((reader, store) => {
-			/** @description subscribe to debug sessions */
-			if (!isEnabled.read(reader)) {
-				return;
-			}
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description subscribe to debug sessions */
+				if (!isEnabled.read(reader)) {
+					return;
+				}
 
-			const sessionDisposables = new Map<IDebugSession, IDisposable>();
-			store.add(toDisposable(() => {
-				sessionDisposables.forEach(d => d.dispose());
-				sessionDisposables.clear();
-			}));
-
-			store.add(
-				debugService.onDidNewSession((session) =>
-					sessionDisposables.set(session, this.handleSession(session))
-				)
-			);
-
-			store.add(debugService.onDidEndSession(({ session }) => {
-				sessionDisposables.get(session)?.dispose();
-				sessionDisposables.delete(session);
-			}));
-
-			debugService
-				.getModel()
-				.getSessions()
-				.forEach((session) =>
-					sessionDisposables.set(session, this.handleSession(session))
+				const sessionDisposables = new Map<
+					IDebugSession,
+					IDisposable
+				>();
+				store.add(
+					toDisposable(() => {
+						sessionDisposables.forEach((d) => d.dispose());
+						sessionDisposables.clear();
+					}),
 				);
-		}));
+
+				store.add(
+					debugService.onDidNewSession((session) =>
+						sessionDisposables.set(
+							session,
+							this.handleSession(session),
+						),
+					),
+				);
+
+				store.add(
+					debugService.onDidEndSession(({ session }) => {
+						sessionDisposables.get(session)?.dispose();
+						sessionDisposables.delete(session);
+					}),
+				);
+
+				debugService
+					.getModel()
+					.getSessions()
+					.forEach((session) =>
+						sessionDisposables.set(
+							session,
+							this.handleSession(session),
+						),
+					);
+			}),
+		);
 	}
 
 	private handleSession(session: IDebugSession): IDisposable {

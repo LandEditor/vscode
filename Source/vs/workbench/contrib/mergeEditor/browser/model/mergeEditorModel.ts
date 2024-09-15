@@ -6,16 +6,16 @@
 import { CompareResult, equals } from "../../../../../base/common/arrays.js";
 import { BugIndicatingError } from "../../../../../base/common/errors.js";
 import {
-	type IObservable,
-	type IReader,
-	type ISettableObservable,
-	type ITransaction,
 	autorunHandleChanges,
 	derived,
 	keepObserved,
 	observableValue,
 	transaction,
 	waitForState,
+	type IObservable,
+	type IReader,
+	type ISettableObservable,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import { Range } from "../../../../../editor/common/core/range.js";
@@ -23,10 +23,10 @@ import { ILanguageService } from "../../../../../editor/common/languages/languag
 import type { ITextModel } from "../../../../../editor/common/model.js";
 import { localize } from "../../../../../nls.js";
 import {
-	type IResourceUndoRedoElement,
 	IUndoRedoService,
 	UndoRedoElementType,
 	UndoRedoGroup,
+	type IResourceUndoRedoElement,
 } from "../../../../../platform/undoRedo/common/undoRedo.js";
 import { EditorModel } from "../../../../common/editor/editorModel.js";
 import type { MergeEditorTelemetry } from "../telemetry.js";
@@ -34,21 +34,21 @@ import { leftJoin } from "../utils.js";
 import type { IMergeDiffComputer } from "./diffComputer.js";
 import { LineRange } from "./lineRange.js";
 import {
-	type DetailedLineRangeMapping,
 	DocumentLineRangeMap,
 	DocumentRangeMap,
 	LineRangeMapping,
+	type DetailedLineRangeMapping,
 } from "./mapping.js";
 import {
-	type InputNumber,
 	ModifiedBaseRange,
 	ModifiedBaseRangeState,
 	ModifiedBaseRangeStateKind,
+	type InputNumber,
 } from "./modifiedBaseRange.js";
 import {
 	TextModelDiffChangeReason,
-	TextModelDiffState,
 	TextModelDiffs,
+	TextModelDiffState,
 } from "./textModelDiffs.js";
 
 export interface InputData {
@@ -87,10 +87,9 @@ export class MergeEditorModel extends EditorModel {
 		const map = new Map<ModifiedBaseRange, ModifiedBaseRangeData>(
 			this.modifiedBaseRanges
 				.read(reader)
-				.map<[ModifiedBaseRange, ModifiedBaseRangeData]>((s) => [
-					s,
-					new ModifiedBaseRangeData(s),
-				]),
+				.map<
+					[ModifiedBaseRange, ModifiedBaseRangeData]
+				>((s) => [s, new ModifiedBaseRangeData(s)]),
 		);
 		return map;
 	});
@@ -126,39 +125,67 @@ export class MergeEditorModel extends EditorModel {
 				autorunHandleChanges(
 					{
 						handleChange: (ctx) => {
-							if (ctx.didChange(this.modifiedBaseRangeResultStates)) {
+							if (
+								ctx.didChange(
+									this.modifiedBaseRangeResultStates,
+								)
+							) {
 								shouldRecomputeHandledFromAccepted = true;
 							}
-							return ctx.didChange(this.resultTextModelDiffs.diffs)
-								// Ignore non-text changes as we update the state directly
-								? ctx.change === TextModelDiffChangeReason.textChange
+							return ctx.didChange(
+								this.resultTextModelDiffs.diffs,
+							)
+								? // Ignore non-text changes as we update the state directly
+									ctx.change ===
+										TextModelDiffChangeReason.textChange
 								: true;
 						},
 					},
 					(reader) => {
 						/** @description Merge Editor Model: Recompute State From Result */
-						const states = this.modifiedBaseRangeResultStates.read(reader);
+						const states =
+							this.modifiedBaseRangeResultStates.read(reader);
 						if (!this.isUpToDate.read(reader)) {
 							return;
 						}
-						const resultDiffs = this.resultTextModelDiffs.diffs.read(reader);
-						transaction(tx => {
+						const resultDiffs =
+							this.resultTextModelDiffs.diffs.read(reader);
+						transaction((tx) => {
 							/** @description Merge Editor Model: Recompute State */
 
-							this.updateBaseRangeAcceptedState(resultDiffs, states, tx);
+							this.updateBaseRangeAcceptedState(
+								resultDiffs,
+								states,
+								tx,
+							);
 
 							if (shouldRecomputeHandledFromAccepted) {
 								shouldRecomputeHandledFromAccepted = false;
-								for (const [_range, observableState] of states) {
-									const state = observableState.accepted.get();
-									const handled = !(state.kind === ModifiedBaseRangeStateKind.base || state.kind === ModifiedBaseRangeStateKind.unrecognized);
-									observableState.handledInput1.set(handled, tx);
-									observableState.handledInput2.set(handled, tx);
+								for (const [
+									_range,
+									observableState,
+								] of states) {
+									const state =
+										observableState.accepted.get();
+									const handled = !(
+										state.kind ===
+											ModifiedBaseRangeStateKind.base ||
+										state.kind ===
+											ModifiedBaseRangeStateKind.unrecognized
+									);
+									observableState.handledInput1.set(
+										handled,
+										tx,
+									);
+									observableState.handledInput2.set(
+										handled,
+										tx,
+									);
 								}
 							}
 						});
-					}
-				)
+					},
+				),
 			);
 		});
 	}

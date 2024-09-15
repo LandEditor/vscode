@@ -129,7 +129,9 @@
 	padding: 0;
 	text-align: initial;
 	justify-content: initial;
-	color: var(--vscode-foreground) !important; /* This is inside .rendered-markdown */
+	color: var(
+		--vscode-foreground
+	) !important; /* This is inside .rendered-markdown */
 	user-select: none;
 }
 

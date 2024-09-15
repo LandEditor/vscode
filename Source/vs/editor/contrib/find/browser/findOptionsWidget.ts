@@ -4,7 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as dom from "../../../../base/browser/dom.js";
+
 import "./findOptionsWidget.css";
+
 import {
 	CaseSensitiveToggle,
 	RegexToggle,
@@ -21,10 +23,10 @@ import {
 	inputActiveOptionForeground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
+	OverlayWidgetPositionPreference,
 	type ICodeEditor,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
-	OverlayWidgetPositionPreference,
 } from "../../../browser/editorBrowser.js";
 import { FIND_IDS } from "./findModel.js";
 import type { FindReplaceState } from "./findState.js";

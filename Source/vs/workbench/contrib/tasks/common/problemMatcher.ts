@@ -3,19 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { localize } from "../../../../nls.js";
-
 import { asArray } from "../../../../base/common/arrays.js";
 import * as Assert from "../../../../base/common/assert.js";
 import type { IStringDictionary } from "../../../../base/common/collections.js";
+import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import { Schemas as NetworkSchemas } from "../../../../base/common/network.js";
 import * as Objects from "../../../../base/common/objects.js";
 import {
-	type IProblemReporter,
 	Parser,
 	ValidationState,
 	ValidationStatus,
+	type IProblemReporter,
 } from "../../../../base/common/parsers.js";
 import { join, normalize } from "../../../../base/common/path.js";
 import * as Platform from "../../../../base/common/platform.js";
@@ -24,8 +23,7 @@ import * as Strings from "../../../../base/common/strings.js";
 import * as Types from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import * as UUID from "../../../../base/common/uuid.js";
-
-import { Emitter, type Event } from "../../../../base/common/event.js";
+import { localize } from "../../../../nls.js";
 import {
 	FileType,
 	type IFileService,
@@ -33,12 +31,12 @@ import {
 	type IFileSystemProvider,
 } from "../../../../platform/files/common/files.js";
 import {
-	type IMarkerData,
 	MarkerSeverity,
+	type IMarkerData,
 } from "../../../../platform/markers/common/markers.js";
 import {
-	type ExtensionMessageCollector,
 	ExtensionsRegistry,
+	type ExtensionMessageCollector,
 } from "../../../services/extensions/common/extensionsRegistry.js";
 
 export enum FileLocationKind {

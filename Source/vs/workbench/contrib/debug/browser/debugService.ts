@@ -7,8 +7,8 @@ import * as aria from "../../../../base/browser/ui/aria/aria.js";
 import { Action, type IAction } from "../../../../base/common/actions.js";
 import { distinct } from "../../../../base/common/arrays.js";
 import {
-	RunOnceScheduler,
 	raceTimeout,
+	RunOnceScheduler,
 } from "../../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import { isErrorWithActions } from "../../../../base/common/errorMessage.js";
@@ -28,15 +28,15 @@ import * as nls from "../../../../nls.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IExtensionHostDebugService } from "../../../../platform/debug/common/extensionHostDebug.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	IFileService,
+	type FileChangesEvent,
 } from "../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
@@ -44,8 +44,8 @@ import { IQuickInputService } from "../../../../platform/quickinput/common/quick
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
 	IWorkspaceContextService,
-	type IWorkspaceFolder,
 	WorkbenchState,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspaceTrustRequestService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { EditorsOrder } from "../../../common/editor.js";
@@ -80,6 +80,11 @@ import {
 	CONTEXT_IN_DEBUG_MODE,
 	DEBUG_MEMORY_SCHEME,
 	DEBUG_SCHEME,
+	debuggerDisabledMessage,
+	getStateLabel,
+	REPL_VIEW_ID,
+	State,
+	VIEWLET_ID,
 	type IAdapterManager,
 	type IBreakpoint,
 	type IBreakpointData,
@@ -99,22 +104,18 @@ import {
 	type IStackFrame,
 	type IThread,
 	type IViewModel,
-	REPL_VIEW_ID,
-	State,
-	VIEWLET_ID,
-	debuggerDisabledMessage,
-	getStateLabel,
 } from "../common/debug.js";
 import { DebugCompoundRoot } from "../common/debugCompoundRoot.js";
+import type { Debugger } from "../common/debugger.js";
 import {
 	Breakpoint,
 	DataBreakpoint,
 	DebugModel,
 	FunctionBreakpoint,
+	InstructionBreakpoint,
 	type IDataBreakpointOptions,
 	type IFunctionBreakpointOptions,
 	type IInstructionBreakpointOptions,
-	InstructionBreakpoint,
 } from "../common/debugModel.js";
 import { Source } from "../common/debugSource.js";
 import { DebugStorage } from "../common/debugStorage.js";
@@ -124,7 +125,6 @@ import {
 	saveAllBeforeDebugStart,
 } from "../common/debugUtils.js";
 import { ViewModel } from "../common/debugViewModel.js";
-import type { Debugger } from "../common/debugger.js";
 import { DisassemblyViewInput } from "../common/disassemblyViewInput.js";
 import { AdapterManager } from "./debugAdapterManager.js";
 import {
@@ -176,25 +176,37 @@ export class DebugService implements IDebugService {
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
 		@IViewsService private readonly viewsService: IViewsService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionHostDebugService private readonly extensionHostDebugService: IExtensionHostDebugService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionHostDebugService
+		private readonly extensionHostDebugService: IExtensionHostDebugService,
 		@IActivityService private readonly activityService: IActivityService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ITestService private readonly testService: ITestService,
 	) {
 		this.breakpointsToSendOnResourceSaved = new Set<URI>();
@@ -204,92 +216,172 @@ export class DebugService implements IDebugService {
 		this._onWillNewSession = new Emitter<IDebugSession>();
 		this._onDidEndSession = new Emitter();
 
-		this.adapterManager = this.instantiationService.createInstance(AdapterManager, { onDidNewSession: this.onDidNewSession });
+		this.adapterManager = this.instantiationService.createInstance(
+			AdapterManager,
+			{ onDidNewSession: this.onDidNewSession },
+		);
 		this.disposables.add(this.adapterManager);
-		this.configurationManager = this.instantiationService.createInstance(ConfigurationManager, this.adapterManager);
+		this.configurationManager = this.instantiationService.createInstance(
+			ConfigurationManager,
+			this.adapterManager,
+		);
 		this.disposables.add(this.configurationManager);
-		this.debugStorage = this.disposables.add(this.instantiationService.createInstance(DebugStorage));
+		this.debugStorage = this.disposables.add(
+			this.instantiationService.createInstance(DebugStorage),
+		);
 
 		this.chosenEnvironments = this.debugStorage.loadChosenEnvironments();
 
-		this.model = this.instantiationService.createInstance(DebugModel, this.debugStorage);
-		this.telemetry = this.instantiationService.createInstance(DebugTelemetry, this.model);
+		this.model = this.instantiationService.createInstance(
+			DebugModel,
+			this.debugStorage,
+		);
+		this.telemetry = this.instantiationService.createInstance(
+			DebugTelemetry,
+			this.model,
+		);
 
 		this.viewModel = new ViewModel(contextKeyService);
-		this.taskRunner = this.instantiationService.createInstance(DebugTaskRunner);
+		this.taskRunner =
+			this.instantiationService.createInstance(DebugTaskRunner);
 
-		this.disposables.add(this.fileService.onDidFilesChange(e => this.onFileChanges(e)));
-		this.disposables.add(this.lifecycleService.onWillShutdown(this.dispose, this));
+		this.disposables.add(
+			this.fileService.onDidFilesChange((e) => this.onFileChanges(e)),
+		);
+		this.disposables.add(
+			this.lifecycleService.onWillShutdown(this.dispose, this),
+		);
 
-		this.disposables.add(this.extensionHostDebugService.onAttachSession(event => {
-			const session = this.model.getSession(event.sessionId, true);
-			if (session) {
-				// EH was started in debug mode -> attach to it
-				session.configuration.request = 'attach';
-				session.configuration.port = event.port;
-				session.setSubId(event.subId);
-				this.launchOrAttachToSession(session);
-			}
-		}));
-		this.disposables.add(this.extensionHostDebugService.onTerminateSession(event => {
-			const session = this.model.getSession(event.sessionId);
-			if (session && session.subId === event.subId) {
-				session.disconnect();
-			}
-		}));
-
-		this.disposables.add(this.viewModel.onDidFocusStackFrame(() => {
-			this.onStateChange();
-		}));
-		this.disposables.add(this.viewModel.onDidFocusSession((session: IDebugSession | undefined) => {
-			this.onStateChange();
-
-			if (session) {
-				this.setExceptionBreakpointFallbackSession(session.getId());
-			}
-		}));
-		this.disposables.add(Event.any(this.adapterManager.onDidRegisterDebugger, this.configurationManager.onDidSelectConfiguration)(() => {
-			const debugUxValue = (this.state !== State.Inactive || (this.configurationManager.getAllConfigurations().length > 0 && this.adapterManager.hasEnabledDebuggers())) ? 'default' : 'simple';
-			this.debugUx.set(debugUxValue);
-			this.debugStorage.storeDebugUxState(debugUxValue);
-		}));
-		this.disposables.add(this.model.onDidChangeCallStack(() => {
-			const numberOfSessions = this.model.getSessions().filter(s => !s.parentSession).length;
-			this.activity?.dispose();
-			if (numberOfSessions > 0) {
-				const viewContainer = this.viewDescriptorService.getViewContainerByViewId(CALLSTACK_VIEW_ID);
-				if (viewContainer) {
-					this.activity = this.activityService.showViewContainerActivity(viewContainer.id, { badge: new NumberBadge(numberOfSessions, n => n === 1 ? nls.localize('1activeSession', "1 active session") : nls.localize('nActiveSessions', "{0} active sessions", n)) });
+		this.disposables.add(
+			this.extensionHostDebugService.onAttachSession((event) => {
+				const session = this.model.getSession(event.sessionId, true);
+				if (session) {
+					// EH was started in debug mode -> attach to it
+					session.configuration.request = "attach";
+					session.configuration.port = event.port;
+					session.setSubId(event.subId);
+					this.launchOrAttachToSession(session);
 				}
-			}
-		}));
-
-		this.disposables.add(editorService.onDidActiveEditorChange(() => {
-			this.contextKeyService.bufferChangeEvents(() => {
-				if (editorService.activeEditor === DisassemblyViewInput.instance) {
-					this.disassemblyViewFocus.set(true);
-				} else {
-					// This key can be initialized a tick after this event is fired
-					this.disassemblyViewFocus?.reset();
+			}),
+		);
+		this.disposables.add(
+			this.extensionHostDebugService.onTerminateSession((event) => {
+				const session = this.model.getSession(event.sessionId);
+				if (session && session.subId === event.subId) {
+					session.disconnect();
 				}
-			});
-		}));
+			}),
+		);
 
-		this.disposables.add(this.lifecycleService.onBeforeShutdown(() => {
-			for (const editor of editorService.editors) {
-				// Editors will not be valid on window reload, so close them.
-				if (editor.resource?.scheme === DEBUG_MEMORY_SCHEME) {
-					editor.dispose();
+		this.disposables.add(
+			this.viewModel.onDidFocusStackFrame(() => {
+				this.onStateChange();
+			}),
+		);
+		this.disposables.add(
+			this.viewModel.onDidFocusSession(
+				(session: IDebugSession | undefined) => {
+					this.onStateChange();
+
+					if (session) {
+						this.setExceptionBreakpointFallbackSession(
+							session.getId(),
+						);
+					}
+				},
+			),
+		);
+		this.disposables.add(
+			Event.any(
+				this.adapterManager.onDidRegisterDebugger,
+				this.configurationManager.onDidSelectConfiguration,
+			)(() => {
+				const debugUxValue =
+					this.state !== State.Inactive ||
+					(this.configurationManager.getAllConfigurations().length >
+						0 &&
+						this.adapterManager.hasEnabledDebuggers())
+						? "default"
+						: "simple";
+				this.debugUx.set(debugUxValue);
+				this.debugStorage.storeDebugUxState(debugUxValue);
+			}),
+		);
+		this.disposables.add(
+			this.model.onDidChangeCallStack(() => {
+				const numberOfSessions = this.model
+					.getSessions()
+					.filter((s) => !s.parentSession).length;
+				this.activity?.dispose();
+				if (numberOfSessions > 0) {
+					const viewContainer =
+						this.viewDescriptorService.getViewContainerByViewId(
+							CALLSTACK_VIEW_ID,
+						);
+					if (viewContainer) {
+						this.activity =
+							this.activityService.showViewContainerActivity(
+								viewContainer.id,
+								{
+									badge: new NumberBadge(
+										numberOfSessions,
+										(n) =>
+											n === 1
+												? nls.localize(
+														"1activeSession",
+														"1 active session",
+													)
+												: nls.localize(
+														"nActiveSessions",
+														"{0} active sessions",
+														n,
+													),
+									),
+								},
+							);
+					}
 				}
-			}
-		}));
+			}),
+		);
 
-		this.disposables.add(extensionService.onWillStop(evt => {
-			evt.veto(
-				this.model.getSessions().length > 0,
-				nls.localize('active debug session', 'A debug session is still running.'),
-			);
-		}));
+		this.disposables.add(
+			editorService.onDidActiveEditorChange(() => {
+				this.contextKeyService.bufferChangeEvents(() => {
+					if (
+						editorService.activeEditor ===
+						DisassemblyViewInput.instance
+					) {
+						this.disassemblyViewFocus.set(true);
+					} else {
+						// This key can be initialized a tick after this event is fired
+						this.disassemblyViewFocus?.reset();
+					}
+				});
+			}),
+		);
+
+		this.disposables.add(
+			this.lifecycleService.onBeforeShutdown(() => {
+				for (const editor of editorService.editors) {
+					// Editors will not be valid on window reload, so close them.
+					if (editor.resource?.scheme === DEBUG_MEMORY_SCHEME) {
+						editor.dispose();
+					}
+				}
+			}),
+		);
+
+		this.disposables.add(
+			extensionService.onWillStop((evt) => {
+				evt.veto(
+					this.model.getSessions().length > 0,
+					nls.localize(
+						"active debug session",
+						"A debug session is still running.",
+					),
+				);
+			}),
+		);
 
 		this.initContextKeys(contextKeyService);
 	}

@@ -9,9 +9,9 @@ import { localize } from "../../../../nls.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 	TriggerAction,
+	type IPickerQuickAccessItem,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import type { IQuickPickSeparator } from "../../../../platform/quickinput/common/quickInput.js";
 import { TerminalLocation } from "../../../../platform/terminal/common/terminal.js";
@@ -22,11 +22,12 @@ import { terminalStrings } from "../common/terminalStrings.js";
 import {
 	ITerminalEditorService,
 	ITerminalGroupService,
-	type ITerminalInstance,
 	ITerminalService,
+	type ITerminalInstance,
 } from "./terminal.js";
 import { getColorClass, getIconId, getUriClasses } from "./terminalIcon.js";
 import { killTerminalIcon, renameTerminalIcon } from "./terminalIcons.js";
+
 let terminalPicks: Array<IPickerQuickAccessItem | IQuickPickSeparator> = [];
 
 export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
@@ -35,13 +36,18 @@ export class TerminalQuickAccessProvider extends PickerQuickAccessProvider<IPick
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
-		super(TerminalQuickAccessProvider.PREFIX, { canAcceptInBackground: true });
+		super(TerminalQuickAccessProvider.PREFIX, {
+			canAcceptInBackground: true,
+		});
 	}
 	protected _getPicks(
 		filter: string,

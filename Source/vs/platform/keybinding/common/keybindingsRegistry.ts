@@ -4,17 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type Keybinding,
 	decodeKeybinding,
+	type Keybinding,
 } from "../../../base/common/keybindings.js";
 import {
-	DisposableStore,
-	type IDisposable,
 	combinedDisposable,
+	DisposableStore,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../base/common/linkedList.js";
-import { OS, OperatingSystem } from "../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../base/common/platform.js";
 import {
 	CommandsRegistry,
 	type ICommandHandler,

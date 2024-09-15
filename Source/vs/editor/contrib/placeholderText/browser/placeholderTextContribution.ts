@@ -7,14 +7,14 @@ import { h } from "../../../../base/browser/dom.js";
 import { structuralEquals } from "../../../../base/common/equals.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type DebugOwner,
-	type IObservable,
-	type IReader,
 	autorun,
 	constObservable,
 	derivedObservableWithCache,
 	derivedOpts,
 	derivedWithStore,
+	type DebugOwner,
+	type IObservable,
+	type IReader,
 } from "../../../../base/common/observable.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import { observableCodeEditor } from "../../../browser/observableCodeEditor.js";

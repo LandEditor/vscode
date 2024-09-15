@@ -27,8 +27,8 @@ import {
 } from "../../../../../platform/contextkey/common/contextkeys.js";
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPickItem,
 	type IQuickPickSeparator,
 } from "../../../../../platform/quickinput/common/quickInput.js";
@@ -44,11 +44,11 @@ import {
 	CONTEXT_IN_CHAT_INPUT,
 	CONTEXT_IN_CHAT_SESSION,
 } from "../../common/chatContextKeys.js";
-import { type IChatDetail, IChatService } from "../../common/chatService.js";
+import { IChatService, type IChatDetail } from "../../common/chatService.js";
 import {
+	isRequestVM,
 	type IChatRequestViewModel,
 	type IChatResponseViewModel,
-	isRequestVM,
 } from "../../common/chatViewModel.js";
 import { IChatWidgetHistoryService } from "../../common/chatWidgetHistoryService.js";
 import { CHAT_VIEW_ID, IChatWidgetService, showChatView } from "../chat.js";

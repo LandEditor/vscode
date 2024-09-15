@@ -8,8 +8,8 @@ import { isEqual } from "../../../../../base/common/extpath.js";
 import { patternsEquals } from "../../../../../base/common/glob.js";
 import { isLinux } from "../../../../../base/common/platform.js";
 import type {
-	INonRecursiveWatchRequest,
 	INonRecursiveWatcher,
+	INonRecursiveWatchRequest,
 	IRecursiveWatcherWithSubscribe,
 } from "../../../common/watcher.js";
 import { BaseWatcher } from "../baseWatcher.js";

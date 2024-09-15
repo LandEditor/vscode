@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../base/browser/fastDomNode.js";
 import { EditorOption } from "../../common/config/editorOptions.js";
 import type { StringBuilder } from "../../common/core/stringBuilder.js";
@@ -18,7 +18,7 @@ import type {
 	RenderingContext,
 	RestrictedRenderingContext,
 } from "./renderingContext.js";
-import { type IVisibleLine, VisibleLinesCollection } from "./viewLayer.js";
+import { VisibleLinesCollection, type IVisibleLine } from "./viewLayer.js";
 import { ViewPart } from "./viewPart.js";
 
 export class ViewOverlays extends ViewPart {

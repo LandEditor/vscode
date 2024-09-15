@@ -10,25 +10,24 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import Severity from "../../../../base/common/severity.js";
 import {
-	type ICodeEditor,
 	getCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
+import { ColorDetector } from "../../../../editor/contrib/colorPicker/browser/colorDetector.js";
+import { FoldingController } from "../../../../editor/contrib/folding/browser/folding.js";
 import * as nls from "../../../../nls.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type ILanguageStatus,
 	ILanguageStatusService,
+	type ILanguageStatus,
 } from "../../../services/languageStatus/common/languageStatusService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
-
-import { ColorDetector } from "../../../../editor/contrib/colorPicker/browser/colorDetector.js";
-import { FoldingController } from "../../../../editor/contrib/folding/browser/folding.js";
 
 const openSettingsCommand = "workbench.action.openSettings";
 const configureSettingsLabel = nls.localize(

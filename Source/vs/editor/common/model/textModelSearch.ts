@@ -8,9 +8,9 @@ import * as strings from "../../../base/common/strings.js";
 import { Position } from "../core/position.js";
 import { Range } from "../core/range.js";
 import {
+	getMapForWordSeparators,
 	WordCharacterClass,
 	type WordCharacterClassifier,
-	getMapForWordSeparators,
 } from "../core/wordCharacterClassifier.js";
 import { EndOfLinePreference, FindMatch, SearchData } from "../model.js";
 import type { TextModel } from "./textModel.js";

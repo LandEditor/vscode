@@ -9,12 +9,14 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
+
 import "./commentsEditorContribution.js";
+
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { CommentThreadState } from "../../../../editor/common/languages.js";
 import { AccessibleViewProviderId } from "../../../../platform/accessibility/browser/accessibleView.js";
@@ -48,14 +50,14 @@ import {
 	accessibleViewCurrentProviderId,
 	accessibleViewIsShown,
 } from "../../accessibility/browser/accessibilityConfiguration.js";
+import { CommentsAccessibilityHelp } from "./commentsAccessibility.js";
+import { CommentsAccessibleView } from "./commentsAccessibleView.js";
+import { revealCommentThread } from "./commentsController.js";
 import {
 	CommentService,
 	ICommentService,
 	type IWorkspaceCommentThreadsEvent,
 } from "./commentService.js";
-import { CommentsAccessibilityHelp } from "./commentsAccessibility.js";
-import { CommentsAccessibleView } from "./commentsAccessibleView.js";
-import { revealCommentThread } from "./commentsController.js";
 import { COMMENTS_VIEW_ID } from "./commentsTreeViewer.js";
 import {
 	CONTEXT_KEY_HAS_COMMENTS,
@@ -271,11 +273,21 @@ export class UnresolvedCommentsBadge
 
 	constructor(
 		@ICommentService private readonly _commentService: ICommentService,
-		@IActivityService private readonly activityService: IActivityService) {
+		@IActivityService private readonly activityService: IActivityService,
+	) {
 		super();
-		this._register(this._commentService.onDidSetAllCommentThreads(this.onAllCommentsChanged, this));
-		this._register(this._commentService.onDidUpdateCommentThreads(this.onCommentsUpdated, this));
-
+		this._register(
+			this._commentService.onDidSetAllCommentThreads(
+				this.onAllCommentsChanged,
+				this,
+			),
+		);
+		this._register(
+			this._commentService.onDidUpdateCommentThreads(
+				this.onCommentsUpdated,
+				this,
+			),
+		);
 	}
 
 	private onAllCommentsChanged(e: IWorkspaceCommentThreadsEvent): void {

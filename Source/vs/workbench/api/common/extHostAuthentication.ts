@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	ExtensionIdentifier,
@@ -12,8 +13,8 @@ import {
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import { INTERNAL_AUTH_PROVIDER_PREFIX } from "../../services/authentication/common/authentication.js";
 import {
-	type ExtHostAuthenticationShape,
 	MainContext,
+	type ExtHostAuthenticationShape,
 	type MainThreadAuthenticationShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -46,9 +47,7 @@ export class ExtHostAuthentication implements ExtHostAuthenticationShape {
 		vscode.AuthenticationSession | undefined
 	>();
 
-	constructor(
-		@IExtHostRpcService extHostRpc: IExtHostRpcService
-	) {
+	constructor(@IExtHostRpcService extHostRpc: IExtHostRpcService) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadAuthentication);
 	}
 

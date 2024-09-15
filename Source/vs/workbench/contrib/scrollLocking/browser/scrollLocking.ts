@@ -20,15 +20,15 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { SideBySideEditor } from "../../../browser/parts/editor/sideBySideEditor.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
+	isEditorPaneWithScrolling,
 	type IEditorPane,
 	type IEditorPaneScrollPosition,
-	isEditorPaneWithScrolling,
 } from "../../../common/editor.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 
 export class SyncScroll extends Disposable implements IWorkbenchContribution {
@@ -52,7 +52,7 @@ export class SyncScroll extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IStatusbarService private readonly statusbarService: IStatusbarService
+		@IStatusbarService private readonly statusbarService: IStatusbarService,
 	) {
 		super();
 

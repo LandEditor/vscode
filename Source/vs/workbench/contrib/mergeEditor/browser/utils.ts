@@ -7,12 +7,12 @@ import { ArrayQueue, CompareResult } from "../../../../base/common/arrays.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorunOpts,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import type { CodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
 import type { IModelDeltaDecoration } from "../../../../editor/common/model.js";
@@ -170,8 +170,8 @@ export class PersistentStore<T> {
 
 	constructor(
 		private readonly key: string,
-		@IStorageService private readonly storageService: IStorageService
-	) { }
+		@IStorageService private readonly storageService: IStorageService,
+	) {}
 
 	public get(): Readonly<T> | undefined {
 		if (!this.hasValue) {

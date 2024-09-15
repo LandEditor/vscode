@@ -30,14 +30,20 @@ class RemoteExtensionsScannerService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IRemoteUserDataProfilesService private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
-		@IActiveLanguagePackService private readonly activeLanguagePackService: IActiveLanguagePackService,
-		@IWorkbenchExtensionManagementService private readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IRemoteUserDataProfilesService
+		private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
+		@IActiveLanguagePackService
+		private readonly activeLanguagePackService: IActiveLanguagePackService,
+		@IWorkbenchExtensionManagementService
+		private readonly extensionManagementService: IWorkbenchExtensionManagementService,
 		@ILogService private readonly logService: ILogService,
-	) { }
+	) {}
 
 	whenExtensionsReady(): Promise<void> {
 		return this.withChannel(

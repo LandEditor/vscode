@@ -4,19 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal } from "@xterm/xterm";
+
 import { Delayer } from "../../../../../base/common/async.js";
 import { VSBuffer } from "../../../../../base/common/buffer.js";
 import { Event } from "../../../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
-	combinedDisposable,
 	dispose,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { URI } from "../../../../../base/common/uri.js";
+
 import "./media/developer.css";
+
 import { localize, localize2 } from "../../../../../nls.js";
 import { Categories } from "../../../../../platform/action/common/actionCommonCategories.js";
 import { IClipboardService } from "../../../../../platform/clipboard/common/clipboardService.js";
@@ -27,9 +30,9 @@ import { IFileService } from "../../../../../platform/files/common/files.js";
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { IQuickInputService } from "../../../../../platform/quickinput/common/quickInput.js";
 import {
+	TerminalCapability,
 	type ICommandDetectionCapability,
 	type ITerminalCommand,
-	TerminalCapability,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
 	ITerminalLogService,
@@ -37,10 +40,10 @@ import {
 } from "../../../../../platform/terminal/common/terminal.js";
 import { IWorkspaceContextService } from "../../../../../platform/workspace/common/workspace.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../../services/statusbar/browser/statusbar.js";
 import type {
 	IInternalXtermTerminal,
@@ -316,15 +319,19 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
 	) {
 		super();
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSettingId.DevMode)) {
-				this._updateDevMode();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TerminalSettingId.DevMode)) {
+					this._updateDevMode();
+				}
+			}),
+		);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: Terminal }): void {

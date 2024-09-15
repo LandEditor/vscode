@@ -17,10 +17,10 @@ import {
 } from "../../common/notebookCommon.js";
 import {
 	CellEditState,
-	type CellFindMatch,
 	CellFoldingState,
 	CellLayoutContext,
 	CellLayoutState,
+	type CellFindMatch,
 	type EditorFoldingStateDelegate,
 	type ICellOutputViewModel,
 	type ICellViewModel,

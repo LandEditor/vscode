@@ -30,14 +30,14 @@ import { IProgressService } from "../../../../platform/progress/common/progress.
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
-	type IViewContainersRegistry,
-	type IViewsRegistry,
 	Extensions as ViewContainerExtensions,
 	ViewContainerLocation,
+	type IViewContainersRegistry,
+	type IViewsRegistry,
 } from "../../../common/views.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
@@ -53,6 +53,14 @@ import {
 	TestExplorerFilterState,
 } from "../common/testExplorerFilterState.js";
 import { TestId, TestPosition } from "../common/testId.js";
+import { TestingContentProvider } from "../common/testingContentProvider.js";
+import { TestingContextKeys } from "../common/testingContextKeys.js";
+import {
+	ITestingContinuousRunService,
+	TestingContinuousRunService,
+} from "../common/testingContinuousRunService.js";
+import { ITestingDecorationsService } from "../common/testingDecorations.js";
+import { ITestingPeekOpener } from "../common/testingPeekOpener.js";
 import {
 	ITestProfileService,
 	TestProfileService,
@@ -68,21 +76,13 @@ import {
 import { ITestService } from "../common/testService.js";
 import { TestService } from "../common/testServiceImpl.js";
 import type { ITestItem, TestRunProfileBitset } from "../common/testTypes.js";
-import { TestingContentProvider } from "../common/testingContentProvider.js";
-import { TestingContextKeys } from "../common/testingContextKeys.js";
-import {
-	ITestingContinuousRunService,
-	TestingContinuousRunService,
-} from "../common/testingContinuousRunService.js";
-import { ITestingDecorationsService } from "../common/testingDecorations.js";
-import { ITestingPeekOpener } from "../common/testingPeekOpener.js";
 import { CodeCoverageDecorations } from "./codeCoverageDecorations.js";
 import { testingResultsIcon, testingViewIcon } from "./icons.js";
 import { TestCoverageView } from "./testCoverageView.js";
 import { allTestActions, discoverAndRunTests } from "./testExplorerActions.js";
 import {
-	TestingDecorationService,
 	TestingDecorations,
+	TestingDecorationService,
 } from "./testingDecorations.js";
 import { TestingExplorerView } from "./testingExplorerView.js";
 import {
@@ -91,13 +91,14 @@ import {
 	GoToNextMessageAction,
 	GoToPreviousMessageAction,
 	OpenMessageInEditorAction,
-	TestResultsView,
 	TestingOutputPeekController,
 	TestingPeekOpener,
+	TestResultsView,
 	ToggleTestingPeekHistory,
 } from "./testingOutputPeek.js";
 import { TestingProgressTrigger } from "./testingProgressUiService.js";
 import { TestingViewPaneContainer } from "./testingViewPaneContainer.js";
+
 import "./testingConfigurationUi.js";
 
 registerSingleton(ITestService, TestService, InstantiationType.Delayed);

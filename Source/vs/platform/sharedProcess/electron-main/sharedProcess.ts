@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IpcMainEvent, MessagePortMain } from "electron";
+
 import { Barrier, DeferredPromise } from "../../../base/common/async.js";
 import { Emitter } from "../../../base/common/event.js";
 import {
@@ -41,12 +42,16 @@ export class SharedProcess extends Disposable {
 		private readonly machineId: string,
 		private readonly sqmId: string,
 		private readonly devDeviceId: string,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@ILogService private readonly logService: ILogService,
-		@ILoggerMainService private readonly loggerMainService: ILoggerMainService,
-		@IPolicyService private readonly policyService: IPolicyService
+		@ILoggerMainService
+		private readonly loggerMainService: ILoggerMainService,
+		@IPolicyService private readonly policyService: IPolicyService,
 	) {
 		super();
 

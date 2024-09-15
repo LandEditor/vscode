@@ -14,16 +14,16 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 
@@ -69,18 +69,22 @@ class MultiCursorModifierContextKeyController
 	private readonly _multiCursorModifier: IContextKey<string>;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super();
-		this._multiCursorModifier = multiCursorModifier.bindTo(contextKeyService);
+		this._multiCursorModifier =
+			multiCursorModifier.bindTo(contextKeyService);
 
 		this._update();
-		this._register(configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('editor.multiCursorModifier')) {
-				this._update();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("editor.multiCursorModifier")) {
+					this._update();
+				}
+			}),
+		);
 	}
 
 	private _update(): void {

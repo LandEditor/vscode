@@ -28,16 +28,16 @@ import {
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { INativeEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type ILogger,
 	ILoggerService,
+	type ILogger,
 } from "../../../../platform/log/common/log.js";
 import {
 	INotificationService,
@@ -46,10 +46,10 @@ import {
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import {
 	IQuickInputService,
@@ -62,12 +62,12 @@ import {
 	CONFIGURATION_KEY_HOST_NAME,
 	CONFIGURATION_KEY_PREFIX,
 	CONFIGURATION_KEY_PREVENT_SLEEP,
-	type ConnectionInfo,
 	INACTIVE_TUNNEL_MODE,
 	IRemoteTunnelService,
-	type IRemoteTunnelSession,
-	LOGGER_NAME,
 	LOG_ID,
+	LOGGER_NAME,
+	type ConnectionInfo,
+	type IRemoteTunnelSession,
 	type TunnelStatus,
 } from "../../../../platform/remoteTunnel/common/remoteTunnel.js";
 import {
@@ -76,17 +76,17 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	IWorkspaceContextService,
 	isUntitledWorkspace,
+	IWorkspaceContextService,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import {
-	type AuthenticationSession,
 	IAuthenticationService,
+	type AuthenticationSession,
 } from "../../../services/authentication/common/authentication.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -187,36 +187,58 @@ export class RemoteTunnelWorkbenchContribution
 	private expiredSessions: Set<string> = new Set();
 
 	constructor(
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IProductService productService: IProductService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILoggerService loggerService: ILoggerService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INativeEnvironmentService private environmentService: INativeEnvironmentService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INativeEnvironmentService
+		private environmentService: INativeEnvironmentService,
 		@IRemoteTunnelService private remoteTunnelService: IRemoteTunnelService,
 		@ICommandService private commandService: ICommandService,
-		@IWorkspaceContextService private workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private workspaceContextService: IWorkspaceContextService,
 		@IProgressService private progressService: IProgressService,
-		@INotificationService private notificationService: INotificationService
+		@INotificationService private notificationService: INotificationService,
 	) {
 		super();
 
-		this.logger = this._register(loggerService.createLogger(joinPath(environmentService.logsHome, `${LOG_ID}.log`), { id: LOG_ID, name: LOGGER_NAME }));
+		this.logger = this._register(
+			loggerService.createLogger(
+				joinPath(environmentService.logsHome, `${LOG_ID}.log`),
+				{ id: LOG_ID, name: LOGGER_NAME },
+			),
+		);
 
-		this.connectionStateContext = REMOTE_TUNNEL_CONNECTION_STATE.bindTo(this.contextKeyService);
+		this.connectionStateContext = REMOTE_TUNNEL_CONNECTION_STATE.bindTo(
+			this.contextKeyService,
+		);
 
 		const serverConfiguration = productService.tunnelApplicationConfig;
 		if (!serverConfiguration || !productService.tunnelApplicationName) {
-			this.logger.error('Missing \'tunnelApplicationConfig\' or \'tunnelApplicationName\' in product.json. Remote tunneling is not available.');
-			this.serverConfiguration = { authenticationProviders: {}, editorWebUrl: '', extension: { extensionId: '', friendlyName: '' } };
+			this.logger.error(
+				"Missing 'tunnelApplicationConfig' or 'tunnelApplicationName' in product.json. Remote tunneling is not available.",
+			);
+			this.serverConfiguration = {
+				authenticationProviders: {},
+				editorWebUrl: "",
+				extension: { extensionId: "", friendlyName: "" },
+			};
 			return;
 		}
 		this.serverConfiguration = serverConfiguration;
 
-		this._register(this.remoteTunnelService.onDidChangeTunnelStatus(s => this.handleTunnelStatusUpdate(s)));
+		this._register(
+			this.remoteTunnelService.onDidChangeTunnelStatus((s) =>
+				this.handleTunnelStatusUpdate(s),
+			),
+		);
 
 		this.registerCommands();
 

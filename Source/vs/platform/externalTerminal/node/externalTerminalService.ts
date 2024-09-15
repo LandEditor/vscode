@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as cp from "child_process";
+
 import { memoize } from "../../../base/common/decorators.js";
 import { FileAccess } from "../../../base/common/network.js";
 import * as path from "../../../base/common/path.js";
@@ -28,8 +29,7 @@ abstract class ExternalTerminalService {
 	async getDefaultTerminalForPlatforms(): Promise<ITerminalForPlatform> {
 		return {
 			windows: WindowsExternalTerminalService.getDefaultTerminalWindows(),
-			linux:
-				await LinuxExternalTerminalService.getDefaultTerminalLinuxReady(),
+			linux: await LinuxExternalTerminalService.getDefaultTerminalLinuxReady(),
 			osx: "xterm",
 		};
 	}

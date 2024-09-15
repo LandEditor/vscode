@@ -35,7 +35,8 @@ export class FoldedCellHint extends CellContentPart {
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		private readonly _container: HTMLElement,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
 	}

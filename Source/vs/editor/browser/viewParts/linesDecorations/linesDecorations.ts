@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./linesDecorations.css";
+
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type * as viewEvents from "../../../common/viewEvents.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";

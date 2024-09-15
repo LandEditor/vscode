@@ -9,8 +9,8 @@ import { createErrorWithActions } from "../../../../base/common/errorMessage.js"
 import * as errors from "../../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import * as objects from "../../../../base/common/objects.js";
@@ -109,84 +109,116 @@ export class RawDebugSession implements IDisposable {
 		public readonly dbgr: IDebugger,
 		private readonly sessionId: string,
 		private readonly name: string,
-		@IExtensionHostDebugService private readonly extensionHostDebugService: IExtensionHostDebugService,
+		@IExtensionHostDebugService
+		private readonly extensionHostDebugService: IExtensionHostDebugService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogSerivce: IDialogService,
 	) {
 		this.debugAdapter = debugAdapter;
 		this._capabilities = Object.create(null);
 
-		this.toDispose.push(this.debugAdapter.onError(err => {
-			this.shutdown(err);
-		}));
+		this.toDispose.push(
+			this.debugAdapter.onError((err) => {
+				this.shutdown(err);
+			}),
+		);
 
-		this.toDispose.push(this.debugAdapter.onExit(code => {
-			if (code !== 0) {
-				this.shutdown(new Error(`exit code: ${code}`));
-			} else {
-				// normal exit
-				this.shutdown();
-			}
-		}));
+		this.toDispose.push(
+			this.debugAdapter.onExit((code) => {
+				if (code !== 0) {
+					this.shutdown(new Error(`exit code: ${code}`));
+				} else {
+					// normal exit
+					this.shutdown();
+				}
+			}),
+		);
 
-		this.debugAdapter.onEvent(event => {
+		this.debugAdapter.onEvent((event) => {
 			switch (event.event) {
-				case 'initialized':
+				case "initialized":
 					this._readyForBreakpoints = true;
 					this._onDidInitialize.fire(event);
 					break;
-				case 'loadedSource':
-					this._onDidLoadedSource.fire(<DebugProtocol.LoadedSourceEvent>event);
+				case "loadedSource":
+					this._onDidLoadedSource.fire(
+						<DebugProtocol.LoadedSourceEvent>event,
+					);
 					break;
-				case 'capabilities':
+				case "capabilities":
 					if (event.body) {
-						const capabilities = (<DebugProtocol.CapabilitiesEvent>event).body.capabilities;
+						const capabilities = (<DebugProtocol.CapabilitiesEvent>(
+							event
+						)).body.capabilities;
 						this.mergeCapabilities(capabilities);
 					}
 					break;
-				case 'stopped':
-					this.didReceiveStoppedEvent = true;		// telemetry: remember that debugger stopped successfully
+				case "stopped":
+					this.didReceiveStoppedEvent = true; // telemetry: remember that debugger stopped successfully
 					this.stoppedSinceLastStep = true;
 					this._onDidStop.fire(<DebugProtocol.StoppedEvent>event);
 					break;
-				case 'continued':
-					this.allThreadsContinued = (<DebugProtocol.ContinuedEvent>event).body.allThreadsContinued === false ? false : true;
-					this._onDidContinued.fire(<DebugProtocol.ContinuedEvent>event);
+				case "continued":
+					this.allThreadsContinued =
+						(<DebugProtocol.ContinuedEvent>event).body
+							.allThreadsContinued === false
+							? false
+							: true;
+					this._onDidContinued.fire(
+						<DebugProtocol.ContinuedEvent>event,
+					);
 					break;
-				case 'thread':
+				case "thread":
 					this._onDidThread.fire(<DebugProtocol.ThreadEvent>event);
 					break;
-				case 'output':
+				case "output":
 					this._onDidOutput.fire(<DebugProtocol.OutputEvent>event);
 					break;
-				case 'breakpoint':
-					this._onDidBreakpoint.fire(<DebugProtocol.BreakpointEvent>event);
+				case "breakpoint":
+					this._onDidBreakpoint.fire(
+						<DebugProtocol.BreakpointEvent>event,
+					);
 					break;
-				case 'terminated':
-					this._onDidTerminateDebugee.fire(<DebugProtocol.TerminatedEvent>event);
+				case "terminated":
+					this._onDidTerminateDebugee.fire(
+						<DebugProtocol.TerminatedEvent>event,
+					);
 					break;
-				case 'exited':
-					this._onDidExitDebugee.fire(<DebugProtocol.ExitedEvent>event);
+				case "exited":
+					this._onDidExitDebugee.fire(
+						<DebugProtocol.ExitedEvent>event,
+					);
 					break;
-				case 'progressStart':
-					this._onDidProgressStart.fire(event as DebugProtocol.ProgressStartEvent);
+				case "progressStart":
+					this._onDidProgressStart.fire(
+						event as DebugProtocol.ProgressStartEvent,
+					);
 					break;
-				case 'progressUpdate':
-					this._onDidProgressUpdate.fire(event as DebugProtocol.ProgressUpdateEvent);
+				case "progressUpdate":
+					this._onDidProgressUpdate.fire(
+						event as DebugProtocol.ProgressUpdateEvent,
+					);
 					break;
-				case 'progressEnd':
-					this._onDidProgressEnd.fire(event as DebugProtocol.ProgressEndEvent);
+				case "progressEnd":
+					this._onDidProgressEnd.fire(
+						event as DebugProtocol.ProgressEndEvent,
+					);
 					break;
-				case 'invalidated':
-					this._onDidInvalidated.fire(event as DebugProtocol.InvalidatedEvent);
+				case "invalidated":
+					this._onDidInvalidated.fire(
+						event as DebugProtocol.InvalidatedEvent,
+					);
 					break;
-				case 'memory':
-					this._onDidInvalidateMemory.fire(event as DebugProtocol.MemoryEvent);
+				case "memory":
+					this._onDidInvalidateMemory.fire(
+						event as DebugProtocol.MemoryEvent,
+					);
 					break;
-				case 'process':
+				case "process":
 					break;
-				case 'module':
+				case "module":
 					break;
 				default:
 					this._onDidCustomEvent.fire(event);
@@ -195,7 +227,7 @@ export class RawDebugSession implements IDisposable {
 			this._onDidEvent.fire(event);
 		});
 
-		this.debugAdapter.onRequest(request => this.dispatchRequest(request));
+		this.debugAdapter.onRequest((request) => this.dispatchRequest(request));
 	}
 
 	get isInShutdown() {

@@ -6,9 +6,9 @@
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -17,7 +17,8 @@ import { DefaultConfigurationExportHelper } from "./configurationExportHelper.js
 export class ExtensionPoints implements IWorkbenchContribution {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 	) {
 		// Config Exporter
 		if (environmentService.args["export-default-configuration"]) {

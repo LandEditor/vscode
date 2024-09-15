@@ -60,11 +60,19 @@ export class ChatEditor extends EditorPane {
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
-		super(ChatEditorInput.EditorID, group, telemetryService, themeService, storageService);
+		super(
+			ChatEditorInput.EditorID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 	}
 
 	private async clear() {

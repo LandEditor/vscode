@@ -14,11 +14,11 @@ import { ResourceMap } from "../../../base/common/map.js";
 import { Schemas } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 import {
+	MarkerSeverity,
 	type IMarker,
 	type IMarkerData,
 	type IMarkerService,
 	type IResourceMarker,
-	MarkerSeverity,
 	type MarkerStatistics,
 } from "./markers.js";
 

@@ -17,7 +17,7 @@ import {
 	type ISingleEditOperation,
 } from "../../../../editor/common/core/editOperation.js";
 import type { LineRange } from "../../../../editor/common/core/lineRange.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type { IDocumentDiff } from "../../../../editor/common/diff/documentDiffProvider.js";
 import {
 	DetailedLineRangeMapping,
@@ -25,19 +25,19 @@ import {
 	type RangeMapping,
 } from "../../../../editor/common/diff/rangeMapping.js";
 import {
+	TrackedRangeStickiness,
 	type IIdentifiedSingleEditOperation,
 	type IModelDecorationOptions,
 	type IModelDeltaDecoration,
 	type ITextModel,
 	type IValidEditOperation,
-	TrackedRangeStickiness,
 } from "../../../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../../../editor/common/model/textModel.js";
 import { IEditorWorkerService } from "../../../../editor/common/services/editorWorker.js";
 import type { IModelContentChangedEvent } from "../../../../editor/common/textModelEvents.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -356,15 +356,24 @@ export class StashedSession {
 		session: Session,
 		private readonly _undoCancelEdits: IValidEditOperation[],
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IInlineChatSessionService private readonly _sessionService: IInlineChatSessionService,
-		@ILogService private readonly _logService: ILogService
+		@IInlineChatSessionService
+		private readonly _sessionService: IInlineChatSessionService,
+		@ILogService private readonly _logService: ILogService,
 	) {
-		this._ctxHasStashedSession = CTX_INLINE_CHAT_HAS_STASHED_SESSION.bindTo(contextKeyService);
+		this._ctxHasStashedSession =
+			CTX_INLINE_CHAT_HAS_STASHED_SESSION.bindTo(contextKeyService);
 
 		// keep session for a little bit, only release when user continues to work (type, move cursor, etc.)
 		this._session = session;
 		this._ctxHasStashedSession.set(true);
-		this._listener = Event.once(Event.any(editor.onDidChangeCursorSelection, editor.onDidChangeModelContent, editor.onDidChangeModel, editor.onDidBlurEditorWidget))(() => {
+		this._listener = Event.once(
+			Event.any(
+				editor.onDidChangeCursorSelection,
+				editor.onDidChangeModelContent,
+				editor.onDidChangeModel,
+				editor.onDidBlurEditorWidget,
+			),
+		)(() => {
 			this._session = undefined;
 			this._sessionService.releaseSession(session);
 			this._ctxHasStashedSession.reset();
@@ -431,16 +440,18 @@ export class HunkData {
 	private _ignoreChanges = false;
 
 	constructor(
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 		private readonly _textModel0: ITextModel,
 		private readonly _textModelN: ITextModel,
 	) {
-
-		this._store.add(_textModelN.onDidChangeContent(e => {
-			if (!this._ignoreChanges) {
-				this._mirrorChanges(e);
-			}
-		}));
+		this._store.add(
+			_textModelN.onDidChangeContent((e) => {
+				if (!this._ignoreChanges) {
+					this._mirrorChanges(e);
+				}
+			}),
+		);
 	}
 
 	dispose(): void {

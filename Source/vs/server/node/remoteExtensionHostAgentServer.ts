@@ -9,9 +9,10 @@ import type * as http from "http";
 import * as net from "net";
 // ESM-uncomment-begin
 import { createRequire } from "node:module";
-import * as url from "url";
 import { performance } from "perf_hooks";
-import { LoaderStats, isESM } from "../../base/common/amd.js";
+import * as url from "url";
+
+import { isESM, LoaderStats } from "../../base/common/amd.js";
 import { VSBuffer } from "../../base/common/buffer.js";
 import { CharCode } from "../../base/common/charCode.js";
 import {
@@ -22,10 +23,10 @@ import {
 import { isEqualOrParent } from "../../base/common/extpath.js";
 import { Disposable, DisposableStore } from "../../base/common/lifecycle.js";
 import {
-	FileAccess,
-	Schemas,
 	connectionTokenQueryName,
+	FileAccess,
 	getServerRootPath,
+	Schemas,
 } from "../../base/common/network.js";
 import { dirname, join } from "../../base/common/path.js";
 import * as perf from "../../base/common/performance.js";
@@ -65,23 +66,24 @@ import { ITelemetryService } from "../../platform/telemetry/common/telemetry.js"
 import { ExtensionHostConnection } from "./extensionHostConnection.js";
 import { ManagementConnection } from "./remoteExtensionManagement.js";
 import {
-	type ServerConnectionToken,
-	ServerConnectionTokenParseError,
-	ServerConnectionTokenType,
 	determineServerConnectionToken,
 	requestHasValidConnectionToken as httpRequestHasValidConnectionToken,
+	ServerConnectionTokenParseError,
+	ServerConnectionTokenType,
+	type ServerConnectionToken,
 } from "./serverConnectionToken.js";
 import {
 	IServerEnvironmentService,
 	type ServerParsedArgs,
 } from "./serverEnvironmentService.js";
-import { type SocketServer, setupServerServices } from "./serverServices.js";
+import { setupServerServices, type SocketServer } from "./serverServices.js";
 import {
 	CacheControl,
-	WebClientServer,
 	serveError,
 	serveFile,
+	WebClientServer,
 } from "./webClientServer.js";
+
 const require = createRequire(import.meta.url);
 // ESM-uncomment-end
 
@@ -123,22 +125,30 @@ class RemoteExtensionHostAgentServer extends Disposable implements IServerAPI {
 		private readonly _vsdaMod: typeof vsda | null,
 		hasWebClient: boolean,
 		serverBasePath: string | undefined,
-		@IServerEnvironmentService private readonly _environmentService: IServerEnvironmentService,
+		@IServerEnvironmentService
+		private readonly _environmentService: IServerEnvironmentService,
 		@IProductService private readonly _productService: IProductService,
 		@ILogService private readonly _logService: ILogService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._serverRootPath = getServerRootPath(_productService, serverBasePath);
+		this._serverRootPath = getServerRootPath(
+			_productService,
+			serverBasePath,
+		);
 		this._extHostConnections = Object.create(null);
 		this._managementConnections = Object.create(null);
 		this._allReconnectionTokens = new Set<string>();
-		this._webClientServer = (
-			hasWebClient
-				? this._instantiationService.createInstance(WebClientServer, this._connectionToken, serverBasePath ?? '/', this._serverRootPath)
-				: null
-		);
+		this._webClientServer = hasWebClient
+			? this._instantiationService.createInstance(
+					WebClientServer,
+					this._connectionToken,
+					serverBasePath ?? "/",
+					this._serverRootPath,
+				)
+			: null;
 		this._logService.info(`Extension host agent started.`);
 
 		this._waitThenShutdown(true);

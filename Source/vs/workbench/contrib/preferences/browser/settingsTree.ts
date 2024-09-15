@@ -13,8 +13,8 @@ import { Button } from "../../../../base/browser/ui/button/button.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import { SimpleIconLabel } from "../../../../base/browser/ui/iconLabel/simpleIconLabel.js";
 import {
-	type IInputOptions,
 	InputBox,
+	type IInputOptions,
 } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import { CachedListVirtualDelegate } from "../../../../base/browser/ui/list/list.js";
 import {
@@ -22,8 +22,8 @@ import {
 	type IListAccessibilityProvider,
 } from "../../../../base/browser/ui/list/listWidget.js";
 import {
-	type ISelectOptionItem,
 	SelectBox,
+	type ISelectOptionItem,
 } from "../../../../base/browser/ui/selectBox/selectBox.js";
 import {
 	Toggle,
@@ -34,17 +34,17 @@ import { RenderIndentGuides } from "../../../../base/browser/ui/tree/abstractTre
 import type { IObjectTreeOptions } from "../../../../base/browser/ui/tree/objectTree.js";
 import { ObjectTreeModel } from "../../../../base/browser/ui/tree/objectTreeModel.js";
 import {
+	TreeVisibility,
 	type ITreeFilter,
 	type ITreeModel,
 	type ITreeNode,
 	type ITreeRenderer,
 	type TreeFilterResult,
-	TreeVisibility,
 } from "../../../../base/browser/ui/tree/tree.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { distinct } from "../../../../base/common/arrays.js";
 import { Codicon } from "../../../../base/common/codicons.js";
@@ -70,8 +70,8 @@ import { IClipboardService } from "../../../../platform/clipboard/common/clipboa
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
 	ConfigurationTarget,
-	IConfigurationService,
 	getLanguageTagSettingPlainKey,
+	IConfigurationService,
 } from "../../../../platform/configuration/common/configuration.js";
 import { ConfigurationScope } from "../../../../platform/configuration/common/configurationRegistry.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
@@ -104,8 +104,8 @@ import { IThemeService } from "../../../../platform/theme/common/themeService.js
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { getIgnoredSettings } from "../../../../platform/userDataSync/common/settingsMerge.js";
 import {
-	IUserDataSyncEnablementService,
 	getDefaultIgnoredSettings,
+	IUserDataSyncEnablementService,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import {
 	APPLY_ALL_PROFILES_SETTING,
@@ -114,17 +114,17 @@ import {
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import {
-	type ISetting,
-	type ISettingsGroup,
 	SETTINGS_AUTHORITY,
 	SettingValueType,
+	type ISetting,
+	type ISettingsGroup,
 } from "../../../services/preferences/common/preferences.js";
 import { getInvalidTypeError } from "../../../services/preferences/common/preferencesValidation.js";
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
 import {
+	compareTwoNullableNumbers,
 	LANGUAGE_SETTING_TAG,
 	SETTINGS_EDITOR_COMMAND_SHOW_CONTEXT_MENU,
-	compareTwoNullableNumbers,
 } from "../common/preferences.js";
 import {
 	settingsNumberInputBackground,
@@ -141,24 +141,28 @@ import {
 import { settingsMoreActionIcon } from "./preferencesIcons.js";
 import type { SettingsTarget } from "./preferencesWidgets.js";
 import {
-	type ISettingOverrideClickEvent,
-	SettingsTreeIndicatorsLabel,
 	getIndicatorsLabelAriaLabel,
+	SettingsTreeIndicatorsLabel,
+	type ISettingOverrideClickEvent,
 } from "./settingsEditorSettingIndicators.js";
 import type { ITOCEntry } from "./settingsLayout.js";
 import {
-	type ISettingsEditorViewState,
-	type SettingsTreeElement,
-	type SettingsTreeGroupChild,
-	SettingsTreeGroupElement,
-	SettingsTreeNewExtensionsElement,
-	SettingsTreeSettingElement,
 	inspectSetting,
 	objectSettingSupportsRemoveDefaultValue,
 	settingKeyToDisplayFormat,
+	SettingsTreeGroupElement,
+	SettingsTreeNewExtensionsElement,
+	SettingsTreeSettingElement,
+	type ISettingsEditorViewState,
+	type SettingsTreeElement,
+	type SettingsTreeGroupChild,
 } from "./settingsTreeModels.js";
 import {
 	ExcludeSettingWidget,
+	IncludeSettingWidget,
+	ListSettingWidget,
+	ObjectSettingCheckboxWidget,
+	ObjectSettingDropdownWidget,
 	type IBoolObjectDataItem,
 	type IIncludeExcludeDataItem,
 	type IListDataItem,
@@ -166,10 +170,6 @@ import {
 	type IObjectEnumOption,
 	type IObjectKeySuggester,
 	type IObjectValueSuggester,
-	IncludeSettingWidget,
-	ListSettingWidget,
-	ObjectSettingCheckboxWidget,
-	ObjectSettingDropdownWidget,
 	type ObjectValue,
 	type SettingListEvent,
 } from "./settingsWidgets.js";
@@ -1116,30 +1116,51 @@ export abstract class AbstractSettingRenderer
 
 	constructor(
 		private readonly settingActions: IAction[],
-		private readonly disposableActionFactory: (setting: ISetting, settingTarget: SettingsTarget) => IAction[],
+		private readonly disposableActionFactory: (
+			setting: ISetting,
+			settingTarget: SettingsTarget,
+		) => IAction[],
 		@IThemeService protected readonly _themeService: IThemeService,
-		@IContextViewService protected readonly _contextViewService: IContextViewService,
+		@IContextViewService
+		protected readonly _contextViewService: IContextViewService,
 		@IOpenerService protected readonly _openerService: IOpenerService,
-		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected readonly _instantiationService: IInstantiationService,
 		@ICommandService protected readonly _commandService: ICommandService,
-		@IContextMenuService protected readonly _contextMenuService: IContextMenuService,
-		@IKeybindingService protected readonly _keybindingService: IKeybindingService,
-		@IConfigurationService protected readonly _configService: IConfigurationService,
-		@IExtensionService protected readonly _extensionsService: IExtensionService,
-		@IExtensionsWorkbenchService protected readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IContextMenuService
+		protected readonly _contextMenuService: IContextMenuService,
+		@IKeybindingService
+		protected readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		protected readonly _configService: IConfigurationService,
+		@IExtensionService
+		protected readonly _extensionsService: IExtensionService,
+		@IExtensionsWorkbenchService
+		protected readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IProductService protected readonly _productService: IProductService,
-		@ITelemetryService protected readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		protected readonly _telemetryService: ITelemetryService,
 		@IHoverService protected readonly _hoverService: IHoverService,
 	) {
 		super();
 
-		this.markdownRenderer = this._register(_instantiationService.createInstance(MarkdownRenderer, {}));
+		this.markdownRenderer = this._register(
+			_instantiationService.createInstance(MarkdownRenderer, {}),
+		);
 
-		this.ignoredSettings = getIgnoredSettings(getDefaultIgnoredSettings(), this._configService);
-		this._register(this._configService.onDidChangeConfiguration(e => {
-			this.ignoredSettings = getIgnoredSettings(getDefaultIgnoredSettings(), this._configService);
-			this._onDidChangeIgnoredSettings.fire();
-		}));
+		this.ignoredSettings = getIgnoredSettings(
+			getDefaultIgnoredSettings(),
+			this._configService,
+		);
+		this._register(
+			this._configService.onDidChangeConfiguration((e) => {
+				this.ignoredSettings = getIgnoredSettings(
+					getDefaultIgnoredSettings(),
+					this._configService,
+				);
+				this._onDidChangeIgnoredSettings.fire();
+			}),
+		);
 	}
 
 	abstract renderTemplate(container: HTMLElement): any;
@@ -1570,8 +1591,7 @@ export class SettingNewExtensionsRenderer
 
 	constructor(
 		@ICommandService private readonly _commandService: ICommandService,
-	) {
-	}
+	) {}
 
 	renderTemplate(container: HTMLElement): ISettingNewExtensionsTemplate {
 		const toDispose = new DisposableStore();
@@ -3100,67 +3120,144 @@ export class SettingTreeRenderers extends Disposable {
 	private readonly settingActions: IAction[];
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IContextViewService private readonly _contextViewService: IContextViewService,
-		@IUserDataProfilesService private readonly _userDataProfilesService: IUserDataProfilesService,
-		@IUserDataSyncEnablementService private readonly _userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
+		@IUserDataProfilesService
+		private readonly _userDataProfilesService: IUserDataProfilesService,
+		@IUserDataSyncEnablementService
+		private readonly _userDataSyncEnablementService: IUserDataSyncEnablementService,
 	) {
 		super();
 		this.settingActions = [
-			new Action('settings.resetSetting', localize('resetSettingLabel', "Reset Setting"), undefined, undefined, async context => {
-				if (context instanceof SettingsTreeSettingElement) {
-					if (!context.isUntrusted) {
-						this._onDidChangeSetting.fire({
-							key: context.setting.key,
-							value: undefined,
-							type: context.setting.type as SettingValueType,
-							manualReset: true,
-							scope: context.setting.scope
-						});
+			new Action(
+				"settings.resetSetting",
+				localize("resetSettingLabel", "Reset Setting"),
+				undefined,
+				undefined,
+				async (context) => {
+					if (context instanceof SettingsTreeSettingElement) {
+						if (!context.isUntrusted) {
+							this._onDidChangeSetting.fire({
+								key: context.setting.key,
+								value: undefined,
+								type: context.setting.type as SettingValueType,
+								manualReset: true,
+								scope: context.setting.scope,
+							});
+						}
 					}
-				}
-			}),
+				},
+			),
 			new Separator(),
 			this._instantiationService.createInstance(CopySettingIdAction),
 			this._instantiationService.createInstance(CopySettingAsJSONAction),
 			this._instantiationService.createInstance(CopySettingAsURLAction),
 		];
 
-		const actionFactory = (setting: ISetting, settingTarget: SettingsTarget) => this.getActionsForSetting(setting, settingTarget);
+		const actionFactory = (
+			setting: ISetting,
+			settingTarget: SettingsTarget,
+		) => this.getActionsForSetting(setting, settingTarget);
 		const emptyActionFactory = (_: ISetting) => [];
-		const extensionRenderer = this._instantiationService.createInstance(SettingsExtensionToggleRenderer, [], emptyActionFactory);
+		const extensionRenderer = this._instantiationService.createInstance(
+			SettingsExtensionToggleRenderer,
+			[],
+			emptyActionFactory,
+		);
 		const settingRenderers = [
-			this._instantiationService.createInstance(SettingBoolRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingNumberRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingArrayRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingComplexRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingTextRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingMultilineTextRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingExcludeRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingIncludeRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingEnumRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingObjectRenderer, this.settingActions, actionFactory),
-			this._instantiationService.createInstance(SettingBoolObjectRenderer, this.settingActions, actionFactory),
-			extensionRenderer
+			this._instantiationService.createInstance(
+				SettingBoolRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingNumberRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingArrayRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingComplexRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingTextRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingMultilineTextRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingExcludeRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingIncludeRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingEnumRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingObjectRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			this._instantiationService.createInstance(
+				SettingBoolObjectRenderer,
+				this.settingActions,
+				actionFactory,
+			),
+			extensionRenderer,
 		];
 
-		this.onDidClickOverrideElement = Event.any(...settingRenderers.map(r => r.onDidClickOverrideElement));
-		this.onDidChangeSetting = Event.any(
-			...settingRenderers.map(r => r.onDidChangeSetting),
-			this._onDidChangeSetting.event
+		this.onDidClickOverrideElement = Event.any(
+			...settingRenderers.map((r) => r.onDidClickOverrideElement),
 		);
-		this.onDidDismissExtensionSetting = extensionRenderer.onDidDismissExtensionSetting;
-		this.onDidOpenSettings = Event.any(...settingRenderers.map(r => r.onDidOpenSettings));
-		this.onDidClickSettingLink = Event.any(...settingRenderers.map(r => r.onDidClickSettingLink));
-		this.onDidFocusSetting = Event.any(...settingRenderers.map(r => r.onDidFocusSetting));
-		this.onDidChangeSettingHeight = Event.any(...settingRenderers.map(r => r.onDidChangeSettingHeight));
-		this.onApplyFilter = Event.any(...settingRenderers.map(r => r.onApplyFilter));
+		this.onDidChangeSetting = Event.any(
+			...settingRenderers.map((r) => r.onDidChangeSetting),
+			this._onDidChangeSetting.event,
+		);
+		this.onDidDismissExtensionSetting =
+			extensionRenderer.onDidDismissExtensionSetting;
+		this.onDidOpenSettings = Event.any(
+			...settingRenderers.map((r) => r.onDidOpenSettings),
+		);
+		this.onDidClickSettingLink = Event.any(
+			...settingRenderers.map((r) => r.onDidClickSettingLink),
+		);
+		this.onDidFocusSetting = Event.any(
+			...settingRenderers.map((r) => r.onDidFocusSetting),
+		);
+		this.onDidChangeSettingHeight = Event.any(
+			...settingRenderers.map((r) => r.onDidChangeSettingHeight),
+		);
+		this.onApplyFilter = Event.any(
+			...settingRenderers.map((r) => r.onApplyFilter),
+		);
 
 		this.allRenderers = [
 			...settingRenderers,
 			this._instantiationService.createInstance(SettingGroupRenderer),
-			this._instantiationService.createInstance(SettingNewExtensionsRenderer),
+			this._instantiationService.createInstance(
+				SettingNewExtensionsRenderer,
+			),
 		];
 	}
 
@@ -3381,8 +3478,9 @@ function escapeInvisibleChars(enumValue: string): string {
 export class SettingsTreeFilter implements ITreeFilter<SettingsTreeElement> {
 	constructor(
 		private viewState: ISettingsEditorViewState,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService,
-	) { }
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService,
+	) {}
 
 	filter(
 		element: SettingsTreeElement,
@@ -3628,10 +3726,12 @@ export class SettingsTree extends WorkbenchObjectTree<SettingsTreeElement> {
 		renderers: ITreeRenderer<any, void, any>[],
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IListService listService: IListService,
-		@IWorkbenchConfigurationService configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		configurationService: IWorkbenchConfigurationService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ILanguageService languageService: ILanguageService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 	) {
 		super(
 			"SettingsTree",
@@ -3731,7 +3831,7 @@ class CopySettingIdAction extends Action {
 	static readonly LABEL = localize("copySettingIdLabel", "Copy Setting ID");
 
 	constructor(
-		@IClipboardService private readonly clipboardService: IClipboardService
+		@IClipboardService private readonly clipboardService: IClipboardService,
 	) {
 		super(CopySettingIdAction.ID, CopySettingIdAction.LABEL);
 	}
@@ -3753,7 +3853,7 @@ class CopySettingAsJSONAction extends Action {
 	);
 
 	constructor(
-		@IClipboardService private readonly clipboardService: IClipboardService
+		@IClipboardService private readonly clipboardService: IClipboardService,
 	) {
 		super(CopySettingAsJSONAction.ID, CopySettingAsJSONAction.LABEL);
 	}
@@ -3807,10 +3907,15 @@ class SyncSettingAction extends Action {
 
 	constructor(
 		private readonly setting: ISetting,
-		@IConfigurationService private readonly configService: IConfigurationService,
+		@IConfigurationService
+		private readonly configService: IConfigurationService,
 	) {
 		super(SyncSettingAction.ID, SyncSettingAction.LABEL);
-		this._register(Event.filter(configService.onDidChangeConfiguration, e => e.affectsConfiguration('settingsSync.ignoredSettings'))(() => this.update()));
+		this._register(
+			Event.filter(configService.onDidChangeConfiguration, (e) =>
+				e.affectsConfiguration("settingsSync.ignoredSettings"),
+			)(() => this.update()),
+		);
 		this.update();
 	}
 
@@ -3868,10 +3973,18 @@ class ApplySettingToAllProfilesAction extends Action {
 
 	constructor(
 		private readonly setting: ISetting,
-		@IWorkbenchConfigurationService private readonly configService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		private readonly configService: IWorkbenchConfigurationService,
 	) {
-		super(ApplySettingToAllProfilesAction.ID, ApplySettingToAllProfilesAction.LABEL);
-		this._register(Event.filter(configService.onDidChangeConfiguration, e => e.affectsConfiguration(APPLY_ALL_PROFILES_SETTING))(() => this.update()));
+		super(
+			ApplySettingToAllProfilesAction.ID,
+			ApplySettingToAllProfilesAction.LABEL,
+		);
+		this._register(
+			Event.filter(configService.onDidChangeConfiguration, (e) =>
+				e.affectsConfiguration(APPLY_ALL_PROFILES_SETTING),
+			)(() => this.update()),
+		);
 		this.update();
 	}
 

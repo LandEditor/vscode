@@ -19,8 +19,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IAutomatedWindow,
 	getLogs,
+	type IAutomatedWindow,
 } from "../../../../platform/log/browser/log.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
@@ -51,42 +51,42 @@ import { IUserDataInitializationService } from "../../userData/browser/userDataI
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	AbstractExtensionService,
-	type IExtensionHostFactory,
-	ResolvedExtensions,
 	checkEnabledAndProposedAPI,
+	ResolvedExtensions,
+	type IExtensionHostFactory,
 } from "../common/abstractExtensionService.js";
 import type { ExtensionDescriptionRegistrySnapshot } from "../common/extensionDescriptionRegistry.js";
 import {
 	ExtensionHostKind,
-	ExtensionRunningPreference,
-	type IExtensionHostKindPicker,
 	extensionHostKindToString,
+	ExtensionRunningPreference,
 	extensionRunningPreferenceToString,
+	type IExtensionHostKindPicker,
 } from "../common/extensionHostKind.js";
 import { IExtensionManifestPropertiesService } from "../common/extensionManifestPropertiesService.js";
 import type { ExtensionRunningLocation } from "../common/extensionRunningLocation.js";
 import {
-	type ExtensionRunningLocationTracker,
 	filterExtensionDescriptions,
+	type ExtensionRunningLocationTracker,
 } from "../common/extensionRunningLocationTracker.js";
 import {
 	ExtensionHostExtensions,
 	ExtensionHostStartup,
-	type IExtensionHost,
 	IExtensionService,
 	toExtensionDescription,
+	type IExtensionHost,
 } from "../common/extensions.js";
 import { ExtensionsProposedApi } from "../common/extensionsProposedApi.js";
 import { dedupExtensions } from "../common/extensionsUtil.js";
 import {
+	RemoteExtensionHost,
 	type IRemoteExtensionHostDataProvider,
 	type IRemoteExtensionHostInitData,
-	RemoteExtensionHost,
 } from "../common/remoteExtensionHost.js";
 import {
+	WebWorkerExtensionHost,
 	type IWebWorkerExtensionHostDataProvider,
 	type IWebWorkerExtensionHostInitData,
-	WebWorkerExtensionHost,
 } from "./webWorkerExtensionHost.js";
 import { FetchFileSystemProvider } from "./webWorkerFileSystemProvider.js";
 
@@ -97,28 +97,41 @@ export class ExtensionService
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotificationService notificationService: INotificationService,
-		@IBrowserWorkbenchEnvironmentService private readonly _browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly _browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchExtensionEnablementService
+		extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IFileService fileService: IFileService,
 		@IProductService productService: IProductService,
-		@IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkbenchExtensionManagementService
+		extensionManagementService: IWorkbenchExtensionManagementService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IWebExtensionsScannerService private readonly _webExtensionsScannerService: IWebExtensionsScannerService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWebExtensionsScannerService
+		private readonly _webExtensionsScannerService: IWebExtensionsScannerService,
 		@ILogService logService: ILogService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IRemoteExtensionsScannerService remoteExtensionsScannerService: IRemoteExtensionsScannerService,
+		@IRemoteExtensionsScannerService
+		remoteExtensionsScannerService: IRemoteExtensionsScannerService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@IUserDataInitializationService private readonly _userDataInitializationService: IUserDataInitializationService,
-		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IRemoteExplorerService private readonly _remoteExplorerService: IRemoteExplorerService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IUserDataInitializationService
+		private readonly _userDataInitializationService: IUserDataInitializationService,
+		@IUserDataProfileService
+		private readonly _userDataProfileService: IUserDataProfileService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IRemoteExplorerService
+		private readonly _remoteExplorerService: IRemoteExplorerService,
 		@IDialogService dialogService: IDialogService,
 	) {
-		const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi);
+		const extensionsProposedApi = instantiationService.createInstance(
+			ExtensionsProposedApi,
+		);
 		const extensionHostFactory = new BrowserExtensionHostFactory(
 			extensionsProposedApi,
 			() => this._scanWebExtensions(),
@@ -127,7 +140,7 @@ export class ExtensionService
 			remoteAgentService,
 			remoteAuthorityResolverService,
 			extensionEnablementService,
-			logService
+			logService,
 		);
 		super(
 			extensionsProposedApi,
@@ -149,12 +162,14 @@ export class ExtensionService
 			remoteExtensionsScannerService,
 			lifecycleService,
 			remoteAuthorityResolverService,
-			dialogService
+			dialogService,
 		);
 
 		// Initialize installed extensions first and do it only after workbench is ready
 		lifecycleService.when(LifecyclePhase.Ready).then(async () => {
-			await this._userDataInitializationService.initializeInstalledExtensions(this._instantiationService);
+			await this._userDataInitializationService.initializeInstalledExtensions(
+				this._instantiationService,
+			);
 			this._initialize();
 		});
 
@@ -308,14 +323,20 @@ export class ExtensionService
 class BrowserExtensionHostFactory implements IExtensionHostFactory {
 	constructor(
 		private readonly _extensionsProposedApi: ExtensionsProposedApi,
-		private readonly _scanWebExtensions: () => Promise<IExtensionDescription[]>,
+		private readonly _scanWebExtensions: () => Promise<
+			IExtensionDescription[]
+		>,
 		private readonly _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@IWorkbenchExtensionEnablementService private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IWorkbenchExtensionEnablementService
+		private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@ILogService private readonly _logService: ILogService,
-	) { }
+	) {}
 
 	createExtensionHost(
 		runningLocations: ExtensionRunningLocationTracker,
@@ -461,9 +482,7 @@ class BrowserExtensionHostFactory implements IExtensionHostFactory {
 export class BrowserExtensionHostKindPicker
 	implements IExtensionHostKindPicker
 {
-	constructor(
-		@ILogService private readonly _logService: ILogService,
-	) { }
+	constructor(@ILogService private readonly _logService: ILogService) {}
 
 	pickExtensionHostKind(
 		extensionId: ExtensionIdentifier,

@@ -64,16 +64,23 @@ export class LanguageModelStatsService
 	private readonly sessionStats = new Map<string, LanguageModelStats>();
 
 	constructor(
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
-		this._register(_storageService.onDidChangeValue(StorageScope.APPLICATION, undefined, this._store)(e => {
-			const model = this.getModel(e.key);
-			if (model) {
-				this._onDidChangeStats.fire(model);
-			}
-		}));
+		this._register(
+			_storageService.onDidChangeValue(
+				StorageScope.APPLICATION,
+				undefined,
+				this._store,
+			)((e) => {
+				const model = this.getModel(e.key);
+				if (model) {
+					this._onDidChangeStats.fire(model);
+				}
+			}),
+		);
 	}
 
 	hasAccessedModel(extensionId: string, model: string): boolean {

@@ -5,11 +5,11 @@
 
 import {
 	ContextKeyExprType,
+	expressionsAreEqualWithConstantSubstitution,
+	implies,
 	type ContextKeyExpression,
 	type IContext,
 	type IContextKeyService,
-	expressionsAreEqualWithConstantSubstitution,
-	implies,
 } from "../../contextkey/common/contextkey.js";
 import type { ResolvedKeybindingItem } from "./resolvedKeybindingItem.js";
 

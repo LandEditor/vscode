@@ -6,8 +6,8 @@
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { isWeb } from "../../../base/common/platform.js";
 import {
-	type IExtensionIdWithVersion,
 	IExtensionStorageService,
+	type IExtensionIdWithVersion,
 } from "../../../platform/extensionManagement/common/extensionStorage.js";
 import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../platform/log/common/log.js";
@@ -15,15 +15,15 @@ import {
 	IStorageService,
 	StorageScope,
 } from "../../../platform/storage/common/storage.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { migrateExtensionStorage } from "../../services/extensions/common/extensionStorageMigration.js";
 import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
 	ExtHostContext,
-	type ExtHostStorageShape,
 	MainContext,
+	type ExtHostStorageShape,
 	type MainThreadStorageShape,
 } from "../common/extHost.protocol.js";
 
@@ -38,21 +38,33 @@ export class MainThreadStorage implements MainThreadStorageShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IExtensionStorageService private readonly _extensionStorageService: IExtensionStorageService,
+		@IExtensionStorageService
+		private readonly _extensionStorageService: IExtensionStorageService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostStorage);
 
-		this._storageListener.add(this._storageService.onDidChangeValue(StorageScope.PROFILE, undefined, this._storageListener)(e => {
-			if (this._sharedStorageKeysToWatch.has(e.key)) {
-				const rawState = this._extensionStorageService.getExtensionStateRaw(e.key, true);
-				if (typeof rawState === 'string') {
-					this._proxy.$acceptValue(true, e.key, rawState);
+		this._storageListener.add(
+			this._storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				undefined,
+				this._storageListener,
+			)((e) => {
+				if (this._sharedStorageKeysToWatch.has(e.key)) {
+					const rawState =
+						this._extensionStorageService.getExtensionStateRaw(
+							e.key,
+							true,
+						);
+					if (typeof rawState === "string") {
+						this._proxy.$acceptValue(true, e.key, rawState);
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	dispose(): void {

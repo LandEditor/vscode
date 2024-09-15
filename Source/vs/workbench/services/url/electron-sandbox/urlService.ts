@@ -14,14 +14,14 @@ import { IMainProcessService } from "../../../../platform/ipc/common/mainProcess
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import {
-	type IOpener,
 	IOpenerService,
+	type IOpener,
 } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
+	IURLService,
 	type IOpenURLOptions,
 	type IURLHandler,
-	IURLService,
 } from "../../../../platform/url/common/url.js";
 import { URLHandlerChannel } from "../../../../platform/url/common/urlIpc.js";
 import { NativeURLService } from "../../../../platform/url/common/urlService.js";
@@ -40,15 +40,21 @@ export class RelayURLService
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
 		@IOpenerService openerService: IOpenerService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IProductService productService: IProductService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super(productService);
 
-		this.urlService = ProxyChannel.toService<IURLService>(mainProcessService.getChannel('url'));
+		this.urlService = ProxyChannel.toService<IURLService>(
+			mainProcessService.getChannel("url"),
+		);
 
-		mainProcessService.registerChannel('urlHandler', new URLHandlerChannel(this));
+		mainProcessService.registerChannel(
+			"urlHandler",
+			new URLHandlerChannel(this),
+		);
 		openerService.registerOpener(this);
 	}
 

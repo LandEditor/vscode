@@ -9,17 +9,17 @@ import {
 } from "../../../../base/browser/browser.js";
 import {
 	$,
-	EventType,
 	addDisposableListener,
 	append,
+	EventType,
 	getWindow,
 	getWindowId,
 	hide,
 	show,
 } from "../../../../base/browser/dom.js";
 import {
-	type CodeWindow,
 	mainWindow,
+	type CodeWindow,
 } from "../../../../base/browser/window.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Event } from "../../../../base/common/event.js";
@@ -36,8 +36,8 @@ import {
 	MenuId,
 } from "../../../../platform/actions/common/actions.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -52,13 +52,13 @@ import {
 	useWindowControlsOverlay,
 } from "../../../../platform/window/common/window.js";
 import {
-	BrowserTitleService,
 	BrowserTitlebarPart,
+	BrowserTitleService,
 	type IAuxiliaryTitlebarPart,
 } from "../../../browser/parts/titlebar/titlebarPart.js";
 import {
-	type IEditorGroupsContainer,
 	IEditorGroupsService,
+	type IEditorGroupsContainer,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
@@ -109,23 +109,42 @@ export class NativeTitlebarPart extends BrowserTitlebarPart {
 	constructor(
 		id: string,
 		targetWindow: CodeWindow,
-		editorGroupsContainer: IEditorGroupsContainer | 'main',
+		editorGroupsContainer: IEditorGroupsContainer | "main",
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IHostService hostService: IHostService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
 		@IMenuService menuService: IMenuService,
-		@IKeybindingService keybindingService: IKeybindingService
+		@IKeybindingService keybindingService: IKeybindingService,
 	) {
-		super(id, targetWindow, editorGroupsContainer, contextMenuService, configurationService, environmentService, instantiationService, themeService, storageService, layoutService, contextKeyService, hostService, editorGroupService, editorService, menuService, keybindingService);
+		super(
+			id,
+			targetWindow,
+			editorGroupsContainer,
+			contextMenuService,
+			configurationService,
+			environmentService,
+			instantiationService,
+			themeService,
+			storageService,
+			layoutService,
+			contextKeyService,
+			hostService,
+			editorGroupService,
+			editorService,
+			menuService,
+			keybindingService,
+		);
 
 		this.bigSurOrNewer = isBigSurOrNewer(environmentService.os.release);
 	}
@@ -416,7 +435,8 @@ export class MainNativeTitlebarPart extends NativeTitlebarPart {
 	constructor(
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
@@ -467,7 +487,8 @@ export class AuxiliaryNativeTitlebarPart
 		private readonly mainTitlebar: BrowserTitlebarPart,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,

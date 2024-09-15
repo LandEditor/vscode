@@ -23,8 +23,8 @@ import { IInstantiationService } from "../../../platform/instantiation/common/in
 import { ILogService } from "../../../platform/log/common/log.js";
 import { Registry } from "../../../platform/registry/common/platform.js";
 import {
-	type PaneCompositeRegistry,
 	Extensions as ViewletExtensions,
+	type PaneCompositeRegistry,
 } from "../../browser/panecomposite.js";
 import {
 	CustomTreeView,
@@ -32,18 +32,18 @@ import {
 } from "../../browser/parts/views/treeView.js";
 import { ViewPaneContainer } from "../../browser/parts/views/viewPaneContainer.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../common/contributions.js";
 import {
+	Extensions as ViewContainerExtensions,
+	ViewContainerLocation,
 	type ICustomViewDescriptor,
 	type IViewContainersRegistry,
 	type IViewDescriptor,
 	type IViewsRegistry,
 	type ViewContainer,
-	Extensions as ViewContainerExtensions,
-	ViewContainerLocation,
 } from "../../common/views.js";
 import { VIEWLET_ID as DEBUG } from "../../contrib/debug/common/debug.js";
 import { VIEWLET_ID as EXPLORER } from "../../contrib/files/common/files.js";
@@ -52,16 +52,16 @@ import { VIEWLET_ID as SCM } from "../../contrib/scm/common/scm.js";
 import { WebviewViewPane } from "../../contrib/webviewView/browser/webviewViewPane.js";
 import {
 	Extensions as ExtensionFeaturesRegistryExtensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,
 } from "../../services/extensionManagement/common/extensionFeatures.js";
 import { isProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
-	type ExtensionMessageCollector,
 	ExtensionsRegistry,
+	type ExtensionMessageCollector,
 	type IExtensionPoint,
 	type IExtensionPointUser,
 } from "../../services/extensions/common/extensionsRegistry.js";
@@ -409,11 +409,16 @@ class ViewsExtensionHandler implements IWorkbenchContribution {
 	private viewsRegistry: IViewsRegistry;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILogService private readonly logService: ILogService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ILogService private readonly logService: ILogService,
 	) {
-		this.viewContainersRegistry = Registry.as<IViewContainersRegistry>(ViewContainerExtensions.ViewContainersRegistry);
-		this.viewsRegistry = Registry.as<IViewsRegistry>(ViewContainerExtensions.ViewsRegistry);
+		this.viewContainersRegistry = Registry.as<IViewContainersRegistry>(
+			ViewContainerExtensions.ViewContainersRegistry,
+		);
+		this.viewsRegistry = Registry.as<IViewsRegistry>(
+			ViewContainerExtensions.ViewsRegistry,
+		);
 		this.handleAndRegisterCustomViewContainers();
 		this.handleAndRegisterCustomViews();
 	}

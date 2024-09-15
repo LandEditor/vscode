@@ -11,18 +11,19 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
+	newWriteableStream,
 	type ReadableStreamEventPayload,
 	type ReadableStreamEvents,
-	newWriteableStream,
 } from "../../../base/common/stream.js";
 import type { URI } from "../../../base/common/uri.js";
 import { generateUuid } from "../../../base/common/uuid.js";
 import type { IChannel } from "../../../base/parts/ipc/common/ipc.js";
 import {
+	createFileSystemProviderError,
 	FileSystemProviderCapabilities,
 	FileSystemProviderErrorCode,
 	type FileType,
@@ -42,7 +43,6 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	createFileSystemProviderError,
 } from "./files.js";
 import { reviveFileChanges } from "./watcher.js";
 

@@ -9,8 +9,8 @@ import {
 } from "../../../../editor/browser/config/migrateOptions.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type ConfigurationKeyValuePairs,
 	Extensions,
+	type ConfigurationKeyValuePairs,
 	type IConfigurationMigrationRegistry,
 } from "../../../common/configuration.js";
 

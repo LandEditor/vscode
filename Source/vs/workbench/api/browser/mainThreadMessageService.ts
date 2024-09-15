@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, toAction } from "../../../base/common/actions.js";
+import { toAction, type IAction } from "../../../base/common/actions.js";
 import { Event } from "../../../base/common/event.js";
 import type { IDisposable } from "../../../base/common/lifecycle.js";
 import type Severity from "../../../base/common/severity.js";
@@ -17,11 +17,11 @@ import {
 	INotificationService,
 	type INotificationSource,
 } from "../../../platform/notification/common/notification.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
+import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
 import {
 	MainContext,
 	type MainThreadMessageOptions,
@@ -34,16 +34,21 @@ export class MainThreadMessageService implements MainThreadMessageServiceShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IExtensionService extensionService: IExtensionService
+		@IExtensionService extensionService: IExtensionService,
 	) {
-		this.extensionsListener = extensionService.onDidChangeExtensions(e => {
-			for (const extension of e.removed) {
-				this._notificationService.removeFilter(extension.identifier.value);
-			}
-		});
+		this.extensionsListener = extensionService.onDidChangeExtensions(
+			(e) => {
+				for (const extension of e.removed) {
+					this._notificationService.removeFilter(
+						extension.identifier.value,
+					);
+				}
+			},
+		);
 	}
 
 	dispose(): void {

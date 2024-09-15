@@ -5,12 +5,12 @@
 
 import { distinct } from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
-	Promises,
 	createCancelablePromise,
+	Promises,
 	raceCancellablePromises,
 	raceCancellation,
 	timeout,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { isCancellationError } from "../../../../base/common/errors.js";
@@ -28,19 +28,19 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import type { IGalleryExtension } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
-	type IExtensionRecommendationNotificationService,
-	type IExtensionRecommendations,
+	RecommendationsNotificationResult,
 	RecommendationSource,
 	RecommendationSourceToString,
-	RecommendationsNotificationResult,
+	type IExtensionRecommendationNotificationService,
+	type IExtensionRecommendations,
 } from "../../../../platform/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type INotificationHandle,
 	INotificationService,
-	type IPromptChoice,
-	type IPromptChoiceWithMenu,
 	NotificationPriority,
 	Severity,
+	type INotificationHandle,
+	type IPromptChoice,
+	type IPromptChoiceWithMenu,
 } from "../../../../platform/notification/common/notification.js";
 import {
 	IStorageService,
@@ -61,8 +61,8 @@ import {
 } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { IExtensionIgnoredRecommendationsService } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../common/extensions.js";
 
 type ExtensionRecommendationsNotificationClassification = {
@@ -238,17 +238,26 @@ export class ExtensionRecommendationNotificationService
 	private pendingNotificaitons: PendingRecommendationsNotification[] = [];
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IStorageService private readonly storageService: IStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionManagementService private readonly extensionManagementService: IWorkbenchExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IExtensionIgnoredRecommendationsService private readonly extensionIgnoredRecommendationsService: IExtensionIgnoredRecommendationsService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IWorkbenchEnvironmentService private readonly workbenchEnvironmentService: IWorkbenchEnvironmentService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionManagementService
+		private readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionIgnoredRecommendationsService: IExtensionIgnoredRecommendationsService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IWorkbenchEnvironmentService
+		private readonly workbenchEnvironmentService: IWorkbenchEnvironmentService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 	}

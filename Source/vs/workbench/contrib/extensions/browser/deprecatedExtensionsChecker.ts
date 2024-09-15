@@ -26,25 +26,39 @@ export class DeprecatedExtensionsChecker
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IStorageService private readonly storageService: IStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
 		this.checkForDeprecatedExtensions();
-		this._register(extensionManagementService.onDidInstallExtensions(e => {
-			const ids: string[] = [];
-			for (const { local } of e) {
-				if (local && extensionsWorkbenchService.local.find(extension => areSameExtensions(extension.identifier, local.identifier))?.deprecationInfo) {
-					ids.push(local.identifier.id.toLowerCase());
+		this._register(
+			extensionManagementService.onDidInstallExtensions((e) => {
+				const ids: string[] = [];
+				for (const { local } of e) {
+					if (
+						local &&
+						extensionsWorkbenchService.local.find((extension) =>
+							areSameExtensions(
+								extension.identifier,
+								local.identifier,
+							),
+						)?.deprecationInfo
+					) {
+						ids.push(local.identifier.id.toLowerCase());
+					}
 				}
-			}
-			if (ids.length) {
-				this.setNotifiedDeprecatedExtensions(ids);
-			}
-		}));
+				if (ids.length) {
+					this.setNotifiedDeprecatedExtensions(ids);
+				}
+			}),
+		);
 	}
 
 	private async checkForDeprecatedExtensions(): Promise<void> {

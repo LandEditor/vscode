@@ -9,6 +9,7 @@ import type {
 	ITheme,
 	Terminal as RawXtermTerminal,
 } from "@xterm/xterm";
+
 import type { IDimension } from "../../../../base/browser/dom.js";
 import type { Orientation } from "../../../../base/browser/ui/splitview/splitview.js";
 import type { Barrier } from "../../../../base/common/async.js";

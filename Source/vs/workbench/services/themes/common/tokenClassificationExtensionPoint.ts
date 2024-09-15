@@ -5,13 +5,13 @@
 
 import * as nls from "../../../../nls.js";
 import {
-	type ITokenClassificationRegistry,
 	getTokenClassificationRegistry,
 	typeAndModifierIdPattern,
+	type ITokenClassificationRegistry,
 } from "../../../../platform/theme/common/tokenClassificationRegistry.js";
 import {
-	type ExtensionMessageCollector,
 	ExtensionsRegistry,
+	type ExtensionMessageCollector,
 } from "../../extensions/common/extensionsRegistry.js";
 
 interface ITokenTypeExtensionPoint {

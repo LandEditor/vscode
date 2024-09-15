@@ -8,8 +8,8 @@ import { LRUCache } from "../../../../base/common/map.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { join } from "../../../../base/common/path.js";
 import {
-	OperatingSystem,
 	isWindows,
+	OperatingSystem,
 } from "../../../../base/common/platform.js";
 import { env } from "../../../../base/common/process.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -17,8 +17,8 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import {
 	FileOperationError,
 	FileOperationResult,
-	type IFileContent,
 	IFileService,
+	type IFileContent,
 } from "../../../../platform/files/common/files.js";
 import {
 	IInstantiationService,
@@ -168,8 +168,9 @@ export class TerminalPersistedHistory<T>
 
 	constructor(
 		private readonly _storageDataKey: string,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IStorageService private readonly _storageService: IStorageService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
 
@@ -177,18 +178,35 @@ export class TerminalPersistedHistory<T>
 		this._entries = new LRUCache<string, T>(this._getHistoryLimit());
 
 		// Listen for config changes to set history limit
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalSettingId.ShellIntegrationCommandHistory)) {
-				this._entries.limit = this._getHistoryLimit();
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						TerminalSettingId.ShellIntegrationCommandHistory,
+					)
+				) {
+					this._entries.limit = this._getHistoryLimit();
+				}
+			}),
+		);
 
 		// Listen to cache changes from other windows
-		this._register(this._storageService.onDidChangeValue(StorageScope.APPLICATION, this._getTimestampStorageKey(), this._store)(() => {
-			if (!this._isStale) {
-				this._isStale = this._storageService.getNumber(this._getTimestampStorageKey(), StorageScope.APPLICATION, 0) !== this._timestamp;
-			}
-		}));
+		this._register(
+			this._storageService.onDidChangeValue(
+				StorageScope.APPLICATION,
+				this._getTimestampStorageKey(),
+				this._store,
+			)(() => {
+				if (!this._isStale) {
+					this._isStale =
+						this._storageService.getNumber(
+							this._getTimestampStorageKey(),
+							StorageScope.APPLICATION,
+							0,
+						) !== this._timestamp;
+				}
+			}),
+		);
 	}
 
 	add(key: string, value: T) {

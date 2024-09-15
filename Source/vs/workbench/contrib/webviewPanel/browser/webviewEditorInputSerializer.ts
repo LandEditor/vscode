@@ -53,8 +53,9 @@ export class WebviewEditorInputSerializer implements IEditorSerializer {
 	public static readonly ID = WebviewInput.typeId;
 
 	public constructor(
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService
-	) { }
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+	) {}
 
 	public canSerialize(input: WebviewInput): boolean {
 		return this._webviewWorkbenchService.shouldPersist(input);

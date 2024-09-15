@@ -17,12 +17,12 @@ import type { ITextEditorOptions } from "../../../../../platform/editor/common/e
 import type { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IQuickAccessRegistry,
 	Extensions as QuickaccesExtensions,
+	type IQuickAccessRegistry,
 } from "../../../../../platform/quickinput/common/quickAccess.js";
 import {
-	type IKeyMods,
 	IQuickInputService,
+	type IKeyMods,
 } from "../../../../../platform/quickinput/common/quickInput.js";
 import { Registry } from "../../../../../platform/registry/common/platform.js";
 import type { IWorkbenchEditorConfiguration } from "../../../../common/editor.js";
@@ -35,8 +35,10 @@ export class GotoLineQuickAccessProvider extends AbstractGotoLineQuickAccessProv
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 	}

@@ -19,15 +19,15 @@ import { URI } from "../../base/common/uri.js";
 import { ProxyChannel } from "../../base/parts/ipc/common/ipc.js";
 import { localize } from "../../nls.js";
 import type { IConfigurationService } from "../../platform/configuration/common/configuration.js";
-import { FileService } from "../../platform/files/common/fileService.js";
 import { IFileService } from "../../platform/files/common/files.js";
+import { FileService } from "../../platform/files/common/fileService.js";
 import { ServiceCollection } from "../../platform/instantiation/common/serviceCollection.js";
 import { IMainProcessService } from "../../platform/ipc/common/mainProcessService.js";
 import { ElectronIPCMainProcessService } from "../../platform/ipc/electron-sandbox/mainProcessService.js";
 import { ISharedProcessService } from "../../platform/ipc/electron-sandbox/services.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 	LogLevel,
 } from "../../platform/log/common/log.js";
 import { LoggerChannelClient } from "../../platform/log/common/logIpc.js";
@@ -65,12 +65,12 @@ import type {
 } from "../../platform/window/common/window.js";
 import { applyZoom } from "../../platform/window/electron-sandbox/window.js";
 import {
-	type IAnyWorkspaceIdentifier,
-	IWorkspaceContextService,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
+	IWorkspaceContextService,
 	reviveIdentifier,
 	toWorkspaceIdentifier,
+	type IAnyWorkspaceIdentifier,
 } from "../../platform/workspace/common/workspace.js";
 import {
 	IWorkspaceTrustEnablementService,

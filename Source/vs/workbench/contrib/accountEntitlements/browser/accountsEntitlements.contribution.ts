@@ -34,8 +34,8 @@ import type { ServicesAccessor } from "../../../../platform/instantiation/common
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	IRequestService,
 	asText,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import {
 	IStorageService,
@@ -45,17 +45,17 @@ import {
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { applicationConfigurationNodeBase } from "../../../common/configuration.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	IActivityService,
 	NumberBadge,
 } from "../../../services/activity/common/activity.js";
 import {
-	type AuthenticationSession,
 	IAuthenticationService,
+	type AuthenticationSession,
 } from "../../../services/authentication/common/authentication.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 
@@ -98,22 +98,31 @@ class EntitlementsContribution
 	constructor(
 		@IContextKeyService private readonly contextService: IContextKeyService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
 		@IProductService private readonly productService: IProductService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IActivityService private readonly activityService: IActivityService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IRequestService private readonly requestService: IRequestService) {
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IRequestService private readonly requestService: IRequestService,
+	) {
 		super();
 
 		if (!this.productService.gitHubEntitlement || isWeb) {
 			return;
 		}
 
-		this.extensionManagementService.getInstalled().then(async exts => {
-			const installed = exts.find(value => ExtensionIdentifier.equals(value.identifier.id, this.productService.gitHubEntitlement!.extensionId));
+		this.extensionManagementService.getInstalled().then(async (exts) => {
+			const installed = exts.find((value) =>
+				ExtensionIdentifier.equals(
+					value.identifier.id,
+					this.productService.gitHubEntitlement!.extensionId,
+				),
+			);
 			if (installed) {
 				this.disableEntitlements();
 			} else {

@@ -15,28 +15,28 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
+import { TestingContextKeys } from "./testingContextKeys.js";
 import { ITestProfileService } from "./testProfileService.js";
 import {
-	type ITestResult,
 	LiveTestResult,
-	type TestResultItemChange,
 	TestResultItemChangeReason,
+	type ITestResult,
+	type TestResultItemChange,
 } from "./testResult.js";
 import { ITestResultStorage, RETAIN_MAX_RESULTS } from "./testResultStorage.js";
 import {
+	TestResultState,
+	TestRunProfileBitset,
 	type ExtensionRunTestsRequest,
 	type ITestRunProfile,
 	type ResolvedTestRunRequest,
 	type TestResultItem,
-	TestResultState,
-	TestRunProfileBitset,
 } from "./testTypes.js";
-import { TestingContextKeys } from "./testingContextKeys.js";
 
 export type ResultChangeEvent =
 	| { completed: LiveTestResult }
@@ -153,7 +153,8 @@ export class TestResultService
 		super();
 		this._register(toDisposable(() => dispose(this._resultsDisposables)));
 		this.isRunning = TestingContextKeys.isRunning.bindTo(contextKeyService);
-		this.hasAnyResults = TestingContextKeys.hasAnyResults.bindTo(contextKeyService);
+		this.hasAnyResults =
+			TestingContextKeys.hasAnyResults.bindTo(contextKeyService);
 	}
 
 	/**

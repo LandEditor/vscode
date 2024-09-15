@@ -9,11 +9,10 @@ import * as resources from "../../../../base/common/resources.js";
 import * as Types from "../../../../base/common/types.js";
 import type { URI, UriComponents } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
-
 import { ConfigurationTarget } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type ContextKeyExpression,
 	RawContextKey,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IExtensionDescription } from "../../../../platform/extensions/common/extensions.js";
 import type { TerminalExitReason } from "../../../../platform/terminal/common/terminal.js";

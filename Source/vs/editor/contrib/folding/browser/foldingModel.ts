@@ -13,10 +13,10 @@ import type {
 } from "../../../common/model.js";
 import type { SelectedLines } from "./folding.js";
 import {
-	type FoldRange,
+	FoldingRegions,
 	FoldSource,
 	type FoldingRegion,
-	FoldingRegions,
+	type FoldRange,
 	type ILineRange,
 } from "./foldingRanges.js";
 

@@ -16,13 +16,13 @@ import { generateUuid } from "../../../../base/common/uuid.js";
 import * as nls from "../../../../nls.js";
 import type { ILabelService } from "../../../../platform/label/common/label.js";
 import {
-	type ISingleFolderWorkspaceIdentifier,
-	type IWorkspaceContextService,
-	type IWorkspaceIdentifier,
-	WORKSPACE_EXTENSION,
 	isEmptyWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
 	toWorkspaceIdentifier,
+	WORKSPACE_EXTENSION,
+	type ISingleFolderWorkspaceIdentifier,
+	type IWorkspaceContextService,
+	type IWorkspaceIdentifier,
 } from "../../../../platform/workspace/common/workspace.js";
 import type { Selection } from "../../../common/core/selection.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
@@ -260,7 +260,8 @@ export class CommentBasedVariableResolver implements VariableResolver {
 	constructor(
 		private readonly _model: ITextModel,
 		private readonly _selection: Selection,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		//
 	}

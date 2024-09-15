@@ -9,8 +9,8 @@ import * as glob from "../../../../base/common/glob.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import {
@@ -37,8 +37,8 @@ import {
 	Severity,
 } from "../../../../platform/notification/common/notification.js";
 import {
-	type IKeyMods,
 	IQuickInputService,
+	type IKeyMods,
 	type IQuickPickItem,
 	type IQuickPickSeparator,
 	type QuickPickItem,
@@ -51,11 +51,7 @@ import {
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
-	type EditorInputWithOptions,
 	EditorResourceAccessor,
-	type IResourceSideBySideEditorInput,
-	type IUntypedEditorInput,
-	SideBySideEditor,
 	isEditorInputWithOptions,
 	isEditorInputWithOptionsAndGroup,
 	isResourceDiffEditorInput,
@@ -63,28 +59,32 @@ import {
 	isResourceMultiDiffEditorInput,
 	isResourceSideBySideEditorInput,
 	isUntitledResourceEditorInput,
+	SideBySideEditor,
+	type EditorInputWithOptions,
+	type IResourceSideBySideEditorInput,
+	type IUntypedEditorInput,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import { SideBySideEditorInput } from "../../../common/editor/sideBySideEditorInput.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import { findGroup } from "../common/editorGroupFinder.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../common/editorGroupsService.js";
 import {
+	editorsAssociationsSettingId,
+	globMatchesResource,
+	IEditorResolverService,
+	priorityToRank,
+	RegisteredEditorPriority,
+	ResolvedStatus,
 	type EditorAssociation,
 	type EditorAssociations,
 	type EditorInputFactoryObject,
-	IEditorResolverService,
 	type RegisteredEditorInfo,
 	type RegisteredEditorOptions,
-	RegisteredEditorPriority,
 	type ResolvedEditor,
-	ResolvedStatus,
-	editorsAssociationsSettingId,
-	globMatchesResource,
-	priorityToRank,
 } from "../common/editorResolverService.js";
 import type { PreferredGroup } from "../common/editorService.js";
 
@@ -133,30 +133,50 @@ export class EditorResolverService
 	private cache: Set<string> | undefined;
 
 	constructor(
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 		// Read in the cache on statup
-		this.cache = new Set<string>(JSON.parse(this.storageService.get(EditorResolverService.cacheStorageID, StorageScope.PROFILE, JSON.stringify([]))));
-		this.storageService.remove(EditorResolverService.cacheStorageID, StorageScope.PROFILE);
+		this.cache = new Set<string>(
+			JSON.parse(
+				this.storageService.get(
+					EditorResolverService.cacheStorageID,
+					StorageScope.PROFILE,
+					JSON.stringify([]),
+				),
+			),
+		);
+		this.storageService.remove(
+			EditorResolverService.cacheStorageID,
+			StorageScope.PROFILE,
+		);
 
-		this._register(this.storageService.onWillSaveState(() => {
-			// We want to store the glob patterns we would activate on, this allows us to know if we need to await the ext host on startup for opening a resource
-			this.cacheEditors();
-		}));
+		this._register(
+			this.storageService.onWillSaveState(() => {
+				// We want to store the glob patterns we would activate on, this allows us to know if we need to await the ext host on startup for opening a resource
+				this.cacheEditors();
+			}),
+		);
 
 		// When extensions have registered we no longer need the cache
-		this._register(this.extensionService.onDidRegisterExtensions(() => {
-			this.cache = undefined;
-		}));
+		this._register(
+			this.extensionService.onDidRegisterExtensions(() => {
+				this.cache = undefined;
+			}),
+		);
 	}
 
 	private resolveUntypedInputAndGroup(

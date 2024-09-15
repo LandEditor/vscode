@@ -6,17 +6,17 @@
 import { Emitter, type Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
+	dispose,
+	MutableDisposable,
 	type IDisposable,
 	type IReference,
-	MutableDisposable,
-	dispose,
 } from "../../../../../base/common/lifecycle.js";
 import { Mimes } from "../../../../../base/common/mime.js";
 import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js";
 import type { ICodeEditorService } from "../../../../../editor/browser/services/codeEditorService.js";
 import type { IEditorCommentsOptions } from "../../../../../editor/common/config/editorOptions.js";
 import type { IPosition } from "../../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../../editor/common/core/range.js";
 import { Selection } from "../../../../../editor/common/core/selection.js";
 import * as editorCommon from "../../../../../editor/common/editorCommon.js";
 import type * as model from "../../../../../editor/common/model.js";
@@ -28,9 +28,9 @@ import type {
 import type { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import type { IUndoRedoService } from "../../../../../platform/undoRedo/common/undoRedo.js";
 import {
-	type IWordWrapTransientState,
 	readTransientState,
 	writeTransientState,
+	type IWordWrapTransientState,
 } from "../../../codeEditor/browser/toggleWordWrap.js";
 import { InlineChatController } from "../../../inlineChat/browser/inlineChatController.js";
 import type { NotebookCellTextModel } from "../../common/model/notebookCellTextModel.js";
@@ -42,9 +42,9 @@ import type {
 import {
 	CellEditState,
 	CellFocusMode,
-	type CellLayoutChangeEvent,
 	CursorAtBoundary,
 	CursorAtLineBoundary,
+	type CellLayoutChangeEvent,
 	type IEditableCellViewModel,
 	type INotebookCellDecorationOptions,
 } from "../notebookBrowser.js";

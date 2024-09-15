@@ -9,9 +9,9 @@ import * as dom from "../../../../base/browser/dom.js";
 import { StandardMouseEvent } from "../../../../base/browser/mouseEvent.js";
 import {
 	Action,
-	type IAction,
 	Separator,
 	SubmenuAction,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { distinct } from "../../../../base/common/arrays.js";
 import { RunOnceScheduler, timeout } from "../../../../base/common/async.js";
@@ -19,9 +19,9 @@ import { memoize } from "../../../../base/common/decorators.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import { MarkdownString } from "../../../../base/common/htmlContent.js";
 import {
-	type IDisposable,
 	dispose,
 	disposeIfDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as env from "../../../../base/common/platform.js";
 import severity from "../../../../base/common/severity.js";
@@ -31,12 +31,12 @@ import type { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
 	ContentWidgetPositionPreference,
+	MouseTargetType,
 	type IActiveCodeEditor,
 	type ICodeEditor,
 	type IContentWidget,
 	type IContentWidgetPosition,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../editor/browser/editorBrowser.js";
 import { EditorOption } from "../../../../editor/common/config/editorOptions.js";
 import type { IPosition } from "../../../../editor/common/core/position.js";
@@ -44,18 +44,18 @@ import { Range } from "../../../../editor/common/core/range.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import {
 	GlyphMarginLane,
+	OverviewRulerLane,
+	TrackedRangeStickiness,
 	type IModelDecorationOptions,
 	type IModelDecorationOverviewRulerOptions,
 	type IModelDecorationsChangeAccessor,
 	type ITextModel,
-	OverviewRulerLane,
-	TrackedRangeStickiness,
 } from "../../../../editor/common/model.js";
 import * as nls from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -75,16 +75,16 @@ import {
 	BreakpointWidgetContext,
 	CONTEXT_BREAKPOINT_WIDGET_VISIBLE,
 	DebuggerString,
+	IDebugService,
+	State,
 	type IBreakpoint,
 	type IBreakpointEditorContribution,
 	type IBreakpointUpdateData,
 	type IDebugConfiguration,
-	IDebugService,
 	type IDebugSession,
-	State,
 } from "../common/debug.js";
-import { BreakpointWidget } from "./breakpointWidget.js";
 import { getBreakpointMessageAndIcon } from "./breakpointsView.js";
+import { BreakpointWidget } from "./breakpointWidget.js";
 import * as icons from "./debugIcons.js";
 
 const $ = dom.$;
@@ -391,15 +391,22 @@ export class BreakpointEditorContribution
 	constructor(
 		private readonly editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILabelService private readonly labelService: ILabelService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ILabelService private readonly labelService: ILabelService,
 	) {
-		this.breakpointWidgetVisible = CONTEXT_BREAKPOINT_WIDGET_VISIBLE.bindTo(contextKeyService);
-		this.setDecorationsScheduler = new RunOnceScheduler(() => this.setDecorations(), 30);
+		this.breakpointWidgetVisible =
+			CONTEXT_BREAKPOINT_WIDGET_VISIBLE.bindTo(contextKeyService);
+		this.setDecorationsScheduler = new RunOnceScheduler(
+			() => this.setDecorations(),
+			30,
+		);
 		this.setDecorationsScheduler.schedule();
 		this.registerListeners();
 	}
@@ -1181,8 +1188,9 @@ export class BreakpointEditorContribution
 							inlineWidget = new InlineBreakpointWidget(
 								activeCodeEditor,
 								decorationId,
-								desiredBreakpointDecorations[index].options
-									.glyphMarginClassName,
+								desiredBreakpointDecorations[
+									index
+								].options.glyphMarginClassName,
 								breakpoint,
 								this.debugService,
 								this.contextMenuService,

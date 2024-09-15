@@ -13,17 +13,17 @@ import * as platform from "../../../../../../base/common/platform.js";
 import { cloneNotebookCellTextModel } from "../../../common/model/notebookCellTextModel.js";
 import {
 	CellEditType,
-	type ICellMoveEdit,
 	SelectionStateType,
+	type ICellMoveEdit,
 } from "../../../common/notebookCommon.js";
 import {
-	type ICellRange,
 	cellRangesToIndexes,
+	type ICellRange,
 } from "../../../common/notebookRange.js";
 import {
+	expandCellRangesWithHiddenCells,
 	type ICellViewModel,
 	type INotebookEditorDelegate,
-	expandCellRangesWithHiddenCells,
 } from "../../notebookBrowser.js";
 import type { CellViewModelStateChangeEvent } from "../../notebookViewEvents.js";
 import { CellContentPart } from "../cellPart.js";

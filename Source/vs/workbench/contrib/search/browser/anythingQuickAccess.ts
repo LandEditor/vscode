@@ -4,17 +4,18 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/anythingQuickAccess.css";
+
 import { top } from "../../../../base/common/arrays.js";
 import { ThrottledDelayer } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Event } from "../../../../base/common/event.js";
 import {
-	type FuzzyScorerCache,
-	type IPreparedQuery,
 	compareItemsByFuzzyScore,
 	prepareQuery,
 	scoreItemFuzzy,
+	type FuzzyScorerCache,
+	type IPreparedQuery,
 } from "../../../../base/common/fuzzyScorer.js";
 import { stripIcons } from "../../../../base/common/iconLabels.js";
 import { untildify } from "../../../../base/common/labels.js";
@@ -22,9 +23,9 @@ import { Lazy } from "../../../../base/common/lazy.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -35,10 +36,10 @@ import {
 } from "../../../../base/common/resources.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import {
-	type IEditor,
 	ScrollType,
+	type IEditor,
 } from "../../../../editor/common/editorCommon.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { getIconClasses } from "../../../../editor/common/services/getIconClasses.js";
@@ -56,41 +57,41 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
+	PickerQuickAccessProvider,
+	TriggerAction,
 	type FastAndSlowPicks,
 	type IPickerQuickAccessItem,
-	PickerQuickAccessProvider,
 	type Picks,
 	type PicksWithActive,
-	TriggerAction,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import {
-	type AnythingQuickAccessProviderRunOptions,
 	DefaultQuickAccessFilterValue,
 	Extensions,
+	type AnythingQuickAccessProviderRunOptions,
 	type IQuickAccessRegistry,
 } from "../../../../platform/quickinput/common/quickAccess.js";
 import {
-	type IKeyMods,
-	type IQuickInputButton,
 	IQuickInputService,
-	type IQuickPick,
-	type IQuickPickItemWithResource,
-	type IQuickPickSeparator,
 	QuickInputHideReason,
 	QuickPickItemScorerAccessor,
 	quickPickItemScorerAccessor,
+	type IKeyMods,
+	type IQuickInputButton,
+	type IQuickPick,
+	type IQuickPickItemWithResource,
+	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import {
-	type IWorkbenchQuickAccessConfiguration,
 	PickerEditorState,
+	type IWorkbenchQuickAccessConfiguration,
 } from "../../../browser/quickaccess.js";
 import {
 	EditorResourceAccessor,
-	type IWorkbenchEditorConfiguration,
 	isEditorInput,
+	type IWorkbenchEditorConfiguration,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import { ICustomEditorLabelService } from "../../../services/editor/common/customEditorLabelService.js";
@@ -104,12 +105,12 @@ import { IFilesConfigurationService } from "../../../services/filesConfiguration
 import { IHistoryService } from "../../../services/history/common/history.js";
 import { IPathService } from "../../../services/path/common/pathService.js";
 import {
-	type IFileQueryBuilderOptions,
 	QueryBuilder,
+	type IFileQueryBuilderOptions,
 } from "../../../services/search/common/queryBuilder.js";
 import {
-	type ISearchComplete,
 	ISearchService,
+	type ISearchComplete,
 } from "../../../services/search/common/search.js";
 import { IWorkingCopyService } from "../../../services/workingCopy/common/workingCopyService.js";
 import { ASK_QUICK_QUESTION_ACTION_ID } from "../../chat/browser/actions/chatQuickInputActions.js";
@@ -117,9 +118,9 @@ import { IQuickChatService } from "../../chat/browser/chat.js";
 import { GotoSymbolQuickAccessProvider } from "../../codeEditor/browser/quickaccess/gotoSymbolQuickAccess.js";
 import { FileQueryCacheState } from "../common/cacheState.js";
 import {
-	type IWorkbenchSearchConfiguration,
 	extractRangeFromFilter,
 	getOutOfWorkspaceEditorResources,
+	type IWorkbenchSearchConfiguration,
 } from "../common/search.js";
 import { SymbolsQuickAccessProvider } from "./symbolsQuickAccess.js";
 
@@ -224,31 +225,41 @@ export class AnythingQuickAccessProvider extends PickerQuickAccessProvider<IAnyt
 	}
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ISearchService private readonly searchService: ISearchService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IPathService private readonly pathService: IPathService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IHistoryService private readonly historyService: IHistoryService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IQuickChatService private readonly quickChatService: IQuickChatService,
 		@ILogService private readonly logService: ILogService,
-		@ICustomEditorLabelService private readonly customEditorLabelService: ICustomEditorLabelService
+		@ICustomEditorLabelService
+		private readonly customEditorLabelService: ICustomEditorLabelService,
 	) {
 		super(AnythingQuickAccessProvider.PREFIX, {
 			canAcceptInBackground: true,
-			noResultsPick: AnythingQuickAccessProvider.NO_RESULTS_PICK
+			noResultsPick: AnythingQuickAccessProvider.NO_RESULTS_PICK,
 		});
 	}
 

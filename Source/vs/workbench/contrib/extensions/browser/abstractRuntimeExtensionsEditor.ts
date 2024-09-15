@@ -5,10 +5,10 @@
 
 import {
 	$,
-	type Dimension,
 	addDisposableListener,
 	append,
 	clearNode,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
@@ -20,15 +20,15 @@ import type {
 import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import { fromNow } from "../../../../base/common/date.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import * as nls from "../../../../nls.js";
@@ -46,8 +46,8 @@ import {
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
-	type ExtensionIdentifier,
 	ExtensionIdentifierMap,
+	type ExtensionIdentifier,
 	type IExtensionDescription,
 } from "../../../../platform/extensions/common/extensions.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -81,16 +81,17 @@ import {
 } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { LocalWebWorkerRunningLocation } from "../../../services/extensions/common/extensionRunningLocation.js";
 import {
-	type IExtensionHostProfile,
 	IExtensionService,
+	type IExtensionHostProfile,
 	type IExtensionsStatus,
 } from "../../../services/extensions/common/extensions.js";
 import {
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 } from "../common/extensions.js";
 import { RuntimeExtensionsInput } from "../common/runtimeExtensionsInput.js";
 import { errorIcon, warningIcon } from "./extensionsIcons.js";
+
 import "./media/runtimeExtensionsEditor.css";
 
 interface IExtensionProfileInformation {
@@ -127,28 +128,53 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IExtensionsWorkbenchService private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IExtensionsWorkbenchService
+		private readonly _extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IInstantiationService
+		protected readonly _instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@IExtensionFeaturesManagementService private readonly _extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@IExtensionFeaturesManagementService
+		private readonly _extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 		@IHoverService private readonly _hoverService: IHoverService,
 		@IMenuService private readonly _menuService: IMenuService,
 	) {
-		super(AbstractRuntimeExtensionsEditor.ID, group, telemetryService, themeService, storageService);
+		super(
+			AbstractRuntimeExtensionsEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 
 		this._list = null;
 		this._elements = null;
-		this._updateSoon = this._register(new RunOnceScheduler(() => this._updateExtensions(), 200));
+		this._updateSoon = this._register(
+			new RunOnceScheduler(() => this._updateExtensions(), 200),
+		);
 
-		this._register(this._extensionService.onDidChangeExtensionsStatus(() => this._updateSoon.schedule()));
-		this._register(this._extensionFeaturesManagementService.onDidChangeAccessData(() => this._updateSoon.schedule()));
+		this._register(
+			this._extensionService.onDidChangeExtensionsStatus(() =>
+				this._updateSoon.schedule(),
+			),
+		);
+		this._register(
+			this._extensionFeaturesManagementService.onDidChangeAccessData(() =>
+				this._updateSoon.schedule(),
+			),
+		);
 		this._updateExtensions();
 	}
 
@@ -708,7 +734,8 @@ export abstract class AbstractRuntimeExtensionsEditor extends EditorPane {
 						listBackground: editorBackground,
 					},
 					accessibilityProvider: new (class
-						implements IListAccessibilityProvider<IRuntimeExtension>
+						implements
+							IListAccessibilityProvider<IRuntimeExtension>
 					{
 						getWidgetAriaLabel(): string {
 							return nls.localize(

@@ -9,20 +9,20 @@ import type { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import type { IExtensionDescription } from "../../../../platform/extensions/common/extensions.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import { Memento } from "../../../common/memento.js";
 import { RegisteredEditorPriority } from "../../../services/editor/common/editorResolverService.js";
 import type { IExtensionPointUser } from "../../../services/extensions/common/extensionsRegistry.js";
 import {
-	type CustomEditorDescriptor,
 	CustomEditorInfo,
+	type CustomEditorDescriptor,
 } from "./customEditor.js";
 import {
-	type ICustomEditorsExtensionPoint,
 	customEditorsExtensionPoint,
+	type ICustomEditorsExtensionPoint,
 } from "./extensionPoint.js";
 
 export class ContributedCustomEditors extends Disposable {

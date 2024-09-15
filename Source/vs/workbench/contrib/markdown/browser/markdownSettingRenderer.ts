@@ -30,13 +30,19 @@ export class SimpleSettingRenderer {
 	private _featuredSettings = new Map<string, any>(); // setting ID to feature value
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IPreferencesService private readonly _preferencesService: IPreferencesService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IPreferencesService
+		private readonly _preferencesService: IPreferencesService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 	) {
-		this.codeSettingRegex = /^<a (href)=".*code.*:\/\/settings\/([^\s"]+)"(?:\s*codesetting="([^"]+)")?>/;
+		this.codeSettingRegex =
+			/^<a (href)=".*code.*:\/\/settings\/([^\s"]+)"(?:\s*codesetting="([^"]+)")?>/;
 	}
 
 	get featuredSettingStates(): Map<string, boolean> {

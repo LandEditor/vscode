@@ -6,15 +6,15 @@
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { ExtensionsRegistry } from "../../../services/extensions/common/extensionsRegistry.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { ViewsWelcomeContribution } from "./viewsWelcomeContribution.js";
 import {
-	type ViewsWelcomeExtensionPoint,
 	viewsWelcomeExtensionPointDescriptor,
+	type ViewsWelcomeExtensionPoint,
 } from "./viewsWelcomeExtensionPoint.js";
 
 const extensionPoint =
@@ -26,7 +26,10 @@ class WorkbenchConfigurationContribution {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		instantiationService.createInstance(ViewsWelcomeContribution, extensionPoint);
+		instantiationService.createInstance(
+			ViewsWelcomeContribution,
+			extensionPoint,
+		);
 	}
 }
 

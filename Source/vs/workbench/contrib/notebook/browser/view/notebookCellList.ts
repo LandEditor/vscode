@@ -7,9 +7,9 @@ import * as DOM from "../../../../../base/browser/dom.js";
 import { FastDomNode } from "../../../../../base/browser/fastDomNode.js";
 import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";
 import {
+	ListError,
 	type IListRenderer,
 	type IListVirtualDelegate,
-	ListError,
 } from "../../../../../base/browser/ui/list/list.js";
 import type {
 	IListView,
@@ -23,8 +23,8 @@ import { Emitter, Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { clamp } from "../../../../../base/common/numbers.js";
 import { isMacintosh } from "../../../../../base/common/platform.js";
@@ -39,23 +39,23 @@ import type { IContextKeyService } from "../../../../../platform/contextkey/comm
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
 	IListService,
-	type IWorkbenchListOptions,
 	WorkbenchList,
+	type IWorkbenchListOptions,
 } from "../../../../../platform/list/browser/listService.js";
 import {
 	CellKind,
+	diff,
 	NOTEBOOK_EDITOR_CURSOR_BOUNDARY,
 	NOTEBOOK_EDITOR_CURSOR_LINE_BOUNDARY,
 	SelectionStateType,
-	diff,
 } from "../../common/notebookCommon.js";
 import { NOTEBOOK_CELL_LIST_FOCUSED } from "../../common/notebookContextKeys.js";
 import { INotebookExecutionStateService } from "../../common/notebookExecutionStateService.js";
 import {
-	type ICellRange,
 	cellRangesEqual,
 	cellRangesToIndexes,
 	reduceCellRanges,
+	type ICellRange,
 } from "../../common/notebookRange.js";
 import {
 	CellEditState,
@@ -218,7 +218,8 @@ export class NotebookCellList
 		@IListService listService: IListService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@INotebookExecutionStateService notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super(
 			listUser,

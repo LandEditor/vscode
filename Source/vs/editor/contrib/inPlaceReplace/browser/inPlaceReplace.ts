@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	timeout,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
@@ -16,9 +16,9 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { Range } from "../../../common/core/range.js";
 import { Selection } from "../../../common/core/selection.js";
@@ -35,6 +35,7 @@ import {
 	EditorState,
 } from "../../editorState/browser/editorState.js";
 import { InPlaceReplaceCommand } from "./inPlaceReplaceCommand.js";
+
 import "./inPlaceReplace.css";
 
 class InPlaceReplaceController implements IEditorContribution {

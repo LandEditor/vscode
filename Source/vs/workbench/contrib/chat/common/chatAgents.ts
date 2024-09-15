@@ -10,13 +10,13 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import { Iterable } from "../../../../base/common/iterator.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { revive } from "../../../../base/common/marshalling.js";
 import {
-	type IObservable,
 	observableValue,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { equalsIgnoreCase } from "../../../../base/common/strings.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
@@ -27,16 +27,16 @@ import type {
 } from "../../../../editor/common/languages.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	IRequestService,
 	asJson,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import {
 	IStorageService,
@@ -356,10 +356,16 @@ export class ChatAgentService implements IChatAgentService {
 	private readonly _defaultAgentRegistered: IContextKey<boolean>;
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
-		this._hasDefaultAgent = CONTEXT_CHAT_ENABLED.bindTo(this.contextKeyService);
-		this._defaultAgentRegistered = CONTEXT_CHAT_PANEL_PARTICIPANT_REGISTERED.bindTo(this.contextKeyService);
+		this._hasDefaultAgent = CONTEXT_CHAT_ENABLED.bindTo(
+			this.contextKeyService,
+		);
+		this._defaultAgentRegistered =
+			CONTEXT_CHAT_PANEL_PARTICIPANT_REGISTERED.bindTo(
+				this.contextKeyService,
+			);
 	}
 
 	registerAgent(id: string, data: IChatAgentData): IDisposable {
@@ -848,7 +854,7 @@ export class ChatAgentNameService implements IChatAgentNameService {
 		@IProductService productService: IProductService,
 		@IRequestService private readonly requestService: IRequestService,
 		@ILogService private readonly logService: ILogService,
-		@IStorageService private readonly storageService: IStorageService
+		@IStorageService private readonly storageService: IStorageService,
 	) {
 		if (!productService.chatParticipantRegistry) {
 			return;
@@ -856,12 +862,18 @@ export class ChatAgentNameService implements IChatAgentNameService {
 
 		this.url = productService.chatParticipantRegistry;
 
-		const raw = storageService.get(ChatAgentNameService.StorageKey, StorageScope.APPLICATION);
+		const raw = storageService.get(
+			ChatAgentNameService.StorageKey,
+			StorageScope.APPLICATION,
+		);
 
 		try {
-			this.registry.set(JSON.parse(raw ?? '{}'), undefined);
+			this.registry.set(JSON.parse(raw ?? "{}"), undefined);
 		} catch (err) {
-			storageService.remove(ChatAgentNameService.StorageKey, StorageScope.APPLICATION);
+			storageService.remove(
+				ChatAgentNameService.StorageKey,
+				StorageScope.APPLICATION,
+			);
 		}
 
 		this.refresh();

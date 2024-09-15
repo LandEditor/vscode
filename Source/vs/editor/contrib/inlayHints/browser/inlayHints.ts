@@ -11,7 +11,7 @@ import {
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { URI } from "../../../../base/common/uri.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import type {

@@ -17,9 +17,9 @@ import {
 import type { IExtensionDescription } from "../../../../platform/extensions/common/extensions.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -35,12 +35,23 @@ class DefaultFoldingRangeProvider
 	static extensionDescriptions: string[] = [];
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
-		this._store.add(this._extensionService.onDidChangeExtensions(this._updateConfigValues, this));
-		this._store.add(FoldingController.setFoldingRangeProviderSelector(this._selectFoldingRangeProvider.bind(this)));
+		this._store.add(
+			this._extensionService.onDidChangeExtensions(
+				this._updateConfigValues,
+				this,
+			),
+		);
+		this._store.add(
+			FoldingController.setFoldingRangeProviderSelector(
+				this._selectFoldingRangeProvider.bind(this),
+			),
+		);
 
 		this._updateConfigValues();
 	}

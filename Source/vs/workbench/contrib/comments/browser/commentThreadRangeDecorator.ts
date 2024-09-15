@@ -5,14 +5,14 @@
 
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import type { IRange } from "../../../../editor/common/core/range.js";
 import {
-	type CommentThread,
 	CommentThreadCollapsibleState,
+	type CommentThread,
 } from "../../../../editor/common/languages.js";
 import type {
 	IModelDecorationOptions,

@@ -4,22 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as nls from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import {
-	type IDebugConfiguration,
 	IDebugService,
 	State,
+	type IDebugConfiguration,
 } from "../common/debug.js";
 
 export class DebugStatusContribution implements IWorkbenchContribution {
@@ -30,38 +30,60 @@ export class DebugStatusContribution implements IWorkbenchContribution {
 	constructor(
 		@IStatusbarService private readonly statusBarService: IStatusbarService,
 		@IDebugService private readonly debugService: IDebugService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
-
 		const addStatusBarEntry = () => {
-			this.entryAccessor = this.statusBarService.addEntry(this.entry, 'status.debug', StatusbarAlignment.LEFT, 30 /* Low Priority */);
+			this.entryAccessor = this.statusBarService.addEntry(
+				this.entry,
+				"status.debug",
+				StatusbarAlignment.LEFT,
+				30 /* Low Priority */,
+			);
 		};
 
 		const setShowInStatusBar = () => {
-			this.showInStatusBar = configurationService.getValue<IDebugConfiguration>('debug').showInStatusBar;
-			if (this.showInStatusBar === 'always' && !this.entryAccessor) {
+			this.showInStatusBar =
+				configurationService.getValue<IDebugConfiguration>(
+					"debug",
+				).showInStatusBar;
+			if (this.showInStatusBar === "always" && !this.entryAccessor) {
 				addStatusBarEntry();
 			}
 		};
 		setShowInStatusBar();
 
-		this.toDispose.push(this.debugService.onDidChangeState(state => {
-			if (state !== State.Inactive && this.showInStatusBar === 'onFirstSessionStart' && !this.entryAccessor) {
-				addStatusBarEntry();
-			}
-		}));
-		this.toDispose.push(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('debug.showInStatusBar')) {
-				setShowInStatusBar();
-				if (this.entryAccessor && this.showInStatusBar === 'never') {
-					this.entryAccessor.dispose();
-					this.entryAccessor = undefined;
+		this.toDispose.push(
+			this.debugService.onDidChangeState((state) => {
+				if (
+					state !== State.Inactive &&
+					this.showInStatusBar === "onFirstSessionStart" &&
+					!this.entryAccessor
+				) {
+					addStatusBarEntry();
 				}
-			}
-		}));
-		this.toDispose.push(this.debugService.getConfigurationManager().onDidSelectConfiguration(e => {
-			this.entryAccessor?.update(this.entry);
-		}));
+			}),
+		);
+		this.toDispose.push(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("debug.showInStatusBar")) {
+					setShowInStatusBar();
+					if (
+						this.entryAccessor &&
+						this.showInStatusBar === "never"
+					) {
+						this.entryAccessor.dispose();
+						this.entryAccessor = undefined;
+					}
+				}
+			}),
+		);
+		this.toDispose.push(
+			this.debugService
+				.getConfigurationManager()
+				.onDidSelectConfiguration((e) => {
+					this.entryAccessor?.update(this.entry);
+				}),
+		);
 	}
 
 	private get entry(): IStatusbarEntry {

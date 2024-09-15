@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IMarker, Terminal } from "@xterm/headless";
+
 import { Emitter } from "../../../../base/common/event.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import {
-	type IPartialCommandDetectionCapability,
 	TerminalCapability,
+	type IPartialCommandDetectionCapability,
 } from "./capabilities.js";
 
 enum Constants {

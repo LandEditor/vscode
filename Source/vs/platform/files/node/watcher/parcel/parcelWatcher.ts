@@ -7,6 +7,7 @@ import { existsSync, statSync, unlinkSync } from "fs";
 import { homedir, tmpdir } from "os";
 import * as parcelWatcher2 from "@bpasero/watcher";
 import * as parcelWatcher from "@parcel/watcher";
+
 import {
 	DeferredPromise,
 	RunOnceScheduler,
@@ -14,8 +15,8 @@ import {
 	ThrottledWorker,
 } from "../../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { toErrorMessage } from "../../../../../base/common/errorMessage.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
@@ -28,8 +29,8 @@ import { GLOBSTAR, patternsEquals } from "../../../../../base/common/glob.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { normalizeNFC } from "../../../../../base/common/normalization.js";
 import { dirname, join, normalize } from "../../../../../base/common/path.js";
@@ -46,12 +47,12 @@ import {
 } from "../../../../../base/node/extpath.js";
 import { FileChangeType, type IFileChange } from "../../../common/files.js";
 import {
-	type IRecursiveWatchRequest,
-	type IRecursiveWatcherWithSubscribe,
-	type IWatcherErrorEvent,
 	coalesceEvents,
 	isFiltered,
 	parseWatcherPatterns,
+	type IRecursiveWatcherWithSubscribe,
+	type IRecursiveWatchRequest,
+	type IWatcherErrorEvent,
 } from "../../../common/watcher.js";
 import { BaseWatcher } from "../baseWatcher.js";
 import { NodeJSFileWatcherLibrary } from "../nodejs/nodejsWatcherLib.js";

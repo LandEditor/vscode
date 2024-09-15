@@ -8,8 +8,8 @@ import {
 	getDomNodePagePosition,
 } from "../../../../base/browser/dom.js";
 import {
-	type IAction,
 	SubmenuAction,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { Delayer } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
@@ -24,21 +24,21 @@ import { ResourceMap } from "../../../../base/common/map.js";
 import { isEqual } from "../../../../base/common/resources.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../editor/browser/editorBrowser.js";
 import { EditorOption } from "../../../../editor/common/config/editorOptions.js";
 import { Position } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type { Selection } from "../../../../editor/common/core/selection.js";
 import type { ICursorPositionChangedEvent } from "../../../../editor/common/cursorEvents.js";
 import * as editorCommon from "../../../../editor/common/editorCommon.js";
 import type * as languages from "../../../../editor/common/languages.js";
 import {
+	TrackedRangeStickiness,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	TrackedRangeStickiness,
 } from "../../../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../../../editor/common/model/textModel.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
@@ -51,19 +51,19 @@ import {
 import {
 	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
+	OVERRIDE_PROPERTY_REGEX,
+	overrideIdentifiersFromKey,
 	type IConfigurationPropertySchema,
 	type IConfigurationRegistry,
 	type IRegisteredConfigurationPropertySchema,
-	OVERRIDE_PROPERTY_REGEX,
-	overrideIdentifiersFromKey,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IMarkerData,
 	IMarkerService,
 	MarkerSeverity,
 	MarkerTag,
+	type IMarkerData,
 } from "../../../../platform/markers/common/markers.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
@@ -80,16 +80,16 @@ import {
 } from "../../../services/configuration/common/configuration.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
-	type IPreferencesEditorModel,
 	IPreferencesService,
+	type IPreferencesEditorModel,
 	type ISetting,
 	type ISettingsEditorModel,
 	type ISettingsGroup,
 } from "../../../services/preferences/common/preferences.js";
 import {
 	DefaultSettingsEditorModel,
-	type SettingsEditorModel,
 	WorkspaceConfigurationEditorModel,
+	type SettingsEditorModel,
 } from "../../../services/preferences/common/preferencesModels.js";
 import { IUserDataProfileService } from "../../../services/userDataProfile/common/userDataProfile.js";
 import { settingsEditIcon } from "./preferencesIcons.js";
@@ -114,17 +114,49 @@ export class UserSettingsRenderer
 
 	private unsupportedSettingsRenderer: UnsupportedSettingsRenderer;
 
-	constructor(protected editor: ICodeEditor, readonly preferencesModel: SettingsEditorModel,
+	constructor(
+		protected editor: ICodeEditor,
+		readonly preferencesModel: SettingsEditorModel,
 		@IPreferencesService protected preferencesService: IPreferencesService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService protected instantiationService: IInstantiationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
 	) {
 		super();
-		this.settingHighlighter = this._register(instantiationService.createInstance(SettingHighlighter, editor));
-		this.editSettingActionRenderer = this._register(this.instantiationService.createInstance(EditSettingRenderer, this.editor, this.preferencesModel, this.settingHighlighter));
-		this._register(this.editSettingActionRenderer.onUpdateSetting(({ key, value, source }) => this.updatePreference(key, value, source)));
-		this._register(this.editor.getModel()!.onDidChangeContent(() => this.modelChangeDelayer.trigger(() => this.onModelChanged())));
-		this.unsupportedSettingsRenderer = this._register(instantiationService.createInstance(UnsupportedSettingsRenderer, editor, preferencesModel));
+		this.settingHighlighter = this._register(
+			instantiationService.createInstance(SettingHighlighter, editor),
+		);
+		this.editSettingActionRenderer = this._register(
+			this.instantiationService.createInstance(
+				EditSettingRenderer,
+				this.editor,
+				this.preferencesModel,
+				this.settingHighlighter,
+			),
+		);
+		this._register(
+			this.editSettingActionRenderer.onUpdateSetting(
+				({ key, value, source }) =>
+					this.updatePreference(key, value, source),
+			),
+		);
+		this._register(
+			this.editor
+				.getModel()!
+				.onDidChangeContent(() =>
+					this.modelChangeDelayer.trigger(() =>
+						this.onModelChanged(),
+					),
+				),
+		);
+		this.unsupportedSettingsRenderer = this._register(
+			instantiationService.createInstance(
+				UnsupportedSettingsRenderer,
+				editor,
+				preferencesModel,
+			),
+		);
 	}
 
 	render(): void {
@@ -268,24 +300,69 @@ class EditSettingRenderer extends Disposable {
 		source: IIndexedSetting;
 	}> = this._onUpdateSetting.event;
 
-	constructor(private editor: ICodeEditor, private primarySettingsModel: ISettingsEditorModel,
+	constructor(
+		private editor: ICodeEditor,
+		private primarySettingsModel: ISettingsEditorModel,
 		private settingHighlighter: SettingHighlighter,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 	) {
 		super();
 
-		this.editPreferenceWidgetForCursorPosition = <EditPreferenceWidget<IIndexedSetting>>this._register(this.instantiationService.createInstance(EditPreferenceWidget, editor));
-		this.editPreferenceWidgetForMouseMove = <EditPreferenceWidget<IIndexedSetting>>this._register(this.instantiationService.createInstance(EditPreferenceWidget, editor));
+		this.editPreferenceWidgetForCursorPosition = <
+			EditPreferenceWidget<IIndexedSetting>
+		>this._register(
+			this.instantiationService.createInstance(
+				EditPreferenceWidget,
+				editor,
+			),
+		);
+		this.editPreferenceWidgetForMouseMove = <
+			EditPreferenceWidget<IIndexedSetting>
+		>this._register(
+			this.instantiationService.createInstance(
+				EditPreferenceWidget,
+				editor,
+			),
+		);
 		this.toggleEditPreferencesForMouseMoveDelayer = new Delayer<void>(75);
 
-		this._register(this.editPreferenceWidgetForCursorPosition.onClick(e => this.onEditSettingClicked(this.editPreferenceWidgetForCursorPosition, e)));
-		this._register(this.editPreferenceWidgetForMouseMove.onClick(e => this.onEditSettingClicked(this.editPreferenceWidgetForMouseMove, e)));
+		this._register(
+			this.editPreferenceWidgetForCursorPosition.onClick((e) =>
+				this.onEditSettingClicked(
+					this.editPreferenceWidgetForCursorPosition,
+					e,
+				),
+			),
+		);
+		this._register(
+			this.editPreferenceWidgetForMouseMove.onClick((e) =>
+				this.onEditSettingClicked(
+					this.editPreferenceWidgetForMouseMove,
+					e,
+				),
+			),
+		);
 
-		this._register(this.editor.onDidChangeCursorPosition(positionChangeEvent => this.onPositionChanged(positionChangeEvent)));
-		this._register(this.editor.onMouseMove(mouseMoveEvent => this.onMouseMoved(mouseMoveEvent)));
-		this._register(this.editor.onDidChangeConfiguration(() => this.onConfigurationChanged()));
+		this._register(
+			this.editor.onDidChangeCursorPosition((positionChangeEvent) =>
+				this.onPositionChanged(positionChangeEvent),
+			),
+		);
+		this._register(
+			this.editor.onMouseMove((mouseMoveEvent) =>
+				this.onMouseMoved(mouseMoveEvent),
+			),
+		);
+		this._register(
+			this.editor.onDidChangeConfiguration(() =>
+				this.onConfigurationChanged(),
+			),
+		);
 	}
 
 	render(
@@ -745,19 +822,44 @@ class UnsupportedSettingsRenderer
 		private readonly editor: ICodeEditor,
 		private readonly settingsEditorModel: SettingsEditorModel,
 		@IMarkerService private readonly markerService: IMarkerService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkbenchConfigurationService private readonly configurationService: IWorkbenchConfigurationService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchConfigurationService
+		private readonly configurationService: IWorkbenchConfigurationService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
-		this._register(this.editor.getModel()!.onDidChangeContent(() => this.delayedRender()));
-		this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.source === ConfigurationTarget.DEFAULT)(() => this.delayedRender()));
-		this._register(languageFeaturesService.codeActionProvider.register({ pattern: settingsEditorModel.uri.path }, this));
-		this._register(userDataProfileService.onDidChangeCurrentProfile(() => this.delayedRender()));
+		this._register(
+			this.editor
+				.getModel()!
+				.onDidChangeContent(() => this.delayedRender()),
+		);
+		this._register(
+			Event.filter(
+				this.configurationService.onDidChangeConfiguration,
+				(e) => e.source === ConfigurationTarget.DEFAULT,
+			)(() => this.delayedRender()),
+		);
+		this._register(
+			languageFeaturesService.codeActionProvider.register(
+				{ pattern: settingsEditorModel.uri.path },
+				this,
+			),
+		);
+		this._register(
+			userDataProfileService.onDidChangeCurrentProfile(() =>
+				this.delayedRender(),
+			),
+		);
 	}
 
 	private delayedRender(): void {
@@ -1204,12 +1306,21 @@ class WorkspaceConfigurationRenderer extends Disposable {
 	private readonly decorations = this.editor.createDecorationsCollection();
 	private renderingDelayer: Delayer<void> = new Delayer<void>(200);
 
-	constructor(private editor: ICodeEditor, private workspaceSettingsEditorModel: SettingsEditorModel,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IMarkerService private readonly markerService: IMarkerService
+	constructor(
+		private editor: ICodeEditor,
+		private workspaceSettingsEditorModel: SettingsEditorModel,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IMarkerService private readonly markerService: IMarkerService,
 	) {
 		super();
-		this._register(this.editor.getModel()!.onDidChangeContent(() => this.renderingDelayer.trigger(() => this.render())));
+		this._register(
+			this.editor
+				.getModel()!
+				.onDidChangeContent(() =>
+					this.renderingDelayer.trigger(() => this.render()),
+				),
+		);
 	}
 
 	render(): void {

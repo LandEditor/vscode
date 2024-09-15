@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Mimes, getMediaMime } from "../../../base/common/mime.js";
+import { getMediaMime, Mimes } from "../../../base/common/mime.js";
 import { extname } from "../../../base/common/path.js";
 import type { URI } from "../../../base/common/uri.js";
 

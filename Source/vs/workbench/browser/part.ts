@@ -4,20 +4,21 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/part.css";
+
 import {
 	Dimension,
-	type IDimension,
-	type IDomPosition,
 	getActiveDocument,
 	prepend,
 	size,
+	type IDimension,
+	type IDomPosition,
 } from "../../base/browser/dom.js";
 import type {
 	ISerializableView,
 	IViewSize,
 } from "../../base/browser/ui/grid/grid.js";
 import { Emitter, type Event } from "../../base/common/event.js";
-import { type IDisposable, toDisposable } from "../../base/common/lifecycle.js";
+import { toDisposable, type IDisposable } from "../../base/common/lifecycle.js";
 import { assertIsDefined } from "../../base/common/types.js";
 import type { IStorageService } from "../../platform/storage/common/storage.js";
 import type {

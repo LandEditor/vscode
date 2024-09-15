@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "../colorPicker.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { Color } from "../../../../../base/common/color.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";

@@ -12,8 +12,8 @@ import type {
 	StorageTarget,
 } from "../../platform/storage/common/storage.js";
 import {
-	type IThemeService,
 	Themable,
+	type IThemeService,
 } from "../../platform/theme/common/themeService.js";
 import { Memento, type MementoObject } from "./memento.js";
 

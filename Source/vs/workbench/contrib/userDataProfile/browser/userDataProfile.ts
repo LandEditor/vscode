@@ -6,8 +6,8 @@
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isWeb } from "../../../../base/common/platform.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -22,8 +22,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -37,8 +37,8 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IURLService } from "../../../../platform/url/common/url.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import {
@@ -61,12 +61,12 @@ import {
 	CURRENT_PROFILE_CONTEXT,
 	HAS_PROFILES_CONTEXT,
 	IS_CURRENT_PROFILE_TRANSIENT_CONTEXT,
+	isProfileURL,
 	IUserDataProfileManagementService,
 	IUserDataProfileService,
 	PROFILES_CATEGORY,
 	PROFILES_ENABLEMENT_CONTEXT,
 	PROFILES_TITLE,
-	isProfileURL,
 } from "../../../services/userDataProfile/common/userDataProfile.js";
 import { IWorkspaceTagsService } from "../../tags/common/workspaceTags.js";
 import type { IUserDataProfilesEditor } from "../common/userDataProfile.js";
@@ -89,35 +89,66 @@ export class UserDataProfilesWorkbenchContribution
 	private readonly hasProfilesContext: IContextKey<boolean>;
 
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileManagementService private readonly userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileManagementService
+		private readonly userDataProfileManagementService: IUserDataProfileManagementService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWorkspaceTagsService private readonly workspaceTagsService: IWorkspaceTagsService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceTagsService
+		private readonly workspaceTagsService: IWorkspaceTagsService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IEditorGroupsService private readonly editorGroupsService: IEditorGroupsService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditorGroupsService
+		private readonly editorGroupsService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IURLService private readonly urlService: IURLService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 
-		this.currentProfileContext = CURRENT_PROFILE_CONTEXT.bindTo(contextKeyService);
-		PROFILES_ENABLEMENT_CONTEXT.bindTo(contextKeyService).set(this.userDataProfilesService.isEnabled());
-		this.isCurrentProfileTransientContext = IS_CURRENT_PROFILE_TRANSIENT_CONTEXT.bindTo(contextKeyService);
+		this.currentProfileContext =
+			CURRENT_PROFILE_CONTEXT.bindTo(contextKeyService);
+		PROFILES_ENABLEMENT_CONTEXT.bindTo(contextKeyService).set(
+			this.userDataProfilesService.isEnabled(),
+		);
+		this.isCurrentProfileTransientContext =
+			IS_CURRENT_PROFILE_TRANSIENT_CONTEXT.bindTo(contextKeyService);
 
-		this.currentProfileContext.set(this.userDataProfileService.currentProfile.id);
-		this.isCurrentProfileTransientContext.set(!!this.userDataProfileService.currentProfile.isTransient);
-		this._register(this.userDataProfileService.onDidChangeCurrentProfile(e => {
-			this.currentProfileContext.set(this.userDataProfileService.currentProfile.id);
-			this.isCurrentProfileTransientContext.set(!!this.userDataProfileService.currentProfile.isTransient);
-		}));
+		this.currentProfileContext.set(
+			this.userDataProfileService.currentProfile.id,
+		);
+		this.isCurrentProfileTransientContext.set(
+			!!this.userDataProfileService.currentProfile.isTransient,
+		);
+		this._register(
+			this.userDataProfileService.onDidChangeCurrentProfile((e) => {
+				this.currentProfileContext.set(
+					this.userDataProfileService.currentProfile.id,
+				);
+				this.isCurrentProfileTransientContext.set(
+					!!this.userDataProfileService.currentProfile.isTransient,
+				);
+			}),
+		);
 
-		this.hasProfilesContext = HAS_PROFILES_CONTEXT.bindTo(contextKeyService);
-		this.hasProfilesContext.set(this.userDataProfilesService.profiles.length > 1);
-		this._register(this.userDataProfilesService.onDidChangeProfiles(e => this.hasProfilesContext.set(this.userDataProfilesService.profiles.length > 1)));
+		this.hasProfilesContext =
+			HAS_PROFILES_CONTEXT.bindTo(contextKeyService);
+		this.hasProfilesContext.set(
+			this.userDataProfilesService.profiles.length > 1,
+		);
+		this._register(
+			this.userDataProfilesService.onDidChangeProfiles((e) =>
+				this.hasProfilesContext.set(
+					this.userDataProfilesService.profiles.length > 1,
+				),
+			),
+		);
 
 		this.registerEditor();
 		this.registerActions();
@@ -125,13 +156,23 @@ export class UserDataProfilesWorkbenchContribution
 		this._register(this.urlService.registerHandler(this));
 
 		if (isWeb) {
-			lifecycleService.when(LifecyclePhase.Eventually).then(() => userDataProfilesService.cleanUp());
+			lifecycleService
+				.when(LifecyclePhase.Eventually)
+				.then(() => userDataProfilesService.cleanUp());
 		}
 
 		this.reportWorkspaceProfileInfo();
 
 		if (environmentService.options?.profileToPreview) {
-			lifecycleService.when(LifecyclePhase.Restored).then(() => this.handleURL(URI.revive(environmentService.options!.profileToPreview!)));
+			lifecycleService
+				.when(LifecyclePhase.Restored)
+				.then(() =>
+					this.handleURL(
+						URI.revive(
+							environmentService.options!.profileToPreview!,
+						),
+					),
+				);
 		}
 	}
 

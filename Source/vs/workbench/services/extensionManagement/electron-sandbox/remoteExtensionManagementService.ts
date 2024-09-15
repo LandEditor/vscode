@@ -17,17 +17,17 @@ import {
 	ExtensionManagementError,
 	ExtensionManagementErrorCode,
 	IExtensionGalleryService,
+	InstallOperation,
 	type IGalleryExtension,
 	type ILocalExtension,
-	InstallOperation,
 	type InstallOptions,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
-import { areApiProposalsCompatible } from "../../../../platform/extensions/common/extensionValidator.js";
 import {
 	ExtensionType,
 	type IExtensionManifest,
 } from "../../../../platform/extensions/common/extensions.js";
+import { areApiProposalsCompatible } from "../../../../platform/extensions/common/extensionValidator.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -43,18 +43,30 @@ export class NativeRemoteExtensionManagementService extends RemoteExtensionManag
 	constructor(
 		channel: IChannel,
 		private readonly localExtensionManagementServer: IExtensionManagementServer,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IRemoteUserDataProfilesService remoteUserDataProfilesService: IRemoteUserDataProfilesService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IRemoteUserDataProfilesService
+		remoteUserDataProfilesService: IRemoteUserDataProfilesService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILogService private readonly logService: ILogService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IProductService private readonly productService: IProductService,
 		@IFileService private readonly fileService: IFileService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
-		super(channel, userDataProfileService, userDataProfilesService, remoteUserDataProfilesService, uriIdentityService);
+		super(
+			channel,
+			userDataProfileService,
+			userDataProfilesService,
+			remoteUserDataProfilesService,
+			uriIdentityService,
+		);
 	}
 
 	override async install(

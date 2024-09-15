@@ -7,9 +7,9 @@ import { Barrier, timeout } from "../../../../base/common/async.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { mark } from "../../../../base/common/performance.js";
 import {
+	getDelayedChannel,
 	type IChannel,
 	type IServerChannel,
-	getDelayedChannel,
 } from "../../../../base/parts/ipc/common/ipc.js";
 import { Client as MessagePortClient } from "../../../../base/parts/ipc/common/ipc.mp.js";
 import { acquirePort } from "../../../../base/parts/ipc/electron-sandbox/ipc.mp.js";
@@ -32,7 +32,7 @@ export class SharedProcessService
 
 	constructor(
 		readonly windowId: number,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 

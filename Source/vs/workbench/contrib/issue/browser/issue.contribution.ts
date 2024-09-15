@@ -22,7 +22,9 @@ import {
 } from "../../../common/contributions.js";
 import { IssueFormService } from "./issueFormService.js";
 import { BrowserIssueService } from "./issueService.js";
+
 import "./issueTroubleshoot.js";
+
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { BaseIssueContribution } from "../common/issue.contribution.js";
 import { IIssueFormService, IWorkbenchIssueService } from "../common/issue.js";

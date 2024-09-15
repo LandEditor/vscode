@@ -12,10 +12,10 @@ import type { FindInput } from "../../../../base/browser/ui/findinput/findInput.
 import type { ReplaceInput } from "../../../../base/browser/ui/findinput/replaceInput.js";
 import type { IMessage as InputBoxMessage } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import {
-	type ISashEvent,
-	type IVerticalSashLayoutProvider,
 	Orientation,
 	Sash,
+	type ISashEvent,
+	type IVerticalSashLayoutProvider,
 } from "../../../../base/browser/ui/sash/sash.js";
 import { Toggle } from "../../../../base/browser/ui/toggle/toggle.js";
 import { Widget } from "../../../../base/browser/ui/widget.js";
@@ -26,7 +26,9 @@ import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { toDisposable } from "../../../../base/common/lifecycle.js";
 import * as platform from "../../../../base/common/platform.js";
 import * as strings from "../../../../base/common/strings.js";
+
 import "./findWidget.css";
+
 import type { IHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegate.js";
 import {
 	createInstantHoverDelegate,
@@ -49,9 +51,9 @@ import type { IHoverService } from "../../../../platform/hover/browser/hover.js"
 import type { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import type { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import {
 	defaultInputBoxStyles,
@@ -74,19 +76,19 @@ import {
 } from "../../../../platform/theme/common/iconRegistry.js";
 import { isHighContrast } from "../../../../platform/theme/common/theme.js";
 import {
-	type IThemeService,
 	registerThemingParticipant,
+	type IThemeService,
 } from "../../../../platform/theme/common/themeService.js";
 import {
+	OverlayWidgetPositionPreference,
 	type ICodeEditor,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
 	type IViewZone,
-	OverlayWidgetPositionPreference,
 } from "../../../browser/editorBrowser.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../common/config/editorOptions.js";
 import { Range } from "../../../common/core/range.js";
 import type { Selection } from "../../../common/core/selection.js";

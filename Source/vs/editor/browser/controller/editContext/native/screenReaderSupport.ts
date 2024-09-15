@@ -27,11 +27,11 @@ import type {
 	RestrictedRenderingContext,
 } from "../../../view/renderingContext.js";
 import {
-	type ISimpleModel,
-	PagedScreenReaderStrategy,
-	type ScreenReaderContentState,
 	ariaLabelForScreenReaderContent,
 	newlinecount,
+	PagedScreenReaderStrategy,
+	type ISimpleModel,
+	type ScreenReaderContentState,
 } from "../screenReaderUtils.js";
 
 export class ScreenReaderSupport {
@@ -50,7 +50,8 @@ export class ScreenReaderSupport {
 	constructor(
 		private readonly _domNode: FastDomNode<HTMLElement>,
 		private readonly _context: ViewContext,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		this._updateConfigurationSettings();
 		this._updateDomAttributes();

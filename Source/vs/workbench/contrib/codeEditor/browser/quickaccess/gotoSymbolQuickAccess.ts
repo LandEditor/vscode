@@ -5,8 +5,8 @@
 
 import { timeout } from "../../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../../base/common/errors.js";
 import { fuzzyScore } from "../../../../../base/common/filters.js";
@@ -19,9 +19,9 @@ import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { isCompositeEditor } from "../../../../../editor/browser/editorBrowser.js";
 import type { IRange } from "../../../../../editor/common/core/range.js";
@@ -46,15 +46,15 @@ import type { ITextEditorOptions } from "../../../../../platform/editor/common/e
 import type { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IQuickAccessRegistry,
 	Extensions as QuickaccessExtensions,
+	type IQuickAccessRegistry,
 } from "../../../../../platform/quickinput/common/quickAccess.js";
 import {
-	type IKeyMods,
 	IQuickInputService,
+	ItemActivation,
+	type IKeyMods,
 	type IQuickPick,
 	type IQuickPickSeparator,
-	ItemActivation,
 } from "../../../../../platform/quickinput/common/quickInput.js";
 import { Registry } from "../../../../../platform/registry/common/platform.js";
 import type { IWorkbenchEditorConfiguration } from "../../../../common/editor.js";
@@ -75,14 +75,18 @@ export class GotoSymbolQuickAccessProvider extends AbstractGotoSymbolQuickAccess
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IOutlineService private readonly outlineService: IOutlineService,
 		@IOutlineModelService outlineModelService: IOutlineModelService,
 	) {
 		super(languageFeaturesService, outlineModelService, {
-			openSideBySideDirection: () => this.configuration.openSideBySideDirection
+			openSideBySideDirection: () =>
+				this.configuration.openSideBySideDirection,
 		});
 	}
 

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./whitespace.css";
+
 import { CharCode } from "../../../../base/common/charCode.js";
 import * as strings from "../../../../base/common/strings.js";
 import type { IEditorConfiguration } from "../../../common/config/editorConfiguration.js";

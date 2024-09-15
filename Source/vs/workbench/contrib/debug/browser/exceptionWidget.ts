@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/exceptionWidget.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { Action } from "../../../../base/common/actions.js";
@@ -18,8 +19,8 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { registerColor } from "../../../../platform/theme/common/colorRegistry.js";
 import { widgetClose } from "../../../../platform/theme/common/iconRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import {
 	EDITOR_CONTRIBUTION_ID,
@@ -28,6 +29,7 @@ import {
 	type IExceptionInfo,
 } from "../common/debug.js";
 import { DebugLinkHoverBehavior, LinkDetector } from "./linkDetector.js";
+
 const $ = dom.$;
 
 // theming
@@ -62,16 +64,32 @@ export class ExceptionWidget extends ZoneWidget {
 		private exceptionInfo: IExceptionInfo,
 		private debugSession: IDebugSession | undefined,
 		@IThemeService themeService: IThemeService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
-		super(editor, { showFrame: true, showArrow: true, isAccessible: true, frameWidth: 1, className: 'exception-widget-container' });
+		super(editor, {
+			showFrame: true,
+			showArrow: true,
+			isAccessible: true,
+			frameWidth: 1,
+			className: "exception-widget-container",
+		});
 
 		this.applyTheme(themeService.getColorTheme());
-		this._disposables.add(themeService.onDidColorThemeChange(this.applyTheme.bind(this)));
+		this._disposables.add(
+			themeService.onDidColorThemeChange(this.applyTheme.bind(this)),
+		);
 
 		this.create();
-		const onDidLayoutChangeScheduler = new RunOnceScheduler(() => this._doLayout(undefined, undefined), 50);
-		this._disposables.add(this.editor.onDidLayoutChange(() => onDidLayoutChangeScheduler.schedule()));
+		const onDidLayoutChangeScheduler = new RunOnceScheduler(
+			() => this._doLayout(undefined, undefined),
+			50,
+		);
+		this._disposables.add(
+			this.editor.onDidLayoutChange(() =>
+				onDidLayoutChangeScheduler.schedule(),
+			),
+		);
 		this._disposables.add(onDidLayoutChangeScheduler);
 	}
 

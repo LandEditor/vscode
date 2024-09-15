@@ -16,14 +16,14 @@ import {
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
-	type ITerminalCommand,
 	TerminalCapability,
+	type ITerminalCommand,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import type { ICurrentPartialCommand } from "../../../../../platform/terminal/common/capabilities/commandDetection/terminalCommand.js";
 import { AccessibilityVerbositySettingId } from "../../../accessibility/browser/accessibilityConfiguration.js";
 import {
-	type ITerminalInstance,
 	ITerminalService,
+	type ITerminalInstance,
 } from "../../../terminal/browser/terminal.js";
 import { TerminalAccessibilitySettingId } from "../common/terminalAccessibilityConfiguration.js";
 import type { BufferContentTracker } from "./bufferContentTracker.js";

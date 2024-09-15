@@ -8,10 +8,10 @@ import { URI } from "../../../../base/common/uri.js";
 import type { IRange } from "../../../../editor/common/core/range.js";
 import type { IWorkspaceSymbol } from "../../search/common/search.js";
 import {
-	type IChatProgressRenderableResponseContent,
-	type IChatProgressResponseContent,
 	appendMarkdownString,
 	canMergeMarkdownStrings,
+	type IChatProgressRenderableResponseContent,
+	type IChatProgressResponseContent,
 } from "./chatModel.js";
 import type {
 	IChatAgentVulnerabilityDetails,

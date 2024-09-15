@@ -14,8 +14,8 @@ import { Range } from "../../../../editor/common/core/range.js";
 import { Selection } from "../../../../editor/common/core/selection.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import * as nls from "../../../../nls.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
@@ -26,9 +26,9 @@ import {
 import { ITextFileService } from "../../textfile/common/textfiles.js";
 import {
 	IJSONEditingService,
-	type IJSONValue,
 	JSONEditingError,
 	JSONEditingErrorCode,
+	type IJSONValue,
 } from "./jsonEditing.js";
 
 export class JSONEditingService implements IJSONEditingService {
@@ -38,8 +38,9 @@ export class JSONEditingService implements IJSONEditingService {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
-		@ITextFileService private readonly textFileService: ITextFileService
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
+		@ITextFileService private readonly textFileService: ITextFileService,
 	) {
 		this.queue = new Queue<void>();
 	}

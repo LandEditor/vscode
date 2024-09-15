@@ -26,7 +26,7 @@ import {
 	CursorChangeReason,
 	type ICursorPositionChangedEvent,
 } from "../../../common/cursorEvents.js";
-import { type ICommand, ScrollType } from "../../../common/editorCommon.js";
+import { ScrollType, type ICommand } from "../../../common/editorCommon.js";
 import {
 	EndOfLinePreference,
 	type FindMatch,
@@ -39,7 +39,7 @@ import type {
 	FindReplaceStateChangedEvent,
 } from "./findState.js";
 import { ReplaceAllCommand } from "./replaceAllCommand.js";
-import { ReplacePattern, parseReplaceString } from "./replacePattern.js";
+import { parseReplaceString, ReplacePattern } from "./replacePattern.js";
 
 export const CONTEXT_FIND_WIDGET_VISIBLE = new RawContextKey<boolean>(
 	"findWidgetVisible",

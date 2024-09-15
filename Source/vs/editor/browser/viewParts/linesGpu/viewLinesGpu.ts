@@ -66,16 +66,21 @@ export class ViewLinesGpu extends ViewPart {
 	constructor(
 		context: ViewContext,
 		private readonly _viewGpuContext: ViewGpuContext,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super(context);
 
 		this.canvas = this._viewGpuContext.canvas.domNode;
 
-		this._register(this._viewGpuContext.onDidChangeCanvasDevicePixelDimensions(({ width, height }) => {
-			// TODO: Request render, should this just call renderText with the last viewportData
-		}));
+		this._register(
+			this._viewGpuContext.onDidChangeCanvasDevicePixelDimensions(
+				({ width, height }) => {
+					// TODO: Request render, should this just call renderText with the last viewportData
+				},
+			),
+		);
 
 		this.initWebgpu();
 	}

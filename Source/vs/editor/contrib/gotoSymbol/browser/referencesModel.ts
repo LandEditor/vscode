@@ -8,9 +8,9 @@ import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { IMatch } from "../../../../base/common/filters.js";
 import { defaultGenerator } from "../../../../base/common/idGenerator.js";
 import {
+	dispose,
 	type IDisposable,
 	type IReference,
-	dispose,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { basename, extUri } from "../../../../base/common/resources.js";
@@ -19,7 +19,7 @@ import { Constants } from "../../../../base/common/uint.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import type { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { Location, LocationLink } from "../../../common/languages.js";
 import type {
 	ITextEditorModel,

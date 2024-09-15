@@ -7,9 +7,9 @@ import { doHash } from "../../../base/common/hash.js";
 import { LRUCache } from "../../../base/common/map.js";
 import { matchesScheme } from "../../../base/common/network.js";
 import {
+	clamp,
 	MovingAverage,
 	SlidingWindowAverage,
-	clamp,
 } from "../../../base/common/numbers.js";
 import { IEnvironmentService } from "../../../platform/environment/common/environment.js";
 import {
@@ -144,7 +144,6 @@ export class LanguageFeatureDebounceService
 		@ILogService private readonly _logService: ILogService,
 		@IEnvironmentService envService: IEnvironmentService,
 	) {
-
 		this._isDev = envService.isExtensionDevelopment || !envService.isBuilt;
 	}
 

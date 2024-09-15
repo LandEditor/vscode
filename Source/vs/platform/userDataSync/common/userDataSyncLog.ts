@@ -8,12 +8,12 @@ import { localize } from "../../../nls.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
 	AbstractLogger,
-	type ILogger,
 	ILoggerService,
+	type ILogger,
 } from "../../log/common/log.js";
 import {
-	type IUserDataSyncLogService,
 	USER_DATA_SYNC_LOG_ID,
+	type IUserDataSyncLogService,
 } from "./userDataSync.js";
 
 export class UserDataSyncLogService

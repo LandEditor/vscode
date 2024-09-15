@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	URITransformer,
 	type IRawURITransformer,
 	type IURITransformer,
-	URITransformer,
 	type UriParts,
 } from "../../../base/common/uriIpc.js";
 

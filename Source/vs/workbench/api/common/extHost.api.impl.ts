@@ -4,19 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { CancellationTokenSource } from "../../../base/common/cancellation.js";
 import * as errors from "../../../base/common/errors.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import { combinedDisposable } from "../../../base/common/lifecycle.js";
-import { Schemas, matchesScheme } from "../../../base/common/network.js";
+import { matchesScheme, Schemas } from "../../../base/common/network.js";
 import Severity from "../../../base/common/severity.js";
 import { URI } from "../../../base/common/uri.js";
 import { TextEditorCursorStyle } from "../../../editor/common/config/editorOptions.js";
+import * as languageConfiguration from "../../../editor/common/languages/languageConfiguration.js";
 import {
 	score,
 	targetsNotebooks,
 } from "../../../editor/common/languageSelector.js";
-import * as languageConfiguration from "../../../editor/common/languages/languageConfiguration.js";
 import { OverviewRulerLane } from "../../../editor/common/model.js";
 import {
 	ExtensionIdentifierSet,
@@ -25,8 +26,8 @@ import {
 import * as files from "../../../platform/files/common/files.js";
 import type { ServicesAccessor } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 	LogLevel,
 } from "../../../platform/log/common/log.js";
 import { getRemoteName } from "../../../platform/remote/common/remoteHosts.js";
@@ -49,8 +50,8 @@ import {
 import {
 	CandidatePortSource,
 	ExtHostContext,
-	type ExtHostLogLevelServiceShape,
 	MainContext,
+	type ExtHostLogLevelServiceShape,
 } from "./extHost.protocol.js";
 import { ExtHostRelatedInformation } from "./extHostAiRelatedInformation.js";
 import { ExtHostApiCommands } from "./extHostApiCommands.js";
@@ -64,8 +65,8 @@ import { ExtHostEditorInsets } from "./extHostCodeInsets.js";
 import { IExtHostCommands } from "./extHostCommands.js";
 import { createExtHostComments } from "./extHostComments.js";
 import {
-	type ExtHostConfigProvider,
 	IExtHostConfiguration,
+	type ExtHostConfigProvider,
 } from "./extHostConfiguration.js";
 import { ExtHostCustomEditors } from "./extHostCustomEditors.js";
 import { IExtHostDebugService } from "./extHostDebugService.js";
@@ -73,9 +74,9 @@ import { IExtHostDecorations } from "./extHostDecorations.js";
 import { ExtHostDiagnostics } from "./extHostDiagnostics.js";
 import { ExtHostDialogs } from "./extHostDialogs.js";
 import { ExtHostDocumentContentProvider } from "./extHostDocumentContentProviders.js";
-import { ExtHostDocumentSaveParticipant } from "./extHostDocumentSaveParticipant.js";
 import { ExtHostDocuments } from "./extHostDocuments.js";
 import { IExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";
+import { ExtHostDocumentSaveParticipant } from "./extHostDocumentSaveParticipant.js";
 import { IExtHostEditorTabs } from "./extHostEditorTabs.js";
 import { ExtHostEmbeddings } from "./extHostEmbedding.js";
 import { ExtHostAiEmbeddingVector } from "./extHostEmbeddingVector.js";
@@ -94,15 +95,15 @@ import { IExtHostInitDataService } from "./extHostInitDataService.js";
 import { ExtHostInteractive } from "./extHostInteractive.js";
 import { ExtHostLabelService } from "./extHostLabelService.js";
 import { ExtHostLanguageFeatures } from "./extHostLanguageFeatures.js";
-import { ExtHostLanguageModelTools } from "./extHostLanguageModelTools.js";
 import { IExtHostLanguageModels } from "./extHostLanguageModels.js";
+import { ExtHostLanguageModelTools } from "./extHostLanguageModelTools.js";
 import { ExtHostLanguages } from "./extHostLanguages.js";
 import { IExtHostLocalizationService } from "./extHostLocalizationService.js";
 import { IExtHostManagedSockets } from "./extHostManagedSockets.js";
 import { ExtHostMessageService } from "./extHostMessageService.js";
 import { ExtHostNotebookController } from "./extHostNotebook.js";
-import { ExtHostNotebookDocumentSaveParticipant } from "./extHostNotebookDocumentSaveParticipant.js";
 import { ExtHostNotebookDocuments } from "./extHostNotebookDocuments.js";
+import { ExtHostNotebookDocumentSaveParticipant } from "./extHostNotebookDocumentSaveParticipant.js";
 import { ExtHostNotebookEditors } from "./extHostNotebookEditors.js";
 import { ExtHostNotebookKernels } from "./extHostNotebookKernels.js";
 import { ExtHostNotebookRenderers } from "./extHostNotebookRenderers.js";

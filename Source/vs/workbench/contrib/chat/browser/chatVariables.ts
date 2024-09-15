@@ -8,8 +8,8 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
 import { Iterable } from "../../../../base/common/iterator.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { basename } from "../../../../base/common/path.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -53,11 +53,12 @@ export class ChatVariablesService implements IChatVariablesService {
 	private _resolver = new Map<string, IChatData>();
 
 	constructor(
-		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService,
+		@IChatWidgetService
+		private readonly chatWidgetService: IChatWidgetService,
 		@IViewsService private readonly viewsService: IViewsService,
-		@ILanguageModelToolsService private readonly toolsService: ILanguageModelToolsService,
-	) {
-	}
+		@ILanguageModelToolsService
+		private readonly toolsService: ILanguageModelToolsService,
+	) {}
 
 	async resolveVariables(
 		prompt: IParsedChatRequest,

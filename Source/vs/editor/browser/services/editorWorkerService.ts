@@ -16,23 +16,23 @@ import {
 import { StopWatch } from "../../../base/common/stopwatch.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
+	logOnceWebWorkerWarning,
 	type IWorkerClient,
 	type IWorkerDescriptor,
 	type Proxied,
-	logOnceWebWorkerWarning,
 } from "../../../base/common/worker/simpleWorker.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import { LineRange } from "../../common/core/lineRange.js";
 import type { Position } from "../../common/core/position.js";
-import { type IRange, Range } from "../../common/core/range.js";
+import { Range, type IRange } from "../../common/core/range.js";
 import type {
 	IDocumentDiff,
 	IDocumentDiffProviderOptions,
 } from "../../common/diff/documentDiffProvider.js";
 import type { IChange } from "../../common/diff/legacyLinesDiffComputer.js";
 import {
-	type ILinesDiffComputerOptions,
 	MovedText,
+	type ILinesDiffComputerOptions,
 } from "../../common/diff/linesDiffComputer.js";
 import {
 	DetailedLineRangeMapping,
@@ -89,28 +89,52 @@ export abstract class EditorWorkerService
 	constructor(
 		workerDescriptor: IWorkerDescriptor,
 		@IModelService modelService: IModelService,
-		@ITextResourceConfigurationService configurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		configurationService: ITextResourceConfigurationService,
 		@ILogService logService: ILogService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this._modelService = modelService;
-		this._workerManager = this._register(new WorkerManager(workerDescriptor, this._modelService));
+		this._workerManager = this._register(
+			new WorkerManager(workerDescriptor, this._modelService),
+		);
 		this._logService = logService;
 
 		// register default link-provider and default completions-provider
-		this._register(languageFeaturesService.linkProvider.register({ language: '*', hasAccessToAllModels: true }, {
-			provideLinks: async (model, token) => {
-				if (!canSyncModel(this._modelService, model.uri)) {
-					return Promise.resolve({ links: [] }); // File too large
-				}
-				const worker = await this._workerWithResources([model.uri]);
-				const links = await worker.$computeLinks(model.uri.toString());
-				return links && { links };
-			}
-		}));
-		this._register(languageFeaturesService.completionProvider.register('*', new WordBasedCompletionItemProvider(this._workerManager, configurationService, this._modelService, this._languageConfigurationService)));
+		this._register(
+			languageFeaturesService.linkProvider.register(
+				{ language: "*", hasAccessToAllModels: true },
+				{
+					provideLinks: async (model, token) => {
+						if (!canSyncModel(this._modelService, model.uri)) {
+							return Promise.resolve({ links: [] }); // File too large
+						}
+						const worker = await this._workerWithResources([
+							model.uri,
+						]);
+						const links = await worker.$computeLinks(
+							model.uri.toString(),
+						);
+						return links && { links };
+					},
+				},
+			),
+		);
+		this._register(
+			languageFeaturesService.completionProvider.register(
+				"*",
+				new WordBasedCompletionItemProvider(
+					this._workerManager,
+					configurationService,
+					this._modelService,
+					this._languageConfigurationService,
+				),
+			),
+		);
 	}
 
 	public override dispose(): void {

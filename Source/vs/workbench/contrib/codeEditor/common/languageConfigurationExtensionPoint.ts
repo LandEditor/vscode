@@ -5,9 +5,9 @@
 
 import { hash } from "../../../../base/common/hash.js";
 import {
-	type ParseError,
 	getNodeType,
 	parse,
+	type ParseError,
 } from "../../../../base/common/json.js";
 import { getParseErrorMessage } from "../../../../base/common/jsonErrorMessages.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
@@ -16,6 +16,7 @@ import * as types from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import {
+	IndentAction,
 	type CharacterPair,
 	type CommentRule,
 	type EnterAction,
@@ -24,7 +25,6 @@ import {
 	type FoldingRules,
 	type IAutoClosingPair,
 	type IAutoClosingPairConditional,
-	IndentAction,
 	type IndentationRule,
 	type OnEnterRule,
 } from "../../../../editor/common/languages/languageConfiguration.js";
@@ -109,24 +109,35 @@ export class LanguageConfigurationFileHandler extends Disposable {
 
 	constructor(
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IExtensionResourceLoaderService private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@IExtensionResourceLoaderService
+		private readonly _extensionResourceLoaderService: IExtensionResourceLoaderService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 
-		this._register(this._languageService.onDidRequestBasicLanguageFeatures(async (languageIdentifier) => {
-			// Modes can be instantiated before the extension points have finished registering
-			this._extensionService.whenInstalledExtensionsRegistered().then(() => {
-				this._loadConfigurationsForMode(languageIdentifier);
-			});
-		}));
-		this._register(this._languageService.onDidChange(() => {
-			// reload language configurations as necessary
-			for (const [languageId] of this._done) {
-				this._loadConfigurationsForMode(languageId);
-			}
-		}));
+		this._register(
+			this._languageService.onDidRequestBasicLanguageFeatures(
+				async (languageIdentifier) => {
+					// Modes can be instantiated before the extension points have finished registering
+					this._extensionService
+						.whenInstalledExtensionsRegistered()
+						.then(() => {
+							this._loadConfigurationsForMode(languageIdentifier);
+						});
+				},
+			),
+		);
+		this._register(
+			this._languageService.onDidChange(() => {
+				// reload language configurations as necessary
+				for (const [languageId] of this._done) {
+					this._loadConfigurationsForMode(languageId);
+				}
+			}),
+		);
 	}
 
 	private async _loadConfigurationsForMode(

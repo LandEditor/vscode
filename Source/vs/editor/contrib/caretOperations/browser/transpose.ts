@@ -9,8 +9,8 @@ import { KeybindingWeight } from "../../../../platform/keybinding/common/keybind
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
-	type ServicesAccessor,
 	registerEditorAction,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ReplaceCommand } from "../../../common/commands/replaceCommand.js";
 import { Range } from "../../../common/core/range.js";

@@ -25,17 +25,17 @@ import { Action, type IAction } from "../../../../base/common/actions.js";
 import { coalesce } from "../../../../base/common/arrays.js";
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { localize } from "../../../../nls.js";
@@ -84,34 +84,34 @@ import {
 	CONTEXT_VARIABLES_FOCUSED,
 	DataBreakpointSetType,
 	DebugVisualizationType,
-	type IDataBreakpointInfoResponse,
 	IDebugService,
+	VARIABLES_VIEW_ID,
+	type IDataBreakpointInfoResponse,
 	type IExpression,
 	type IScope,
 	type IStackFrame,
 	type IViewModel,
-	VARIABLES_VIEW_ID,
 } from "../common/debug.js";
 import { getContextForVariable } from "../common/debugContext.js";
 import {
 	ErrorScope,
 	Expression,
+	getUriForDebugMemory,
 	Scope,
 	StackFrame,
 	Variable,
 	VisualizedExpression,
-	getUriForDebugMemory,
 } from "../common/debugModel.js";
 import {
-	type DebugVisualizer,
 	IDebugVisualizerService,
+	type DebugVisualizer,
 } from "../common/debugVisualizers.js";
 import {
 	AbstractExpressionDataSource,
 	AbstractExpressionsRenderer,
+	renderViewTree,
 	type IExpressionTemplateData,
 	type IInputBoxOptions,
-	renderViewTree,
 } from "./baseDebugView.js";
 import {
 	ADD_TO_WATCH_ID,
@@ -162,18 +162,34 @@ export class VariablesView extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@IMenuService private readonly menuService: IMenuService
+		@IMenuService private readonly menuService: IMenuService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
 		// Use scheduler to prevent unnecessary flashing
 		this.updateTreeScheduler = new RunOnceScheduler(async () => {
-			const stackFrame = this.debugService.getViewModel().focusedStackFrame;
+			const stackFrame =
+				this.debugService.getViewModel().focusedStackFrame;
 
 			this.needsRefresh = false;
 			const input = this.tree.getInput();
 			if (input) {
-				this.savedViewState.set(input.getId(), this.tree.getViewState());
+				this.savedViewState.set(
+					input.getId(),
+					this.tree.getViewState(),
+				);
 			}
 			if (!stackFrame) {
 				await this.tree.setInput(null);
@@ -185,7 +201,7 @@ export class VariablesView extends ViewPane {
 
 			// Automatically expand the first non-expensive scope
 			const scopes = await stackFrame.getScopes();
-			const toExpand = scopes.find(s => !s.expensive);
+			const toExpand = scopes.find((s) => !s.expensive);
 
 			// A race condition could be present causing the scopes here to be different from the scopes that the tree just retrieved.
 			// If that happened, don't try to reveal anything, it will be straightened out on the next update
@@ -648,7 +664,8 @@ export class VisualizedVariableRenderer extends AbstractExpressionsRenderer {
 		@IContextViewService contextViewService: IContextViewService,
 		@IHoverService hoverService: IHoverService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super(debugService, contextViewService, hoverService);
 	}
@@ -770,9 +787,12 @@ export class VariablesRenderer extends AbstractExpressionsRenderer {
 	constructor(
 		private readonly expressionRenderer: DebugExpressionRenderer,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IDebugVisualizerService private readonly visualization: IDebugVisualizerService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IDebugVisualizerService
+		private readonly visualization: IDebugVisualizerService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IDebugService debugService: IDebugService,
 		@IContextViewService contextViewService: IContextViewService,
 		@IHoverService hoverService: IHoverService,

@@ -31,9 +31,9 @@ import { AccessibleViewProviderId } from "../../../../platform/accessibility/bro
 import { CONTEXT_ACCESSIBILITY_MODE_ENABLED } from "../../../../platform/accessibility/common/accessibility.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
 	registerAction2,
+	type IAction2Options,
 } from "../../../../platform/actions/common/actions.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
@@ -50,17 +50,17 @@ import {
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
-	type IPickOptions,
 	IQuickInputService,
+	type IPickOptions,
 	type IQuickPickItem,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { TerminalCapability } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
-	type ITerminalProfile,
 	TerminalExitReason,
-	type TerminalIcon,
 	TerminalLocation,
 	TerminalSettingId,
+	type ITerminalProfile,
+	type TerminalIcon,
 } from "../../../../platform/terminal/common/terminal.js";
 import { createProfileSchemaEnums } from "../../../../platform/terminal/common/terminalProfiles.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
@@ -86,24 +86,24 @@ import {
 } from "../../accessibility/browser/accessibilityConfiguration.js";
 import { clearShellFileHistory, getCommandHistory } from "../common/history.js";
 import {
-	type IRemoteTerminalAttachTarget,
 	ITerminalProfileResolverService,
 	ITerminalProfileService,
 	TERMINAL_VIEW_ID,
 	TerminalCommandId,
+	type IRemoteTerminalAttachTarget,
 } from "../common/terminal.js";
 import { TerminalContextKeys } from "../common/terminalContextKey.js";
 import { terminalStrings } from "../common/terminalStrings.js";
 import {
 	Direction,
-	type ICreateTerminalOptions,
-	type IDetachedTerminalInstance,
 	ITerminalConfigurationService,
 	ITerminalEditorService,
 	ITerminalGroupService,
-	type ITerminalInstance,
 	ITerminalInstanceService,
 	ITerminalService,
+	type ICreateTerminalOptions,
+	type IDetachedTerminalInstance,
+	type ITerminalInstance,
 	type IXtermTerminal,
 } from "./terminal.js";
 import { InstanceContext } from "./terminalContextMenu.js";
@@ -231,9 +231,12 @@ export const terminalSendSequenceCommand = async (
 
 export class TerminalLaunchHelpAction extends Action {
 	constructor(
-		@IOpenerService private readonly _openerService: IOpenerService
+		@IOpenerService private readonly _openerService: IOpenerService,
 	) {
-		super('workbench.action.terminal.launchHelp', localize('terminalLaunchHelp', "Open Help"));
+		super(
+			"workbench.action.terminal.launchHelp",
+			localize("terminalLaunchHelp", "Open Help"),
+		);
 	}
 
 	override async run(): Promise<void> {
@@ -2047,12 +2050,10 @@ export function registerTerminalActions() {
 		),
 		precondition: sharedWhenClause.terminalAvailable,
 		run: (c, accessor) =>
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@feature:terminal",
-				}),
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@feature:terminal",
+			}),
 	});
 
 	registerActiveInstanceAction({

@@ -8,13 +8,13 @@ import { ResourceMap } from "../../../base/common/map.js";
 import type { URI } from "../../../base/common/uri.js";
 import { refineServiceDecorator } from "../../instantiation/common/instantiation.js";
 import {
+	ILoggerService,
+	isLogLevel,
 	type DidChangeLoggersEvent,
 	type ILogger,
 	type ILoggerOptions,
 	type ILoggerResource,
-	ILoggerService,
 	type LogLevel,
-	isLogLevel,
 } from "../common/log.js";
 import { LoggerService } from "../node/loggerService.js";
 

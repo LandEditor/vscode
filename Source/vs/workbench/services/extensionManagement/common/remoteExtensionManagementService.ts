@@ -22,10 +22,13 @@ export class RemoteExtensionManagementService
 {
 	constructor(
 		channel: IChannel,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IRemoteUserDataProfilesService private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
-		@IUriIdentityService uriIdentityService: IUriIdentityService
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IRemoteUserDataProfilesService
+		private readonly remoteUserDataProfilesService: IRemoteUserDataProfilesService,
+		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
 		super(channel, userDataProfileService, uriIdentityService);
 	}

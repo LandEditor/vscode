@@ -13,9 +13,9 @@ import {
 import { registerThemingParticipant } from "../../../../platform/theme/common/themeService.js";
 import { TestResultState } from "../common/testTypes.js";
 import {
+	testingColorRunAction,
 	testStatesToIconColors,
 	testStatesToRetiredIconColors,
-	testingColorRunAction,
 } from "./theme.js";
 
 export const testingViewIcon = registerIcon(

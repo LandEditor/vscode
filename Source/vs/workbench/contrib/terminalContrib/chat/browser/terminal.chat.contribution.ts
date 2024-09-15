@@ -6,6 +6,19 @@
 import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
 import { TerminalInlineChatAccessibleView } from "./terminalChatAccessibleView.js";
 import { TerminalChatController } from "./terminalChatController.js";
+// #endregion
+
+// #region Actions
+
+import "./terminalChatActions.js";
+
+import { AccessibleViewRegistry } from "../../../../../platform/accessibility/browser/accessibleViewRegistry.js";
+import {
+	registerWorkbenchContribution2,
+	WorkbenchPhase,
+} from "../../../../common/contributions.js";
+import { TerminalChatAccessibilityHelp } from "./terminalChatAccessibilityHelp.js";
+import { TerminalChatEnabler } from "./terminalChatEnabler.js";
 
 // #region Terminal Contributions
 
@@ -27,18 +40,5 @@ registerWorkbenchContribution2(
 	TerminalChatEnabler,
 	WorkbenchPhase.AfterRestored,
 );
-
-// #endregion
-
-// #region Actions
-
-import "./terminalChatActions.js";
-import { AccessibleViewRegistry } from "../../../../../platform/accessibility/browser/accessibleViewRegistry.js";
-import {
-	WorkbenchPhase,
-	registerWorkbenchContribution2,
-} from "../../../../common/contributions.js";
-import { TerminalChatAccessibilityHelp } from "./terminalChatAccessibilityHelp.js";
-import { TerminalChatEnabler } from "./terminalChatEnabler.js";
 
 // #endregion

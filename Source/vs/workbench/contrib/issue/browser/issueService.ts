@@ -38,8 +38,8 @@ import {
 	textLinkForeground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { SIDE_BAR_BACKGROUND } from "../../../common/theme.js";
@@ -64,14 +64,20 @@ export class BrowserIssueService implements IWorkbenchIssueService {
 		@IProductService private readonly productService: IProductService,
 		@IIssueFormService private readonly issueFormService: IIssueFormService,
 		@IThemeService private readonly themeService: IThemeService,
-		@IWorkbenchAssignmentService private readonly experimentService: IWorkbenchAssignmentService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchAssignmentService
+		private readonly experimentService: IWorkbenchAssignmentService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IIntegrityService private readonly integrityService: IIntegrityService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
-	) { }
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+	) {}
 
 	async openReporter(options: Partial<IssueReporterData>): Promise<void> {
 		// If web reporter setting is false open the old GitHub issue reporter

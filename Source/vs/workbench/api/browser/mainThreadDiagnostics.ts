@@ -6,18 +6,18 @@
 import type { IDisposable } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
-	type IMarkerData,
 	IMarkerService,
+	type IMarkerData,
 } from "../../../platform/markers/common/markers.js";
 import { IUriIdentityService } from "../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostDiagnosticsShape,
 	MainContext,
+	type ExtHostDiagnosticsShape,
 	type MainThreadDiagnosticsShape,
 } from "../common/extHost.protocol.js";
 
@@ -31,11 +31,17 @@ export class MainThreadDiagnostics implements MainThreadDiagnosticsShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDiagnostics);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostDiagnostics,
+		);
 
-		this._markerListener = this._markerService.onMarkerChanged(this._forwardMarkers, this);
+		this._markerListener = this._markerService.onMarkerChanged(
+			this._forwardMarkers,
+			this,
+		);
 	}
 
 	dispose(): void {

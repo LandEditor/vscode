@@ -13,8 +13,8 @@ import { IConfigurationService } from "../../../../../../platform/configuration/
 import type { ServicesAccessor } from "../../../../../../platform/instantiation/common/instantiation.js";
 import { NotebookSetting } from "../../../common/notebookCommon.js";
 import {
-	type INotebookActionContext,
 	NOTEBOOK_ACTIONS_CATEGORY,
+	type INotebookActionContext,
 } from "../../controller/coreActions.js";
 
 const TOGGLE_CELL_TOOLBAR_POSITION = "notebook.toggleCellToolbarPosition";

@@ -17,7 +17,7 @@ import type { ServicesAccessor } from "../../../../../platform/instantiation/com
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { InlineChatController } from "../../../inlineChat/browser/inlineChatController.js";
 import { CONTEXT_CHAT_ENABLED } from "../../common/chatContextKeys.js";
-import { type IQuickChatOpenOptions, IQuickChatService } from "../chat.js";
+import { IQuickChatService, type IQuickChatOpenOptions } from "../chat.js";
 import { CHAT_CATEGORY } from "./chatActions.js";
 
 export const ASK_QUICK_QUESTION_ACTION_ID = "workbench.action.quickchat.toggle";

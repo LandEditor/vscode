@@ -10,8 +10,8 @@ import * as nls from "../../../../nls.js";
 import type { IExtensionDescription } from "../../../../platform/extensions/common/extensions.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IIconRegistry,
 	Extensions as IconRegistryExtensions,
+	type IIconRegistry,
 } from "../../../../platform/theme/common/iconRegistry.js";
 import { ExtensionsRegistry } from "../../extensions/common/extensionsRegistry.js";
 

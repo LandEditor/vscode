@@ -7,8 +7,8 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type ICommandAndKeybindingRule,
 	KeybindingWeight,
+	type ICommandAndKeybindingRule,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { WALK_THROUGH_FOCUS, WalkThroughPart } from "./walkThroughPart.js";

@@ -5,8 +5,8 @@
 
 import { BugIndicatingError } from "../../../base/common/errors.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 
 export const quadVertices = new Float32Array([

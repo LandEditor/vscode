@@ -10,16 +10,16 @@ import {
 	DisposableStore,
 } from "../../../../base/common/lifecycle.js";
 import {
-	OperatingSystem,
 	isMacintosh,
+	OperatingSystem,
 } from "../../../../base/common/platform.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../nls.js";
 import {
@@ -33,15 +33,15 @@ import {
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { showWithPinnedItems } from "../../../../platform/quickinput/browser/quickPickPin.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPickItem,
 	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import {
-	type ITerminalCommand,
 	TerminalCapability,
+	type ITerminalCommand,
 } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import { collapseTildePath } from "../../../../platform/terminal/common/terminalEnvironment.js";
 import {
@@ -497,10 +497,15 @@ class TerminalOutputProvider
 
 	constructor(
 		@ITextModelService textModelResolverService: ITextModelService,
-		@IModelService private readonly _modelService: IModelService
+		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
-		this._register(textModelResolverService.registerTextModelContentProvider(TerminalOutputProvider.scheme, this));
+		this._register(
+			textModelResolverService.registerTextModelContentProvider(
+				TerminalOutputProvider.scheme,
+				this,
+			),
+		);
 	}
 
 	async provideTextContent(resource: URI): Promise<ITextModel | null> {

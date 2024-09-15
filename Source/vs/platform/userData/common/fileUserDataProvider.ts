@@ -6,8 +6,8 @@ import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ResourceSet } from "../../../base/common/map.js";
 import type { ReadableStreamEvents } from "../../../base/common/stream.js";
@@ -15,6 +15,8 @@ import { TernarySearchTree } from "../../../base/common/ternarySearchTree.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
 	FileSystemProviderCapabilities,
+	hasFileCloneCapability,
+	hasFileFolderCopyCapability,
 	type FileType,
 	type IFileAtomicOptions,
 	type IFileAtomicReadOptions,
@@ -34,8 +36,6 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	hasFileCloneCapability,
-	hasFileFolderCopyCapability,
 } from "../../files/common/files.js";
 import type { ILogService } from "../../log/common/log.js";
 import type { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";

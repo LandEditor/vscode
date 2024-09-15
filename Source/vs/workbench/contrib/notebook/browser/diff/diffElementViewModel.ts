@@ -13,8 +13,8 @@ import type { FontInfo } from "../../../../../editor/common/config/fontInfo.js";
 import type * as editorCommon from "../../../../../editor/common/editorCommon.js";
 import type { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type NotebookCellTextModel,
 	getFormattedMetadataJSON,
+	type NotebookCellTextModel,
 } from "../../common/model/notebookCellTextModel.js";
 import type { NotebookTextModel } from "../../common/model/notebookTextModel.js";
 import {
@@ -33,13 +33,13 @@ import type { NotebookLayoutInfo } from "../notebookViewEvents.js";
 import { getEditorPadding } from "./diffCellEditorOptions.js";
 import { DiffNestedCellViewModel } from "./diffNestedCellViewModel.js";
 import {
-	type NotebookDiffEditorEventDispatcher,
 	NotebookDiffViewEventType,
+	type NotebookDiffEditorEventDispatcher,
 } from "./eventDispatcher.js";
 import {
-	type CellDiffViewModelLayoutChangeEvent,
 	DIFF_CELL_MARGIN,
 	DiffSide,
+	type CellDiffViewModelLayoutChangeEvent,
 	type IDiffElementLayoutInfo,
 } from "./notebookDiffEditorBrowser.js";
 import type { IUnchangedEditorRegionsService } from "./unchangedEditorRegions.js";
@@ -375,8 +375,8 @@ export abstract class DiffElementCellViewModelBase extends DiffElementViewModelB
 		const outputHeight = this.ignoreOutputs
 			? 0
 			: delta.recomputeOutput ||
-					delta.rawOutputHeight !== undefined ||
-					delta.outputMetadataHeight !== undefined
+				  delta.rawOutputHeight !== undefined ||
+				  delta.outputMetadataHeight !== undefined
 				? this._getOutputTotalHeight(
 						rawOutputHeight,
 						outputMetadataHeight,

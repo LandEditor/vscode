@@ -9,22 +9,23 @@ import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
 	FileOperationError,
 	FileOperationResult,
 	FilePermission,
-	type FileSystemProviderCapabilities,
 	FileSystemProviderErrorCode,
 	FileType,
+	IFileService,
+	toFileSystemProviderErrorCode,
+	type FileSystemProviderCapabilities,
 	type IFileChange,
 	type IFileDeleteOptions,
 	type IFileOpenOptions,
 	type IFileOverwriteOptions,
-	IFileService,
 	type IFileStat,
 	type IFileStatWithPartialMetadata,
 	type IFileSystemProviderWithFileFolderCopyCapability,
@@ -33,17 +34,16 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	toFileSystemProviderErrorCode,
 } from "../../../platform/files/common/files.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostFileSystemShape,
 	type IFileChangeDto,
-	MainContext,
 	type MainThreadFileSystemShape,
 } from "../common/extHost.protocol.js";
 
@@ -58,17 +58,36 @@ export class MainThreadFileSystem implements MainThreadFileSystemShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IFileService private readonly _fileService: IFileService
+		@IFileService private readonly _fileService: IFileService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostFileSystem);
 
-		const infoProxy = extHostContext.getProxy(ExtHostContext.ExtHostFileSystemInfo);
+		const infoProxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostFileSystemInfo,
+		);
 
 		for (const entry of _fileService.listCapabilities()) {
-			infoProxy.$acceptProviderInfos(URI.from({ scheme: entry.scheme, path: '/dummy' }), entry.capabilities);
+			infoProxy.$acceptProviderInfos(
+				URI.from({ scheme: entry.scheme, path: "/dummy" }),
+				entry.capabilities,
+			);
 		}
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderRegistrations(e => infoProxy.$acceptProviderInfos(URI.from({ scheme: e.scheme, path: '/dummy' }), e.provider?.capabilities ?? null)));
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderCapabilities(e => infoProxy.$acceptProviderInfos(URI.from({ scheme: e.scheme, path: '/dummy' }), e.provider.capabilities)));
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderRegistrations((e) =>
+				infoProxy.$acceptProviderInfos(
+					URI.from({ scheme: e.scheme, path: "/dummy" }),
+					e.provider?.capabilities ?? null,
+				),
+			),
+		);
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderCapabilities((e) =>
+				infoProxy.$acceptProviderInfos(
+					URI.from({ scheme: e.scheme, path: "/dummy" }),
+					e.provider.capabilities,
+				),
+			),
+		);
 	}
 
 	dispose(): void {

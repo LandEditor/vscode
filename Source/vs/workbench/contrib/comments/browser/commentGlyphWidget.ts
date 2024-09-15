@@ -14,8 +14,8 @@ import {
 import type { IEditorDecorationsCollection } from "../../../../editor/common/editorCommon.js";
 import { CommentThreadState } from "../../../../editor/common/languages.js";
 import {
-	type IModelDecorationOptions,
 	OverviewRulerLane,
+	type IModelDecorationOptions,
 } from "../../../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../../../editor/common/model/textModel.js";
 import * as nls from "../../../../nls.js";

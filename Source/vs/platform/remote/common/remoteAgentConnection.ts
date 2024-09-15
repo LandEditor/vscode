@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	promiseWithResolvers,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import {
@@ -21,8 +21,8 @@ import { Emitter } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { RemoteAuthorities } from "../../../base/common/network.js";
 import * as performance from "../../../base/common/performance.js";
@@ -31,9 +31,9 @@ import { generateUuid } from "../../../base/common/uuid.js";
 import type { IIPCLogger } from "../../../base/parts/ipc/common/ipc.js";
 import {
 	Client,
-	type ISocket,
 	PersistentProtocol,
 	SocketCloseEventType,
+	type ISocket,
 } from "../../../base/parts/ipc/common/ipc.net.js";
 import type { ILogService } from "../../log/common/log.js";
 import type { ISignService } from "../../sign/common/sign.js";
@@ -44,7 +44,7 @@ import {
 } from "./remoteAuthorityResolver.js";
 import type { IRemoteSocketFactoryService } from "./remoteSocketFactoryService.js";
 
-const RECONNECT_TIMEOUT = 30 * 1000 /* 30s */;
+const RECONNECT_TIMEOUT = 30 * 1000; /* 30s */
 
 export enum ConnectionType {
 	Management = 1,

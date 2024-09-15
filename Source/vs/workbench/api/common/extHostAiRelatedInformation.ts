@@ -9,11 +9,12 @@ import type {
 	RelatedInformationResult,
 	RelatedInformationType,
 } from "vscode";
+
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostAiRelatedInformationShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadAiRelatedInformationShape,
 } from "./extHost.protocol.js";
 import { Disposable } from "./extHostTypes.js";

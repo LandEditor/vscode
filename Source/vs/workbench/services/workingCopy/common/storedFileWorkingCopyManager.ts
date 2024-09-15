@@ -10,8 +10,8 @@ import { onUnexpectedError } from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { isWeb } from "../../../../base/common/platform.js";
@@ -20,9 +20,9 @@ import { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	FileOperation,
 	IFileService,
+	type FileChangesEvent,
 	type IFileSystemProviderCapabilitiesChangeEvent,
 	type IFileSystemProviderRegistrationEvent,
 } from "../../../../platform/files/common/files.js";
@@ -41,13 +41,13 @@ import {
 } from "./abstractFileWorkingCopyManager.js";
 import { SnapshotContext } from "./fileWorkingCopy.js";
 import {
+	StoredFileWorkingCopy,
+	StoredFileWorkingCopyState,
 	type IStoredFileWorkingCopySaveEvent as IBaseStoredFileWorkingCopySaveEvent,
 	type IStoredFileWorkingCopy,
 	type IStoredFileWorkingCopyModel,
 	type IStoredFileWorkingCopyModelFactory,
 	type IStoredFileWorkingCopyResolveOptions,
-	StoredFileWorkingCopy,
-	StoredFileWorkingCopyState,
 } from "./storedFileWorkingCopy.js";
 import { IWorkingCopyBackupService } from "./workingCopyBackup.js";
 import { IWorkingCopyEditorService } from "./workingCopyEditorService.js";
@@ -229,16 +229,24 @@ export class StoredFileWorkingCopyManager<M extends IStoredFileWorkingCopyModel>
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILabelService private readonly labelService: ILabelService,
 		@ILogService logService: ILogService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService,
-		@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IWorkingCopyEditorService private readonly workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyBackupService
+		workingCopyBackupService: IWorkingCopyBackupService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IWorkingCopyEditorService
+		private readonly workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IElevatedFileService private readonly elevatedFileService: IElevatedFileService,
-		@IProgressService private readonly progressService: IProgressService
+		@IElevatedFileService
+		private readonly elevatedFileService: IElevatedFileService,
+		@IProgressService private readonly progressService: IProgressService,
 	) {
 		super(fileService, logService, workingCopyBackupService);
 

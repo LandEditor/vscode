@@ -23,16 +23,16 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { FuzzyScore } from "../../../../base/common/filters.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { FileAccess } from "../../../../base/common/network.js";
@@ -43,8 +43,8 @@ import { URI } from "../../../../base/common/uri.js";
 import type { MarkdownRenderer } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IMenuEntryActionViewItemOptions,
 	createActionViewItem,
+	type IMenuEntryActionViewItemOptions,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import { MenuWorkbenchToolBar } from "../../../../platform/actions/browser/toolbar.js";
 import {
@@ -91,22 +91,22 @@ import {
 	type IChatTreeData,
 } from "../common/chatService.js";
 import {
+	isRequestVM,
+	isResponseVM,
+	isWelcomeVM,
 	type IChatCodeCitations,
 	type IChatReferences,
 	type IChatRendererContent,
 	type IChatRequestViewModel,
 	type IChatResponseViewModel,
 	type IChatWelcomeMessageViewModel,
-	isRequestVM,
-	isResponseVM,
-	isWelcomeVM,
 } from "../common/chatViewModel.js";
 import { getNWords } from "../common/chatWordCounter.js";
 import type { CodeBlockModelCollection } from "../common/codeBlockModelCollection.js";
 import { MarkUnhelpfulActionId } from "./actions/chatTitleActions.js";
 import {
-	type ChatTreeItem,
 	GeneratingPhrase,
+	type ChatTreeItem,
 	type IChatCodeBlockInfo,
 	type IChatFileTreeInfo,
 	type IChatListItemRendererOptions,
@@ -235,24 +235,62 @@ export class ChatListItemRenderer
 		private readonly delegate: IChatRendererDelegate,
 		private readonly codeBlockModelCollection: CodeBlockModelCollection,
 		overflowWidgetsDomNode: HTMLElement | undefined,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IConfigurationService configService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IThemeService private readonly themeService: IThemeService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super();
 
-		this.renderer = this._register(this.instantiationService.createInstance(ChatMarkdownRenderer, undefined));
-		this.markdownDecorationsRenderer = this.instantiationService.createInstance(ChatMarkdownDecorationsRenderer);
-		this._editorPool = this._register(this.instantiationService.createInstance(EditorPool, editorOptions, delegate, overflowWidgetsDomNode));
-		this._diffEditorPool = this._register(this.instantiationService.createInstance(DiffEditorPool, editorOptions, delegate, overflowWidgetsDomNode));
-		this._treePool = this._register(this.instantiationService.createInstance(TreePool, this._onDidChangeVisibility.event));
-		this._contentReferencesListPool = this._register(this.instantiationService.createInstance(CollapsibleListPool, this._onDidChangeVisibility.event));
+		this.renderer = this._register(
+			this.instantiationService.createInstance(
+				ChatMarkdownRenderer,
+				undefined,
+			),
+		);
+		this.markdownDecorationsRenderer =
+			this.instantiationService.createInstance(
+				ChatMarkdownDecorationsRenderer,
+			);
+		this._editorPool = this._register(
+			this.instantiationService.createInstance(
+				EditorPool,
+				editorOptions,
+				delegate,
+				overflowWidgetsDomNode,
+			),
+		);
+		this._diffEditorPool = this._register(
+			this.instantiationService.createInstance(
+				DiffEditorPool,
+				editorOptions,
+				delegate,
+				overflowWidgetsDomNode,
+			),
+		);
+		this._treePool = this._register(
+			this.instantiationService.createInstance(
+				TreePool,
+				this._onDidChangeVisibility.event,
+			),
+		);
+		this._contentReferencesListPool = this._register(
+			this.instantiationService.createInstance(
+				CollapsibleListPool,
+				this._onDidChangeVisibility.event,
+			),
+		);
 
-		this._register(this.instantiationService.createInstance(ChatCodeBlockContentProvider));
+		this._register(
+			this.instantiationService.createInstance(
+				ChatCodeBlockContentProvider,
+			),
+		);
 	}
 
 	get templateId(): string {
@@ -1557,8 +1595,8 @@ export class ChatListItemRenderer
 export class ChatListDelegate implements IListVirtualDelegate<ChatTreeItem> {
 	constructor(
 		private readonly defaultElementHeight: number,
-		@ILogService private readonly logService: ILogService
-	) { }
+		@ILogService private readonly logService: ILogService,
+	) {}
 
 	private _traceLayout(method: string, message: string) {
 		if (forceVerboseLayoutTracing) {
@@ -1628,17 +1666,20 @@ export class ChatVoteDownButton extends DropdownMenuActionViewItem {
 		action: IAction,
 		options: IDropdownMenuActionViewItemOptions | undefined,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkbenchIssueService private readonly issueService: IWorkbenchIssueService,
+		@IWorkbenchIssueService
+		private readonly issueService: IWorkbenchIssueService,
 		@ILogService private readonly logService: ILogService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 	) {
-		super(action,
-			{ getActions: () => this.getActions(), },
+		super(
+			action,
+			{ getActions: () => this.getActions() },
 			contextMenuService,
 			{
 				...options,
 				classNames: ThemeIcon.asClassNameArray(Codicon.thumbsdown),
-			});
+			},
+		);
 	}
 
 	getActions(): readonly IAction[] {

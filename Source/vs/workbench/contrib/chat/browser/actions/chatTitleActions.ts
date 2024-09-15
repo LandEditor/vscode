@@ -39,8 +39,8 @@ import {
 } from "../../common/chatContextKeys.js";
 import {
 	ChatAgentVoteDirection,
-	type ChatAgentVoteDownReason,
 	IChatService,
+	type ChatAgentVoteDownReason,
 } from "../../common/chatService.js";
 import { isRequestVM, isResponseVM } from "../../common/chatViewModel.js";
 import { IChatWidgetService } from "../chat.js";

@@ -7,9 +7,9 @@ import { asArray } from "../../../../base/common/arrays.js";
 import { DeferredPromise } from "../../../../base/common/async.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
-	MarkdownString,
 	isMarkdownString,
+	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { revive } from "../../../../base/common/marshalling.js";
@@ -17,15 +17,15 @@ import { equals } from "../../../../base/common/objects.js";
 import { basename, isEqual } from "../../../../base/common/resources.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
 import {
+	isUriComponents,
 	URI,
 	type UriComponents,
 	type UriDto,
-	isUriComponents,
 } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type IOffsetRange,
 	OffsetRange,
+	type IOffsetRange,
 } from "../../../../editor/common/core/offsetRange.js";
 import type { IRange } from "../../../../editor/common/core/range.js";
 import type { TextEdit } from "../../../../editor/common/languages.js";
@@ -34,18 +34,19 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
 	ChatAgentLocation,
+	IChatAgentService,
+	reviveSerializedAgent,
 	type IChatAgentCommand,
 	type IChatAgentData,
 	type IChatAgentResult,
-	IChatAgentService,
-	reviveSerializedAgent,
 } from "./chatAgents.js";
 import {
 	ChatRequestTextPart,
-	type IParsedChatRequest,
 	reviveParsedChatRequest,
+	type IParsedChatRequest,
 } from "./chatParserTypes.js";
 import {
+	isIUsedContext,
 	type ChatAgentVoteDirection,
 	type ChatAgentVoteDownReason,
 	type IChatAgentMarkdownContentWithVulnerability,
@@ -66,7 +67,6 @@ import {
 	type IChatTreeData,
 	type IChatUsedContext,
 	type IChatWarningMessage,
-	isIUsedContext,
 } from "./chatService.js";
 import type { IChatRequestVariableValue } from "./chatVariables.js";
 
@@ -1012,23 +1012,45 @@ export class ChatModel extends Disposable implements IChatModel {
 	}
 
 	constructor(
-		private readonly initialData: ISerializableChatData | IExportableChatData | undefined,
+		private readonly initialData:
+			| ISerializableChatData
+			| IExportableChatData
+			| undefined,
 		private readonly _initialLocation: ChatAgentLocation,
 		@ILogService private readonly logService: ILogService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._isImported = (!!initialData && !isSerializableSessionData(initialData)) || (initialData?.isImported ?? false);
-		this._sessionId = (isSerializableSessionData(initialData) && initialData.sessionId) || generateUuid();
+		this._isImported =
+			(!!initialData && !isSerializableSessionData(initialData)) ||
+			(initialData?.isImported ?? false);
+		this._sessionId =
+			(isSerializableSessionData(initialData) && initialData.sessionId) ||
+			generateUuid();
 		this._requests = initialData ? this._deserialize(initialData) : [];
-		this._creationDate = (isSerializableSessionData(initialData) && initialData.creationDate) || Date.now();
-		this._lastMessageDate = (isSerializableSessionData(initialData) && initialData.lastMessageDate) || this._creationDate;
-		this._customTitle = isSerializableSessionData(initialData) ? initialData.customTitle : undefined;
+		this._creationDate =
+			(isSerializableSessionData(initialData) &&
+				initialData.creationDate) ||
+			Date.now();
+		this._lastMessageDate =
+			(isSerializableSessionData(initialData) &&
+				initialData.lastMessageDate) ||
+			this._creationDate;
+		this._customTitle = isSerializableSessionData(initialData)
+			? initialData.customTitle
+			: undefined;
 
-		this._initialRequesterAvatarIconUri = initialData?.requesterAvatarIconUri && URI.revive(initialData.requesterAvatarIconUri);
-		this._initialResponderAvatarIconUri = isUriComponents(initialData?.responderAvatarIconUri) ? URI.revive(initialData.responderAvatarIconUri) : initialData?.responderAvatarIconUri;
+		this._initialRequesterAvatarIconUri =
+			initialData?.requesterAvatarIconUri &&
+			URI.revive(initialData.requesterAvatarIconUri);
+		this._initialResponderAvatarIconUri = isUriComponents(
+			initialData?.responderAvatarIconUri,
+		)
+			? URI.revive(initialData.responderAvatarIconUri)
+			: initialData?.responderAvatarIconUri;
 	}
 
 	private _deserialize(obj: IExportableChatData): ChatRequestModel[] {
@@ -1524,7 +1546,7 @@ export class ChatWelcomeMessageModel implements IChatWelcomeMessageModel {
 		public readonly sampleQuestions: IChatFollowup[],
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 	) {
-		this._id = 'welcome_' + ChatWelcomeMessageModel.nextId++;
+		this._id = "welcome_" + ChatWelcomeMessageModel.nextId++;
 	}
 
 	public get username(): string {

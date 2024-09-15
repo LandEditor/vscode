@@ -5,6 +5,7 @@
 
 import { writeFileSync } from "fs";
 import { tmpdir } from "os";
+
 import { randomPath } from "../../../base/common/extpath.js";
 
 export function createWaitMarkerFileSync(

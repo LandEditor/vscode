@@ -12,15 +12,15 @@ import {
 import { isEqual } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import type { IRevertOptions, ISaveOptions } from "../../../common/editor.js";
 import {
-	type ITextFileEditorModel,
 	ITextFileService,
 	TextFileEditorModelState,
+	type ITextFileEditorModel,
 } from "../../../services/textfile/common/textfiles.js";
 import type { ICustomEditorModel } from "./customEditor.js";
 
@@ -58,7 +58,7 @@ export class CustomTextEditorModel
 		public readonly viewType: string,
 		private readonly _resource: URI,
 		private readonly _model: IReference<IResolvedTextEditorModel>,
-		@ITextFileService private readonly textFileService: ITextFileService
+		@ITextFileService private readonly textFileService: ITextFileService,
 	) {
 		super();
 
@@ -66,16 +66,26 @@ export class CustomTextEditorModel
 
 		this._textFileModel = this.textFileService.files.get(_resource);
 		if (this._textFileModel) {
-			this._register(this._textFileModel.onDidChangeOrphaned(() => this._onDidChangeOrphaned.fire()));
-			this._register(this._textFileModel.onDidChangeReadonly(() => this._onDidChangeReadonly.fire()));
+			this._register(
+				this._textFileModel.onDidChangeOrphaned(() =>
+					this._onDidChangeOrphaned.fire(),
+				),
+			);
+			this._register(
+				this._textFileModel.onDidChangeReadonly(() =>
+					this._onDidChangeReadonly.fire(),
+				),
+			);
 		}
 
-		this._register(this.textFileService.files.onDidChangeDirty(e => {
-			if (isEqual(this.resource, e.resource)) {
-				this._onDidChangeDirty.fire();
-				this._onDidChangeContent.fire();
-			}
-		}));
+		this._register(
+			this.textFileService.files.onDidChangeDirty((e) => {
+				if (isEqual(this.resource, e.resource)) {
+					this._onDidChangeDirty.fire();
+					this._onDidChangeContent.fire();
+				}
+			}),
+		);
 	}
 
 	public get resource() {

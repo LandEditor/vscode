@@ -6,11 +6,11 @@
 import { Range } from "../../../../editor/common/core/range.js";
 import type { FindMatch, ITextModel } from "../../../../editor/common/model.js";
 import {
+	TextSearchMatch,
 	type ITextQuery,
 	type ITextSearchMatch,
 	type ITextSearchPreviewOptions,
 	type ITextSearchResult,
-	TextSearchMatch,
 } from "./search.js";
 
 function editorMatchToTextSearchResult(

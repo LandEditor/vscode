@@ -5,24 +5,24 @@
 
 import {
 	Action,
-	type IAction,
 	Separator,
 	SubmenuAction,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { localize, localize2 } from "../../../../nls.js";
 import {
-	type IMenu,
 	MenuId,
 	MenuRegistry,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IExtensionTerminalProfile,
-	type ITerminalProfile,
 	TerminalLocation,
 	TerminalSettingId,
+	type IExtensionTerminalProfile,
+	type ITerminalProfile,
 } from "../../../../platform/terminal/common/terminal.js";
 import { ResourceContextKey } from "../../../common/contextkeys.js";
 import {
@@ -32,8 +32,8 @@ import {
 import { TaskExecutionSupportedContext } from "../../tasks/common/taskService.js";
 import { TERMINAL_VIEW_ID, TerminalCommandId } from "../common/terminal.js";
 import {
-	TerminalContextKeyStrings,
 	TerminalContextKeys,
+	TerminalContextKeyStrings,
 } from "../common/terminalContextKey.js";
 import { terminalStrings } from "../common/terminalStrings.js";
 import type {

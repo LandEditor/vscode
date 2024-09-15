@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type ChildProcess, type StdioOptions, spawn } from "child_process";
+import { spawn, type ChildProcess, type StdioOptions } from "child_process";
 import { homedir, hostname } from "os";
+
 import {
-	type CancelablePromise,
-	Delayer,
 	createCancelablePromise,
+	Delayer,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
@@ -22,9 +23,9 @@ import { IConfigurationService } from "../../configuration/common/configuration.
 import { INativeEnvironmentService } from "../../environment/common/environment.js";
 import { ISharedProcessLifecycleService } from "../../lifecycle/node/sharedProcessLifecycleService.js";
 import {
-	type ILogger,
 	ILoggerService,
 	LogLevelToString,
+	type ILogger,
 } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
@@ -34,17 +35,17 @@ import {
 } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type ActiveTunnelMode,
 	CONFIGURATION_KEY_HOST_NAME,
 	CONFIGURATION_KEY_PREVENT_SLEEP,
-	type ConnectionInfo,
 	INACTIVE_TUNNEL_MODE,
+	LOG_ID,
+	LOGGER_NAME,
+	TunnelStates,
+	type ActiveTunnelMode,
+	type ConnectionInfo,
 	type IRemoteTunnelService,
 	type IRemoteTunnelSession,
-	LOGGER_NAME,
-	LOG_ID,
 	type TunnelMode,
-	TunnelStates,
 	type TunnelStatus,
 } from "../common/remoteTunnel.js";
 
@@ -126,29 +127,53 @@ export class RemoteTunnelService
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService,
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
 		@ILoggerService loggerService: ILoggerService,
-		@ISharedProcessLifecycleService sharedProcessLifecycleService: ISharedProcessLifecycleService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IStorageService private readonly storageService: IStorageService
+		@ISharedProcessLifecycleService
+		sharedProcessLifecycleService: ISharedProcessLifecycleService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IStorageService private readonly storageService: IStorageService,
 	) {
 		super();
-		this._logger = this._register(loggerService.createLogger(joinPath(environmentService.logsHome, `${LOG_ID}.log`), { id: LOG_ID, name: LOGGER_NAME }));
+		this._logger = this._register(
+			loggerService.createLogger(
+				joinPath(environmentService.logsHome, `${LOG_ID}.log`),
+				{ id: LOG_ID, name: LOGGER_NAME },
+			),
+		);
 		this._startTunnelProcessDelayer = new Delayer(100);
 
-		this._register(this._logger.onDidChangeLogLevel(l => this._logger.info('Log level changed to ' + LogLevelToString(l))));
+		this._register(
+			this._logger.onDidChangeLogLevel((l) =>
+				this._logger.info(
+					"Log level changed to " + LogLevelToString(l),
+				),
+			),
+		);
 
-		this._register(sharedProcessLifecycleService.onWillShutdown(() => {
-			this._tunnelProcess?.cancel();
-			this._tunnelProcess = undefined;
-			this.dispose();
-		}));
+		this._register(
+			sharedProcessLifecycleService.onWillShutdown(() => {
+				this._tunnelProcess?.cancel();
+				this._tunnelProcess = undefined;
+				this.dispose();
+			}),
+		);
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (restartTunnelOnConfigurationChanges.some(c => e.affectsConfiguration(c))) {
-				this._startTunnelProcessDelayer.trigger(() => this.updateTunnelProcess());
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					restartTunnelOnConfigurationChanges.some((c) =>
+						e.affectsConfiguration(c),
+					)
+				) {
+					this._startTunnelProcessDelayer.trigger(() =>
+						this.updateTunnelProcess(),
+					);
+				}
+			}),
+		);
 
 		this._mode = this._restoreMode();
 		this._tunnelStatus = TunnelStates.uninitialized;

@@ -11,8 +11,8 @@ import {
 import { StandardMouseEvent } from "../../../../../base/browser/mouseEvent.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../../base/common/actions.js";
 import { isNative } from "../../../../../base/common/platform.js";
 import { localize } from "../../../../../nls.js";

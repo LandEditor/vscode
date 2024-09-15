@@ -4,18 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { ResourceQueue } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import {
-	type IExtUri,
 	extUri,
 	extUriIgnorePathCase,
+	type IExtUri,
 } from "../../../base/common/resources.js";
 import * as files from "../../../platform/files/common/files.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";

@@ -4,24 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";

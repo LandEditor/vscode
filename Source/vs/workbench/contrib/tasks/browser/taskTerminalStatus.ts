@@ -6,9 +6,9 @@
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import Severity from "../../../../base/common/severity.js";
 import * as nls from "../../../../nls.js";
@@ -22,17 +22,17 @@ import { spinningLoading } from "../../../../platform/theme/common/iconRegistry.
 import type { ITerminalInstance } from "../../terminal/browser/terminal.js";
 import type { ITerminalStatus } from "../../terminal/common/terminal.js";
 import {
-	type AbstractProblemCollector,
 	StartStopProblemCollector,
+	type AbstractProblemCollector,
 } from "../common/problemCollectors.js";
-import { ITaskService, type Task } from "../common/taskService.js";
 import {
+	TaskEventKind,
+	TaskRunType,
 	type ITaskGeneralEvent,
 	type ITaskProcessEndedEvent,
 	type ITaskProcessStartedEvent,
-	TaskEventKind,
-	TaskRunType,
 } from "../common/tasks.js";
+import { ITaskService, type Task } from "../common/taskService.js";
 
 interface ITerminalData {
 	terminal: ITerminalInstance;
@@ -114,22 +114,36 @@ const INFO_INACTIVE_TASK_STATUS: ITerminalStatus = {
 export class TaskTerminalStatus extends Disposable {
 	private terminalMap: Map<number, ITerminalData> = new Map();
 	private _marker: IMarker | undefined;
-	constructor(@ITaskService taskService: ITaskService, @IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService) {
+	constructor(
+		@ITaskService taskService: ITaskService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+	) {
 		super();
-		this._register(taskService.onDidStateChange((event) => {
-			switch (event.kind) {
-				case TaskEventKind.ProcessStarted:
-				case TaskEventKind.Active: this.eventActive(event); break;
-				case TaskEventKind.Inactive: this.eventInactive(event); break;
-				case TaskEventKind.ProcessEnded: this.eventEnd(event); break;
-			}
-		}));
-		this._register(toDisposable(() => {
-			for (const terminalData of this.terminalMap.values()) {
-				terminalData.disposeListener?.dispose();
-			}
-			this.terminalMap.clear();
-		}));
+		this._register(
+			taskService.onDidStateChange((event) => {
+				switch (event.kind) {
+					case TaskEventKind.ProcessStarted:
+					case TaskEventKind.Active:
+						this.eventActive(event);
+						break;
+					case TaskEventKind.Inactive:
+						this.eventInactive(event);
+						break;
+					case TaskEventKind.ProcessEnded:
+						this.eventEnd(event);
+						break;
+				}
+			}),
+		);
+		this._register(
+			toDisposable(() => {
+				for (const terminalData of this.terminalMap.values()) {
+					terminalData.disposeListener?.dispose();
+				}
+				this.terminalMap.clear();
+			}),
+		);
 	}
 
 	addTerminal(
@@ -180,9 +194,9 @@ export class TaskTerminalStatus extends Disposable {
 		});
 	}
 
-	private terminalFromEvent(event: { terminalId: number | undefined }):
-		| ITerminalData
-		| undefined {
+	private terminalFromEvent(event: {
+		terminalId: number | undefined;
+	}): ITerminalData | undefined {
 		if (!("terminalId" in event) || !event.terminalId) {
 			return undefined;
 		}

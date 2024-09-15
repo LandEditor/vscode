@@ -20,30 +20,30 @@ import {
 import { WebviewInput } from "../../contrib/webviewPanel/browser/webviewEditorInput.js";
 import type { WebviewIcons } from "../../contrib/webviewPanel/browser/webviewIconManager.js";
 import {
-	type IWebViewShowOptions,
 	IWebviewWorkbenchService,
+	type IWebViewShowOptions,
 } from "../../contrib/webviewPanel/browser/webviewWorkbenchService.js";
 import { editorGroupToColumn } from "../../services/editor/common/editorGroupColumn.js";
 import {
 	GroupLocation,
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
 	preferredSideBySideGroupDirection,
+	type IEditorGroup,
 } from "../../services/editor/common/editorGroupsService.js";
 import {
 	ACTIVE_GROUP,
 	IEditorService,
-	type PreferredGroup,
 	SIDE_GROUP,
+	type PreferredGroup,
 } from "../../services/editor/common/editorService.js";
-import type { IExtHostContext } from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
+import type { IExtHostContext } from "../../services/extensions/common/extHostCustomers.js";
 import * as extHostProtocol from "../common/extHost.protocol.js";
 import {
-	type MainThreadWebviews,
 	reviveWebviewContentOptions,
 	reviveWebviewExtension,
+	type MainThreadWebviews,
 } from "./mainThreadWebviews.js";
 
 /**
@@ -116,46 +116,67 @@ export class MainThreadWebviewPanels
 	constructor(
 		context: IExtHostContext,
 		private readonly _mainThreadWebviews: MainThreadWebviews,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@IExtensionService extensionService: IExtensionService,
 		@IStorageService storageService: IStorageService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
 	) {
 		super();
 
-		this.webviewOriginStore = new ExtensionKeyedWebviewOriginStore('mainThreadWebviewPanel.origins', storageService);
+		this.webviewOriginStore = new ExtensionKeyedWebviewOriginStore(
+			"mainThreadWebviewPanel.origins",
+			storageService,
+		);
 
-		this._proxy = context.getProxy(extHostProtocol.ExtHostContext.ExtHostWebviewPanels);
+		this._proxy = context.getProxy(
+			extHostProtocol.ExtHostContext.ExtHostWebviewPanels,
+		);
 
-		this._register(Event.any(
-			_editorService.onDidActiveEditorChange,
-			_editorService.onDidVisibleEditorsChange,
-			_editorGroupService.onDidAddGroup,
-			_editorGroupService.onDidRemoveGroup,
-			_editorGroupService.onDidMoveGroup,
-		)(() => {
-			this.updateWebviewViewStates(this._editorService.activeEditor);
-		}));
+		this._register(
+			Event.any(
+				_editorService.onDidActiveEditorChange,
+				_editorService.onDidVisibleEditorsChange,
+				_editorGroupService.onDidAddGroup,
+				_editorGroupService.onDidRemoveGroup,
+				_editorGroupService.onDidMoveGroup,
+			)(() => {
+				this.updateWebviewViewStates(this._editorService.activeEditor);
+			}),
+		);
 
-		this._register(_webviewWorkbenchService.onDidChangeActiveWebviewEditor(input => {
-			this.updateWebviewViewStates(input);
-		}));
+		this._register(
+			_webviewWorkbenchService.onDidChangeActiveWebviewEditor((input) => {
+				this.updateWebviewViewStates(input);
+			}),
+		);
 
 		// This reviver's only job is to activate extensions.
 		// This should trigger the real reviver to be registered from the extension host side.
-		this._register(_webviewWorkbenchService.registerResolver({
-			canResolve: (webview: WebviewInput) => {
-				const viewType = this.webviewPanelViewType.toExternal(webview.viewType);
-				if (typeof viewType === 'string') {
-					extensionService.activateByEvent(`onWebviewPanel:${viewType}`);
-				}
-				return false;
-			},
-			resolveWebview: () => { throw new Error('not implemented'); }
-		}));
+		this._register(
+			_webviewWorkbenchService.registerResolver({
+				canResolve: (webview: WebviewInput) => {
+					const viewType = this.webviewPanelViewType.toExternal(
+						webview.viewType,
+					);
+					if (typeof viewType === "string") {
+						extensionService.activateByEvent(
+							`onWebviewPanel:${viewType}`,
+						);
+					}
+					return false;
+				},
+				resolveWebview: () => {
+					throw new Error("not implemented");
+				},
+			}),
+		);
 	}
 
 	public get webviewInputs(): Iterable<WebviewInput> {

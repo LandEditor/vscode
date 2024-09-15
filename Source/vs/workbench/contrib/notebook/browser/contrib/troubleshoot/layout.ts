@@ -6,8 +6,8 @@
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../../../base/common/lifecycle.js";
 import { localize2 } from "../../../../../../nls.js";
 import { Categories } from "../../../../../../platform/action/common/actionCommonCategories.js";
@@ -23,12 +23,12 @@ import {
 } from "../../../common/notebookCommon.js";
 import { INotebookService } from "../../../common/notebookService.js";
 import {
+	getNotebookEditorFromEditorPane,
 	type ICellViewModel,
 	type ICommonCellViewModelLayoutChangeInfo,
 	type INotebookDeltaCellStatusBarItems,
 	type INotebookEditor,
 	type INotebookEditorContribution,
-	getNotebookEditorFromEditorPane,
 } from "../../notebookBrowser.js";
 import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 import type { NotebookEditorWidget } from "../../notebookEditorWidget.js";

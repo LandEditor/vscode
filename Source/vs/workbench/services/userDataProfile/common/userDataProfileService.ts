@@ -10,9 +10,9 @@ import { equals } from "../../../../base/common/objects.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import type { IUserDataProfile } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
+	defaultUserDataProfileIcon,
 	type DidChangeUserDataProfileEvent,
 	type IUserDataProfileService,
-	defaultUserDataProfileIcon,
 } from "./userDataProfile.js";
 
 export class UserDataProfileService

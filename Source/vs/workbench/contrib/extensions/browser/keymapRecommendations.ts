@@ -6,8 +6,8 @@
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type ExtensionRecommendation,
 	ExtensionRecommendations,
+	type ExtensionRecommendation,
 } from "./extensionRecommendations.js";
 
 export class KeymapRecommendations extends ExtensionRecommendations {

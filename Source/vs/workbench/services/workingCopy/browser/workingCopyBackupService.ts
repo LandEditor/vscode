@@ -12,8 +12,8 @@ import {
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { IWorkingCopyBackupService } from "../common/workingCopyBackup.js";
@@ -23,7 +23,8 @@ import { BrowserWorkingCopyBackupTracker } from "./workingCopyBackupTracker.js";
 export class BrowserWorkingCopyBackupService extends WorkingCopyBackupService {
 	constructor(
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 	) {

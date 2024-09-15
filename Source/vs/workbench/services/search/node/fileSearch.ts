@@ -7,6 +7,7 @@ import * as childProcess from "child_process";
 import * as fs from "fs";
 import type { Readable } from "stream";
 import { StringDecoder } from "string_decoder";
+
 import * as arrays from "../../../../base/common/arrays.js";
 import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import { isEqualOrParent } from "../../../../base/common/extpath.js";
@@ -21,6 +22,8 @@ import * as types from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { Promises } from "../../../../base/node/pfs.js";
 import {
+	hasSiblingFn,
+	isFilePatternMatch,
 	type IFileQuery,
 	type IFolderQuery,
 	type IProgressMessage,
@@ -28,8 +31,6 @@ import {
 	type ISearchEngine,
 	type ISearchEngineStats,
 	type ISearchEngineSuccess,
-	hasSiblingFn,
-	isFilePatternMatch,
 } from "../common/search.js";
 import { spawnRipgrepCmd } from "./ripgrepFileSearch.js";
 

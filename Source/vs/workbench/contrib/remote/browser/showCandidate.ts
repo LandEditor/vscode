@@ -17,7 +17,8 @@ export class ShowCandidateContribution
 
 	constructor(
 		@IRemoteExplorerService remoteExplorerService: IRemoteExplorerService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 		const showPortCandidate =

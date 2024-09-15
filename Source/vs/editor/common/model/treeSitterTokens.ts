@@ -5,9 +5,9 @@
 
 import { StandardTokenType } from "../encodedTokenAttributes.js";
 import {
+	TreeSitterTokenizationRegistry,
 	type ILanguageIdCodec,
 	type ITreeSitterTokenizationSupport,
-	TreeSitterTokenizationRegistry,
 } from "../languages.js";
 import type { ITreeSitterParserService } from "../services/treeSitterParserService.js";
 import type { IModelContentChangedEvent } from "../textModelEvents.js";

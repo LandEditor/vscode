@@ -20,12 +20,10 @@ import { Codicon } from "../../../../../base/common/codicons.js";
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import {
 	Disposable,
-	type DisposableStore,
 	toDisposable,
+	type DisposableStore,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ITransaction,
 	autorun,
 	autorunWithStore,
 	derived,
@@ -33,6 +31,8 @@ import {
 	observableValue,
 	subtransaction,
 	transaction,
+	type IObservable,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import { ThemeIcon } from "../../../../../base/common/themables.js";
 import { localize } from "../../../../../nls.js";
@@ -52,8 +52,8 @@ import { OffsetRange } from "../../../../common/core/offsetRange.js";
 import { Position } from "../../../../common/core/position.js";
 import { Range } from "../../../../common/core/range.js";
 import {
-	type DetailedLineRangeMapping,
 	LineRangeMapping,
+	type DetailedLineRangeMapping,
 } from "../../../../common/diff/rangeMapping.js";
 import type { ILanguageIdCodec } from "../../../../common/languages.js";
 import { ILanguageService } from "../../../../common/languages/language.js";
@@ -69,7 +69,9 @@ import {
 import { ViewLineRenderingData } from "../../../../common/viewModel.js";
 import { applyFontInfo } from "../../../config/domFontInfo.js";
 import { applyStyle } from "../utils.js";
+
 import "./accessibleDiffViewer.css";
+
 import type { DiffEditorEditors } from "./diffEditorEditors.js";
 
 const accessibleDiffViewerInsertIcon = registerIcon(
@@ -126,13 +128,19 @@ export class AccessibleDiffViewer extends Disposable {
 	constructor(
 		private readonly _parentNode: HTMLElement,
 		private readonly _visible: IObservable<boolean>,
-		private readonly _setVisible: (visible: boolean, tx: ITransaction | undefined) => void,
+		private readonly _setVisible: (
+			visible: boolean,
+			tx: ITransaction | undefined,
+		) => void,
 		private readonly _canClose: IObservable<boolean>,
 		private readonly _width: IObservable<number>,
 		private readonly _height: IObservable<number>,
-		private readonly _diffs: IObservable<DetailedLineRangeMapping[] | undefined>,
+		private readonly _diffs: IObservable<
+			DetailedLineRangeMapping[] | undefined
+		>,
 		private readonly _models: IAccessibleDiffViewerModel,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -206,59 +214,92 @@ class ViewModel extends Disposable {
 		);
 
 	constructor(
-		private readonly _diffs: IObservable<DetailedLineRangeMapping[] | undefined>,
+		private readonly _diffs: IObservable<
+			DetailedLineRangeMapping[] | undefined
+		>,
 		private readonly _models: IAccessibleDiffViewerModel,
-		private readonly _setVisible: (visible: boolean, tx: ITransaction | undefined) => void,
+		private readonly _setVisible: (
+			visible: boolean,
+			tx: ITransaction | undefined,
+		) => void,
 		public readonly canClose: IObservable<boolean>,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super();
 
-		this._register(autorun(reader => {
-			/** @description update groups */
-			const diffs = this._diffs.read(reader);
-			if (!diffs) {
-				this._groups.set([], undefined);
-				return;
-			}
-
-			const groups = computeViewElementGroups(
-				diffs,
-				this._models.getOriginalModel().getLineCount(),
-				this._models.getModifiedModel().getLineCount()
-			);
-
-			transaction(tx => {
-				const p = this._models.getModifiedPosition();
-				if (p) {
-					const nextGroup = groups.findIndex(g => p?.lineNumber < g.range.modified.endLineNumberExclusive);
-					if (nextGroup !== -1) {
-						this._currentGroupIdx.set(nextGroup, tx);
-					}
+		this._register(
+			autorun((reader) => {
+				/** @description update groups */
+				const diffs = this._diffs.read(reader);
+				if (!diffs) {
+					this._groups.set([], undefined);
+					return;
 				}
-				this._groups.set(groups, tx);
-			});
-		}));
 
-		this._register(autorun(reader => {
-			/** @description play audio-cue for diff */
-			const currentViewItem = this.currentElement.read(reader);
-			if (currentViewItem?.type === LineType.Deleted) {
-				this._accessibilitySignalService.playSignal(AccessibilitySignal.diffLineDeleted, { source: 'accessibleDiffViewer.currentElementChanged' });
-			} else if (currentViewItem?.type === LineType.Added) {
-				this._accessibilitySignalService.playSignal(AccessibilitySignal.diffLineInserted, { source: 'accessibleDiffViewer.currentElementChanged' });
-			}
-		}));
+				const groups = computeViewElementGroups(
+					diffs,
+					this._models.getOriginalModel().getLineCount(),
+					this._models.getModifiedModel().getLineCount(),
+				);
 
-		this._register(autorun(reader => {
-			/** @description select lines in editor */
-			// This ensures editor commands (like revert/stage) work
-			const currentViewItem = this.currentElement.read(reader);
-			if (currentViewItem && currentViewItem.type !== LineType.Header) {
-				const lineNumber = currentViewItem.modifiedLineNumber ?? currentViewItem.diff.modified.startLineNumber;
-				this._models.modifiedSetSelection(Range.fromPositions(new Position(lineNumber, 1)));
-			}
-		}));
+				transaction((tx) => {
+					const p = this._models.getModifiedPosition();
+					if (p) {
+						const nextGroup = groups.findIndex(
+							(g) =>
+								p?.lineNumber <
+								g.range.modified.endLineNumberExclusive,
+						);
+						if (nextGroup !== -1) {
+							this._currentGroupIdx.set(nextGroup, tx);
+						}
+					}
+					this._groups.set(groups, tx);
+				});
+			}),
+		);
+
+		this._register(
+			autorun((reader) => {
+				/** @description play audio-cue for diff */
+				const currentViewItem = this.currentElement.read(reader);
+				if (currentViewItem?.type === LineType.Deleted) {
+					this._accessibilitySignalService.playSignal(
+						AccessibilitySignal.diffLineDeleted,
+						{
+							source: "accessibleDiffViewer.currentElementChanged",
+						},
+					);
+				} else if (currentViewItem?.type === LineType.Added) {
+					this._accessibilitySignalService.playSignal(
+						AccessibilitySignal.diffLineInserted,
+						{
+							source: "accessibleDiffViewer.currentElementChanged",
+						},
+					);
+				}
+			}),
+		);
+
+		this._register(
+			autorun((reader) => {
+				/** @description select lines in editor */
+				// This ensures editor commands (like revert/stage) work
+				const currentViewItem = this.currentElement.read(reader);
+				if (
+					currentViewItem &&
+					currentViewItem.type !== LineType.Header
+				) {
+					const lineNumber =
+						currentViewItem.modifiedLineNumber ??
+						currentViewItem.diff.modified.startLineNumber;
+					this._models.modifiedSetSelection(
+						Range.fromPositions(new Position(lineNumber, 1)),
+					);
+				}
+			}),
+		);
 	}
 
 	private _goToGroupDelta(delta: number, tx?: ITransaction): void {
@@ -522,88 +563,114 @@ class View extends Disposable {
 		super();
 
 		this.domNode = this._element;
-		this.domNode.className = 'monaco-component diff-review monaco-editor-background';
+		this.domNode.className =
+			"monaco-component diff-review monaco-editor-background";
 
-		const actionBarContainer = document.createElement('div');
-		actionBarContainer.className = 'diff-review-actions';
-		this._actionBar = this._register(new ActionBar(
-			actionBarContainer
-		));
-		this._register(autorun(reader => {
-			/** @description update actions */
-			this._actionBar.clear();
-			if (this._model.canClose.read(reader)) {
-				this._actionBar.push(new Action(
-					'diffreview.close',
-					localize('label.close', "Close"),
-					'close-diff-review ' + ThemeIcon.asClassName(accessibleDiffViewerCloseIcon),
-					true,
-					async () => _model.close()
-				), { label: false, icon: true });
-			}
-		}));
+		const actionBarContainer = document.createElement("div");
+		actionBarContainer.className = "diff-review-actions";
+		this._actionBar = this._register(new ActionBar(actionBarContainer));
+		this._register(
+			autorun((reader) => {
+				/** @description update actions */
+				this._actionBar.clear();
+				if (this._model.canClose.read(reader)) {
+					this._actionBar.push(
+						new Action(
+							"diffreview.close",
+							localize("label.close", "Close"),
+							"close-diff-review " +
+								ThemeIcon.asClassName(
+									accessibleDiffViewerCloseIcon,
+								),
+							true,
+							async () => _model.close(),
+						),
+						{ label: false, icon: true },
+					);
+				}
+			}),
+		);
 
-		this._content = document.createElement('div');
-		this._content.className = 'diff-review-content';
-		this._content.setAttribute('role', 'code');
-		this._scrollbar = this._register(new DomScrollableElement(this._content, {}));
+		this._content = document.createElement("div");
+		this._content.className = "diff-review-content";
+		this._content.setAttribute("role", "code");
+		this._scrollbar = this._register(
+			new DomScrollableElement(this._content, {}),
+		);
 		reset(this.domNode, this._scrollbar.getDomNode(), actionBarContainer);
 
-		this._register(autorun(r => {
-			this._height.read(r);
-			this._width.read(r);
-			this._scrollbar.scanDomNode();
-		}));
+		this._register(
+			autorun((r) => {
+				this._height.read(r);
+				this._width.read(r);
+				this._scrollbar.scanDomNode();
+			}),
+		);
 
-		this._register(toDisposable(() => { reset(this.domNode); }));
+		this._register(
+			toDisposable(() => {
+				reset(this.domNode);
+			}),
+		);
 
-		this._register(applyStyle(this.domNode, { width: this._width, height: this._height }));
-		this._register(applyStyle(this._content, { width: this._width, height: this._height }));
+		this._register(
+			applyStyle(this.domNode, {
+				width: this._width,
+				height: this._height,
+			}),
+		);
+		this._register(
+			applyStyle(this._content, {
+				width: this._width,
+				height: this._height,
+			}),
+		);
 
-		this._register(autorunWithStore((reader, store) => {
-			/** @description render */
-			this._model.currentGroup.read(reader);
-			this._render(store);
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description render */
+				this._model.currentGroup.read(reader);
+				this._render(store);
+			}),
+		);
 
 		// TODO@hediet use commands
-		this._register(addStandardDisposableListener(this.domNode, 'keydown', (e) => {
-			if (
-				e.equals(KeyCode.DownArrow)
-				|| e.equals(KeyMod.CtrlCmd | KeyCode.DownArrow)
-				|| e.equals(KeyMod.Alt | KeyCode.DownArrow)
-			) {
-				e.preventDefault();
-				this._model.goToNextLine();
-			}
+		this._register(
+			addStandardDisposableListener(this.domNode, "keydown", (e) => {
+				if (
+					e.equals(KeyCode.DownArrow) ||
+					e.equals(KeyMod.CtrlCmd | KeyCode.DownArrow) ||
+					e.equals(KeyMod.Alt | KeyCode.DownArrow)
+				) {
+					e.preventDefault();
+					this._model.goToNextLine();
+				}
 
-			if (
-				e.equals(KeyCode.UpArrow)
-				|| e.equals(KeyMod.CtrlCmd | KeyCode.UpArrow)
-				|| e.equals(KeyMod.Alt | KeyCode.UpArrow)
-			) {
-				e.preventDefault();
-				this._model.goToPreviousLine();
-			}
+				if (
+					e.equals(KeyCode.UpArrow) ||
+					e.equals(KeyMod.CtrlCmd | KeyCode.UpArrow) ||
+					e.equals(KeyMod.Alt | KeyCode.UpArrow)
+				) {
+					e.preventDefault();
+					this._model.goToPreviousLine();
+				}
 
-			if (
-				e.equals(KeyCode.Escape)
-				|| e.equals(KeyMod.CtrlCmd | KeyCode.Escape)
-				|| e.equals(KeyMod.Alt | KeyCode.Escape)
-				|| e.equals(KeyMod.Shift | KeyCode.Escape)
-			) {
-				e.preventDefault();
-				this._model.close();
-			}
+				if (
+					e.equals(KeyCode.Escape) ||
+					e.equals(KeyMod.CtrlCmd | KeyCode.Escape) ||
+					e.equals(KeyMod.Alt | KeyCode.Escape) ||
+					e.equals(KeyMod.Shift | KeyCode.Escape)
+				) {
+					e.preventDefault();
+					this._model.close();
+				}
 
-			if (
-				e.equals(KeyCode.Space)
-				|| e.equals(KeyCode.Enter)
-			) {
-				e.preventDefault();
-				this._model.revealCurrentElementInEditor();
-			}
-		}));
+				if (e.equals(KeyCode.Space) || e.equals(KeyCode.Enter)) {
+					e.preventDefault();
+					this._model.revealCurrentElementInEditor();
+				}
+			}),
+		);
 	}
 
 	private _render(store: DisposableStore): void {

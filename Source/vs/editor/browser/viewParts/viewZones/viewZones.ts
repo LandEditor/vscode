@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";

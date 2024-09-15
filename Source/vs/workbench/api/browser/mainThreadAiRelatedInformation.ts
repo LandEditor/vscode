@@ -6,18 +6,18 @@
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { Disposable, DisposableMap } from "../../../base/common/lifecycle.js";
 import {
-	type IAiRelatedInformationProvider,
 	IAiRelatedInformationService,
+	type IAiRelatedInformationProvider,
 	type RelatedInformationResult,
 } from "../../services/aiRelatedInformation/common/aiRelatedInformation.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type ExtHostAiRelatedInformationShape,
 	ExtHostContext,
 	MainContext,
+	type ExtHostAiRelatedInformationShape,
 	type MainThreadAiRelatedInformationShape,
 } from "../common/extHost.protocol.js";
 import type { RelatedInformationType } from "../common/extHostTypes.js";
@@ -34,10 +34,13 @@ export class MainThreadAiRelatedInformation
 
 	constructor(
 		context: IExtHostContext,
-		@IAiRelatedInformationService private readonly _aiRelatedInformationService: IAiRelatedInformationService,
+		@IAiRelatedInformationService
+		private readonly _aiRelatedInformationService: IAiRelatedInformationService,
 	) {
 		super();
-		this._proxy = context.getProxy(ExtHostContext.ExtHostAiRelatedInformation);
+		this._proxy = context.getProxy(
+			ExtHostContext.ExtHostAiRelatedInformation,
+		);
 	}
 
 	$getAiRelatedInformation(

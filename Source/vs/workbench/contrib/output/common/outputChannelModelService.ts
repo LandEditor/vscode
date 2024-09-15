@@ -13,8 +13,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
@@ -44,10 +44,15 @@ export class OutputChannelModelService {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 	) {
-		this.outputLocation = joinPath(environmentService.windowLogsPath, `output_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, '')}`);
+		this.outputLocation = joinPath(
+			environmentService.windowLogsPath,
+			`output_${toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, "")}`,
+		);
 	}
 
 	createOutputChannelModel(

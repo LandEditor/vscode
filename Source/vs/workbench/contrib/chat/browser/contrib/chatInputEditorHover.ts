@@ -8,15 +8,15 @@ import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js
 import { Range } from "../../../../../editor/common/core/range.js";
 import type { IModelDecoration } from "../../../../../editor/common/model.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
 	HoverParticipantRegistry,
+	RenderedHoverParts,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "../../../../../editor/contrib/hover/browser/hoverTypes.js";
 import * as nls from "../../../../../nls.js";
 import { ICommandService } from "../../../../../platform/commands/common/commands.js";
@@ -34,10 +34,12 @@ export class ChatAgentHoverParticipant
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IChatWidgetService
+		private readonly chatWidgetService: IChatWidgetService,
 		@ICommandService private readonly commandService: ICommandService,
-	) { }
+	) {}
 
 	public computeSync(
 		anchor: HoverAnchor,

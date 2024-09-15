@@ -13,21 +13,21 @@ import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	FileOperation,
+	IFileService,
 	type FileOperationEvent,
 	type IFileOperationEventWithMetadata,
-	IFileService,
 	type IFileStatWithMetadata,
 } from "../../../../platform/files/common/files.js";
 import { IUndoRedoService } from "../../../../platform/undoRedo/common/undoRedo.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
-import { type SaveSource, SaveSourceRegistry } from "../../../common/editor.js";
+import { SaveSourceRegistry, type SaveSource } from "../../../common/editor.js";
 import { ResourceGlobMatcher } from "../../../common/resources.js";
 import { IPathService } from "../../path/common/pathService.js";
 import {
-	type IStoredFileWorkingCopyModel,
 	isStoredFileWorkingCopySaveEvent,
+	type IStoredFileWorkingCopyModel,
 } from "./storedFileWorkingCopy.js";
 import type { IStoredFileWorkingCopySaveEvent } from "./storedFileWorkingCopyManager.js";
 import type { IWorkingCopy } from "./workingCopy.js";
@@ -36,8 +36,8 @@ import {
 	MAX_PARALLEL_HISTORY_IO_OPS,
 } from "./workingCopyHistory.js";
 import {
-	type IWorkingCopySaveEvent,
 	IWorkingCopyService,
+	type IWorkingCopySaveEvent,
 } from "./workingCopyService.js";
 
 export class WorkingCopyHistoryTracker
@@ -95,14 +95,19 @@ export class WorkingCopyHistoryTracker
 	);
 
 	constructor(
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IWorkingCopyHistoryService private readonly workingCopyHistoryService: IWorkingCopyHistoryService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IWorkingCopyHistoryService
+		private readonly workingCopyHistoryService: IWorkingCopyHistoryService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IPathService private readonly pathService: IPathService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IUndoRedoService private readonly undoRedoService: IUndoRedoService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IFileService private readonly fileService: IFileService
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 

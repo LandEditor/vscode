@@ -66,7 +66,8 @@ export class SharedProcessTunnelService
 	private readonly _disposedTunnels: Set<string> = new Set<string>();
 
 	constructor(
-		@ISharedTunnelsService private readonly _tunnelService: ISharedTunnelsService,
+		@ISharedTunnelsService
+		private readonly _tunnelService: ISharedTunnelsService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		super();

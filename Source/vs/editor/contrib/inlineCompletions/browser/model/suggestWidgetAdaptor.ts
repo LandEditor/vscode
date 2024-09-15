@@ -16,8 +16,8 @@ import { Range } from "../../../../common/core/range.js";
 import { SingleTextEdit } from "../../../../common/core/textEdit.js";
 import {
 	CompletionItemInsertTextRule,
-	type CompletionItemKind,
 	SelectedSuggestionInfo,
+	type CompletionItemKind,
 } from "../../../../common/languages.js";
 import type { ITextModel } from "../../../../common/model.js";
 import { SnippetParser } from "../../../snippet/browser/snippetParser.js";

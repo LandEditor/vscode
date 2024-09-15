@@ -24,8 +24,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import {
@@ -49,9 +49,9 @@ import { IStorageService } from "../../../../platform/storage/common/storage.js"
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import type { IWorkbenchQuickAccessConfiguration } from "../../../browser/quickaccess.js";
 import {
-	type CommandInformationResult,
 	IAiRelatedInformationService,
 	RelatedInformationType,
+	type CommandInformationResult,
 } from "../../../services/aiRelatedInformation/common/aiRelatedInformation.js";
 import { IEditorGroupsService } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
@@ -102,22 +102,37 @@ export class CommandsQuickAccessProvider extends AbstractEditorCommandsQuickAcce
 		@ICommandService commandService: ICommandService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IDialogService dialogService: IDialogService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@IProductService private readonly productService: IProductService,
-		@IAiRelatedInformationService private readonly aiRelatedInformationService: IAiRelatedInformationService,
+		@IAiRelatedInformationService
+		private readonly aiRelatedInformationService: IAiRelatedInformationService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
 	) {
-		super({
-			showAlias: !Language.isDefaultVariant(),
-			noResultsPick: () => ({
-				label: localize('noCommandResults', "No matching commands"),
-				commandId: ''
-			}),
-		}, instantiationService, keybindingService, commandService, telemetryService, dialogService);
+		super(
+			{
+				showAlias: !Language.isDefaultVariant(),
+				noResultsPick: () => ({
+					label: localize("noCommandResults", "No matching commands"),
+					commandId: "",
+				}),
+			},
+			instantiationService,
+			keybindingService,
+			commandService,
+			telemetryService,
+			dialogService,
+		);
 
-		this._register(configurationService.onDidChangeConfiguration((e) => this.updateOptions(e)));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) =>
+				this.updateOptions(e),
+			),
+		);
 		this.updateOptions();
 	}
 

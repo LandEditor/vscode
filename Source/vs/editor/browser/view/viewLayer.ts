@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../base/browser/fastDomNode.js";
 import { createTrustedTypesPolicy } from "../../../base/browser/trustedTypes.js";
 import { BugIndicatingError } from "../../../base/common/errors.js";

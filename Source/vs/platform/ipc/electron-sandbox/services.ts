@@ -4,15 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IChannel,
 	ProxyChannel,
+	type IChannel,
 } from "../../../base/parts/ipc/common/ipc.js";
 import { SyncDescriptor } from "../../instantiation/common/descriptors.js";
 import { registerSingleton } from "../../instantiation/common/extensions.js";
 import {
+	createDecorator,
 	IInstantiationService,
 	type ServiceIdentifier,
-	createDecorator,
 } from "../../instantiation/common/instantiation.js";
 import { IMainProcessService } from "../common/mainProcessService.js";
 import type { IRemoteService } from "../common/services.js";

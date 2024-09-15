@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./indentGuides.css";
+
 import { ArrayQueue } from "../../../../base/common/arrays.js";
 import type { Color } from "../../../../base/common/color.js";
 import { isDefined } from "../../../../base/common/types.js";
@@ -263,7 +264,7 @@ export class IndentGuidesOverlay extends DynamicViewOverlay {
 									? HorizontalGuidesState.Enabled
 									: this._bracketPairGuideOptions
 												.bracketPairsHorizontal ===
-											"active"
+										  "active"
 										? HorizontalGuidesState.EnabledForActive
 										: HorizontalGuidesState.Disabled,
 							includeInactive:

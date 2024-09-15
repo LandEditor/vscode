@@ -35,11 +35,13 @@ export class NativeExtensionManagementService
 {
 	constructor(
 		channel: IChannel,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
 		@IDownloadService private readonly downloadService: IDownloadService,
-		@INativeWorkbenchEnvironmentService private readonly nativeEnvironmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		private readonly nativeEnvironmentService: INativeWorkbenchEnvironmentService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super(channel, userDataProfileService, uriIdentityService);

@@ -12,8 +12,8 @@ import { Emitter } from "../../../../base/common/event.js";
 import { Iterable } from "../../../../base/common/iterator.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { observableValue } from "../../../../base/common/observable.js";
 import { isDefined } from "../../../../base/common/types.js";
@@ -23,8 +23,8 @@ import type { Location } from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 	type RawContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -38,15 +38,16 @@ import {
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IWorkspaceTrustRequestService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
-import { TestingConfigKeys, getTestingConfiguration } from "./configuration.js";
+import { getTestingConfiguration, TestingConfigKeys } from "./configuration.js";
 import { MainThreadTestCollection } from "./mainThreadTestCollection.js";
 import { MutableObservableValue } from "./observableValue.js";
 import { StoredValue } from "./storedValue.js";
 import { TestExclusions } from "./testExclusions.js";
 import { TestId } from "./testId.js";
+import { TestingContextKeys } from "./testingContextKeys.js";
 import {
-	ITestProfileService,
 	canUseProfileWithTest,
+	ITestProfileService,
 } from "./testProfileService.js";
 import type { ITestResult } from "./testResult.js";
 import { ITestResultService } from "./testResultService.js";
@@ -58,15 +59,14 @@ import type {
 	ITestService,
 } from "./testService.js";
 import {
-	type ITestRunProfile,
-	type InternalTestItem,
-	type ResolvedTestRunRequest,
 	TestControllerCapability,
 	TestDiffOpType,
+	type InternalTestItem,
+	type ITestRunProfile,
+	type ResolvedTestRunRequest,
 	type TestMessageFollowupRequest,
 	type TestsDiff,
 } from "./testTypes.js";
-import { TestingContextKeys } from "./testingContextKeys.js";
 
 export class TestService extends Disposable implements ITestService {
 	declare readonly _serviceBrand: undefined;
@@ -144,36 +144,66 @@ export class TestService extends Disposable implements ITestService {
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IStorageService private readonly storage: IStorageService,
 		@IEditorService private readonly editorService: IEditorService,
 		@ITestProfileService private readonly testProfiles: ITestProfileService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITestResultService private readonly testResults: ITestResultService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
 	) {
 		super();
 		this.excluded = instantiationService.createInstance(TestExclusions);
-		this.isRefreshingTests = TestingContextKeys.isRefreshingTests.bindTo(contextKeyService);
-		this.activeEditorHasTests = TestingContextKeys.activeEditorHasTests.bindTo(contextKeyService);
+		this.isRefreshingTests =
+			TestingContextKeys.isRefreshingTests.bindTo(contextKeyService);
+		this.activeEditorHasTests =
+			TestingContextKeys.activeEditorHasTests.bindTo(contextKeyService);
 
-		this._register(bindContextKey(TestingContextKeys.providerCount, contextKeyService,
-			reader => this.testControllers.read(reader).size));
+		this._register(
+			bindContextKey(
+				TestingContextKeys.providerCount,
+				contextKeyService,
+				(reader) => this.testControllers.read(reader).size,
+			),
+		);
 
-		const bindCapability = (key: RawContextKey<boolean>, capability: TestControllerCapability) =>
-			this._register(bindContextKey(key, contextKeyService, reader =>
-				Iterable.some(
-					this.testControllers.read(reader).values(),
-					ctrl => !!(ctrl.capabilities.read(reader) & capability)
+		const bindCapability = (
+			key: RawContextKey<boolean>,
+			capability: TestControllerCapability,
+		) =>
+			this._register(
+				bindContextKey(key, contextKeyService, (reader) =>
+					Iterable.some(
+						this.testControllers.read(reader).values(),
+						(ctrl) =>
+							!!(ctrl.capabilities.read(reader) & capability),
+					),
 				),
-			));
+			);
 
-		bindCapability(TestingContextKeys.canRefreshTests, TestControllerCapability.Refresh);
-		bindCapability(TestingContextKeys.canGoToRelatedCode, TestControllerCapability.CodeRelatedToTest);
-		bindCapability(TestingContextKeys.canGoToRelatedTest, TestControllerCapability.TestRelatedToCode);
+		bindCapability(
+			TestingContextKeys.canRefreshTests,
+			TestControllerCapability.Refresh,
+		);
+		bindCapability(
+			TestingContextKeys.canGoToRelatedCode,
+			TestControllerCapability.CodeRelatedToTest,
+		);
+		bindCapability(
+			TestingContextKeys.canGoToRelatedTest,
+			TestControllerCapability.TestRelatedToCode,
+		);
 
-		this._register(editorService.onDidActiveEditorChange(() => this.updateEditorContextKeys()));
+		this._register(
+			editorService.onDidActiveEditorChange(() =>
+				this.updateEditorContextKeys(),
+			),
+		);
 	}
 
 	/**

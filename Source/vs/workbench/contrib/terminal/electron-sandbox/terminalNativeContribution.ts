@@ -28,15 +28,22 @@ export class TerminalNativeContribution
 		@IFileService private readonly _fileService: IFileService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@INativeHostService nativeHostService: INativeHostService
+		@INativeHostService nativeHostService: INativeHostService,
 	) {
 		super();
 
-		ipcRenderer.on('vscode:openFiles', (_: unknown, request: INativeOpenFileRequest) => { this._onOpenFileRequest(request); });
-		this._register(nativeHostService.onDidResumeOS(() => this._onOsResume()));
+		ipcRenderer.on(
+			"vscode:openFiles",
+			(_: unknown, request: INativeOpenFileRequest) => {
+				this._onOpenFileRequest(request);
+			},
+		);
+		this._register(
+			nativeHostService.onDidResumeOS(() => this._onOsResume()),
+		);
 
 		this._terminalService.setNativeDelegate({
-			getWindowCount: () => nativeHostService.getWindowCount()
+			getWindowCount: () => nativeHostService.getWindowCount(),
 		});
 
 		const connection = remoteAgentService.getConnection();

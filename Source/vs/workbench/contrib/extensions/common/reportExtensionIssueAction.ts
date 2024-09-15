@@ -19,11 +19,18 @@ export class ReportExtensionIssueAction extends Action {
 	// TODO: Consider passing in IExtensionStatus or IExtensionHostProfile for additional data
 	constructor(
 		private extension: IExtensionDescription,
-		@IWorkbenchIssueService private readonly issueService: IWorkbenchIssueService
+		@IWorkbenchIssueService
+		private readonly issueService: IWorkbenchIssueService,
 	) {
-		super(ReportExtensionIssueAction._id, ReportExtensionIssueAction._label, 'extension-action report-issue');
+		super(
+			ReportExtensionIssueAction._id,
+			ReportExtensionIssueAction._label,
+			"extension-action report-issue",
+		);
 
-		this.enabled = extension.isBuiltin || (!!extension.repository && !!extension.repository.url);
+		this.enabled =
+			extension.isBuiltin ||
+			(!!extension.repository && !!extension.repository.url);
 	}
 
 	override async run(): Promise<void> {

@@ -5,8 +5,8 @@
 
 import type { DisposableStore } from "../../../../base/common/lifecycle.js";
 import {
-	ProxyChannel,
 	getDelayedChannel,
+	ProxyChannel,
 } from "../../../../base/parts/ipc/common/ipc.js";
 import type { IFileChange } from "../../../../platform/files/common/files.js";
 import {

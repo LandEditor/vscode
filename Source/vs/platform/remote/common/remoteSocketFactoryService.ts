@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { ISocket } from "../../../base/parts/ipc/common/ipc.net.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";

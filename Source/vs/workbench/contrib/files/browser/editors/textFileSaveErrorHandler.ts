@@ -9,8 +9,8 @@ import { Event } from "../../../../../base/common/event.js";
 import { hash } from "../../../../../base/common/hash.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../../base/common/map.js";
 import { Schemas } from "../../../../../base/common/network.js";
@@ -24,8 +24,8 @@ import {
 	RawContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
+	type FileOperationError,
 	type IWriteFileOptions,
 } from "../../../../../platform/files/common/files.js";
 import {
@@ -33,10 +33,10 @@ import {
 	type ServicesAccessor,
 } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
-	type INotificationActions,
-	type INotificationHandle,
 	INotificationService,
 	Severity,
+	type INotificationActions,
+	type INotificationHandle,
 } from "../../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../../platform/product/common/productService.js";
@@ -47,19 +47,19 @@ import {
 } from "../../../../../platform/storage/common/storage.js";
 import type { IWorkbenchContribution } from "../../../../common/contributions.js";
 import {
-	type IEditorIdentifier,
 	SaveReason,
 	SideBySideEditor,
+	type IEditorIdentifier,
 } from "../../../../common/editor.js";
 import { DiffEditorInput } from "../../../../common/editor/diffEditorInput.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import { IPreferencesService } from "../../../../services/preferences/common/preferences.js";
 import {
+	ITextFileService,
 	type ISaveErrorHandler,
 	type ITextFileEditorModel,
 	type ITextFileSaveAsOptions,
 	type ITextFileSaveOptions,
-	ITextFileService,
 } from "../../../../services/textfile/common/textfiles.js";
 import { TextFileContentProvider } from "../../common/files.js";
 import { SAVE_FILE_AS_LABEL } from "../fileConstants.js";
@@ -91,18 +91,27 @@ export class TextFileSaveErrorHandler
 	private activeConflictResolutionResource: URI | undefined = undefined;
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IContextKeyService private contextKeyService: IContextKeyService,
 		@IEditorService private readonly editorService: IEditorService,
 		@ITextModelService textModelService: ITextModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IStorageService private readonly storageService: IStorageService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IStorageService private readonly storageService: IStorageService,
 	) {
 		super();
 
-		const provider = this._register(instantiationService.createInstance(TextFileContentProvider));
-		this._register(textModelService.registerTextModelContentProvider(CONFLICT_RESOLUTION_SCHEME, provider));
+		const provider = this._register(
+			instantiationService.createInstance(TextFileContentProvider),
+		);
+		this._register(
+			textModelService.registerTextModelContentProvider(
+				CONFLICT_RESOLUTION_SCHEME,
+				provider,
+			),
+		);
 
 		// Set as save error handler to service for text files
 		this.textFileService.files.saveErrorHandler = this;
@@ -379,9 +388,12 @@ function clearPendingResolveSaveConflictMessages(): void {
 
 class ResolveConflictLearnMoreAction extends Action {
 	constructor(
-		@IOpenerService private readonly openerService: IOpenerService
+		@IOpenerService private readonly openerService: IOpenerService,
 	) {
-		super('workbench.files.action.resolveConflictLearnMore', localize('learnMore', "Learn More"));
+		super(
+			"workbench.files.action.resolveConflictLearnMore",
+			localize("learnMore", "Learn More"),
+		);
 	}
 
 	override async run(): Promise<void> {
@@ -393,9 +405,12 @@ class ResolveConflictLearnMoreAction extends Action {
 
 class DoNotShowResolveConflictLearnMoreAction extends Action {
 	constructor(
-		@IStorageService private readonly storageService: IStorageService
+		@IStorageService private readonly storageService: IStorageService,
 	) {
-		super('workbench.files.action.resolveConflictLearnMoreDoNotShowAgain', localize('dontShowAgain', "Don't Show Again"));
+		super(
+			"workbench.files.action.resolveConflictLearnMoreDoNotShowAgain",
+			localize("dontShowAgain", "Don't Show Again"),
+		);
 	}
 
 	override async run(notification: IDisposable): Promise<void> {
@@ -416,11 +431,16 @@ class ResolveSaveConflictAction extends Action {
 	constructor(
 		private model: ITextFileEditorModel,
 		@IEditorService private readonly editorService: IEditorService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IProductService private readonly productService: IProductService
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IProductService private readonly productService: IProductService,
 	) {
-		super('workbench.files.action.resolveConflict', localize('compareChanges', "Compare"));
+		super(
+			"workbench.files.action.resolveConflict",
+			localize("compareChanges", "Compare"),
+		);
 	}
 
 	override async run(): Promise<void> {
@@ -533,9 +553,9 @@ class RevertModelAction extends Action {
 class SaveModelAsAction extends Action {
 	constructor(
 		private model: ITextFileEditorModel,
-		@IEditorService private editorService: IEditorService
+		@IEditorService private editorService: IEditorService,
 	) {
-		super('workbench.files.action.saveModelAs', SAVE_FILE_AS_LABEL.value);
+		super("workbench.files.action.saveModelAs", SAVE_FILE_AS_LABEL.value);
 	}
 
 	override async run(): Promise<void> {
@@ -619,9 +639,13 @@ class SaveModelIgnoreModifiedSinceAction extends Action {
 
 class ConfigureSaveConflictAction extends Action {
 	constructor(
-		@IPreferencesService private readonly preferencesService: IPreferencesService
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 	) {
-		super('workbench.files.action.configureSaveConflict', localize('configure', "Configure"));
+		super(
+			"workbench.files.action.configureSaveConflict",
+			localize("configure", "Configure"),
+		);
 	}
 
 	override async run(): Promise<void> {

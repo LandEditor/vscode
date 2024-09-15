@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/extensionsViewlet.css";
+
 import {
 	$,
-	Dimension,
-	DragAndDropObserver,
-	EventType,
 	addDisposableListener,
 	append,
 	clearNode,
+	Dimension,
+	DragAndDropObserver,
+	EventType,
 	hide,
 	show,
 	trackFocus,
@@ -45,9 +46,9 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { extractEditorsAndFilesDropData } from "../../../../platform/dnd/browser/dnd.js";
@@ -95,25 +96,25 @@ import type { IPaneComposite } from "../../../common/panecomposite.js";
 import { SIDE_BAR_DRAG_AND_DROP_BACKGROUND } from "../../../common/theme.js";
 import {
 	Extensions,
+	IViewDescriptorService,
+	ViewContainerLocation,
 	type IAddedViewDescriptorRef,
 	type IViewDescriptor,
-	IViewDescriptorService,
 	type IViewsRegistry,
 	type ViewContainer,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import {
 	IActivityService,
-	type IBadge,
 	NumberBadge,
 	WarningBadge,
+	type IBadge,
 } from "../../../services/activity/common/activity.js";
 import { IEditorGroupsService } from "../../../services/editor/common/editorGroupsService.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
-	type IExtensionManagementServer,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionEnablementService,
+	type IExtensionManagementServer,
 } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { IHostService } from "../../../services/host/browser/host.js";
@@ -125,15 +126,15 @@ import { Query } from "../common/extensionQuery.js";
 import {
 	AutoCheckUpdatesConfigurationKey,
 	AutoRestartConfigurationKey,
-	CONTEXT_HAS_GALLERY,
 	CloseExtensionDetailsOnViewChangeKey,
-	type IExtensionsViewPaneContainer,
+	CONTEXT_HAS_GALLERY,
+	extensionsSearchActionsMenu,
 	IExtensionsWorkbenchService,
 	INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID,
 	OUTDATED_EXTENSIONS_VIEW_ID,
 	VIEWLET_ID,
 	WORKSPACE_RECOMMENDATIONS_VIEW_ID,
-	extensionsSearchActionsMenu,
+	type IExtensionsViewPaneContainer,
 } from "../common/extensions.js";
 import { ExtensionsInput } from "../common/extensionsInput.js";
 import {
@@ -247,14 +248,17 @@ export class ExtensionsViewletViewsContribution
 	private readonly container: ViewContainer;
 
 	constructor(
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 
-		this.container = viewDescriptorService.getViewContainerById(VIEWLET_ID)!;
+		this.container =
+			viewDescriptorService.getViewContainerById(VIEWLET_ID)!;
 		this.registerViews();
 	}
 
@@ -853,46 +857,97 @@ export class ExtensionsViewPaneContainer
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
 		@IThemeService themeService: IThemeService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IStorageService storageService: IStorageService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IExtensionService extensionService: IExtensionService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@ICommandService private readonly commandService: ICommandService
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@ICommandService private readonly commandService: ICommandService,
 	) {
-		super(VIEWLET_ID, { mergeViewWithContainerWhenSingleView: true }, instantiationService, configurationService, layoutService, contextMenuService, telemetryService, extensionService, themeService, storageService, contextService, viewDescriptorService);
+		super(
+			VIEWLET_ID,
+			{ mergeViewWithContainerWhenSingleView: true },
+			instantiationService,
+			configurationService,
+			layoutService,
+			contextMenuService,
+			telemetryService,
+			extensionService,
+			themeService,
+			storageService,
+			contextService,
+			viewDescriptorService,
+		);
 
 		this.searchDelayer = new Delayer(500);
-		this.defaultViewsContextKey = DefaultViewsContext.bindTo(contextKeyService);
-		this.sortByContextKey = ExtensionsSortByContext.bindTo(contextKeyService);
-		this.searchMarketplaceExtensionsContextKey = SearchMarketplaceExtensionsContext.bindTo(contextKeyService);
-		this.searchHasTextContextKey = SearchHasTextContext.bindTo(contextKeyService);
-		this.sortByUpdateDateContextKey = SortByUpdateDateContext.bindTo(contextKeyService);
-		this.installedExtensionsContextKey = InstalledExtensionsContext.bindTo(contextKeyService);
-		this.searchInstalledExtensionsContextKey = SearchInstalledExtensionsContext.bindTo(contextKeyService);
-		this.searchRecentlyUpdatedExtensionsContextKey = SearchRecentlyUpdatedExtensionsContext.bindTo(contextKeyService);
-		this.searchExtensionUpdatesContextKey = SearchExtensionUpdatesContext.bindTo(contextKeyService);
-		this.searchWorkspaceUnsupportedExtensionsContextKey = SearchUnsupportedWorkspaceExtensionsContext.bindTo(contextKeyService);
-		this.searchDeprecatedExtensionsContextKey = SearchDeprecatedExtensionsContext.bindTo(contextKeyService);
-		this.searchOutdatedExtensionsContextKey = SearchOutdatedExtensionsContext.bindTo(contextKeyService);
-		this.searchEnabledExtensionsContextKey = SearchEnabledExtensionsContext.bindTo(contextKeyService);
-		this.searchDisabledExtensionsContextKey = SearchDisabledExtensionsContext.bindTo(contextKeyService);
-		this.hasInstalledExtensionsContextKey = HasInstalledExtensionsContext.bindTo(contextKeyService);
-		this.builtInExtensionsContextKey = BuiltInExtensionsContext.bindTo(contextKeyService);
-		this.searchBuiltInExtensionsContextKey = SearchBuiltInExtensionsContext.bindTo(contextKeyService);
-		this.recommendedExtensionsContextKey = RecommendedExtensionsContext.bindTo(contextKeyService);
-		this._register(this.paneCompositeService.onDidPaneCompositeOpen(e => { if (e.viewContainerLocation === ViewContainerLocation.Sidebar) { this.onViewletOpen(e.composite); } }, this));
-		this._register(extensionsWorkbenchService.onReset(() => this.refresh()));
-		this.searchViewletState = this.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE);
+		this.defaultViewsContextKey =
+			DefaultViewsContext.bindTo(contextKeyService);
+		this.sortByContextKey =
+			ExtensionsSortByContext.bindTo(contextKeyService);
+		this.searchMarketplaceExtensionsContextKey =
+			SearchMarketplaceExtensionsContext.bindTo(contextKeyService);
+		this.searchHasTextContextKey =
+			SearchHasTextContext.bindTo(contextKeyService);
+		this.sortByUpdateDateContextKey =
+			SortByUpdateDateContext.bindTo(contextKeyService);
+		this.installedExtensionsContextKey =
+			InstalledExtensionsContext.bindTo(contextKeyService);
+		this.searchInstalledExtensionsContextKey =
+			SearchInstalledExtensionsContext.bindTo(contextKeyService);
+		this.searchRecentlyUpdatedExtensionsContextKey =
+			SearchRecentlyUpdatedExtensionsContext.bindTo(contextKeyService);
+		this.searchExtensionUpdatesContextKey =
+			SearchExtensionUpdatesContext.bindTo(contextKeyService);
+		this.searchWorkspaceUnsupportedExtensionsContextKey =
+			SearchUnsupportedWorkspaceExtensionsContext.bindTo(
+				contextKeyService,
+			);
+		this.searchDeprecatedExtensionsContextKey =
+			SearchDeprecatedExtensionsContext.bindTo(contextKeyService);
+		this.searchOutdatedExtensionsContextKey =
+			SearchOutdatedExtensionsContext.bindTo(contextKeyService);
+		this.searchEnabledExtensionsContextKey =
+			SearchEnabledExtensionsContext.bindTo(contextKeyService);
+		this.searchDisabledExtensionsContextKey =
+			SearchDisabledExtensionsContext.bindTo(contextKeyService);
+		this.hasInstalledExtensionsContextKey =
+			HasInstalledExtensionsContext.bindTo(contextKeyService);
+		this.builtInExtensionsContextKey =
+			BuiltInExtensionsContext.bindTo(contextKeyService);
+		this.searchBuiltInExtensionsContextKey =
+			SearchBuiltInExtensionsContext.bindTo(contextKeyService);
+		this.recommendedExtensionsContextKey =
+			RecommendedExtensionsContext.bindTo(contextKeyService);
+		this._register(
+			this.paneCompositeService.onDidPaneCompositeOpen((e) => {
+				if (e.viewContainerLocation === ViewContainerLocation.Sidebar) {
+					this.onViewletOpen(e.composite);
+				}
+			}, this),
+		);
+		this._register(
+			extensionsWorkbenchService.onReset(() => this.refresh()),
+		);
+		this.searchViewletState = this.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		);
 	}
 
 	get searchValue(): string | undefined {
@@ -1102,7 +1157,7 @@ export class ExtensionsViewPaneContainer
 		this.searchBox?.layout(
 			new Dimension(dimension.width - 34 - /*padding*/ 8 - 24 * 2, 20),
 		);
-		const searchBoxHeight = 20 + 21 /*margin*/;
+		const searchBoxHeight = 20 + 21; /*margin*/
 		const headerHeight =
 			this.header && !!this.notificationContainer?.childNodes.length
 				? this.notificationContainer.clientHeight +
@@ -1496,13 +1551,29 @@ export class StatusUpdater
 
 	constructor(
 		@IActivityService private readonly activityService: IActivityService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 		this.onServiceChange();
-		this._register(Event.any(Event.debounce(extensionsWorkbenchService.onChange, () => undefined, 100, undefined, undefined, undefined, this._store), extensionsWorkbenchService.onDidChangeExtensionsNotification)(this.onServiceChange, this));
+		this._register(
+			Event.any(
+				Event.debounce(
+					extensionsWorkbenchService.onChange,
+					() => undefined,
+					100,
+					undefined,
+					undefined,
+					undefined,
+					this._store,
+				),
+				extensionsWorkbenchService.onDidChangeExtensionsNotification,
+			)(this.onServiceChange, this),
+		);
 	}
 
 	private onServiceChange(): void {
@@ -1582,11 +1653,14 @@ export class StatusUpdater
 
 export class MaliciousExtensionChecker implements IWorkbenchContribution {
 	constructor(
-		@IExtensionManagementService private readonly extensionsManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		private readonly extensionsManagementService: IExtensionManagementService,
 		@IHostService private readonly hostService: IHostService,
 		@ILogService private readonly logService: ILogService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		if (!this.environmentService.disableExtensions) {
 			this.loopCheckForMaliciousExtensions();

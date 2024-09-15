@@ -10,13 +10,13 @@ import {
 	type Event,
 } from "../../../../base/common/event.js";
 import {
+	combinedDisposable,
 	DisposableStore,
+	dispose,
+	ReferenceCollection,
+	toDisposable,
 	type IDisposable,
 	type IReference,
-	ReferenceCollection,
-	combinedDisposable,
-	dispose,
-	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -34,15 +34,15 @@ import {
 } from "../../../services/workingCopy/common/fileWorkingCopyManager.js";
 import {
 	CellUri,
-	type IResolvedNotebookEditorModel,
-	type NotebookEditorModelCreationOptions,
 	NotebookSetting,
 	NotebookWorkingCopyTypeIdentifier,
+	type IResolvedNotebookEditorModel,
+	type NotebookEditorModelCreationOptions,
 } from "./notebookCommon.js";
 import {
-	type NotebookFileWorkingCopyModel,
 	NotebookFileWorkingCopyModelFactory,
 	SimpleNotebookEditorModel,
+	type NotebookFileWorkingCopyModel,
 } from "./notebookEditorModel.js";
 import type {
 	INotebookConflictEvent,
@@ -81,11 +81,15 @@ class NotebookModelReferenceCollection extends ReferenceCollection<
 
 	private readonly modelsToDispose = new Set<string>();
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@INotebookLoggingService private readonly _notebookLoggingService: INotebookLoggingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@INotebookLoggingService
+		private readonly _notebookLoggingService: INotebookLoggingService,
 	) {
 		super();
 	}
@@ -250,10 +254,14 @@ export class NotebookModelResolverServiceImpl
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotebookService private readonly _notebookService: INotebookService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
 	) {
-		this._data = instantiationService.createInstance(NotebookModelReferenceCollection);
+		this._data = instantiationService.createInstance(
+			NotebookModelReferenceCollection,
+		);
 		this.onDidSaveNotebook = this._data.onDidSaveNotebook;
 		this.onDidChangeDirty = this._data.onDidChangeDirty;
 	}

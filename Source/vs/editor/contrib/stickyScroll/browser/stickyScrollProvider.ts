@@ -6,8 +6,8 @@
 import { binarySearch } from "../../../../base/common/arrays.js";
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
@@ -26,8 +26,8 @@ import type {
 	StickyRange,
 } from "./stickyScrollElement.js";
 import {
-	type IStickyModelProvider,
 	StickyModelProvider,
+	type IStickyModelProvider,
 } from "./stickyScrollModelProvider.js";
 
 export class StickyLineCandidate {
@@ -70,19 +70,25 @@ export class StickyLineCandidateProvider
 
 	constructor(
 		editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 		this._editor = editor;
 		this._sessionStore = this._register(new DisposableStore());
-		this._updateSoon = this._register(new RunOnceScheduler(() => this.update(), 50));
+		this._updateSoon = this._register(
+			new RunOnceScheduler(() => this.update(), 50),
+		);
 
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.stickyScroll)) {
-				this.readConfiguration();
-			}
-		}));
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.stickyScroll)) {
+					this.readConfiguration();
+				}
+			}),
+		);
 		this.readConfiguration();
 	}
 

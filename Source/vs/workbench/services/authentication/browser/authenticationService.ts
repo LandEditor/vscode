@@ -8,9 +8,9 @@ import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	isDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isFalsyOrWhitespace } from "../../../../base/common/strings.js";
 import { isString } from "../../../../base/common/types.js";
@@ -27,13 +27,13 @@ import {
 	IExtensionService,
 } from "../../extensions/common/extensions.js";
 import {
+	IAuthenticationService,
 	type AuthenticationProviderInformation,
 	type AuthenticationSession,
 	type AuthenticationSessionAccount,
 	type AuthenticationSessionsChangeEvent,
 	type IAuthenticationCreateSessionOptions,
 	type IAuthenticationProvider,
-	IAuthenticationService,
 } from "../common/authentication.js";
 import { IAuthenticationAccessService } from "./authenticationAccessService.js";
 
@@ -122,25 +122,32 @@ export class AuthenticationService
 	> = this._register(new DisposableMap<string, IDisposable>());
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IAuthenticationAccessService authenticationAccessService: IAuthenticationAccessService,
-		@IBrowserWorkbenchEnvironmentService private readonly _environmentService: IBrowserWorkbenchEnvironmentService
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IAuthenticationAccessService
+		authenticationAccessService: IAuthenticationAccessService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 
-		this._register(authenticationAccessService.onDidChangeExtensionSessionAccess(e => {
-			// The access has changed, not the actual session itself but extensions depend on this event firing
-			// when they have gained access to an account so this fires that event.
-			this._onDidChangeSessions.fire({
-				providerId: e.providerId,
-				label: e.accountName,
-				event: {
-					added: [],
-					changed: [],
-					removed: []
-				}
-			});
-		}));
+		this._register(
+			authenticationAccessService.onDidChangeExtensionSessionAccess(
+				(e) => {
+					// The access has changed, not the actual session itself but extensions depend on this event firing
+					// when they have gained access to an account so this fires that event.
+					this._onDidChangeSessions.fire({
+						providerId: e.providerId,
+						label: e.accountName,
+						event: {
+							added: [],
+							changed: [],
+							removed: [],
+						},
+					});
+				},
+			),
+		);
 
 		this._registerEnvContributedAuthenticationProviders();
 	}

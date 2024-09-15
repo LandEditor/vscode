@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Lazy } from "../../../base/common/lazy.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import * as path from "../../../base/common/path.js";
@@ -13,8 +14,8 @@ import { createDecorator } from "../../../platform/instantiation/common/instanti
 import type { IConfigurationResolverService } from "../../services/configurationResolver/common/configurationResolver.js";
 import { AbstractVariableResolverService } from "../../services/configurationResolver/common/variableResolver.js";
 import {
-	type ExtHostConfigProvider,
 	IExtHostConfiguration,
+	type ExtHostConfigProvider,
 } from "./extHostConfiguration.js";
 import { IExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";
 import { IExtHostEditorTabs } from "./extHostEditorTabs.js";
@@ -191,10 +192,13 @@ export class ExtHostVariableResolverProviderService
 	});
 
 	constructor(
-		@IExtHostExtensionService private readonly extensionService: IExtHostExtensionService,
+		@IExtHostExtensionService
+		private readonly extensionService: IExtHostExtensionService,
 		@IExtHostWorkspace private readonly workspaceService: IExtHostWorkspace,
-		@IExtHostDocumentsAndEditors private readonly editorService: IExtHostDocumentsAndEditors,
-		@IExtHostConfiguration private readonly configurationService: IExtHostConfiguration,
+		@IExtHostDocumentsAndEditors
+		private readonly editorService: IExtHostDocumentsAndEditors,
+		@IExtHostConfiguration
+		private readonly configurationService: IExtHostConfiguration,
 		@IExtHostEditorTabs private readonly editorTabs: IExtHostEditorTabs,
 	) {
 		super();

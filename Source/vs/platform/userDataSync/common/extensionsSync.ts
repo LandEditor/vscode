@@ -36,8 +36,8 @@ import {
 } from "../../extensionManagement/common/extensionStorage.js";
 import {
 	ExtensionType,
-	type IExtensionIdentifier,
 	isApplicationScopedExtension,
+	type IExtensionIdentifier,
 } from "../../extensions/common/extensions.js";
 import { IFileService } from "../../files/common/files.js";
 import { IInstantiationService } from "../../instantiation/common/instantiation.js";
@@ -47,36 +47,36 @@ import { IStorageService } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import { IUserDataProfileStorageService } from "../../userDataProfile/common/userDataProfileStorageService.js";
 import {
 	AbstractInitializer,
 	AbstractSynchroniser,
+	getSyncResourceLogLabel,
 	type IAcceptResult,
 	type IMergeResult,
 	type IResourcePreview,
-	getSyncResourceLogLabel,
 } from "./abstractSynchronizer.js";
 import {
-	type IMergeResult as IExtensionMergeResult,
 	merge,
+	type IMergeResult as IExtensionMergeResult,
 } from "./extensionsMerge.js";
 import { IIgnoredExtensionsManagementService } from "./ignoredExtensions.js";
 import {
 	Change,
-	type ILocalSyncExtension,
-	type IRemoteUserData,
-	type ISyncData,
-	type ISyncExtension,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
-	type IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
+	type ILocalSyncExtension,
+	type IRemoteUserData,
+	type ISyncData,
+	type ISyncExtension,
+	type IUserDataSynchroniser,
 } from "./userDataSync.js";
 
 type IExtensionResourceMergeResult = IAcceptResult & IExtensionMergeResult;
@@ -198,27 +198,68 @@ export class ExtensionsSynchroniser
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IIgnoredExtensionsManagementService private readonly ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IIgnoredExtensionsManagementService
+		private readonly ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IExtensionStorageService extensionStorageService: IExtensionStorageService,
+		@IExtensionStorageService
+		extensionStorageService: IExtensionStorageService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IUserDataProfileStorageService userDataProfileStorageService: IUserDataProfileStorageService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IUserDataProfileStorageService
+		userDataProfileStorageService: IUserDataProfileStorageService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
-		super({ syncResource: SyncResource.Extensions, profile }, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, configurationService, uriIdentityService);
-		this.localExtensionsProvider = this.instantiationService.createInstance(LocalExtensionsProvider);
+		super(
+			{ syncResource: SyncResource.Extensions, profile },
+			collection,
+			fileService,
+			environmentService,
+			storageService,
+			userDataSyncStoreService,
+			userDataSyncLocalStoreService,
+			userDataSyncEnablementService,
+			telemetryService,
+			logService,
+			configurationService,
+			uriIdentityService,
+		);
+		this.localExtensionsProvider = this.instantiationService.createInstance(
+			LocalExtensionsProvider,
+		);
 		this._register(
 			Event.any<any>(
-				Event.filter(this.extensionManagementService.onDidInstallExtensions, (e => e.some(({ local }) => !!local))),
-				Event.filter(this.extensionManagementService.onDidUninstallExtension, (e => !e.error)),
-				Event.filter(userDataProfileStorageService.onDidChange, e => e.valueChanges.some(({ profile, changes }) => this.syncResource.profile.id === profile.id && changes.some(change => change.key === DISABLED_EXTENSIONS_STORAGE_PATH))),
-				extensionStorageService.onDidChangeExtensionStorageToSync)(() => this.triggerLocalChange()));
+				Event.filter(
+					this.extensionManagementService.onDidInstallExtensions,
+					(e) => e.some(({ local }) => !!local),
+				),
+				Event.filter(
+					this.extensionManagementService.onDidUninstallExtension,
+					(e) => !e.error,
+				),
+				Event.filter(userDataProfileStorageService.onDidChange, (e) =>
+					e.valueChanges.some(
+						({ profile, changes }) =>
+							this.syncResource.profile.id === profile.id &&
+							changes.some(
+								(change) =>
+									change.key ===
+									DISABLED_EXTENSIONS_STORAGE_PATH,
+							),
+					),
+				),
+				extensionStorageService.onDidChangeExtensionStorageToSync,
+			)(() => this.triggerLocalChange()),
+		);
 	}
 
 	protected async generateSyncPreview(
@@ -607,17 +648,21 @@ export class ExtensionsSynchroniser
 
 export class LocalExtensionsProvider {
 	constructor(
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IUserDataProfileStorageService private readonly userDataProfileStorageService: IUserDataProfileStorageService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IIgnoredExtensionsManagementService private readonly ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-	) { }
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IUserDataProfileStorageService
+		private readonly userDataProfileStorageService: IUserDataProfileStorageService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IIgnoredExtensionsManagementService
+		private readonly ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+	) {}
 
-	async getLocalExtensions(
-		profile: IUserDataProfile,
-	): Promise<{
+	async getLocalExtensions(profile: IUserDataProfile): Promise<{
 		localExtensions: ILocalSyncExtension[];
 		ignoredExtensions: string[];
 	}> {
@@ -888,8 +933,10 @@ export class LocalExtensionsProvider {
 											extensionsToInstall.push({
 												extension,
 												options: {
-													isMachineScoped: false /* set isMachineScoped value to prevent install and sync dialog in web */,
-													donotIncludePackAndDependencies: true,
+													isMachineScoped:
+														false /* set isMachineScoped value to prevent install and sync dialog in web */,
+													donotIncludePackAndDependencies:
+														true,
 													installGivenVersion:
 														e.pinned && !!e.version,
 													pinned: e.pinned,
@@ -900,7 +947,8 @@ export class LocalExtensionsProvider {
 													isApplicationScoped:
 														e.isApplicationScoped,
 													context: {
-														[EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT]: true,
+														[EXTENSION_INSTALL_SKIP_WALKTHROUGH_CONTEXT]:
+															true,
 														[EXTENSION_INSTALL_SOURCE_CONTEXT]:
 															ExtensionInstallSource.SETTINGS_SYNC,
 													},
@@ -1120,16 +1168,27 @@ export interface IExtensionsInitializerPreviewResult {
 
 export abstract class AbstractExtensionsInitializer extends AbstractInitializer {
 	constructor(
-		@IExtensionManagementService protected readonly extensionManagementService: IExtensionManagementService,
-		@IIgnoredExtensionsManagementService private readonly ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
+		@IExtensionManagementService
+		protected readonly extensionManagementService: IExtensionManagementService,
+		@IIgnoredExtensionsManagementService
+		private readonly ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@ILogService logService: ILogService,
 		@IStorageService storageService: IStorageService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
-		super(SyncResource.Extensions, userDataProfilesService, environmentService, logService, fileService, storageService, uriIdentityService);
+		super(
+			SyncResource.Extensions,
+			userDataProfilesService,
+			environmentService,
+			logService,
+			fileService,
+			storageService,
+			uriIdentityService,
+		);
 	}
 
 	protected async parseExtensions(

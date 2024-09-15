@@ -19,9 +19,9 @@ import { stripIcons } from "../../../../base/common/iconLabels.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { parseLinkedText } from "../../../../base/common/linkedText.js";
 import { localize } from "../../../../nls.js";
@@ -33,14 +33,17 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { ResultKind } from "../../../../platform/keybinding/common/keybindingResolver.js";
 import { ILayoutService } from "../../../../platform/layout/browser/layoutService.js";
 import {
-	type INotificationHandle,
 	INotificationService,
+	isNotificationSource,
 	NotificationPriority,
 	NotificationsFilter,
 	Severity,
-	isNotificationSource,
+	type INotificationHandle,
 } from "../../../../platform/notification/common/notification.js";
 import {
+	IProgressService,
+	Progress,
+	ProgressLocation,
 	type IProgress,
 	type IProgressCompositeOptions,
 	type IProgressDialogOptions,
@@ -48,11 +51,8 @@ import {
 	type IProgressNotificationOptions,
 	type IProgressOptions,
 	type IProgressRunner,
-	IProgressService,
 	type IProgressStep,
 	type IProgressWindowOptions,
-	Progress,
-	ProgressLocation,
 } from "../../../../platform/progress/common/progress.js";
 import {
 	defaultButtonStyles,
@@ -70,10 +70,10 @@ import {
 } from "../../activity/common/activity.js";
 import { IPaneCompositePartService } from "../../panecomposite/browser/panecomposite.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../statusbar/browser/statusbar.js";
 import { IUserActivityService } from "../../userActivity/common/userActivityService.js";
 import { IViewsService } from "../../views/common/viewsService.js";
@@ -83,14 +83,19 @@ export class ProgressService extends Disposable implements IProgressService {
 
 	constructor(
 		@IActivityService private readonly activityService: IActivityService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
 		@IViewsService private readonly viewsService: IViewsService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@ILayoutService private readonly layoutService: ILayoutService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IUserActivityService private readonly userActivityService: IUserActivityService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IUserActivityService
+		private readonly userActivityService: IUserActivityService,
 	) {
 		super();
 	}

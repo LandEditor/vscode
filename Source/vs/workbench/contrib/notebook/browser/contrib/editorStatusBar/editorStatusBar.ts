@@ -7,8 +7,8 @@ import { Event } from "../../../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../../base/common/network.js";
 import { ILanguageFeaturesService } from "../../../../../../editor/common/services/languageFeatures.js";
@@ -17,9 +17,9 @@ import { IConfigurationService } from "../../../../../../platform/configuration/
 import { IInstantiationService } from "../../../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../../../platform/log/common/log.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../../../common/contributions.js";
 import {
 	IEditorGroupsService,
@@ -27,22 +27,22 @@ import {
 } from "../../../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../../../services/editor/common/editorService.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../../../services/statusbar/browser/statusbar.js";
 import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
 import { NotebookCellsChangeType } from "../../../common/notebookCommon.js";
 import {
-	type INotebookKernel,
 	INotebookKernelService,
+	type INotebookKernel,
 } from "../../../common/notebookKernelService.js";
 import { SELECT_KERNEL_ID } from "../../controller/coreActions.js";
 import { SELECT_NOTEBOOK_INDENTATION_ID } from "../../controller/editActions.js";
 import {
-	type INotebookEditor,
 	getNotebookEditorFromEditorPane,
+	type INotebookEditor,
 } from "../../notebookBrowser.js";
 import { CENTER_ACTIVE_CELL } from "../navigation/arrow.js";
 
@@ -53,7 +53,8 @@ class ImplictKernelSelector implements IDisposable {
 		notebook: NotebookTextModel,
 		suggested: INotebookKernel,
 		@INotebookKernelService notebookKernelService: INotebookKernelService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@ILogService logService: ILogService,
 	) {
 		const disposables = new DisposableStore();
@@ -114,12 +115,19 @@ export class KernelStatus extends Disposable implements IWorkbenchContribution {
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
-		this._register(this._editorService.onDidActiveEditorChange(() => this._updateStatusbar()));
+		this._register(
+			this._editorService.onDidActiveEditorChange(() =>
+				this._updateStatusbar(),
+			),
+		);
 	}
 
 	private _updateStatusbar() {
@@ -273,10 +281,13 @@ export class ActiveCellStatus
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
 	) {
 		super();
-		this._register(this._editorService.onDidActiveEditorChange(() => this._update()));
+		this._register(
+			this._editorService.onDidActiveEditorChange(() => this._update()),
+		);
 	}
 
 	private _update() {
@@ -375,16 +386,25 @@ export class NotebookIndentationStatus extends Disposable {
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
-		this._register(this._editorService.onDidActiveEditorChange(() => this._update()));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('editor') || e.affectsConfiguration('notebook')) {
-				this._update();
-			}
-		}));
+		this._register(
+			this._editorService.onDidActiveEditorChange(() => this._update()),
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("editor") ||
+					e.affectsConfiguration("notebook")
+				) {
+					this._update();
+				}
+			}),
+		);
 	}
 
 	private _update() {
@@ -471,7 +491,8 @@ export class NotebookEditorStatusContribution
 	static readonly ID = "notebook.contrib.editorStatus";
 
 	constructor(
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 	) {
 		super();
 
@@ -479,7 +500,11 @@ export class NotebookEditorStatusContribution
 			this.createNotebookStatus(part);
 		}
 
-		this._register(editorGroupService.onDidCreateAuxiliaryEditorPart(part => this.createNotebookStatus(part)));
+		this._register(
+			editorGroupService.onDidCreateAuxiliaryEditorPart((part) =>
+				this.createNotebookStatus(part),
+			),
+		);
 	}
 
 	private createNotebookStatus(part: IEditorPart): void {

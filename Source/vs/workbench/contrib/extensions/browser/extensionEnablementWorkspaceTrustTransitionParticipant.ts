@@ -23,10 +23,14 @@ export class ExtensionEnablementWorkspaceTrustTransitionParticipant
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IWorkspaceTrustEnablementService workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchExtensionEnablementService
+		extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkspaceTrustEnablementService
+		workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
 

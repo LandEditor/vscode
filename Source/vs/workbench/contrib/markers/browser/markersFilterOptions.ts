@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IFilter,
 	matchesFuzzy,
 	matchesFuzzy2,
+	type IFilter,
 } from "../../../../base/common/filters.js";
 import {
-	type IExpression,
-	type ParsedExpression,
 	getEmptyExpression,
 	parse,
 	splitGlobAware,
+	type IExpression,
+	type ParsedExpression,
 } from "../../../../base/common/glob.js";
 import { relativePath } from "../../../../base/common/resources.js";
 import * as strings from "../../../../base/common/strings.js";

@@ -7,18 +7,18 @@ import { Disposable } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
-	ILogService,
-	type ILogger,
 	ILoggerService,
+	ILogService,
 	LogLevel,
+	type ILogger,
 } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	type ITelemetryAppender,
 	isLoggingOnly,
 	supportsTelemetry,
 	telemetryLogId,
 	validateTelemetryData,
+	type ITelemetryAppender,
 } from "./telemetryUtils.js";
 
 export class TelemetryLogAppender

@@ -10,29 +10,29 @@ import type {
 	ITerminalAddon,
 	Terminal,
 } from "@xterm/xterm";
+
 import { getWindow } from "../../../../../base/browser/dom.js";
 import { coalesce } from "../../../../../base/common/arrays.js";
 import { timeout } from "../../../../../base/common/async.js";
 import {
 	Disposable,
 	DisposableStore,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
+	TerminalCapability,
 	type ITerminalCapabilityStore,
 	type ITerminalCommand,
-	TerminalCapability,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import type { ICurrentPartialCommand } from "../../../../../platform/terminal/common/capabilities/commandDetection/terminalCommand.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
-import { TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR } from "../../common/terminalColorRegistry.js";
-import type { IMarkTracker } from "../terminal.js";
-
 // HACK: Mark navigation currently depends on terminalContrib/stickyScroll
 // eslint-disable-next-line local/code-import-patterns
 import { TerminalStickyScrollSettingId } from "../../../terminalContrib/stickyScroll/common/terminalStickyScrollConfiguration.js";
+import { TERMINAL_OVERVIEW_RULER_CURSOR_FOREGROUND_COLOR } from "../../common/terminalColorRegistry.js";
+import type { IMarkTracker } from "../terminal.js";
 
 enum Boundary {
 	Top = 0,
@@ -77,8 +77,9 @@ export class MarkNavigationAddon
 
 	constructor(
 		private readonly _capabilities: ITerminalCapabilityStore,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IThemeService private readonly _themeService: IThemeService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IThemeService private readonly _themeService: IThemeService,
 	) {
 		super();
 	}

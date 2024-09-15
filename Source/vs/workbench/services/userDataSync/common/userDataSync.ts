@@ -17,11 +17,11 @@ import {
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js";
 import {
+	SyncResource,
+	SyncStatus,
 	type IAuthenticationProvider,
 	type IResourcePreview,
 	type IUserDataSyncResource,
-	SyncResource,
-	SyncStatus,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import type { IView } from "../../../common/views.js";
 

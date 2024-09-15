@@ -7,7 +7,8 @@ import * as cp from "child_process";
 import { EventEmitter } from "events";
 import { StringDecoder } from "string_decoder";
 import { rgPath } from "@vscode/ripgrep";
-import { type AST as ReAST, RegExpParser, RegExpVisitor } from "vscode-regexpp";
+import { RegExpParser, RegExpVisitor, type AST as ReAST } from "vscode-regexpp";
+
 import { coalesce, mapArrayOrNot } from "../../../../base/common/arrays.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { groupBy } from "../../../../base/common/collections.js";
@@ -20,30 +21,30 @@ import { URI } from "../../../../base/common/uri.js";
 import type { Progress } from "../../../../platform/progress/common/progress.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
-	type IExtendedExtensionSearchOptions,
-	type ITextSearchPreviewOptions,
 	SearchError,
 	SearchErrorCode,
-	TextSearchMatch,
 	serializeSearchError,
+	TextSearchMatch,
+	type IExtendedExtensionSearchOptions,
+	type ITextSearchPreviewOptions,
 } from "../common/search.js";
 import { newToOldPreviewOptions } from "../common/searchExtConversionTypes.js";
 import {
 	Range,
-	type TextSearchCompleteNew,
 	TextSearchContextNew,
 	TextSearchMatchNew,
+	type TextSearchCompleteNew,
 	type TextSearchProviderOptions,
 	type TextSearchQueryNew,
 	type TextSearchResultNew,
 } from "../common/searchExtTypes.js";
 import type { RipgrepTextSearchOptions } from "../common/searchExtTypesInternal.js";
 import {
-	type IOutputChannel,
-	type Maybe,
 	anchorGlob,
 	rangeToSearchRange,
 	searchRangeToRange,
+	type IOutputChannel,
+	type Maybe,
 } from "./ripgrepSearchUtils.js";
 
 // If @vscode/ripgrep is in an .asar file, then the binary is unpacked.

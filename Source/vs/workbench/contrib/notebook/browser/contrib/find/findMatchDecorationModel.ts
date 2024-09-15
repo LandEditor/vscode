@@ -12,13 +12,13 @@ import {
 	overviewRulerSelectionHighlightForeground,
 } from "../../../../../../platform/theme/common/colorRegistry.js";
 import {
+	NotebookOverviewRulerLane,
 	type CellFindMatchWithIndex,
 	type ICellModelDecorations,
 	type ICellModelDeltaDecorations,
 	type ICellViewModel,
 	type INotebookDeltaDecoration,
 	type INotebookEditor,
-	NotebookOverviewRulerLane,
 } from "../../notebookBrowser.js";
 
 export class FindMatchDecorationModel extends Disposable {

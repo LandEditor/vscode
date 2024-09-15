@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { deepFreeze } from "../../../base/common/objects.js";
@@ -11,14 +12,14 @@ import { assertIsDefined } from "../../../base/common/types.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { IModelChangedEvent } from "../../../editor/common/model/mirrorTextModel.js";
 import {
+	MainContext,
 	type ExtHostDocumentsShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadDocumentsShape,
 } from "./extHost.protocol.js";
 import {
-	type ExtHostDocumentData,
 	setWordDefinitionFor,
+	type ExtHostDocumentData,
 } from "./extHostDocumentData.js";
 import type { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";
 import * as TypeConverters from "./extHostTypeConverters.js";

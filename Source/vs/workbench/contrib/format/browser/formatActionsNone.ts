@@ -7,8 +7,8 @@ import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
-	type ServicesAccessor,
 	registerEditorAction,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";

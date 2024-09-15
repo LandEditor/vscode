@@ -7,26 +7,26 @@ import { Schemas } from "../../../../base/common/network.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import type { ExtensionKind } from "../../../../platform/environment/common/environment.js";
 import {
-	type ExtensionIdentifier,
 	ExtensionIdentifierMap,
+	type ExtensionIdentifier,
 	type IExtensionDescription,
 } from "../../../../platform/extensions/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import type { IReadOnlyExtensionDescriptionRegistry } from "./extensionDescriptionRegistry.js";
 import {
+	determineExtensionHostKinds,
 	ExtensionHostKind,
 	ExtensionRunningPreference,
 	type IExtensionHostKindPicker,
-	determineExtensionHostKinds,
 } from "./extensionHostKind.js";
 import type { IExtensionHostManager } from "./extensionHostManagers.js";
 import { IExtensionManifestPropertiesService } from "./extensionManifestPropertiesService.js";
 import {
-	type ExtensionRunningLocation,
 	LocalProcessRunningLocation,
 	LocalWebWorkerRunningLocation,
 	RemoteRunningLocation,
+	type ExtensionRunningLocation,
 } from "./extensionRunningLocation.js";
 
 export class ExtensionRunningLocationTracker {
@@ -46,11 +46,14 @@ export class ExtensionRunningLocationTracker {
 	constructor(
 		private readonly _registry: IReadOnlyExtensionDescriptionRegistry,
 		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ILogService private readonly _logService: ILogService,
-		@IExtensionManifestPropertiesService private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-	) { }
+		@IExtensionManifestPropertiesService
+		private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+	) {}
 
 	public set(
 		extensionId: ExtensionIdentifier,

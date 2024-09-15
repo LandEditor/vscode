@@ -16,10 +16,10 @@ import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js"
 import { themeColorFromId } from "../../../../platform/theme/common/themeService.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
-	type IModelDecorationOptions,
-	type IModelDecorationsChangeAccessor,
 	MinimapPosition,
 	TrackedRangeStickiness,
+	type IModelDecorationOptions,
+	type IModelDecorationsChangeAccessor,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import type { IDecorationProvider } from "./foldingModel.js";

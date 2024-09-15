@@ -7,9 +7,9 @@ import type { IDragAndDropData } from "../../../../base/browser/dnd.js";
 import type { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import type { IHighlight } from "../../../../base/browser/ui/highlightedlabel/highlightedLabel.js";
 import {
-	type IListVirtualDelegate,
 	ListDragOverEffectPosition,
 	ListDragOverEffectType,
+	type IListVirtualDelegate,
 } from "../../../../base/browser/ui/list/list.js";
 import {
 	ElementsDragAndDropData,
@@ -31,16 +31,16 @@ import { localize } from "../../../../nls.js";
 import { createAndFillInContextMenuActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	Action2,
-	type IMenu,
 	IMenuService,
 	MenuId,
 	registerAction2,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -65,10 +65,10 @@ import {
 	CONTEXT_WATCH_EXPRESSIONS_EXIST,
 	CONTEXT_WATCH_EXPRESSIONS_FOCUSED,
 	CONTEXT_WATCH_ITEM_TYPE,
-	type IDebugConfiguration,
 	IDebugService,
-	type IExpression,
 	WATCH_VIEW_ID,
+	type IDebugConfiguration,
+	type IExpression,
 } from "../common/debug.js";
 import {
 	Expression,
@@ -78,9 +78,9 @@ import {
 import {
 	AbstractExpressionDataSource,
 	AbstractExpressionsRenderer,
+	renderViewTree,
 	type IExpressionTemplateData,
 	type IInputBoxOptions,
-	renderViewTree,
 } from "./baseDebugView.js";
 import { DebugExpressionRenderer } from "./debugExpressionRenderer.js";
 import {
@@ -123,21 +123,42 @@ export class WatchExpressionsView extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@IMenuService menuService: IMenuService
+		@IMenuService menuService: IMenuService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this.menu = menuService.createMenu(MenuId.DebugWatchContext, contextKeyService);
+		this.menu = menuService.createMenu(
+			MenuId.DebugWatchContext,
+			contextKeyService,
+		);
 		this._register(this.menu);
 		this.watchExpressionsUpdatedScheduler = new RunOnceScheduler(() => {
 			this.needsRefresh = false;
 			this.tree.updateChildren();
 		}, 50);
-		this.watchExpressionsExist = CONTEXT_WATCH_EXPRESSIONS_EXIST.bindTo(contextKeyService);
-		this.variableReadonly = CONTEXT_VARIABLE_IS_READONLY.bindTo(contextKeyService);
-		this.watchExpressionsExist.set(this.debugService.getModel().getWatchExpressions().length > 0);
+		this.watchExpressionsExist =
+			CONTEXT_WATCH_EXPRESSIONS_EXIST.bindTo(contextKeyService);
+		this.variableReadonly =
+			CONTEXT_VARIABLE_IS_READONLY.bindTo(contextKeyService);
+		this.watchExpressionsExist.set(
+			this.debugService.getModel().getWatchExpressions().length > 0,
+		);
 		this.watchItemType = CONTEXT_WATCH_ITEM_TYPE.bindTo(contextKeyService);
-		this.expressionRenderer = instantiationService.createInstance(DebugExpressionRenderer);
+		this.expressionRenderer = instantiationService.createInstance(
+			DebugExpressionRenderer,
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
@@ -447,11 +468,13 @@ export class WatchExpressionsRenderer extends AbstractExpressionsRenderer {
 	constructor(
 		private readonly expressionRenderer: DebugExpressionRenderer,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IDebugService debugService: IDebugService,
 		@IContextViewService contextViewService: IContextViewService,
 		@IHoverService hoverService: IHoverService,
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
 	) {
 		super(debugService, contextViewService, hoverService);
 	}

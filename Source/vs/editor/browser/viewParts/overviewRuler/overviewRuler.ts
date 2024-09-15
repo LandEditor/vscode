@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import {
 	EditorOption,
@@ -14,9 +14,9 @@ import {
 import { ViewEventHandler } from "../../../common/viewEventHandler.js";
 import type * as viewEvents from "../../../common/viewEvents.js";
 import {
+	OverviewZoneManager,
 	type ColorZone,
 	type OverviewRulerZone,
-	OverviewZoneManager,
 } from "../../../common/viewModel/overviewZoneManager.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";
 import type { IOverviewRuler } from "../../editorBrowser.js";

@@ -13,8 +13,8 @@ import {
 } from "../../../../platform/theme/common/colorRegistry.js";
 import { asCssVariableName } from "../../../../platform/theme/common/colorUtils.js";
 import {
-	type ITestingCoverageBarThresholds,
 	TestingDisplayedCoveragePercent,
+	type ITestingCoverageBarThresholds,
 } from "../common/configuration.js";
 import { getTotalCoveragePercent } from "../common/testCoverage.js";
 import type { TestId } from "../common/testId.js";

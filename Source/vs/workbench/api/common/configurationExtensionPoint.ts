@@ -11,18 +11,18 @@ import * as objects from "../../../base/common/objects.js";
 import { isObject, isUndefined } from "../../../base/common/types.js";
 import * as nls from "../../../nls.js";
 import {
+	configurationDefaultsSchemaId,
 	ConfigurationScope,
 	Extensions,
+	getAllConfigurationProperties,
+	getDefaultValue,
+	OVERRIDE_PROPERTY_REGEX,
+	parseScope,
+	validateProperty,
 	type IConfigurationDefaults,
 	type IConfigurationDelta,
 	type IConfigurationNode,
 	type IConfigurationRegistry,
-	OVERRIDE_PROPERTY_REGEX,
-	configurationDefaultsSchemaId,
-	getAllConfigurationProperties,
-	getDefaultValue,
-	parseScope,
-	validateProperty,
 } from "../../../platform/configuration/common/configurationRegistry.js";
 import {
 	ExtensionIdentifierMap,
@@ -30,8 +30,8 @@ import {
 } from "../../../platform/extensions/common/extensions.js";
 import { SyncDescriptor } from "../../../platform/instantiation/common/descriptors.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import { Registry } from "../../../platform/registry/common/platform.js";
 import {
@@ -41,8 +41,8 @@ import {
 } from "../../services/configuration/common/configuration.js";
 import {
 	Extensions as ExtensionFeaturesExtensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,

@@ -4,16 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	asArray,
 	coalesce,
 	isNonEmptyArray,
 } from "../../../base/common/arrays.js";
-import { VSBuffer, encodeBase64 } from "../../../base/common/buffer.js";
+import { encodeBase64, VSBuffer } from "../../../base/common/buffer.js";
 import {
+	UriList,
 	type IDataTransferFile,
 	type IDataTransferItem,
-	UriList,
 } from "../../../base/common/dataTransfer.js";
 import { createSingleCallFunction } from "../../../base/common/functional.js";
 import * as htmlContent from "../../../base/common/htmlContent.js";
@@ -24,8 +25,8 @@ import { parse, revive } from "../../../base/common/marshalling.js";
 import { Mimes } from "../../../base/common/mime.js";
 import { cloneAndChange } from "../../../base/common/objects.js";
 import {
-	type IPrefixTreeNode,
 	WellDefinedPrefixTree,
+	type IPrefixTreeNode,
 } from "../../../base/common/prefixTree.js";
 import { basename } from "../../../base/common/resources.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
@@ -37,9 +38,9 @@ import {
 	isUndefinedOrNull,
 } from "../../../base/common/types.js";
 import {
+	isUriComponents,
 	URI,
 	type UriComponents,
-	isUriComponents,
 } from "../../../base/common/uri.js";
 import type { IURITransformer } from "../../../base/common/uriIpc.js";
 import { RenderLineNumbersType } from "../../../editor/common/config/editorOptions.js";
@@ -53,8 +54,8 @@ import type {
 	IThemeDecorationRenderOptions,
 } from "../../../editor/common/editorCommon.js";
 import * as encodedTokenAttributes from "../../../editor/common/encodedTokenAttributes.js";
-import type * as languageSelector from "../../../editor/common/languageSelector.js";
 import * as languages from "../../../editor/common/languages.js";
+import type * as languageSelector from "../../../editor/common/languageSelector.js";
 import {
 	EndOfLineSequence,
 	TrackedRangeStickiness,
@@ -62,10 +63,10 @@ import {
 import type { ITextEditorOptions } from "../../../platform/editor/common/editor.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
-	type IMarkerData,
-	type IRelatedInformation,
 	MarkerSeverity,
 	MarkerTag,
+	type IMarkerData,
+	type IRelatedInformation,
 } from "../../../platform/markers/common/markers.js";
 import { ProgressLocation as MainProgressLocation } from "../../../platform/progress/common/progress.js";
 import { DEFAULT_EDITOR_ASSOCIATION, SaveReason } from "../../common/editor.js";
@@ -96,11 +97,11 @@ import type {
 	IChatUserActionEvent,
 	IChatWarningMessage,
 } from "../../contrib/chat/common/chatService.js";
+import * as chatProvider from "../../contrib/chat/common/languageModels.js";
 import type {
 	IToolData,
 	IToolResult,
 } from "../../contrib/chat/common/languageModelToolsService.js";
-import * as chatProvider from "../../contrib/chat/common/languageModels.js";
 import {
 	DebugTreeItemCollapsibleState,
 	type IDebugVisualizationTreeItem,
@@ -110,18 +111,18 @@ import type { ICellRange } from "../../contrib/notebook/common/notebookRange.js"
 import type * as search from "../../contrib/search/common/search.js";
 import { TestId } from "../../contrib/testing/common/testId.js";
 import {
-	type CoverageDetails,
+	denamespaceTestTag,
 	DetailType,
+	namespaceTestTag,
+	TestMessageType,
+	type CoverageDetails,
 	type ICoverageCount,
 	type IFileCoverage,
 	type ISerializedTestResults,
 	type ITestErrorMessage,
 	type ITestItem,
 	type ITestTag,
-	TestMessageType,
 	type TestResultItem,
-	denamespaceTestTag,
-	namespaceTestTag,
 } from "../../contrib/testing/common/testTypes.js";
 import type { EditorGroupColumn } from "../../services/editor/common/editorGroupColumn.js";
 import {
@@ -3519,10 +3520,10 @@ export namespace ChatResponseReferencePart {
 			: URI.isUri(part.iconPath)
 				? { light: URI.revive(part.iconPath) }
 				: part.iconPath &&
-						"light" in part.iconPath &&
-						"dark" in part.iconPath &&
-						URI.isUri(part.iconPath.light) &&
-						URI.isUri(part.iconPath.dark)
+					  "light" in part.iconPath &&
+					  "dark" in part.iconPath &&
+					  URI.isUri(part.iconPath.light) &&
+					  URI.isUri(part.iconPath.dark)
 					? {
 							light: URI.revive(part.iconPath.light),
 							dark: URI.revive(part.iconPath.dark),
@@ -3778,10 +3779,10 @@ export namespace ChatPromptReference {
 			value: isUriComponents(value)
 				? URI.revive(value)
 				: value &&
-						typeof value === "object" &&
-						"uri" in value &&
-						"range" in value &&
-						isUriComponents(value.uri)
+					  typeof value === "object" &&
+					  "uri" in value &&
+					  "range" in value &&
+					  isUriComponents(value.uri)
 					? Location.to(revive(value))
 					: value,
 			modelDescription: variable.modelDescription,

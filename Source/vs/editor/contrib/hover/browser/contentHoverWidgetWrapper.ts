@@ -10,9 +10,9 @@ import { Disposable } from "../../../../base/common/lifecycle.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { Range } from "../../../common/core/range.js";
@@ -27,14 +27,14 @@ import { ContentHoverResult } from "./contentHoverTypes.js";
 import { ContentHoverWidget } from "./contentHoverWidget.js";
 import {
 	HoverOperation,
-	type HoverResult,
 	HoverStartMode,
 	HoverStartSource,
+	type HoverResult,
 } from "./hoverOperation.js";
 import {
-	type HoverAnchor,
 	HoverParticipantRegistry,
 	HoverRangeAnchor,
+	type HoverAnchor,
 	type IEditorHoverContext,
 	type IEditorHoverParticipant,
 	type IHoverPart,
@@ -61,13 +61,25 @@ export class ContentHoverWidgetWrapper
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
-		this._contentHoverWidget = this._register(this._instantiationService.createInstance(ContentHoverWidget, this._editor));
+		this._contentHoverWidget = this._register(
+			this._instantiationService.createInstance(
+				ContentHoverWidget,
+				this._editor,
+			),
+		);
 		this._participants = this._initializeHoverParticipants();
-		this._hoverOperation = this._register(new HoverOperation(this._editor, new ContentHoverComputer(this._editor, this._participants)));
+		this._hoverOperation = this._register(
+			new HoverOperation(
+				this._editor,
+				new ContentHoverComputer(this._editor, this._participants),
+			),
+		);
 		this._registerListeners();
 	}
 

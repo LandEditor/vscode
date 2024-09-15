@@ -8,15 +8,15 @@ import { mixin } from "../../../../base/common/objects.js";
 import * as Platform from "../../../../base/common/platform.js";
 import * as uuid from "../../../../base/common/uuid.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type ICommonProperties,
 	firstSessionDateStorageKey,
 	lastSessionDateStorageKey,
 	machineIdKey,
+	type ICommonProperties,
 } from "../../../../platform/telemetry/common/telemetry.js";
 import { cleanRemoteAuthority } from "../../../../platform/telemetry/common/telemetryUtils.js";
 

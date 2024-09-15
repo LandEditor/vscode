@@ -5,8 +5,8 @@
 
 import type { URI } from "../../../../../base/common/uri.js";
 import {
-	type IResourceUndoRedoElement,
 	UndoRedoElementType,
+	type IResourceUndoRedoElement,
 } from "../../../../../platform/undoRedo/common/undoRedo.js";
 import type {
 	ISelectionState,

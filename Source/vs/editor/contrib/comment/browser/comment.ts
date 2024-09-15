@@ -10,9 +10,9 @@ import { KeybindingWeight } from "../../../../platform/keybinding/common/keybind
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
+	registerEditorAction,
 	type IActionOptions,
 	type ServicesAccessor,
-	registerEditorAction,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Range } from "../../../common/core/range.js";
@@ -44,13 +44,11 @@ abstract class CommentLineAction extends EditorAction {
 		const modelOptions = model.getOptions();
 		const commentsOptions = editor.getOption(EditorOption.comments);
 
-		const selections = editor
-			.getSelections()
-			.map((selection, index) => ({
-				selection,
-				index,
-				ignoreFirstLine: false,
-			}));
+		const selections = editor.getSelections().map((selection, index) => ({
+			selection,
+			index,
+			ignoreFirstLine: false,
+		}));
 		selections.sort((a, b) =>
 			Range.compareRangesUsingStarts(a.selection, b.selection),
 		);

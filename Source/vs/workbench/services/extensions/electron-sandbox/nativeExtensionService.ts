@@ -39,20 +39,20 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import {
 	INotificationService,
-	type IPromptChoice,
 	NotificationPriority,
 	Severity,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { PersistentConnectionEventType } from "../../../../platform/remote/common/remoteAgentConnection.js";
 import type { IRemoteAgentEnvironment } from "../../../../platform/remote/common/remoteAgentEnvironment.js";
 import {
+	getRemoteAuthorityPrefix,
 	IRemoteAuthorityResolverService,
 	RemoteAuthorityResolverError,
 	RemoteConnectionType,
 	type ResolverResult,
-	getRemoteAuthorityPrefix,
 } from "../../../../platform/remote/common/remoteAuthorityResolver.js";
 import { IRemoteExtensionsScannerService } from "../../../../platform/remote/common/remoteExtensionsScanner.js";
 import {
@@ -77,26 +77,26 @@ import {
 import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
 import { IRemoteExplorerService } from "../../remote/common/remoteExplorerService.js";
 import {
+	WebWorkerExtensionHost,
 	type IWebWorkerExtensionHostDataProvider,
 	type IWebWorkerExtensionHostInitData,
-	WebWorkerExtensionHost,
 } from "../browser/webWorkerExtensionHost.js";
 import {
 	AbstractExtensionService,
-	ExtensionHostCrashTracker,
-	type IExtensionHostFactory,
-	ResolvedExtensions,
 	checkEnabledAndProposedAPI,
+	ExtensionHostCrashTracker,
 	extensionIsEnabled,
+	ResolvedExtensions,
+	type IExtensionHostFactory,
 } from "../common/abstractExtensionService.js";
 import type { ExtensionDescriptionRegistrySnapshot } from "../common/extensionDescriptionRegistry.js";
 import { parseExtensionDevOptions } from "../common/extensionDevOptions.js";
 import {
 	ExtensionHostKind,
-	ExtensionRunningPreference,
-	type IExtensionHostKindPicker,
 	extensionHostKindToString,
+	ExtensionRunningPreference,
 	extensionRunningPreferenceToString,
+	type IExtensionHostKindPicker,
 } from "../common/extensionHostKind.js";
 import type { IExtensionHostManager } from "../common/extensionHostManagers.js";
 import { ExtensionHostExitCode } from "../common/extensionHostProtocol.js";
@@ -107,29 +107,29 @@ import type {
 	LocalWebWorkerRunningLocation,
 } from "../common/extensionRunningLocation.js";
 import {
-	type ExtensionRunningLocationTracker,
 	filterExtensionDescriptions,
+	type ExtensionRunningLocationTracker,
 } from "../common/extensionRunningLocationTracker.js";
 import {
 	ExtensionHostExtensions,
 	ExtensionHostStartup,
-	type IExtensionHost,
 	IExtensionService,
-	type WebWorkerExtHostConfigValue,
 	toExtension,
 	webWorkerExtHostConfig,
+	type IExtensionHost,
+	type WebWorkerExtHostConfigValue,
 } from "../common/extensions.js";
 import { ExtensionsProposedApi } from "../common/extensionsProposedApi.js";
 import {
+	RemoteExtensionHost,
 	type IRemoteExtensionHostDataProvider,
 	type IRemoteExtensionHostInitData,
-	RemoteExtensionHost,
 } from "../common/remoteExtensionHost.js";
 import { CachedExtensionScanner } from "./cachedExtensionScanner.js";
 import {
+	NativeLocalProcessExtensionHost,
 	type ILocalProcessExtensionHostDataProvider,
 	type ILocalProcessExtensionHostInitData,
-	NativeLocalProcessExtensionHost,
 } from "./localProcessExtensionHost.js";
 
 export class NativeExtensionService
@@ -142,29 +142,43 @@ export class NativeExtensionService
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@INotificationService notificationService: INotificationService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchExtensionEnablementService
+		extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IFileService fileService: IFileService,
 		@IProductService productService: IProductService,
-		@IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkbenchExtensionManagementService
+		extensionManagementService: IWorkbenchExtensionManagementService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@ILogService logService: ILogService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IRemoteExtensionsScannerService remoteExtensionsScannerService: IRemoteExtensionsScannerService,
+		@IRemoteExtensionsScannerService
+		remoteExtensionsScannerService: IRemoteExtensionsScannerService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IHostService private readonly _hostService: IHostService,
-		@IRemoteExplorerService private readonly _remoteExplorerService: IRemoteExplorerService,
-		@IExtensionGalleryService private readonly _extensionGalleryService: IExtensionGalleryService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IRemoteExplorerService
+		private readonly _remoteExplorerService: IRemoteExplorerService,
+		@IExtensionGalleryService
+		private readonly _extensionGalleryService: IExtensionGalleryService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IDialogService dialogService: IDialogService,
 	) {
-		const extensionsProposedApi = instantiationService.createInstance(ExtensionsProposedApi);
-		const extensionScanner = instantiationService.createInstance(CachedExtensionScanner);
+		const extensionsProposedApi = instantiationService.createInstance(
+			ExtensionsProposedApi,
+		);
+		const extensionScanner = instantiationService.createInstance(
+			CachedExtensionScanner,
+		);
 		const extensionHostFactory = new NativeExtensionHostFactory(
 			extensionsProposedApi,
 			extensionScanner,
@@ -175,12 +189,16 @@ export class NativeExtensionService
 			configurationService,
 			remoteAgentService,
 			remoteAuthorityResolverService,
-			logService
+			logService,
 		);
 		super(
 			extensionsProposedApi,
 			extensionHostFactory,
-			new NativeExtensionHostKindPicker(environmentService, configurationService, logService),
+			new NativeExtensionHostKindPicker(
+				environmentService,
+				configurationService,
+				logService,
+			),
 			instantiationService,
 			notificationService,
 			environmentService,
@@ -197,7 +215,7 @@ export class NativeExtensionService
 			remoteExtensionsScannerService,
 			lifecycleService,
 			remoteAuthorityResolverService,
-			dialogService
+			dialogService,
 		);
 
 		this._extensionScanner = extensionScanner;
@@ -210,9 +228,13 @@ export class NativeExtensionService
 		// see https://github.com/microsoft/vscode/issues/41322
 		lifecycleService.when(LifecyclePhase.Ready).then(() => {
 			// reschedule to ensure this runs after restoring viewlets, panels, and editors
-			runWhenWindowIdle(mainWindow, () => {
-				this._initialize();
-			}, 50 /*max delay*/);
+			runWhenWindowIdle(
+				mainWindow,
+				() => {
+					this._initialize();
+				},
+				50 /*max delay*/,
+			);
 		});
 	}
 
@@ -781,15 +803,24 @@ class NativeExtensionHostFactory implements IExtensionHostFactory {
 		private readonly _extensionsProposedApi: ExtensionsProposedApi,
 		private readonly _extensionScanner: CachedExtensionScanner,
 		private readonly _getExtensionRegistrySnapshotWhenReady: () => Promise<ExtensionDescriptionRegistrySnapshot>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IWorkbenchExtensionEnablementService private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchExtensionEnablementService
+		private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ILogService private readonly _logService: ILogService,
 	) {
-		this._webWorkerExtHostEnablement = determineLocalWebWorkerExtHostEnablement(environmentService, configurationService);
+		this._webWorkerExtHostEnablement =
+			determineLocalWebWorkerExtHostEnablement(
+				environmentService,
+				configurationService,
+			);
 	}
 
 	public createExtensionHost(
@@ -1036,13 +1067,20 @@ export class NativeExtensionHostKindPicker implements IExtensionHostKindPicker {
 	private readonly _hasWebWorkerExtHost: boolean;
 
 	constructor(
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		this._hasRemoteExtHost = Boolean(environmentService.remoteAuthority);
-		const webWorkerExtHostEnablement = determineLocalWebWorkerExtHostEnablement(environmentService, configurationService);
-		this._hasWebWorkerExtHost = (webWorkerExtHostEnablement !== LocalWebWorkerExtHostEnablement.Disabled);
+		const webWorkerExtHostEnablement =
+			determineLocalWebWorkerExtHostEnablement(
+				environmentService,
+				configurationService,
+			);
+		this._hasWebWorkerExtHost =
+			webWorkerExtHostEnablement !==
+			LocalWebWorkerExtHostEnablement.Disabled;
 	}
 
 	public pickExtensionHostKind(

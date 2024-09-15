@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type WebContents, type WebFrameMain, webContents } from "electron";
+import { webContents, type WebContents, type WebFrameMain } from "electron";
+
 import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { IWindowsMainService } from "../../windows/electron-main/windows.js";
@@ -28,7 +29,8 @@ export class WebviewMainService
 	public onFoundInFrame = this._onFoundInFrame.event;
 
 	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 	) {
 		super();
 		this._register(new WebviewProtocolProvider());

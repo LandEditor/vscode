@@ -5,19 +5,19 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type IIconSelectBoxOptions,
 	IconSelectBox,
+	type IIconSelectBoxOptions,
 } from "../../../../base/browser/ui/icons/iconSelectBox.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 
 export const WorkbenchIconSelectBoxFocusContextKey = new RawContextKey<boolean>(

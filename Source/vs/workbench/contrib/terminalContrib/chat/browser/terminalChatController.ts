@@ -4,8 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
+import {
+	createCancelablePromise,
+	DeferredPromise,
+	type CancelablePromise,
+} from "../../../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../../../base/common/cancellation.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
+import { MarkdownString } from "../../../../../base/common/htmlContent.js";
 import { Lazy } from "../../../../../base/common/lazy.js";
 import {
 	Disposable,
@@ -13,49 +20,42 @@ import {
 	MutableDisposable,
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
+import { assertType } from "../../../../../base/common/types.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
-import {
-	IChatCodeBlockContextProviderService,
-	showChatView,
-} from "../../../chat/browser/chat.js";
-import {
-	type IChatProgress,
-	IChatService,
-} from "../../../chat/common/chatService.js";
-import {
-	type ITerminalContribution,
-	type ITerminalInstance,
-	ITerminalService,
-	type IXtermTerminal,
-	isDetachedTerminalInstance,
-} from "../../../terminal/browser/terminal.js";
-import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
-import type { ITerminalProcessManager } from "../../../terminal/common/terminal.js";
-import { TerminalChatWidget } from "./terminalChatWidget.js";
-
-import {
-	type CancelablePromise,
-	DeferredPromise,
-	createCancelablePromise,
-} from "../../../../../base/common/async.js";
-import { MarkdownString } from "../../../../../base/common/htmlContent.js";
-import { assertType } from "../../../../../base/common/types.js";
 import {
 	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "../../../../../platform/storage/common/storage.js";
 import { IViewsService } from "../../../../services/views/common/viewsService.js";
+import {
+	IChatCodeBlockContextProviderService,
+	showChatView,
+} from "../../../chat/browser/chat.js";
 import { ChatAgentLocation } from "../../../chat/common/chatAgents.js";
 import type {
 	ChatModel,
 	IChatResponseModel,
 } from "../../../chat/common/chatModel.js";
+import {
+	IChatService,
+	type IChatProgress,
+} from "../../../chat/common/chatService.js";
+import {
+	isDetachedTerminalInstance,
+	ITerminalService,
+	type ITerminalContribution,
+	type ITerminalInstance,
+	type IXtermTerminal,
+} from "../../../terminal/browser/terminal.js";
+import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
+import type { ITerminalProcessManager } from "../../../terminal/common/terminal.js";
 import { TerminalChatContextKeys } from "./terminalChat.js";
+import { TerminalChatWidget } from "./terminalChatWidget.js";
 
 enum Message {
 	NONE = 0,
@@ -148,34 +148,61 @@ export class TerminalChatController
 		processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IChatService private readonly _chatService: IChatService,
-		@IChatCodeBlockContextProviderService private readonly _chatCodeBlockContextProviderService: IChatCodeBlockContextProviderService,
+		@IChatCodeBlockContextProviderService
+		private readonly _chatCodeBlockContextProviderService: IChatCodeBlockContextProviderService,
 		@IViewsService private readonly _viewsService: IViewsService,
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
 
-		this._requestActiveContextKey = TerminalChatContextKeys.requestActive.bindTo(this._contextKeyService);
-		this._responseContainsCodeBlockContextKey = TerminalChatContextKeys.responseContainsCodeBlock.bindTo(this._contextKeyService);
-		this._responseContainsMulitpleCodeBlocksContextKey = TerminalChatContextKeys.responseContainsMultipleCodeBlocks.bindTo(this._contextKeyService);
+		this._requestActiveContextKey =
+			TerminalChatContextKeys.requestActive.bindTo(
+				this._contextKeyService,
+			);
+		this._responseContainsCodeBlockContextKey =
+			TerminalChatContextKeys.responseContainsCodeBlock.bindTo(
+				this._contextKeyService,
+			);
+		this._responseContainsMulitpleCodeBlocksContextKey =
+			TerminalChatContextKeys.responseContainsMultipleCodeBlocks.bindTo(
+				this._contextKeyService,
+			);
 
-		this._register(this._chatCodeBlockContextProviderService.registerProvider({
-			getCodeBlockContext: (editor) => {
-				if (!editor || !this._chatWidget?.hasValue || !this.hasFocus()) {
-					return;
-				}
-				return {
-					element: editor,
-					code: editor.getValue(),
-					codeBlockIndex: 0,
-					languageId: editor.getModel()!.getLanguageId()
-				};
-			}
-		}, 'terminal'));
+		this._register(
+			this._chatCodeBlockContextProviderService.registerProvider(
+				{
+					getCodeBlockContext: (editor) => {
+						if (
+							!editor ||
+							!this._chatWidget?.hasValue ||
+							!this.hasFocus()
+						) {
+							return;
+						}
+						return {
+							element: editor,
+							code: editor.getValue(),
+							codeBlockIndex: 0,
+							languageId: editor.getModel()!.getLanguageId(),
+						};
+					},
+				},
+				"terminal",
+			),
+		);
 
-		TerminalChatController._promptHistory = JSON.parse(this._storageService.get(TerminalChatController._storageKey, StorageScope.PROFILE, '[]'));
+		TerminalChatController._promptHistory = JSON.parse(
+			this._storageService.get(
+				TerminalChatController._storageKey,
+				StorageScope.PROFILE,
+				"[]",
+			),
+		);
 		this._historyUpdate = (prompt: string) => {
 			const idx = TerminalChatController._promptHistory.indexOf(prompt);
 			if (idx >= 0) {
@@ -183,8 +210,13 @@ export class TerminalChatController
 			}
 			TerminalChatController._promptHistory.unshift(prompt);
 			this._historyOffset = -1;
-			this._historyCandidate = '';
-			this._storageService.store(TerminalChatController._storageKey, JSON.stringify(TerminalChatController._promptHistory), StorageScope.PROFILE, StorageTarget.USER);
+			this._historyCandidate = "";
+			this._storageService.store(
+				TerminalChatController._storageKey,
+				JSON.stringify(TerminalChatController._promptHistory),
+				StorageScope.PROFILE,
+				StorageTarget.USER,
+			);
 		};
 	}
 

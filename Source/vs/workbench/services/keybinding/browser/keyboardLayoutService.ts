@@ -10,15 +10,15 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import { getNodeType, parse } from "../../../../base/common/json.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type AppResourcePath,
 	FileAccess,
+	type AppResourcePath,
 } from "../../../../base/common/network.js";
 import * as objects from "../../../../base/common/objects.js";
 import {
-	OS,
-	OperatingSystem,
 	isMacintosh,
 	isWindows,
+	OperatingSystem,
+	OS,
 } from "../../../../base/common/platform.js";
 import type { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
@@ -41,12 +41,12 @@ import {
 	readKeyboardConfig,
 } from "../../../../platform/keyboardLayout/common/keyboardConfig.js";
 import {
-	type IKeyboardLayoutInfo,
+	getKeyboardLayoutId,
 	IKeyboardLayoutService,
+	type IKeyboardLayoutInfo,
 	type IKeyboardMapping,
 	type IMacLinuxKeyboardMapping,
 	type IWindowsKeyboardMapping,
-	getKeyboardLayoutId,
 } from "../../../../platform/keyboardLayout/common/keyboardLayout.js";
 import {
 	CachedKeyboardMapper,
@@ -57,9 +57,9 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import { FallbackKeyboardMapper } from "../common/fallbackKeyboardMapper.js";
 import {
+	KeymapInfo,
 	type IKeymapInfo,
 	type IRawMixedKeyboardMapping,
-	KeymapInfo,
 } from "../common/keymapInfo.js";
 import { MacLinuxKeyboardMapper } from "../common/macLinuxKeyboardMapper.js";
 import { WindowsKeyboardMapper } from "../common/windowsKeyboardMapper.js";
@@ -694,61 +694,90 @@ export class BrowserKeyboardLayoutService
 		@INotificationService notificationService: INotificationService,
 		@IStorageService storageService: IStorageService,
 		@ICommandService commandService: ICommandService,
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
 	) {
 		super();
-		const keyboardConfig = configurationService.getValue<{ layout: string }>('keyboard');
+		const keyboardConfig = configurationService.getValue<{
+			layout: string;
+		}>("keyboard");
 		const layout = keyboardConfig.layout;
-		this._keyboardLayoutMode = layout ?? 'autodetect';
-		this._factory = new BrowserKeyboardMapperFactory(configurationService, notificationService, storageService, commandService);
+		this._keyboardLayoutMode = layout ?? "autodetect";
+		this._factory = new BrowserKeyboardMapperFactory(
+			configurationService,
+			notificationService,
+			storageService,
+			commandService,
+		);
 
-		this._register(this._factory.onDidChangeKeyboardMapper(() => {
-			this._onDidChangeKeyboardLayout.fire();
-		}));
+		this._register(
+			this._factory.onDidChangeKeyboardMapper(() => {
+				this._onDidChangeKeyboardLayout.fire();
+			}),
+		);
 
-		if (layout && layout !== 'autodetect') {
+		if (layout && layout !== "autodetect") {
 			// set keyboard layout
 			this._factory.setKeyboardLayout(layout);
 		}
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('keyboard.layout')) {
-				const keyboardConfig = configurationService.getValue<{ layout: string }>('keyboard');
-				const layout = keyboardConfig.layout;
-				this._keyboardLayoutMode = layout;
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration("keyboard.layout")) {
+					const keyboardConfig = configurationService.getValue<{
+						layout: string;
+					}>("keyboard");
+					const layout = keyboardConfig.layout;
+					this._keyboardLayoutMode = layout;
 
-				if (layout === 'autodetect') {
-					this._factory.setLayoutFromBrowserAPI();
-				} else {
-					this._factory.setKeyboardLayout(layout);
+					if (layout === "autodetect") {
+						this._factory.setLayoutFromBrowserAPI();
+					} else {
+						this._factory.setKeyboardLayout(layout);
+					}
 				}
-			}
-		}));
+			}),
+		);
 
-		this._userKeyboardLayout = new UserKeyboardLayout(environmentService.keyboardLayoutResource, fileService);
+		this._userKeyboardLayout = new UserKeyboardLayout(
+			environmentService.keyboardLayoutResource,
+			fileService,
+		);
 		this._userKeyboardLayout.initialize().then(() => {
 			if (this._userKeyboardLayout.keyboardLayout) {
-				this._factory.registerKeyboardLayout(this._userKeyboardLayout.keyboardLayout);
+				this._factory.registerKeyboardLayout(
+					this._userKeyboardLayout.keyboardLayout,
+				);
 
 				this.setUserKeyboardLayoutIfMatched();
 			}
 		});
 
-		this._register(this._userKeyboardLayout.onDidChange(() => {
-			const userKeyboardLayouts = this._factory.keymapInfos.filter(layout => layout.isUserKeyboardLayout);
+		this._register(
+			this._userKeyboardLayout.onDidChange(() => {
+				const userKeyboardLayouts = this._factory.keymapInfos.filter(
+					(layout) => layout.isUserKeyboardLayout,
+				);
 
-			if (userKeyboardLayouts.length) {
-				if (this._userKeyboardLayout.keyboardLayout) {
-					userKeyboardLayouts[0].update(this._userKeyboardLayout.keyboardLayout);
-				} else {
-					this._factory.removeKeyboardLayout(userKeyboardLayouts[0]);
-				}
-			} else if (this._userKeyboardLayout.keyboardLayout) {
-					this._factory.registerKeyboardLayout(this._userKeyboardLayout.keyboardLayout);
+				if (userKeyboardLayouts.length) {
+					if (this._userKeyboardLayout.keyboardLayout) {
+						userKeyboardLayouts[0].update(
+							this._userKeyboardLayout.keyboardLayout,
+						);
+					} else {
+						this._factory.removeKeyboardLayout(
+							userKeyboardLayouts[0],
+						);
+					}
+				} else if (this._userKeyboardLayout.keyboardLayout) {
+					this._factory.registerKeyboardLayout(
+						this._userKeyboardLayout.keyboardLayout,
+					);
 				}
 
-			this.setUserKeyboardLayoutIfMatched();
-		}));
+				this.setUserKeyboardLayoutIfMatched();
+			}),
+		);
 	}
 
 	setUserKeyboardLayoutIfMatched() {

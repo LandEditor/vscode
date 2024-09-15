@@ -5,10 +5,10 @@
 
 import { getActiveElement } from "../../../../base/browser/dom.js";
 import {
-	type MultiCommand,
 	RedoCommand,
 	SelectAllCommand,
 	UndoCommand,
+	type MultiCommand,
 } from "../../../../editor/browser/editorExtensions.js";
 import {
 	CopyAction,
@@ -23,7 +23,7 @@ import {
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { WebviewInput } from "../../webviewPanel/browser/webviewEditorInput.js";
-import { type IWebview, IWebviewService } from "./webview.js";
+import { IWebviewService, type IWebview } from "./webview.js";
 
 const PRIORITY = 100;
 

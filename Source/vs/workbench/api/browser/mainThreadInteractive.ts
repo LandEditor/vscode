@@ -7,13 +7,13 @@ import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../editor/common/languages/modesRegistry.js";
 import { IInteractiveDocumentService } from "../../contrib/interactive/browser/interactiveDocumentService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostInteractiveShape,
 	MainContext,
+	type ExtHostInteractiveShape,
 	type MainThreadInteractiveShape,
 } from "../common/extHost.protocol.js";
 
@@ -25,7 +25,8 @@ export class MainThreadInteractive implements MainThreadInteractiveShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IInteractiveDocumentService interactiveDocumentService: IInteractiveDocumentService,
+		@IInteractiveDocumentService
+		interactiveDocumentService: IInteractiveDocumentService,
 	) {
 		this._proxy = extHostContext.getProxy(
 			ExtHostContext.ExtHostInteractive,

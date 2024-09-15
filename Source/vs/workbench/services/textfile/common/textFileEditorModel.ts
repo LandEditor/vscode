@@ -28,25 +28,25 @@ import { IAccessibilityService } from "../../../../platform/accessibility/common
 import {
 	ETAG_DISABLED,
 	FileChangeType,
-	type FileChangesEvent,
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
-	type IFileStatWithMetadata,
 	NotModifiedSinceFileOperationError,
+	type FileChangesEvent,
+	type FileOperationError,
+	type IFileStatWithMetadata,
 } from "../../../../platform/files/common/files.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import {
-	type IRevertOptions,
 	SaveReason,
 	SaveSourceRegistry,
+	type IRevertOptions,
 } from "../../../common/editor.js";
 import { BaseTextEditorModel } from "../../../common/editor/textEditorModel.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
@@ -54,28 +54,28 @@ import { IFilesConfigurationService } from "../../filesConfiguration/common/file
 import { ILanguageDetectionService } from "../../languageDetection/common/languageDetectionWorkerService.js";
 import { IPathService } from "../../path/common/pathService.js";
 import {
-	type IWorkingCopyBackup,
-	type IWorkingCopyBackupMeta,
 	NO_TYPE_ID,
 	WorkingCopyCapabilities,
+	type IWorkingCopyBackup,
+	type IWorkingCopyBackupMeta,
 } from "../../workingCopy/common/workingCopy.js";
 import {
-	type IResolvedWorkingCopyBackup,
 	IWorkingCopyBackupService,
+	type IResolvedWorkingCopyBackup,
 } from "../../workingCopy/common/workingCopyBackup.js";
 import { IWorkingCopyService } from "../../workingCopy/common/workingCopyService.js";
 import { UTF8, UTF8_with_bom, UTF16be, UTF16le } from "./encoding.js";
 import {
 	EncodingMode,
+	ITextFileService,
+	TextFileEditorModelState,
+	TextFileResolveReason,
 	type IResolvedTextFileEditorModel,
 	type ITextFileEditorModel,
 	type ITextFileEditorModelSaveEvent,
 	type ITextFileResolveOptions,
 	type ITextFileSaveAsOptions,
-	ITextFileService,
 	type ITextFileStreamContent,
-	TextFileEditorModelState,
-	TextFileResolveReason,
 } from "./textfiles.js";
 
 interface IBackupMetaData extends IWorkingCopyBackupMeta {
@@ -149,8 +149,7 @@ export class TextFileEditorModel
 	private ignoreDirtyOnModelContentChange = false;
 	private ignoreSaveFromSaveParticipants = false;
 
-	private static readonly UNDO_REDO_SAVE_PARTICIPANTS_AUTO_SAVE_THROTTLE_THRESHOLD =
-		500;
+	private static readonly UNDO_REDO_SAVE_PARTICIPANTS_AUTO_SAVE_THROTTLE_THRESHOLD = 500;
 	private lastModelContentChangeFromUndoRedo: number | undefined = undefined;
 
 	lastResolvedFileStat: IFileStatWithMetadata | undefined; // !!! DO NOT MARK PRIVATE! USED IN TESTS !!!
@@ -164,24 +163,33 @@ export class TextFileEditorModel
 
 	constructor(
 		readonly resource: URI,
-		private preferredEncoding: string | undefined,		// encoding as chosen by the user
-		private preferredLanguageId: string | undefined,	// language id as chosen by the user
+		private preferredEncoding: string | undefined, // encoding as chosen by the user
+		private preferredLanguageId: string | undefined, // language id as chosen by the user
 		@ILanguageService languageService: ILanguageService,
 		@IModelService modelService: IModelService,
 		@IFileService private readonly fileService: IFileService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
 		@ILogService private readonly logService: ILogService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 		@ILabelService private readonly labelService: ILabelService,
-		@ILanguageDetectionService languageDetectionService: ILanguageDetectionService,
+		@ILanguageDetectionService
+		languageDetectionService: ILanguageDetectionService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 		@IPathService private readonly pathService: IPathService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IProgressService private readonly progressService: IProgressService
+		@IProgressService private readonly progressService: IProgressService,
 	) {
-		super(modelService, languageService, languageDetectionService, accessibilityService);
+		super(
+			modelService,
+			languageService,
+			languageDetectionService,
+			accessibilityService,
+		);
 
 		// Make known to working copy service
 		this._register(this.workingCopyService.registerWorkingCopy(this));

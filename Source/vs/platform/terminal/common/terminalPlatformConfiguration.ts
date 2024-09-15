@@ -22,9 +22,9 @@ import {
 } from "../../configuration/common/configurationRegistry.js";
 import { Registry } from "../../registry/common/platform.js";
 import {
+	TerminalSettingId,
 	type IExtensionTerminalProfile,
 	type ITerminalProfile,
-	TerminalSettingId,
 } from "./terminal.js";
 import { createProfileSchemaEnums } from "./terminalProfiles.js";
 

@@ -7,10 +7,10 @@ import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import type { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import { URI, type UriComponents } from "../../../../base/common/uri.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { TestId } from "./testId.js";
 
 export enum TestResultState {

@@ -22,8 +22,8 @@ import {
 	toDisposable,
 } from "../../base/common/lifecycle.js";
 import {
-	Schemas,
 	connectionTokenCookieName,
+	Schemas,
 } from "../../base/common/network.js";
 import { mixin, safeStringify } from "../../base/common/objects.js";
 import { mark } from "../../base/common/performance.js";
@@ -47,8 +47,8 @@ import {
 	type IndexedDBFileSystemProviderErrorDataClassification,
 } from "../../platform/files/browser/indexedDBFileSystemProvider.js";
 import { WebFileSystemAccess } from "../../platform/files/browser/webFileSystemAccess.js";
-import { FileService } from "../../platform/files/common/fileService.js";
 import { IFileService } from "../../platform/files/common/files.js";
+import { FileService } from "../../platform/files/common/fileService.js";
 import { InMemoryFileSystemProvider } from "../../platform/files/common/inMemoryFilesystemProvider.js";
 import {
 	IInstantiationService,
@@ -61,10 +61,10 @@ import { BufferLogger } from "../../platform/log/common/bufferLog.js";
 import { FileLoggerService } from "../../platform/log/common/fileLog.js";
 import {
 	ConsoleLogger,
+	getLogLevel,
+	ILoggerService,
 	ILogService,
 	type ILogger,
-	ILoggerService,
-	getLogLevel,
 } from "../../platform/log/common/log.js";
 import { LogService } from "../../platform/log/common/logService.js";
 import {
@@ -100,8 +100,8 @@ import { IUriIdentityService } from "../../platform/uriIdentity/common/uriIdenti
 import { UriIdentityService } from "../../platform/uriIdentity/common/uriIdentityService.js";
 import { BrowserUserDataProfilesService } from "../../platform/userDataProfile/browser/userDataProfile.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../platform/userDataProfile/common/userDataProfile.js";
 import { IUserDataSyncStoreManagementService } from "../../platform/userDataSync/common/userDataSync.js";
 import { UserDataSyncStoreManagementService } from "../../platform/userDataSync/common/userDataSyncStoreService.js";
@@ -110,11 +110,11 @@ import {
 	isWorkspaceToOpen,
 } from "../../platform/window/common/window.js";
 import {
-	type IAnyWorkspaceIdentifier,
-	IWorkspaceContextService,
-	UNKNOWN_EMPTY_WINDOW_WORKSPACE,
 	isTemporaryWorkspace,
 	isWorkspaceIdentifier,
+	IWorkspaceContextService,
+	UNKNOWN_EMPTY_WINDOW_WORKSPACE,
+	type IAnyWorkspaceIdentifier,
 } from "../../platform/workspace/common/workspace.js";
 import {
 	IWorkspaceTrustEnablementService,
@@ -147,8 +147,8 @@ import { IEmbedderTerminalService } from "../services/terminal/common/embedderTe
 import { ITimerService } from "../services/timer/browser/timerService.js";
 import {
 	IUserDataInitializationService,
-	type IUserDataInitializer,
 	UserDataInitializationService,
+	type IUserDataInitializer,
 } from "../services/userData/browser/userDataInit.js";
 import { UserDataProfileInitializer } from "../services/userDataProfile/browser/userDataProfileInit.js";
 import { IUserDataProfileService } from "../services/userDataProfile/common/userDataProfile.js";

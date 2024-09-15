@@ -17,15 +17,15 @@ import {
 	IConfigurationService,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type INotificationHandle,
 	INotificationService,
 	NotificationPriority,
+	type INotificationHandle,
 } from "../../../../platform/notification/common/notification.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 
 export class AccessibilityStatus
@@ -41,16 +41,26 @@ export class AccessibilityStatus
 	);
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IStatusbarService private readonly statusbarService: IStatusbarService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IStatusbarService private readonly statusbarService: IStatusbarService,
 	) {
 		super();
 
-		this._register(CommandsRegistry.registerCommand({ id: 'showEditorScreenReaderNotification', handler: () => this.showScreenReaderNotification() }));
+		this._register(
+			CommandsRegistry.registerCommand({
+				id: "showEditorScreenReaderNotification",
+				handler: () => this.showScreenReaderNotification(),
+			}),
+		);
 
-		this.updateScreenReaderModeElement(this.accessibilityService.isScreenReaderOptimized());
+		this.updateScreenReaderModeElement(
+			this.accessibilityService.isScreenReaderOptimized(),
+		);
 
 		this.registerListeners();
 	}

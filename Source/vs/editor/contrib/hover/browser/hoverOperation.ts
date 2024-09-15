@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	createCancelableAsyncIterable,
+	RunOnceScheduler,
 	type AsyncIterableObject,
 	type CancelableAsyncIterableObject,
-	RunOnceScheduler,
-	createCancelableAsyncIterable,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";

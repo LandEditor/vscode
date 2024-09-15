@@ -10,12 +10,12 @@ import {
 import type { URI } from "../../../../../../base/common/uri.js";
 import * as nls from "../../../../../../nls.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../../platform/contextkey/common/contextkey.js";
 import { SyncDescriptor } from "../../../../../../platform/instantiation/common/descriptors.js";
 import { Registry } from "../../../../../../platform/registry/common/platform.js";
@@ -48,20 +48,35 @@ export class NotebookVariables
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService,
-		@INotebookKernelService private readonly notebookKernelService: INotebookKernelService,
-		@INotebookService private readonly notebookDocumentService: INotebookService
+		@INotebookExecutionStateService
+		private readonly notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookKernelService
+		private readonly notebookKernelService: INotebookKernelService,
+		@INotebookService
+		private readonly notebookDocumentService: INotebookService,
 	) {
 		super();
 
-		this.viewEnabled = NOTEBOOK_VARIABLE_VIEW_ENABLED.bindTo(contextKeyService);
+		this.viewEnabled =
+			NOTEBOOK_VARIABLE_VIEW_ENABLED.bindTo(contextKeyService);
 
-		this.listeners.push(this.editorService.onDidActiveEditorChange(() => this.handleInitEvent()));
-		this.listeners.push(this.notebookExecutionStateService.onDidChangeExecution((e) => this.handleInitEvent(e.notebook)));
+		this.listeners.push(
+			this.editorService.onDidActiveEditorChange(() =>
+				this.handleInitEvent(),
+			),
+		);
+		this.listeners.push(
+			this.notebookExecutionStateService.onDidChangeExecution((e) =>
+				this.handleInitEvent(e.notebook),
+			),
+		);
 
-		this.configListener = configurationService.onDidChangeConfiguration((e) => this.handleConfigChange(e));
+		this.configListener = configurationService.onDidChangeConfiguration(
+			(e) => this.handleConfigChange(e),
+		);
 	}
 
 	private handleConfigChange(e: IConfigurationChangeEvent) {

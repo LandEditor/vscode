@@ -6,13 +6,13 @@
 import { readHotReloadableExport } from "../../../../base/common/hotReloadHelpers.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IReader,
-	type ISettableObservable,
 	derived,
 	derivedDisposable,
 	derivedObservableWithCache,
 	derivedWithSetter,
 	observableValue,
+	type IReader,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
@@ -111,16 +111,33 @@ export class InlineEditsController extends Disposable {
 
 	constructor(
 		public readonly editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@ILanguageFeatureDebounceService private readonly _debounceService: ILanguageFeatureDebounceService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@ILanguageFeatureDebounceService
+		private readonly _debounceService: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 
-		this._register(bindContextKey(inlineEditVisible, this._contextKeyService, r => !!this.model.read(r)?.inlineEdit.read(r)));
-		this._register(bindContextKey(isPinnedContextKey, this._contextKeyService, r => !!this.model.read(r)?.isPinned.read(r)));
+		this._register(
+			bindContextKey(
+				inlineEditVisible,
+				this._contextKeyService,
+				(r) => !!this.model.read(r)?.inlineEdit.read(r),
+			),
+		);
+		this._register(
+			bindContextKey(
+				isPinnedContextKey,
+				this._contextKeyService,
+				(r) => !!this.model.read(r)?.isPinned.read(r),
+			),
+		);
 
 		this.model.recomputeInitiallyAndOnChange(this._store);
 		this._widget.recomputeInitiallyAndOnChange(this._store);

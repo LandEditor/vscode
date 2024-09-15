@@ -11,15 +11,15 @@ import { Iterable } from "../../../base/common/iterator.js";
 import type { IJSONSchema } from "../../../base/common/jsonSchema.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { ThemeColor } from "../../../base/common/themables.js";
 import type { Command } from "../../../editor/common/languages.js";
 import { localize } from "../../../nls.js";
 import {
-	type IAccessibilityInformation,
 	isAccessibilityInformation,
+	type IAccessibilityInformation,
 } from "../../../platform/accessibility/common/accessibility.js";
 import { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import {
@@ -34,12 +34,12 @@ import {
 import { isProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import { ExtensionsRegistry } from "../../services/extensions/common/extensionsRegistry.js";
 import {
+	IStatusbarService,
+	StatusbarAlignment,
 	type IStatusbarEntry,
 	type IStatusbarEntryAccessor,
 	type IStatusbarEntryPriority,
-	IStatusbarService,
 	type StatusbarAlignment as MainThreadStatusBarAlignment,
-	StatusbarAlignment,
 	type StatusbarEntryKind,
 } from "../../services/statusbar/browser/statusbar.js";
 import { asStatusBarItemIdentifier } from "../common/extHostTypes.js";
@@ -114,7 +114,10 @@ class ExtensionStatusBarItemService implements IExtensionStatusBarItemService {
 	readonly onDidChange: Event<IExtensionStatusBarItemChangeEvent> =
 		this._onDidChange.event;
 
-	constructor(@IStatusbarService private readonly _statusbarService: IStatusbarService) { }
+	constructor(
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
+	) {}
 
 	dispose(): void {
 		this._entries.forEach((entry) => entry.accessor.dispose());
@@ -391,18 +394,25 @@ const statusBarItemsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<
 });
 
 export class StatusBarItemsExtensionPoint {
-	constructor(@IExtensionStatusBarItemService statusBarItemsService: IExtensionStatusBarItemService) {
-
+	constructor(
+		@IExtensionStatusBarItemService
+		statusBarItemsService: IExtensionStatusBarItemService,
+	) {
 		const contributions = new DisposableStore();
 
 		statusBarItemsExtensionPoint.setHandler((extensions) => {
-
 			contributions.clear();
 
 			for (const entry of extensions) {
-
-				if (!isProposedApiEnabled(entry.description, 'contribStatusBarItems')) {
-					entry.collector.error(`The ${statusBarItemsExtensionPoint.name} is proposed API`);
+				if (
+					!isProposedApiEnabled(
+						entry.description,
+						"contribStatusBarItems",
+					)
+				) {
+					entry.collector.error(
+						`The ${statusBarItemsExtensionPoint.name} is proposed API`,
+					);
 					continue;
 				}
 
@@ -410,28 +420,45 @@ export class StatusBarItemsExtensionPoint {
 
 				for (const candidate of Iterable.wrap(value)) {
 					if (!isUserFriendlyStatusItemEntry(candidate)) {
-						collector.error(localize('invalid', "Invalid status bar item contribution."));
+						collector.error(
+							localize(
+								"invalid",
+								"Invalid status bar item contribution.",
+							),
+						);
 						continue;
 					}
 
-					const fullItemId = asStatusBarItemIdentifier(entry.description.identifier, candidate.id);
+					const fullItemId = asStatusBarItemIdentifier(
+						entry.description.identifier,
+						candidate.id,
+					);
 
 					const kind = statusBarItemsService.setOrUpdateEntry(
 						fullItemId,
 						fullItemId,
 						ExtensionIdentifier.toKey(entry.description.identifier),
-						candidate.name ?? entry.description.displayName ?? entry.description.name,
+						candidate.name ??
+							entry.description.displayName ??
+							entry.description.name,
 						candidate.text,
 						candidate.tooltip,
-						candidate.command ? { id: candidate.command, title: candidate.name } : undefined,
-						undefined, undefined,
-						candidate.alignment === 'left',
+						candidate.command
+							? { id: candidate.command, title: candidate.name }
+							: undefined,
+						undefined,
+						undefined,
+						candidate.alignment === "left",
 						candidate.priority,
-						candidate.accessibilityInformation
+						candidate.accessibilityInformation,
 					);
 
 					if (kind === StatusBarUpdateKind.DidDefine) {
-						contributions.add(toDisposable(() => statusBarItemsService.unsetEntry(fullItemId)));
+						contributions.add(
+							toDisposable(() =>
+								statusBarItemsService.unsetEntry(fullItemId),
+							),
+						);
 					}
 				}
 			}

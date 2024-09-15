@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	PlatformToString,
 	platform,
+	PlatformToString,
 } from "../../../../base/common/platform.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";

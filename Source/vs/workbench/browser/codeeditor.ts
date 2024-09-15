@@ -9,12 +9,12 @@ import { Disposable, DisposableStore } from "../../base/common/lifecycle.js";
 import { isEqual } from "../../base/common/resources.js";
 import type { URI } from "../../base/common/uri.js";
 import {
+	isCodeEditor,
+	isCompositeEditor,
+	OverlayWidgetPositionPreference,
 	type ICodeEditor,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
-	OverlayWidgetPositionPreference,
-	isCodeEditor,
-	isCompositeEditor,
 } from "../../editor/browser/editorBrowser.js";
 import { EmbeddedCodeEditorWidget } from "../../editor/browser/widget/codeEditor/embeddedCodeEditorWidget.js";
 import { EditorOption } from "../../editor/common/config/editorOptions.js";
@@ -25,8 +25,8 @@ import {
 } from "../../editor/common/cursorEvents.js";
 import type { IEditorContribution } from "../../editor/common/editorCommon.js";
 import {
-	type IModelDecorationsChangeAccessor,
 	TrackedRangeStickiness,
+	type IModelDecorationsChangeAccessor,
 } from "../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../editor/common/model/textModel.js";
 import {
@@ -53,7 +53,9 @@ export class RangeHighlightDecorations extends Disposable {
 	private editor: ICodeEditor | null = null;
 	private readonly editorDisposables = this._register(new DisposableStore());
 
-	constructor(@IEditorService private readonly editorService: IEditorService) {
+	constructor(
+		@IEditorService private readonly editorService: IEditorService,
+	) {
 		super();
 	}
 
@@ -227,9 +229,10 @@ export class FloatingEditorClickMenu
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IMenuService menuService: IMenuService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super(MenuId.EditorContent, menuService, contextKeyService);
 		this.render();

@@ -16,14 +16,14 @@ import { IEditorResolverService } from "../../../../services/editor/common/edito
 import { QueryBuilder } from "../../../../services/search/common/queryBuilder.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
+	ISearchService,
+	pathIncludedInQuery,
+	QueryType,
 	type IFolderQuery,
 	type ISearchComplete,
 	type ISearchConfigurationProperties,
 	type ISearchProgressItem,
-	ISearchService,
 	type ITextQuery,
-	QueryType,
-	pathIncludedInQuery,
 } from "../../../../services/search/common/search.js";
 import type { NotebookEditorWidget } from "../../../notebook/browser/notebookEditorWidget.js";
 import { INotebookEditorService } from "../../../notebook/browser/services/notebookEditorService.js";
@@ -33,10 +33,10 @@ import type { INotebookSearchService } from "../../common/notebookSearch.js";
 import type { NotebookPriorityInfo } from "../../common/search.js";
 import type { INotebookFileMatchNoModel } from "../../common/searchNotebookHelpers.js";
 import {
-	type INotebookCellMatchWithModel,
-	type INotebookFileMatchWithModel,
 	contentMatchesToTextSearchMatches,
 	webviewMatchesToTextSearchMatches,
+	type INotebookCellMatchWithModel,
+	type INotebookFileMatchWithModel,
 } from "./searchNotebookHelpers.js";
 
 interface IOpenNotebookSearchResults {
@@ -51,14 +51,18 @@ export class NotebookSearchService implements INotebookSearchService {
 	declare readonly _serviceBrand: undefined;
 	private queryBuilder: QueryBuilder;
 	constructor(
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@INotebookEditorService private readonly notebookEditorService: INotebookEditorService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@INotebookEditorService
+		private readonly notebookEditorService: INotebookEditorService,
 		@ILogService private readonly logService: ILogService,
 		@INotebookService private readonly notebookService: INotebookService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
 		@ISearchService private readonly searchService: ISearchService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		this.queryBuilder = instantiationService.createInstance(QueryBuilder);
 	}

@@ -14,12 +14,12 @@ import { localize, localize2 } from "../../../../nls.js";
 import type { ILocalizedString } from "../../../../platform/action/common/action.js";
 import {
 	Action2,
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
 	registerAction2,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
@@ -33,8 +33,8 @@ import {
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 
@@ -84,17 +84,26 @@ class NewFileTemplatesManager extends Disposable {
 	private menu: IMenu;
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IMenuService menuService: IMenuService,
 	) {
 		super();
 
 		NewFileTemplatesManager.Instance = this;
 
-		this._register({ dispose() { if (NewFileTemplatesManager.Instance === this) { NewFileTemplatesManager.Instance = undefined; } } });
+		this._register({
+			dispose() {
+				if (NewFileTemplatesManager.Instance === this) {
+					NewFileTemplatesManager.Instance = undefined;
+				}
+			},
+		});
 
 		this.menu = menuService.createMenu(MenuId.NewFile, contextKeyService);
 	}

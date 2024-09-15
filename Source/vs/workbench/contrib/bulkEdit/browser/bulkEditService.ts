@@ -5,25 +5,25 @@
 
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import { ResourceMap, ResourceSet } from "../../../../base/common/map.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
+	IBulkEditService,
+	ResourceFileEdit,
+	ResourceTextEdit,
 	type IBulkEditOptions,
 	type IBulkEditPreviewHandler,
 	type IBulkEditResult,
-	IBulkEditService,
 	type ResourceEdit,
-	ResourceFileEdit,
-	ResourceTextEdit,
 } from "../../../../editor/browser/services/bulkEditService.js";
 import { EditorOption } from "../../../../editor/common/config/editorOptions.js";
 import type { WorkspaceEdit } from "../../../../editor/common/languages.js";
@@ -41,9 +41,9 @@ import {
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
+	Progress,
 	type IProgress,
 	type IProgressStep,
-	Progress,
 } from "../../../../platform/progress/common/progress.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -86,11 +86,10 @@ class BulkEdit {
 		private readonly _undoRedoGroup: UndoRedoGroup,
 		private readonly _undoRedoSource: UndoRedoSource | undefined,
 		private readonly _confirmBeforeUndo: boolean,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
-	) {
-
-	}
+	) {}
 
 	ariaMessage(): string {
 		const otherResources = new ResourceMap<boolean>();
@@ -271,14 +270,18 @@ export class BulkEditService implements IBulkEditService {
 	private _previewHandler?: IBulkEditPreviewHandler;
 
 	constructor(
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IWorkingCopyService private readonly _workingCopyService: IWorkingCopyService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-	) { }
+		@IWorkingCopyService
+		private readonly _workingCopyService: IWorkingCopyService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+	) {}
 
 	setPreviewHandler(handler: IBulkEditPreviewHandler): IDisposable {
 		this._previewHandler = handler;

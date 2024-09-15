@@ -15,9 +15,9 @@ import type {
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
+	registerEditorAction,
 	type IActionOptions,
 	type ServicesAccessor,
-	registerEditorAction,
 } from "../../../browser/editorExtensions.js";
 import {
 	ReplaceCommand,

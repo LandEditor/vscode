@@ -12,15 +12,15 @@ import type {
 	IJSONSchemaMap,
 } from "../../../base/common/jsonSchema.js";
 import {
-	type IconIdentifier,
 	ThemeIcon,
+	type IconIdentifier,
 } from "../../../base/common/themables.js";
 import { isString } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../jsonschemas/common/jsonContributionRegistry.js";
 import * as platform from "../../registry/common/platform.js";
 

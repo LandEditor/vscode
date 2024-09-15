@@ -5,6 +5,7 @@
 
 import * as fs from "fs";
 import { hostname, release } from "os";
+
 import { raceTimeout } from "../../base/common/async.js";
 import { toErrorMessage } from "../../base/common/errorMessage.js";
 import {
@@ -45,8 +46,8 @@ import {
 } from "../../platform/extensionManagement/node/extensionSignatureVerificationService.js";
 import { ExtensionsProfileScannerService } from "../../platform/extensionManagement/node/extensionsProfileScannerService.js";
 import { ExtensionsScannerService } from "../../platform/extensionManagement/node/extensionsScannerService.js";
-import { FileService } from "../../platform/files/common/fileService.js";
 import { IFileService } from "../../platform/files/common/files.js";
+import { FileService } from "../../platform/files/common/fileService.js";
 import { DiskFileSystemProvider } from "../../platform/files/node/diskFileSystemProvider.js";
 import { SyncDescriptor } from "../../platform/instantiation/common/descriptors.js";
 import type { IInstantiationService } from "../../platform/instantiation/common/instantiation.js";
@@ -56,11 +57,11 @@ import { ILanguagePackService } from "../../platform/languagePacks/common/langua
 import { NativeLanguagePackService } from "../../platform/languagePacks/node/languagePacks.js";
 import {
 	ConsoleLogger,
-	ILogService,
-	type ILogger,
-	ILoggerService,
-	LogLevel,
 	getLogLevel,
+	ILoggerService,
+	ILogService,
+	LogLevel,
+	type ILogger,
 } from "../../platform/log/common/log.js";
 import { LogService } from "../../platform/log/common/logService.js";
 import { LoggerService } from "../../platform/log/node/loggerService.js";
@@ -81,29 +82,29 @@ import {
 import { resolveCommonProperties } from "../../platform/telemetry/common/commonProperties.js";
 import { ITelemetryService } from "../../platform/telemetry/common/telemetry.js";
 import {
-	type ITelemetryServiceConfig,
 	TelemetryService,
+	type ITelemetryServiceConfig,
 } from "../../platform/telemetry/common/telemetryService.js";
 import {
-	type ITelemetryAppender,
-	NullTelemetryService,
 	getPiiPathsFromEnvironment,
 	isInternalTelemetry,
+	NullTelemetryService,
 	supportsTelemetry,
+	type ITelemetryAppender,
 } from "../../platform/telemetry/common/telemetryUtils.js";
 import { OneDataSystemAppender } from "../../platform/telemetry/node/1dsAppender.js";
 import { buildTelemetryMessage } from "../../platform/telemetry/node/telemetry.js";
 import {
+	resolvedevDeviceId,
 	resolveMachineId,
 	resolveSqmId,
-	resolvedevDeviceId,
 } from "../../platform/telemetry/node/telemetryUtils.js";
 import { IUriIdentityService } from "../../platform/uriIdentity/common/uriIdentity.js";
 import { UriIdentityService } from "../../platform/uriIdentity/common/uriIdentityService.js";
 import { FileUserDataProvider } from "../../platform/userData/common/fileUserDataProvider.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../platform/userDataProfile/common/userDataProfile.js";
 import { UserDataProfilesReadonlyService } from "../../platform/userDataProfile/node/userDataProfile.js";
 

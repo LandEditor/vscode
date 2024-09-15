@@ -16,8 +16,8 @@ import {
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
 	Extensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,

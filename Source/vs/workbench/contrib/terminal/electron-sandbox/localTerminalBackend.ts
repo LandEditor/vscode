@@ -7,20 +7,20 @@ import { DeferredPromise } from "../../../../base/common/async.js";
 import { memoize } from "../../../../base/common/decorators.js";
 import { Emitter } from "../../../../base/common/event.js";
 import {
-	type PerformanceMark,
 	mark,
+	type PerformanceMark,
 } from "../../../../base/common/performance.js";
 import {
-	type IProcessEnvironment,
-	type OperatingSystem,
 	isMacintosh,
 	isWindows,
+	type IProcessEnvironment,
+	type OperatingSystem,
 } from "../../../../base/common/platform.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	ProxyChannel,
 	getDelayedChannel,
+	ProxyChannel,
 } from "../../../../base/parts/ipc/common/ipc.js";
 import { Client as MessagePortClient } from "../../../../base/parts/ipc/common/ipc.mp.js";
 import { acquirePort } from "../../../../base/parts/ipc/electron-sandbox/ipc.mp.js";
@@ -37,6 +37,10 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import {
 	ILocalPtyService,
+	ITerminalLogService,
+	TerminalExtensions,
+	TerminalIpcChannels,
+	TerminalSettingId,
 	type IProcessPropertyMap,
 	type IPtyHostLatencyMeasurement,
 	type IPtyService,
@@ -45,14 +49,10 @@ import {
 	type ITerminalBackendRegistry,
 	type ITerminalChildProcess,
 	type ITerminalEnvironment,
-	ITerminalLogService,
 	type ITerminalProcessOptions,
 	type ITerminalsLayoutInfo,
 	type ITerminalsLayoutInfoById,
 	type ProcessPropertyType,
-	TerminalExtensions,
-	TerminalIpcChannels,
-	TerminalSettingId,
 	type TitleEventSource,
 } from "../../../../platform/terminal/common/terminal.js";
 import { shouldUseEnvironmentVariableCollection } from "../../../../platform/terminal/common/terminalEnvironment.js";
@@ -76,9 +76,9 @@ import { BaseTerminalBackend } from "../browser/baseTerminalBackend.js";
 import { ITerminalInstanceService } from "../browser/terminal.js";
 import { IEnvironmentVariableService } from "../common/environmentVariable.js";
 import {
-	type ITerminalConfiguration,
 	ITerminalProfileResolverService,
 	TERMINAL_CONFIG_SECTION,
+	type ITerminalConfiguration,
 } from "../common/terminal.js";
 import * as terminalEnvironment from "../common/terminalEnvironment.js";
 import { TerminalStorageKeys } from "../common/terminalStorageKeys.js";
@@ -91,7 +91,8 @@ export class LocalTerminalBackendContribution
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ITerminalInstanceService terminalInstanceService: ITerminalInstanceService,
+		@ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		const backend =
 			instantiationService.createInstance(LocalTerminalBackend);
@@ -141,31 +142,49 @@ class LocalTerminalBackend
 	readonly onDidRequestDetach = this._onDidRequestDetach.event;
 
 	constructor(
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@ITerminalLogService logService: ITerminalLogService,
 		@ILocalPtyService private readonly _localPtyService: ILocalPtyService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IShellEnvironmentService private readonly _shellEnvironmentService: IShellEnvironmentService,
+		@IShellEnvironmentService
+		private readonly _shellEnvironmentService: IShellEnvironmentService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IConfigurationResolverService private readonly _configurationResolverService: IConfigurationResolverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationResolverService
+		private readonly _configurationResolverService: IConfigurationResolverService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IProductService private readonly _productService: IProductService,
 		@IHistoryService private readonly _historyService: IHistoryService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
-		@IEnvironmentVariableService private readonly _environmentVariableService: IEnvironmentVariableService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@IEnvironmentVariableService
+		private readonly _environmentVariableService: IEnvironmentVariableService,
 		@IHistoryService historyService: IHistoryService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IStatusbarService statusBarService: IStatusbarService,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
 	) {
-		super(_localPtyService, logService, historyService, _configurationResolverService, statusBarService, workspaceContextService);
+		super(
+			_localPtyService,
+			logService,
+			historyService,
+			_configurationResolverService,
+			statusBarService,
+			workspaceContextService,
+		);
 
-		this._register(this.onPtyHostRestart(() => {
-			this._directProxy = undefined;
-			this._directProxyClientEventually = undefined;
-			this._connectToDirectProxy();
-		}));
+		this._register(
+			this.onPtyHostRestart(() => {
+				this._directProxy = undefined;
+				this._directProxyClientEventually = undefined;
+				this._connectToDirectProxy();
+			}),
+		);
 	}
 
 	/**

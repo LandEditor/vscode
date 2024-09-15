@@ -32,9 +32,7 @@ export class SettingsEditor2Input extends EditorInput {
 		path: `settingseditor`,
 	});
 
-	constructor(
-		@IPreferencesService _preferencesService: IPreferencesService,
-	) {
+	constructor(@IPreferencesService _preferencesService: IPreferencesService) {
 		super();
 
 		this._settingsModel = _preferencesService.createSettings2EditorModel();

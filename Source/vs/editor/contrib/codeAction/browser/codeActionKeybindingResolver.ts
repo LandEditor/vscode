@@ -37,8 +37,9 @@ export class CodeActionKeybindingResolver {
 	];
 
 	constructor(
-		@IKeybindingService private readonly keybindingService: IKeybindingService
-	) { }
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+	) {}
 
 	public getResolver(): (
 		action: CodeAction,

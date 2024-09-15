@@ -23,7 +23,7 @@ import {
 	editorBackground,
 	editorForeground,
 } from "../../theme/common/colorRegistry.js";
-import { type IMenu, IMenuService, type MenuId } from "../common/actions.js";
+import { IMenuService, type IMenu, type MenuId } from "../common/actions.js";
 import { createAndFillInActionBarActions } from "./menuEntryActionViewItem.js";
 
 export class FloatingClickWidget extends Widget {
@@ -134,9 +134,10 @@ export class FloatingClickMenu extends AbstractFloatingClickMenu {
 			/** Argument provided to the menu action */
 			getActionArg: () => void;
 		},
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IMenuService menuService: IMenuService,
-		@IContextKeyService contextKeyService: IContextKeyService
+		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
 		super(options.menuId, menuService, contextKeyService);
 		this.render();

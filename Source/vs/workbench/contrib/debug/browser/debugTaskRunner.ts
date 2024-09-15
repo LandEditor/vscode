@@ -37,17 +37,17 @@ import type {
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { Markers } from "../../markers/common/markers.js";
 import {
-	ITaskService,
-	type ITaskSummary,
-} from "../../tasks/common/taskService.js";
-import {
 	ConfiguringTask,
 	CustomTask,
+	TaskEventKind,
 	type ITaskEvent,
 	type ITaskIdentifier,
 	type Task,
-	TaskEventKind,
 } from "../../tasks/common/tasks.js";
+import {
+	ITaskService,
+	type ITaskSummary,
+} from "../../tasks/common/taskService.js";
 import type { IDebugConfiguration } from "../common/debug.js";
 import {
 	DEBUG_CONFIGURE_COMMAND_ID,
@@ -85,13 +85,14 @@ export class DebugTaskRunner implements IDisposable {
 	constructor(
 		@ITaskService private readonly taskService: ITaskService,
 		@IMarkerService private readonly markerService: IMarkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IViewsService private readonly viewsService: IViewsService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IProgressService private readonly progressService: IProgressService,
-	) { }
+	) {}
 
 	cancel(): void {
 		this.globalCancellation.dispose(true);
@@ -163,7 +164,7 @@ export class DebugTaskRunner implements IDisposable {
 								taskLabel,
 							)
 						: taskSummary &&
-								typeof taskSummary.exitCode === "number"
+							  typeof taskSummary.exitCode === "number"
 							? nls.localize(
 									"preLaunchTaskExitCode",
 									"The preLaunchTask '{0}' terminated with exit code {1}.",

@@ -5,14 +5,14 @@
 
 import { timeout } from "../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { isFunction } from "../../../base/common/types.js";
 import type {

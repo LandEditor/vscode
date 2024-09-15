@@ -19,12 +19,12 @@ import { IWorkspaceContextService } from "../../../../platform/workspace/common/
 import { IWorkbenchExtensionManagementService } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type IExtensionsConfigContent,
 	IWorkspaceExtensionsConfigService,
+	type IExtensionsConfigContent,
 } from "../../../services/extensionRecommendations/common/workspaceExtensionsConfig.js";
 import {
-	type ExtensionRecommendation,
 	ExtensionRecommendations,
+	type ExtensionRecommendation,
 } from "./extensionRecommendations.js";
 
 const WORKSPACE_EXTENSIONS_FOLDER = ".vscode/extensions";
@@ -48,15 +48,25 @@ export class WorkspaceRecommendations extends ExtensionRecommendations {
 	private readonly onDidChangeWorkspaceExtensionsScheduler: RunOnceScheduler;
 
 	constructor(
-		@IWorkspaceExtensionsConfigService private readonly workspaceExtensionsConfigService: IWorkspaceExtensionsConfigService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IWorkspaceExtensionsConfigService
+		private readonly workspaceExtensionsConfigService: IWorkspaceExtensionsConfigService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkbenchExtensionManagementService private readonly workbenchExtensionManagementService: IWorkbenchExtensionManagementService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IWorkbenchExtensionManagementService
+		private readonly workbenchExtensionManagementService: IWorkbenchExtensionManagementService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
-		this.onDidChangeWorkspaceExtensionsScheduler = this._register(new RunOnceScheduler(() => this.onDidChangeWorkspaceExtensionsFolders(), 1000));
+		this.onDidChangeWorkspaceExtensionsScheduler = this._register(
+			new RunOnceScheduler(
+				() => this.onDidChangeWorkspaceExtensionsFolders(),
+				1000,
+			),
+		);
 	}
 
 	protected async doActivate(): Promise<void> {

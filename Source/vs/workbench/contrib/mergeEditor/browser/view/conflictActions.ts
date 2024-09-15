@@ -17,10 +17,10 @@ import {
 	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	derived,
 	transaction,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type {
 	ICodeEditor,
@@ -32,9 +32,9 @@ import {
 } from "../../../../../editor/common/config/editorOptions.js";
 import { localize } from "../../../../../nls.js";
 import {
-	type ModifiedBaseRange,
 	ModifiedBaseRangeState,
 	ModifiedBaseRangeStateKind,
+	type ModifiedBaseRange,
 } from "../model/modifiedBaseRange.js";
 import { FixedZoneWidget } from "./fixedZoneWidget.js";
 import type { MergeEditorViewModel } from "./viewModel.js";

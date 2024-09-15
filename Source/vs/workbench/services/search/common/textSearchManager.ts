@@ -5,8 +5,8 @@
 
 import { isThenable } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -17,6 +17,11 @@ import { URI } from "../../../../base/common/uri.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
 	DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS,
+	excludeToGlobPattern,
+	hasSiblingPromiseFn,
+	QueryGlobTester,
+	QueryType,
+	resolvePatternsForProvider,
 	type IAITextQuery,
 	type IExtendedExtensionSearchOptions,
 	type IFileMatch,
@@ -29,16 +34,11 @@ import {
 	type ITextSearchMatch,
 	type ITextSearchResult,
 	type ITextSearchStats,
-	QueryGlobTester,
-	QueryType,
-	excludeToGlobPattern,
-	hasSiblingPromiseFn,
-	resolvePatternsForProvider,
 } from "./search.js";
 import {
+	TextSearchMatchNew,
 	type AITextSearchProviderNew,
 	type TextSearchCompleteNew,
-	TextSearchMatchNew,
 	type TextSearchProviderFolderOptions,
 	type TextSearchProviderNew,
 	type TextSearchProviderOptions,

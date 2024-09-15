@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
+
 import { Promises, Queue } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
@@ -26,24 +27,24 @@ import { isBoolean } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import { generateUuid } from "../../../base/common/uuid.js";
 import * as pfs from "../../../base/node/pfs.js";
-import { type IFile, extract, zip } from "../../../base/node/zip.js";
+import { extract, zip, type IFile } from "../../../base/node/zip.js";
 import * as nls from "../../../nls.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import { IDownloadService } from "../../download/common/download.js";
 import { INativeEnvironmentService } from "../../environment/common/environment.js";
-import { isEngineValid } from "../../extensions/common/extensionValidator.js";
 import {
 	ExtensionType,
 	type IExtension,
 	type IExtensionManifest,
 	type TargetPlatform,
 } from "../../extensions/common/extensions.js";
+import { isEngineValid } from "../../extensions/common/extensionValidator.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	FileOperationResult,
 	IFileService,
 	toFileOperationResult,
+	type FileChangesEvent,
 } from "../../files/common/files.js";
 import {
 	IInstantiationService,
@@ -57,31 +58,31 @@ import { IUserDataProfilesService } from "../../userDataProfile/common/userDataP
 import {
 	AbstractExtensionManagementService,
 	AbstractExtensionTask,
+	toExtensionManagementError,
 	type ExtensionVerificationStatus,
 	type IInstallExtensionTask,
-	type IUninstallExtensionTask,
 	type InstallExtensionTaskOptions,
+	type IUninstallExtensionTask,
 	type UninstallExtensionTaskOptions,
-	toExtensionManagementError,
 } from "../common/abstractExtensionManagementService.js";
 import {
 	EXTENSION_INSTALL_CLIENT_TARGET_PLATFORM_CONTEXT,
 	ExtensionManagementError,
 	ExtensionManagementErrorCode,
 	IExtensionGalleryService,
-	type IExtensionIdentifier,
 	IExtensionManagementService,
+	InstallOperation,
+	type IExtensionIdentifier,
 	type IGalleryExtension,
 	type ILocalExtension,
-	type IProductVersion,
-	InstallOperation,
 	type InstallOptions,
+	type IProductVersion,
 	type Metadata,
 } from "../common/extensionManagement.js";
 import {
-	ExtensionKey,
 	areSameExtensions,
 	computeTargetPlatform,
+	ExtensionKey,
 	getGalleryExtensionId,
 	groupByExtension,
 } from "../common/extensionManagementUtil.js";
@@ -99,8 +100,8 @@ import { ExtensionsLifecycle } from "./extensionLifecycle.js";
 import { fromExtractError, getManifest } from "./extensionManagementUtil.js";
 import { ExtensionsManifestCache } from "./extensionsManifestCache.js";
 import {
-	type DidChangeProfileExtensionsEvent,
 	ExtensionsWatcher,
+	type DidChangeProfileExtensionsEvent,
 } from "./extensionsWatcher.js";
 
 export const INativeServerExtensionManagementService = refineServiceDecorator<
@@ -141,25 +142,69 @@ export class ExtensionManagementService
 		@IExtensionGalleryService galleryService: IExtensionGalleryService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILogService logService: ILogService,
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,
-		@IExtensionsScannerService private readonly extensionsScannerService: IExtensionsScannerService,
-		@IExtensionsProfileScannerService private readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
+		@IExtensionsScannerService
+		private readonly extensionsScannerService: IExtensionsScannerService,
+		@IExtensionsProfileScannerService
+		private readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@IDownloadService private downloadService: IDownloadService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IProductService productService: IProductService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 	) {
-		super(galleryService, telemetryService, uriIdentityService, logService, productService, userDataProfilesService);
-		const extensionLifecycle = this._register(instantiationService.createInstance(ExtensionsLifecycle));
-		this.extensionsScanner = this._register(instantiationService.createInstance(ExtensionsScanner, extension => extensionLifecycle.postUninstall(extension)));
-		this.manifestCache = this._register(new ExtensionsManifestCache(userDataProfilesService, fileService, uriIdentityService, this, this.logService));
-		this.extensionsDownloader = this._register(instantiationService.createInstance(ExtensionsDownloader));
+		super(
+			galleryService,
+			telemetryService,
+			uriIdentityService,
+			logService,
+			productService,
+			userDataProfilesService,
+		);
+		const extensionLifecycle = this._register(
+			instantiationService.createInstance(ExtensionsLifecycle),
+		);
+		this.extensionsScanner = this._register(
+			instantiationService.createInstance(
+				ExtensionsScanner,
+				(extension) => extensionLifecycle.postUninstall(extension),
+			),
+		);
+		this.manifestCache = this._register(
+			new ExtensionsManifestCache(
+				userDataProfilesService,
+				fileService,
+				uriIdentityService,
+				this,
+				this.logService,
+			),
+		);
+		this.extensionsDownloader = this._register(
+			instantiationService.createInstance(ExtensionsDownloader),
+		);
 
-		const extensionsWatcher = this._register(new ExtensionsWatcher(this, this.extensionsScannerService, userDataProfilesService, extensionsProfileScannerService, uriIdentityService, fileService, logService));
-		this._register(extensionsWatcher.onDidChangeExtensionsByAnotherSource(e => this.onDidChangeExtensionsFromAnotherSource(e)));
+		const extensionsWatcher = this._register(
+			new ExtensionsWatcher(
+				this,
+				this.extensionsScannerService,
+				userDataProfilesService,
+				extensionsProfileScannerService,
+				uriIdentityService,
+				fileService,
+				logService,
+			),
+		);
+		this._register(
+			extensionsWatcher.onDidChangeExtensionsByAnotherSource((e) =>
+				this.onDidChangeExtensionsFromAnotherSource(e),
+			),
+		);
 		this.watchForExtensionsNotInstalledBySystem();
 	}
 
@@ -1006,16 +1051,24 @@ export class ExtensionsScanner extends Disposable {
 	>();
 
 	constructor(
-		private readonly beforeRemovingExtension: (e: ILocalExtension) => Promise<void>,
+		private readonly beforeRemovingExtension: (
+			e: ILocalExtension,
+		) => Promise<void>,
 		@IFileService private readonly fileService: IFileService,
-		@IExtensionsScannerService private readonly extensionsScannerService: IExtensionsScannerService,
-		@IExtensionsProfileScannerService private readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IExtensionsScannerService
+		private readonly extensionsScannerService: IExtensionsScannerService,
+		@IExtensionsProfileScannerService
+		private readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this.uninstalledResource = joinPath(this.extensionsScannerService.userExtensionsLocation, '.obsolete');
+		this.uninstalledResource = joinPath(
+			this.extensionsScannerService.userExtensionsLocation,
+			".obsolete",
+		);
 		this.uninstalledFileLimiter = new Queue();
 	}
 
@@ -1810,13 +1863,21 @@ class InstallExtensionInProfileTask
 		readonly manifest: IExtensionManifest,
 		readonly source: IGalleryExtension | URI,
 		readonly options: InstallExtensionTaskOptions,
-		private readonly extractExtensionFn: (operation: InstallOperation, token: CancellationToken) => Promise<ExtractExtensionResult>,
+		private readonly extractExtensionFn: (
+			operation: InstallOperation,
+			token: CancellationToken,
+		) => Promise<ExtractExtensionResult>,
 		private readonly extensionsScanner: ExtensionsScanner,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IExtensionsScannerService private readonly extensionsScannerService: IExtensionsScannerService,
-		@IExtensionsProfileScannerService private readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IExtensionsScannerService
+		private readonly extensionsScannerService: IExtensionsScannerService,
+		@IExtensionsProfileScannerService
+		private readonly extensionsProfileScannerService: IExtensionsProfileScannerService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();

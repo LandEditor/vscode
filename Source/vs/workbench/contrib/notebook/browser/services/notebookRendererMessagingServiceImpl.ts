@@ -36,7 +36,7 @@ export class NotebookRendererMessagingService
 	public readonly onShouldPostMessage = this.postMessageEmitter.event;
 
 	constructor(
-		@IExtensionService private readonly extensionService: IExtensionService
+		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super();
 	}

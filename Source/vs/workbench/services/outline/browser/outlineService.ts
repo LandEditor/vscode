@@ -6,8 +6,8 @@
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import {
@@ -16,9 +16,9 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import type { IEditorPane } from "../../../common/editor.js";
 import {
+	IOutlineService,
 	type IOutline,
 	type IOutlineCreator,
-	IOutlineService,
 	type OutlineTarget,
 } from "./outline.js";
 

@@ -43,9 +43,9 @@ import {
 import { IWorkingCopyBackupService } from "../../../services/workingCopy/common/workingCopyBackup.js";
 import { TerminalCommandId } from "../../terminal/common/terminal.js";
 import {
-	type GettingStartedEditorOptions,
 	GettingStartedInput,
 	gettingStartedInputTypeId,
+	type GettingStartedEditorOptions,
 } from "./gettingStartedInput.js";
 
 export const restoreWalkthroughsConfigurationKey =
@@ -66,31 +66,36 @@ export class StartupPageEditorResolverContribution
 	static readonly ID = "workbench.contrib.startupPageEditorResolver";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IEditorResolverService editorResolverService: IEditorResolverService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IEditorResolverService editorResolverService: IEditorResolverService,
 	) {
 		editorResolverService.registerEditor(
 			`${GettingStartedInput.RESOURCE.scheme}:/**`,
 			{
 				id: GettingStartedInput.ID,
-				label: localize('welcome.displayName', "Welcome Page"),
+				label: localize("welcome.displayName", "Welcome Page"),
 				priority: RegisteredEditorPriority.builtin,
 			},
 			{
 				singlePerResource: false,
-				canSupportResource: uri => uri.scheme === GettingStartedInput.RESOURCE.scheme,
+				canSupportResource: (uri) =>
+					uri.scheme === GettingStartedInput.RESOURCE.scheme,
 			},
 			{
 				createEditorInput: ({ resource, options }) => {
 					return {
-						editor: this.instantiationService.createInstance(GettingStartedInput, options as GettingStartedEditorOptions),
+						editor: this.instantiationService.createInstance(
+							GettingStartedInput,
+							options as GettingStartedEditorOptions,
+						),
 						options: {
 							...options,
-							pinned: false
-						}
+							pinned: false,
+						},
 					};
-				}
-			}
+				},
+			},
 		);
 	}
 }
@@ -99,19 +104,25 @@ export class StartupPageRunnerContribution implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.startupPageRunner";
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IWorkingCopyBackupService private readonly workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyBackupService
+		private readonly workingCopyBackupService: IWorkingCopyBackupService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IProductService private readonly productService: IProductService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
-		@INotificationService private readonly notificationService: INotificationService
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		this.run().then(undefined, onUnexpectedError);
 	}

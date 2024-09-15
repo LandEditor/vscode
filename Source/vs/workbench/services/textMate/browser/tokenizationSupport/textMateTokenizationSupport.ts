@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IGrammar, StateStack } from "vscode-textmate";
+
 import { Emitter, type Event } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { StopWatch } from "../../../../../base/common/stopwatch.js";
 import {
-	type LanguageId,
 	TokenMetadata,
+	type LanguageId,
 } from "../../../../../editor/common/encodedTokenAttributes.js";
 import {
 	EncodedTokenizationResult,

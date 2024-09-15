@@ -32,20 +32,35 @@ export class ContributedExternalUriOpenersStore extends Disposable {
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IExtensionService private readonly _extensionService: IExtensionService
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 	) {
 		super();
 
-		this._memento = new Memento(ContributedExternalUriOpenersStore.STORAGE_ID, storageService);
-		this._mementoObject = this._memento.getMemento(StorageScope.PROFILE, StorageTarget.MACHINE);
+		this._memento = new Memento(
+			ContributedExternalUriOpenersStore.STORAGE_ID,
+			storageService,
+		);
+		this._mementoObject = this._memento.getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.MACHINE,
+		);
 		for (const [id, value] of Object.entries(this._mementoObject || {})) {
 			this.add(id, value.extensionId, { isCurrentlyRegistered: false });
 		}
 
 		this.invalidateOpenersOnExtensionsChanged();
 
-		this._register(this._extensionService.onDidChangeExtensions(() => this.invalidateOpenersOnExtensionsChanged()));
-		this._register(this._extensionService.onDidChangeExtensionsStatus(() => this.invalidateOpenersOnExtensionsChanged()));
+		this._register(
+			this._extensionService.onDidChangeExtensions(() =>
+				this.invalidateOpenersOnExtensionsChanged(),
+			),
+		);
+		this._register(
+			this._extensionService.onDidChangeExtensionsStatus(() =>
+				this.invalidateOpenersOnExtensionsChanged(),
+			),
+		);
 	}
 
 	public didRegisterOpener(id: string, extensionId: string): void {

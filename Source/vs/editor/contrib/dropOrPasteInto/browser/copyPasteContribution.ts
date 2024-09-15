@@ -16,16 +16,16 @@ import {
 	EditorAction,
 	EditorCommand,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import { registerEditorFeature } from "../../../common/editorFeatures.js";
 import {
-	CopyPasteController,
 	changePasteTypeCommandId,
+	CopyPasteController,
 	pasteWidgetVisibleCtx,
 } from "./copyPasteController.js";
 import {

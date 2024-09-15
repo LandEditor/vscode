@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	MarkdownString,
 	isMarkdownString,
+	MarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -29,10 +29,10 @@ import {
 	type IEditorPaneRegistry,
 } from "../../../browser/editor.js";
 import {
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -52,8 +52,8 @@ import { registerChatContextActions } from "./actions/chatContextActions.js";
 import { registerChatCopyActions } from "./actions/chatCopyActions.js";
 import { registerChatDeveloperActions } from "./actions/chatDeveloperActions.js";
 import {
-	SubmitAction,
 	registerChatExecuteActions,
+	SubmitAction,
 } from "./actions/chatExecuteActions.js";
 import { registerChatFileTreeActions } from "./actions/chatFileTreeActions.js";
 import { registerChatExportActions } from "./actions/chatImportExport.js";
@@ -85,10 +85,12 @@ import { ChatResponseAccessibleView } from "./chatResponseAccessibleView.js";
 import { ChatVariablesService } from "./chatVariables.js";
 import { ChatWidgetService } from "./chatWidget.js";
 import { ChatCodeBlockContextProviderService } from "./codeBlockContextProviderService.js";
+
 import "./contrib/chatContextAttachments.js";
 import "./contrib/chatInputCompletions.js";
 import "./contrib/chatInputEditorContrib.js";
 import "./contrib/chatInputEditorHover.js";
+
 import {
 	IEditorResolverService,
 	RegisteredEditorPriority,
@@ -114,6 +116,10 @@ import {
 	IChatWidgetHistoryService,
 } from "../common/chatWidgetHistoryService.js";
 import {
+	ILanguageModelsService,
+	LanguageModelsService,
+} from "../common/languageModels.js";
+import {
 	ILanguageModelStatsService,
 	LanguageModelStatsService,
 } from "../common/languageModelStats.js";
@@ -121,15 +127,12 @@ import {
 	ILanguageModelToolsService,
 	LanguageModelToolsService,
 } from "../common/languageModelToolsService.js";
-import {
-	ILanguageModelsService,
-	LanguageModelsService,
-} from "../common/languageModels.js";
 import { LanguageModelToolsExtensionPointHandler } from "../common/tools/languageModelToolsContribution.js";
 import {
 	IVoiceChatService,
 	VoiceChatService,
 } from "../common/voiceChatService.js";
+
 import "../common/chatColors.js";
 
 // Register configuration
@@ -409,8 +412,7 @@ class ChatSlashStaticSlashCommandsContribution extends Disposable {
 						} else {
 							progress.report({
 								content: new MarkdownString(
-									defaultAgent.metadata
-										.helpTextVariablesPrefix,
+									defaultAgent.metadata.helpTextVariablesPrefix,
 								),
 								kind: "markdownContent",
 							});

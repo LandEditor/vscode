@@ -8,7 +8,7 @@ import * as semver from "../../../base/common/semver/semver.js";
 import Severity from "../../../base/common/severity.js";
 import type { URI } from "../../../base/common/uri.js";
 import * as nls from "../../../nls.js";
-import { type IExtensionManifest, parseApiProposals } from "./extensions.js";
+import { parseApiProposals, type IExtensionManifest } from "./extensions.js";
 import { allApiProposals } from "./extensionsApiProposals.js";
 
 export interface IParsedVersion {

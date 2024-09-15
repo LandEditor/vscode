@@ -18,8 +18,8 @@ import {
 import { createTextBufferFactory } from "../../../../editor/common/model/textModel.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
@@ -53,12 +53,17 @@ export class WalkThroughSnippetContentProvider
 	private loads = new Map<string, Promise<ITextBufferFactory>>();
 
 	constructor(
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IModelService private readonly modelService: IModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
-		this.textModelResolverService.registerTextModelContentProvider(Schemas.walkThroughSnippet, this);
+		this.textModelResolverService.registerTextModelContentProvider(
+			Schemas.walkThroughSnippet,
+			this,
+		);
 	}
 
 	private async textBufferFactoryFromResource(

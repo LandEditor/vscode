@@ -17,8 +17,8 @@ import { Link } from "../../../../platform/opener/browser/link.js";
 import type { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { SeverityIcon } from "../../../../platform/severityIcon/browser/severityIcon.js";
 import {
-	type TextSearchCompleteMessage,
 	TextSearchCompleteMessageType,
+	type TextSearchCompleteMessage,
 } from "../../../services/search/common/searchExtTypes.js";
 
 export const renderSearchMessage = (

@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { ResourceLabelFormatter } from "../../../platform/label/common/label.js";
 import {
+	MainContext,
 	type ExtHostLabelServiceShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadLabelServiceShape,
 } from "./extHost.protocol.js";
 

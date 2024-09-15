@@ -5,8 +5,8 @@
 
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	ValueWithChangeEventFromObservable,
 	observableFromEvent,
+	ValueWithChangeEventFromObservable,
 	waitForState,
 } from "../../../../base/common/observable.js";
 import { URI, type UriComponents } from "../../../../base/common/uri.js";
@@ -24,15 +24,15 @@ import {
 } from "../../../services/activity/common/activity.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
+	ISCMService,
 	type ISCMRepository,
 	type ISCMResourceGroup,
-	ISCMService,
 } from "../../scm/common/scm.js";
 import {
-	type IMultiDiffSourceResolver,
 	IMultiDiffSourceResolverService,
-	type IResolvedMultiDiffSource,
 	MultiDiffEditorItem,
+	type IMultiDiffSourceResolver,
+	type IResolvedMultiDiffSource,
 } from "./multiDiffSourceResolverService.js";
 
 export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
@@ -80,8 +80,7 @@ export class ScmMultiDiffSourceResolver implements IMultiDiffSourceResolver {
 	constructor(
 		@ISCMService private readonly _scmService: ISCMService,
 		@IActivityService private readonly _activityService: IActivityService,
-	) {
-	}
+	) {}
 
 	canHandleUri(uri: URI): boolean {
 		return ScmMultiDiffSourceResolver.parseUri(uri) !== undefined;
@@ -164,7 +163,8 @@ export class ScmMultiDiffSourceResolverContribution extends Disposable {
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IMultiDiffSourceResolverService multiDiffSourceResolverService: IMultiDiffSourceResolverService,
+		@IMultiDiffSourceResolverService
+		multiDiffSourceResolverService: IMultiDiffSourceResolverService,
 	) {
 		super();
 

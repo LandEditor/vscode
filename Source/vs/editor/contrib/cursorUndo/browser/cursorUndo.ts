@@ -11,9 +11,9 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import type { Selection } from "../../../common/core/selection.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";

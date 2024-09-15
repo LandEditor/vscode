@@ -6,7 +6,9 @@
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
+
 import "./bracketMatching.css";
+
 import * as nls from "../../../../nls.js";
 import {
 	MenuId,
@@ -19,9 +21,9 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
@@ -33,9 +35,9 @@ import type {
 } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import {
-	type IModelDeltaDecoration,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 

@@ -21,10 +21,10 @@ import { Range } from "../../../../../editor/common/core/range.js";
 import type * as editorCommon from "../../../../../editor/common/editorCommon.js";
 import type { IWorkspaceTextEdit } from "../../../../../editor/common/languages.js";
 import {
+	TrackedRangeStickiness,
 	type FindMatch,
 	type IModelDecorationOptions,
 	type IModelDeltaDecoration,
-	TrackedRangeStickiness,
 } from "../../../../../editor/common/model.js";
 import {
 	MultiModelEditStackElement,
@@ -43,29 +43,29 @@ import type { NotebookCellTextModel } from "../../common/model/notebookCellTextM
 import type { NotebookTextModel } from "../../common/model/notebookTextModel.js";
 import {
 	CellKind,
+	NotebookCellsChangeType,
+	NotebookFindScopeType,
+	SelectionStateType,
 	type ICell,
 	type INotebookFindOptions,
 	type ISelectionState,
 	type NotebookCellTextModelSplice,
-	NotebookCellsChangeType,
-	NotebookFindScopeType,
-	SelectionStateType,
 } from "../../common/notebookCommon.js";
 import {
 	INotebookExecutionStateService,
 	NotebookExecutionType,
 } from "../../common/notebookExecutionStateService.js";
 import {
-	type ICellRange,
 	cellIndexesToRanges,
 	cellRangesToIndexes,
 	reduceCellRanges,
+	type ICellRange,
 } from "../../common/notebookRange.js";
 import { CellFindMatchModel } from "../contrib/find/findModel.js";
 import {
 	CellEditState,
-	type CellFindMatchWithIndex,
 	CellFoldingState,
+	type CellFindMatchWithIndex,
 	type EditorFoldingStateDelegate,
 	type ICellModelDecorations,
 	type ICellModelDeltaDecorations,
@@ -78,8 +78,8 @@ import {
 	type INotebookViewModel,
 } from "../notebookBrowser.js";
 import {
-	type NotebookLayoutInfo,
 	NotebookMetadataChangedEvent,
+	type NotebookLayoutInfo,
 } from "../notebookViewEvents.js";
 import { NotebookCellSelectionCollection } from "./cellSelectionCollection.js";
 import { CodeCellViewModel } from "./codeCellViewModel.js";
@@ -329,37 +329,61 @@ export class NotebookViewModel
 		private _viewContext: ViewContext,
 		private _layoutInfo: NotebookLayoutInfo | null,
 		private _options: NotebookViewModelOptions,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IBulkEditService private readonly _bulkEditService: IBulkEditService,
 		@IUndoRedoService private readonly _undoService: IUndoRedoService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@INotebookExecutionStateService notebookExecutionStateService: INotebookExecutionStateService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@INotebookExecutionStateService
+		notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
 
 		MODEL_ID++;
-		this.id = '$notebookViewModel' + MODEL_ID;
+		this.id = "$notebookViewModel" + MODEL_ID;
 		this._instanceId = strings.singleLetterHash(MODEL_ID);
 		this.replView = !!this.options.inRepl;
 
-		const compute = (changes: NotebookCellTextModelSplice<ICell>[], synchronous: boolean) => {
-			const diffs = changes.map(splice => {
-				return [splice[0], splice[1], splice[2].map(cell => {
-					return createCellViewModel(this._instantiationService, this, cell as NotebookCellTextModel, this._viewContext);
-				})] as [number, number, CellViewModel[]];
+		const compute = (
+			changes: NotebookCellTextModelSplice<ICell>[],
+			synchronous: boolean,
+		) => {
+			const diffs = changes.map((splice) => {
+				return [
+					splice[0],
+					splice[1],
+					splice[2].map((cell) => {
+						return createCellViewModel(
+							this._instantiationService,
+							this,
+							cell as NotebookCellTextModel,
+							this._viewContext,
+						);
+					}),
+				] as [number, number, CellViewModel[]];
 			});
 
-			diffs.reverse().forEach(diff => {
-				const deletedCells = this._viewCells.splice(diff[0], diff[1], ...diff[2]);
+			diffs.reverse().forEach((diff) => {
+				const deletedCells = this._viewCells.splice(
+					diff[0],
+					diff[1],
+					...diff[2],
+				);
 
-				this._decorationsTree.acceptReplace(diff[0], diff[1], diff[2].length, true);
-				deletedCells.forEach(cell => {
+				this._decorationsTree.acceptReplace(
+					diff[0],
+					diff[1],
+					diff[2].length,
+					true,
+				);
+				deletedCells.forEach((cell) => {
 					this._handleToViewCellMapping.delete(cell.handle);
 					// dispose the cell to release ref to the cell text document
 					cell.dispose();
 				});
 
-				diff[2].forEach(cell => {
+				diff[2].forEach((cell) => {
 					this._handleToViewCellMapping.set(cell.handle, cell);
 					this._localStore.add(cell);
 				});
@@ -369,13 +393,15 @@ export class NotebookViewModel
 
 			this._onDidChangeViewCells.fire({
 				synchronous: synchronous,
-				splices: diffs
+				splices: diffs,
 			});
 
 			let endSelectionHandles: number[] = [];
 			if (selectionHandles.length) {
 				const primaryHandle = selectionHandles[0];
-				const primarySelectionIndex = this._viewCells.indexOf(this.getCellByHandle(primaryHandle)!);
+				const primarySelectionIndex = this._viewCells.indexOf(
+					this.getCellByHandle(primaryHandle)!,
+				);
 				endSelectionHandles = [primaryHandle];
 				let delta = 0;
 
@@ -392,92 +418,144 @@ export class NotebookViewModel
 					}
 
 					if (diff[0] + diff[1] > primarySelectionIndex) {
-						endSelectionHandles = [this._viewCells[diff[0] + delta].handle];
+						endSelectionHandles = [
+							this._viewCells[diff[0] + delta].handle,
+						];
 						break;
 					}
 				}
 			}
 
 			// TODO@rebornix
-			const selectionIndexes = endSelectionHandles.map(handle => this._viewCells.findIndex(cell => cell.handle === handle));
-			this._selectionCollection.setState(cellIndexesToRanges([selectionIndexes[0]])[0], cellIndexesToRanges(selectionIndexes), true, 'model');
+			const selectionIndexes = endSelectionHandles.map((handle) =>
+				this._viewCells.findIndex((cell) => cell.handle === handle),
+			);
+			this._selectionCollection.setState(
+				cellIndexesToRanges([selectionIndexes[0]])[0],
+				cellIndexesToRanges(selectionIndexes),
+				true,
+				"model",
+			);
 		};
 
-		this._register(this._notebook.onDidChangeContent(e => {
-			for (let i = 0; i < e.rawEvents.length; i++) {
-				const change = e.rawEvents[i];
-				let changes: NotebookCellTextModelSplice<ICell>[] = [];
-				const synchronous = e.synchronous ?? true;
+		this._register(
+			this._notebook.onDidChangeContent((e) => {
+				for (let i = 0; i < e.rawEvents.length; i++) {
+					const change = e.rawEvents[i];
+					let changes: NotebookCellTextModelSplice<ICell>[] = [];
+					const synchronous = e.synchronous ?? true;
 
-				if (change.kind === NotebookCellsChangeType.ModelChange || change.kind === NotebookCellsChangeType.Initialize) {
-					changes = change.changes;
-					compute(changes, synchronous);
-					continue;
-				} else if (change.kind === NotebookCellsChangeType.Move) {
-					compute([[change.index, change.length, []]], synchronous);
-					compute([[change.newIdx, 0, change.cells]], synchronous);
-				} else {
-					continue;
-				}
-			}
-		}));
-
-		this._register(this._notebook.onDidChangeContent(contentChanges => {
-			contentChanges.rawEvents.forEach(e => {
-				if (e.kind === NotebookCellsChangeType.ChangeDocumentMetadata) {
-					this._viewContext.eventDispatcher.emit([new NotebookMetadataChangedEvent(this._notebook.metadata)]);
-				}
-			});
-
-			if (contentChanges.endSelectionState) {
-				this.updateSelectionsState(contentChanges.endSelectionState);
-			}
-		}));
-
-		this._register(this._viewContext.eventDispatcher.onDidChangeLayout((e) => {
-			this._layoutInfo = e.value;
-
-			this._viewCells.forEach(cell => {
-				if (cell.cellKind === CellKind.Markup) {
-					if (e.source.width || e.source.fontInfo) {
-						cell.layoutChange({ outerWidth: e.value.width, font: e.value.fontInfo });
+					if (
+						change.kind === NotebookCellsChangeType.ModelChange ||
+						change.kind === NotebookCellsChangeType.Initialize
+					) {
+						changes = change.changes;
+						compute(changes, synchronous);
+						continue;
+					} else if (change.kind === NotebookCellsChangeType.Move) {
+						compute(
+							[[change.index, change.length, []]],
+							synchronous,
+						);
+						compute(
+							[[change.newIdx, 0, change.cells]],
+							synchronous,
+						);
+					} else {
+						continue;
 					}
-				} else if (e.source.width !== undefined) {
-						cell.layoutChange({ outerWidth: e.value.width, font: e.value.fontInfo });
+				}
+			}),
+		);
+
+		this._register(
+			this._notebook.onDidChangeContent((contentChanges) => {
+				contentChanges.rawEvents.forEach((e) => {
+					if (
+						e.kind ===
+						NotebookCellsChangeType.ChangeDocumentMetadata
+					) {
+						this._viewContext.eventDispatcher.emit([
+							new NotebookMetadataChangedEvent(
+								this._notebook.metadata,
+							),
+						]);
 					}
-			});
-		}));
+				});
 
-		this._register(this._viewContext.notebookOptions.onDidChangeOptions(e => {
-			for (let i = 0; i < this.length; i++) {
-				const cell = this._viewCells[i];
-				cell.updateOptions(e);
-			}
-		}));
+				if (contentChanges.endSelectionState) {
+					this.updateSelectionsState(
+						contentChanges.endSelectionState,
+					);
+				}
+			}),
+		);
 
-		this._register(notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type !== NotebookExecutionType.cell) {
-				return;
-			}
-			const cell = this.getCellByHandle(e.cellHandle);
+		this._register(
+			this._viewContext.eventDispatcher.onDidChangeLayout((e) => {
+				this._layoutInfo = e.value;
 
-			if (cell instanceof CodeCellViewModel) {
-				cell.updateExecutionState(e);
-			}
-		}));
+				this._viewCells.forEach((cell) => {
+					if (cell.cellKind === CellKind.Markup) {
+						if (e.source.width || e.source.fontInfo) {
+							cell.layoutChange({
+								outerWidth: e.value.width,
+								font: e.value.fontInfo,
+							});
+						}
+					} else if (e.source.width !== undefined) {
+						cell.layoutChange({
+							outerWidth: e.value.width,
+							font: e.value.fontInfo,
+						});
+					}
+				});
+			}),
+		);
 
-		this._register(this._selectionCollection.onDidChangeSelection(e => {
-			this._onDidChangeSelection.fire(e);
-		}));
+		this._register(
+			this._viewContext.notebookOptions.onDidChangeOptions((e) => {
+				for (let i = 0; i < this.length; i++) {
+					const cell = this._viewCells[i];
+					cell.updateOptions(e);
+				}
+			}),
+		);
 
+		this._register(
+			notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (e.type !== NotebookExecutionType.cell) {
+					return;
+				}
+				const cell = this.getCellByHandle(e.cellHandle);
 
-		const viewCellCount = this.replView ? this._notebook.cells.length - 1 : this._notebook.cells.length;
+				if (cell instanceof CodeCellViewModel) {
+					cell.updateExecutionState(e);
+				}
+			}),
+		);
+
+		this._register(
+			this._selectionCollection.onDidChangeSelection((e) => {
+				this._onDidChangeSelection.fire(e);
+			}),
+		);
+
+		const viewCellCount = this.replView
+			? this._notebook.cells.length - 1
+			: this._notebook.cells.length;
 		for (let i = 0; i < viewCellCount; i++) {
-			this._viewCells.push(createCellViewModel(this._instantiationService, this, this._notebook.cells[i], this._viewContext));
+			this._viewCells.push(
+				createCellViewModel(
+					this._instantiationService,
+					this,
+					this._notebook.cells[i],
+					this._viewContext,
+				),
+			);
 		}
 
-
-		this._viewCells.forEach(cell => {
+		this._viewCells.forEach((cell) => {
 			this._handleToViewCellMapping.set(cell.handle, cell);
 		});
 	}

@@ -7,9 +7,9 @@ import { BugIndicatingError } from "../../../../base/common/errors.js";
 import { ensureNonNullable } from "../gpuUtils.js";
 import type { IRasterizedGlyph } from "../raster/raster.js";
 import {
+	UsagePreviewColors,
 	type ITextureAtlasAllocator,
 	type ITextureAtlasPageGlyph,
-	UsagePreviewColors,
 } from "./atlas.js";
 
 /**

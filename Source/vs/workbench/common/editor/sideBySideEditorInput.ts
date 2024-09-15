@@ -13,6 +13,14 @@ import { IEditorService } from "../../services/editor/common/editorService.js";
 import {
 	EditorExtensions,
 	EditorInputCapabilities,
+	findViewStateForEditor,
+	isDiffEditorInput,
+	isEditorInput,
+	isResourceDiffEditorInput,
+	isResourceEditorInput,
+	isResourceMergeEditorInput,
+	isResourceMultiDiffEditorInput,
+	isResourceSideBySideEditorInput,
 	type GroupIdentifier,
 	type IEditorFactoryRegistry,
 	type IEditorSerializer,
@@ -23,14 +31,6 @@ import {
 	type ISideBySideEditorInput,
 	type IUntypedEditorInput,
 	type Verbosity,
-	findViewStateForEditor,
-	isDiffEditorInput,
-	isEditorInput,
-	isResourceDiffEditorInput,
-	isResourceEditorInput,
-	isResourceMergeEditorInput,
-	isResourceMultiDiffEditorInput,
-	isResourceSideBySideEditorInput,
 } from "../editor.js";
 import { EditorInput, type IUntypedEditorOptions } from "./editorInput.js";
 
@@ -91,7 +91,7 @@ export class SideBySideEditorInput
 		protected readonly preferredDescription: string | undefined,
 		readonly secondary: EditorInput,
 		readonly primary: EditorInput,
-		@IEditorService private readonly editorService: IEditorService
+		@IEditorService private readonly editorService: IEditorService,
 	) {
 		super();
 

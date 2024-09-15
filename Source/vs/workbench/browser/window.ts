@@ -5,17 +5,17 @@
 
 import { isSafari, setFullscreen } from "../../base/browser/browser.js";
 import {
-	type HidDeviceData,
-	type SerialPortData,
-	type UsbDeviceData,
 	requestHidDevice,
 	requestSerialPort,
 	requestUsbDevice,
+	type HidDeviceData,
+	type SerialPortData,
+	type UsbDeviceData,
 } from "../../base/browser/deviceAccess.js";
 import {
+	addDisposableListener,
 	EventHelper,
 	EventType,
-	addDisposableListener,
 	getActiveWindow,
 	getWindow,
 	getWindowById,
@@ -27,20 +27,20 @@ import {
 } from "../../base/browser/dom.js";
 import { DomEmitter } from "../../base/browser/event.js";
 import {
-	type CodeWindow,
 	isAuxiliaryWindow,
 	mainWindow,
+	type CodeWindow,
 } from "../../base/browser/window.js";
 import { timeout } from "../../base/common/async.js";
 import { Event } from "../../base/common/event.js";
 import { createSingleCallFunction } from "../../base/common/functional.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../base/common/lifecycle.js";
-import { Schemas, matchesScheme } from "../../base/common/network.js";
+import { matchesScheme, Schemas } from "../../base/common/network.js";
 import { isIOS, isMacintosh } from "../../base/common/platform.js";
 import Severity from "../../base/common/severity.js";
 import { URI } from "../../base/common/uri.js";
@@ -78,9 +78,10 @@ export abstract class BaseWindow extends Disposable {
 
 	constructor(
 		targetWindow: CodeWindow,
-		dom = { getWindowsCount, getWindows }, /* for testing */
+		dom = { getWindowsCount, getWindows } /* for testing */,
 		@IHostService protected readonly hostService: IHostService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
 
@@ -334,14 +335,18 @@ export abstract class BaseWindow extends Disposable {
 export class BrowserWindow extends BaseWindow {
 	constructor(
 		@IOpenerService private readonly openerService: IOpenerService,
-		@ILifecycleService private readonly lifecycleService: BrowserLifecycleService,
+		@ILifecycleService
+		private readonly lifecycleService: BrowserLifecycleService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IProductService private readonly productService: IProductService,
-		@IBrowserWorkbenchEnvironmentService private readonly browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IHostService hostService: IHostService
+		@IBrowserWorkbenchEnvironmentService
+		private readonly browserEnvironmentService: IBrowserWorkbenchEnvironmentService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IHostService hostService: IHostService,
 	) {
 		super(mainWindow, undefined, hostService, browserEnvironmentService);
 
@@ -359,7 +364,7 @@ export class BrowserWindow extends BaseWindow {
 		const viewport =
 			isIOS && mainWindow.visualViewport
 				? mainWindow.visualViewport /** Visual viewport */
-				: mainWindow /** Layout viewport */;
+				: mainWindow; /** Layout viewport */
 		this._register(
 			addDisposableListener(viewport, EventType.RESIZE, () => {
 				this.layoutService.layout();

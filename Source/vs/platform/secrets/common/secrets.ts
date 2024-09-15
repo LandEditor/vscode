@@ -11,8 +11,8 @@ import { IEncryptionService } from "../../encryption/common/encryptionService.js
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 import { ILogService } from "../../log/common/log.js";
 import {
-	IStorageService,
 	InMemoryStorageService,
+	IStorageService,
 	StorageScope,
 	StorageTarget,
 } from "../../storage/common/storage.js";

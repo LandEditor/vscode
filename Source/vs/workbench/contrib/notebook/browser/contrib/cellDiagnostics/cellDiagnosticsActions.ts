@@ -21,9 +21,9 @@ import {
 	NOTEBOOK_CELL_HAS_ERROR_DIAGNOSTICS,
 } from "../../../common/notebookContextKeys.js";
 import {
-	type INotebookCellActionContext,
-	NotebookCellAction,
 	findTargetCellEditor,
+	NotebookCellAction,
+	type INotebookCellActionContext,
 } from "../../controller/coreActions.js";
 import { CodeCellViewModel } from "../../viewModel/codeCellViewModel.js";
 

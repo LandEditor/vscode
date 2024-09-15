@@ -6,8 +6,8 @@
 import type { IIdentityProvider } from "../../../../../base/browser/ui/list/list.js";
 import type { ObjectTree } from "../../../../../base/browser/ui/tree/objectTree.js";
 import {
-	type IObjectTreeElement,
 	ObjectTreeElementCollapseState,
+	type IObjectTreeElement,
 } from "../../../../../base/browser/ui/tree/tree.js";
 import { Emitter, type Event } from "../../../../../base/common/event.js";
 import type { FuzzyScore } from "../../../../../base/common/filters.js";
@@ -16,14 +16,14 @@ import { Iterable } from "../../../../../base/common/iterator.js";
 import type { IDisposable } from "../../../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../../../base/common/marshallingIds.js";
 import {
-	type ITestItemContext,
 	InternalTestItem,
 	TestItemExpandState,
 	TestResultState,
+	type ITestItemContext,
 } from "../../common/testTypes.js";
 import {
-	type ISerializedTestTreeCollapseState,
 	isCollapsedInSerializedTestTree,
+	type ISerializedTestTreeCollapseState,
 } from "./testingViewState.js";
 
 /**
@@ -205,7 +205,7 @@ export const getChildrenForParent = (
 						: (isCollapsedInSerializedTestTree(
 									serialized,
 									element.test.item.extId,
-								) ?? element.depth > 0)
+							  ) ?? element.depth > 0)
 							? ObjectTreeElementCollapseState.PreserveOrCollapsed
 							: ObjectTreeElementCollapseState.PreserveOrExpanded,
 					children: getChildrenForParent(

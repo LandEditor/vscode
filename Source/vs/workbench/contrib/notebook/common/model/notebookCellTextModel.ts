@@ -5,7 +5,7 @@
 
 import { ThrottledDelayer } from "../../../../../base/common/async.js";
 import { Emitter, type Event } from "../../../../../base/common/event.js";
-import { StringSHA1, hash } from "../../../../../base/common/hash.js";
+import { hash, StringSHA1 } from "../../../../../base/common/hash.js";
 import { toFormattedString } from "../../../../../base/common/jsonFormatter.js";
 import {
 	Disposable,
@@ -20,8 +20,8 @@ import { PLAINTEXT_LANGUAGE_ID } from "../../../../../editor/common/languages/mo
 import * as model from "../../../../../editor/common/model.js";
 import { PieceTreeTextBuffer } from "../../../../../editor/common/model/pieceTreeTextBuffer/pieceTreeTextBuffer.js";
 import {
-	type TextModel,
 	createTextBuffer,
+	type TextModel,
 } from "../../../../../editor/common/model/textModel.js";
 import type { ILanguageDetectionService } from "../../../../services/languageDetection/common/languageDetectionWorkerService.js";
 import type {

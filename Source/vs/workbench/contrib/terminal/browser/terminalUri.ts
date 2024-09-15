@@ -5,7 +5,7 @@
 
 import { Schemas } from "../../../../base/common/network.js";
 import { URI } from "../../../../base/common/uri.js";
-import { type ITerminalInstance, TerminalDataTransfers } from "./terminal.js";
+import { TerminalDataTransfers, type ITerminalInstance } from "./terminal.js";
 
 export function parseTerminalUri(resource: URI): ITerminalIdentifier {
 	const [, workspaceId, instanceId] = resource.path.split("/");

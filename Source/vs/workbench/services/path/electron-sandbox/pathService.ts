@@ -15,7 +15,8 @@ import { AbstractPathService, IPathService } from "../common/pathService.js";
 export class NativePathService extends AbstractPathService {
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 	) {
 		super(

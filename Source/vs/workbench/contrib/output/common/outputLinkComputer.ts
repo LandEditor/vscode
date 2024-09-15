@@ -16,8 +16,8 @@ import type {
 import { Range } from "../../../../editor/common/core/range.js";
 import type { ILink } from "../../../../editor/common/languages.js";
 import {
-	type ICommonModel,
 	WorkerTextModelSyncServer,
+	type ICommonModel,
 } from "../../../../editor/common/services/textModelSync/textModelSync.impl.js";
 
 export interface IResourceCreator {

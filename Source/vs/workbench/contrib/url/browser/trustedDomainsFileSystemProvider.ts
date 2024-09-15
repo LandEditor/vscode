@@ -12,9 +12,9 @@ import type { URI } from "../../../../base/common/uri.js";
 import {
 	FileSystemProviderCapabilities,
 	FileType,
+	IFileService,
 	type IFileDeleteOptions,
 	type IFileOverwriteOptions,
-	IFileService,
 	type IFileSystemProviderWithFileReadWriteCapability,
 	type IFileWriteOptions,
 	type IStat,
@@ -28,9 +28,9 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
+	readTrustedDomains,
 	TRUSTED_DOMAINS_CONTENT_STORAGE_KEY,
 	TRUSTED_DOMAINS_STORAGE_KEY,
-	readTrustedDomains,
 } from "./trustedDomains.js";
 
 const TRUSTED_DOMAINS_SCHEMA = "trustedDomains";
@@ -113,7 +113,8 @@ export class TrustedDomainsFileSystemProvider
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		this.fileService.registerProvider(TRUSTED_DOMAINS_SCHEMA, this);
 	}

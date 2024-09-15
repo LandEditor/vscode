@@ -7,19 +7,21 @@ import type { IActionViewItem } from "../../../../base/browser/ui/actionbar/acti
 import type { IAction } from "../../../../base/common/actions.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
+
 import "./media/debugViewlet.css";
+
 import type { IBaseActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import * as nls from "../../../../nls.js";
 import { createActionViewItem } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	Action2,
 	MenuId,
-	type MenuItemAction,
 	MenuRegistry,
 	registerAction2,
+	type MenuItemAction,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
@@ -52,16 +54,16 @@ import { IWorkbenchLayoutService } from "../../../services/layout/browser/layout
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	BREAKPOINTS_VIEW_ID,
-	CONTEXT_DEBUGGERS_AVAILABLE,
 	CONTEXT_DEBUG_STATE,
 	CONTEXT_DEBUG_UX,
 	CONTEXT_DEBUG_UX_KEY,
+	CONTEXT_DEBUGGERS_AVAILABLE,
+	getStateLabel,
 	IDebugService,
-	type ILaunch,
 	REPL_VIEW_ID,
 	State,
 	VIEWLET_ID,
-	getStateLabel,
+	type ILaunch,
 } from "../common/debug.js";
 import {
 	FocusSessionActionViewItem,
@@ -103,27 +105,61 @@ export class DebugViewPaneContainer extends ViewPaneContainer {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IExtensionService extensionService: IExtensionService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 	) {
-		super(VIEWLET_ID, { mergeViewWithContainerWhenSingleView: true }, instantiationService, configurationService, layoutService, contextMenuService, telemetryService, extensionService, themeService, storageService, contextService, viewDescriptorService);
+		super(
+			VIEWLET_ID,
+			{ mergeViewWithContainerWhenSingleView: true },
+			instantiationService,
+			configurationService,
+			layoutService,
+			contextMenuService,
+			telemetryService,
+			extensionService,
+			themeService,
+			storageService,
+			contextService,
+			viewDescriptorService,
+		);
 
 		// When there are potential updates to the docked debug toolbar we need to update it
-		this._register(this.debugService.onDidChangeState(state => this.onDebugServiceStateChange(state)));
+		this._register(
+			this.debugService.onDidChangeState((state) =>
+				this.onDebugServiceStateChange(state),
+			),
+		);
 
-		this._register(this.contextKeyService.onDidChangeContext(e => {
-			if (e.affectsSome(new Set([CONTEXT_DEBUG_UX_KEY, 'inDebugMode']))) {
-				this.updateTitleArea();
-			}
-		}));
+		this._register(
+			this.contextKeyService.onDidChangeContext((e) => {
+				if (
+					e.affectsSome(
+						new Set([CONTEXT_DEBUG_UX_KEY, "inDebugMode"]),
+					)
+				) {
+					this.updateTitleArea();
+				}
+			}),
+		);
 
-		this._register(this.contextService.onDidChangeWorkbenchState(() => this.updateTitleArea()));
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('debug.toolBarLocation') || e.affectsConfiguration('debug.hideLauncherWhileDebugging')) {
-				this.updateTitleArea();
-			}
-		}));
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(() =>
+				this.updateTitleArea(),
+			),
+		);
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("debug.toolBarLocation") ||
+					e.affectsConfiguration("debug.hideLauncherWhileDebugging")
+				) {
+					this.updateTitleArea();
+				}
+			}),
+		);
 	}
 
 	override create(parent: HTMLElement): void {

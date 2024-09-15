@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import {
 	DisposableStore,
@@ -17,7 +17,7 @@ import type {
 	ICodeEditor,
 } from "../../../browser/editorBrowser.js";
 import type { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { ITextModel } from "../../../common/model.js";
 import { EditorKeybindingCancellationTokenSource } from "./keybindingCancellation.js";
 

@@ -7,9 +7,9 @@ import { distinct } from "../../../../base/common/arrays.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import type { IStringDictionary } from "../../../../base/common/collections.js";
 import {
-	type IMatch,
 	matchesContiguousSubString,
 	matchesWords,
+	type IMatch,
 } from "../../../../base/common/filters.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import * as strings from "../../../../base/common/strings.js";
@@ -36,13 +36,13 @@ import {
 } from "../../../services/aiRelatedInformation/common/aiRelatedInformation.js";
 import { IWorkbenchExtensionEnablementService } from "../../../services/extensionManagement/common/extensionManagement.js";
 import {
+	SettingMatchType,
 	type IGroupFilter,
 	type ISearchResult,
 	type ISetting,
 	type ISettingMatch,
 	type ISettingsEditorModel,
 	type ISettingsGroup,
-	SettingMatchType,
 } from "../../../services/preferences/common/preferences.js";
 import { nullRange } from "../../../services/preferences/common/preferencesModels.js";
 import {
@@ -68,21 +68,34 @@ export class PreferencesSearchService
 	private _remoteSearchProvider: IRemoteSearchProvider | undefined;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
 		super();
 
 		// This request goes to the shared process but results won't change during a window's lifetime, so cache the results.
-		this._installedExtensions = this.extensionManagementService.getInstalled(ExtensionType.User).then(exts => {
-			// Filter to enabled extensions that have settings
-			return exts
-				.filter(ext => this.extensionEnablementService.isEnabled(ext))
-				.filter(ext => ext.manifest && ext.manifest.contributes && ext.manifest.contributes.configuration)
-				.filter(ext => !!ext.identifier.uuid);
-		});
+		this._installedExtensions = this.extensionManagementService
+			.getInstalled(ExtensionType.User)
+			.then((exts) => {
+				// Filter to enabled extensions that have settings
+				return exts
+					.filter((ext) =>
+						this.extensionEnablementService.isEnabled(ext),
+					)
+					.filter(
+						(ext) =>
+							ext.manifest &&
+							ext.manifest.contributes &&
+							ext.manifest.contributes.configuration,
+					)
+					.filter((ext) => !!ext.identifier.uuid);
+			});
 	}
 
 	private get remoteSearchAllowed(): boolean {
@@ -123,7 +136,8 @@ export class LocalSearchProvider implements ISearchProvider {
 
 	constructor(
 		private _filter: string,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		this._filter = cleanFilter(this._filter);
 	}
@@ -199,9 +213,14 @@ export class SettingMatches {
 		requireFullQueryMatch: boolean,
 		private searchDescription: boolean,
 		valuesMatcher: (filter: string, setting: ISetting) => IRange[],
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
-		this.matches = distinct(this._findMatchesInSetting(searchString, setting), (match) => `${match.startLineNumber}_${match.startColumn}_${match.endLineNumber}_${match.endColumn}_`);
+		this.matches = distinct(
+			this._findMatchesInSetting(searchString, setting),
+			(match) =>
+				`${match.startLineNumber}_${match.startColumn}_${match.endLineNumber}_${match.endColumn}_`,
+		);
 	}
 
 	private _findMatchesInSetting(
@@ -490,9 +509,12 @@ class AiRelatedInformationSearchProvider implements IRemoteSearchProvider {
 	private _filter = "";
 
 	constructor(
-		@IAiRelatedInformationService private readonly aiRelatedInformationService: IAiRelatedInformationService
+		@IAiRelatedInformationService
+		private readonly aiRelatedInformationService: IAiRelatedInformationService,
 	) {
-		this._keysProvider = new AiRelatedInformationSearchKeysProvider(aiRelatedInformationService);
+		this._keysProvider = new AiRelatedInformationSearchKeysProvider(
+			aiRelatedInformationService,
+		);
 	}
 
 	setFilter(filter: string) {
@@ -664,9 +686,9 @@ class RemoteSearchProvider implements IRemoteSearchProvider {
 	private filter = "";
 
 	constructor(
-		@IAiRelatedInformationService private readonly aiRelatedInformationService: IAiRelatedInformationService
-	) {
-	}
+		@IAiRelatedInformationService
+		private readonly aiRelatedInformationService: IAiRelatedInformationService,
+	) {}
 
 	private initializeSearchProviders() {
 		if (this.aiRelatedInformationService.isEnabled()) {

@@ -80,7 +80,8 @@ export class TerminalStatusList
 	}
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 	}

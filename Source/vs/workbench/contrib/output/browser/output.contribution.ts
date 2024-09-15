@@ -7,9 +7,9 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { assertIsDefined } from "../../../../base/common/types.js";
 import { ModesRegistry } from "../../../../editor/common/languages/modesRegistry.js";
@@ -53,21 +53,21 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import {
+	Extensions as ViewContainerExtensions,
+	ViewContainerLocation,
 	type IViewContainersRegistry,
 	type IViewsRegistry,
 	type ViewContainer,
-	Extensions as ViewContainerExtensions,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import {
 	AUX_WINDOW_GROUP,
-	type AUX_WINDOW_GROUP_TYPE,
 	IEditorService,
+	type AUX_WINDOW_GROUP_TYPE,
 } from "../../../services/editor/common/editorService.js";
 import { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -80,15 +80,15 @@ import {
 	CONTEXT_IN_OUTPUT,
 	CONTEXT_OUTPUT_SCROLL_LOCK,
 	Extensions,
-	type IFileOutputChannelDescriptor,
-	type IOutputChannelDescriptor,
-	type IOutputChannelRegistry,
 	IOutputService,
 	LOG_MIME,
 	LOG_MODE_ID,
 	OUTPUT_MIME,
 	OUTPUT_MODE_ID,
 	OUTPUT_VIEW_ID,
+	type IFileOutputChannelDescriptor,
+	type IOutputChannelDescriptor,
+	type IOutputChannelRegistry,
 } from "../../../services/output/common/output.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { IDefaultLogLevelsService } from "../../logs/common/defaultLogLevels.js";
@@ -177,7 +177,8 @@ class OutputContribution extends Disposable implements IWorkbenchContribution {
 	constructor(
 		@IOutputService private readonly outputService: IOutputService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IFilesConfigurationService private readonly fileConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		private readonly fileConfigurationService: IFilesConfigurationService,
 	) {
 		super();
 		this.registerActions();

@@ -12,8 +12,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { LineRange } from "../../../common/core/lineRange.js";
@@ -28,8 +28,8 @@ import {
 } from "../../../common/diff/rangeMapping.js";
 import type { ITextModel } from "../../../common/model.js";
 import {
-	type DiffAlgorithmName,
 	IEditorWorkerService,
+	type DiffAlgorithmName,
 } from "../../../common/services/editorWorker.js";
 
 export const IDiffProviderFactoryService =
@@ -52,8 +52,9 @@ export class WorkerBasedDiffProviderFactoryService
 	readonly _serviceBrand: undefined;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	createDiffProvider(
 		options: IDocumentDiffFactoryOptions,
@@ -90,7 +91,8 @@ export class WorkerBasedDocumentDiffProvider
 
 	constructor(
 		options: IWorkerBasedDocumentDiffProviderOptions,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		this.setOptions(options);

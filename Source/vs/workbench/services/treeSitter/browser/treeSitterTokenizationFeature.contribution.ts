@@ -10,9 +10,9 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { ITreeSitterTokenizationFeature } from "./treeSitterTokenizationFeature.js";
 
@@ -23,8 +23,10 @@ class TreeSitterTokenizationInstantiator implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.treeSitterTokenizationInstantiator";
 
 	constructor(
-		@ITreeSitterParserService _treeSitterTokenizationService: ITreeSitterParserService,
-		@ITreeSitterTokenizationFeature _treeSitterTokenizationFeature: ITreeSitterTokenizationFeature,
+		@ITreeSitterParserService
+		_treeSitterTokenizationService: ITreeSitterParserService,
+		@ITreeSitterTokenizationFeature
+		_treeSitterTokenizationFeature: ITreeSitterTokenizationFeature,
 	) {}
 }
 

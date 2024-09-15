@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { $, type Dimension, append } from "../../../../../base/browser/dom.js";
+import { $, append, type Dimension } from "../../../../../base/browser/dom.js";
 import { DEFAULT_FONT_FAMILY } from "../../../../../base/browser/fonts.js";
 import type { IHistoryNavigationWidget } from "../../../../../base/browser/history.js";
 import { Widget } from "../../../../../base/browser/ui/widget.js";
@@ -13,7 +13,9 @@ import { KeyCode } from "../../../../../base/common/keyCodes.js";
 import { mixin } from "../../../../../base/common/objects.js";
 import { isMacintosh } from "../../../../../base/common/platform.js";
 import { URI as uri } from "../../../../../base/common/uri.js";
+
 import "./suggestEnabledInput.css";
+
 import type { IEditorConstructionOptions } from "../../../../../editor/browser/config/editorConfiguration.js";
 import { EditorExtensionsRegistry } from "../../../../../editor/browser/editorExtensions.js";
 import { CodeEditorWidget } from "../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
@@ -34,23 +36,23 @@ import { SnippetController2 } from "../../../../../editor/contrib/snippet/browse
 import { SuggestController } from "../../../../../editor/contrib/suggest/browser/suggestController.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IHistoryNavigationContext,
 	registerAndCreateHistoryNavigationContext,
+	type IHistoryNavigationContext,
 } from "../../../../../platform/history/browser/contextScopedHistoryWidget.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { ServiceCollection } from "../../../../../platform/instantiation/common/serviceCollection.js";
 import {
-	type ColorIdentifier,
 	asCssVariable,
 	asCssVariableWithDefault,
 	inputBackground,
 	inputBorder,
 	inputForeground,
 	inputPlaceholderForeground,
+	type ColorIdentifier,
 } from "../../../../../platform/theme/common/colorRegistry.js";
 import { MenuPreventer } from "../menuPreventer.js";
 import { SelectionClipboardContributionID } from "../selectionClipboard.js";
@@ -164,10 +166,12 @@ export class SuggestEnabledInput extends Widget {
 		ariaLabel: string,
 		resourceHandle: string,
 		options: SuggestEnabledInputOptions,
-		@IInstantiationService defaultInstantiationService: IInstantiationService,
+		@IInstantiationService
+		defaultInstantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super();
@@ -524,7 +528,8 @@ export class SuggestEnabledInputWithHistory
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(
@@ -616,7 +621,8 @@ export class ContextScopedSuggestEnabledInputWithHistory extends SuggestEnabledI
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(

@@ -9,13 +9,13 @@ import { arch, platform } from "../../../../base/common/process.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	IRequestService,
 	asJson,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { IBannerService } from "../../../services/banner/browser/bannerService.js";
 
@@ -43,9 +43,9 @@ export class EmergencyAlert implements IWorkbenchContribution {
 		@IBannerService private readonly bannerService: IBannerService,
 		@IRequestService private readonly requestService: IRequestService,
 		@IProductService private readonly productService: IProductService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
-		if (productService.quality !== 'insider') {
+		if (productService.quality !== "insider") {
 			return; // only enabled in insiders for now
 		}
 

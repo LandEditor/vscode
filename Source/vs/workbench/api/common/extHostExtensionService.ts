@@ -6,10 +6,11 @@
 /* eslint-disable local/code-no-native-private */
 
 import type * as vscode from "vscode";
+
 import {
+	asPromise,
 	Barrier,
 	IntervalTimer,
-	asPromise,
 	timeout,
 } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
@@ -18,9 +19,9 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { Schemas } from "../../../base/common/network.js";
 import * as path from "../../../base/common/path.js";
@@ -42,20 +43,20 @@ import {
 	type IExtensionDescription,
 } from "../../../platform/extensions/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../platform/instantiation/common/instantiation.js";
 import { ServiceCollection } from "../../../platform/instantiation/common/serviceCollection.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
-	type IRemoteConnectionData,
+	getRemoteAuthorityPrefix,
 	ManagedRemoteConnection,
 	RemoteAuthorityResolverErrorCode,
+	WebSocketRemoteConnection,
+	type IRemoteConnectionData,
 	type ResolvedAuthority,
 	type ResolvedOptions,
 	type TunnelInformation,
-	WebSocketRemoteConnection,
-	getRemoteAuthorityPrefix,
 } from "../../../platform/remote/common/remoteAuthorityResolver.js";
 import {
 	ExtensionDescriptionRegistry,
@@ -68,35 +69,35 @@ import type {
 import type { IResolveAuthorityResult } from "../../services/extensions/common/extensionHostProxy.js";
 import {
 	ActivationKind,
-	type ExtensionActivationReason,
-	type MissingExtensionDependency,
 	checkProposedApiEnabled,
 	isProposedApiEnabled,
+	type ExtensionActivationReason,
+	type MissingExtensionDependency,
 } from "../../services/extensions/common/extensions.js";
 import type { Dto } from "../../services/extensions/common/proxyIdentifier.js";
 import {
-	type IExtensionActivationHost,
 	checkActivateWorkspaceContainsExtension,
+	type IExtensionActivationHost,
 } from "../../services/extensions/common/workspaceContains.js";
 import {
-	type ExtHostExtensionServiceShape,
 	MainContext,
+	type ExtHostExtensionServiceShape,
 	type MainThreadExtensionServiceShape,
 	type MainThreadTelemetryShape,
 	type MainThreadWorkspaceShape,
 } from "./extHost.protocol.js";
 import {
-	type ExtHostConfiguration,
 	IExtHostConfiguration,
+	type ExtHostConfiguration,
 } from "./extHostConfiguration.js";
 import {
 	ActivatedExtension,
 	EmptyExtension,
 	ExtensionActivationTimes,
 	ExtensionActivationTimesBuilder,
-	type ExtensionActivationTimesFragment,
 	ExtensionsActivator,
 	HostExtension,
+	type ExtensionActivationTimesFragment,
 	type IExtensionAPI,
 	type IExtensionModule,
 } from "./extHostExtensionActivator.js";
@@ -106,25 +107,25 @@ import { IExtHostLocalizationService } from "./extHostLocalizationService.js";
 import { IExtHostManagedSockets } from "./extHostManagedSockets.js";
 import { ExtensionGlobalMemento, ExtensionMemento } from "./extHostMemento.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
+import { ExtensionSecrets } from "./extHostSecrets.js";
 import {
 	ExtHostSecretState,
 	IExtHostSecretState,
 } from "./extHostSecretState.js";
-import { ExtensionSecrets } from "./extHostSecrets.js";
 import { ExtHostStorage, IExtHostStorage } from "./extHostStorage.js";
 import { IExtensionStoragePaths } from "./extHostStoragePaths.js";
 import { IExtHostTerminalService } from "./extHostTerminalService.js";
 import { IExtHostTunnelService } from "./extHostTunnelService.js";
 import {
-	ManagedResolvedAuthority as ExtHostManagedResolvedAuthority,
 	ExtensionKind,
 	ExtensionMode,
-	type ExtensionRuntime,
+	ManagedResolvedAuthority as ExtHostManagedResolvedAuthority,
 	RemoteAuthorityResolverError,
+	type ExtensionRuntime,
 } from "./extHostTypes.js";
 import {
-	type ExtHostWorkspace,
 	IExtHostWorkspace,
+	type ExtHostWorkspace,
 } from "./extHostWorkspace.js";
 
 interface ITestRunner {
@@ -255,10 +256,14 @@ export abstract class AbstractExtHostExtensionService
 		@IExtHostInitDataService initData: IExtHostInitDataService,
 		@IExtensionStoragePaths storagePath: IExtensionStoragePaths,
 		@IExtHostTunnelService extHostTunnelService: IExtHostTunnelService,
-		@IExtHostTerminalService extHostTerminalService: IExtHostTerminalService,
-		@IExtHostLocalizationService extHostLocalizationService: IExtHostLocalizationService,
-		@IExtHostManagedSockets private readonly _extHostManagedSockets: IExtHostManagedSockets,
-		@IExtHostLanguageModels private readonly _extHostLanguageModels: IExtHostLanguageModels,
+		@IExtHostTerminalService
+		extHostTerminalService: IExtHostTerminalService,
+		@IExtHostLocalizationService
+		extHostLocalizationService: IExtHostLocalizationService,
+		@IExtHostManagedSockets
+		private readonly _extHostManagedSockets: IExtHostManagedSockets,
+		@IExtHostLanguageModels
+		private readonly _extHostLanguageModels: IExtHostLanguageModels,
 	) {
 		super();
 		this._hostUtils = hostUtils;
@@ -272,55 +277,107 @@ export abstract class AbstractExtHostExtensionService
 		this._extHostTerminalService = extHostTerminalService;
 		this._extHostLocalizationService = extHostLocalizationService;
 
-		this._mainThreadWorkspaceProxy = this._extHostContext.getProxy(MainContext.MainThreadWorkspace);
-		this._mainThreadTelemetryProxy = this._extHostContext.getProxy(MainContext.MainThreadTelemetry);
-		this._mainThreadExtensionsProxy = this._extHostContext.getProxy(MainContext.MainThreadExtensionService);
+		this._mainThreadWorkspaceProxy = this._extHostContext.getProxy(
+			MainContext.MainThreadWorkspace,
+		);
+		this._mainThreadTelemetryProxy = this._extHostContext.getProxy(
+			MainContext.MainThreadTelemetry,
+		);
+		this._mainThreadExtensionsProxy = this._extHostContext.getProxy(
+			MainContext.MainThreadExtensionService,
+		);
 
 		this._almostReadyToRunExtensions = new Barrier();
 		this._readyToStartExtensionHost = new Barrier();
 		this._readyToRunExtensions = new Barrier();
 		this._eagerExtensionsActivated = new Barrier();
-		this._activationEventsReader = new SyncedActivationEventsReader(this._initData.extensions.activationEvents);
-		this._globalRegistry = new ExtensionDescriptionRegistry(this._activationEventsReader, this._initData.extensions.allExtensions);
-		const myExtensionsSet = new ExtensionIdentifierSet(this._initData.extensions.myExtensions);
+		this._activationEventsReader = new SyncedActivationEventsReader(
+			this._initData.extensions.activationEvents,
+		);
+		this._globalRegistry = new ExtensionDescriptionRegistry(
+			this._activationEventsReader,
+			this._initData.extensions.allExtensions,
+		);
+		const myExtensionsSet = new ExtensionIdentifierSet(
+			this._initData.extensions.myExtensions,
+		);
 		this._myRegistry = new ExtensionDescriptionRegistry(
 			this._activationEventsReader,
-			filterExtensions(this._globalRegistry, myExtensionsSet)
+			filterExtensions(this._globalRegistry, myExtensionsSet),
 		);
 
 		if (isCI) {
-			this._logService.info(`Creating extension host with the following global extensions: ${printExtIds(this._globalRegistry)}`);
-			this._logService.info(`Creating extension host with the following local extensions: ${printExtIds(this._myRegistry)}`);
+			this._logService.info(
+				`Creating extension host with the following global extensions: ${printExtIds(this._globalRegistry)}`,
+			);
+			this._logService.info(
+				`Creating extension host with the following local extensions: ${printExtIds(this._myRegistry)}`,
+			);
 		}
 
-		this._storage = new ExtHostStorage(this._extHostContext, this._logService);
+		this._storage = new ExtHostStorage(
+			this._extHostContext,
+			this._logService,
+		);
 		this._secretState = new ExtHostSecretState(this._extHostContext);
 		this._storagePath = storagePath;
 
-		this._instaService = this._store.add(instaService.createChild(new ServiceCollection(
-			[IExtHostStorage, this._storage],
-			[IExtHostSecretState, this._secretState]
-		)));
+		this._instaService = this._store.add(
+			instaService.createChild(
+				new ServiceCollection(
+					[IExtHostStorage, this._storage],
+					[IExtHostSecretState, this._secretState],
+				),
+			),
+		);
 
-		this._activator = this._register(new ExtensionsActivator(
-			this._myRegistry,
-			this._globalRegistry,
-			{
-				onExtensionActivationError: (extensionId: ExtensionIdentifier, error: Error, missingExtensionDependency: MissingExtensionDependency | null): void => {
-					this._mainThreadExtensionsProxy.$onExtensionActivationError(extensionId, errors.transformErrorForSerialization(error), missingExtensionDependency);
+		this._activator = this._register(
+			new ExtensionsActivator(
+				this._myRegistry,
+				this._globalRegistry,
+				{
+					onExtensionActivationError: (
+						extensionId: ExtensionIdentifier,
+						error: Error,
+						missingExtensionDependency: MissingExtensionDependency | null,
+					): void => {
+						this._mainThreadExtensionsProxy.$onExtensionActivationError(
+							extensionId,
+							errors.transformErrorForSerialization(error),
+							missingExtensionDependency,
+						);
+					},
+
+					actualActivateExtension: async (
+						extensionId: ExtensionIdentifier,
+						reason: ExtensionActivationReason,
+					): Promise<ActivatedExtension> => {
+						if (
+							ExtensionDescriptionRegistry.isHostExtension(
+								extensionId,
+								this._myRegistry,
+								this._globalRegistry,
+							)
+						) {
+							await this._mainThreadExtensionsProxy.$activateExtension(
+								extensionId,
+								reason,
+							);
+							return new HostExtension();
+						}
+						const extensionDescription =
+							this._myRegistry.getExtensionDescription(
+								extensionId,
+							)!;
+						return this._activateExtension(
+							extensionDescription,
+							reason,
+						);
+					},
 				},
-
-				actualActivateExtension: async (extensionId: ExtensionIdentifier, reason: ExtensionActivationReason): Promise<ActivatedExtension> => {
-					if (ExtensionDescriptionRegistry.isHostExtension(extensionId, this._myRegistry, this._globalRegistry)) {
-						await this._mainThreadExtensionsProxy.$activateExtension(extensionId, reason);
-						return new HostExtension();
-					}
-					const extensionDescription = this._myRegistry.getExtensionDescription(extensionId)!;
-					return this._activateExtension(extensionDescription, reason);
-				}
-			},
-			this._logService
-		));
+				this._logService,
+			),
+		);
 		this._extensionPathIndex = null;
 		this._resolvers = Object.create(null);
 		this._started = false;
@@ -1293,9 +1350,7 @@ export abstract class AbstractExtHostExtensionService
 
 	// -- called by main thread
 
-	private async _activateAndGetResolver(
-		remoteAuthority: string,
-	): Promise<{
+	private async _activateAndGetResolver(remoteAuthority: string): Promise<{
 		authorityPrefix: string;
 		resolver: vscode.RemoteAuthorityResolver | undefined;
 	}> {

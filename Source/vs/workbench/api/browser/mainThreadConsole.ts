@@ -3,14 +3,14 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IRemoteConsoleLog, log } from "../../../base/common/console.js";
+import { log, type IRemoteConsoleLog } from "../../../base/common/console.js";
 import { IEnvironmentService } from "../../../platform/environment/common/environment.js";
 import { ILogService } from "../../../platform/log/common/log.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { parseExtensionDevOptions } from "../../services/extensions/common/extensionDevOptions.js";
+import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
 import {
 	logRemoteEntry,
 	logRemoteEntryIfError,
@@ -26,7 +26,8 @@ export class MainThreadConsole implements MainThreadConsoleShape {
 
 	constructor(
 		_extHostContext: IExtHostContext,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		const devOpts = parseExtensionDevOptions(this._environmentService);

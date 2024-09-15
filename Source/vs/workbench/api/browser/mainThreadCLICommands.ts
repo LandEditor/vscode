@@ -165,16 +165,21 @@ class RemoteExtensionManagementCLI extends ExtensionManagementCLI {
 
 	constructor(
 		logger: ILogger,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
 		@ILabelService labelService: ILabelService,
 		@IWorkbenchEnvironmentService envService: IWorkbenchEnvironmentService,
-		@IExtensionManifestPropertiesService private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionManifestPropertiesService
+		private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(logger, extensionManagementService, extensionGalleryService);
 
 		const remoteAuthority = envService.remoteAuthority;
-		this._location = remoteAuthority ? labelService.getHostLabel(Schemas.vscodeRemote, remoteAuthority) : undefined;
+		this._location = remoteAuthority
+			? labelService.getHostLabel(Schemas.vscodeRemote, remoteAuthority)
+			: undefined;
 	}
 
 	protected override get location(): string | undefined {

@@ -6,12 +6,12 @@ import { Codicon } from "../../../../../base/common/codicons.js";
 import { ThemeIcon } from "../../../../../base/common/themables.js";
 import type { IRange } from "../../../../../editor/common/core/range.js";
 import {
-	type SymbolKind,
 	SymbolKinds,
+	type SymbolKind,
 } from "../../../../../editor/common/languages.js";
 import {
-	type IMarkerService,
 	MarkerSeverity,
+	type IMarkerService,
 } from "../../../../../platform/markers/common/markers.js";
 import { CellKind } from "../../common/notebookCommon.js";
 import type { ICellViewModel } from "../notebookBrowser.js";

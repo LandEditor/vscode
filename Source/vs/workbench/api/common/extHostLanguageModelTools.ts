@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { raceCancellation } from "../../../base/common/async.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { CancellationError } from "../../../base/common/errors.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { revive } from "../../../base/common/marshalling.js";
 import { generateUuid } from "../../../base/common/uuid.js";
@@ -20,10 +21,10 @@ import type {
 	IToolResult,
 } from "../../contrib/chat/common/languageModelToolsService.js";
 import {
+	MainContext,
 	type ExtHostLanguageModelToolsShape,
 	type IMainContext,
 	type IToolDataDto,
-	MainContext,
 	type MainThreadLanguageModelToolsShape,
 } from "./extHost.protocol.js";
 import * as typeConvert from "./extHostTypeConverters.js";

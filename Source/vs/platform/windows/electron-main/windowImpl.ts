@@ -5,6 +5,7 @@
 
 import { release } from "os";
 import electron, { type BrowserWindowConstructorOptions } from "electron";
+
 import { isESM } from "../../../base/common/amd.js";
 import {
 	DeferredPromise,
@@ -28,8 +29,8 @@ import { localize } from "../../../nls.js";
 import type { ISerializableCommandAction } from "../../action/common/action.js";
 import { IBackupMainService } from "../../backup/electron-main/backup.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../configuration/common/configuration.js";
 import { IDialogMainService } from "../../dialogs/electron-main/dialogMainService.js";
 import type { NativeParsedArgs } from "../../environment/common/argv.js";
@@ -55,40 +56,40 @@ import type { IUserDataProfile } from "../../userDataProfile/common/userDataProf
 import { IUserDataProfilesMainService } from "../../userDataProfile/electron-main/userDataProfile.js";
 import {
 	DEFAULT_CUSTOM_TITLEBAR_HEIGHT,
+	getMenuBarVisibility,
+	hasNativeTitlebar,
+	TitlebarStyle,
+	useNativeFullScreen,
+	useWindowControlsOverlay,
 	type IFolderToOpen,
 	type INativeWindowConfiguration,
 	type IWindowSettings,
 	type IWorkspaceToOpen,
 	type MenuBarVisibility,
-	TitlebarStyle,
-	getMenuBarVisibility,
-	hasNativeTitlebar,
-	useNativeFullScreen,
-	useWindowControlsOverlay,
 } from "../../window/common/window.js";
 import {
+	defaultWindowState,
+	LoadReason,
+	WindowError,
+	WindowMode,
 	type IBaseWindow,
 	type ICodeWindow,
 	type ILoadEvent,
 	type IWindowState,
-	LoadReason,
-	WindowError,
-	WindowMode,
-	defaultWindowState,
 } from "../../window/electron-main/window.js";
 import {
-	type ISingleFolderWorkspaceIdentifier,
-	type IWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
 	toWorkspaceIdentifier,
+	type ISingleFolderWorkspaceIdentifier,
+	type IWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import { IWorkspacesManagementMainService } from "../../workspaces/electron-main/workspacesManagementMainService.js";
 import {
+	defaultBrowserWindowOptions,
 	IWindowsMainService,
 	OpenContext,
 	WindowStateValidator,
-	defaultBrowserWindowOptions,
 } from "./windows.js";
 
 export interface IWindowCreationOptions {
@@ -774,45 +775,74 @@ export class CodeWindow extends BaseWindow implements ICodeWindow {
 	constructor(
 		config: IWindowCreationOptions,
 		@ILogService logService: ILogService,
-		@ILoggerMainService private readonly loggerMainService: ILoggerMainService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@ILoggerMainService
+		private readonly loggerMainService: ILoggerMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@IPolicyService private readonly policyService: IPolicyService,
-		@IUserDataProfilesMainService private readonly userDataProfilesService: IUserDataProfilesMainService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesService: IUserDataProfilesMainService,
 		@IFileService private readonly fileService: IFileService,
-		@IApplicationStorageMainService private readonly applicationStorageMainService: IApplicationStorageMainService,
-		@IStorageMainService private readonly storageMainService: IStorageMainService,
+		@IApplicationStorageMainService
+		private readonly applicationStorageMainService: IApplicationStorageMainService,
+		@IStorageMainService
+		private readonly storageMainService: IStorageMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
-		@IBackupMainService private readonly backupMainService: IBackupMainService,
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@IBackupMainService
+		private readonly backupMainService: IBackupMainService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@IProductService private readonly productService: IProductService,
-		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IProtocolMainService
+		private readonly protocolMainService: IProtocolMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@IStateService stateService: IStateService,
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		super(configurationService, stateService, environmentMainService, logService);
+		super(
+			configurationService,
+			stateService,
+			environmentMainService,
+			logService,
+		);
 
 		//#region create browser window
 		{
 			// Load window state
-			const [state, hasMultipleDisplays] = this.restoreWindowState(config.state);
+			const [state, hasMultipleDisplays] = this.restoreWindowState(
+				config.state,
+			);
 			this.windowState = state;
-			this.logService.trace('window#ctor: using window state', state);
+			this.logService.trace("window#ctor: using window state", state);
 
-			const options = instantiationService.invokeFunction(defaultBrowserWindowOptions, this.windowState, undefined, {
-				preload: FileAccess.asFileUri('vs/base/parts/sandbox/electron-sandbox/preload.js').fsPath,
-				additionalArguments: [`--vscode-window-config=${this.configObjectUrl.resource.toString()}`],
-				v8CacheOptions: this.environmentMainService.useCodeCache ? 'bypassHeatCheck' : 'none',
-			});
+			const options = instantiationService.invokeFunction(
+				defaultBrowserWindowOptions,
+				this.windowState,
+				undefined,
+				{
+					preload: FileAccess.asFileUri(
+						"vs/base/parts/sandbox/electron-sandbox/preload.js",
+					).fsPath,
+					additionalArguments: [
+						`--vscode-window-config=${this.configObjectUrl.resource.toString()}`,
+					],
+					v8CacheOptions: this.environmentMainService.useCodeCache
+						? "bypassHeatCheck"
+						: "none",
+				},
+			);
 
 			// Create the browser window
-			mark('code/willCreateCodeBrowserWindow');
+			mark("code/willCreateCodeBrowserWindow");
 			this._win = new electron.BrowserWindow(options);
-			mark('code/didCreateCodeBrowserWindow');
+			mark("code/didCreateCodeBrowserWindow");
 
 			this._id = this._win.id;
 			this.setWin(this._win, options);

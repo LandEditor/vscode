@@ -13,19 +13,19 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	AutoOpenTesting,
-	TestingConfigKeys,
 	getTestingConfiguration,
+	TestingConfigKeys,
 } from "../common/configuration.js";
 import { Testing } from "../common/constants.js";
 import { ITestCoverageService } from "../common/testCoverageService.js";
+import { isFailedState } from "../common/testingStates.js";
 import {
+	TestResultItemChangeReason,
 	type ITestResult,
 	type LiveTestResult,
-	TestResultItemChangeReason,
 } from "../common/testResult.js";
 import { ITestResultService } from "../common/testResultService.js";
 import { TestResultState } from "../common/testTypes.js";
-import { isFailedState } from "../common/testingStates.js";
 import { ExplorerTestCoverageBars } from "./testCoverageBars.js";
 
 /** Workbench contribution that triggers updates in the TestingProgressUi service */
@@ -33,18 +33,21 @@ export class TestingProgressTrigger extends Disposable {
 	constructor(
 		@ITestResultService resultService: ITestResultService,
 		@ITestCoverageService testCoverageService: ITestCoverageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IViewsService private readonly viewsService: IViewsService,
 	) {
 		super();
 
-		this._register(resultService.onResultsChanged((e) => {
-			if ('started' in e) {
-				this.attachAutoOpenForNewResults(e.started);
-			}
-		}));
+		this._register(
+			resultService.onResultsChanged((e) => {
+				if ("started" in e) {
+					this.attachAutoOpenForNewResults(e.started);
+				}
+			}),
+		);
 
-		const barContributionRegistration = autorun(reader => {
+		const barContributionRegistration = autorun((reader) => {
 			const hasCoverage = !!testCoverageService.selected.read(reader);
 			if (!hasCoverage) {
 				return;

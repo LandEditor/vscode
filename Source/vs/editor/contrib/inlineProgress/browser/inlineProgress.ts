@@ -12,7 +12,9 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { noBreakWhitespace } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
+
 import "./inlineProgressWidget.css";
+
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	ContentWidgetPositionPreference,
@@ -147,7 +149,8 @@ export class InlineProgressManager extends Disposable {
 	constructor(
 		private readonly id: string,
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 

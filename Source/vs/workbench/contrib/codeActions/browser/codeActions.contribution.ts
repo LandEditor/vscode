@@ -10,18 +10,18 @@ import {
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { ExtensionsRegistry } from "../../../services/extensions/common/extensionsRegistry.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
-	type CodeActionsExtensionPoint,
 	codeActionsExtensionPointDescriptor,
+	type CodeActionsExtensionPoint,
 } from "../common/codeActionsExtensionPoint.js";
 import {
-	type DocumentationExtensionPoint,
 	documentationExtensionPointDescriptor,
+	type DocumentationExtensionPoint,
 } from "../common/documentationExtensionPoint.js";
 import {
 	CodeActionsContribution,
@@ -50,8 +50,14 @@ class WorkbenchConfigurationContribution {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		instantiationService.createInstance(CodeActionsContribution, codeActionsExtensionPoint);
-		instantiationService.createInstance(CodeActionDocumentationContribution, documentationExtensionPoint);
+		instantiationService.createInstance(
+			CodeActionsContribution,
+			codeActionsExtensionPoint,
+		);
+		instantiationService.createInstance(
+			CodeActionDocumentationContribution,
+			documentationExtensionPoint,
+		);
 	}
 }
 

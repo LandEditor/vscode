@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import { Event } from "../../../../../base/common/event.js";
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import { DisposableStore } from "../../../../../base/common/lifecycle.js";
@@ -21,27 +22,27 @@ import {
 	accessibleViewIsShown,
 } from "../../../accessibility/browser/accessibilityConfiguration.js";
 import {
+	isDetachedTerminalInstance,
 	type IDetachedTerminalInstance,
 	type ITerminalContribution,
 	type ITerminalInstance,
 	type IXtermTerminal,
-	isDetachedTerminalInstance,
 } from "../../../terminal/browser/terminal.js";
 import { registerActiveInstanceAction } from "../../../terminal/browser/terminalActions.js";
 import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
 import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
 import {
+	isTerminalProcessManager,
 	type ITerminalProcessInfo,
 	type ITerminalProcessManager,
-	isTerminalProcessManager,
 } from "../../../terminal/common/terminal.js";
 import { TerminalContextKeys } from "../../../terminal/common/terminalContextKey.js";
 import { terminalStrings } from "../../../terminal/common/terminalStrings.js";
 import { TerminalLinksCommandId } from "../common/terminal.links.js";
 import { ITerminalLinkProviderService } from "./links.js";
 import {
-	type IDetectedLinks,
 	TerminalLinkManager,
+	type IDetectedLinks,
 } from "./terminalLinkManager.js";
 import { TerminalLinkProviderService } from "./terminalLinkProviderService.js";
 import { TerminalLinkQuickpick } from "./terminalLinkQuickpick.js";
@@ -76,14 +77,21 @@ class TerminalLinkContribution
 	private _linkResolver: TerminalLinkResolver;
 
 	constructor(
-		private readonly _instance: ITerminalInstance | IDetachedTerminalInstance,
-		private readonly _processManager: ITerminalProcessManager | ITerminalProcessInfo,
+		private readonly _instance:
+			| ITerminalInstance
+			| IDetachedTerminalInstance,
+		private readonly _processManager:
+			| ITerminalProcessManager
+			| ITerminalProcessInfo,
 		private readonly _widgetManager: TerminalWidgetManager,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITerminalLinkProviderService private readonly _terminalLinkProviderService: ITerminalLinkProviderService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITerminalLinkProviderService
+		private readonly _terminalLinkProviderService: ITerminalLinkProviderService,
 	) {
 		super();
-		this._linkResolver = this._instantiationService.createInstance(TerminalLinkResolver);
+		this._linkResolver =
+			this._instantiationService.createInstance(TerminalLinkResolver);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {

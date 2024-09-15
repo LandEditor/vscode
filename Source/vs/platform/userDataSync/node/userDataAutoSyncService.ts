@@ -22,15 +22,20 @@ import { IUserDataSyncMachinesService } from "../common/userDataSyncMachines.js"
 export class UserDataAutoSyncService extends BaseUserDataAutoSyncService {
 	constructor(
 		@IProductService productService: IProductService,
-		@IUserDataSyncStoreManagementService userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncStoreManagementService
+		userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IUserDataSyncService userDataSyncService: IUserDataSyncService,
 		@INativeHostService nativeHostService: INativeHostService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
-		@IUserDataSyncAccountService authTokenService: IUserDataSyncAccountService,
+		@IUserDataSyncAccountService
+		authTokenService: IUserDataSyncAccountService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IUserDataSyncMachinesService userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IUserDataSyncMachinesService
+		userDataSyncMachinesService: IUserDataSyncMachinesService,
 		@IStorageService storageService: IStorageService,
 	) {
 		super(

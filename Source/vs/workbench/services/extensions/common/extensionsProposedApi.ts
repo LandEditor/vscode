@@ -5,8 +5,8 @@
 
 import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { Mutable } from "../../../../base/common/types.js";
@@ -17,8 +17,8 @@ import {
 	type IExtensionManifest,
 } from "../../../../platform/extensions/common/extensions.js";
 import {
-	type ApiProposalName,
 	allApiProposals,
+	type ApiProposalName,
 } from "../../../../platform/extensions/common/extensionsApiProposals.js";
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -39,27 +39,36 @@ export class ExtensionsProposedApi {
 
 	constructor(
 		@ILogService private readonly _logService: ILogService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@IProductService productService: IProductService
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@IProductService productService: IProductService,
 	) {
-
-		this._envEnabledExtensions = new Set((_environmentService.extensionEnabledProposedApi ?? []).map(id => ExtensionIdentifier.toKey(id)));
+		this._envEnabledExtensions = new Set(
+			(_environmentService.extensionEnabledProposedApi ?? []).map((id) =>
+				ExtensionIdentifier.toKey(id),
+			),
+		);
 
 		this._envEnablesProposedApiForAll =
 			!_environmentService.isBuilt || // always allow proposed API when running out of sources
-			(_environmentService.isExtensionDevelopment && productService.quality !== 'stable') || // do not allow proposed API against stable builds when developing an extension
-			(this._envEnabledExtensions.size === 0 && Array.isArray(_environmentService.extensionEnabledProposedApi)); // always allow proposed API if --enable-proposed-api is provided without extension ID
+			(_environmentService.isExtensionDevelopment &&
+				productService.quality !== "stable") || // do not allow proposed API against stable builds when developing an extension
+			(this._envEnabledExtensions.size === 0 &&
+				Array.isArray(_environmentService.extensionEnabledProposedApi)); // always allow proposed API if --enable-proposed-api is provided without extension ID
 
 		this._productEnabledExtensions = new Map<string, ApiProposalName[]>();
 
-
 		// NEW world - product.json spells out what proposals each extension can use
 		if (productService.extensionEnabledApiProposals) {
-			for (const [k, value] of Object.entries(productService.extensionEnabledApiProposals)) {
+			for (const [k, value] of Object.entries(
+				productService.extensionEnabledApiProposals,
+			)) {
 				const key = ExtensionIdentifier.toKey(k);
-				const proposalNames = value.filter(name => {
+				const proposalNames = value.filter((name) => {
 					if (!allApiProposals[<ApiProposalName>name]) {
-						_logService.warn(`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`);
+						_logService.warn(
+							`Via 'product.json#extensionEnabledApiProposals' extension '${key}' wants API proposal '${name}' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.`,
+						);
 						return false;
 					}
 					return true;

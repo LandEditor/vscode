@@ -5,13 +5,13 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import type { IMouseWheelEvent } from "../../../../base/browser/mouseEvent.js";
 import {
-	type IOverviewRulerLayoutInfo,
 	SmoothScrollableElement,
+	type IOverviewRulerLayoutInfo,
 } from "../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import type {
 	ScrollableElementChangeOptions,
@@ -20,8 +20,8 @@ import type {
 import { getThemeTypeSelector } from "../../../../platform/theme/common/themeService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import {
-	type INewScrollPosition,
 	ScrollType,
+	type INewScrollPosition,
 } from "../../../common/editorCommon.js";
 import type * as viewEvents from "../../../common/viewEvents.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";

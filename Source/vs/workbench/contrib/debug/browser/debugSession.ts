@@ -9,12 +9,12 @@ import { mainWindow } from "../../../../base/browser/window.js";
 import { distinct } from "../../../../base/common/arrays.js";
 import {
 	Queue,
-	RunOnceScheduler,
 	raceTimeout,
+	RunOnceScheduler,
 } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { canceled } from "../../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
@@ -23,9 +23,9 @@ import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { mixin } from "../../../../base/common/objects.js";
 import * as platform from "../../../../base/common/platform.js";
@@ -64,17 +64,20 @@ import type { LiveTestResult } from "../../testing/common/testResult.js";
 import { ITestResultService } from "../../testing/common/testResultService.js";
 import { ITestService } from "../../testing/common/testService.js";
 import {
+	IDebugService,
+	isFrameDeemphasized,
+	State,
+	VIEWLET_ID,
 	type AdapterEndEvent,
 	type IBreakpoint,
 	type IConfig,
 	type IDataBreakpoint,
 	type IDataBreakpointInfoResponse,
 	type IDebugConfiguration,
+	type IDebugger,
 	type IDebugLocationReferenced,
-	IDebugService,
 	type IDebugSession,
 	type IDebugSessionOptions,
-	type IDebugger,
 	type IExceptionBreakpoint,
 	type IExceptionInfo,
 	type IFunctionBreakpoint,
@@ -86,20 +89,17 @@ import {
 	type IStackFrame,
 	type IThread,
 	type LoadedSourceEvent,
-	State,
-	VIEWLET_ID,
-	isFrameDeemphasized,
 } from "../common/debug.js";
 import type { DebugCompoundRoot } from "../common/debugCompoundRoot.js";
 import {
-	type DebugModel,
 	ExpressionContainer,
 	MemoryRegion,
 	Thread,
+	type DebugModel,
 } from "../common/debugModel.js";
 import { Source } from "../common/debugSource.js";
 import { filterExceptionsFromTelemetry } from "../common/debugUtils.js";
-import { type INewReplElementData, ReplModel } from "../common/replModel.js";
+import { ReplModel, type INewReplElementData } from "../common/replModel.js";
 import { RawDebugSession } from "./rawDebugSession.js";
 
 const TRIGGERED_BREAKPOINT_MAX_DELAY = 1500;
@@ -163,27 +163,39 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 	constructor(
 		private id: string,
-		private _configuration: { resolved: IConfig; unresolved: IConfig | undefined },
+		private _configuration: {
+			resolved: IConfig;
+			unresolved: IConfig | undefined;
+		},
 		public root: IWorkspaceFolder | undefined,
 		private model: DebugModel,
 		options: IDebugSessionOptions | undefined,
 		@IDebugService private readonly debugService: IDebugService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IHostService private readonly hostService: IHostService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IProductService private readonly productService: IProductService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ICustomEndpointTelemetryService private readonly customEndpointTelemetryService: ICustomEndpointTelemetryService,
-		@IWorkbenchEnvironmentService private readonly workbenchEnvironmentService: IWorkbenchEnvironmentService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ICustomEndpointTelemetryService
+		private readonly customEndpointTelemetryService: ICustomEndpointTelemetryService,
+		@IWorkbenchEnvironmentService
+		private readonly workbenchEnvironmentService: IWorkbenchEnvironmentService,
 		@ILogService private readonly logService: ILogService,
 		@ITestService private readonly testService: ITestService,
 		@ITestResultService testResultService: ITestResultService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 	) {
 		this._options = options || {};
 		this.parentSession = this._options.parentSession;
@@ -195,41 +207,74 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		const toDispose = this.globalDisposables;
 		const replListener = toDispose.add(new MutableDisposable());
-		replListener.value = this.repl.onDidChangeElements((e) => this._onDidChangeREPLElements.fire(e));
+		replListener.value = this.repl.onDidChangeElements((e) =>
+			this._onDidChangeREPLElements.fire(e),
+		);
 		if (lifecycleService) {
-			toDispose.add(lifecycleService.onWillShutdown(() => {
-				this.shutdown();
-				dispose(toDispose);
-			}));
+			toDispose.add(
+				lifecycleService.onWillShutdown(() => {
+					this.shutdown();
+					dispose(toDispose);
+				}),
+			);
 		}
 
 		// Cast here, it's not possible to reference a hydrated result in this code path.
 		this.correlatedTestRun = options?.testRun
-			? (testResultService.getResult(options.testRun.runId) as LiveTestResult)
+			? (testResultService.getResult(
+					options.testRun.runId,
+				) as LiveTestResult)
 			: this.parentSession?.correlatedTestRun;
 
 		if (this.correlatedTestRun) {
 			// Listen to the test completing because the user might have taken the cancel action rather than stopping the session.
-			toDispose.add(this.correlatedTestRun.onComplete(() => this.terminate()));
+			toDispose.add(
+				this.correlatedTestRun.onComplete(() => this.terminate()),
+			);
 		}
 
 		const compoundRoot = this._options.compoundRoot;
 		if (compoundRoot) {
-			toDispose.add(compoundRoot.onDidSessionStop(() => this.terminate()));
+			toDispose.add(
+				compoundRoot.onDidSessionStop(() => this.terminate()),
+			);
 		}
 		this.passFocusScheduler = new RunOnceScheduler(() => {
 			// If there is some session or thread that is stopped pass focus to it
-			if (this.debugService.getModel().getSessions().some(s => s.state === State.Stopped) || this.getAllThreads().some(t => t.stopped)) {
-				if (typeof this.lastContinuedThreadId === 'number') {
-					const thread = this.debugService.getViewModel().focusedThread;
-					if (thread && thread.threadId === this.lastContinuedThreadId && !thread.stopped) {
-						const toFocusThreadId = this.getStoppedDetails()?.threadId;
-						const toFocusThread = typeof toFocusThreadId === 'number' ? this.getThread(toFocusThreadId) : undefined;
-						this.debugService.focusStackFrame(undefined, toFocusThread);
+			if (
+				this.debugService
+					.getModel()
+					.getSessions()
+					.some((s) => s.state === State.Stopped) ||
+				this.getAllThreads().some((t) => t.stopped)
+			) {
+				if (typeof this.lastContinuedThreadId === "number") {
+					const thread =
+						this.debugService.getViewModel().focusedThread;
+					if (
+						thread &&
+						thread.threadId === this.lastContinuedThreadId &&
+						!thread.stopped
+					) {
+						const toFocusThreadId =
+							this.getStoppedDetails()?.threadId;
+						const toFocusThread =
+							typeof toFocusThreadId === "number"
+								? this.getThread(toFocusThreadId)
+								: undefined;
+						this.debugService.focusStackFrame(
+							undefined,
+							toFocusThread,
+						);
 					}
 				} else {
-					const session = this.debugService.getViewModel().focusedSession;
-					if (session && session.getId() === this.getId() && session.state !== State.Stopped) {
+					const session =
+						this.debugService.getViewModel().focusedSession;
+					if (
+						session &&
+						session.getId() === this.getId() &&
+						session.state !== State.Stopped
+					) {
 						this.debugService.focusStackFrame(undefined);
 					}
 				}
@@ -238,15 +283,22 @@ export class DebugSession implements IDebugSession, IDisposable {
 
 		const parent = this._options.parentSession;
 		if (parent) {
-			toDispose.add(parent.onDidEndAdapter(() => {
-				// copy the parent repl and get a new detached repl for this child, and
-				// remove its parent, if it's still running
-				if (!this.hasSeparateRepl() && this.raw?.isInShutdown === false) {
-					this.repl = this.repl.clone();
-					replListener.value = this.repl.onDidChangeElements((e) => this._onDidChangeREPLElements.fire(e));
-					this.parentSession = undefined;
-				}
-			}));
+			toDispose.add(
+				parent.onDidEndAdapter(() => {
+					// copy the parent repl and get a new detached repl for this child, and
+					// remove its parent, if it's still running
+					if (
+						!this.hasSeparateRepl() &&
+						this.raw?.isInShutdown === false
+					) {
+						this.repl = this.repl.clone();
+						replListener.value = this.repl.onDidChangeElements(
+							(e) => this._onDidChangeREPLElements.fire(e),
+						);
+						this.parentSession = undefined;
+					}
+				}),
+			);
 		}
 	}
 

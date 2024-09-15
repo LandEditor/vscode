@@ -12,9 +12,9 @@ import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type IMarkdownRenderResult,
-	type IMarkdownRendererOptions,
 	MarkdownRenderer,
+	type IMarkdownRendererOptions,
+	type IMarkdownRenderResult,
 } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
@@ -69,7 +69,8 @@ export class ChatMarkdownRenderer extends MarkdownRenderer {
 		options: IMarkdownRendererOptions | undefined,
 		@ILanguageService languageService: ILanguageService,
 		@IOpenerService openerService: IOpenerService,
-		@ITrustedDomainService private readonly trustedDomainService: ITrustedDomainService,
+		@ITrustedDomainService
+		private readonly trustedDomainService: ITrustedDomainService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@IFileService private readonly fileService: IFileService,
 		@ICommandService private readonly commandService: ICommandService,

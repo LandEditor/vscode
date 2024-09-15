@@ -10,9 +10,9 @@ import type { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { TextEditorSelectionRevealType } from "../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -24,11 +24,11 @@ import {
 	EditorAction,
 	EditorCommand,
 	EditorContributionInstantiation,
-	type IActionOptions,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
+	type IActionOptions,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../browser/services/codeEditorService.js";
 import { Position } from "../../../common/core/position.js";
@@ -58,13 +58,18 @@ export class MarkerController implements IEditorContribution {
 
 	constructor(
 		editor: ICodeEditor,
-		@IMarkerNavigationService private readonly _markerNavigationService: IMarkerNavigationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IMarkerNavigationService
+		private readonly _markerNavigationService: IMarkerNavigationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		this._editor = editor;
-		this._widgetVisible = CONTEXT_MARKERS_NAVIGATION_VISIBLE.bindTo(this._contextKeyService);
+		this._widgetVisible = CONTEXT_MARKERS_NAVIGATION_VISIBLE.bindTo(
+			this._contextKeyService,
+		);
 	}
 
 	dispose(): void {

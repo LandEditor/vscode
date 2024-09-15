@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IStringDictionary } from "../../../../base/common/collections.js";
+import { Emitter, type Event } from "../../../../base/common/event.js";
 import type {
 	IJSONSchema,
 	IJSONSchemaMap,
@@ -11,15 +12,12 @@ import type {
 import * as Objects from "../../../../base/common/objects.js";
 import * as Types from "../../../../base/common/types.js";
 import * as nls from "../../../../nls.js";
-
-import {
-	type ExtensionMessageCollector,
-	ExtensionsRegistry,
-} from "../../../services/extensions/common/extensionsRegistry.js";
-
-import { Emitter, type Event } from "../../../../base/common/event.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
+import {
+	ExtensionsRegistry,
+	type ExtensionMessageCollector,
+} from "../../../services/extensions/common/extensionsRegistry.js";
 import type * as Tasks from "./tasks.js";
 
 const taskDefinitionSchema: IJSONSchema = {

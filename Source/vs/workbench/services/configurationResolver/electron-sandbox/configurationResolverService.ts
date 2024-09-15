@@ -24,13 +24,16 @@ import { IConfigurationResolverService } from "../common/configurationResolver.j
 export class ConfigurationResolverService extends BaseConfigurationResolverService {
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ICommandService commandService: ICommandService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@ILabelService labelService: ILabelService,
-		@IShellEnvironmentService shellEnvironmentService: IShellEnvironmentService,
+		@IShellEnvironmentService
+		shellEnvironmentService: IShellEnvironmentService,
 		@IPathService pathService: IPathService,
 		@IExtensionService extensionService: IExtensionService,
 		@IStorageService storageService: IStorageService,

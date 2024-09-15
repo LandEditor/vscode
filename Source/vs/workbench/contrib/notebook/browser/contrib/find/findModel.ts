@@ -5,9 +5,9 @@
 
 import { findFirstIdxMonotonousOrArrLen } from "../../../../../../base/common/arraysFind.js";
 import {
-	type CancelablePromise,
-	Delayer,
 	createCancelablePromise,
+	Delayer,
+	type CancelablePromise,
 } from "../../../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../../../base/common/cancellation.js";
 import {
@@ -25,8 +25,8 @@ import { IConfigurationService } from "../../../../../../platform/configuration/
 import type { NotebookTextModel } from "../../../common/model/notebookTextModel.js";
 import {
 	CellKind,
-	type INotebookFindOptions,
 	NotebookCellsChangeType,
+	type INotebookFindOptions,
 } from "../../../common/notebookCommon.js";
 import {
 	CellEditState,
@@ -104,41 +104,63 @@ export class FindModel extends Disposable {
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		private readonly _state: FindReplaceState<NotebookFindFilters>,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 
 		this._throttledDelayer = new Delayer(20);
 		this._computePromise = null;
 
-		this._register(_state.onFindReplaceStateChange(e => {
-			this._updateCellStates(e);
+		this._register(
+			_state.onFindReplaceStateChange((e) => {
+				this._updateCellStates(e);
 
-			if (e.searchString || e.isRegex || e.matchCase || e.searchScope || e.wholeWord || (e.isRevealed && this._state.isRevealed) || e.filters || e.isReplaceRevealed) {
-				this.research();
-			}
+				if (
+					e.searchString ||
+					e.isRegex ||
+					e.matchCase ||
+					e.searchScope ||
+					e.wholeWord ||
+					(e.isRevealed && this._state.isRevealed) ||
+					e.filters ||
+					e.isReplaceRevealed
+				) {
+					this.research();
+				}
 
-			if (e.isRevealed && !this._state.isRevealed) {
-				this.clear();
-			}
-		}));
+				if (e.isRevealed && !this._state.isRevealed) {
+					this.clear();
+				}
+			}),
+		);
 
-		this._register(this._notebookEditor.onDidChangeModel(e => {
-			this._registerModelListener(e);
-		}));
+		this._register(
+			this._notebookEditor.onDidChangeModel((e) => {
+				this._registerModelListener(e);
+			}),
+		);
 
-		this._register(this._notebookEditor.onDidChangeCellState(e => {
-			if (e.cell.cellKind === CellKind.Markup && e.source.editStateChanged) {
-				// research when markdown cell is switching between markdown preview and editing mode.
-				this.research();
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidChangeCellState((e) => {
+				if (
+					e.cell.cellKind === CellKind.Markup &&
+					e.source.editStateChanged
+				) {
+					// research when markdown cell is switching between markdown preview and editing mode.
+					this.research();
+				}
+			}),
+		);
 
 		if (this._notebookEditor.hasModel()) {
 			this._registerModelListener(this._notebookEditor.textModel);
 		}
 
-		this._findMatchDecorationModel = new FindMatchDecorationModel(this._notebookEditor, this._notebookEditor.getId());
+		this._findMatchDecorationModel = new FindMatchDecorationModel(
+			this._notebookEditor,
+			this._notebookEditor.getId(),
+		);
 	}
 
 	private _updateCellStates(e: FindReplaceStateChangedEvent) {

@@ -163,7 +163,8 @@ export class LanguageModelToolsExtensionPointHandler
 	private _registrationDisposables = new DisposableMap<string>();
 
 	constructor(
-		@ILanguageModelToolsService languageModelToolsService: ILanguageModelToolsService,
+		@ILanguageModelToolsService
+		languageModelToolsService: ILanguageModelToolsService,
 		@ILogService logService: ILogService,
 	) {
 		languageModelToolsExtensionPoint.setHandler((extensions, delta) => {

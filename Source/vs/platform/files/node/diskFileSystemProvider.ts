@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type Stats, promises } from "fs";
+import { promises, type Stats } from "fs";
+
 import { Barrier, retry } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
@@ -11,8 +12,8 @@ import { Event } from "../../../base/common/event.js";
 import { isEqual } from "../../../base/common/extpath.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../base/common/map.js";
 import { basename, dirname, join } from "../../../base/common/path.js";
@@ -24,15 +25,15 @@ import {
 	dirname as resourcesDirname,
 } from "../../../base/common/resources.js";
 import {
-	type ReadableStreamEvents,
 	newWriteableStream,
+	type ReadableStreamEvents,
 } from "../../../base/common/stream.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
-	type IDirent,
 	Promises,
 	RimRafMode,
 	SymlinkSupport,
+	type IDirent,
 } from "../../../base/node/pfs.js";
 import { localize } from "../../../nls.js";
 import type { ILogService } from "../../log/common/log.js";
@@ -41,11 +42,13 @@ import {
 	type IDiskFileSystemProviderOptions,
 } from "../common/diskFileSystemProvider.js";
 import {
+	createFileSystemProviderError,
 	FilePermission,
 	FileSystemProviderCapabilities,
 	FileSystemProviderError,
 	FileSystemProviderErrorCode,
 	FileType,
+	isFileOpenForWriteOptions,
 	type IFileAtomicReadOptions,
 	type IFileChange,
 	type IFileDeleteOptions,
@@ -62,8 +65,6 @@ import {
 	type IFileSystemProviderWithOpenReadWriteCloseCapability,
 	type IFileWriteOptions,
 	type IStat,
-	createFileSystemProviderError,
-	isFileOpenForWriteOptions,
 } from "../common/files.js";
 import { readFileIntoStream } from "../common/io.js";
 import type {

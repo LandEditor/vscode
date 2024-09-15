@@ -6,8 +6,8 @@
 import { Emitter, type Event } from "../../../../../../base/common/event.js";
 import { Disposable } from "../../../../../../base/common/lifecycle.js";
 import {
-	type INotebookFindScope,
 	NotebookFindScopeType,
+	type INotebookFindScope,
 } from "../../../common/notebookCommon.js";
 
 export interface INotebookFindChangeEvent {

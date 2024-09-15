@@ -8,9 +8,9 @@ import type { URI } from "../../../../base/common/uri.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
 import { IExtensionStorageService } from "../../../../platform/extensionManagement/common/extensionStorage.js";
 import {
-	type FileSystemProviderError,
 	FileSystemProviderErrorCode,
 	IFileService,
+	type FileSystemProviderError,
 } from "../../../../platform/files/common/files.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../../platform/log/common/log.js";

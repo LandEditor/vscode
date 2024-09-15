@@ -8,8 +8,8 @@ import { FileAccess } from "../../../../base/common/network.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import {
-	type DidUninstallExtensionEvent,
 	IExtensionManagementService,
+	type DidUninstallExtensionEvent,
 	type IGalleryExtension,
 	type ILocalExtension,
 	type InstallExtensionEvent,

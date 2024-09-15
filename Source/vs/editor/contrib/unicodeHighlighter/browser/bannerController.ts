@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import "./bannerController.css";
+
 import { $, append, clearNode } from "../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { Action } from "../../../../base/common/actions.js";
@@ -11,8 +12,8 @@ import { Disposable } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type ILinkDescriptor,
 	Link,
+	type ILinkDescriptor,
 } from "../../../../platform/opener/browser/link.js";
 import { widgetClose } from "../../../../platform/theme/common/iconRegistry.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
@@ -25,11 +26,14 @@ export class BannerController extends Disposable {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this.banner = this._register(this.instantiationService.createInstance(Banner));
+		this.banner = this._register(
+			this.instantiationService.createInstance(Banner),
+		);
 	}
 
 	public hide() {
@@ -60,13 +64,17 @@ class Banner extends Disposable {
 	private actionBar: ActionBar | undefined;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this.markdownRenderer = this.instantiationService.createInstance(MarkdownRenderer, {});
+		this.markdownRenderer = this.instantiationService.createInstance(
+			MarkdownRenderer,
+			{},
+		);
 
-		this.element = $('div.editor-banner');
+		this.element = $("div.editor-banner");
 		this.element.tabIndex = 0;
 	}
 

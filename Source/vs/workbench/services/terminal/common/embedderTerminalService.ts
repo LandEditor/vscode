@@ -11,6 +11,7 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import {
+	ProcessPropertyType,
 	type IProcessDataEvent,
 	type IProcessProperty,
 	type IProcessPropertyMap,
@@ -18,7 +19,6 @@ import {
 	type IShellLaunchConfig,
 	type ITerminalChildProcess,
 	type ITerminalLaunchError,
-	ProcessPropertyType,
 } from "../../../../platform/terminal/common/terminal.js";
 
 export const IEmbedderTerminalService =

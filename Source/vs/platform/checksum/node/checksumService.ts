@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { createHash } from "crypto";
+
 import { listenStream } from "../../../base/common/stream.js";
 import type { URI } from "../../../base/common/uri.js";
 import { IFileService } from "../../files/common/files.js";
@@ -12,7 +13,7 @@ import type { IChecksumService } from "../common/checksumService.js";
 export class ChecksumService implements IChecksumService {
 	declare readonly _serviceBrand: undefined;
 
-	constructor(@IFileService private readonly fileService: IFileService) { }
+	constructor(@IFileService private readonly fileService: IFileService) {}
 
 	async checksum(resource: URI): Promise<string> {
 		const stream = (await this.fileService.readFileStream(resource)).value;

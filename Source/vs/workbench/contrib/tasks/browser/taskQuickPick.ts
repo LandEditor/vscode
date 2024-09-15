@@ -22,8 +22,8 @@ import {
 } from "../../../../platform/notification/common/notification.js";
 import { showWithPinnedItems } from "../../../../platform/quickinput/browser/quickPickPin.js";
 import {
-	type IQuickInputButton,
 	IQuickInputService,
+	type IQuickInputButton,
 	type IQuickPick,
 	type IQuickPickItem,
 	type QuickPickInput,
@@ -40,10 +40,6 @@ import {
 	getColorClass,
 } from "../../terminal/browser/terminalIcon.js";
 import {
-	ITaskService,
-	type IWorkspaceFolderTaskResult,
-} from "../common/taskService.js";
-import {
 	ConfiguringTask,
 	ContributedTask,
 	CustomTask,
@@ -51,6 +47,10 @@ import {
 	type Task,
 	type TaskSorter,
 } from "../common/tasks.js";
+import {
+	ITaskService,
+	type IWorkspaceFolderTaskResult,
+} from "../common/taskService.js";
 import type { TaskQuickPickEntryType } from "./abstractTaskService.js";
 
 export const QUICKOPEN_DETAIL_CONFIG = "task.quickOpen.detail";
@@ -101,12 +101,15 @@ export class TaskQuickPick extends Disposable {
 		| undefined;
 	constructor(
 		@ITaskService private _taskService: ITaskService,
-		@IConfigurationService private _configurationService: IConfigurationService,
+		@IConfigurationService
+		private _configurationService: IConfigurationService,
 		@IQuickInputService private _quickInputService: IQuickInputService,
-		@INotificationService private _notificationService: INotificationService,
+		@INotificationService
+		private _notificationService: INotificationService,
 		@IThemeService private _themeService: IThemeService,
 		@IDialogService private _dialogService: IDialogService,
-		@IStorageService private _storageService: IStorageService) {
+		@IStorageService private _storageService: IStorageService,
+	) {
 		super();
 		this._sorter = this._taskService.createSorter();
 	}

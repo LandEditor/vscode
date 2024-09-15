@@ -5,11 +5,11 @@
 
 import {
 	$,
-	type Dimension,
 	addDisposableListener,
 	append,
 	clearNode,
 	reset,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import { renderFormattedText } from "../../../../base/browser/formattedTextRenderer.js";
 import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
@@ -30,13 +30,15 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import type { ILink, LinkedText } from "../../../../base/common/linkedText.js";
 import { parse } from "../../../../base/common/marshalling.js";
-import { Schemas, matchesScheme } from "../../../../base/common/network.js";
+import { matchesScheme, Schemas } from "../../../../base/common/network.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { assertIsDefined } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
+
 import "./media/gettingStarted.css";
+
 import { MarkdownRenderer } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { localize } from "../../../../nls.js";
@@ -48,9 +50,9 @@ import {
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
 	RawContextKey,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
@@ -72,9 +74,9 @@ import {
 	WillSaveStateReason,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	firstSessionDateStorageKey,
 	ITelemetryService,
 	TelemetryLevel,
-	firstSessionDateStorageKey,
 } from "../../../../platform/telemetry/common/telemetry.js";
 import { getTelemetryLevel } from "../../../../platform/telemetry/common/telemetryUtils.js";
 import {
@@ -87,12 +89,12 @@ import {
 	UNKNOWN_EMPTY_WINDOW_WORKSPACE,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
-	type IRecentFolder,
-	type IRecentWorkspace,
-	type IRecentlyOpened,
-	IWorkspacesService,
 	isRecentFolder,
 	isRecentWorkspace,
+	IWorkspacesService,
+	type IRecentFolder,
+	type IRecentlyOpened,
+	type IRecentWorkspace,
 } from "../../../../platform/workspaces/common/workspaces.js";
 import { OpenRecentAction } from "../../../browser/actions/windowActions.js";
 import {
@@ -107,15 +109,17 @@ import type {
 	IEditorSerializer,
 } from "../../../common/editor.js";
 import {
-	type IWebviewElement,
 	IWebviewService,
+	type IWebviewElement,
 } from "../../webview/browser/webview.js";
+
 import "./gettingStartedColors.js";
+
 import {
 	GroupDirection,
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { IHostService } from "../../../services/host/browser/host.js";
@@ -129,15 +133,15 @@ import {
 import { GettingStartedInput } from "./gettingStartedInput.js";
 import { GettingStartedIndexList } from "./gettingStartedList.js";
 import {
+	hiddenEntriesConfigurationKey,
+	IWalkthroughsService,
+	parseDescription,
 	type IResolvedWalkthrough,
 	type IResolvedWalkthroughStep,
-	IWalkthroughsService,
-	hiddenEntriesConfigurationKey,
-	parseDescription,
 } from "./gettingStartedService.js";
 import {
-	type RestoreWalkthroughsConfigurationValue,
 	restoreWalkthroughsConfigurationKey,
+	type RestoreWalkthroughsConfigurationValue,
 } from "./startupPage.js";
 
 const SLIDE_TRANSITION_TIME_MS = 250;
@@ -252,148 +256,271 @@ export class GettingStartedPage extends EditorPane {
 		group: IEditorGroup,
 		@ICommandService private readonly commandService: ICommandService,
 		@IProductService private readonly productService: IProductService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IWalkthroughsService private readonly gettingStartedService: IWalkthroughsService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IWalkthroughsService
+		private readonly gettingStartedService: IWalkthroughsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@IFileService private readonly fileService: IFileService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IWorkbenchThemeService protected override readonly themeService: IWorkbenchThemeService,
+		@IWorkbenchThemeService
+		protected override readonly themeService: IWorkbenchThemeService,
 		@IStorageService private storageService: IStorageService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IEditorGroupsService private readonly groupsService: IEditorGroupsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IEditorGroupsService
+		private readonly groupsService: IEditorGroupsService,
 		@IContextKeyService contextService: IContextKeyService,
 		@IQuickInputService private quickInputService: IQuickInputService,
-		@IWorkspacesService private readonly workspacesService: IWorkspacesService,
+		@IWorkspacesService
+		private readonly workspacesService: IWorkspacesService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IHostService private readonly hostService: IHostService,
 		@IWebviewService private readonly webviewService: IWebviewService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 	) {
+		super(
+			GettingStartedPage.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 
-		super(GettingStartedPage.ID, group, telemetryService, themeService, storageService);
-
-		this.container = $('.gettingStartedContainer',
-			{
-				role: 'document',
-				tabindex: 0,
-				'aria-label': localize('welcomeAriaLabel', "Overview of how to get up to speed with your editor.")
-			});
-		this.stepMediaComponent = $('.getting-started-media');
+		this.container = $(".gettingStartedContainer", {
+			role: "document",
+			tabindex: 0,
+			"aria-label": localize(
+				"welcomeAriaLabel",
+				"Overview of how to get up to speed with your editor.",
+			),
+		});
+		this.stepMediaComponent = $(".getting-started-media");
 		this.stepMediaComponent.id = generateUuid();
 
 		this.categoriesSlideDisposables = this._register(new DisposableStore());
 
-		this.detailsRenderer = new GettingStartedDetailsRenderer(this.fileService, this.notificationService, this.extensionService, this.languageService);
+		this.detailsRenderer = new GettingStartedDetailsRenderer(
+			this.fileService,
+			this.notificationService,
+			this.extensionService,
+			this.languageService,
+		);
 
-		this.contextService = this._register(contextService.createScoped(this.container));
+		this.contextService = this._register(
+			contextService.createScoped(this.container),
+		);
 		inWelcomeContext.bindTo(this.contextService).set(true);
 
-		this.gettingStartedCategories = this.gettingStartedService.getWalkthroughs();
+		this.gettingStartedCategories =
+			this.gettingStartedService.getWalkthroughs();
 
 		this._register(this.dispatchListeners);
 		this.buildSlideThrottle = new Throttler();
 
 		const rerender = () => {
-			this.gettingStartedCategories = this.gettingStartedService.getWalkthroughs();
+			this.gettingStartedCategories =
+				this.gettingStartedService.getWalkthroughs();
 			if (this.currentWalkthrough) {
-				const existingSteps = this.currentWalkthrough.steps.map(step => step.id);
-				const newCategory = this.gettingStartedCategories.find(category => this.currentWalkthrough?.id === category.id);
+				const existingSteps = this.currentWalkthrough.steps.map(
+					(step) => step.id,
+				);
+				const newCategory = this.gettingStartedCategories.find(
+					(category) => this.currentWalkthrough?.id === category.id,
+				);
 				if (newCategory) {
-					const newSteps = newCategory.steps.map(step => step.id);
+					const newSteps = newCategory.steps.map((step) => step.id);
 					if (!equals(newSteps, existingSteps)) {
-						this.buildSlideThrottle.queue(() => this.buildCategoriesSlide());
+						this.buildSlideThrottle.queue(() =>
+							this.buildCategoriesSlide(),
+						);
 					}
 				}
 			} else {
-				this.buildSlideThrottle.queue(() => this.buildCategoriesSlide());
+				this.buildSlideThrottle.queue(() =>
+					this.buildCategoriesSlide(),
+				);
 			}
 		};
 
-		this._register(this.gettingStartedService.onDidAddWalkthrough(rerender));
-		this._register(this.gettingStartedService.onDidRemoveWalkthrough(rerender));
+		this._register(
+			this.gettingStartedService.onDidAddWalkthrough(rerender),
+		);
+		this._register(
+			this.gettingStartedService.onDidRemoveWalkthrough(rerender),
+		);
 
 		this.recentlyOpened = this.workspacesService.getRecentlyOpened();
-		this._register(workspacesService.onDidChangeRecentlyOpened(() => {
-			this.recentlyOpened = workspacesService.getRecentlyOpened();
-			rerender();
-		}));
+		this._register(
+			workspacesService.onDidChangeRecentlyOpened(() => {
+				this.recentlyOpened = workspacesService.getRecentlyOpened();
+				rerender();
+			}),
+		);
 
-		this._register(this.gettingStartedService.onDidChangeWalkthrough(category => {
-			const ourCategory = this.gettingStartedCategories.find(c => c.id === category.id);
-			if (!ourCategory) { return; }
-
-			ourCategory.title = category.title;
-			ourCategory.description = category.description;
-
-			this.container.querySelectorAll<HTMLDivElement>(`[x-category-title-for="${category.id}"]`).forEach(step => (step as HTMLDivElement).innerText = ourCategory.title);
-			this.container.querySelectorAll<HTMLDivElement>(`[x-category-description-for="${category.id}"]`).forEach(step => (step as HTMLDivElement).innerText = ourCategory.description);
-		}));
-
-		this._register(this.gettingStartedService.onDidProgressStep(step => {
-			const category = this.gettingStartedCategories.find(category => category.id === step.category);
-			if (!category) { throw Error('Could not find category with ID: ' + step.category); }
-			const ourStep = category.steps.find(_step => _step.id === step.id);
-			if (!ourStep) {
-				throw Error('Could not find step with ID: ' + step.id);
-			}
-
-			const stats = this.getWalkthroughCompletionStats(category);
-			if (!ourStep.done && stats.stepsComplete === stats.stepsTotal - 1) {
-				this.hideCategory(category.id);
-			}
-
-			this._register(this.configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration(REDUCED_MOTION_KEY)) {
-					this.container.classList.toggle('animatable', this.shouldAnimate());
+		this._register(
+			this.gettingStartedService.onDidChangeWalkthrough((category) => {
+				const ourCategory = this.gettingStartedCategories.find(
+					(c) => c.id === category.id,
+				);
+				if (!ourCategory) {
+					return;
 				}
-			}));
-			ourStep.done = step.done;
 
-			if (category.id === this.currentWalkthrough?.id) {
-				const badgeelements = assertIsDefined(this.window.document.querySelectorAll(`[data-done-step-id="${step.id}"]`));
-				badgeelements.forEach(badgeelement => {
-					if (step.done) {
-						badgeelement.setAttribute('aria-checked', 'true');
-						badgeelement.parentElement?.setAttribute('aria-checked', 'true');
-						badgeelement.classList.remove(...ThemeIcon.asClassNameArray(gettingStartedUncheckedCodicon));
-						badgeelement.classList.add('complete', ...ThemeIcon.asClassNameArray(gettingStartedCheckedCodicon));
-					}
-					else {
-						badgeelement.setAttribute('aria-checked', 'false');
-						badgeelement.parentElement?.setAttribute('aria-checked', 'false');
-						badgeelement.classList.remove('complete', ...ThemeIcon.asClassNameArray(gettingStartedCheckedCodicon));
-						badgeelement.classList.add(...ThemeIcon.asClassNameArray(gettingStartedUncheckedCodicon));
-					}
-				});
-			}
-			this.updateCategoryProgress();
-		}));
+				ourCategory.title = category.title;
+				ourCategory.description = category.description;
 
-		this._register(this.storageService.onWillSaveState((e) => {
-			if (e.reason !== WillSaveStateReason.SHUTDOWN) {
-				return;
-			}
+				this.container
+					.querySelectorAll<HTMLDivElement>(
+						`[x-category-title-for="${category.id}"]`,
+					)
+					.forEach(
+						(step) =>
+							((step as HTMLDivElement).innerText =
+								ourCategory.title),
+					);
+				this.container
+					.querySelectorAll<HTMLDivElement>(
+						`[x-category-description-for="${category.id}"]`,
+					)
+					.forEach(
+						(step) =>
+							((step as HTMLDivElement).innerText =
+								ourCategory.description),
+					);
+			}),
+		);
 
-			if (this.workspaceContextService.getWorkspace().folders.length !== 0) {
-				return;
-			}
+		this._register(
+			this.gettingStartedService.onDidProgressStep((step) => {
+				const category = this.gettingStartedCategories.find(
+					(category) => category.id === step.category,
+				);
+				if (!category) {
+					throw Error(
+						"Could not find category with ID: " + step.category,
+					);
+				}
+				const ourStep = category.steps.find(
+					(_step) => _step.id === step.id,
+				);
+				if (!ourStep) {
+					throw Error("Could not find step with ID: " + step.id);
+				}
 
-			if (!this.editorInput || !this.currentWalkthrough || !this.editorInput.selectedCategory || !this.editorInput.selectedStep) {
-				return;
-			}
+				const stats = this.getWalkthroughCompletionStats(category);
+				if (
+					!ourStep.done &&
+					stats.stepsComplete === stats.stepsTotal - 1
+				) {
+					this.hideCategory(category.id);
+				}
 
-			// Save the state of the walkthrough so we can restore it on reload
-			const restoreData: RestoreWalkthroughsConfigurationValue = { folder: UNKNOWN_EMPTY_WINDOW_WORKSPACE.id, category: this.editorInput.selectedCategory, step: this.editorInput.selectedStep };
-			this.storageService.store(
-				restoreWalkthroughsConfigurationKey,
-				JSON.stringify(restoreData),
-				StorageScope.PROFILE, StorageTarget.MACHINE);
-		}));
+				this._register(
+					this.configurationService.onDidChangeConfiguration((e) => {
+						if (e.affectsConfiguration(REDUCED_MOTION_KEY)) {
+							this.container.classList.toggle(
+								"animatable",
+								this.shouldAnimate(),
+							);
+						}
+					}),
+				);
+				ourStep.done = step.done;
+
+				if (category.id === this.currentWalkthrough?.id) {
+					const badgeelements = assertIsDefined(
+						this.window.document.querySelectorAll(
+							`[data-done-step-id="${step.id}"]`,
+						),
+					);
+					badgeelements.forEach((badgeelement) => {
+						if (step.done) {
+							badgeelement.setAttribute("aria-checked", "true");
+							badgeelement.parentElement?.setAttribute(
+								"aria-checked",
+								"true",
+							);
+							badgeelement.classList.remove(
+								...ThemeIcon.asClassNameArray(
+									gettingStartedUncheckedCodicon,
+								),
+							);
+							badgeelement.classList.add(
+								"complete",
+								...ThemeIcon.asClassNameArray(
+									gettingStartedCheckedCodicon,
+								),
+							);
+						} else {
+							badgeelement.setAttribute("aria-checked", "false");
+							badgeelement.parentElement?.setAttribute(
+								"aria-checked",
+								"false",
+							);
+							badgeelement.classList.remove(
+								"complete",
+								...ThemeIcon.asClassNameArray(
+									gettingStartedCheckedCodicon,
+								),
+							);
+							badgeelement.classList.add(
+								...ThemeIcon.asClassNameArray(
+									gettingStartedUncheckedCodicon,
+								),
+							);
+						}
+					});
+				}
+				this.updateCategoryProgress();
+			}),
+		);
+
+		this._register(
+			this.storageService.onWillSaveState((e) => {
+				if (e.reason !== WillSaveStateReason.SHUTDOWN) {
+					return;
+				}
+
+				if (
+					this.workspaceContextService.getWorkspace().folders
+						.length !== 0
+				) {
+					return;
+				}
+
+				if (
+					!this.editorInput ||
+					!this.currentWalkthrough ||
+					!this.editorInput.selectedCategory ||
+					!this.editorInput.selectedStep
+				) {
+					return;
+				}
+
+				// Save the state of the walkthrough so we can restore it on reload
+				const restoreData: RestoreWalkthroughsConfigurationValue = {
+					folder: UNKNOWN_EMPTY_WINDOW_WORKSPACE.id,
+					category: this.editorInput.selectedCategory,
+					step: this.editorInput.selectedStep,
+				};
+				this.storageService.store(
+					restoreWalkthroughsConfigurationKey,
+					JSON.stringify(restoreData),
+					StorageScope.PROFILE,
+					StorageTarget.MACHINE,
+				);
+			}),
+		);
 	}
 
 	// remove when 'workbench.welcomePage.preferReducedMotion' deprecated

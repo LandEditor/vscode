@@ -8,10 +8,10 @@ import { CancellationTokenSource } from "../../../../../base/common/cancellation
 import { Emitter, Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
-	type IReference,
 	RefCountedDisposable,
 	toDisposable,
+	type IDisposable,
+	type IReference,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { isEqual } from "../../../../../base/common/resources.js";
@@ -24,8 +24,8 @@ import { createTextBufferFactoryFromSnapshot } from "../../../../../editor/commo
 import { IModelService } from "../../../../../editor/common/services/model.js";
 import { DefaultModelSHA1Computer } from "../../../../../editor/common/services/modelService.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../../nls.js";
 import { MenuId } from "../../../../../platform/actions/common/actions.js";
@@ -34,8 +34,8 @@ import {
 	registerSingleton,
 } from "../../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../../platform/instantiation/common/instantiation.js";
 import type {
 	IChatProgressRenderableResponseContent,
@@ -43,8 +43,8 @@ import type {
 } from "../../common/chatModel.js";
 import { IChatService } from "../../common/chatService.js";
 import {
-	type IChatResponseViewModel,
 	isResponseVM,
+	type IChatResponseViewModel,
 } from "../../common/chatViewModel.js";
 import type { IChatListItemRendererOptions } from "../chat.js";
 import type { IChatRendererDelegate } from "../chatListRenderer.js";
@@ -54,7 +54,7 @@ import {
 	type ICodeCompareBlockData,
 	type ICodeCompareBlockDiffData,
 } from "../codeBlockPart.js";
-import { type IDisposableReference, ResourcePool } from "./chatCollections.js";
+import { ResourcePool, type IDisposableReference } from "./chatCollections.js";
 import type {
 	IChatContentPart,
 	IChatContentPartRenderContext,
@@ -98,7 +98,8 @@ export class ChatTextEditContentPart
 		rendererOptions: IChatListItemRendererOptions,
 		diffEditorPool: DiffEditorPool,
 		currentWidth: number,
-		@ICodeCompareModelService private readonly codeCompareModelService: ICodeCompareModelService
+		@ICodeCompareModelService
+		private readonly codeCompareModelService: ICodeCompareModelService,
 	) {
 		super();
 		const element = context.element;
@@ -107,42 +108,55 @@ export class ChatTextEditContentPart
 
 		// TODO@jrieken move this into the CompareCodeBlock and properly say what kind of changes happen
 		if (rendererOptions.renderTextEditsAsSummary?.(chatTextEdit.uri)) {
-			if (element.response.value.every(item => item.kind === 'textEditGroup')) {
-				this.domNode = $('.interactive-edits-summary', undefined, element.isComplete
-					? element.isCanceled
-						? localize('edits0', "Making changes was aborted.")
-						: localize('editsSummary', "Made changes.") : '');
+			if (
+				element.response.value.every(
+					(item) => item.kind === "textEditGroup",
+				)
+			) {
+				this.domNode = $(
+					".interactive-edits-summary",
+					undefined,
+					element.isComplete
+						? element.isCanceled
+							? localize("edits0", "Making changes was aborted.")
+							: localize("editsSummary", "Made changes.")
+						: "",
+				);
 			} else {
-				this.domNode = $('div');
+				this.domNode = $("div");
 			}
 
 			// TODO@roblourens this case is now handled outside this Part in ChatListRenderer, but can it be cleaned up?
 			// return;
 		} else {
-
-
 			const cts = new CancellationTokenSource();
 
 			let isDisposed = false;
-			this._register(toDisposable(() => {
-				isDisposed = true;
-				cts.dispose(true);
-			}));
+			this._register(
+				toDisposable(() => {
+					isDisposed = true;
+					cts.dispose(true);
+				}),
+			);
 
 			this.comparePart = this._register(diffEditorPool.get());
 
 			// Attach this after updating text/layout of the editor, so it should only be fired when the size updates later (horizontal scrollbar, wrapping)
 			// not during a renderElement OR a progressive render (when we will be firing this event anyway at the end of the render)
-			this._register(this.comparePart.object.onDidChangeContentHeight(() => {
-				this._onDidChangeHeight.fire();
-			}));
+			this._register(
+				this.comparePart.object.onDidChangeContentHeight(() => {
+					this._onDidChangeHeight.fire();
+				}),
+			);
 
 			const data: ICodeCompareBlockData = {
 				element,
 				edit: chatTextEdit,
 				diffData: (async () => {
-
-					const ref = await this.codeCompareModelService.createModel(element, chatTextEdit);
+					const ref = await this.codeCompareModelService.createModel(
+						element,
+						chatTextEdit,
+					);
 
 					if (isDisposed) {
 						ref.dispose();
@@ -154,9 +168,9 @@ export class ChatTextEditContentPart
 					return {
 						modified: ref.object.modified.textEditorModel,
 						original: ref.object.original.textEditorModel,
-						originalSha1: ref.object.originalSha1
+						originalSha1: ref.object.originalSha1,
 					} satisfies ICodeCompareBlockDiffData;
-				})()
+				})(),
 			};
 			this.comparePart.object.render(data, currentWidth, cts.token);
 
@@ -227,7 +241,7 @@ class CodeCompareModelService implements ICodeCompareModelService {
 		@ITextModelService private readonly textModelService: ITextModelService,
 		@IModelService private readonly modelService: IModelService,
 		@IChatService private readonly chatService: IChatService,
-	) { }
+	) {}
 
 	async createModel(
 		element: IChatResponseViewModel,

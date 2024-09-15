@@ -6,7 +6,7 @@
 import { coalesce } from "../../../../base/common/arrays.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
-import { Schemas, matchesSomeScheme } from "../../../../base/common/network.js";
+import { matchesSomeScheme, Schemas } from "../../../../base/common/network.js";
 import { registerModelAndPositionCommand } from "../../../browser/editorExtensions.js";
 import type { Position } from "../../../common/core/position.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";

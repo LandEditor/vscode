@@ -4,35 +4,38 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "../../services/markerDecorations.js";
+
 import * as dom from "../../../../base/browser/dom.js";
 import type { IKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
 import type { IMouseWheelEvent } from "../../../../base/browser/mouseEvent.js";
 import type { Color } from "../../../../base/common/color.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import {
+	createEventDeliveryQueue,
 	Emitter,
 	type EmitterOptions,
 	type Event,
 	type EventDeliveryQueue,
-	createEventDeliveryQueue,
 } from "../../../../base/common/event.js";
 import { hash } from "../../../../base/common/hash.js";
 import {
 	Disposable,
+	dispose,
 	type DisposableStore,
 	type IDisposable,
-	dispose,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
+
 import "./editor.css";
+
 import * as nls from "../../../../nls.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
+	IContextKeyService,
 	type ContextKeyValue,
 	type IContextKey,
-	IContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IInstantiationService,
@@ -55,20 +58,20 @@ import {
 } from "../../../../platform/theme/common/themeService.js";
 import type { IEditorConfiguration } from "../../../common/config/editorConfiguration.js";
 import {
+	EditorOption,
+	filterValidationDecorations,
 	type ConfigurationChangedEvent,
 	type EditorLayoutInfo,
-	EditorOption,
 	type FindComputedEditorOptionValueById,
 	type IComputedEditorOptions,
 	type IEditorOptions,
-	filterValidationDecorations,
 } from "../../../common/config/editorOptions.js";
 import { CursorColumns } from "../../../common/core/cursorColumns.js";
 import type { IDimension } from "../../../common/core/dimension.js";
 import { editorUnnecessaryCodeOpacity } from "../../../common/core/editorColorRegistry.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
-import { type ISelection, Selection } from "../../../common/core/selection.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
+import { Range, type IRange } from "../../../common/core/range.js";
+import { Selection, type ISelection } from "../../../common/core/selection.js";
 import type { IWordAtPosition } from "../../../common/core/wordHelper.js";
 import { WordOperations } from "../../../common/cursor/cursorWordOperations.js";
 import {
@@ -123,10 +126,10 @@ import {
 } from "../../editorExtensions.js";
 import { ICodeEditorService } from "../../services/codeEditorService.js";
 import {
+	View,
 	type IContentWidgetData,
 	type IGlyphMarginWidgetData,
 	type IOverlayWidgetData,
-	View,
 } from "../../view.js";
 import { DOMLineBreaksComputerFactory } from "../../view/domLineBreaksComputer.js";
 import type { ICommandDelegate } from "../../view/viewController.js";
@@ -534,8 +537,10 @@ export class CodeEditorWidget
 		@IThemeService themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		codeEditorService.willCreateCodeEditor();
@@ -545,40 +550,72 @@ export class CodeEditorWidget
 		this._domElement = domElement;
 		this._overflowWidgetsDomNode = options.overflowWidgetsDomNode;
 		delete options.overflowWidgetsDomNode;
-		this._id = (++EDITOR_ID);
+		this._id = ++EDITOR_ID;
 		this._decorationTypeKeysToIds = {};
 		this._decorationTypeSubtypes = {};
 		this._telemetryData = codeEditorWidgetOptions.telemetryData;
 
-		this._configuration = this._register(this._createConfiguration(codeEditorWidgetOptions.isSimpleWidget || false,
-			codeEditorWidgetOptions.contextMenuId ?? (codeEditorWidgetOptions.isSimpleWidget ? MenuId.SimpleEditorContext : MenuId.EditorContext),
-			options, accessibilityService));
-		this._register(this._configuration.onDidChange((e) => {
-			this._onDidChangeConfiguration.fire(e);
+		this._configuration = this._register(
+			this._createConfiguration(
+				codeEditorWidgetOptions.isSimpleWidget || false,
+				codeEditorWidgetOptions.contextMenuId ??
+					(codeEditorWidgetOptions.isSimpleWidget
+						? MenuId.SimpleEditorContext
+						: MenuId.EditorContext),
+				options,
+				accessibilityService,
+			),
+		);
+		this._register(
+			this._configuration.onDidChange((e) => {
+				this._onDidChangeConfiguration.fire(e);
 
-			const options = this._configuration.options;
-			if (e.hasChanged(EditorOption.layoutInfo)) {
-				const layoutInfo = options.get(EditorOption.layoutInfo);
-				this._onDidLayoutChange.fire(layoutInfo);
-			}
-		}));
+				const options = this._configuration.options;
+				if (e.hasChanged(EditorOption.layoutInfo)) {
+					const layoutInfo = options.get(EditorOption.layoutInfo);
+					this._onDidLayoutChange.fire(layoutInfo);
+				}
+			}),
+		);
 
-		this._contextKeyService = this._register(contextKeyService.createScoped(this._domElement));
+		this._contextKeyService = this._register(
+			contextKeyService.createScoped(this._domElement),
+		);
 		this._notificationService = notificationService;
 		this._codeEditorService = codeEditorService;
 		this._commandService = commandService;
 		this._themeService = themeService;
-		this._register(new EditorContextKeysManager(this, this._contextKeyService));
-		this._register(new EditorModeContext(this, this._contextKeyService, languageFeaturesService));
+		this._register(
+			new EditorContextKeysManager(this, this._contextKeyService),
+		);
+		this._register(
+			new EditorModeContext(
+				this,
+				this._contextKeyService,
+				languageFeaturesService,
+			),
+		);
 
-		this._instantiationService = this._register(instantiationService.createChild(new ServiceCollection([IContextKeyService, this._contextKeyService])));
+		this._instantiationService = this._register(
+			instantiationService.createChild(
+				new ServiceCollection([
+					IContextKeyService,
+					this._contextKeyService,
+				]),
+			),
+		);
 
 		this._modelData = null;
 
-		this._focusTracker = new CodeEditorWidgetFocusTracker(domElement, this._overflowWidgetsDomNode);
-		this._register(this._focusTracker.onChange(() => {
-			this._editorWidgetFocus.setValue(this._focusTracker.hasFocus());
-		}));
+		this._focusTracker = new CodeEditorWidgetFocusTracker(
+			domElement,
+			this._overflowWidgetsDomNode,
+		);
+		this._register(
+			this._focusTracker.onChange(() => {
+				this._editorWidgetFocus.setValue(this._focusTracker.hasFocus());
+			}),
+		);
 
 		this._contentWidgets = {};
 		this._overlayWidgets = {};
@@ -590,11 +627,19 @@ export class CodeEditorWidget
 		} else {
 			contributions = EditorExtensionsRegistry.getEditorContributions();
 		}
-		this._contributions.initialize(this, contributions, this._instantiationService);
+		this._contributions.initialize(
+			this,
+			contributions,
+			this._instantiationService,
+		);
 
 		for (const action of EditorExtensionsRegistry.getEditorActions()) {
 			if (this._actions.has(action.id)) {
-				onUnexpectedError(new Error(`Cannot have two actions with the same id ${action.id}`));
+				onUnexpectedError(
+					new Error(
+						`Cannot have two actions with the same id ${action.id}`,
+					),
+				);
 				continue;
 			}
 			const internalAction = new InternalEditorAction(
@@ -604,54 +649,72 @@ export class CodeEditorWidget
 				action.metadata,
 				action.precondition ?? undefined,
 				(args: unknown): Promise<void> => {
-					return this._instantiationService.invokeFunction((accessor) => {
-						return Promise.resolve(action.runEditorCommand(accessor, this, args));
-					});
+					return this._instantiationService.invokeFunction(
+						(accessor) => {
+							return Promise.resolve(
+								action.runEditorCommand(accessor, this, args),
+							);
+						},
+					);
 				},
-				this._contextKeyService
+				this._contextKeyService,
 			);
 			this._actions.set(internalAction.id, internalAction);
 		}
 
 		const isDropIntoEnabled = () => {
-			return !this._configuration.options.get(EditorOption.readOnly)
-				&& this._configuration.options.get(EditorOption.dropIntoEditor).enabled;
+			return (
+				!this._configuration.options.get(EditorOption.readOnly) &&
+				this._configuration.options.get(EditorOption.dropIntoEditor)
+					.enabled
+			);
 		};
 
-		this._register(new dom.DragAndDropObserver(this._domElement, {
-			onDragOver: e => {
-				if (!isDropIntoEnabled()) {
-					return;
-				}
+		this._register(
+			new dom.DragAndDropObserver(this._domElement, {
+				onDragOver: (e) => {
+					if (!isDropIntoEnabled()) {
+						return;
+					}
 
-				const target = this.getTargetAtClientPoint(e.clientX, e.clientY);
-				if (target?.position) {
-					this.showDropIndicatorAt(target.position);
-				}
-			},
-			onDrop: async e => {
-				if (!isDropIntoEnabled()) {
-					return;
-				}
+					const target = this.getTargetAtClientPoint(
+						e.clientX,
+						e.clientY,
+					);
+					if (target?.position) {
+						this.showDropIndicatorAt(target.position);
+					}
+				},
+				onDrop: async (e) => {
+					if (!isDropIntoEnabled()) {
+						return;
+					}
 
-				this.removeDropIndicator();
+					this.removeDropIndicator();
 
-				if (!e.dataTransfer) {
-					return;
-				}
+					if (!e.dataTransfer) {
+						return;
+					}
 
-				const target = this.getTargetAtClientPoint(e.clientX, e.clientY);
-				if (target?.position) {
-					this._onDropIntoEditor.fire({ position: target.position, event: e });
-				}
-			},
-			onDragLeave: () => {
-				this.removeDropIndicator();
-			},
-			onDragEnd: () => {
-				this.removeDropIndicator();
-			},
-		}));
+					const target = this.getTargetAtClientPoint(
+						e.clientX,
+						e.clientY,
+					);
+					if (target?.position) {
+						this._onDropIntoEditor.fire({
+							position: target.position,
+							event: e,
+						});
+					}
+				},
+				onDragLeave: () => {
+					this.removeDropIndicator();
+				},
+				onDragEnd: () => {
+					this.removeDropIndicator();
+				},
+			}),
+		);
 
 		this._codeEditorService.addCodeEditor(this);
 	}

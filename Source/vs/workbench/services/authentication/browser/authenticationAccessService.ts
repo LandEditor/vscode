@@ -75,7 +75,7 @@ export class AuthenticationAccessService
 
 	constructor(
 		@IStorageService private readonly _storageService: IStorageService,
-		@IProductService private readonly _productService: IProductService
+		@IProductService private readonly _productService: IProductService,
 	) {
 		super();
 	}

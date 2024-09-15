@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { asPromise } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { IURITransformer } from "../../../base/common/uriIpc.js";
 import {
+	MainContext,
 	type ExtHostQuickDiffShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadQuickDiffShape,
 } from "./extHost.protocol.js";
 import { DocumentSelector } from "./extHostTypeConverters.js";

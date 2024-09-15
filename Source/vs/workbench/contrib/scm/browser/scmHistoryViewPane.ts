@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/scm.css";
+
 import { $, append, h, reset } from "../../../../base/browser/dom.js";
-import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IActionViewItem } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type { IDropdownMenuActionViewItemOptions } from "../../../../base/browser/ui/dropdown/dropdownActionViewItem.js";
 import type {
 	IHoverOptions,
@@ -40,9 +41,9 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import { fromNow } from "../../../../base/common/date.js";
 import { Event } from "../../../../base/common/event.js";
 import {
+	createMatches,
 	type FuzzyScore,
 	type IMatch,
-	createMatches,
 } from "../../../../base/common/filters.js";
 import { MarkdownString } from "../../../../base/common/htmlContent.js";
 import { stripIcons } from "../../../../base/common/iconLabels.js";
@@ -54,7 +55,6 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { clamp } from "../../../../base/common/numbers.js";
 import {
-	type IObservable,
 	autorun,
 	autorunWithStore,
 	autorunWithStoreHandleChanges,
@@ -66,6 +66,7 @@ import {
 	runOnChange,
 	signalFromObservable,
 	waitForState,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import * as platform from "../../../../base/common/platform.js";
 import { compare } from "../../../../base/common/strings.js";
@@ -82,8 +83,8 @@ import { ICommandService } from "../../../../platform/commands/common/commands.j
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
@@ -96,8 +97,8 @@ import {
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
-	type IOpenEvent,
 	WorkbenchAsyncDataTree,
+	type IOpenEvent,
 } from "../../../../platform/list/browser/listService.js";
 import { observableConfigValue } from "../../../../platform/observable/common/platformObservableUtils.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
@@ -109,16 +110,16 @@ import {
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type ColorIdentifier,
 	asCssVariable,
 	foreground,
+	type ColorIdentifier,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IViewPaneOptions,
 	ViewAction,
 	ViewPane,
 	ViewPaneShowActions,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import {
 	IViewDescriptorService,
@@ -138,13 +139,12 @@ import type {
 } from "../common/history.js";
 import {
 	HISTORY_VIEW_PANE_ID,
-	type ISCMProvider,
-	type ISCMRepository,
 	ISCMService,
 	ISCMViewService,
+	type ISCMProvider,
+	type ISCMRepository,
 } from "../common/scm.js";
 import {
-	SWIMLANE_WIDTH,
 	historyItemHoverAdditionsForeground,
 	historyItemHoverDefaultLabelBackground,
 	historyItemHoverDefaultLabelForeground,
@@ -152,6 +152,7 @@ import {
 	historyItemHoverLabelForeground,
 	renderSCMHistoryGraphPlaceholder,
 	renderSCMHistoryItemGraph,
+	SWIMLANE_WIDTH,
 	toISCMHistoryItemViewModelArray,
 } from "./scmHistory.js";
 import { ContextKeys } from "./scmViewPane.js";
@@ -479,11 +480,13 @@ class HistoryItemRenderer
 
 	constructor(
 		private readonly hoverDelegate: IHoverDelegate,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IHoverService private readonly _hoverService: IHoverService,
-		@IThemeService private readonly _themeService: IThemeService
-	) { }
+		@IThemeService private readonly _themeService: IThemeService,
+	) {}
 
 	renderTemplate(container: HTMLElement): HistoryItemTemplate {
 		// hack
@@ -811,7 +814,11 @@ interface LoadMoreTemplate {
 
 class HistoryItemLoadMoreRenderer
 	implements
-		ITreeRenderer<SCMHistoryItemLoadMoreTreeElement, void, LoadMoreTemplate>
+		ITreeRenderer<
+			SCMHistoryItemLoadMoreTreeElement,
+			void,
+			LoadMoreTemplate
+		>
 {
 	static readonly TEMPLATE_ID = "historyItemLoadMore";
 	get templateId(): string {
@@ -820,9 +827,12 @@ class HistoryItemLoadMoreRenderer
 
 	constructor(
 		private readonly _loadingMore: () => IObservable<boolean>,
-		private readonly _loadMoreCallback: (repository: ISCMRepository) => void,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
-	) { }
+		private readonly _loadMoreCallback: (
+			repository: ISCMRepository,
+		) => void,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): LoadMoreTemplate {
 		// hack
@@ -908,12 +918,18 @@ class HistoryItemLoadMoreRenderer
 class HistoryItemHoverDelegate extends WorkbenchHoverDelegate {
 	constructor(
 		private readonly _viewContainerLocation: ViewContainerLocation | null,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHoverService hoverService: IHoverService,
-
 	) {
-		super('element', true, () => this.getHoverOptions(), configurationService, hoverService);
+		super(
+			"element",
+			true,
+			() => this.getHoverOptions(),
+			configurationService,
+			hoverService,
+		);
 	}
 
 	private getHoverOptions(): Partial<IHoverOptions> {
@@ -944,7 +960,9 @@ class HistoryItemHoverDelegate extends WorkbenchHoverDelegate {
 }
 
 class SCMHistoryViewPaneActionRunner extends ActionRunner {
-	constructor(@IProgressService private readonly _progressService: IProgressService) {
+	constructor(
+		@IProgressService private readonly _progressService: IProgressService,
+	) {
 		super();
 	}
 
@@ -1113,25 +1131,31 @@ class SCMHistoryViewModel extends Disposable {
 	private readonly _state = new Map<ISCMRepository, HistoryItemState>();
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ISCMService private readonly _scmService: ISCMService,
-		@ISCMViewService private readonly _scmViewService: ISCMViewService
+		@ISCMViewService private readonly _scmViewService: ISCMViewService,
 	) {
 		super();
 
 		// Closed repository cleanup
-		this._register(autorun(reader => {
-			const repository = this._closedRepository.read(reader);
-			if (!repository) {
-				return;
-			}
+		this._register(
+			autorun((reader) => {
+				const repository = this._closedRepository.read(reader);
+				if (!repository) {
+					return;
+				}
 
-			if (this.repository.get() === repository) {
-				this._selectedRepository.set(Iterable.first(this._scmService.repositories) ?? 'auto', undefined);
-			}
+				if (this.repository.get() === repository) {
+					this._selectedRepository.set(
+						Iterable.first(this._scmService.repositories) ?? "auto",
+						undefined,
+					);
+				}
 
-			this._state.delete(repository);
-		}));
+				this._state.delete(repository);
+			}),
+		);
 	}
 
 	clearRepositoryState(): void {
@@ -1303,8 +1327,9 @@ class RepositoryPicker extends Disposable {
 	};
 
 	constructor(
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
-		@ISCMViewService private readonly _scmViewService: ISCMViewService
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
+		@ISCMViewService private readonly _scmViewService: ISCMViewService,
 	) {
 		super();
 	}
@@ -1360,8 +1385,12 @@ class HistoryItemRefPicker extends Disposable {
 
 	constructor(
 		private readonly _historyProvider: ISCMHistoryProvider,
-		private readonly _historyItemsFilter: 'all' | 'auto' | ISCMHistoryItemRef[],
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		private readonly _historyItemsFilter:
+			| "all"
+			| "auto"
+			| ISCMHistoryItemRef[],
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
 	}
@@ -1554,7 +1583,8 @@ export class SCMHistoryViewPane extends ViewPane {
 	constructor(
 		options: IViewPaneOptions,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IProgressService private readonly _progressService: IProgressService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
@@ -1565,17 +1595,33 @@ export class SCMHistoryViewPane extends ViewPane {
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IHoverService hoverService: IHoverService
+		@IHoverService hoverService: IHoverService,
 	) {
-		super({
-			...options,
-			titleMenuId: MenuId.SCMHistoryTitle,
-			showActions: ViewPaneShowActions.WhenExpanded
-		}, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			{
+				...options,
+				titleMenuId: MenuId.SCMHistoryTitle,
+				showActions: ViewPaneShowActions.WhenExpanded,
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this._scmProviderCtx = ContextKeys.SCMProvider.bindTo(this.scopedContextKeyService);
+		this._scmProviderCtx = ContextKeys.SCMProvider.bindTo(
+			this.scopedContextKeyService,
+		);
 
-		this._actionRunner = this.instantiationService.createInstance(SCMHistoryViewPaneActionRunner);
+		this._actionRunner = this.instantiationService.createInstance(
+			SCMHistoryViewPaneActionRunner,
+		);
 		this._register(this._actionRunner);
 
 		this._register(this._updateChildrenThrottler);

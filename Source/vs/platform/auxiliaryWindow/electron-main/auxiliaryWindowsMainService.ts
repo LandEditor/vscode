@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	app,
 	BrowserWindow,
 	type BrowserWindowConstructorOptions,
 	type HandlerDetails,
 	type WebContents,
-	app,
 } from "electron";
+
 import { Emitter, Event } from "../../../base/common/event.js";
 import {
 	Disposable,
@@ -21,15 +22,15 @@ import { validatedIpcMain } from "../../../base/parts/ipc/electron-main/ipcMain.
 import { IInstantiationService } from "../../instantiation/common/instantiation.js";
 import { ILogService } from "../../log/common/log.js";
 import {
-	type IWindowState,
-	WindowMode,
 	defaultAuxWindowState,
+	WindowMode,
+	type IWindowState,
 } from "../../window/electron-main/window.js";
 import {
-	type IDefaultBrowserWindowOptionsOverrides,
-	WindowStateValidator,
 	defaultBrowserWindowOptions,
 	getLastFocused,
+	WindowStateValidator,
+	type IDefaultBrowserWindowOptionsOverrides,
 } from "../../windows/electron-main/windows.js";
 import { AuxiliaryWindow, type IAuxiliaryWindow } from "./auxiliaryWindow.js";
 import type { IAuxiliaryWindowsMainService } from "./auxiliaryWindows.js";
@@ -67,8 +68,9 @@ export class AuxiliaryWindowsMainService
 	>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILogService private readonly logService: ILogService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 

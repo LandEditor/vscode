@@ -3,10 +3,11 @@ import type {
 	ITerminalAddon,
 	Terminal as RawXtermTerminal,
 } from "@xterm/xterm";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import {
-	type IContentActionHandler,
 	renderFormattedText,
+	type IContentActionHandler,
 } from "../../../../../base/browser/formattedTextRenderer.js";
 import { status } from "../../../../../base/browser/ui/aria/aria.js";
 import { KeybindingLabel } from "../../../../../base/browser/ui/keybindingLabel/keybindingLabel.js";
@@ -33,17 +34,17 @@ import { IKeybindingService } from "../../../../../platform/keybinding/common/ke
 import { IProductService } from "../../../../../platform/product/common/productService.js";
 import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
 import {
-	type ITerminalCapabilityStore,
 	TerminalCapability,
+	type ITerminalCapabilityStore,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import { AccessibilityVerbositySettingId } from "../../../accessibility/browser/accessibilityConfiguration.js";
 import {
-	type IDetachedTerminalInstance,
-	type ITerminalContribution,
 	ITerminalEditorService,
 	ITerminalGroupService,
-	type ITerminalInstance,
 	ITerminalService,
+	type IDetachedTerminalInstance,
+	type ITerminalContribution,
+	type ITerminalInstance,
 	type IXtermTerminal,
 } from "../../../terminal/browser/terminal.js";
 import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
@@ -54,7 +55,9 @@ import type {
 	ITerminalProcessManager,
 } from "../../../terminal/common/terminal.js";
 import { TerminalChatCommandId } from "./terminalChat.js";
+
 import "./media/terminalInitialHint.css";
+
 import { StandardMouseEvent } from "../../../../../base/browser/mouseEvent.js";
 import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
 import {
@@ -64,8 +67,8 @@ import {
 } from "../../../../../platform/storage/common/storage.js";
 import {
 	ChatAgentLocation,
-	type IChatAgent,
 	IChatAgentService,
+	type IChatAgent,
 } from "../../../chat/common/chatAgents.js";
 import { TerminalInitialHintSettingId } from "../common/terminalInitialHintConfiguration.js";
 
@@ -152,24 +155,41 @@ export class TerminalInitialHintContribution
 	private _xterm: (IXtermTerminal & { raw: RawXtermTerminal }) | undefined;
 
 	constructor(
-		private readonly _instance: Pick<ITerminalInstance, 'capabilities' | 'shellLaunchConfig'> | IDetachedTerminalInstance,
-		processManager: ITerminalProcessManager | ITerminalProcessInfo | undefined,
+		private readonly _instance:
+			| Pick<ITerminalInstance, "capabilities" | "shellLaunchConfig">
+			| IDetachedTerminalInstance,
+		processManager:
+			| ITerminalProcessManager
+			| ITerminalProcessInfo
+			| undefined,
 		widgetManager: TerminalWidgetManager | undefined,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@IChatAgentService private readonly _chatAgentService: IChatAgentService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@IChatAgentService
+		private readonly _chatAgentService: IChatAgentService,
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
 		super();
 
 		// Reset hint state when config changes
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalInitialHintSettingId.Enabled)) {
-				this._storageService.remove(Constants.InitialHintHideStorageKey, StorageScope.APPLICATION);
-			}
-		}));
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(TerminalInitialHintSettingId.Enabled)
+				) {
+					this._storageService.remove(
+						Constants.InitialHintHideStorageKey,
+						StorageScope.APPLICATION,
+					);
+				}
+			}),
+		);
 	}
 
 	xtermOpen(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
@@ -359,32 +379,56 @@ class TerminalInitialHintWidget extends Disposable {
 
 	constructor(
 		private readonly _instance: ITerminalInstance,
-		@IChatAgentService private readonly _chatAgentService: IChatAgentService,
+		@IChatAgentService
+		private readonly _chatAgentService: IChatAgentService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService,
 		@ITerminalService private readonly terminalService: ITerminalService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 	) {
 		super();
-		this.toDispose.add(_instance.onDidFocus(() => {
-			if (this._instance.hasFocus && this.isVisible && this.ariaLabel && this.configurationService.getValue(AccessibilityVerbositySettingId.TerminalChat)) {
-				status(this.ariaLabel);
-			}
-		}));
-		this.toDispose.add(terminalService.onDidChangeInstances(() => {
-			if (this.terminalService.instances.length !== 1) {
-				this.dispose();
-			}
-		}));
-		this.toDispose.add(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TerminalInitialHintSettingId.Enabled) && !this.configurationService.getValue(TerminalInitialHintSettingId.Enabled)) {
-				this.dispose();
-			}
-		}));
+		this.toDispose.add(
+			_instance.onDidFocus(() => {
+				if (
+					this._instance.hasFocus &&
+					this.isVisible &&
+					this.ariaLabel &&
+					this.configurationService.getValue(
+						AccessibilityVerbositySettingId.TerminalChat,
+					)
+				) {
+					status(this.ariaLabel);
+				}
+			}),
+		);
+		this.toDispose.add(
+			terminalService.onDidChangeInstances(() => {
+				if (this.terminalService.instances.length !== 1) {
+					this.dispose();
+				}
+			}),
+		);
+		this.toDispose.add(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						TerminalInitialHintSettingId.Enabled,
+					) &&
+					!this.configurationService.getValue(
+						TerminalInitialHintSettingId.Enabled,
+					)
+				) {
+					this.dispose();
+				}
+			}),
+		);
 	}
 
 	private _getHintInlineChat(agents: IChatAgent[]) {

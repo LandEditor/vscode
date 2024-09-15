@@ -8,9 +8,9 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { ITextMateTokenizationService } from "./textMateTokenizationFeature.js";
 import { TextMateTokenizationFeature } from "./textMateTokenizationFeatureImpl.js";
@@ -22,8 +22,9 @@ class TextMateTokenizationInstantiator implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.textMateTokenizationInstantiator";
 
 	constructor(
-		@ITextMateTokenizationService _textMateTokenizationService: ITextMateTokenizationService
-	) { }
+		@ITextMateTokenizationService
+		_textMateTokenizationService: ITextMateTokenizationService,
+	) {}
 }
 
 registerSingleton(

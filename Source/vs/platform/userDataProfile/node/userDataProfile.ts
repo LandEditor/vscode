@@ -35,13 +35,20 @@ export class UserDataProfilesReadonlyService
 		"profileAssociationsMigration";
 
 	constructor(
-		@IStateReadService private readonly stateReadonlyService: IStateReadService,
+		@IStateReadService
+		private readonly stateReadonlyService: IStateReadService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@INativeEnvironmentService private readonly nativeEnvironmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		private readonly nativeEnvironmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 	) {
-		super(nativeEnvironmentService, fileService, uriIdentityService, logService);
+		super(
+			nativeEnvironmentService,
+			fileService,
+			uriIdentityService,
+			logService,
+		);
 	}
 
 	protected override getStoredProfiles(): StoredUserDataProfile[] {
@@ -91,11 +98,18 @@ export class UserDataProfilesService
 	constructor(
 		@IStateService protected readonly stateService: IStateService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 	) {
-		super(stateService, uriIdentityService, environmentService, fileService, logService);
+		super(
+			stateService,
+			uriIdentityService,
+			environmentService,
+			fileService,
+			logService,
+		);
 	}
 
 	protected override saveStoredProfiles(
@@ -190,7 +204,8 @@ export class ServerUserDataProfilesService
 {
 	constructor(
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
 	) {

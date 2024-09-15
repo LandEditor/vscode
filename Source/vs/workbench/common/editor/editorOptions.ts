@@ -11,9 +11,9 @@ import type {
 	ScrollType,
 } from "../../../editor/common/editorCommon.js";
 import {
-	type ITextEditorOptions,
 	TextEditorSelectionRevealType,
 	TextEditorSelectionSource,
+	type ITextEditorOptions,
 } from "../../../platform/editor/common/editor.js";
 import { isTextEditorViewState } from "../editor.js";
 

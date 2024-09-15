@@ -13,10 +13,10 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorCommand,
-	type ICommandOptions,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
+	type ICommandOptions,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ReplaceCommand } from "../../../common/commands/replaceCommand.js";
 import {
@@ -27,13 +27,13 @@ import { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import { Selection } from "../../../common/core/selection.js";
 import {
-	type WordCharacterClassifier,
 	getMapForWordSeparators,
+	type WordCharacterClassifier,
 } from "../../../common/core/wordCharacterClassifier.js";
 import {
-	type DeleteWordContext,
 	WordNavigationType,
 	WordOperations,
+	type DeleteWordContext,
 } from "../../../common/cursor/cursorWordOperations.js";
 import { CursorState } from "../../../common/cursorCommon.js";
 import { CursorChangeReason } from "../../../common/cursorEvents.js";

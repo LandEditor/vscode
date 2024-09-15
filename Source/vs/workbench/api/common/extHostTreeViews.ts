@@ -4,16 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { coalesce, equals } from "../../../base/common/arrays.js";
 import { asPromise } from "../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import {
-	type IMarkdownString,
 	isMarkdownString,
+	type IMarkdownString,
 } from "../../../base/common/htmlContent.js";
 import {
 	Disposable,
@@ -24,19 +25,19 @@ import { basename } from "../../../base/common/resources.js";
 import { isString, isUndefinedOrNull } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import {
-	type ITreeViewsDnDService,
 	TreeViewsDnDService,
+	type ITreeViewsDnDService,
 } from "../../../editor/common/services/treeViewsDnd.js";
 import { localize } from "../../../nls.js";
 import type { IAccessibilityInformation } from "../../../platform/accessibility/common/accessibility.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import type { ILogService } from "../../../platform/log/common/log.js";
 import {
+	NoTreeViewError,
 	type IRevealOptions,
 	type ITreeItem,
 	type ITreeItemCheckboxState,
 	type ITreeItemLabel,
-	NoTreeViewError,
 	type TreeCommand,
 	type TreeViewItemHandleArg,
 	type TreeViewPaneHandleArg,

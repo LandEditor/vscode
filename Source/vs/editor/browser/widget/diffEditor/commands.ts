@@ -23,7 +23,9 @@ import {
 } from "../../editorExtensions.js";
 import { ICodeEditorService } from "../../services/codeEditorService.js";
 import { DiffEditorWidget } from "./diffEditorWidget.js";
+
 import "./registrations.contribution.js";
+
 import type { URI } from "../../../../base/common/uri.js";
 import type { DiffEditorSelectionHunkToolbarContext } from "./features/gutterFeature.js";
 

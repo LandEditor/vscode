@@ -10,10 +10,10 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	AccessibleViewInformationService,

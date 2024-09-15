@@ -8,8 +8,8 @@ import { onUnexpectedExternalError } from "../../../../../base/common/errors.js"
 import { Emitter, type Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import type { INotebookCellStatusBarService } from "../../common/notebookCellStatusBarService.js";

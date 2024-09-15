@@ -5,11 +5,11 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import type { IKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
-import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import {
 	ActionBar,
 	type IActionViewItem,
 } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import type { IActionViewItemOptions } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { Button } from "../../../../base/browser/ui/button/button.js";
 import type { IManagedHover } from "../../../../base/browser/ui/hover/hover.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
@@ -24,24 +24,24 @@ import {
 	type IListAccessibilityProvider,
 } from "../../../../base/browser/ui/list/listWidget.js";
 import {
+	TreeVisibility,
 	type ITreeContextMenuEvent,
 	type ITreeFilter,
 	type ITreeNode,
 	type ITreeRenderer,
 	type ITreeSorter,
 	type TreeFilterResult,
-	TreeVisibility,
 } from "../../../../base/browser/ui/tree/tree.js";
 import {
 	Action,
 	ActionRunner,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { mapFindFirst } from "../../../../base/common/arraysFind.js";
 import {
-	RunOnceScheduler,
 	disposableTimeout,
+	RunOnceScheduler,
 } from "../../../../base/common/async.js";
 import { Color, RGBA } from "../../../../base/common/color.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
@@ -60,15 +60,17 @@ import { fuzzyContains } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { isDefined } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
+
 import "./media/testing.css";
+
 import { MarkdownRenderer } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { localize } from "../../../../nls.js";
 import { DropdownWithPrimaryActionViewItem } from "../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js";
 import {
-	MenuEntryActionViewItem,
 	createActionViewItem,
 	createAndFillInActionBarActions,
 	createAndFillInContextMenuActions,
+	MenuEntryActionViewItem,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	IMenuService,
@@ -112,46 +114,24 @@ import {
 import { IEditorGroupsService } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
+	getTestingConfiguration,
 	TestingConfigKeys,
 	TestingCountBadge,
-	getTestingConfiguration,
 } from "../common/configuration.js";
 import {
+	labelForTestInState,
 	TestCommandId,
 	TestExplorerViewMode,
 	TestExplorerViewSorting,
 	Testing,
-	labelForTestInState,
 } from "../common/constants.js";
 import { StoredValue } from "../common/storedValue.js";
 import {
 	ITestExplorerFilterState,
-	type TestExplorerFilterState,
 	TestFilterTerm,
+	type TestExplorerFilterState,
 } from "../common/testExplorerFilterState.js";
 import { TestId } from "../common/testId.js";
-import {
-	ITestProfileService,
-	canUseProfileWithTest,
-} from "../common/testProfileService.js";
-import {
-	LiveTestResult,
-	TestResultItemChangeReason,
-} from "../common/testResult.js";
-import { ITestResultService } from "../common/testResultService.js";
-import {
-	type IMainThreadTestCollection,
-	ITestService,
-	testCollectionIsEmpty,
-} from "../common/testService.js";
-import {
-	type ITestRunProfile,
-	type InternalTestItem,
-	TestControllerCapability,
-	TestItemExpandState,
-	TestResultState,
-	TestRunProfileBitset,
-} from "../common/testTypes.js";
 import { TestingContextKeys } from "../common/testingContextKeys.js";
 import { ITestingContinuousRunService } from "../common/testingContinuousRunService.js";
 import { ITestingPeekOpener } from "../common/testingPeekOpener.js";
@@ -162,23 +142,45 @@ import {
 	statesInOrder,
 } from "../common/testingStates.js";
 import {
-	type ITestTreeProjection,
-	type TestExplorerTreeElement,
+	canUseProfileWithTest,
+	ITestProfileService,
+} from "../common/testProfileService.js";
+import {
+	LiveTestResult,
+	TestResultItemChangeReason,
+} from "../common/testResult.js";
+import { ITestResultService } from "../common/testResultService.js";
+import {
+	ITestService,
+	testCollectionIsEmpty,
+	type IMainThreadTestCollection,
+} from "../common/testService.js";
+import {
+	TestControllerCapability,
+	TestItemExpandState,
+	TestResultState,
+	TestRunProfileBitset,
+	type InternalTestItem,
+	type ITestRunProfile,
+} from "../common/testTypes.js";
+import {
 	TestItemTreeElement,
 	TestTreeErrorMessage,
+	type ITestTreeProjection,
+	type TestExplorerTreeElement,
 } from "./explorerProjections/index.js";
 import { ListProjection } from "./explorerProjections/listProjection.js";
-import { getTestItemContextOverlay } from "./explorerProjections/testItemContextOverlay.js";
 import { TestingObjectTree } from "./explorerProjections/testingObjectTree.js";
 import type { ISerializedTestTreeCollapseState } from "./explorerProjections/testingViewState.js";
+import { getTestItemContextOverlay } from "./explorerProjections/testItemContextOverlay.js";
 import { TreeProjection } from "./explorerProjections/treeProjection.js";
 import * as icons from "./icons.js";
 import { DebugLastRun, ReRunLastRun } from "./testExplorerActions.js";
 import { TestingExplorerFilter } from "./testingExplorerFilter.js";
 import {
-	type CountSummary,
 	collectTestStateCounts,
 	getTestProgressText,
+	type CountSummary,
 } from "./testingProgressUiService.js";
 
 enum LastFocusState {
@@ -220,24 +222,45 @@ export class TestingExplorerView extends ViewPane {
 		@ITestService private readonly testService: ITestService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@ITestProfileService private readonly testProfileService: ITestProfileService,
+		@ITestProfileService
+		private readonly testProfileService: ITestProfileService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IMenuService private readonly menuService: IMenuService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		const relayout = this._register(new RunOnceScheduler(() => this.layoutBody(), 1));
-		this._register(this.onDidChangeViewWelcomeState(() => {
-			if (!this.shouldShowWelcome()) {
-				relayout.schedule();
-			}
-		}));
+		const relayout = this._register(
+			new RunOnceScheduler(() => this.layoutBody(), 1),
+		);
+		this._register(
+			this.onDidChangeViewWelcomeState(() => {
+				if (!this.shouldShowWelcome()) {
+					relayout.schedule();
+				}
+			}),
+		);
 
-		this._register(testService.collection.onBusyProvidersChange(busy => {
-			this.updateDiscoveryProgress(busy);
-		}));
+		this._register(
+			testService.collection.onBusyProvidersChange((busy) => {
+				this.updateDiscoveryProgress(busy);
+			}),
+		);
 
-		this._register(testProfileService.onDidChange(() => this.updateActions()));
+		this._register(
+			testProfileService.onDidChange(() => this.updateActions()),
+		);
 	}
 
 	public override shouldShowWelcome() {
@@ -728,33 +751,54 @@ class ResultSummaryView extends Disposable {
 		private readonly container: HTMLElement,
 		@ITestResultService private readonly resultService: ITestResultService,
 		@IActivityService private readonly activityService: IActivityService,
-		@ITestingContinuousRunService private readonly crService: ITestingContinuousRunService,
+		@ITestingContinuousRunService
+		private readonly crService: ITestingContinuousRunService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IHoverService hoverService: IHoverService,
 	) {
 		super();
 
-		this.badgeType = configurationService.getValue<TestingCountBadge>(TestingConfigKeys.CountBadge);
+		this.badgeType = configurationService.getValue<TestingCountBadge>(
+			TestingConfigKeys.CountBadge,
+		);
 		this._register(resultService.onResultsChanged(this.render, this));
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TestingConfigKeys.CountBadge)) {
-				this.badgeType = configurationService.getValue(TestingConfigKeys.CountBadge);
-				this.render();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TestingConfigKeys.CountBadge)) {
+					this.badgeType = configurationService.getValue(
+						TestingConfigKeys.CountBadge,
+					);
+					this.render();
+				}
+			}),
+		);
 
-		this.countHover = this._register(hoverService.setupManagedHover(getDefaultHoverDelegate('mouse'), this.elements.count, ''));
+		this.countHover = this._register(
+			hoverService.setupManagedHover(
+				getDefaultHoverDelegate("mouse"),
+				this.elements.count,
+				"",
+			),
+		);
 
-		const ab = this._register(new ActionBar(this.elements.rerun, {
-			actionViewItemProvider: (action, options) => createActionViewItem(instantiationService, action, options),
-		}));
-		ab.push(instantiationService.createInstance(MenuItemAction,
-			{ ...new ReRunLastRun().desc, icon: icons.testingRerunIcon },
-			{ ...new DebugLastRun().desc, icon: icons.testingDebugIcon },
-			{},
-			undefined, undefined
-		), { icon: true, label: false });
+		const ab = this._register(
+			new ActionBar(this.elements.rerun, {
+				actionViewItemProvider: (action, options) =>
+					createActionViewItem(instantiationService, action, options),
+			}),
+		);
+		ab.push(
+			instantiationService.createInstance(
+				MenuItemAction,
+				{ ...new ReRunLastRun().desc, icon: icons.testingRerunIcon },
+				{ ...new DebugLastRun().desc, icon: icons.testingDebugIcon },
+				{},
+				undefined,
+				undefined,
+			),
+			{ icon: true, label: false },
+		);
 
 		this.render();
 	}
@@ -987,207 +1031,369 @@ class TestingExplorerViewModel extends Disposable {
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@ITestService private readonly testService: ITestService,
-		@ITestExplorerFilterState private readonly filterState: TestExplorerFilterState,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@ITestExplorerFilterState
+		private readonly filterState: TestExplorerFilterState,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ITestResultService private readonly testResults: ITestResultService,
 		@ITestingPeekOpener private readonly peekOpener: ITestingPeekOpener,
-		@ITestProfileService private readonly testProfileService: ITestProfileService,
-		@ITestingContinuousRunService private readonly crService: ITestingContinuousRunService,
+		@ITestProfileService
+		private readonly testProfileService: ITestProfileService,
+		@ITestingContinuousRunService
+		private readonly crService: ITestingContinuousRunService,
 		@ICommandService commandService: ICommandService,
 	) {
 		super();
 
 		this.hasPendingReveal = !!filterState.reveal.value;
-		this.noTestForDocumentWidget = this._register(instantiationService.createInstance(NoTestsForDocumentWidget, listContainer));
-		this._viewMode.set(this.storageService.get('testing.viewMode', StorageScope.WORKSPACE, TestExplorerViewMode.Tree) as TestExplorerViewMode);
-		this._viewSorting.set(this.storageService.get('testing.viewSorting', StorageScope.WORKSPACE, TestExplorerViewSorting.ByLocation) as TestExplorerViewSorting);
+		this.noTestForDocumentWidget = this._register(
+			instantiationService.createInstance(
+				NoTestsForDocumentWidget,
+				listContainer,
+			),
+		);
+		this._viewMode.set(
+			this.storageService.get(
+				"testing.viewMode",
+				StorageScope.WORKSPACE,
+				TestExplorerViewMode.Tree,
+			) as TestExplorerViewMode,
+		);
+		this._viewSorting.set(
+			this.storageService.get(
+				"testing.viewSorting",
+				StorageScope.WORKSPACE,
+				TestExplorerViewSorting.ByLocation,
+			) as TestExplorerViewSorting,
+		);
 
 		this.reevaluateWelcomeState();
-		this.filter = this.instantiationService.createInstance(TestsFilter, testService.collection);
+		this.filter = this.instantiationService.createInstance(
+			TestsFilter,
+			testService.collection,
+		);
 		this.tree = instantiationService.createInstance(
 			TestingObjectTree,
-			'Test Explorer List',
+			"Test Explorer List",
 			listContainer,
 			new ListDelegate(),
 			[
-				instantiationService.createInstance(TestItemRenderer, this.actionRunner),
+				instantiationService.createInstance(
+					TestItemRenderer,
+					this.actionRunner,
+				),
 				instantiationService.createInstance(ErrorRenderer),
 			],
 			{
-				identityProvider: instantiationService.createInstance(IdentityProvider),
+				identityProvider:
+					instantiationService.createInstance(IdentityProvider),
 				hideTwistiesOfChildlessElements: false,
 				sorter: instantiationService.createInstance(TreeSorter, this),
-				keyboardNavigationLabelProvider: instantiationService.createInstance(TreeKeyboardNavigationLabelProvider),
-				accessibilityProvider: instantiationService.createInstance(ListAccessibilityProvider),
+				keyboardNavigationLabelProvider:
+					instantiationService.createInstance(
+						TreeKeyboardNavigationLabelProvider,
+					),
+				accessibilityProvider: instantiationService.createInstance(
+					ListAccessibilityProvider,
+				),
 				filter: this.filter,
 				findWidgetEnabled: false,
 				openOnSingleClick: false,
-			}) as TestingObjectTree<FuzzyScore>;
-
+			},
+		) as TestingObjectTree<FuzzyScore>;
 
 		// saves the collapse state so that if items are removed or refreshed, they
 		// retain the same state (#170169)
-		const collapseStateSaver = this._register(new RunOnceScheduler(() => {
-			// reuse the last view state to avoid making a bunch of object garbage:
-			const state = this.tree.getOptimizedViewState(this.lastViewState.get({}));
-			const projection = this.projection.value;
-			if (projection) {
-				projection.lastState = state;
-			}
-		}, 3000));
-
-		this._register(this.tree.onDidChangeCollapseState(evt => {
-			if (evt.node.element instanceof TestItemTreeElement) {
-				if (!evt.node.collapsed) {
-					this.projection.value?.expandElement(evt.node.element, evt.deep ? Number.POSITIVE_INFINITY : 0);
+		const collapseStateSaver = this._register(
+			new RunOnceScheduler(() => {
+				// reuse the last view state to avoid making a bunch of object garbage:
+				const state = this.tree.getOptimizedViewState(
+					this.lastViewState.get({}),
+				);
+				const projection = this.projection.value;
+				if (projection) {
+					projection.lastState = state;
 				}
-				collapseStateSaver.schedule();
-			}
-		}));
+			}, 3000),
+		);
 
-		this._register(this.crService.onDidChange(testId => {
-			if (testId) {
-				// a continuous run test will sort to the top:
-				const elem = this.projection.value?.getElementByTestId(testId);
-				this.tree.resort(elem?.parent && this.tree.hasElement(elem.parent) ? elem.parent : null, false);
-			}
-		}));
+		this._register(
+			this.tree.onDidChangeCollapseState((evt) => {
+				if (evt.node.element instanceof TestItemTreeElement) {
+					if (!evt.node.collapsed) {
+						this.projection.value?.expandElement(
+							evt.node.element,
+							evt.deep ? Number.POSITIVE_INFINITY : 0,
+						);
+					}
+					collapseStateSaver.schedule();
+				}
+			}),
+		);
 
-		this._register(onDidChangeVisibility(visible => {
-			if (visible) {
-				this.ensureProjection();
-			}
-		}));
+		this._register(
+			this.crService.onDidChange((testId) => {
+				if (testId) {
+					// a continuous run test will sort to the top:
+					const elem =
+						this.projection.value?.getElementByTestId(testId);
+					this.tree.resort(
+						elem?.parent && this.tree.hasElement(elem.parent)
+							? elem.parent
+							: null,
+						false,
+					);
+				}
+			}),
+		);
 
-		this._register(this.tree.onContextMenu(e => this.onContextMenu(e)));
+		this._register(
+			onDidChangeVisibility((visible) => {
+				if (visible) {
+					this.ensureProjection();
+				}
+			}),
+		);
 
-		this._register(Event.any(
-			filterState.text.onDidChange,
-			filterState.fuzzy.onDidChange,
-			testService.excluded.onTestExclusionsChanged,
-		)(this.tree.refilter, this.tree));
+		this._register(this.tree.onContextMenu((e) => this.onContextMenu(e)));
 
-		this._register(this.tree.onDidOpen(e => {
-			if (e.element instanceof TestItemTreeElement && !e.element.children.size && e.element.test.item.uri) {
-				commandService.executeCommand('vscode.revealTest', e.element.test.item.extId);
-			}
-		}));
+		this._register(
+			Event.any(
+				filterState.text.onDidChange,
+				filterState.fuzzy.onDidChange,
+				testService.excluded.onTestExclusionsChanged,
+			)(this.tree.refilter, this.tree),
+		);
+
+		this._register(
+			this.tree.onDidOpen((e) => {
+				if (
+					e.element instanceof TestItemTreeElement &&
+					!e.element.children.size &&
+					e.element.test.item.uri
+				) {
+					commandService.executeCommand(
+						"vscode.revealTest",
+						e.element.test.item.extId,
+					);
+				}
+			}),
+		);
 
 		this._register(this.tree);
 
-		this._register(this.onChangeWelcomeVisibility(e => {
-			this.noTestForDocumentWidget.setVisible(e === WelcomeExperience.ForDocument);
-		}));
-
-		this._register(dom.addStandardDisposableListener(this.tree.getHTMLElement(), 'keydown', evt => {
-			if (evt.equals(KeyCode.Enter)) {
-				this.handleExecuteKeypress(evt);
-			} else if (DefaultKeyboardNavigationDelegate.mightProducePrintableCharacter(evt)) {
-				filterState.text.value = evt.browserEvent.key;
-				filterState.focusInput();
-			}
-		}));
-
-		this._register(filterState.reveal.onDidChange(id => this.revealById(id, undefined, false)));
-
-		this._register(onDidChangeVisibility(visible => {
-			if (visible) {
-				filterState.focusInput();
-			}
-		}));
-
-		this._register(this.tree.onDidChangeSelection(evt => {
-			if (dom.isMouseEvent(evt.browserEvent) && (evt.browserEvent.altKey || evt.browserEvent.shiftKey)) {
-				return; // don't focus when alt-clicking to multi select
-			}
-
-			const selected = evt.elements[0];
-			if (selected && evt.browserEvent && selected instanceof TestItemTreeElement
-				&& selected.children.size === 0 && selected.test.expand === TestItemExpandState.NotExpandable) {
-				this.tryPeekError(selected);
-			}
-		}));
-
-		let followRunningTests = getTestingConfiguration(configurationService, TestingConfigKeys.FollowRunningTest);
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TestingConfigKeys.FollowRunningTest)) {
-				followRunningTests = getTestingConfiguration(configurationService, TestingConfigKeys.FollowRunningTest);
-			}
-		}));
-
-		let alwaysRevealTestAfterStateChange = getTestingConfiguration(configurationService, TestingConfigKeys.AlwaysRevealTestOnStateChange);
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TestingConfigKeys.AlwaysRevealTestOnStateChange)) {
-				alwaysRevealTestAfterStateChange = getTestingConfiguration(configurationService, TestingConfigKeys.AlwaysRevealTestOnStateChange);
-			}
-		}));
-
-		this._register(testResults.onTestChanged(evt => {
-			if (!followRunningTests) {
-				return;
-			}
-
-			if (evt.reason !== TestResultItemChangeReason.OwnStateChange) {
-				return;
-			}
-
-			if (this.tree.selectionSize > 1) {
-				return; // don't change a multi-selection #180950
-			}
-
-			// follow running tests, or tests whose state changed. Tests that
-			// complete very fast may not enter the running state at all.
-			if (evt.item.ownComputedState !== TestResultState.Running && !(evt.previousState === TestResultState.Queued && isStateWithResult(evt.item.ownComputedState))) {
-				return;
-			}
-
-			this.revealById(evt.item.item.extId, alwaysRevealTestAfterStateChange, false);
-		}));
-
-		this._register(testResults.onResultsChanged(() => {
-			this.tree.resort(null);
-		}));
-
-		this._register(this.testProfileService.onDidChange(() => {
-			this.tree.rerender();
-		}));
-
-		const allOpenEditorInputs = observableFromEvent(this,
-			editorService.onDidEditorsChange,
-			() => new Set(editorGroupsService.groups.flatMap(g => g.editors).map(e => e.resource).filter(isDefined)),
+		this._register(
+			this.onChangeWelcomeVisibility((e) => {
+				this.noTestForDocumentWidget.setVisible(
+					e === WelcomeExperience.ForDocument,
+				);
+			}),
 		);
 
-		const activeResource = observableFromEvent(this, editorService.onDidActiveEditorChange, () => {
-			if (editorService.activeEditor instanceof DiffEditorInput) {
-				return editorService.activeEditor.primary.resource;
-			} else {
-				return editorService.activeEditor?.resource;
-			}
-		});
+		this._register(
+			dom.addStandardDisposableListener(
+				this.tree.getHTMLElement(),
+				"keydown",
+				(evt) => {
+					if (evt.equals(KeyCode.Enter)) {
+						this.handleExecuteKeypress(evt);
+					} else if (
+						DefaultKeyboardNavigationDelegate.mightProducePrintableCharacter(
+							evt,
+						)
+					) {
+						filterState.text.value = evt.browserEvent.key;
+						filterState.focusInput();
+					}
+				},
+			),
+		);
 
-		const filterText = observableFromEvent(this.filterState.text.onDidChange, () => this.filterState.text);
-		this._register(autorun(reader => {
-			filterText.read(reader);
-			if (this.filterState.isFilteringFor(TestFilterTerm.OpenedFiles)) {
-				this.filter.filterToDocumentUri([...allOpenEditorInputs.read(reader)]);
-			} else {
-				this.filter.filterToDocumentUri([activeResource.read(reader)].filter(isDefined));
-			}
+		this._register(
+			filterState.reveal.onDidChange((id) =>
+				this.revealById(id, undefined, false),
+			),
+		);
 
-			if (this.filterState.isFilteringFor(TestFilterTerm.CurrentDoc) || this.filterState.isFilteringFor(TestFilterTerm.OpenedFiles)) {
-				this.tree.refilter();
-			}
-		}));
+		this._register(
+			onDidChangeVisibility((visible) => {
+				if (visible) {
+					filterState.focusInput();
+				}
+			}),
+		);
 
-		this._register(this.storageService.onWillSaveState(({ reason, }) => {
-			if (reason === WillSaveStateReason.SHUTDOWN) {
-				this.lastViewState.store(this.tree.getOptimizedViewState());
-			}
-		}));
+		this._register(
+			this.tree.onDidChangeSelection((evt) => {
+				if (
+					dom.isMouseEvent(evt.browserEvent) &&
+					(evt.browserEvent.altKey || evt.browserEvent.shiftKey)
+				) {
+					return; // don't focus when alt-clicking to multi select
+				}
+
+				const selected = evt.elements[0];
+				if (
+					selected &&
+					evt.browserEvent &&
+					selected instanceof TestItemTreeElement &&
+					selected.children.size === 0 &&
+					selected.test.expand === TestItemExpandState.NotExpandable
+				) {
+					this.tryPeekError(selected);
+				}
+			}),
+		);
+
+		let followRunningTests = getTestingConfiguration(
+			configurationService,
+			TestingConfigKeys.FollowRunningTest,
+		);
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(TestingConfigKeys.FollowRunningTest)
+				) {
+					followRunningTests = getTestingConfiguration(
+						configurationService,
+						TestingConfigKeys.FollowRunningTest,
+					);
+				}
+			}),
+		);
+
+		let alwaysRevealTestAfterStateChange = getTestingConfiguration(
+			configurationService,
+			TestingConfigKeys.AlwaysRevealTestOnStateChange,
+		);
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						TestingConfigKeys.AlwaysRevealTestOnStateChange,
+					)
+				) {
+					alwaysRevealTestAfterStateChange = getTestingConfiguration(
+						configurationService,
+						TestingConfigKeys.AlwaysRevealTestOnStateChange,
+					);
+				}
+			}),
+		);
+
+		this._register(
+			testResults.onTestChanged((evt) => {
+				if (!followRunningTests) {
+					return;
+				}
+
+				if (evt.reason !== TestResultItemChangeReason.OwnStateChange) {
+					return;
+				}
+
+				if (this.tree.selectionSize > 1) {
+					return; // don't change a multi-selection #180950
+				}
+
+				// follow running tests, or tests whose state changed. Tests that
+				// complete very fast may not enter the running state at all.
+				if (
+					evt.item.ownComputedState !== TestResultState.Running &&
+					!(
+						evt.previousState === TestResultState.Queued &&
+						isStateWithResult(evt.item.ownComputedState)
+					)
+				) {
+					return;
+				}
+
+				this.revealById(
+					evt.item.item.extId,
+					alwaysRevealTestAfterStateChange,
+					false,
+				);
+			}),
+		);
+
+		this._register(
+			testResults.onResultsChanged(() => {
+				this.tree.resort(null);
+			}),
+		);
+
+		this._register(
+			this.testProfileService.onDidChange(() => {
+				this.tree.rerender();
+			}),
+		);
+
+		const allOpenEditorInputs = observableFromEvent(
+			this,
+			editorService.onDidEditorsChange,
+			() =>
+				new Set(
+					editorGroupsService.groups
+						.flatMap((g) => g.editors)
+						.map((e) => e.resource)
+						.filter(isDefined),
+				),
+		);
+
+		const activeResource = observableFromEvent(
+			this,
+			editorService.onDidActiveEditorChange,
+			() => {
+				if (editorService.activeEditor instanceof DiffEditorInput) {
+					return editorService.activeEditor.primary.resource;
+				} else {
+					return editorService.activeEditor?.resource;
+				}
+			},
+		);
+
+		const filterText = observableFromEvent(
+			this.filterState.text.onDidChange,
+			() => this.filterState.text,
+		);
+		this._register(
+			autorun((reader) => {
+				filterText.read(reader);
+				if (
+					this.filterState.isFilteringFor(TestFilterTerm.OpenedFiles)
+				) {
+					this.filter.filterToDocumentUri([
+						...allOpenEditorInputs.read(reader),
+					]);
+				} else {
+					this.filter.filterToDocumentUri(
+						[activeResource.read(reader)].filter(isDefined),
+					);
+				}
+
+				if (
+					this.filterState.isFilteringFor(
+						TestFilterTerm.CurrentDoc,
+					) ||
+					this.filterState.isFilteringFor(TestFilterTerm.OpenedFiles)
+				) {
+					this.tree.refilter();
+				}
+			}),
+		);
+
+		this._register(
+			this.storageService.onWillSaveState(({ reason }) => {
+				if (reason === WillSaveStateReason.SHUTDOWN) {
+					this.lastViewState.store(this.tree.getOptimizedViewState());
+				}
+			}),
+		);
 	}
 
 	/**
@@ -1469,10 +1675,12 @@ class TestsFilter implements ITreeFilter<TestExplorerTreeElement> {
 
 	constructor(
 		private readonly collection: IMainThreadTestCollection,
-		@ITestExplorerFilterState private readonly state: ITestExplorerFilterState,
+		@ITestExplorerFilterState
+		private readonly state: ITestExplorerFilterState,
 		@ITestService private readonly testService: ITestService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-	) { }
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {}
 
 	/**
 	 * @inheritdoc
@@ -1880,7 +2088,11 @@ interface ITestElementTemplateData {
 class TestItemRenderer
 	extends Disposable
 	implements
-		ITreeRenderer<TestItemTreeElement, FuzzyScore, ITestElementTemplateData>
+		ITreeRenderer<
+			TestItemTreeElement,
+			FuzzyScore,
+			ITestElementTemplateData
+		>
 {
 	public static readonly ID = "testItem";
 
@@ -1889,9 +2101,12 @@ class TestItemRenderer
 		@IMenuService private readonly menuService: IMenuService,
 		@ITestService protected readonly testService: ITestService,
 		@ITestProfileService protected readonly profiles: ITestProfileService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITestingContinuousRunService private readonly crService: ITestingContinuousRunService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITestingContinuousRunService
+		private readonly crService: ITestingContinuousRunService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super();

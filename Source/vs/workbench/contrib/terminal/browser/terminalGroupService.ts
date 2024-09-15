@@ -10,8 +10,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IQuickInputService } from "../../../../platform/quickinput/common/quickInput.js";
@@ -95,20 +95,43 @@ export class TerminalGroupService
 
 	constructor(
 		@IContextKeyService private _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
 
-		this._terminalGroupCountContextKey = TerminalContextKeys.groupCount.bindTo(this._contextKeyService);
+		this._terminalGroupCountContextKey =
+			TerminalContextKeys.groupCount.bindTo(this._contextKeyService);
 
-		this._register(this.onDidDisposeGroup(group => this._removeGroup(group)));
-		this._register(this.onDidChangeGroups(() => this._terminalGroupCountContextKey.set(this.groups.length)));
-		this._register(Event.any(this.onDidChangeActiveGroup, this.onDidChangeInstances)(() => this.updateVisibility()));
-		this._register(this._quickInputService.onShow(() => this._isQuickInputOpened = true));
-		this._register(this._quickInputService.onHide(() => this._isQuickInputOpened = false));
+		this._register(
+			this.onDidDisposeGroup((group) => this._removeGroup(group)),
+		);
+		this._register(
+			this.onDidChangeGroups(() =>
+				this._terminalGroupCountContextKey.set(this.groups.length),
+			),
+		);
+		this._register(
+			Event.any(
+				this.onDidChangeActiveGroup,
+				this.onDidChangeInstances,
+			)(() => this.updateVisibility()),
+		);
+		this._register(
+			this._quickInputService.onShow(
+				() => (this._isQuickInputOpened = true),
+			),
+		);
+		this._register(
+			this._quickInputService.onHide(
+				() => (this._isQuickInputOpened = false),
+			),
+		);
 	}
 
 	hidePanel(): void {

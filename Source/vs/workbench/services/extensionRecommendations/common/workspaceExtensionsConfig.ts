@@ -5,7 +5,7 @@
 
 import { distinct } from "../../../../base/common/arrays.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
-import { type JSONPath, parse } from "../../../../base/common/json.js";
+import { parse, type JSONPath } from "../../../../base/common/json.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -28,10 +28,10 @@ import {
 	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import {
-	type IWorkspace,
-	IWorkspaceContextService,
-	type IWorkspaceFolder,
 	isWorkspace,
+	IWorkspaceContextService,
+	type IWorkspace,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
 	IJSONEditingService,
@@ -75,23 +75,36 @@ export class WorkspaceExtensionsConfigService
 		this._onDidChangeExtensionsConfigs.event;
 
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IFileService private readonly fileService: IFileService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
 	) {
 		super();
-		this._register(workspaceContextService.onDidChangeWorkspaceFolders(e => this._onDidChangeExtensionsConfigs.fire()));
-		this._register(fileService.onDidFilesChange(e => {
-			const workspace = workspaceContextService.getWorkspace();
-			if ((workspace.configuration && e.affects(workspace.configuration))
-				|| workspace.folders.some(folder => e.affects(folder.toResource(EXTENSIONS_CONFIG)))
-			) {
-				this._onDidChangeExtensionsConfigs.fire();
-			}
-		}));
+		this._register(
+			workspaceContextService.onDidChangeWorkspaceFolders((e) =>
+				this._onDidChangeExtensionsConfigs.fire(),
+			),
+		);
+		this._register(
+			fileService.onDidFilesChange((e) => {
+				const workspace = workspaceContextService.getWorkspace();
+				if (
+					(workspace.configuration &&
+						e.affects(workspace.configuration)) ||
+					workspace.folders.some((folder) =>
+						e.affects(folder.toResource(EXTENSIONS_CONFIG)),
+					)
+				) {
+					this._onDidChangeExtensionsConfigs.fire();
+				}
+			}),
+		);
 	}
 
 	async getExtensionsConfigs(): Promise<IExtensionsConfigContent[]> {

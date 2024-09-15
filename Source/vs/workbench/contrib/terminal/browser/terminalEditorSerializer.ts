@@ -7,16 +7,17 @@ import type { IInstantiationService } from "../../../../platform/instantiation/c
 import type { IEditorSerializer } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type ISerializedTerminalEditorInput,
 	ITerminalEditorService,
+	type ISerializedTerminalEditorInput,
 	type ITerminalInstance,
 } from "./terminal.js";
 import type { TerminalEditorInput } from "./terminalEditorInput.js";
 
 export class TerminalInputSerializer implements IEditorSerializer {
 	constructor(
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService
-	) { }
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+	) {}
 
 	public canSerialize(
 		editorInput: TerminalEditorInput,

@@ -11,14 +11,14 @@ import type {
 } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { FileAccess } from "../../../base/common/network.js";
 import {
-	ValueWithChangeEventFromObservable,
 	derived,
 	observableFromEvent,
+	ValueWithChangeEventFromObservable,
 } from "../../../base/common/observable.js";
 import { localize } from "../../../nls.js";
 import { IAccessibilityService } from "../../accessibility/common/accessibility.js";
@@ -115,8 +115,10 @@ export class AccessibilitySignalService
 	private readonly sentTelemetry = new Set<string>();
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super();

@@ -33,10 +33,10 @@ import { getIconsStyleSheet } from "../../../../platform/theme/browser/iconsStyl
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
 	IIssueFormService,
+	IssueType,
 	type IssueReporterData,
 	type IssueReporterExtensionData,
 	type IssueReporterStyles,
-	IssueType,
 } from "../common/issue.js";
 import { normalizeGitHubUrl } from "../common/issueReporterUtil.js";
 import {
@@ -88,17 +88,25 @@ export class BaseIssueReporterService extends Disposable {
 		@IThemeService public readonly themeService: IThemeService,
 	) {
 		super();
-		const targetExtension = data.extensionId ? data.enabledExtensions.find(extension => extension.id.toLocaleLowerCase() === data.extensionId?.toLocaleLowerCase()) : undefined;
+		const targetExtension = data.extensionId
+			? data.enabledExtensions.find(
+					(extension) =>
+						extension.id.toLocaleLowerCase() ===
+						data.extensionId?.toLocaleLowerCase(),
+				)
+			: undefined;
 		this.issueReporterModel = new IssueReporterModel({
 			...data,
 			issueType: data.issueType || IssueType.Bug,
 			versionInfo: {
-				vscodeVersion: `${product.nameShort} ${!!product.darwinUniversalAssetId ? `${product.version} (Universal)` : product.version} (${product.commit || 'Commit unknown'}, ${product.date || 'Date unknown'})`,
-				os: `${this.os.type} ${this.os.arch} ${this.os.release}${isLinuxSnap ? ' snap' : ''}`
+				vscodeVersion: `${product.nameShort} ${!!product.darwinUniversalAssetId ? `${product.version} (Universal)` : product.version} (${product.commit || "Commit unknown"}, ${product.date || "Date unknown"})`,
+				os: `${this.os.type} ${this.os.arch} ${this.os.release}${isLinuxSnap ? " snap" : ""}`,
 			},
 			extensionsDisabled: !!this.disableExtensions,
-			fileOnExtension: data.extensionId ? !targetExtension?.isBuiltin : undefined,
-			selectedExtension: targetExtension
+			fileOnExtension: data.extensionId
+				? !targetExtension?.isBuiltin
+				: undefined,
+			selectedExtension: targetExtension,
 		});
 
 		const fileOnMarketplace = data.issueSource === IssueSource.Marketplace;
@@ -106,19 +114,23 @@ export class BaseIssueReporterService extends Disposable {
 		this.issueReporterModel.update({ fileOnMarketplace, fileOnProduct });
 
 		//TODO: Handle case where extension is not activated
-		const issueReporterElement = this.getElementById('issue-reporter');
+		const issueReporterElement = this.getElementById("issue-reporter");
 		if (issueReporterElement) {
-			this.previewButton = new Button(issueReporterElement, unthemedButtonStyles);
-			const issueRepoName = document.createElement('a');
+			this.previewButton = new Button(
+				issueReporterElement,
+				unthemedButtonStyles,
+			);
+			const issueRepoName = document.createElement("a");
 			issueReporterElement.appendChild(issueRepoName);
-			issueRepoName.id = 'show-repo-name';
-			issueRepoName.classList.add('hidden');
+			issueRepoName.id = "show-repo-name";
+			issueRepoName.classList.add("hidden");
 			this.updatePreviewButtonState();
 		}
 
 		const issueTitle = data.issueTitle;
 		if (issueTitle) {
-			const issueTitleElement = this.getElementById<HTMLInputElement>('issue-title');
+			const issueTitleElement =
+				this.getElementById<HTMLInputElement>("issue-title");
 			if (issueTitleElement) {
 				issueTitleElement.value = issueTitle;
 			}
@@ -126,21 +138,24 @@ export class BaseIssueReporterService extends Disposable {
 
 		const issueBody = data.issueBody;
 		if (issueBody) {
-			const description = this.getElementById<HTMLTextAreaElement>('description');
+			const description =
+				this.getElementById<HTMLTextAreaElement>("description");
 			if (description) {
 				description.value = issueBody;
 				this.issueReporterModel.update({ issueDescription: issueBody });
 			}
 		}
 
-		if (this.window.document.documentElement.lang !== 'en') {
-			show(this.getElementById('english'));
+		if (this.window.document.documentElement.lang !== "en") {
+			show(this.getElementById("english"));
 		}
 
 		const codiconStyleSheet = createStyleSheet();
-		codiconStyleSheet.id = 'codiconStyles';
+		codiconStyleSheet.id = "codiconStyles";
 
-		const iconsStyleSheet = this._register(getIconsStyleSheet(this.themeService));
+		const iconsStyleSheet = this._register(
+			getIconsStyleSheet(this.themeService),
+		);
 		function updateAll() {
 			codiconStyleSheet.textContent = iconsStyleSheet.getCSS();
 		}

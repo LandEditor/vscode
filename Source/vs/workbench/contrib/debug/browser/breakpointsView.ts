@@ -38,16 +38,16 @@ import {
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	Action2,
-	type IMenu,
 	IMenuService,
 	MenuId,
 	registerAction2,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -76,22 +76,24 @@ import {
 } from "../../../services/editor/common/editorService.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
-	BREAKPOINTS_VIEW_ID,
 	BREAKPOINT_EDITOR_CONTRIBUTION_ID,
-	CONTEXT_BREAKPOINTS_EXIST,
-	CONTEXT_BREAKPOINTS_FOCUSED,
+	BREAKPOINTS_VIEW_ID,
 	CONTEXT_BREAKPOINT_HAS_MODES,
 	CONTEXT_BREAKPOINT_INPUT_FOCUSED,
 	CONTEXT_BREAKPOINT_ITEM_IS_DATA_BYTES,
 	CONTEXT_BREAKPOINT_ITEM_TYPE,
 	CONTEXT_BREAKPOINT_SUPPORTS_CONDITION,
+	CONTEXT_BREAKPOINTS_EXIST,
+	CONTEXT_BREAKPOINTS_FOCUSED,
 	CONTEXT_DEBUGGERS_AVAILABLE,
 	CONTEXT_IN_DEBUG_MODE,
 	CONTEXT_SET_DATA_BREAKPOINT_BYTES_SUPPORTED,
-	DEBUG_SCHEME,
 	DataBreakpointSetType,
-	type DataBreakpointSource,
+	DEBUG_SCHEME,
 	DebuggerString,
+	IDebugService,
+	State,
+	type DataBreakpointSource,
 	type IBaseBreakpoint,
 	type IBreakpoint,
 	type IBreakpointEditorContribution,
@@ -99,12 +101,10 @@ import {
 	type IDataBreakpoint,
 	type IDataBreakpointInfoResponse,
 	type IDebugModel,
-	IDebugService,
 	type IEnablement,
 	type IExceptionBreakpoint,
 	type IFunctionBreakpoint,
 	type IInstructionBreakpoint,
-	State,
 } from "../common/debug.js";
 import {
 	Breakpoint,
@@ -179,7 +179,8 @@ export class BreakpointsView extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -190,19 +191,51 @@ export class BreakpointsView extends ViewPane {
 		@IHoverService hoverService: IHoverService,
 		@ILanguageService private readonly languageService: ILanguageService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this.menu = menuService.createMenu(MenuId.DebugBreakpointsContext, contextKeyService);
+		this.menu = menuService.createMenu(
+			MenuId.DebugBreakpointsContext,
+			contextKeyService,
+		);
 		this._register(this.menu);
-		this.breakpointItemType = CONTEXT_BREAKPOINT_ITEM_TYPE.bindTo(contextKeyService);
-		this.breakpointIsDataBytes = CONTEXT_BREAKPOINT_ITEM_IS_DATA_BYTES.bindTo(contextKeyService);
-		this.breakpointHasMultipleModes = CONTEXT_BREAKPOINT_HAS_MODES.bindTo(contextKeyService);
-		this.breakpointSupportsCondition = CONTEXT_BREAKPOINT_SUPPORTS_CONDITION.bindTo(contextKeyService);
-		this.breakpointInputFocused = CONTEXT_BREAKPOINT_INPUT_FOCUSED.bindTo(contextKeyService);
-		this._register(this.debugService.getModel().onDidChangeBreakpoints(() => this.onBreakpointsChange()));
-		this._register(this.debugService.getViewModel().onDidFocusSession(() => this.onBreakpointsChange()));
-		this._register(this.debugService.onDidChangeState(() => this.onStateChange()));
-		this.hintDelayer = this._register(new RunOnceScheduler(() => this.updateBreakpointsHint(true), 4000));
+		this.breakpointItemType =
+			CONTEXT_BREAKPOINT_ITEM_TYPE.bindTo(contextKeyService);
+		this.breakpointIsDataBytes =
+			CONTEXT_BREAKPOINT_ITEM_IS_DATA_BYTES.bindTo(contextKeyService);
+		this.breakpointHasMultipleModes =
+			CONTEXT_BREAKPOINT_HAS_MODES.bindTo(contextKeyService);
+		this.breakpointSupportsCondition =
+			CONTEXT_BREAKPOINT_SUPPORTS_CONDITION.bindTo(contextKeyService);
+		this.breakpointInputFocused =
+			CONTEXT_BREAKPOINT_INPUT_FOCUSED.bindTo(contextKeyService);
+		this._register(
+			this.debugService
+				.getModel()
+				.onDidChangeBreakpoints(() => this.onBreakpointsChange()),
+		);
+		this._register(
+			this.debugService
+				.getViewModel()
+				.onDidFocusSession(() => this.onBreakpointsChange()),
+		);
+		this._register(
+			this.debugService.onDidChangeState(() => this.onStateChange()),
+		);
+		this.hintDelayer = this._register(
+			new RunOnceScheduler(() => this.updateBreakpointsHint(true), 4000),
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
@@ -795,7 +828,7 @@ class BreakpointsRenderer
 		private breakpointItemType: IContextKey<string | undefined>,
 		@IDebugService private readonly debugService: IDebugService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@ILabelService private readonly labelService: ILabelService
+		@ILabelService private readonly labelService: ILabelService,
 	) {
 		// noop
 	}
@@ -1085,7 +1118,7 @@ class FunctionBreakpointsRenderer
 		private breakpointItemType: IContextKey<string | undefined>,
 		@IDebugService private readonly debugService: IDebugService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@ILabelService private readonly labelService: ILabelService
+		@ILabelService private readonly labelService: ILabelService,
 	) {
 		// noop
 	}
@@ -1249,7 +1282,7 @@ class DataBreakpointsRenderer
 		private breakpointIsDataBytes: IContextKey<boolean | undefined>,
 		@IDebugService private readonly debugService: IDebugService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@ILabelService private readonly labelService: ILabelService
+		@ILabelService private readonly labelService: ILabelService,
 	) {
 		// noop
 	}
@@ -1429,7 +1462,7 @@ class InstructionBreakpointsRenderer
 	constructor(
 		@IDebugService private readonly debugService: IDebugService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@ILabelService private readonly labelService: ILabelService
+		@ILabelService private readonly labelService: ILabelService,
 	) {
 		// noop
 	}
@@ -1546,7 +1579,10 @@ class InstructionBreakpointsRenderer
 
 class FunctionBreakpointInputRenderer
 	implements
-		IListRenderer<IFunctionBreakpoint, IFunctionBreakpointInputTemplateData>
+		IListRenderer<
+			IFunctionBreakpoint,
+			IFunctionBreakpointInputTemplateData
+		>
 {
 	constructor(
 		private view: BreakpointsView,

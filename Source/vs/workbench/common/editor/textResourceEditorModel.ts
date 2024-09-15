@@ -19,7 +19,8 @@ export class TextResourceEditorModel extends BaseTextEditorModel {
 		resource: URI,
 		@ILanguageService languageService: ILanguageService,
 		@IModelService modelService: IModelService,
-		@ILanguageDetectionService languageDetectionService: ILanguageDetectionService,
+		@ILanguageDetectionService
+		languageDetectionService: ILanguageDetectionService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 	) {
 		super(

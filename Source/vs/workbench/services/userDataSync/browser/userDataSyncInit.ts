@@ -43,17 +43,17 @@ import { SettingsInitializer } from "../../../../platform/userDataSync/common/se
 import { SnippetsInitializer } from "../../../../platform/userDataSync/common/snippetsSync.js";
 import { TasksInitializer } from "../../../../platform/userDataSync/common/tasksSync.js";
 import {
-	type IRemoteUserData,
-	type IUserData,
 	IUserDataSyncLogService,
-	type IUserDataSyncResourceInitializer,
 	IUserDataSyncStoreManagementService,
 	SyncResource,
+	type IRemoteUserData,
+	type IUserData,
+	type IUserDataSyncResourceInitializer,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { UserDataSyncStoreClient } from "../../../../platform/userDataSync/common/userDataSyncStoreService.js";
 import {
-	type AuthenticationSessionInfo,
 	getCurrentAuthenticationSessionInfo,
+	type AuthenticationSessionInfo,
 } from "../../authentication/browser/authenticationService.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
 import {
@@ -71,18 +71,23 @@ export class UserDataSyncInitializer implements IUserDataInitializer {
 	private globalStateUserData: IUserData | null = null;
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@ISecretStorageService private readonly secretStorageService: ISecretStorageService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@ISecretStorageService
+		private readonly secretStorageService: ISecretStorageService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IProductService private readonly productService: IProductService,
 		@IRequestService private readonly requestService: IRequestService,
 		@ILogService private readonly logService: ILogService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
-		this.createUserDataSyncStoreClient().then(userDataSyncStoreClient => {
+		this.createUserDataSyncStoreClient().then((userDataSyncStoreClient) => {
 			if (!userDataSyncStoreClient) {
 				this.initializationFinished.open();
 			}
@@ -506,10 +511,13 @@ class ExtensionsPreviewInitializer extends AbstractExtensionsInitializer {
 
 	constructor(
 		private readonly extensionsData: IUserData,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
-		@IIgnoredExtensionsManagementService ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
+		@IIgnoredExtensionsManagementService
+		ignoredExtensionsManagementService: IIgnoredExtensionsManagementService,
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,
@@ -564,11 +572,13 @@ class InstalledExtensionsInitializer
 {
 	constructor(
 		private readonly extensionsPreviewInitializer: ExtensionsPreviewInitializer,
-		@IGlobalExtensionEnablementService private readonly extensionEnablementService: IGlobalExtensionEnablementService,
-		@IExtensionStorageService private readonly extensionStorageService: IExtensionStorageService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-	) {
-	}
+		@IGlobalExtensionEnablementService
+		private readonly extensionEnablementService: IGlobalExtensionEnablementService,
+		@IExtensionStorageService
+		private readonly extensionStorageService: IExtensionStorageService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+	) {}
 
 	async initialize(): Promise<void> {
 		const preview = await this.extensionsPreviewInitializer.getPreview();
@@ -619,12 +629,15 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 	constructor(
 		private readonly extensionsPreviewInitializer: ExtensionsPreviewInitializer,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionStorageService private readonly extensionStorageService: IExtensionStorageService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-	) {
-	}
+		@IExtensionStorageService
+		private readonly extensionStorageService: IExtensionStorageService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+	) {}
 
 	async initialize(): Promise<void> {
 		const preview = await this.extensionsPreviewInitializer.getPreview();
@@ -667,7 +680,8 @@ class NewExtensionsInitializer implements IUserDataSyncResourceInitializer {
 					await this.extensionManagementService.installFromGallery(
 						galleryExtension,
 						{
-							isMachineScoped: false /* set isMachineScoped to prevent install and sync dialog in web */,
+							isMachineScoped:
+								false /* set isMachineScoped to prevent install and sync dialog in web */,
 							donotIncludePackAndDependencies: true,
 							installGivenVersion: !!extensionToSync.version,
 							installPreReleaseVersion:

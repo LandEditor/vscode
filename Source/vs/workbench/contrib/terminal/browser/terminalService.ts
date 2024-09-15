@@ -15,9 +15,9 @@ import {
 } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { mark } from "../../../../base/common/performance.js";
@@ -28,8 +28,8 @@ import * as nls from "../../../../nls.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -42,6 +42,11 @@ import type {
 } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import { TerminalCapabilityStore } from "../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js";
 import {
+	ITerminalLogService,
+	TerminalExitReason,
+	TerminalLocation,
+	TerminalLocationString,
+	TitleEventSource,
 	type ICreateContributedTerminalProfileOptions,
 	type IExtensionTerminalProfile,
 	type IPtyHostAttachTarget,
@@ -50,13 +55,8 @@ import {
 	type IShellLaunchConfig,
 	type ITerminalBackend,
 	type ITerminalLaunchError,
-	ITerminalLogService,
 	type ITerminalsLayoutInfo,
 	type ITerminalsLayoutInfoById,
-	TerminalExitReason,
-	TerminalLocation,
-	TerminalLocationString,
-	TitleEventSource,
 } from "../../../../platform/terminal/common/terminal.js";
 import { formatMessageForTerminal } from "../../../../platform/terminal/common/terminalStrings.js";
 import { iconForeground } from "../../../../platform/theme/common/colorRegistry.js";
@@ -73,11 +73,11 @@ import type { IEditableData } from "../../../common/views.js";
 import { columnToEditorGroup } from "../../../services/editor/common/editorGroupColumn.js";
 import { IEditorGroupsService } from "../../../services/editor/common/editorGroupsService.js";
 import {
-	type ACTIVE_GROUP_TYPE,
 	AUX_WINDOW_GROUP,
-	type AUX_WINDOW_GROUP_TYPE,
 	IEditorService,
 	SIDE_GROUP,
+	type ACTIVE_GROUP_TYPE,
+	type AUX_WINDOW_GROUP_TYPE,
 	type SIDE_GROUP_TYPE,
 } from "../../../services/editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
@@ -92,30 +92,30 @@ import { IRemoteAgentService } from "../../../services/remote/common/remoteAgent
 import { ITimerService } from "../../../services/timer/browser/timerService.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
+	ITerminalProfileService,
+	TERMINAL_VIEW_ID,
 	type IRemoteTerminalAttachTarget,
 	type IStartExtensionTerminalRequest,
 	type ITerminalProcessExtHostProxy,
-	ITerminalProfileService,
-	TERMINAL_VIEW_ID,
 } from "../common/terminal.js";
 import { TerminalContextKeys } from "../common/terminalContextKey.js";
 import { DetachedTerminal } from "./detachedTerminal.js";
 import {
+	ITerminalConfigurationService,
+	ITerminalEditorService,
+	ITerminalGroupService,
+	ITerminalInstanceService,
+	ITerminalService,
+	TerminalConnectionState,
 	type ICreateTerminalOptions,
 	type IDetachedTerminalInstance,
 	type IDetachedXTermOptions,
 	type IRequestAddInstanceToGroupEvent,
-	ITerminalConfigurationService,
-	ITerminalEditorService,
 	type ITerminalGroup,
-	ITerminalGroupService,
 	type ITerminalInstance,
 	type ITerminalInstanceHost,
-	ITerminalInstanceService,
 	type ITerminalLocationOptions,
-	ITerminalService,
 	type ITerminalServiceNativeDelegate,
-	TerminalConnectionState,
 	type TerminalEditorLocation,
 } from "./terminal.js";
 import { getCwdForSplit } from "./terminalActions.js";
@@ -349,75 +349,137 @@ export class TerminalService extends Disposable implements ITerminalService {
 
 	constructor(
 		@IContextKeyService private _contextKeyService: IContextKeyService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IDialogService private _dialogService: IDialogService,
-		@IInstantiationService private _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private _instantiationService: IInstantiationService,
 		@IRemoteAgentService private _remoteAgentService: IRemoteAgentService,
 		@IViewsService private _viewsService: IViewsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITerminalConfigurationService private readonly _terminalConfigService: ITerminalConfigurationService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@ITerminalEditorService private readonly _terminalEditorService: ITerminalEditorService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-		@ITerminalInstanceService private readonly _terminalInstanceService: ITerminalInstanceService,
-		@IEditorGroupsService private readonly _editorGroupsService: IEditorGroupsService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigService: ITerminalConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalEditorService
+		private readonly _terminalEditorService: ITerminalEditorService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalInstanceService
+		private readonly _terminalInstanceService: ITerminalInstanceService,
+		@IEditorGroupsService
+		private readonly _editorGroupsService: IEditorGroupsService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@ITimerService private readonly _timerService: ITimerService
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@ITimerService private readonly _timerService: ITimerService,
 	) {
 		super();
 
 		// the below avoids having to poll routinely.
 		// we update detected profiles when an instance is created so that,
 		// for example, we detect if you've installed a pwsh
-		this._register(this.onDidCreateInstance(() => this._terminalProfileService.refreshAvailableProfiles()));
+		this._register(
+			this.onDidCreateInstance(() =>
+				this._terminalProfileService.refreshAvailableProfiles(),
+			),
+		);
 		this._forwardInstanceHostEvents(this._terminalGroupService);
 		this._forwardInstanceHostEvents(this._terminalEditorService);
-		this._register(this._terminalGroupService.onDidChangeActiveGroup(this._onDidChangeActiveGroup.fire, this._onDidChangeActiveGroup));
-		this._register(this._terminalInstanceService.onDidCreateInstance(instance => {
-			this._initInstanceListeners(instance);
-			this._onDidCreateInstance.fire(instance);
-		}));
+		this._register(
+			this._terminalGroupService.onDidChangeActiveGroup(
+				this._onDidChangeActiveGroup.fire,
+				this._onDidChangeActiveGroup,
+			),
+		);
+		this._register(
+			this._terminalInstanceService.onDidCreateInstance((instance) => {
+				this._initInstanceListeners(instance);
+				this._onDidCreateInstance.fire(instance);
+			}),
+		);
 
 		// Hide the panel if there are no more instances, provided that VS Code is not shutting
 		// down. When shutting down the panel is locked in place so that it is restored upon next
 		// launch.
-		this._register(this._terminalGroupService.onDidChangeActiveInstance(instance => {
-			if (!instance && !this._isShuttingDown) {
-				this._terminalGroupService.hidePanel();
-			}
-			if (instance?.shellType) {
-				this._terminalShellTypeContextKey.set(instance.shellType.toString());
-			} else if (!instance || !(instance.shellType)) {
-				this._terminalShellTypeContextKey.reset();
-			}
-		}));
+		this._register(
+			this._terminalGroupService.onDidChangeActiveInstance((instance) => {
+				if (!instance && !this._isShuttingDown) {
+					this._terminalGroupService.hidePanel();
+				}
+				if (instance?.shellType) {
+					this._terminalShellTypeContextKey.set(
+						instance.shellType.toString(),
+					);
+				} else if (!instance || !instance.shellType) {
+					this._terminalShellTypeContextKey.reset();
+				}
+			}),
+		);
 
 		this._handleInstanceContextKeys();
-		this._terminalShellTypeContextKey = TerminalContextKeys.shellType.bindTo(this._contextKeyService);
-		this._processSupportContextKey = TerminalContextKeys.processSupported.bindTo(this._contextKeyService);
-		this._processSupportContextKey.set(!isWeb || this._remoteAgentService.getConnection() !== null);
-		this._terminalHasBeenCreated = TerminalContextKeys.terminalHasBeenCreated.bindTo(this._contextKeyService);
-		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(this._contextKeyService);
-		this._terminalEditorActive = TerminalContextKeys.terminalEditorActive.bindTo(this._contextKeyService);
+		this._terminalShellTypeContextKey =
+			TerminalContextKeys.shellType.bindTo(this._contextKeyService);
+		this._processSupportContextKey =
+			TerminalContextKeys.processSupported.bindTo(
+				this._contextKeyService,
+			);
+		this._processSupportContextKey.set(
+			!isWeb || this._remoteAgentService.getConnection() !== null,
+		);
+		this._terminalHasBeenCreated =
+			TerminalContextKeys.terminalHasBeenCreated.bindTo(
+				this._contextKeyService,
+			);
+		this._terminalCountContextKey = TerminalContextKeys.count.bindTo(
+			this._contextKeyService,
+		);
+		this._terminalEditorActive =
+			TerminalContextKeys.terminalEditorActive.bindTo(
+				this._contextKeyService,
+			);
 
-		this._register(this.onDidChangeActiveInstance(instance => {
-			this._terminalEditorActive.set(!!instance?.target && instance.target === TerminalLocation.Editor);
-		}));
+		this._register(
+			this.onDidChangeActiveInstance((instance) => {
+				this._terminalEditorActive.set(
+					!!instance?.target &&
+						instance.target === TerminalLocation.Editor,
+				);
+			}),
+		);
 
-		this._register(_lifecycleService.onBeforeShutdown(async e => e.veto(this._onBeforeShutdown(e.reason), 'veto.terminal')));
-		this._register(_lifecycleService.onWillShutdown(e => this._onWillShutdown(e)));
+		this._register(
+			_lifecycleService.onBeforeShutdown(async (e) =>
+				e.veto(this._onBeforeShutdown(e.reason), "veto.terminal"),
+			),
+		);
+		this._register(
+			_lifecycleService.onWillShutdown((e) => this._onWillShutdown(e)),
+		);
 
 		this._initializePrimaryBackend();
 
 		// Create async as the class depends on `this`
-		timeout(0).then(() => this._register(this._instantiationService.createInstance(TerminalEditorStyle, mainWindow.document.head)));
+		timeout(0).then(() =>
+			this._register(
+				this._instantiationService.createInstance(
+					TerminalEditorStyle,
+					mainWindow.document.head,
+				),
+			),
+		);
 	}
 
 	async showProfileQuickPick(
@@ -1904,8 +1966,9 @@ class TerminalEditorStyle extends Themable {
 		container: HTMLElement,
 		@ITerminalService private readonly _terminalService: ITerminalService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@IEditorService private readonly _editorService: IEditorService
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@IEditorService private readonly _editorService: IEditorService,
 	) {
 		super(_themeService);
 		this._registerListeners();

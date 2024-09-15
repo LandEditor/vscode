@@ -5,8 +5,8 @@
 
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import type { ICodeEditor } from "../../../../browser/editorBrowser.js";
@@ -27,11 +27,18 @@ export class StandaloneColorPickerController
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IContextKeyService _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
-		this._standaloneColorPickerVisible = EditorContextKeys.standaloneColorPickerVisible.bindTo(_contextKeyService);
-		this._standaloneColorPickerFocused = EditorContextKeys.standaloneColorPickerFocused.bindTo(_contextKeyService);
+		this._standaloneColorPickerVisible =
+			EditorContextKeys.standaloneColorPickerVisible.bindTo(
+				_contextKeyService,
+			);
+		this._standaloneColorPickerFocused =
+			EditorContextKeys.standaloneColorPickerFocused.bindTo(
+				_contextKeyService,
+			);
 	}
 
 	public showOrFocus() {

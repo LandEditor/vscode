@@ -12,8 +12,8 @@ import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { IPosition } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import {
-	type CompletionItem,
 	CompletionItemKind,
+	type CompletionItem,
 } from "../../../common/languages.js";
 import type { IEditorWorkerService } from "../../../common/services/editorWorker.js";
 import { BracketSelectionRangeProvider } from "../../smartSelect/browser/bracketSelections.js";

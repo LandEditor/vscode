@@ -11,18 +11,18 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	derived,
 	observableFromEvent,
 	observableValue,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { basename, isEqual } from "../../../../base/common/resources.js";
 import Severity from "../../../../base/common/severity.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../nls.js";
 import {
@@ -37,21 +37,21 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IRevertOptions,
 	SaveSourceRegistry,
+	type IRevertOptions,
 } from "../../../common/editor.js";
 import { EditorModel } from "../../../common/editor/editorModel.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
+	ITextFileService,
 	type ITextFileEditorModel,
 	type ITextFileSaveOptions,
-	ITextFileService,
 } from "../../../services/textfile/common/textfiles.js";
 import { StorageCloseWithConflicts } from "../common/mergeEditor.js";
 import type { MergeEditorInputData } from "./mergeEditorInput.js";
 import { conflictMarkers } from "./mergeMarkers/mergeMarkersController.js";
 import { MergeDiffComputer } from "./model/diffComputer.js";
-import { type InputData, MergeEditorModel } from "./model/mergeEditorModel.js";
+import { MergeEditorModel, type InputData } from "./model/mergeEditorModel.js";
 import type { MergeEditorTelemetry } from "./telemetry.js";
 
 export interface MergeEditorArgs {
@@ -95,11 +95,12 @@ export class TempFileMergeEditorModeFactory
 {
 	constructor(
 		private readonly _mergeEditorTelemetry: MergeEditorTelemetry,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
 		@IModelService private readonly _modelService: IModelService,
-	) {
-	}
+	) {}
 
 	async createInputModel(
 		args: MergeEditorArgs,
@@ -367,11 +368,12 @@ export class WorkspaceMergeEditorModeFactory
 {
 	constructor(
 		private readonly _mergeEditorTelemetry: MergeEditorTelemetry,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-	) {
-	}
+	) {}
 
 	private static readonly FILE_SAVED_SOURCE =
 		SaveSourceRegistry.registerSource(

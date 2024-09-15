@@ -58,7 +58,7 @@ export class ChildProcessMonitor extends Disposable {
 
 	constructor(
 		private readonly _pid: number,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 	}

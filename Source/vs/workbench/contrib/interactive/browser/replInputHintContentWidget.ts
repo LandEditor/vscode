@@ -17,8 +17,8 @@ import {
 	type IContentWidgetPosition,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../../editor/common/config/editorOptions.js";
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -37,27 +37,51 @@ export class ReplInputHintContentWidget
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
 
-		this._register(this.editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (this.domNode && e.hasChanged(EditorOption.fontInfo)) {
-				this.editor.applyFontInfo(this.domNode);
-			}
-		}));
-		const onDidFocusEditorText = Event.debounce(this.editor.onDidFocusEditorText, () => undefined, 500);
-		this._register(onDidFocusEditorText(() => {
-			if (this.editor.hasTextFocus() && this.ariaLabel && configurationService.getValue(AccessibilityVerbositySettingId.ReplInputHint)) {
-				status(this.ariaLabel);
-			}
-		}));
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(InteractiveWindowSetting.executeWithShiftEnter)) {
-				this.setHint();
-			}
-		}));
+		this._register(
+			this.editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (this.domNode && e.hasChanged(EditorOption.fontInfo)) {
+						this.editor.applyFontInfo(this.domNode);
+					}
+				},
+			),
+		);
+		const onDidFocusEditorText = Event.debounce(
+			this.editor.onDidFocusEditorText,
+			() => undefined,
+			500,
+		);
+		this._register(
+			onDidFocusEditorText(() => {
+				if (
+					this.editor.hasTextFocus() &&
+					this.ariaLabel &&
+					configurationService.getValue(
+						AccessibilityVerbositySettingId.ReplInputHint,
+					)
+				) {
+					status(this.ariaLabel);
+				}
+			}),
+		);
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						InteractiveWindowSetting.executeWithShiftEnter,
+					)
+				) {
+					this.setHint();
+				}
+			}),
+		);
 		this.editor.addContentWidget(this);
 	}
 

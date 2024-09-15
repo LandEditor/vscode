@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/explorerviewlet.css";
+
 import { isMouseEvent } from "../../../../base/browser/dom.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
@@ -14,8 +15,8 @@ import { localize, localize2 } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IsWebContext } from "../../../../platform/contextkey/common/contextkeys.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -52,21 +53,21 @@ import {
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
 	Extensions,
-	type IViewContainersRegistry,
-	type IViewDescriptor,
 	IViewDescriptorService,
-	type IViewsRegistry,
-	type ViewContainer,
 	ViewContainerLocation,
 	ViewContentGroups,
+	type IViewContainersRegistry,
+	type IViewDescriptor,
+	type IViewsRegistry,
+	type ViewContainer,
 } from "../../../common/views.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import { IWorkbenchLayoutService } from "../../../services/layout/browser/layoutService.js";
 import {
 	ExplorerViewletVisibleContext,
-	type IFilesConfiguration,
-	VIEWLET_ID,
 	VIEW_ID,
+	VIEWLET_ID,
+	type IFilesConfiguration,
 } from "../common/files.js";
 import { EmptyView } from "./views/emptyView.js";
 import { ExplorerView } from "./views/explorerView.js";
@@ -90,17 +91,30 @@ export class ExplorerViewletViewsContribution
 	static readonly ID = "workbench.contrib.explorerViewletViews";
 
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IProgressService progressService: IProgressService
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IProgressService progressService: IProgressService,
 	) {
 		super();
 
-		progressService.withProgress({ location: ProgressLocation.Explorer }, () => workspaceContextService.getCompleteWorkspace()).finally(() => {
-			this.registerViews();
+		progressService
+			.withProgress({ location: ProgressLocation.Explorer }, () =>
+				workspaceContextService.getCompleteWorkspace(),
+			)
+			.finally(() => {
+				this.registerViews();
 
-			this._register(workspaceContextService.onDidChangeWorkbenchState(() => this.registerViews()));
-			this._register(workspaceContextService.onDidChangeWorkspaceFolders(() => this.registerViews()));
-		});
+				this._register(
+					workspaceContextService.onDidChangeWorkbenchState(() =>
+						this.registerViews(),
+					),
+				);
+				this._register(
+					workspaceContextService.onDidChangeWorkspaceFolders(() =>
+						this.registerViews(),
+					),
+				);
+			});
 	}
 
 	private registerViews(): void {

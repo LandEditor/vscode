@@ -6,14 +6,14 @@
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type IExtHostContext,
 	extHostCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import * as extHostProtocol from "../common/extHost.protocol.js";
 import { MainThreadCustomEditors } from "./mainThreadCustomEditors.js";
 import { MainThreadWebviewPanels } from "./mainThreadWebviewPanels.js";
-import { MainThreadWebviewsViews } from "./mainThreadWebviewViews.js";
 import { MainThreadWebviews } from "./mainThreadWebviews.js";
+import { MainThreadWebviewsViews } from "./mainThreadWebviewViews.js";
 
 @extHostCustomer
 export class MainThreadWebviewManager extends Disposable {

@@ -11,14 +11,14 @@ import { ResourceMap } from "../../../../base/common/map.js";
 import { basename, extUri } from "../../../../base/common/resources.js";
 import { splitLines } from "../../../../base/common/strings.js";
 import type { URI } from "../../../../base/common/uri.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
-import { unsupportedSchemas } from "../../../../platform/markers/common/markerService.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import {
-	type IMarker,
 	IMarkerData,
-	type IRelatedInformation,
 	MarkerSeverity,
+	type IMarker,
+	type IRelatedInformation,
 } from "../../../../platform/markers/common/markers.js";
+import { unsupportedSchemas } from "../../../../platform/markers/common/markerService.js";
 
 export type MarkerElement = ResourceMarkers | Marker | RelatedInformation;
 

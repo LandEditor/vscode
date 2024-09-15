@@ -12,7 +12,8 @@ import { ILifecycleService } from "../../../services/lifecycle/common/lifecycle.
 
 export class LogsDataCleaner extends Disposable {
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 	) {

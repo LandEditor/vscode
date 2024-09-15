@@ -23,13 +23,15 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as platform from "../../../../base/common/platform.js";
 import { URI } from "../../../../base/common/uri.js";
+
 import "./media/settingsEditor2.css";
+
 import {
 	Orientation,
 	Sizing,
@@ -52,8 +54,8 @@ import {
 	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IExtensionGalleryService,
@@ -96,26 +98,26 @@ import type {
 } from "../../../common/editor.js";
 import { IWorkbenchConfigurationService } from "../../../services/configuration/common/configuration.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import {
-	type IOpenSettingsOptions,
 	IPreferencesService,
+	SettingMatchType,
+	SettingValueType,
+	validateSettingsEditorOptions,
+	type IOpenSettingsOptions,
 	type ISearchResult,
 	type ISetting,
 	type ISettingsEditorModel,
 	type ISettingsEditorOptions,
 	type ISettingsGroup,
-	SettingMatchType,
-	SettingValueType,
-	validateSettingsEditorOptions,
 } from "../../../services/preferences/common/preferences.js";
 import type { SettingsEditor2Input } from "../../../services/preferences/common/preferencesEditorInput.js";
 import {
-	Settings2EditorModel,
 	nullRange,
+	Settings2EditorModel,
 } from "../../../services/preferences/common/preferencesModels.js";
 import { IUserDataProfileService } from "../../../services/userDataProfile/common/userDataProfile.js";
 import { IUserDataSyncWorkbenchService } from "../../../services/userDataSync/common/userDataSync.js";
@@ -128,9 +130,9 @@ import {
 	ENABLE_LANGUAGE_FILTER,
 	EXTENSION_SETTING_TAG,
 	FEATURE_SETTING_TAG,
+	getExperimentalExtensionToggleData,
 	ID_SETTING_TAG,
 	IPreferencesSearchService,
-	type ISearchProvider,
 	LANGUAGE_SETTING_TAG,
 	MODIFIED_SETTING_TAG,
 	POLICY_SETTING_TAG,
@@ -138,7 +140,7 @@ import {
 	SETTINGS_EDITOR_COMMAND_CLEAR_SEARCH_RESULTS,
 	SETTINGS_EDITOR_COMMAND_SUGGEST_FILTERS,
 	WORKSPACE_TRUST_SETTING_TAG,
-	getExperimentalExtensionToggleData,
+	type ISearchProvider,
 } from "../common/preferences.js";
 import {
 	settingsHeaderBorder,
@@ -150,38 +152,38 @@ import {
 	preferencesFilterIcon,
 } from "./preferencesIcons.js";
 import {
-	type SettingsTarget,
 	SettingsTargetsWidget,
+	type SettingsTarget,
 } from "./preferencesWidgets.js";
 import type { ISettingOverrideClickEvent } from "./settingsEditorSettingIndicators.js";
 import {
-	type ITOCEntry,
 	getCommonlyUsedData,
 	tocData,
+	type ITOCEntry,
 } from "./settingsLayout.js";
 import { SettingsSearchFilterDropdownMenuActionViewItem } from "./settingsSearchMenu.js";
 import {
 	AbstractSettingRenderer,
-	type HeightChangeParams,
-	type ISettingLinkClickEvent,
-	SettingTreeRenderers,
-	SettingsTree,
 	createTocTreeForExtensionSettings,
 	resolveConfiguredUntrustedSettings,
 	resolveSettingsTree,
+	SettingsTree,
+	SettingTreeRenderers,
+	type HeightChangeParams,
+	type ISettingLinkClickEvent,
 } from "./settingsTree.js";
 import {
-	type ISettingsEditorViewState,
+	parseQuery,
 	SearchResultIdx,
 	SearchResultModel,
-	type SettingsTreeElement,
-	type SettingsTreeGroupChild,
 	SettingsTreeGroupElement,
 	SettingsTreeModel,
 	SettingsTreeSettingElement,
-	parseQuery,
+	type ISettingsEditorViewState,
+	type SettingsTreeElement,
+	type SettingsTreeGroupChild,
 } from "./settingsTreeModels.js";
-import { TOCTree, TOCTreeModel, createTOCIterator } from "./tocTree.js";
+import { createTOCIterator, TOCTree, TOCTreeModel } from "./tocTree.js";
 
 export enum SettingsFocusContext {
 	Search = 0,
@@ -354,86 +356,143 @@ export class SettingsEditor2 extends EditorPane {
 	constructor(
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IWorkbenchConfigurationService private readonly configurationService: IWorkbenchConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
+		@IWorkbenchConfigurationService
+		private readonly configurationService: IWorkbenchConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
 		@IThemeService themeService: IThemeService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IPreferencesSearchService private readonly preferencesSearchService: IPreferencesSearchService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IPreferencesSearchService
+		private readonly preferencesSearchService: IPreferencesSearchService,
 		@ILogService private readonly logService: ILogService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IEditorGroupsService protected editorGroupService: IEditorGroupsService,
-		@IUserDataSyncWorkbenchService private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IEditorGroupsService
+		protected editorGroupService: IEditorGroupsService,
+		@IUserDataSyncWorkbenchService
+		private readonly userDataSyncWorkbenchService: IUserDataSyncWorkbenchService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IProductService private readonly productService: IProductService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IEditorProgressService private readonly editorProgressService: IEditorProgressService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IEditorProgressService
+		private readonly editorProgressService: IEditorProgressService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 	) {
-		super(SettingsEditor2.ID, group, telemetryService, themeService, storageService);
+		super(
+			SettingsEditor2.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 		this.delayedFilterLogging = new Delayer<void>(1000);
 		this.searchDelayer = new Delayer(300);
 		this.viewState = { settingsTarget: ConfigurationTarget.USER_LOCAL };
 
-		this.settingFastUpdateDelayer = new Delayer<void>(SettingsEditor2.SETTING_UPDATE_FAST_DEBOUNCE);
-		this.settingSlowUpdateDelayer = new Delayer<void>(SettingsEditor2.SETTING_UPDATE_SLOW_DEBOUNCE);
+		this.settingFastUpdateDelayer = new Delayer<void>(
+			SettingsEditor2.SETTING_UPDATE_FAST_DEBOUNCE,
+		);
+		this.settingSlowUpdateDelayer = new Delayer<void>(
+			SettingsEditor2.SETTING_UPDATE_SLOW_DEBOUNCE,
+		);
 
-		this.searchInputDelayer = new Delayer<void>(SettingsEditor2.SEARCH_DEBOUNCE);
-		this.updatedConfigSchemaDelayer = new Delayer<void>(SettingsEditor2.CONFIG_SCHEMA_UPDATE_DELAYER);
+		this.searchInputDelayer = new Delayer<void>(
+			SettingsEditor2.SEARCH_DEBOUNCE,
+		);
+		this.updatedConfigSchemaDelayer = new Delayer<void>(
+			SettingsEditor2.CONFIG_SCHEMA_UPDATE_DELAYER,
+		);
 
-		this.inSettingsEditorContextKey = CONTEXT_SETTINGS_EDITOR.bindTo(contextKeyService);
-		this.searchFocusContextKey = CONTEXT_SETTINGS_SEARCH_FOCUS.bindTo(contextKeyService);
+		this.inSettingsEditorContextKey =
+			CONTEXT_SETTINGS_EDITOR.bindTo(contextKeyService);
+		this.searchFocusContextKey =
+			CONTEXT_SETTINGS_SEARCH_FOCUS.bindTo(contextKeyService);
 		this.tocRowFocused = CONTEXT_TOC_ROW_FOCUS.bindTo(contextKeyService);
-		this.settingRowFocused = CONTEXT_SETTINGS_ROW_FOCUS.bindTo(contextKeyService);
+		this.settingRowFocused =
+			CONTEXT_SETTINGS_ROW_FOCUS.bindTo(contextKeyService);
 
 		this.scheduledRefreshes = new Map<string, DOM.IFocusTracker>();
 
-		this.editorMemento = this.getEditorMemento<ISettingsEditor2State>(editorGroupService, textResourceConfigurationService, SETTINGS_EDITOR_STATE_KEY);
+		this.editorMemento = this.getEditorMemento<ISettingsEditor2State>(
+			editorGroupService,
+			textResourceConfigurationService,
+			SETTINGS_EDITOR_STATE_KEY,
+		);
 
 		this.dismissedExtensionSettings = this.storageService
-			.get(this.DISMISSED_EXTENSION_SETTINGS_STORAGE_KEY, StorageScope.PROFILE, '')
+			.get(
+				this.DISMISSED_EXTENSION_SETTINGS_STORAGE_KEY,
+				StorageScope.PROFILE,
+				"",
+			)
 			.split(this.DISMISSED_EXTENSION_SETTINGS_DELIMITER);
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.source !== ConfigurationTarget.DEFAULT) {
-				this.onConfigUpdate(e.affectedKeys);
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.source !== ConfigurationTarget.DEFAULT) {
+					this.onConfigUpdate(e.affectedKeys);
+				}
+			}),
+		);
 
-		this._register(userDataProfileService.onDidChangeCurrentProfile(e => {
-			e.join(this.whenCurrentProfileChanged());
-		}));
+		this._register(
+			userDataProfileService.onDidChangeCurrentProfile((e) => {
+				e.join(this.whenCurrentProfileChanged());
+			}),
+		);
 
-		this._register(workspaceTrustManagementService.onDidChangeTrust(() => {
-			this.searchResultModel?.updateWorkspaceTrust(workspaceTrustManagementService.isWorkspaceTrusted());
+		this._register(
+			workspaceTrustManagementService.onDidChangeTrust(() => {
+				this.searchResultModel?.updateWorkspaceTrust(
+					workspaceTrustManagementService.isWorkspaceTrusted(),
+				);
 
-			if (this.settingsTreeModel) {
-				this.settingsTreeModel.updateWorkspaceTrust(workspaceTrustManagementService.isWorkspaceTrusted());
-				this.renderTree();
-			}
-		}));
+				if (this.settingsTreeModel) {
+					this.settingsTreeModel.updateWorkspaceTrust(
+						workspaceTrustManagementService.isWorkspaceTrusted(),
+					);
+					this.renderTree();
+				}
+			}),
+		);
 
-		this._register(configurationService.onDidChangeRestrictedSettings(e => {
-			if (e.default.length && this.currentSettingsModel) {
-				this.updateElementsByKey(new Set(e.default));
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeRestrictedSettings((e) => {
+				if (e.default.length && this.currentSettingsModel) {
+					this.updateElementsByKey(new Set(e.default));
+				}
+			}),
+		);
 
-		this._register(extensionManagementService.onDidInstallExtensions(() => {
-			this.refreshInstalledExtensionsList();
-		}));
-		this._register(extensionManagementService.onDidUninstallExtension(() => {
-			this.refreshInstalledExtensionsList();
-		}));
+		this._register(
+			extensionManagementService.onDidInstallExtensions(() => {
+				this.refreshInstalledExtensionsList();
+			}),
+		);
+		this._register(
+			extensionManagementService.onDidUninstallExtension(() => {
+				this.refreshInstalledExtensionsList();
+			}),
+		);
 
 		this.modelDisposables = this._register(new DisposableStore());
 
-		if (ENABLE_LANGUAGE_FILTER && !SettingsEditor2.SUGGESTIONS.includes(`@${LANGUAGE_SETTING_TAG}`)) {
+		if (
+			ENABLE_LANGUAGE_FILTER &&
+			!SettingsEditor2.SUGGESTIONS.includes(`@${LANGUAGE_SETTING_TAG}`)
+		) {
 			SettingsEditor2.SUGGESTIONS.push(`@${LANGUAGE_SETTING_TAG}`);
 		}
 		this.inputChangeListener = this._register(new MutableDisposable());
@@ -2669,7 +2728,7 @@ export class SettingsEditor2 extends EditorPane {
 	private layoutSplitView(dimension: DOM.Dimension): void {
 		const listHeight =
 			dimension.height -
-			(72 + 11 + 14) /* header height + editor padding */;
+			(72 + 11 + 14); /* header height + editor padding */
 
 		this.splitView.el.style.height = `${listHeight}px`;
 
@@ -2743,46 +2802,84 @@ class SyncControls extends Disposable {
 		window: CodeWindow,
 		container: HTMLElement,
 		@ICommandService private readonly commandService: ICommandService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
 	) {
 		super();
 
-		const headerRightControlsContainer = DOM.append(container, $('.settings-right-controls'));
-		const turnOnSyncButtonContainer = DOM.append(headerRightControlsContainer, $('.turn-on-sync'));
-		this.turnOnSyncButton = this._register(new Button(turnOnSyncButtonContainer, { title: true, ...defaultButtonStyles }));
-		this.lastSyncedLabel = DOM.append(headerRightControlsContainer, $('.last-synced-label'));
+		const headerRightControlsContainer = DOM.append(
+			container,
+			$(".settings-right-controls"),
+		);
+		const turnOnSyncButtonContainer = DOM.append(
+			headerRightControlsContainer,
+			$(".turn-on-sync"),
+		);
+		this.turnOnSyncButton = this._register(
+			new Button(turnOnSyncButtonContainer, {
+				title: true,
+				...defaultButtonStyles,
+			}),
+		);
+		this.lastSyncedLabel = DOM.append(
+			headerRightControlsContainer,
+			$(".last-synced-label"),
+		);
 		DOM.hide(this.lastSyncedLabel);
 
 		this.turnOnSyncButton.enabled = true;
-		this.turnOnSyncButton.label = localize('turnOnSyncButton', "Backup and Sync Settings");
+		this.turnOnSyncButton.label = localize(
+			"turnOnSyncButton",
+			"Backup and Sync Settings",
+		);
 		DOM.hide(this.turnOnSyncButton.element);
 
-		this._register(this.turnOnSyncButton.onDidClick(async () => {
-			telemetryService.publicLog2<{}, {
-				owner: 'sandy081';
-				comment: 'This event tracks whenever settings sync is turned on from settings editor.';
-			}>('sync/turnOnSyncFromSettings');
-			await this.commandService.executeCommand('workbench.userDataSync.actions.turnOn');
-		}));
+		this._register(
+			this.turnOnSyncButton.onDidClick(async () => {
+				telemetryService.publicLog2<
+					{},
+					{
+						owner: "sandy081";
+						comment: "This event tracks whenever settings sync is turned on from settings editor.";
+					}
+				>("sync/turnOnSyncFromSettings");
+				await this.commandService.executeCommand(
+					"workbench.userDataSync.actions.turnOn",
+				);
+			}),
+		);
 
 		this.updateLastSyncedTime();
-		this._register(this.userDataSyncService.onDidChangeLastSyncTime(() => {
-			this.updateLastSyncedTime();
-		}));
+		this._register(
+			this.userDataSyncService.onDidChangeLastSyncTime(() => {
+				this.updateLastSyncedTime();
+			}),
+		);
 
-		const updateLastSyncedTimer = this._register(new DOM.WindowIntervalTimer());
-		updateLastSyncedTimer.cancelAndSet(() => this.updateLastSyncedTime(), 60 * 1000, window);
+		const updateLastSyncedTimer = this._register(
+			new DOM.WindowIntervalTimer(),
+		);
+		updateLastSyncedTimer.cancelAndSet(
+			() => this.updateLastSyncedTime(),
+			60 * 1000,
+			window,
+		);
 
 		this.update();
-		this._register(this.userDataSyncService.onDidChangeStatus(() => {
-			this.update();
-		}));
+		this._register(
+			this.userDataSyncService.onDidChangeStatus(() => {
+				this.update();
+			}),
+		);
 
-		this._register(this.userDataSyncEnablementService.onDidChangeEnablement(() => {
-			this.update();
-		}));
+		this._register(
+			this.userDataSyncEnablementService.onDidChangeEnablement(() => {
+				this.update();
+			}),
+		);
 	}
 
 	private updateLastSyncedTime(): void {

@@ -13,15 +13,15 @@ import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import { getErrorMessage } from "../../../../base/common/errors.js";
 import { KeyChord, KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { basename, extname, isAbsolute } from "../../../../base/common/path.js";
 import {
+	isWindows,
 	OS,
 	type OperatingSystem,
-	isWindows,
 } from "../../../../base/common/platform.js";
 import * as resources from "../../../../base/common/resources.js";
 import { rtrim, trim } from "../../../../base/common/strings.js";
@@ -33,8 +33,8 @@ import { ILanguageService } from "../../../../editor/common/languages/language.j
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import * as nls from "../../../../nls.js";
 import type { ILocalizedString } from "../../../../platform/action/common/action.js";
@@ -48,9 +48,9 @@ import {
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IConfirmationResult,
-	IDialogService,
 	getFileNamesMessage,
+	IDialogService,
+	type IConfirmationResult,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import {
@@ -88,12 +88,12 @@ import { IViewsService } from "../../../services/views/common/viewsService.js";
 import type { IWorkingCopy } from "../../../services/workingCopy/common/workingCopy.js";
 import { IWorkingCopyFileService } from "../../../services/workingCopy/common/workingCopyFileService.js";
 import { IWorkingCopyService } from "../../../services/workingCopy/common/workingCopyService.js";
-import { type ExplorerItem, NewExplorerItem } from "../common/explorerModel.js";
+import { NewExplorerItem, type ExplorerItem } from "../common/explorerModel.js";
 import {
-	type IFilesConfiguration,
 	UndoConfirmLevel,
-	VIEWLET_ID,
 	VIEW_ID,
+	VIEWLET_ID,
+	type IFilesConfiguration,
 } from "../common/files.js";
 import {
 	NEW_UNTITLED_FILE_COMMAND_ID,
@@ -882,7 +882,8 @@ abstract class BaseSaveAllAction extends Action {
 		label: string,
 		@ICommandService protected commandService: ICommandService,
 		@INotificationService private notificationService: INotificationService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
 	) {
 		super(id, label);
 
@@ -942,7 +943,11 @@ export class CloseGroupAction extends Action {
 	static readonly ID = "workbench.files.action.closeGroup";
 	static readonly LABEL = nls.localize("closeGroup", "Close Group");
 
-	constructor(id: string, label: string, @ICommandService private readonly commandService: ICommandService) {
+	constructor(
+		id: string,
+		label: string,
+		@ICommandService private readonly commandService: ICommandService,
+	) {
 		super(id, label, ThemeIcon.asClassName(Codicon.closeAll));
 	}
 
@@ -1299,8 +1304,8 @@ class ClipboardContentProvider implements ITextModelContentProvider {
 	constructor(
 		@IClipboardService private readonly clipboardService: IClipboardService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IModelService private readonly modelService: IModelService
-	) { }
+		@IModelService private readonly modelService: IModelService,
+	) {}
 
 	async provideTextContent(resource: URI): Promise<ITextModel> {
 		const text = await this.clipboardService.readText();

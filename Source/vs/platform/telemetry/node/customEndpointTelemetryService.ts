@@ -7,13 +7,13 @@ import { FileAccess } from "../../../base/common/network.js";
 import { Client as TelemetryClient } from "../../../base/parts/ipc/node/ipc.cp.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
-import { ILogService, ILoggerService } from "../../log/common/log.js";
+import { ILoggerService, ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
+	ITelemetryService,
 	type ICustomEndpointTelemetryService,
 	type ITelemetryData,
 	type ITelemetryEndpoint,
-	ITelemetryService,
 } from "../common/telemetry.js";
 import { TelemetryAppenderClient } from "../common/telemetryIpc.js";
 import { TelemetryLogAppender } from "../common/telemetryLogAppender.js";
@@ -27,13 +27,15 @@ export class CustomEndpointTelemetryService
 	private customTelemetryServices = new Map<string, ITelemetryService>();
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILogService private readonly logService: ILogService,
 		@ILoggerService private readonly loggerService: ILoggerService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IProductService private readonly productService: IProductService
-	) { }
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IProductService private readonly productService: IProductService,
+	) {}
 
 	private getCustomTelemetryService(
 		endpoint: ITelemetryEndpoint,

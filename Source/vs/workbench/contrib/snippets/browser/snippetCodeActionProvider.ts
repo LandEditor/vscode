@@ -21,8 +21,8 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { ApplyFileSnippetAction } from "./commands/fileTemplateSnippets.js";
 import {
-	SurroundWithSnippetEditorAction,
 	getSurroundableSnippets,
+	SurroundWithSnippetEditorAction,
 } from "./commands/surroundWithSnippet.js";
 import { ISnippetsService } from "./snippets.js";
 import type { Snippet } from "./snippetsFile.js";
@@ -39,7 +39,9 @@ class SurroundWithSnippetCodeActionProvider implements CodeActionProvider {
 		},
 	};
 
-	constructor(@ISnippetsService private readonly _snippetService: ISnippetsService) { }
+	constructor(
+		@ISnippetsService private readonly _snippetService: ISnippetsService,
+	) {}
 
 	async provideCodeActions(
 		model: ITextModel,
@@ -103,7 +105,9 @@ class FileTemplateCodeActionProvider implements CodeActionProvider {
 		CodeActionKind.SurroundWith.value,
 	];
 
-	constructor(@ISnippetsService private readonly _snippetService: ISnippetsService) { }
+	constructor(
+		@ISnippetsService private readonly _snippetService: ISnippetsService,
+	) {}
 
 	async provideCodeActions(model: ITextModel) {
 		if (model.getValueLength() !== 0) {
@@ -167,7 +171,8 @@ export class SnippetCodeActions implements IWorkbenchContribution {
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@IConfigurationService configService: IConfigurationService,
 	) {
 		const setting = "editor.snippets.codeActions.enabled";

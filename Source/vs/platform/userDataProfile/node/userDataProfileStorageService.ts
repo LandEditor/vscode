@@ -12,7 +12,8 @@ import { RemoteUserDataProfileStorageService } from "../common/userDataProfileSt
 export class SharedProcessUserDataProfileStorageService extends RemoteUserDataProfileStorageService {
 	constructor(
 		@IMainProcessService mainProcessService: IMainProcessService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IStorageService storageService: IStorageService,
 		@ILogService logService: ILogService,
 	) {

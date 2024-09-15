@@ -6,8 +6,8 @@
 import { toAction } from "../../../../base/common/actions.js";
 import { parse } from "../../../../base/common/jsonc.js";
 import {
-	LANGUAGE_DEFAULT,
 	Language,
+	LANGUAGE_DEFAULT,
 } from "../../../../base/common/platform.js";
 import { localize } from "../../../../nls.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -18,8 +18,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ILanguagePackItem,
 	ILanguagePackService,
+	type ILanguagePackItem,
 } from "../../../../platform/languagePacks/common/languagePacks.js";
 import {
 	INotificationService,
@@ -31,8 +31,8 @@ import {
 	ProgressLocation,
 } from "../../../../platform/progress/common/progress.js";
 import {
-	type IViewPaneContainer,
 	ViewContainerLocation,
+	type IViewPaneContainer,
 } from "../../../common/views.js";
 import { IJSONEditingService } from "../../configuration/common/jsonEditing.js";
 import { IEditorService } from "../../editor/common/editorService.js";
@@ -58,19 +58,25 @@ class NativeLocaleService implements ILocaleService {
 	_serviceBrand: undefined;
 
 	constructor(
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@ILanguagePackService private readonly languagePackService: ILanguagePackService,
-		@IPaneCompositePartService private readonly paneCompositePartService: IPaneCompositePartService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@ILanguagePackService
+		private readonly languagePackService: ILanguagePackService,
+		@IPaneCompositePartService
+		private readonly paneCompositePartService: IPaneCompositePartService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IProgressService private readonly progressService: IProgressService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IHostService private readonly hostService: IHostService,
-		@IProductService private readonly productService: IProductService
-	) { }
+		@IProductService private readonly productService: IProductService,
+	) {}
 
 	private async validateLocaleFile(): Promise<boolean> {
 		try {
@@ -242,8 +248,9 @@ class NativeActiveLanguagePackService implements IActiveLanguagePackService {
 	_serviceBrand: undefined;
 
 	constructor(
-		@ILanguagePackService private readonly languagePackService: ILanguagePackService
-	) { }
+		@ILanguagePackService
+		private readonly languagePackService: ILanguagePackService,
+	) {}
 
 	async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
 		const language = Language.value();

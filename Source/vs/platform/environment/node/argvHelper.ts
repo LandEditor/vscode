@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import assert from "assert";
+
 import type { IProcessEnvironment } from "../../../base/common/platform.js";
 import { localize } from "../../../nls.js";
 import type { NativeParsedArgs } from "../common/argv.js";
 import {
-	type ErrorReporter,
 	NATIVE_CLI_COMMANDS,
 	OPTIONS,
 	parseArgs,
+	type ErrorReporter,
 } from "./argv.js";
 
 function parseAndValidate(

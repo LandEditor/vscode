@@ -57,7 +57,11 @@ export class StoredValue<T> extends Disposable {
 		this.scope = options.scope;
 		this.target = options.target;
 		this.serialization = options.serialization ?? defaultSerialization;
-		this.onDidChange = this.storage.onDidChangeValue(this.scope, this.key, this._register(new DisposableStore()));
+		this.onDidChange = this.storage.onDidChangeValue(
+			this.scope,
+			this.key,
+			this._register(new DisposableStore()),
+		);
 	}
 
 	/**

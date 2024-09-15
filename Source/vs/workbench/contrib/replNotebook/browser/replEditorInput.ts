@@ -6,8 +6,8 @@
 import type { IReference } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { ITextResourceConfigurationService } from "../../../../editor/common/services/textResourceConfiguration.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -27,8 +27,8 @@ import {
 	NotebookSetting,
 } from "../../notebook/common/notebookCommon.js";
 import {
-	type ICompositeNotebookEditorInput,
 	NotebookEditorInput,
+	type ICompositeNotebookEditorInput,
 } from "../../notebook/common/notebookEditorInput.js";
 import { INotebookEditorModelResolverService } from "../../notebook/common/notebookEditorModelResolverService.js";
 import { INotebookService } from "../../notebook/common/notebookService.js";
@@ -48,21 +48,46 @@ export class ReplEditorInput
 		resource: URI,
 		label: string | undefined,
 		@INotebookService _notebookService: INotebookService,
-		@INotebookEditorModelResolverService _notebookModelResolverService: INotebookEditorModelResolverService,
+		@INotebookEditorModelResolverService
+		_notebookModelResolverService: INotebookEditorModelResolverService,
 		@IFileDialogService _fileDialogService: IFileDialogService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@IExtensionService extensionService: IExtensionService,
 		@IEditorService editorService: IEditorService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService,
-		@IInteractiveHistoryService public readonly historyService: IInteractiveHistoryService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@IConfigurationService configurationService: IConfigurationService
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
+		@IInteractiveHistoryService
+		public readonly historyService: IInteractiveHistoryService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
-		super(resource, undefined, 'jupyter-notebook', {}, _notebookService, _notebookModelResolverService, _fileDialogService, labelService, fileService, filesConfigurationService, extensionService, editorService, textResourceConfigurationService, customEditorLabelService);
-		this.isScratchpad = resource.scheme === 'untitled' && configurationService.getValue<boolean>(NotebookSetting.InteractiveWindowPromptToSave) !== true;
+		super(
+			resource,
+			undefined,
+			"jupyter-notebook",
+			{},
+			_notebookService,
+			_notebookModelResolverService,
+			_fileDialogService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			extensionService,
+			editorService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
+		this.isScratchpad =
+			resource.scheme === "untitled" &&
+			configurationService.getValue<boolean>(
+				NotebookSetting.InteractiveWindowPromptToSave,
+			) !== true;
 		this.label = label ?? this.createEditorLabel(resource);
 	}
 

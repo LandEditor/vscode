@@ -18,8 +18,8 @@ import {
 	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	Schemas,
 	matchesSomeScheme,
+	Schemas,
 } from "../../../../../base/common/network.js";
 import { basename } from "../../../../../base/common/path.js";
 import {
@@ -40,8 +40,8 @@ import { IProductService } from "../../../../../platform/product/common/productS
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import { fillEditorsDragData } from "../../../../browser/dnd.js";
 import {
-	type IResourceLabel,
 	ResourceLabels,
+	type IResourceLabel,
 } from "../../../../browser/labels.js";
 import { ColorScheme } from "../../../../browser/web.api.js";
 import { SETTINGS_AUTHORITY } from "../../../../services/preferences/common/preferences.js";
@@ -57,7 +57,7 @@ import type {
 	IChatResponseViewModel,
 } from "../../common/chatViewModel.js";
 import type { ChatTreeItem } from "../chat.js";
-import { type IDisposableReference, ResourcePool } from "./chatCollections.js";
+import { ResourcePool, type IDisposableReference } from "./chatCollections.js";
 import type { IChatContentPart } from "./chatContentParts.js";
 
 const $ = dom.$;
@@ -85,96 +85,164 @@ export class ChatCollapsibleListContentPart
 		element: IChatResponseViewModel,
 		contentReferencesListPool: CollapsibleListPool,
 		@IOpenerService openerService: IOpenerService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IClipboardService private readonly clipboardService: IClipboardService,
 	) {
 		super();
 
-		const referencesLabel = labelOverride ?? (data.length > 1 ?
-			localize('usedReferencesPlural', "Used {0} references", data.length) :
-			localize('usedReferencesSingular', "Used {0} reference", 1));
-		const iconElement = $('.chat-used-context-icon');
-		const icon = (element: IChatResponseViewModel) => element.usedReferencesExpanded ? Codicon.chevronDown : Codicon.chevronRight;
+		const referencesLabel =
+			labelOverride ??
+			(data.length > 1
+				? localize(
+						"usedReferencesPlural",
+						"Used {0} references",
+						data.length,
+					)
+				: localize("usedReferencesSingular", "Used {0} reference", 1));
+		const iconElement = $(".chat-used-context-icon");
+		const icon = (element: IChatResponseViewModel) =>
+			element.usedReferencesExpanded
+				? Codicon.chevronDown
+				: Codicon.chevronRight;
 		iconElement.classList.add(...ThemeIcon.asClassNameArray(icon(element)));
-		const buttonElement = $('.chat-used-context-label', undefined);
+		const buttonElement = $(".chat-used-context-label", undefined);
 
-		const collapseButton = this._register(new Button(buttonElement, {
-			buttonBackground: undefined,
-			buttonBorder: undefined,
-			buttonForeground: undefined,
-			buttonHoverBackground: undefined,
-			buttonSecondaryBackground: undefined,
-			buttonSecondaryForeground: undefined,
-			buttonSecondaryHoverBackground: undefined,
-			buttonSeparator: undefined
-		}));
-		this.domNode = $('.chat-used-context', undefined, buttonElement);
+		const collapseButton = this._register(
+			new Button(buttonElement, {
+				buttonBackground: undefined,
+				buttonBorder: undefined,
+				buttonForeground: undefined,
+				buttonHoverBackground: undefined,
+				buttonSecondaryBackground: undefined,
+				buttonSecondaryForeground: undefined,
+				buttonSecondaryHoverBackground: undefined,
+				buttonSeparator: undefined,
+			}),
+		);
+		this.domNode = $(".chat-used-context", undefined, buttonElement);
 		collapseButton.label = referencesLabel;
 		collapseButton.element.prepend(iconElement);
-		this.updateAriaLabel(collapseButton.element, referencesLabel, element.usedReferencesExpanded);
-		this.domNode.classList.toggle('chat-used-context-collapsed', !element.usedReferencesExpanded);
-		this._register(collapseButton.onDidClick(() => {
-			iconElement.classList.remove(...ThemeIcon.asClassNameArray(icon(element)));
-			element.usedReferencesExpanded = !element.usedReferencesExpanded;
-			iconElement.classList.add(...ThemeIcon.asClassNameArray(icon(element)));
-			this.domNode.classList.toggle('chat-used-context-collapsed', !element.usedReferencesExpanded);
-			this._onDidChangeHeight.fire();
-			this.updateAriaLabel(collapseButton.element, referencesLabel, element.usedReferencesExpanded);
-		}));
+		this.updateAriaLabel(
+			collapseButton.element,
+			referencesLabel,
+			element.usedReferencesExpanded,
+		);
+		this.domNode.classList.toggle(
+			"chat-used-context-collapsed",
+			!element.usedReferencesExpanded,
+		);
+		this._register(
+			collapseButton.onDidClick(() => {
+				iconElement.classList.remove(
+					...ThemeIcon.asClassNameArray(icon(element)),
+				);
+				element.usedReferencesExpanded =
+					!element.usedReferencesExpanded;
+				iconElement.classList.add(
+					...ThemeIcon.asClassNameArray(icon(element)),
+				);
+				this.domNode.classList.toggle(
+					"chat-used-context-collapsed",
+					!element.usedReferencesExpanded,
+				);
+				this._onDidChangeHeight.fire();
+				this.updateAriaLabel(
+					collapseButton.element,
+					referencesLabel,
+					element.usedReferencesExpanded,
+				);
+			}),
+		);
 
 		const ref = this._register(contentReferencesListPool.get());
 		const list = ref.object;
 		this.domNode.appendChild(list.getHTMLElement().parentElement!);
 
-		this._register(list.onDidOpen((e) => {
-			if (e.element && 'reference' in e.element && typeof e.element.reference === 'object') {
-				const uriOrLocation = 'variableName' in e.element.reference ? e.element.reference.value : e.element.reference;
-				const uri = URI.isUri(uriOrLocation) ? uriOrLocation :
-					uriOrLocation?.uri;
-				if (uri) {
-					openerService.open(
-						uri,
-						{
+		this._register(
+			list.onDidOpen((e) => {
+				if (
+					e.element &&
+					"reference" in e.element &&
+					typeof e.element.reference === "object"
+				) {
+					const uriOrLocation =
+						"variableName" in e.element.reference
+							? e.element.reference.value
+							: e.element.reference;
+					const uri = URI.isUri(uriOrLocation)
+						? uriOrLocation
+						: uriOrLocation?.uri;
+					if (uri) {
+						openerService.open(uri, {
 							fromUserGesture: true,
 							editorOptions: {
 								...e.editorOptions,
 								...{
-									selection: uriOrLocation && 'range' in uriOrLocation ? uriOrLocation.range : undefined
-								}
-							}
+									selection:
+										uriOrLocation &&
+										"range" in uriOrLocation
+											? uriOrLocation.range
+											: undefined,
+								},
+							},
 						});
+					}
 				}
-			}
-		}));
-		this._register(list.onContextMenu((e) => {
-			e.browserEvent.preventDefault();
-			e.browserEvent.stopPropagation();
+			}),
+		);
+		this._register(
+			list.onContextMenu((e) => {
+				e.browserEvent.preventDefault();
+				e.browserEvent.stopPropagation();
 
-			if (e.element && 'reference' in e.element && typeof e.element.reference === 'object') {
-				const uriOrLocation = 'variableName' in e.element.reference ? e.element.reference.value : e.element.reference;
-				const uri = URI.isUri(uriOrLocation) ? uriOrLocation :
-					uriOrLocation?.uri;
-				if (uri) {
-					this.contextMenuService.showContextMenu({
-						getAnchor: () => e.anchor,
-						getActions: () => {
-							return [{
-								id: 'workbench.action.chat.copyReference',
-								title: localize('copyReference', "Copy"),
-								label: localize('copyReference', "Copy"),
-								tooltip: localize('copyReference', "Copy"),
-								enabled: e.element?.kind === 'reference',
-								class: undefined,
-								run: () => {
-									void this.clipboardService.writeResources([uri]);
-								}
-							}];
-						}
-					});
+				if (
+					e.element &&
+					"reference" in e.element &&
+					typeof e.element.reference === "object"
+				) {
+					const uriOrLocation =
+						"variableName" in e.element.reference
+							? e.element.reference.value
+							: e.element.reference;
+					const uri = URI.isUri(uriOrLocation)
+						? uriOrLocation
+						: uriOrLocation?.uri;
+					if (uri) {
+						this.contextMenuService.showContextMenu({
+							getAnchor: () => e.anchor,
+							getActions: () => {
+								return [
+									{
+										id: "workbench.action.chat.copyReference",
+										title: localize(
+											"copyReference",
+											"Copy",
+										),
+										label: localize(
+											"copyReference",
+											"Copy",
+										),
+										tooltip: localize(
+											"copyReference",
+											"Copy",
+										),
+										enabled:
+											e.element?.kind === "reference",
+										class: undefined,
+										run: () => {
+											void this.clipboardService.writeResources(
+												[uri],
+											);
+										},
+									},
+								];
+							},
+						});
+					}
 				}
-			}
-
-		}));
+			}),
+		);
 
 		const maxItemsShown = 6;
 		const itemsShown = Math.min(data.length, maxItemsShown);
@@ -221,7 +289,8 @@ export class CollapsibleListPool extends Disposable {
 
 	constructor(
 		private _onDidChangeVisibility: Event<boolean>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IThemeService private readonly themeService: IThemeService,
 		@ILabelService private readonly labelService: ILabelService,
 	) {
@@ -370,7 +439,8 @@ interface ICollapsibleListTemplate {
 }
 
 class CollapsibleListRenderer
-	implements IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate>
+	implements
+		IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate>
 {
 	static TEMPLATE_ID = "chatCollapsibleListRenderer";
 	readonly templateId: string = CollapsibleListRenderer.TEMPLATE_ID;
@@ -378,9 +448,10 @@ class CollapsibleListRenderer
 	constructor(
 		private labels: ResourceLabels,
 		@IThemeService private readonly themeService: IThemeService,
-		@IChatVariablesService private readonly chatVariablesService: IChatVariablesService,
+		@IChatVariablesService
+		private readonly chatVariablesService: IChatVariablesService,
 		@IProductService private readonly productService: IProductService,
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement): ICollapsibleListTemplate {
 		const templateDisposables = new DisposableStore();

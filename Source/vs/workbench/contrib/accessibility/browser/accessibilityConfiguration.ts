@@ -19,11 +19,11 @@ import { RawContextKey } from "../../../../platform/contextkey/common/contextkey
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	workbenchConfigurationNodeBase,
+	Extensions as WorkbenchExtensions,
 	type ConfigurationKeyValuePairs,
 	type ConfigurationMigration,
 	type IConfigurationMigrationRegistry,
-	Extensions as WorkbenchExtensions,
-	workbenchConfigurationNodeBase,
 } from "../../../common/configuration.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
@@ -1152,11 +1152,16 @@ export class DynamicSpeechAccessibilityConfiguration
 
 	constructor(
 		@ISpeechService private readonly speechService: ISpeechService,
-		@IProductService private readonly productService: IProductService
+		@IProductService private readonly productService: IProductService,
 	) {
 		super();
 
-		this._register(Event.runAndSubscribe(speechService.onDidChangeHasSpeechProvider, () => this.updateConfiguration()));
+		this._register(
+			Event.runAndSubscribe(
+				speechService.onDidChangeHasSpeechProvider,
+				() => this.updateConfiguration(),
+			),
+		);
 	}
 
 	private updateConfiguration(): void {

@@ -17,8 +17,8 @@ import type {
 import { HoverPosition } from "../../../../base/browser/ui/hover/hoverWidget.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import {
-	type IMarkdownString,
 	isMarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import { isFunction, isString } from "../../../../base/common/types.js";

@@ -8,8 +8,8 @@ import {
 	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	keepObserved,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type { LanguageId } from "../../../../../editor/common/encodedTokenAttributes.js";
 import type {

@@ -55,7 +55,10 @@ export class QuickDiffService extends Disposable implements IQuickDiffService {
 	readonly onDidChangeQuickDiffProviders =
 		this._onDidChangeQuickDiffProviders.event;
 
-	constructor(@IUriIdentityService private readonly uriIdentityService: IUriIdentityService) {
+	constructor(
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {
 		super();
 	}
 

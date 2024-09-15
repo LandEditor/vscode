@@ -14,14 +14,14 @@ import type { PersistentProtocol } from "../../../../base/parts/ipc/common/ipc.n
 import { IExtensionHostDebugService } from "../../../../platform/debug/common/extensionHostDebug.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
+	connectRemoteAgentExtensionHost,
 	type IConnectionOptions,
 	type IRemoteExtensionHostStartParams,
-	connectRemoteAgentExtensionHost,
 } from "../../../../platform/remote/common/remoteAgentConnection.js";
 import {
 	IRemoteAuthorityResolverService,
@@ -38,16 +38,16 @@ import {
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { parseExtensionDevOptions } from "./extensionDevOptions.js";
 import {
-	type IExtensionHostInitData,
-	MessageType,
-	UIKind,
 	createMessageOfType,
 	isMessageOfType,
+	MessageType,
+	UIKind,
+	type IExtensionHostInitData,
 } from "./extensionHostProtocol.js";
 import type { RemoteRunningLocation } from "./extensionRunningLocation.js";
 import {
-	type ExtensionHostExtensions,
 	ExtensionHostStartup,
+	type ExtensionHostExtensions,
 	type IExtensionHost,
 } from "./extensions.js";
 
@@ -86,17 +86,23 @@ export class RemoteExtensionHost extends Disposable implements IExtensionHost {
 	constructor(
 		public readonly runningLocation: RemoteRunningLocation,
 		private readonly _initDataProvider: IRemoteExtensionHostDataProvider,
-		@IRemoteSocketFactoryService private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@IRemoteSocketFactoryService
+		private readonly remoteSocketFactoryService: IRemoteSocketFactoryService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ILogService private readonly _logService: ILogService,
 		@ILoggerService protected readonly _loggerService: ILoggerService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@IRemoteAuthorityResolverService private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@IExtensionHostDebugService private readonly _extensionHostDebugService: IExtensionHostDebugService,
+		@IRemoteAuthorityResolverService
+		private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IExtensionHostDebugService
+		private readonly _extensionHostDebugService: IExtensionHostDebugService,
 		@IProductService private readonly _productService: IProductService,
-		@ISignService private readonly _signService: ISignService
+		@ISignService private readonly _signService: ISignService,
 	) {
 		super();
 		this.remoteAuthority = this._initDataProvider.remoteAuthority;

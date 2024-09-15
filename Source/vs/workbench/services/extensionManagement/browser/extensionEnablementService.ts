@@ -11,21 +11,21 @@ import { StorageManager } from "../../../../platform/extensionManagement/common/
 import {
 	DISABLED_EXTENSIONS_STORAGE_PATH,
 	ENABLED_EXTENSIONS_STORAGE_PATH,
-	type IExtensionIdentifier,
 	IExtensionManagementService,
 	IGlobalExtensionEnablementService,
 	InstallOperation,
+	type IExtensionIdentifier,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
-	BetterMergeId,
 	areSameExtensions,
+	BetterMergeId,
 	getExtensionDependencies,
 } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
-	type IExtension,
 	isAuthenticationProviderExtension,
 	isLanguagePackExtension,
 	isResolverExtension,
+	type IExtension,
 } from "../../../../platform/extensions/common/extensions.js";
 import {
 	InstantiationType,
@@ -56,8 +56,8 @@ import {
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { IExtensionManifestPropertiesService } from "../../extensions/common/extensionManifestPropertiesService.js";
 import {
-	type WebWorkerExtHostConfigValue,
 	webWorkerExtHostConfig,
+	type WebWorkerExtHostConfigValue,
 } from "../../extensions/common/extensions.js";
 import { IHostService } from "../../host/browser/host.js";
 import {
@@ -67,10 +67,10 @@ import {
 import {
 	EnablementState,
 	ExtensionInstallLocation,
-	type IExtensionManagementServer,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionEnablementService,
 	IWorkbenchExtensionManagementService,
+	type IExtensionManagementServer,
 } from "../common/extensionManagement.js";
 import { IExtensionBisectService } from "./extensionBisect.js";
 
@@ -96,50 +96,105 @@ export class ExtensionEnablementService
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IGlobalExtensionEnablementService protected readonly globalExtensionEnablementService: IGlobalExtensionEnablementService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataSyncAccountService private readonly userDataSyncAccountService: IUserDataSyncAccountService,
+		@IGlobalExtensionEnablementService
+		protected readonly globalExtensionEnablementService: IGlobalExtensionEnablementService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncAccountService
+		private readonly userDataSyncAccountService: IUserDataSyncAccountService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IHostService hostService: IHostService,
-		@IExtensionBisectService private readonly extensionBisectService: IExtensionBisectService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionBisectService
+		private readonly extensionBisectService: IExtensionBisectService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
-		this.storageManager = this._register(new StorageManager(storageService));
+		this.storageManager = this._register(
+			new StorageManager(storageService),
+		);
 
-		const uninstallDisposable = this._register(Event.filter(extensionManagementService.onDidUninstallExtension, e => !e.error)(({ identifier }) => this._reset(identifier)));
+		const uninstallDisposable = this._register(
+			Event.filter(
+				extensionManagementService.onDidUninstallExtension,
+				(e) => !e.error,
+			)(({ identifier }) => this._reset(identifier)),
+		);
 		let isDisposed = false;
-		this._register(toDisposable(() => isDisposed = true));
-		this.extensionsManager = this._register(instantiationService.createInstance(ExtensionsManager));
+		this._register(toDisposable(() => (isDisposed = true)));
+		this.extensionsManager = this._register(
+			instantiationService.createInstance(ExtensionsManager),
+		);
 		this.extensionsManager.whenInitialized().then(() => {
 			if (!isDisposed) {
 				this._onDidChangeExtensions([], [], false);
-				this._register(this.extensionsManager.onDidChangeExtensions(({ added, removed, isProfileSwitch }) => this._onDidChangeExtensions(added, removed, isProfileSwitch)));
+				this._register(
+					this.extensionsManager.onDidChangeExtensions(
+						({ added, removed, isProfileSwitch }) =>
+							this._onDidChangeExtensions(
+								added,
+								removed,
+								isProfileSwitch,
+							),
+					),
+				);
 				uninstallDisposable.dispose();
 			}
 		});
 
-		this._register(this.globalExtensionEnablementService.onDidChangeEnablement(({ extensions, source }) => this._onDidChangeGloballyDisabledExtensions(extensions, source)));
+		this._register(
+			this.globalExtensionEnablementService.onDidChangeEnablement(
+				({ extensions, source }) =>
+					this._onDidChangeGloballyDisabledExtensions(
+						extensions,
+						source,
+					),
+			),
+		);
 
 		// delay notification for extensions disabled until workbench restored
 		if (this.allUserExtensionsDisabled) {
 			this.lifecycleService.when(LifecyclePhase.Eventually).then(() => {
-				this.notificationService.prompt(Severity.Info, localize('extensionsDisabled', "All installed extensions are temporarily disabled."), [{
-					label: localize('Reload', "Reload and Enable Extensions"),
-					run: () => hostService.reload({ disableExtensions: false })
-				}], {
-					sticky: true,
-					priority: NotificationPriority.URGENT
-				});
+				this.notificationService.prompt(
+					Severity.Info,
+					localize(
+						"extensionsDisabled",
+						"All installed extensions are temporarily disabled.",
+					),
+					[
+						{
+							label: localize(
+								"Reload",
+								"Reload and Enable Extensions",
+							),
+							run: () =>
+								hostService.reload({
+									disableExtensions: false,
+								}),
+						},
+					],
+					{
+						sticky: true,
+						priority: NotificationPriority.URGENT,
+					},
+				);
 			});
 		}
 	}
@@ -1137,12 +1192,14 @@ class ExtensionsManager extends Disposable {
 	private disposed = false;
 
 	constructor(
-		@IWorkbenchExtensionManagementService private readonly extensionManagementService: IWorkbenchExtensionManagementService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@ILogService private readonly logService: ILogService
+		@IWorkbenchExtensionManagementService
+		private readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this._register(toDisposable(() => this.disposed = true));
+		this._register(toDisposable(() => (this.disposed = true)));
 		this.initializePromise = this.initialize();
 	}
 

@@ -11,10 +11,10 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type IActionOptions,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type IActionOptions,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { ShiftCommand } from "../../../common/commands/shiftCommand.js";
 import {
@@ -23,7 +23,7 @@ import {
 } from "../../../common/config/editorOptions.js";
 import type { ISingleEditOperation } from "../../../common/core/editOperation.js";
 import type { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { Selection } from "../../../common/core/selection.js";
 import type {
 	ICommand,
@@ -43,8 +43,8 @@ import { IndentConsts } from "../../../common/languages/supports/indentRules.js"
 import type { EndOfLineSequence, ITextModel } from "../../../common/model.js";
 import { IModelService } from "../../../common/services/model.js";
 import { getStandardTokenTypeAtPosition } from "../../../common/tokens/lineTokens.js";
-import * as indentUtils from "../common/indentUtils.js";
 import { getReindentEditOperations } from "../common/indentation.js";
+import * as indentUtils from "../common/indentUtils.js";
 
 export class IndentationToSpacesAction extends EditorAction {
 	public static readonly ID = "editor.action.indentationToSpaces";
@@ -513,12 +513,16 @@ export class AutoIndentOnPaste implements IEditorContribution {
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
-
-		this.callOnDispose.add(editor.onDidChangeConfiguration(() => this.update()));
+		this.callOnDispose.add(
+			editor.onDidChangeConfiguration(() => this.update()),
+		);
 		this.callOnDispose.add(editor.onDidChangeModel(() => this.update()));
-		this.callOnDispose.add(editor.onDidChangeModelLanguage(() => this.update()));
+		this.callOnDispose.add(
+			editor.onDidChangeModelLanguage(() => this.update()),
+		);
 	}
 
 	private update(): void {

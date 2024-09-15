@@ -6,13 +6,13 @@
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import * as pfs from "../../../../base/node/pfs.js";
 import {
+	resultIsMatch,
 	type IFileMatch,
 	type IProgressMessage,
 	type ISerializedFileMatch,
 	type ISerializedSearchSuccess,
 	type ITextQuery,
 	type ITextSearchMatch,
-	resultIsMatch,
 } from "../common/search.js";
 import { RipgrepTextSearchEngine } from "./ripgrepTextSearchEngine.js";
 import { NativeTextSearchManager } from "./textSearchManager.js";

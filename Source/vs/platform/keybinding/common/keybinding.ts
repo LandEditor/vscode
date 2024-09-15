@@ -5,11 +5,11 @@
 
 import type { Event } from "../../../base/common/event.js";
 import type { IJSONSchema } from "../../../base/common/jsonSchema.js";
-import type { KeyCode } from "../../../base/common/keyCodes.js";
 import type {
 	Keybinding,
 	ResolvedKeybinding,
 } from "../../../base/common/keybindings.js";
+import type { KeyCode } from "../../../base/common/keyCodes.js";
 import type {
 	IContextKeyService,
 	IContextKeyServiceTarget,

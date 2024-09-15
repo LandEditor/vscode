@@ -17,8 +17,8 @@ import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextke
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type WorkbenchCompressibleObjectTree,
 	getSelectionKeyboardEvent,
+	type WorkbenchCompressibleObjectTree,
 } from "../../../../platform/list/browser/listService.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
@@ -37,13 +37,13 @@ import {
 } from "./searchActionsBase.js";
 import { searchRemoveIcon, searchReplaceIcon } from "./searchIcons.js";
 import {
+	arrayContainsElementOrParent,
 	FileMatch,
 	FolderMatch,
 	Match,
 	MatchInNotebook,
-	type RenderableMatch,
 	SearchResult,
-	arrayContainsElementOrParent,
+	type RenderableMatch,
 } from "./searchModel.js";
 import type { SearchView } from "./searchView.js";
 

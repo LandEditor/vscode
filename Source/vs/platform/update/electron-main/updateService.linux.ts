@@ -10,18 +10,18 @@ import { ILifecycleMainService } from "../../lifecycle/electron-main/lifecycleMa
 import { ILogService } from "../../log/common/log.js";
 import { INativeHostMainService } from "../../native/electron-main/nativeHostMainService.js";
 import { IProductService } from "../../product/common/productService.js";
-import { IRequestService, asJson } from "../../request/common/request.js";
+import { asJson, IRequestService } from "../../request/common/request.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type AvailableForDownload,
-	type IUpdate,
 	State,
 	UpdateType,
+	type AvailableForDownload,
+	type IUpdate,
 } from "../common/update.js";
 import {
 	AbstractUpdateService,
-	type UpdateNotAvailableClassification,
 	createUpdateURL,
+	type UpdateNotAvailableClassification,
 } from "./abstractUpdateService.js";
 
 export class LinuxUpdateService extends AbstractUpdateService {
@@ -29,13 +29,22 @@ export class LinuxUpdateService extends AbstractUpdateService {
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@IRequestService requestService: IRequestService,
 		@ILogService logService: ILogService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
-		@IProductService productService: IProductService
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
+		@IProductService productService: IProductService,
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService,
+		);
 	}
 
 	protected buildUpdateFeedUrl(quality: string): string {

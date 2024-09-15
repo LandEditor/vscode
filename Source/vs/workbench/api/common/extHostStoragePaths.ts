@@ -38,11 +38,14 @@ export class ExtensionStoragePaths implements IExtensionStoragePaths {
 	constructor(
 		@IExtHostInitDataService initData: IExtHostInitDataService,
 		@ILogService protected readonly _logService: ILogService,
-		@IExtHostConsumerFileSystem private readonly _extHostFileSystem: IExtHostConsumerFileSystem
+		@IExtHostConsumerFileSystem
+		private readonly _extHostFileSystem: IExtHostConsumerFileSystem,
 	) {
 		this._workspace = initData.workspace ?? undefined;
 		this._environment = initData.environment;
-		this.whenReady = this._getOrCreateWorkspaceStoragePath().then(value => this._value = value);
+		this.whenReady = this._getOrCreateWorkspaceStoragePath().then(
+			(value) => (this._value = value),
+		);
 	}
 
 	protected async _getWorkspaceStorageURI(storageName: string): Promise<URI> {

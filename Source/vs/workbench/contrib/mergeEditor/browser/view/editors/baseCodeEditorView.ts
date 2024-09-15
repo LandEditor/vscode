@@ -7,15 +7,15 @@ import { h, reset } from "../../../../../../base/browser/dom.js";
 import { renderLabelWithIcons } from "../../../../../../base/browser/ui/iconLabel/iconLabels.js";
 import { BugIndicatingError } from "../../../../../../base/common/errors.js";
 import {
-	type IObservable,
 	autorun,
 	autorunWithStore,
 	derived,
+	type IObservable,
 } from "../../../../../../base/common/observable.js";
 import {
-	type IModelDeltaDecoration,
 	MinimapPosition,
 	OverviewRulerLane,
+	type IModelDeltaDecoration,
 } from "../../../../../../editor/common/model.js";
 import { localize } from "../../../../../../nls.js";
 import { MenuId } from "../../../../../../platform/actions/common/actions.js";
@@ -30,8 +30,8 @@ import { EditorGutter } from "../editorGutter.js";
 import type { MergeEditorViewModel } from "../viewModel.js";
 import {
 	CodeEditorView,
-	TitleMenu,
 	createSelectionsAutorun,
+	TitleMenu,
 } from "./codeEditorView.js";
 
 export class BaseCodeEditorView extends CodeEditorView {

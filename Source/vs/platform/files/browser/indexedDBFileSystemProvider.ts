@@ -20,6 +20,7 @@ import { isString } from "../../../base/common/types.js";
 import { URI, type UriDto } from "../../../base/common/uri.js";
 import { localize } from "../../../nls.js";
 import {
+	createFileSystemProviderError,
 	FileChangeType,
 	FileSystemProviderCapabilities,
 	FileSystemProviderError,
@@ -32,7 +33,6 @@ import {
 	type IFileWriteOptions,
 	type IStat,
 	type IWatchOptions,
-	createFileSystemProviderError,
 } from "../common/files.js";
 
 export type IndexedDBFileSystemProviderErrorDataClassification = {

@@ -6,7 +6,7 @@
 import type { ITreeNode } from "../../../../../base/browser/ui/tree/tree.js";
 import { WorkbenchObjectTree } from "../../../../../platform/list/browser/listService.js";
 import { TestId } from "../../common/testId.js";
-import { type TestExplorerTreeElement, TestItemTreeElement } from "./index.js";
+import { TestItemTreeElement, type TestExplorerTreeElement } from "./index.js";
 import type { ISerializedTestTreeCollapseState } from "./testingViewState.js";
 
 export class TestingObjectTree<TFilterData = void> extends WorkbenchObjectTree<

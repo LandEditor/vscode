@@ -3,12 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type JumpListCategory, type JumpListItem, app } from "electron";
+import { app, type JumpListCategory, type JumpListItem } from "electron";
+
 import { coalesce } from "../../../base/common/arrays.js";
 import { ThrottledDelayer } from "../../../base/common/async.js";
 import {
-	type Event as CommonEvent,
 	Emitter,
+	type Event as CommonEvent,
 } from "../../../base/common/event.js";
 import {
 	normalizeDriveLetter,
@@ -36,20 +37,20 @@ import { ILogService } from "../../log/common/log.js";
 import { StorageScope, StorageTarget } from "../../storage/common/storage.js";
 import { IApplicationStorageMainService } from "../../storage/electron-main/storageMainService.js";
 import {
-	type IWorkspaceIdentifier,
 	WORKSPACE_EXTENSION,
+	type IWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import {
-	type IRecent,
-	type IRecentFile,
-	type IRecentFolder,
-	type IRecentWorkspace,
-	type IRecentlyOpened,
 	isRecentFile,
 	isRecentFolder,
 	isRecentWorkspace,
 	restoreRecentlyOpened,
 	toStoreData,
+	type IRecent,
+	type IRecentFile,
+	type IRecentFolder,
+	type IRecentlyOpened,
+	type IRecentWorkspace,
 } from "../common/workspaces.js";
 import { IWorkspacesManagementMainService } from "./workspacesManagementMainService.js";
 
@@ -87,10 +88,14 @@ export class WorkspacesHistoryMainService
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IApplicationStorageMainService private readonly applicationStorageMainService: IApplicationStorageMainService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@IApplicationStorageMainService
+		private readonly applicationStorageMainService: IApplicationStorageMainService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
 	) {
 		super();
 

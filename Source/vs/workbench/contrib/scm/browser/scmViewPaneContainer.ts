@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/scm.css";
+
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -19,8 +20,8 @@ import { IWorkbenchLayoutService } from "../../../services/layout/browser/layout
 import {
 	HISTORY_VIEW_PANE_ID,
 	REPOSITORIES_VIEW_PANE_ID,
-	VIEWLET_ID,
 	VIEW_PANE_ID,
+	VIEWLET_ID,
 } from "../common/scm.js";
 
 export class SCMViewPaneContainer extends ViewPaneContainer {

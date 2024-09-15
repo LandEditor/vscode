@@ -10,10 +10,10 @@ import { localize } from "../../../../nls.js";
 import { IAccessibleViewService } from "../../../../platform/accessibility/browser/accessibleView.js";
 import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
 import {
-	type IChatResponseViewModel,
 	isRequestVM,
 	isResponseVM,
 	isWelcomeVM,
+	type IChatResponseViewModel,
 } from "../common/chatViewModel.js";
 import type { ChatTreeItem } from "./chat.js";
 
@@ -21,10 +21,9 @@ export class ChatAccessibilityProvider
 	implements IListAccessibilityProvider<ChatTreeItem>
 {
 	constructor(
-		@IAccessibleViewService private readonly _accessibleViewService: IAccessibleViewService
-	) {
-
-	}
+		@IAccessibleViewService
+		private readonly _accessibleViewService: IAccessibleViewService,
+	) {}
 	getWidgetRole(): AriaRole {
 		return "list";
 	}

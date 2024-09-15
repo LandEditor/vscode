@@ -5,6 +5,7 @@
 
 import type { BrowserWindow } from "electron";
 import type { ProfileResult } from "v8-inspect-profiler";
+
 import { timeout } from "../../../base/common/async.js";
 import { ILogService } from "../../log/common/log.js";
 import type { IV8Profile } from "../common/profiling.js";
@@ -14,7 +15,7 @@ export class WindowProfiler {
 		private readonly _window: BrowserWindow,
 		private readonly _sessionId: string,
 		@ILogService private readonly _logService: ILogService,
-	) { }
+	) {}
 
 	async inspect(duration: number): Promise<IV8Profile> {
 		await this._connect();

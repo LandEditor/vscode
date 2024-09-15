@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import electron from "electron";
+
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { isMacintosh } from "../../../base/common/platform.js";
 import { extUriBiasedIgnorePathCase } from "../../../base/common/resources.js";
@@ -17,15 +18,15 @@ import type {
 	IWindowSettings,
 } from "../../window/common/window.js";
 import {
+	defaultWindowState,
+	WindowMode,
 	type ICodeWindow,
 	type IWindowState as IWindowUIState,
-	WindowMode,
-	defaultWindowState,
 } from "../../window/electron-main/window.js";
 import {
-	type IWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
+	type IWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import { IWindowsMainService } from "./windows.js";
 
@@ -79,11 +80,14 @@ export class WindowsStateHandler extends Disposable {
 	private shuttingDown = false;
 
 	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
 		@IStateService private readonly stateService: IStateService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
 		@ILogService private readonly logService: ILogService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 

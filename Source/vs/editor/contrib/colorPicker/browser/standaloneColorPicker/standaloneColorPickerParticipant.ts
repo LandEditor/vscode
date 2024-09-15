@@ -42,7 +42,7 @@ export class StandaloneColorPickerParticipant {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IThemeService private readonly _themeService: IThemeService,
-	) { }
+	) {}
 
 	public async createColorHover(
 		defaultColorInfo: IColorInformation,

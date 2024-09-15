@@ -4,24 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	RunOnceScheduler,
 	disposableTimeout,
+	RunOnceScheduler,
 	runWhenGlobalIdle,
 } from "../../../../base/common/async.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	InstantiationType,
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { userActivityRegistry } from "./userActivityRegistry.js";
 
@@ -86,9 +86,15 @@ export class UserActivityService
 	/** @inheritdoc */
 	onDidChangeIsActive: Event<boolean> = this.changeEmitter.event;
 
-	constructor(@IInstantiationService instantiationService: IInstantiationService) {
+	constructor(
+		@IInstantiationService instantiationService: IInstantiationService,
+	) {
 		super();
-		this._register(runWhenGlobalIdle(() => userActivityRegistry.take(this, instantiationService)));
+		this._register(
+			runWhenGlobalIdle(() =>
+				userActivityRegistry.take(this, instantiationService),
+			),
+		);
 	}
 
 	/** @inheritdoc */

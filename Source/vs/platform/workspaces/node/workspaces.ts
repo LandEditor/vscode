@@ -5,6 +5,7 @@
 
 import { createHash } from "crypto";
 import type { Stats } from "fs";
+
 import { Schemas } from "../../../base/common/network.js";
 import {
 	isLinux,

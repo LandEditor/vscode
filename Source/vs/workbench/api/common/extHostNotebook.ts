@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { VSBuffer } from "../../../base/common/buffer.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import type { IRelativePattern } from "../../../base/common/glob.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ResourceMap, ResourceSet } from "../../../base/common/map.js";
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
@@ -31,32 +32,32 @@ import type {
 import { CellSearchModel } from "../../contrib/search/common/cellSearchModel.js";
 import type { NotebookPriorityInfo } from "../../contrib/search/common/search.js";
 import {
+	genericCellMatchesToTextSearchMatches,
 	type INotebookCellMatchNoModel,
 	type INotebookFileMatchNoModel,
 	type IRawClosedNotebookFileMatch,
-	genericCellMatchesToTextSearchMatches,
 } from "../../contrib/search/common/searchNotebookHelpers.js";
 import {
-	RegisteredEditorPriority,
 	globMatchesResource,
+	RegisteredEditorPriority,
 } from "../../services/editor/common/editorResolverService.js";
 import { SerializableObjectWithBuffers } from "../../services/extensions/common/proxyIdentifier.js";
 import {
+	QueryType,
 	type IFileQuery,
 	type ITextQuery,
-	QueryType,
 } from "../../services/search/common/search.js";
 import { Cache } from "./cache.js";
 import {
+	MainContext,
 	type ExtHostNotebookShape,
 	type IMainContext,
 	type IModelAddedData,
 	type INotebookCellStatusBarListDto,
-	type INotebookDocumentShowOptions,
 	type INotebookDocumentsAndEditorsDelta,
+	type INotebookDocumentShowOptions,
 	type INotebookEditorAddData,
 	type INotebookPartialFileStatsWithMetadata,
-	MainContext,
 	type MainThreadNotebookDocumentsShape,
 	type MainThreadNotebookEditorsShape,
 	type MainThreadNotebookShape,

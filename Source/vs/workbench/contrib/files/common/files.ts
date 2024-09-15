@@ -13,8 +13,8 @@ import {
 import type { URI } from "../../../../base/common/uri.js";
 import type { IEditorOptions } from "../../../../editor/common/config/editorOptions.js";
 import {
-	type ILanguageSelection,
 	ILanguageService,
+	type ILanguageSelection,
 } from "../../../../editor/common/languages/language.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
@@ -33,9 +33,9 @@ import {
 } from "../../../../platform/files/common/files.js";
 import {
 	EditorResourceAccessor,
+	SideBySideEditor,
 	type IEditorIdentifier,
 	type IWorkbenchEditorConfiguration,
-	SideBySideEditor,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import type { IEditorGroup } from "../../../services/editor/common/editorGroupsService.js";
@@ -330,7 +330,7 @@ export class TextFileContentProvider
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IFileService private readonly fileService: IFileService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IModelService private readonly modelService: IModelService
+		@IModelService private readonly modelService: IModelService,
 	) {
 		super();
 	}

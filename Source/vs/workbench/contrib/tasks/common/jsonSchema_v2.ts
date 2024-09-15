@@ -3,18 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { getAllCodicons } from "../../../../base/common/codicons.js";
 import type {
 	IJSONSchema,
 	IJSONSchemaMap,
 } from "../../../../base/common/jsonSchema.js";
 import * as Objects from "../../../../base/common/objects.js";
 import * as nls from "../../../../nls.js";
-
-import commonSchema from "./jsonSchemaCommon.js";
-
-import { getAllCodicons } from "../../../../base/common/codicons.js";
 import { inputsSchema } from "../../../services/configurationResolver/common/configurationResolverSchema.js";
 import * as ConfigurationResolverUtils from "../../../services/configurationResolver/common/configurationResolverUtils.js";
+import commonSchema from "./jsonSchemaCommon.js";
 import { ProblemMatcherRegistry } from "./problemMatcher.js";
 import { TaskDefinitionRegistry } from "./taskDefinitionRegistry.js";
 
@@ -882,8 +880,9 @@ export function updateProblemMatchers() {
 			(key) => "$" + key,
 		);
 		definitions.problemMatcherType2.oneOf![0].enum = matcherIds;
-		(definitions.problemMatcherType2.oneOf![2].items as IJSONSchema)
-			.anyOf![0].enum = matcherIds;
+		(
+			definitions.problemMatcherType2.oneOf![2].items as IJSONSchema
+		).anyOf![0].enum = matcherIds;
 	} catch (err) {
 		console.log("Installing problem matcher ids failed");
 	}

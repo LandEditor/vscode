@@ -18,9 +18,9 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import {
 	AbstractRequestService,
+	IRequestService,
 	type AuthInfo,
 	type Credentials,
-	IRequestService,
 } from "../../../../platform/request/common/request.js";
 
 export class NativeRequestService
@@ -30,8 +30,10 @@ export class NativeRequestService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService logService: ILogService,
 	) {
 		super(logService);

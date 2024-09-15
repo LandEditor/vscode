@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IUniversalWatchRequest,
 	requestFilterToString,
+	type IUniversalWatchRequest,
 } from "../../common/watcher.js";
 import type {
 	INodeJSWatcherInstance,

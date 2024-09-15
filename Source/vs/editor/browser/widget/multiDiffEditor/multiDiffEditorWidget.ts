@@ -19,14 +19,16 @@ import type { Range } from "../../../common/core/range.js";
 import type { IDiffEditor } from "../../../common/editorCommon.js";
 import type { ICodeEditor } from "../../editorBrowser.js";
 import type { DiffEditorWidget } from "../diffEditor/diffEditorWidget.js";
+
 import "./colors.js";
+
 import { DiffEditorItemTemplate } from "./diffEditorItemTemplate.js";
 import type { IDocumentDiffItem, IMultiDiffEditorModel } from "./model.js";
 import { MultiDiffEditorViewModel } from "./multiDiffEditorViewModel.js";
 import {
+	MultiDiffEditorWidgetImpl,
 	type IMultiDiffEditorViewState,
 	type IMultiDiffResourceId,
-	MultiDiffEditorWidgetImpl,
 } from "./multiDiffEditorWidgetImpl.js";
 import type { IWorkbenchUIElementFactory } from "./workbenchUIElementFactory.js";
 
@@ -55,7 +57,8 @@ export class MultiDiffEditorWidget extends Disposable {
 	constructor(
 		private readonly _element: HTMLElement,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 

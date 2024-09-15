@@ -6,8 +6,8 @@
 import type { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { FileAccess } from "../../../../base/common/network.js";
 import {
-	ProxyChannel,
 	getNextTickChannel,
+	ProxyChannel,
 } from "../../../../base/parts/ipc/common/ipc.js";
 import { Client } from "../../../../base/parts/ipc/node/ipc.cp.js";
 import type { IFileChange } from "../../common/files.js";

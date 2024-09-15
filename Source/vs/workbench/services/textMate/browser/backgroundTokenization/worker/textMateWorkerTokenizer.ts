@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type {
+	diffStateStacksRefEq,
 	StackDiff,
 	StateStack,
-	diffStateStacksRefEq,
 } from "vscode-textmate";
+
 import { importAMDNodeModule } from "../../../../../../amdX.js";
 import { RunOnceScheduler } from "../../../../../../base/common/async.js";
 import { Disposable } from "../../../../../../base/common/lifecycle.js";
@@ -17,8 +18,8 @@ import type { URI } from "../../../../../../base/common/uri.js";
 import { LineRange } from "../../../../../../editor/common/core/lineRange.js";
 import type { LanguageId } from "../../../../../../editor/common/encodedTokenAttributes.js";
 import {
-	type IModelChangedEvent,
 	MirrorTextModel,
+	type IModelChangedEvent,
 } from "../../../../../../editor/common/model/mirrorTextModel.js";
 import { TokenizerWithStateStore } from "../../../../../../editor/common/model/textModelTokens.js";
 import { ContiguousMultilineTokensBuilder } from "../../../../../../editor/common/tokens/contiguousMultilineTokensBuilder.js";

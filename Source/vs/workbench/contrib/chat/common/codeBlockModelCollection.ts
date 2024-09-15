@@ -14,18 +14,18 @@ import { Range } from "../../../../editor/common/core/range.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { EndOfLinePreference } from "../../../../editor/common/model.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import {
-	type IMarkdownVulnerability,
 	extractCodeblockUrisFromText,
 	extractVulnerabilitiesFromText,
+	type IMarkdownVulnerability,
 } from "./annotations.js";
 import {
+	isResponseVM,
 	type IChatRequestViewModel,
 	type IChatResponseViewModel,
-	isResponseVM,
 } from "./chatViewModel.js";
 
 export class CodeBlockModelCollection extends Disposable {
@@ -44,7 +44,7 @@ export class CodeBlockModelCollection extends Disposable {
 
 	constructor(
 		@ILanguageService private readonly languageService: ILanguageService,
-		@ITextModelService private readonly textModelService: ITextModelService
+		@ITextModelService private readonly textModelService: ITextModelService,
 	) {
 		super();
 	}

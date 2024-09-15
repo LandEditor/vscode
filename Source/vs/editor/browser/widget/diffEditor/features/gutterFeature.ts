@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	h,
 } from "../../../../../base/browser/dom.js";
 import type { IMouseWheelEvent } from "../../../../../base/browser/mouseEvent.js";
@@ -14,7 +14,6 @@ import { HoverPosition } from "../../../../../base/browser/ui/hover/hoverWidget.
 import type { IBoundarySashes } from "../../../../../base/browser/ui/sash/sash.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	autorunWithStore,
 	derived,
@@ -22,6 +21,7 @@ import {
 	derivedWithSetter,
 	observableFromEvent,
 	observableValue,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import {
@@ -102,51 +102,75 @@ export class DiffEditorGutter extends Disposable {
 
 	constructor(
 		diffEditorRoot: HTMLDivElement,
-		private readonly _diffModel: IObservable<DiffEditorViewModel | undefined>,
+		private readonly _diffModel: IObservable<
+			DiffEditorViewModel | undefined
+		>,
 		private readonly _editors: DiffEditorEditors,
 		private readonly _options: DiffEditorOptions,
 		private readonly _sashLayout: SashLayout,
-		private readonly _boundarySashes: IObservable<IBoundarySashes | undefined, void>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		private readonly _boundarySashes: IObservable<
+			IBoundarySashes | undefined,
+			void
+		>,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IMenuService private readonly _menuService: IMenuService,
 	) {
 		super();
 
-		this._register(prependRemoveOnDispose(diffEditorRoot, this.elements.root));
+		this._register(
+			prependRemoveOnDispose(diffEditorRoot, this.elements.root),
+		);
 
-		this._register(addDisposableListener(this.elements.root, 'click', () => {
-			this._editors.modified.focus();
-		}));
+		this._register(
+			addDisposableListener(this.elements.root, "click", () => {
+				this._editors.modified.focus();
+			}),
+		);
 
-		this._register(applyStyle(this.elements.root, { display: this._hasActions.map(a => a ? 'block' : 'none') }));
+		this._register(
+			applyStyle(this.elements.root, {
+				display: this._hasActions.map((a) => (a ? "block" : "none")),
+			}),
+		);
 
-		derivedDisposable(this, reader => {
+		derivedDisposable(this, (reader) => {
 			const showSash = this._showSash.read(reader);
-			return showSash ? new DiffEditorSash(
-				diffEditorRoot,
-				this._sashLayout.dimensions,
-				this._options.enableSplitViewResizing,
-				this._boundarySashes,
-				derivedWithSetter(
-					this, reader => this._sashLayout.sashLeft.read(reader) - width,
-					(v, tx) => this._sashLayout.sashLeft.set(v + width, tx)
-				),
-				() => this._sashLayout.resetSash(),
-			) : undefined;
+			return showSash
+				? new DiffEditorSash(
+						diffEditorRoot,
+						this._sashLayout.dimensions,
+						this._options.enableSplitViewResizing,
+						this._boundarySashes,
+						derivedWithSetter(
+							this,
+							(reader) =>
+								this._sashLayout.sashLeft.read(reader) - width,
+							(v, tx) =>
+								this._sashLayout.sashLeft.set(v + width, tx),
+						),
+						() => this._sashLayout.resetSash(),
+					)
+				: undefined;
 		}).recomputeInitiallyAndOnChange(this._store);
 
-		const gutterItems = derived(this, reader => {
+		const gutterItems = derived(this, (reader) => {
 			const model = this._diffModel.read(reader);
 			if (!model) {
 				return [];
 			}
 			const diffs = model.diff.read(reader);
-			if (!diffs) { return []; }
+			if (!diffs) {
+				return [];
+			}
 
 			const selection = this._selectedDiffs.read(reader);
 			if (selection.length > 0) {
-				const m = DetailedLineRangeMapping.fromRangeMappings(selection.flatMap(s => s.rangeMappings));
+				const m = DetailedLineRangeMapping.fromRangeMappings(
+					selection.flatMap((s) => s.rangeMappings),
+				);
 				return [
 					new DiffGutterItem(
 						m,
@@ -155,33 +179,61 @@ export class DiffEditorGutter extends Disposable {
 						undefined,
 						model.model.original.uri,
 						model.model.modified.uri,
-					)];
+					),
+				];
 			}
 
 			const currentDiff = this._currentDiff.read(reader);
 
-			return diffs.mappings.map(m => new DiffGutterItem(
-				m.lineRangeMapping.withInnerChangesFromLineRanges(),
-				m.lineRangeMapping === currentDiff?.lineRangeMapping,
-				MenuId.DiffEditorHunkToolbar,
-				undefined,
-				model.model.original.uri,
-				model.model.modified.uri,
-			));
+			return diffs.mappings.map(
+				(m) =>
+					new DiffGutterItem(
+						m.lineRangeMapping.withInnerChangesFromLineRanges(),
+						m.lineRangeMapping === currentDiff?.lineRangeMapping,
+						MenuId.DiffEditorHunkToolbar,
+						undefined,
+						model.model.original.uri,
+						model.model.modified.uri,
+					),
+			);
 		});
 
-		this._register(new EditorGutter<DiffGutterItem>(this._editors.modified, this.elements.root, {
-			getIntersectingGutterItems: (range, reader) => gutterItems.read(reader),
-			createView: (item, target) => {
-				return this._instantiationService.createInstance(DiffToolBar, item, target, this);
-			},
-		}));
+		this._register(
+			new EditorGutter<DiffGutterItem>(
+				this._editors.modified,
+				this.elements.root,
+				{
+					getIntersectingGutterItems: (range, reader) =>
+						gutterItems.read(reader),
+					createView: (item, target) => {
+						return this._instantiationService.createInstance(
+							DiffToolBar,
+							item,
+							target,
+							this,
+						);
+					},
+				},
+			),
+		);
 
-		this._register(addDisposableListener(this.elements.gutter, EventType.MOUSE_WHEEL, (e: IMouseWheelEvent) => {
-			if (this._editors.modified.getOption(EditorOption.scrollbar).handleMouseWheel) {
-				this._editors.modified.delegateScrollFromMouseWheelEvent(e);
-			}
-		}, { passive: false }));
+		this._register(
+			addDisposableListener(
+				this.elements.gutter,
+				EventType.MOUSE_WHEEL,
+				(e: IMouseWheelEvent) => {
+					if (
+						this._editors.modified.getOption(EditorOption.scrollbar)
+							.handleMouseWheel
+					) {
+						this._editors.modified.delegateScrollFromMouseWheelEvent(
+							e,
+						);
+					}
+				},
+				{ passive: false },
+			),
+		);
 	}
 
 	public computeStagedValue(mapping: DetailedLineRangeMapping): string {

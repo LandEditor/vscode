@@ -5,8 +5,8 @@
 
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
-	type IJSONSchema,
 	getCompressedContent,
+	type IJSONSchema,
 } from "../../../base/common/jsonSchema.js";
 import * as platform from "../../registry/common/platform.js";
 

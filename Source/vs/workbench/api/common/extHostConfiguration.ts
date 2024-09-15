@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Barrier } from "../../../base/common/async.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { deepClone, mixin } from "../../../base/common/objects.js";
@@ -31,16 +32,16 @@ import { createDecorator } from "../../../platform/instantiation/common/instanti
 import { ILogService } from "../../../platform/log/common/log.js";
 import type { Workspace } from "../../../platform/workspace/common/workspace.js";
 import {
+	MainContext,
 	type ExtHostConfigurationShape,
 	type IConfigurationInitData,
-	MainContext,
 	type MainThreadConfigurationShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
 import { ConfigurationTarget as ExtHostConfigurationTarget } from "./extHostTypes.js";
 import {
-	type ExtHostWorkspace,
 	IExtHostWorkspace,
+	type ExtHostWorkspace,
 } from "./extHostWorkspace.js";
 
 function lookUp(tree: any, key: string) {

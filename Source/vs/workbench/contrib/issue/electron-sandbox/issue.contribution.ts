@@ -18,8 +18,8 @@ import {
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	type IQuickAccessRegistry,
 	Extensions as QuickAccessExtensions,
+	type IQuickAccessRegistry,
 } from "../../../../platform/quickinput/common/quickAccess.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
@@ -31,12 +31,14 @@ import { IssueQuickAccess } from "../browser/issueQuickAccess.js";
 import { BaseIssueContribution } from "../common/issue.contribution.js";
 import {
 	IIssueFormService,
-	IWorkbenchIssueService,
 	IssueType,
+	IWorkbenchIssueService,
 } from "../common/issue.js";
 import { NativeIssueService } from "./issueService.js";
+
 import "./issueMainService.js";
 import "../browser/issueTroubleshoot.js";
+
 import {
 	Extensions as ConfigurationExtensions,
 	type IConfigurationRegistry,

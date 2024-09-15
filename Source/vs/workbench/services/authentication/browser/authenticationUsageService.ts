@@ -37,7 +37,9 @@ export interface IAuthenticationUsageService {
 export class AuthenticationUsageService implements IAuthenticationUsageService {
 	_serviceBrand: undefined;
 
-	constructor(@IStorageService private readonly _storageService: IStorageService) { }
+	constructor(
+		@IStorageService private readonly _storageService: IStorageService,
+	) {}
 
 	readAccountUsages(
 		providerId: string,

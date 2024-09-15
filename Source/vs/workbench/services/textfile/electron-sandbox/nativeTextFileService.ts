@@ -15,8 +15,8 @@ import {
 	IFileDialogService,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import {
-	type IFileReadLimits,
 	IFileService,
+	type IFileReadLimits,
 } from "../../../../platform/files/common/files.js";
 import {
 	InstantiationType,
@@ -35,12 +35,12 @@ import { IUntitledTextEditorService } from "../../untitled/common/untitledTextEd
 import { IWorkingCopyFileService } from "../../workingCopy/common/workingCopyFileService.js";
 import { AbstractTextFileService } from "../browser/textFileService.js";
 import {
+	ITextFileService,
+	TextFileEditorModelState,
 	type IReadTextFileOptions,
 	type ITextFileContent,
 	type ITextFileEditorModel,
-	ITextFileService,
 	type ITextFileStreamContent,
-	TextFileEditorModelState,
 } from "../common/textfiles.js";
 
 export class NativeTextFileService extends AbstractTextFileService {
@@ -48,18 +48,23 @@ export class NativeTextFileService extends AbstractTextFileService {
 
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUntitledTextEditorService untitledTextEditorService: IUntitledTextEditorService,
+		@IUntitledTextEditorService
+		untitledTextEditorService: IUntitledTextEditorService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IModelService modelService: IModelService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IDialogService dialogService: IDialogService,
 		@IFileDialogService fileDialogService: IFileDialogService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@IPathService pathService: IPathService,
-		@IWorkingCopyFileService workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		workingCopyFileService: IWorkingCopyFileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILanguageService languageService: ILanguageService,
 		@IElevatedFileService elevatedFileService: IElevatedFileService,

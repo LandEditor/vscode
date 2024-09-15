@@ -15,13 +15,15 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { escapeRegExpCharacters } from "../../../../base/common/strings.js";
 import { assertIsDefined } from "../../../../base/common/types.js";
+
 import "./parameterHints.css";
+
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
@@ -37,8 +39,8 @@ import {
 	type IContentWidgetPosition,
 } from "../../../browser/editorBrowser.js";
 import {
-	type IMarkdownRenderResult,
 	MarkdownRenderer,
+	type IMarkdownRenderResult,
 } from "../../../browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import {
 	EDITOR_FONT_DEFAULTS,
@@ -100,10 +102,13 @@ export class ParameterHintsWidget extends Disposable implements IContentWidget {
 	) {
 		super();
 
-		this.markdownRenderer = this._register(new MarkdownRenderer({ editor }, languageService, openerService));
+		this.markdownRenderer = this._register(
+			new MarkdownRenderer({ editor }, languageService, openerService),
+		);
 
 		this.keyVisible = Context.Visible.bindTo(contextKeyService);
-		this.keyMultipleSignatures = Context.MultipleSignatures.bindTo(contextKeyService);
+		this.keyMultipleSignatures =
+			Context.MultipleSignatures.bindTo(contextKeyService);
 	}
 
 	private createParameterHintDOMNodes() {

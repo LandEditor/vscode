@@ -37,11 +37,12 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHoverService hoverService: IHoverService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IInlineChatSessionService inlineChatSessionService: IInlineChatSessionService,
+		@IInlineChatSessionService
+		inlineChatSessionService: IInlineChatSessionService,
 		@IChatAgentService chatAgentService: IChatAgentService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IProductService productService: IProductService,
-		@IContextMenuService contextMenuService: IContextMenuService
+		@IContextMenuService contextMenuService: IContextMenuService,
 	) {
 		super(
 			editor,
@@ -54,16 +55,20 @@ export class EmptyCellEditorHintContribution extends EmptyTextEditorHintContribu
 			chatAgentService,
 			telemetryService,
 			productService,
-			contextMenuService
+			contextMenuService,
 		);
 
-		const activeEditor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
+		const activeEditor = getNotebookEditorFromEditorPane(
+			this._editorService.activeEditorPane,
+		);
 
 		if (!activeEditor) {
 			return;
 		}
 
-		this.toDispose.push(activeEditor.onDidChangeActiveCell(() => this.update()));
+		this.toDispose.push(
+			activeEditor.onDidChangeActiveCell(() => this.update()),
+		);
 	}
 
 	protected override _getOptions(): IEmptyTextEditorHintOptions {

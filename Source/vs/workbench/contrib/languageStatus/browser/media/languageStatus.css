@@ -12,12 +12,12 @@
 
 	15%,
 	45% {
-		transform: rotate(.04turn) scale(1.1);
+		transform: rotate(0.04turn) scale(1.1);
 	}
 
 	30%,
 	60% {
-		transform: rotate(-.04turn) scale(1.2);
+		transform: rotate(-0.04turn) scale(1.2);
 	}
 
 	100% {
@@ -30,7 +30,7 @@
 	DIV#status\.languageStatus
 	A
 	> SPAN.codicon.wiggle {
-	animation-duration: .8s;
+	animation-duration: 0.8s;
 	animation-iteration-count: 1;
 	animation-name: wiggle;
 }
@@ -50,7 +50,7 @@
 }
 
 .monaco-workbench .statusbar DIV#status\.languageStatus.flash A {
-	animation-duration: .8s;
+	animation-duration: 0.8s;
 	animation-iteration-count: 1;
 	animation-name: flash;
 }

@@ -10,18 +10,18 @@ import { ITextResourceConfigurationService } from "../../../editor/common/servic
 import { isConfigured } from "../../../platform/configuration/common/configuration.js";
 import {
 	ByteSize,
-	type IFileReadLimits,
-	IFileService,
 	getLargeFileConfirmationLimit,
+	IFileService,
+	type IFileReadLimits,
 } from "../../../platform/files/common/files.js";
 import { ILabelService } from "../../../platform/label/common/label.js";
 import { ICustomEditorLabelService } from "../../services/editor/common/customEditorLabelService.js";
 import { IFilesConfigurationService } from "../../services/filesConfiguration/common/filesConfigurationService.js";
 import {
 	EditorInputCapabilities,
+	Verbosity,
 	type EditorInputWithPreferredResource,
 	type IFileLimitedEditorInputOptions,
-	Verbosity,
 } from "../editor.js";
 import { EditorInput } from "./editorInput.js";
 
@@ -60,9 +60,12 @@ export abstract class AbstractResourceEditorInput
 		preferredResource: URI | undefined,
 		@ILabelService protected readonly labelService: ILabelService,
 		@IFileService protected readonly fileService: IFileService,
-		@IFilesConfigurationService protected readonly filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService protected readonly customEditorLabelService: ICustomEditorLabelService
+		@IFilesConfigurationService
+		protected readonly filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		protected readonly customEditorLabelService: ICustomEditorLabelService,
 	) {
 		super();
 

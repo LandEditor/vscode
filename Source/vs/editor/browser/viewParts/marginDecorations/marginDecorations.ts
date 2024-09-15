@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./marginDecorations.css";
+
 import type * as viewEvents from "../../../common/viewEvents.js";
 import type { ViewContext } from "../../../common/viewModel/viewContext.js";
 import type { RenderingContext } from "../../view/renderingContext.js";

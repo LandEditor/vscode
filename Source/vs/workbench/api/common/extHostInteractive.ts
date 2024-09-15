@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { NotebookEditor } from "vscode";
+
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { ILogService } from "../../../platform/log/common/log.js";
 import type {

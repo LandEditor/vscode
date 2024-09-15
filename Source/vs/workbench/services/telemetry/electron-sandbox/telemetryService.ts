@@ -20,8 +20,8 @@ import type {
 	StrictPropertyCheck,
 } from "../../../../platform/telemetry/common/gdprTypings.js";
 import {
-	type ITelemetryData,
 	ITelemetryService,
+	type ITelemetryData,
 	type TelemetryLevel,
 } from "../../../../platform/telemetry/common/telemetry.js";
 import { TelemetryAppenderClient } from "../../../../platform/telemetry/common/telemetryIpc.js";
@@ -30,9 +30,9 @@ import {
 	type ITelemetryServiceConfig,
 } from "../../../../platform/telemetry/common/telemetryService.js";
 import {
-	NullTelemetryService,
 	getPiiPathsFromEnvironment,
 	isInternalTelemetry,
+	NullTelemetryService,
 	supportsTelemetry,
 } from "../../../../platform/telemetry/common/telemetryUtils.js";
 import { INativeWorkbenchEnvironmentService } from "../../environment/electron-sandbox/environmentService.js";
@@ -64,7 +64,8 @@ export class TelemetryService extends Disposable implements ITelemetryService {
 	}
 
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IProductService productService: IProductService,
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
 		@IStorageService storageService: IStorageService,

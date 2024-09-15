@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import {
 	equalsIfDefined,
@@ -14,24 +14,24 @@ import {
 import { matchesSubString } from "../../../../../base/common/filters.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ITransaction,
 	derivedOpts,
 	disposableObservableValue,
 	transaction,
+	type IObservable,
+	type IReader,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import type { Position } from "../../../../common/core/position.js";
 import { Range } from "../../../../common/core/range.js";
 import { SingleTextEdit } from "../../../../common/core/textEdit.js";
 import { TextLength } from "../../../../common/core/textLength.js";
 import {
-	type InlineCompletionContext,
 	InlineCompletionTriggerKind,
+	type InlineCompletionContext,
 } from "../../../../common/languages.js";
 import { ILanguageConfigurationService } from "../../../../common/languages/languageConfigurationRegistry.js";
 import {
@@ -41,9 +41,9 @@ import {
 import type { IFeatureDebounceInformation } from "../../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../../common/services/languageFeatures.js";
 import {
+	provideInlineCompletions,
 	type InlineCompletionItem,
 	type InlineCompletionProviderResult,
-	provideInlineCompletions,
 } from "./provideInlineCompletions.js";
 import { singleTextRemoveCommonPrefix } from "./singleTextEdit.js";
 
@@ -62,14 +62,18 @@ export class InlineCompletionsSource extends Disposable {
 		private readonly textModel: ITextModel,
 		private readonly versionId: IObservable<number | null>,
 		private readonly _debounceValue: IFeatureDebounceInformation,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 
-		this._register(this.textModel.onDidChangeContent(() => {
-			this._updateOperation.clear();
-		}));
+		this._register(
+			this.textModel.onDidChangeContent(() => {
+				this._updateOperation.clear();
+			}),
+		);
 	}
 
 	public fetch(

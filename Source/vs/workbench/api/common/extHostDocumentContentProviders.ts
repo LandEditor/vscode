@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../base/common/errors.js";
 import type { IDisposable } from "../../../base/common/lifecycle.js";
@@ -12,9 +13,9 @@ import { splitLines } from "../../../base/common/strings.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { ILogService } from "../../../platform/log/common/log.js";
 import {
+	MainContext,
 	type ExtHostDocumentContentProvidersShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadDocumentContentProvidersShape,
 } from "./extHost.protocol.js";
 import type { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";

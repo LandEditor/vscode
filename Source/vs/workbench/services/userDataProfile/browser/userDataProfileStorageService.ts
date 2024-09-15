@@ -12,16 +12,16 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type IProfileStorageValueChangeEvent,
+	isProfileUsingDefaultStorage,
 	IStorageService,
 	StorageScope,
-	isProfileUsingDefaultStorage,
+	type IProfileStorageValueChangeEvent,
 } from "../../../../platform/storage/common/storage.js";
 import type { IUserDataProfile } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	AbstractUserDataProfileStorageService,
-	type IProfileStorageChanges,
 	IUserDataProfileStorageService,
+	type IProfileStorageChanges,
 } from "../../../../platform/userDataProfile/common/userDataProfileStorageService.js";
 import { IndexedDBStorageDatabase } from "../../storage/browser/storageService.js";
 import { IUserDataProfileService } from "../common/userDataProfile.js";
@@ -38,13 +38,26 @@ export class UserDataProfileStorageService
 
 	constructor(
 		@IStorageService storageService: IStorageService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super(true, storageService);
 		const disposables = this._register(new DisposableStore());
-		this._register(Event.filter(storageService.onDidChangeTarget, e => e.scope === StorageScope.PROFILE, disposables)(() => this.onDidChangeStorageTargetInCurrentProfile()));
-		this._register(storageService.onDidChangeValue(StorageScope.PROFILE, undefined, disposables)(e => this.onDidChangeStorageValueInCurrentProfile(e)));
+		this._register(
+			Event.filter(
+				storageService.onDidChangeTarget,
+				(e) => e.scope === StorageScope.PROFILE,
+				disposables,
+			)(() => this.onDidChangeStorageTargetInCurrentProfile()),
+		);
+		this._register(
+			storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				undefined,
+				disposables,
+			)((e) => this.onDidChangeStorageValueInCurrentProfile(e)),
+		);
 	}
 
 	private onDidChangeStorageTargetInCurrentProfile(): void {

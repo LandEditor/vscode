@@ -7,22 +7,24 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import { Disposable, toDisposable } from "../../../base/common/lifecycle.js";
 import type * as performance from "../../../base/common/performance.js";
 import {
-	type IProcessEnvironment,
-	OS,
-	type OperatingSystem,
 	isWindows,
+	OS,
+	type IProcessEnvironment,
+	type OperatingSystem,
 } from "../../../base/common/platform.js";
 import { StopWatch } from "../../../base/common/stopwatch.js";
 import { getSystemShell } from "../../../base/node/shell.js";
 import { ProxyChannel } from "../../../base/parts/ipc/common/ipc.js";
 import { IConfigurationService } from "../../configuration/common/configuration.js";
-import { ILogService, ILoggerService, LogLevel } from "../../log/common/log.js";
+import { ILoggerService, ILogService, LogLevel } from "../../log/common/log.js";
 import { RemoteLoggerChannelClient } from "../../log/common/logIpc.js";
 import { getResolvedShellEnv } from "../../shell/node/shellEnv.js";
 import type { IPtyHostProcessReplayEvent } from "../common/capabilities/capabilities.js";
 import { RequestStore } from "../common/requestStore.js";
 import {
 	HeartbeatConstants,
+	TerminalIpcChannels,
+	TerminalSettingId,
 	type IHeartbeatService,
 	type IProcessDataEvent,
 	type IProcessProperty,
@@ -40,8 +42,6 @@ import {
 	type ITerminalsLayoutInfo,
 	type ProcessPropertyType,
 	type TerminalIcon,
-	TerminalIpcChannels,
-	TerminalSettingId,
 	type TitleEventSource,
 } from "../common/terminal.js";
 import { registerTerminalPlatformConfiguration } from "../common/terminalPlatformConfiguration.js";
@@ -151,7 +151,8 @@ export class PtyHostService extends Disposable implements IPtyHostService {
 
 	constructor(
 		private readonly _ptyHostStarter: IPtyHostStarter,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ILogService private readonly _logService: ILogService,
 		@ILoggerService private readonly _loggerService: ILoggerService,
 	) {
@@ -164,16 +165,31 @@ export class PtyHostService extends Disposable implements IPtyHostService {
 		this._register(this._ptyHostStarter);
 		this._register(toDisposable(() => this._disposePtyHost()));
 
-		this._resolveVariablesRequestStore = this._register(new RequestStore(undefined, this._logService));
-		this._register(this._resolveVariablesRequestStore.onCreateRequest(this._onPtyHostRequestResolveVariables.fire, this._onPtyHostRequestResolveVariables));
+		this._resolveVariablesRequestStore = this._register(
+			new RequestStore(undefined, this._logService),
+		);
+		this._register(
+			this._resolveVariablesRequestStore.onCreateRequest(
+				this._onPtyHostRequestResolveVariables.fire,
+				this._onPtyHostRequestResolveVariables,
+			),
+		);
 
 		// Start the pty host when a window requests a connection, if the starter has that capability.
 		if (this._ptyHostStarter.onRequestConnection) {
-			this._register(Event.once(this._ptyHostStarter.onRequestConnection)(() => this._ensurePtyHost()));
+			this._register(
+				Event.once(this._ptyHostStarter.onRequestConnection)(() =>
+					this._ensurePtyHost(),
+				),
+			);
 		}
 
 		if (this._ptyHostStarter.onWillShutdown) {
-			this._register(this._ptyHostStarter.onWillShutdown(() => this._wasQuitRequested = true));
+			this._register(
+				this._ptyHostStarter.onWillShutdown(
+					() => (this._wasQuitRequested = true),
+				),
+			);
 		}
 	}
 

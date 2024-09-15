@@ -9,20 +9,21 @@ import type {
 	IViewportRange,
 	Terminal,
 } from "@xterm/xterm";
+
 import { EventType } from "../../../../../base/browser/dom.js";
 import type { IHoverAction } from "../../../../../base/browser/ui/hover/hover.js";
 import { RunOnceScheduler } from "../../../../../base/common/async.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../../base/common/htmlContent.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
-import { OS, isMacintosh } from "../../../../../base/common/platform.js";
+import { isMacintosh, OS } from "../../../../../base/common/platform.js";
 import { URI } from "../../../../../base/common/uri.js";
 import * as nls from "../../../../../nls.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
@@ -36,27 +37,27 @@ import { ITerminalLogService } from "../../../../../platform/terminal/common/ter
 import { ITunnelService } from "../../../../../platform/tunnel/common/tunnel.js";
 import {
 	ITerminalConfigurationService,
-	type ITerminalExternalLinkProvider,
 	TerminalLinkQuickPickEvent,
+	type ITerminalExternalLinkProvider,
 } from "../../../terminal/browser/terminal.js";
 import {
-	type ILinkHoverTargetOptions,
 	TerminalHover,
+	type ILinkHoverTargetOptions,
 } from "../../../terminal/browser/widgets/terminalHoverWidget.js";
 import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
 import type { IXtermCore } from "../../../terminal/browser/xterm-private.js";
 import {
+	TERMINAL_CONFIG_SECTION,
 	type ITerminalConfiguration,
 	type ITerminalProcessInfo,
-	TERMINAL_CONFIG_SECTION,
 } from "../../../terminal/common/terminal.js";
 import {
+	TerminalBuiltinLinkType,
 	type ITerminalLinkDetector,
 	type ITerminalLinkOpener,
 	type ITerminalLinkResolver,
 	type ITerminalSimpleLink,
 	type OmitFirstArg,
-	TerminalBuiltinLinkType,
 	type TerminalLinkType,
 } from "./links.js";
 import { TerminalExternalLinkDetector } from "./terminalExternalLinkDetector.js";
@@ -101,84 +102,177 @@ export class TerminalLinkManager extends DisposableStore {
 		private readonly _processInfo: ITerminalProcessInfo,
 		capabilities: ITerminalCapabilityStore,
 		private readonly _linkResolver: ITerminalLinkResolver,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@ITunnelService private readonly _tunnelService: ITunnelService
+		@ITunnelService private readonly _tunnelService: ITunnelService,
 	) {
 		super();
 
 		let enableFileLinks = true;
-		const enableFileLinksConfig = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION).enableFileLinks as ITerminalConfiguration['enableFileLinks'] | boolean;
+		const enableFileLinksConfig =
+			this._configurationService.getValue<ITerminalConfiguration>(
+				TERMINAL_CONFIG_SECTION,
+			).enableFileLinks as
+				| ITerminalConfiguration["enableFileLinks"]
+				| boolean;
 		switch (enableFileLinksConfig) {
-			case 'off':
+			case "off":
 			case false: // legacy from v1.75
 				enableFileLinks = false;
 				break;
-			case 'notRemote':
+			case "notRemote":
 				enableFileLinks = !this._processInfo.remoteAuthority;
 				break;
 		}
 
 		// Setup link detectors in their order of priority
 		if (enableFileLinks) {
-			this._setupLinkDetector(TerminalMultiLineLinkDetector.id, this._instantiationService.createInstance(TerminalMultiLineLinkDetector, this._xterm, this._processInfo, this._linkResolver));
-			this._setupLinkDetector(TerminalLocalLinkDetector.id, this._instantiationService.createInstance(TerminalLocalLinkDetector, this._xterm, capabilities, this._processInfo, this._linkResolver));
+			this._setupLinkDetector(
+				TerminalMultiLineLinkDetector.id,
+				this._instantiationService.createInstance(
+					TerminalMultiLineLinkDetector,
+					this._xterm,
+					this._processInfo,
+					this._linkResolver,
+				),
+			);
+			this._setupLinkDetector(
+				TerminalLocalLinkDetector.id,
+				this._instantiationService.createInstance(
+					TerminalLocalLinkDetector,
+					this._xterm,
+					capabilities,
+					this._processInfo,
+					this._linkResolver,
+				),
+			);
 		}
-		this._setupLinkDetector(TerminalUriLinkDetector.id, this._instantiationService.createInstance(TerminalUriLinkDetector, this._xterm, this._processInfo, this._linkResolver));
-		this._setupLinkDetector(TerminalWordLinkDetector.id, this.add(this._instantiationService.createInstance(TerminalWordLinkDetector, this._xterm)));
+		this._setupLinkDetector(
+			TerminalUriLinkDetector.id,
+			this._instantiationService.createInstance(
+				TerminalUriLinkDetector,
+				this._xterm,
+				this._processInfo,
+				this._linkResolver,
+			),
+		);
+		this._setupLinkDetector(
+			TerminalWordLinkDetector.id,
+			this.add(
+				this._instantiationService.createInstance(
+					TerminalWordLinkDetector,
+					this._xterm,
+				),
+			),
+		);
 
 		// Setup link openers
-		const localFileOpener = this._instantiationService.createInstance(TerminalLocalFileLinkOpener);
-		const localFolderInWorkspaceOpener = this._instantiationService.createInstance(TerminalLocalFolderInWorkspaceLinkOpener);
+		const localFileOpener = this._instantiationService.createInstance(
+			TerminalLocalFileLinkOpener,
+		);
+		const localFolderInWorkspaceOpener =
+			this._instantiationService.createInstance(
+				TerminalLocalFolderInWorkspaceLinkOpener,
+			);
 		this._openers.set(TerminalBuiltinLinkType.LocalFile, localFileOpener);
-		this._openers.set(TerminalBuiltinLinkType.LocalFolderInWorkspace, localFolderInWorkspaceOpener);
-		this._openers.set(TerminalBuiltinLinkType.LocalFolderOutsideWorkspace, this._instantiationService.createInstance(TerminalLocalFolderOutsideWorkspaceLinkOpener));
-		this._openers.set(TerminalBuiltinLinkType.Search, this._instantiationService.createInstance(TerminalSearchLinkOpener, capabilities, this._processInfo.initialCwd, localFileOpener, localFolderInWorkspaceOpener, () => this._processInfo.os || OS));
-		this._openers.set(TerminalBuiltinLinkType.Url, this._instantiationService.createInstance(TerminalUrlLinkOpener, !!this._processInfo.remoteAuthority));
+		this._openers.set(
+			TerminalBuiltinLinkType.LocalFolderInWorkspace,
+			localFolderInWorkspaceOpener,
+		);
+		this._openers.set(
+			TerminalBuiltinLinkType.LocalFolderOutsideWorkspace,
+			this._instantiationService.createInstance(
+				TerminalLocalFolderOutsideWorkspaceLinkOpener,
+			),
+		);
+		this._openers.set(
+			TerminalBuiltinLinkType.Search,
+			this._instantiationService.createInstance(
+				TerminalSearchLinkOpener,
+				capabilities,
+				this._processInfo.initialCwd,
+				localFileOpener,
+				localFolderInWorkspaceOpener,
+				() => this._processInfo.os || OS,
+			),
+		);
+		this._openers.set(
+			TerminalBuiltinLinkType.Url,
+			this._instantiationService.createInstance(
+				TerminalUrlLinkOpener,
+				!!this._processInfo.remoteAuthority,
+			),
+		);
 
 		this._registerStandardLinkProviders();
 
 		let activeHoverDisposable: IDisposable | undefined;
 		let activeTooltipScheduler: RunOnceScheduler | undefined;
-		this.add(toDisposable(() => {
-			this._clearLinkProviders();
-			dispose(this._externalLinkProviders);
-			activeHoverDisposable?.dispose();
-			activeTooltipScheduler?.dispose();
-		}));
+		this.add(
+			toDisposable(() => {
+				this._clearLinkProviders();
+				dispose(this._externalLinkProviders);
+				activeHoverDisposable?.dispose();
+				activeTooltipScheduler?.dispose();
+			}),
+		);
 		this._xterm.options.linkHandler = {
 			allowNonHttpProtocols: true,
 			activate: (event, text) => {
 				if (!this._isLinkActivationModifierDown(event)) {
 					return;
 				}
-				const colonIndex = text.indexOf(':');
+				const colonIndex = text.indexOf(":");
 				if (colonIndex === -1) {
 					throw new Error(`Could not find scheme in link "${text}"`);
 				}
 				const scheme = text.substring(0, colonIndex);
-				if (this._terminalConfigurationService.config.allowedLinkSchemes.indexOf(scheme) === -1) {
-					this._notificationService.prompt(Severity.Warning, nls.localize('scheme', 'Opening URIs can be insecure, do you want to allow opening links with the scheme {0}?', scheme), [
-						{
-							label: nls.localize('allow', 'Allow {0}', scheme),
-							run: () => {
-								const allowedLinkSchemes = [
-									...this._terminalConfigurationService.config.allowedLinkSchemes,
-									scheme
-								];
-								this._configurationService.updateValue(`terminal.integrated.allowedLinkSchemes`, allowedLinkSchemes);
-							}
-						}
-					]);
+				if (
+					this._terminalConfigurationService.config.allowedLinkSchemes.indexOf(
+						scheme,
+					) === -1
+				) {
+					this._notificationService.prompt(
+						Severity.Warning,
+						nls.localize(
+							"scheme",
+							"Opening URIs can be insecure, do you want to allow opening links with the scheme {0}?",
+							scheme,
+						),
+						[
+							{
+								label: nls.localize(
+									"allow",
+									"Allow {0}",
+									scheme,
+								),
+								run: () => {
+									const allowedLinkSchemes = [
+										...this._terminalConfigurationService
+											.config.allowedLinkSchemes,
+										scheme,
+									];
+									this._configurationService.updateValue(
+										`terminal.integrated.allowedLinkSchemes`,
+										allowedLinkSchemes,
+									);
+								},
+							},
+						],
+					);
 				}
 				this._openers.get(TerminalBuiltinLinkType.Url)?.open({
 					type: TerminalBuiltinLinkType.Url,
 					text,
 					bufferRange: null!,
-					uri: URI.parse(text)
+					uri: URI.parse(text),
 				});
 			},
 			hover: (e, text, range) => {
@@ -189,23 +283,36 @@ export class TerminalLinkManager extends DisposableStore {
 					const core = (this._xterm as any)._core as IXtermCore;
 					const cellDimensions = {
 						width: core._renderService.dimensions.css.cell.width,
-						height: core._renderService.dimensions.css.cell.height
+						height: core._renderService.dimensions.css.cell.height,
 					};
 					const terminalDimensions = {
 						width: this._xterm.cols,
-						height: this._xterm.rows
+						height: this._xterm.rows,
 					};
-					activeHoverDisposable = this._showHover({
-						viewportRange: convertBufferRangeToViewport(range, this._xterm.buffer.active.viewportY),
-						cellDimensions,
-						terminalDimensions
-					}, this._getLinkHoverString(text, text), undefined, (text) => this._xterm.options.linkHandler?.activate(e, text, range));
+					activeHoverDisposable = this._showHover(
+						{
+							viewportRange: convertBufferRangeToViewport(
+								range,
+								this._xterm.buffer.active.viewportY,
+							),
+							cellDimensions,
+							terminalDimensions,
+						},
+						this._getLinkHoverString(text, text),
+						undefined,
+						(text) =>
+							this._xterm.options.linkHandler?.activate(
+								e,
+								text,
+								range,
+							),
+					);
 					// Clear out scheduler until next hover event
 					activeTooltipScheduler?.dispose();
 					activeTooltipScheduler = undefined;
-				}, this._configurationService.getValue('workbench.hover.delay'));
+				}, this._configurationService.getValue("workbench.hover.delay"));
 				activeTooltipScheduler.schedule();
-			}
+			},
 		};
 	}
 

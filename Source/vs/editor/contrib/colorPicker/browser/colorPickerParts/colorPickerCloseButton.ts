@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import "../colorPicker.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { Codicon } from "../../../../../base/common/codicons.js";
 import { Emitter } from "../../../../../base/common/event.js";

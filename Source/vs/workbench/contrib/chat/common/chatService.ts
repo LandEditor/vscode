@@ -9,7 +9,7 @@ import type { Event } from "../../../../base/common/event.js";
 import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import type { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import type { ISelection } from "../../../../editor/common/core/selection.js";
 import type {
 	Command,

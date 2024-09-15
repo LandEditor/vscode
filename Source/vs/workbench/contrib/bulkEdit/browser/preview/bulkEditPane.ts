@@ -15,7 +15,9 @@ import type { FuzzyScore } from "../../../../../base/common/filters.js";
 import { DisposableStore } from "../../../../../base/common/lifecycle.js";
 import type { Mutable } from "../../../../../base/common/types.js";
 import { URI } from "../../../../../base/common/uri.js";
+
 import "./bulkEdit.css";
+
 import type { ResourceEdit } from "../../../../../editor/browser/services/bulkEditService.js";
 import type {
 	IMultiDiffEditorOptions,
@@ -27,9 +29,9 @@ import { localize } from "../../../../../nls.js";
 import { MenuId } from "../../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
 import { IDialogService } from "../../../../../platform/dialogs/common/dialogs.js";
@@ -38,8 +40,8 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
 import { ILabelService } from "../../../../../platform/label/common/label.js";
 import {
-	type IOpenEvent,
 	WorkbenchAsyncDataTree,
+	type IOpenEvent,
 } from "../../../../../platform/list/browser/listService.js";
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import {
@@ -65,25 +67,25 @@ import {
 } from "../../../../services/editor/common/editorService.js";
 import {
 	BulkEditPreviewProvider,
-	type BulkFileOperation,
-	BulkFileOperationType,
 	BulkFileOperations,
+	BulkFileOperationType,
+	type BulkFileOperation,
 } from "./bulkEditPreview.js";
 import {
 	BulkEditAccessibilityProvider,
 	BulkEditDataSource,
 	BulkEditDelegate,
-	type BulkEditElement,
 	BulkEditIdentityProvider,
 	BulkEditNaviLabelProvider,
 	BulkEditSorter,
 	CategoryElement,
 	CategoryElementRenderer,
+	compareBulkFileOperations,
 	FileElement,
 	FileElementRenderer,
 	TextEditElement,
 	TextEditElementRenderer,
-	compareBulkFileOperations,
+	type BulkEditElement,
 } from "./bulkEditTree.js";
 
 enum State {
@@ -131,12 +133,15 @@ export class BulkEditPane extends ViewPane {
 
 	constructor(
 		options: IViewletViewOptions,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILabelService private readonly _labelService: ILabelService,
-		@ITextModelService private readonly _textModelService: ITextModelService,
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
@@ -150,19 +155,33 @@ export class BulkEditPane extends ViewPane {
 	) {
 		super(
 			{ ...options, titleMenuId: MenuId.BulkEditTitle },
-			keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, _instaService, openerService, themeService, telemetryService, hoverService
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			_instaService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
 		);
 
-		this.element.classList.add('bulk-edit-panel', 'show-file-icons');
-		this._ctxHasCategories = BulkEditPane.ctxHasCategories.bindTo(contextKeyService);
-		this._ctxGroupByFile = BulkEditPane.ctxGroupByFile.bindTo(contextKeyService);
-		this._ctxHasCheckedChanges = BulkEditPane.ctxHasCheckedChanges.bindTo(contextKeyService);
+		this.element.classList.add("bulk-edit-panel", "show-file-icons");
+		this._ctxHasCategories =
+			BulkEditPane.ctxHasCategories.bindTo(contextKeyService);
+		this._ctxGroupByFile =
+			BulkEditPane.ctxGroupByFile.bindTo(contextKeyService);
+		this._ctxHasCheckedChanges =
+			BulkEditPane.ctxHasCheckedChanges.bindTo(contextKeyService);
 		// telemetry
 		type BulkEditPaneOpened = {
-			owner: 'aiday-mar';
-			comment: 'Report when the bulk edit pane has been opened';
+			owner: "aiday-mar";
+			comment: "Report when the bulk edit pane has been opened";
 		};
-		this.telemetryService.publicLog2<{}, BulkEditPaneOpened>('views.bulkEditPane');
+		this.telemetryService.publicLog2<{}, BulkEditPaneOpened>(
+			"views.bulkEditPane",
+		);
 	}
 
 	override dispose(): void {
@@ -275,8 +294,7 @@ export class BulkEditPane extends ViewPane {
 	protected override layoutBody(height: number, width: number): void {
 		super.layoutBody(height, width);
 		const treeHeight = height - 50;
-		this._tree.getHTMLElement().parentElement!.style.height =
-			`${treeHeight}px`;
+		this._tree.getHTMLElement().parentElement!.style.height = `${treeHeight}px`;
 		this._tree.layout(treeHeight, width);
 	}
 

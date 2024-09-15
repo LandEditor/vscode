@@ -24,7 +24,8 @@ export class ConfigurationResolverService extends BaseConfigurationResolverServi
 		@IEditorService editorService: IEditorService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ICommandService commandService: ICommandService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@ILabelService labelService: ILabelService,
 		@IPathService pathService: IPathService,

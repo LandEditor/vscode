@@ -8,8 +8,8 @@ import type { Color } from "../../../base/common/color.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";

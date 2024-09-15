@@ -13,8 +13,8 @@ import { launchSchemaId } from "../../../services/configuration/common/configura
 import { inputsSchema } from "../../../services/configurationResolver/common/configurationResolverSchema.js";
 import {
 	Extensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,

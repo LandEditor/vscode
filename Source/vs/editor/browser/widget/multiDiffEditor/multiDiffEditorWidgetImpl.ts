@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type Dimension,
 	getWindow,
 	h,
 	scheduleAtNextAnimationFrame,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import { SmoothScrollableElement } from "../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import { compareBy, numberComparator } from "../../../../base/common/arrays.js";
@@ -15,13 +15,10 @@ import { findFirstMax } from "../../../../base/common/arraysFind.js";
 import { BugIndicatingError } from "../../../../base/common/errors.js";
 import {
 	Disposable,
-	type IReference,
 	toDisposable,
+	type IReference,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ITransaction,
 	autorun,
 	autorunWithStore,
 	derived,
@@ -31,6 +28,9 @@ import {
 	observableFromEvent,
 	observableValue,
 	transaction,
+	type IObservable,
+	type IReader,
+	type ITransaction,
 } from "../../../../base/common/observable.js";
 import {
 	Scrollable,
@@ -39,15 +39,15 @@ import {
 import type { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import {
-	type ContextKeyValue,
 	IContextKeyService,
+	type ContextKeyValue,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ITextEditorOptions } from "../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { ServiceCollection } from "../../../../platform/instantiation/common/serviceCollection.js";
 import { OffsetRange } from "../../../common/core/offsetRange.js";
 import type { IRange } from "../../../common/core/range.js";
-import { type ISelection, Selection } from "../../../common/core/selection.js";
+import { Selection, type ISelection } from "../../../common/core/selection.js";
 import type { IDiffEditor } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import type { ICodeEditor } from "../../editorBrowser.js";
@@ -63,7 +63,9 @@ import type {
 } from "./multiDiffEditorViewModel.js";
 import type { RevealOptions } from "./multiDiffEditorWidget.js";
 import { ObjectPool } from "./objectPool.js";
+
 import "./style.css";
+
 import type { IWorkbenchUIElementFactory } from "./workbenchUIElementFactory.js";
 
 export class MultiDiffEditorWidgetImpl extends Disposable {
@@ -217,93 +219,136 @@ export class MultiDiffEditorWidgetImpl extends Disposable {
 	constructor(
 		private readonly _element: HTMLElement,
 		private readonly _dimension: IObservable<Dimension | undefined>,
-		private readonly _viewModel: IObservable<MultiDiffEditorViewModel | undefined>,
+		private readonly _viewModel: IObservable<
+			MultiDiffEditorViewModel | undefined
+		>,
 		private readonly _workbenchUIElementFactory: IWorkbenchUIElementFactory,
-		@IContextKeyService private readonly _parentContextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _parentInstantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _parentContextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _parentInstantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._register(autorunWithStore((reader, store) => {
-			const viewModel = this._viewModel.read(reader);
-			if (viewModel && viewModel.contextKeys) {
-				for (const [key, value] of Object.entries(viewModel.contextKeys)) {
-					const contextKey = this._contextKeyService.createKey<ContextKeyValue>(key, undefined);
-					contextKey.set(value);
-					store.add(toDisposable(() => contextKey.reset()));
+		this._register(
+			autorunWithStore((reader, store) => {
+				const viewModel = this._viewModel.read(reader);
+				if (viewModel && viewModel.contextKeys) {
+					for (const [key, value] of Object.entries(
+						viewModel.contextKeys,
+					)) {
+						const contextKey =
+							this._contextKeyService.createKey<ContextKeyValue>(
+								key,
+								undefined,
+							);
+						contextKey.set(value);
+						store.add(toDisposable(() => contextKey.reset()));
+					}
 				}
-			}
-		}));
+			}),
+		);
 
-		const ctxAllCollapsed = this._parentContextKeyService.createKey<boolean>(EditorContextKeys.multiDiffEditorAllCollapsed.key, false);
-		this._register(autorun((reader) => {
-			const viewModel = this._viewModel.read(reader);
-			if (viewModel) {
-				const allCollapsed = viewModel.items.read(reader).every(item => item.collapsed.read(reader));
-				ctxAllCollapsed.set(allCollapsed);
-			}
-		}));
+		const ctxAllCollapsed =
+			this._parentContextKeyService.createKey<boolean>(
+				EditorContextKeys.multiDiffEditorAllCollapsed.key,
+				false,
+			);
+		this._register(
+			autorun((reader) => {
+				const viewModel = this._viewModel.read(reader);
+				if (viewModel) {
+					const allCollapsed = viewModel.items
+						.read(reader)
+						.every((item) => item.collapsed.read(reader));
+					ctxAllCollapsed.set(allCollapsed);
+				}
+			}),
+		);
 
-		this._register(autorun((reader) => {
-			/** @description Update widget dimension */
-			const dimension = this._dimension.read(reader);
-			this._sizeObserver.observe(dimension);
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description Update widget dimension */
+				const dimension = this._dimension.read(reader);
+				this._sizeObserver.observe(dimension);
+			}),
+		);
 
-		const placeholderMessage = derived(reader => {
+		const placeholderMessage = derived((reader) => {
 			const items = this._viewItems.read(reader);
-			if (items.length > 0) { return undefined; }
+			if (items.length > 0) {
+				return undefined;
+			}
 
 			const vm = this._viewModel.read(reader);
-			return (!vm || vm.isLoading.read(reader))
-				? localize('loading', 'Loading...')
-				: localize('noChangedFiles', 'No Changed Files');
+			return !vm || vm.isLoading.read(reader)
+				? localize("loading", "Loading...")
+				: localize("noChangedFiles", "No Changed Files");
 		});
 
-		this._register(autorun((reader) => {
-			const message = placeholderMessage.read(reader);
-			this._elements.placeholder.innerText = message ?? '';
-			this._elements.placeholder.classList.toggle('visible', !!message);
-		}));
+		this._register(
+			autorun((reader) => {
+				const message = placeholderMessage.read(reader);
+				this._elements.placeholder.innerText = message ?? "";
+				this._elements.placeholder.classList.toggle(
+					"visible",
+					!!message,
+				);
+			}),
+		);
 
-		this._scrollableElements.content.style.position = 'relative';
+		this._scrollableElements.content.style.position = "relative";
 
-		this._register(autorun((reader) => {
-			/** @description Update scroll dimensions */
-			const height = this._sizeObserver.height.read(reader);
-			this._scrollableElements.root.style.height = `${height}px`;
-			const totalHeight = this._totalHeight.read(reader);
-			this._scrollableElements.content.style.height = `${totalHeight}px`;
+		this._register(
+			autorun((reader) => {
+				/** @description Update scroll dimensions */
+				const height = this._sizeObserver.height.read(reader);
+				this._scrollableElements.root.style.height = `${height}px`;
+				const totalHeight = this._totalHeight.read(reader);
+				this._scrollableElements.content.style.height = `${totalHeight}px`;
 
-			const width = this._sizeObserver.width.read(reader);
+				const width = this._sizeObserver.width.read(reader);
 
-			let scrollWidth = width;
-			const viewItems = this._viewItems.read(reader);
-			const max = findFirstMax(viewItems, compareBy(i => i.maxScroll.read(reader).maxScroll, numberComparator));
-			if (max) {
-				const maxScroll = max.maxScroll.read(reader);
-				scrollWidth = width + maxScroll.maxScroll;
-			}
+				let scrollWidth = width;
+				const viewItems = this._viewItems.read(reader);
+				const max = findFirstMax(
+					viewItems,
+					compareBy(
+						(i) => i.maxScroll.read(reader).maxScroll,
+						numberComparator,
+					),
+				);
+				if (max) {
+					const maxScroll = max.maxScroll.read(reader);
+					scrollWidth = width + maxScroll.maxScroll;
+				}
 
-			this._scrollableElement.setScrollDimensions({
-				width: width,
-				height: height,
-				scrollHeight: totalHeight,
-				scrollWidth,
-			});
-		}));
+				this._scrollableElement.setScrollDimensions({
+					width: width,
+					height: height,
+					scrollHeight: totalHeight,
+					scrollWidth,
+				});
+			}),
+		);
 
 		_element.replaceChildren(this._elements.root);
-		this._register(toDisposable(() => {
-			_element.replaceChildren();
-		}));
+		this._register(
+			toDisposable(() => {
+				_element.replaceChildren();
+			}),
+		);
 
-		this._register(this._register(autorun(reader => {
-			/** @description Render all */
-			globalTransaction(tx => {
-				this.render(reader);
-			});
-		})));
+		this._register(
+			this._register(
+				autorun((reader) => {
+					/** @description Render all */
+					globalTransaction((tx) => {
+						this.render(reader);
+					});
+				}),
+			),
+		);
 	}
 
 	public setScrollState(scrollState: { top?: number; left?: number }): void {

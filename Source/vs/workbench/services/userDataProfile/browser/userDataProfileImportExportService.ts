@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/userDataProfileView.css";
+
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { VSBuffer } from "../../../../base/common/buffer.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
@@ -14,14 +15,14 @@ import { Emitter } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { joinPath } from "../../../../base/common/resources.js";
 import Severity from "../../../../base/common/severity.js";
 import { escapeRegExpCharacters } from "../../../../base/common/strings.js";
-import { type Mutable, isUndefined } from "../../../../base/common/types.js";
+import { isUndefined, type Mutable } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
@@ -48,14 +49,14 @@ import {
 	type QuickPickItem,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import {
-	IRequestService,
 	asText,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	IUserDataProfilesService,
 	type IUserDataProfile,
 	type IUserDataProfileOptions,
-	IUserDataProfilesService,
 	type ProfileResourceType,
 	type ProfileResourceTypeFlags,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
@@ -66,21 +67,21 @@ import type {
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import { ITextFileService } from "../../textfile/common/textfiles.js";
 import {
+	isProfileURL,
+	IUserDataProfileImportExportService,
+	IUserDataProfileManagementService,
+	IUserDataProfileService,
+	PROFILE_EXTENSION,
+	PROFILE_FILTER,
+	PROFILE_URL_AUTHORITY,
+	PROFILE_URL_AUTHORITY_PREFIX,
+	PROFILES_CATEGORY,
+	toUserDataProfileUri,
 	type IProfileImportOptions,
 	type IProfileResourceTreeItem,
 	type ISaveProfileResult,
 	type IUserDataProfileContentHandler,
 	type IUserDataProfileCreateOptions,
-	IUserDataProfileImportExportService,
-	IUserDataProfileManagementService,
-	IUserDataProfileService,
-	PROFILES_CATEGORY,
-	PROFILE_EXTENSION,
-	PROFILE_FILTER,
-	PROFILE_URL_AUTHORITY,
-	PROFILE_URL_AUTHORITY_PREFIX,
-	isProfileURL,
-	toUserDataProfileUri,
 } from "../common/userDataProfile.js";
 import {
 	ExtensionsResource,
@@ -151,22 +152,34 @@ export class UserDataProfileImportExportService
 	private readonly fileUserDataProfileContentHandler: FileUserDataProfileContentHandler;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfileManagementService private readonly userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileManagementService
+		private readonly userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IClipboardService private readonly clipboardService: IClipboardService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IRequestService private readonly requestService: IRequestService,
 		@IProductService private readonly productService: IProductService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
-		this.registerProfileContentHandler(Schemas.file, this.fileUserDataProfileContentHandler = instantiationService.createInstance(FileUserDataProfileContentHandler));
+		this.registerProfileContentHandler(
+			Schemas.file,
+			(this.fileUserDataProfileContentHandler =
+				instantiationService.createInstance(
+					FileUserDataProfileContentHandler,
+				)),
+		);
 	}
 
 	registerProfileContentHandler(
@@ -938,12 +951,14 @@ class FileUserDataProfileContentHandler
 	readonly description = localize("file", "file");
 
 	constructor(
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
 		@IProductService private readonly productService: IProductService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-	) { }
+	) {}
 
 	async saveProfile(
 		name: string,
@@ -1011,7 +1026,8 @@ abstract class UserDataProfileImportExportState
 	readonly onDidChangeRoots = this._onDidChangeRoots.event;
 
 	constructor(
-		@IQuickInputService protected readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		protected readonly quickInputService: IQuickInputService,
 	) {
 		super();
 	}
@@ -1145,7 +1161,8 @@ class UserDataProfileExportState extends UserDataProfileImportExportState {
 		private readonly exportFlags: ProfileResourceTypeFlags | undefined,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@IFileService private readonly fileService: IFileService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super(quickInputService);
 	}

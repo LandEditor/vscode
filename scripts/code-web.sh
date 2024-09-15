@@ -14,7 +14,7 @@ function code() {
 	npm run download-builtin-extensions
 
 	NODE=$(node build/lib/node.js)
-	if [ ! -e $NODE ];then
+	if [ ! -e $NODE ]; then
 		# Load remote node
 		npm run gulp node
 	fi

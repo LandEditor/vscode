@@ -5,15 +5,15 @@
 
 import { equals } from "../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
-	ThrottledDelayer,
 	createCancelablePromise,
+	ThrottledDelayer,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import type { IStringDictionary } from "../../../base/common/collections.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
-import { type ParseError, parse } from "../../../base/common/json.js";
+import { parse, type ParseError } from "../../../base/common/json.js";
 import type { FormattingOptions } from "../../../base/common/jsonFormatter.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import type { IExtUri } from "../../../base/common/resources.js";
@@ -26,12 +26,12 @@ import { IConfigurationService } from "../../configuration/common/configuration.
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import { getServiceMachineId } from "../../externalServices/common/serviceMachineId.js";
 import {
-	type FileChangesEvent,
 	FileOperationError,
 	FileOperationResult,
-	type IFileContent,
 	IFileService,
 	toFileOperationResult,
+	type FileChangesEvent,
+	type IFileContent,
 } from "../../files/common/files.js";
 import { ILogService } from "../../log/common/log.js";
 import {
@@ -42,11 +42,25 @@ import {
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	Change,
+	getLastSyncResourceUri,
+	getPathSegments,
+	IUserDataSyncEnablementService,
+	IUserDataSyncLocalStoreService,
+	IUserDataSyncLogService,
+	IUserDataSyncStoreService,
+	IUserDataSyncUtilService,
+	MergeState,
+	PREVIEW_DIR_NAME,
+	SyncStatus,
+	USER_DATA_SYNC_CONFIGURATION_SCOPE,
+	USER_DATA_SYNC_SCHEME,
+	UserDataSyncError,
+	UserDataSyncErrorCode,
 	type IResourcePreview as IBaseResourcePreview,
 	type IUserDataSyncResourcePreview as IBaseSyncResourcePreview,
 	type IRemoteUserData,
@@ -54,25 +68,11 @@ import {
 	type IUserData,
 	type IUserDataResourceManifest,
 	type IUserDataSyncConfiguration,
-	IUserDataSyncEnablementService,
-	IUserDataSyncLocalStoreService,
-	IUserDataSyncLogService,
+	type IUserDataSynchroniser,
 	type IUserDataSyncResource,
 	type IUserDataSyncResourceConflicts,
 	type IUserDataSyncResourceInitializer,
-	IUserDataSyncStoreService,
-	IUserDataSyncUtilService,
-	type IUserDataSynchroniser,
-	MergeState,
-	PREVIEW_DIR_NAME,
 	type SyncResource,
-	SyncStatus,
-	USER_DATA_SYNC_CONFIGURATION_SCOPE,
-	USER_DATA_SYNC_SCHEME,
-	UserDataSyncError,
-	UserDataSyncErrorCode,
-	getLastSyncResourceUri,
-	getPathSegments,
 } from "./userDataSync.js";
 
 type IncompatibleSyncSourceClassification = {
@@ -88,7 +88,8 @@ type IncompatibleSyncSourceClassification = {
 export function isRemoteUserData(thing: any): thing is IRemoteUserData {
 	if (
 		thing &&
-		thing.ref !== undefined && typeof thing.ref === "string" &&
+		thing.ref !== undefined &&
+		typeof thing.ref === "string" &&
 		thing.ref !== "" &&
 		thing.syncData !== undefined &&
 		(thing.syncData === null || isSyncData(thing.syncData))
@@ -218,8 +219,7 @@ export abstract class AbstractSynchroniser
 	readonly onDidChangeLocal: Event<void> = this._onDidChangeLocal.event;
 
 	protected readonly lastSyncResource: URI;
-	private readonly lastSyncUserDataStateKey =
-		`${this.collection ? `${this.collection}.` : ""}${this.syncResource.syncResource}.lastSyncUserData`;
+	private readonly lastSyncUserDataStateKey = `${this.collection ? `${this.collection}.` : ""}${this.syncResource.syncResource}.lastSyncUserData`;
 	private hasSyncResourceStateVersionChanged = false;
 	protected readonly syncResourceLogLabel: string;
 
@@ -231,23 +231,55 @@ export abstract class AbstractSynchroniser
 		readonly syncResource: IUserDataSyncResource,
 		readonly collection: string | undefined,
 		@IFileService protected readonly fileService: IFileService,
-		@IEnvironmentService protected readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		protected readonly environmentService: IEnvironmentService,
 		@IStorageService protected readonly storageService: IStorageService,
-		@IUserDataSyncStoreService protected readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService protected readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
-		@IUserDataSyncEnablementService protected readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@ITelemetryService protected readonly telemetryService: ITelemetryService,
-		@IUserDataSyncLogService protected readonly logService: IUserDataSyncLogService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IUserDataSyncStoreService
+		protected readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		protected readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncEnablementService
+		protected readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@ITelemetryService
+		protected readonly telemetryService: ITelemetryService,
+		@IUserDataSyncLogService
+		protected readonly logService: IUserDataSyncLogService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
 		super();
-		this.syncResourceLogLabel = getSyncResourceLogLabel(syncResource.syncResource, syncResource.profile);
+		this.syncResourceLogLabel = getSyncResourceLogLabel(
+			syncResource.syncResource,
+			syncResource.profile,
+		);
 		this.extUri = uriIdentityService.extUri;
-		this.syncFolder = this.extUri.joinPath(environmentService.userDataSyncHome, ...getPathSegments(syncResource.profile.isDefault ? undefined : syncResource.profile.id, syncResource.syncResource));
-		this.syncPreviewFolder = this.extUri.joinPath(this.syncFolder, PREVIEW_DIR_NAME);
-		this.lastSyncResource = getLastSyncResourceUri(syncResource.profile.isDefault ? undefined : syncResource.profile.id, syncResource.syncResource, environmentService, this.extUri);
-		this.currentMachineIdPromise = getServiceMachineId(environmentService, fileService, storageService);
+		this.syncFolder = this.extUri.joinPath(
+			environmentService.userDataSyncHome,
+			...getPathSegments(
+				syncResource.profile.isDefault
+					? undefined
+					: syncResource.profile.id,
+				syncResource.syncResource,
+			),
+		);
+		this.syncPreviewFolder = this.extUri.joinPath(
+			this.syncFolder,
+			PREVIEW_DIR_NAME,
+		);
+		this.lastSyncResource = getLastSyncResourceUri(
+			syncResource.profile.isDefault
+				? undefined
+				: syncResource.profile.id,
+			syncResource.syncResource,
+			environmentService,
+			this.extUri,
+		);
+		this.currentMachineIdPromise = getServiceMachineId(
+			environmentService,
+			fileService,
+			storageService,
+		);
 	}
 
 	protected triggerLocalChange(): void {
@@ -930,8 +962,7 @@ export abstract class AbstractSynchroniser
 					mergeState: MergeState.Accepted,
 				});
 			} else {
-
-			/* Changed -> Apply ? (Merge ? Conflict | Accept) : Preview */
+				/* Changed -> Apply ? (Merge ? Conflict | Accept) : Preview */
 				/* Merge */
 				const mergeResult = merge
 					? await this.getMergeResult(resourcePreviewResult, token)
@@ -1381,9 +1412,12 @@ export abstract class AbstractFileSynchroniser extends AbstractSynchroniser {
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IConfigurationService configurationService: IConfigurationService,
@@ -1488,16 +1522,34 @@ export abstract class AbstractJsonFileSynchroniser extends AbstractFileSynchroni
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
-		@IUserDataSyncUtilService protected readonly userDataSyncUtilService: IUserDataSyncUtilService,
+		@IUserDataSyncUtilService
+		protected readonly userDataSyncUtilService: IUserDataSyncUtilService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
-		super(file, syncResource, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, configurationService, uriIdentityService);
+		super(
+			file,
+			syncResource,
+			collection,
+			fileService,
+			environmentService,
+			storageService,
+			userDataSyncStoreService,
+			userDataSyncLocalStoreService,
+			userDataSyncEnablementService,
+			telemetryService,
+			logService,
+			configurationService,
+			uriIdentityService,
+		);
 	}
 
 	protected hasErrors(content: string, isArray: boolean): boolean {
@@ -1533,15 +1585,22 @@ export abstract class AbstractInitializer
 
 	constructor(
 		readonly resource: SyncResource,
-		@IUserDataProfilesService protected readonly userDataProfilesService: IUserDataProfilesService,
-		@IEnvironmentService protected readonly environmentService: IEnvironmentService,
+		@IUserDataProfilesService
+		protected readonly userDataProfilesService: IUserDataProfilesService,
+		@IEnvironmentService
+		protected readonly environmentService: IEnvironmentService,
 		@ILogService protected readonly logService: ILogService,
 		@IFileService protected readonly fileService: IFileService,
 		@IStorageService protected readonly storageService: IStorageService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
 		this.extUri = uriIdentityService.extUri;
-		this.lastSyncResource = getLastSyncResourceUri(undefined, this.resource, environmentService, this.extUri);
+		this.lastSyncResource = getLastSyncResourceUri(
+			undefined,
+			this.resource,
+			environmentService,
+			this.extUri,
+		);
 	}
 
 	async initialize({ ref, content }: IUserData): Promise<void> {

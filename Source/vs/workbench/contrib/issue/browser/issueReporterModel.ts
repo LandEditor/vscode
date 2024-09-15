@@ -5,14 +5,14 @@
 
 import { mainWindow } from "../../../../base/browser/window.js";
 import {
-	type SystemInfo,
 	isRemoteDiagnosticError,
+	type SystemInfo,
 } from "../../../../platform/diagnostics/common/diagnostics.js";
 import type { OldIssueType } from "../../../../platform/issue/common/issue.js";
 import {
+	IssueType,
 	type ISettingSearchResult,
 	type IssueReporterExtensionData,
-	IssueType,
 } from "../common/issue.js";
 
 export interface IssueReporterData {

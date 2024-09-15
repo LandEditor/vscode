@@ -7,9 +7,9 @@ import { ProcessTimeRunOnceScheduler } from "../../base/common/async.js";
 import type { VSBuffer } from "../../base/common/buffer.js";
 import { Emitter, type Event } from "../../base/common/event.js";
 import {
+	ProtocolConstants,
 	type ISocket,
 	type PersistentProtocol,
-	ProtocolConstants,
 } from "../../base/parts/ipc/common/ipc.net.js";
 import type { ILogService } from "../../platform/log/common/log.js";
 

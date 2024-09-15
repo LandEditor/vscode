@@ -16,8 +16,8 @@ import {
 	CONTEXT_IN_CHAT_SESSION,
 } from "../../common/chatContextKeys.js";
 import {
-	type IChatResponseViewModel,
 	isResponseVM,
+	type IChatResponseViewModel,
 } from "../../common/chatViewModel.js";
 import { IChatWidgetService } from "../chat.js";
 import { CHAT_CATEGORY } from "./chatActions.js";

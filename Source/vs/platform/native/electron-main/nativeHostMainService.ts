@@ -17,28 +17,29 @@ import {
 } from "os";
 import { promisify } from "util";
 import {
+	app,
+	clipboard,
+	Menu,
+	powerMonitor,
+	screen,
+	shell,
+	webContents,
 	type BrowserWindow,
 	type Display,
-	Menu,
 	type MessageBoxOptions,
 	type MessageBoxReturnValue,
 	type OpenDialogOptions,
 	type OpenDialogReturnValue,
 	type SaveDialogOptions,
 	type SaveDialogReturnValue,
-	app,
-	clipboard,
-	powerMonitor,
-	screen,
-	shell,
-	webContents,
 } from "electron";
+
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { memoize } from "../../../base/common/decorators.js";
 import { CancellationError } from "../../../base/common/errors.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
-import { Schemas, matchesSomeScheme } from "../../../base/common/network.js";
+import { matchesSomeScheme, Schemas } from "../../../base/common/network.js";
 import {
 	dirname,
 	join,
@@ -76,22 +77,22 @@ import type { IV8Profile } from "../../profiling/common/profiling.js";
 import { WindowProfiler } from "../../profiling/electron-main/windowProfiling.js";
 import { hasWSLFeatureInstalled } from "../../remote/node/wsl.js";
 import {
+	IRequestService,
 	type AuthInfo,
 	type Credentials,
-	IRequestService,
 } from "../../request/common/request.js";
 import type { IPartsSplash } from "../../theme/common/themeService.js";
 import { IThemeMainService } from "../../theme/electron-main/themeMainService.js";
 import {
+	useWindowControlsOverlay,
 	type IColorScheme,
-	type IOpenEmptyWindowOptions,
-	type IOpenWindowOptions,
 	type IOpenedAuxiliaryWindow,
 	type IOpenedMainWindow,
+	type IOpenEmptyWindowOptions,
+	type IOpenWindowOptions,
 	type IPoint,
 	type IRectangle,
 	type IWindowOpenable,
-	useWindowControlsOverlay,
 } from "../../window/common/window.js";
 import type { ICodeWindow } from "../../window/electron-main/window.js";
 import {
@@ -129,18 +130,25 @@ export class NativeHostMainService
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IWindowsMainService private readonly windowsMainService: IWindowsMainService,
-		@IAuxiliaryWindowsMainService private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@IWindowsMainService
+		private readonly windowsMainService: IWindowsMainService,
+		@IAuxiliaryWindowsMainService
+		private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@ILogService private readonly logService: ILogService,
 		@IProductService private readonly productService: IProductService,
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IRequestService private readonly requestService: IRequestService,
-		@IProxyAuthService private readonly proxyAuthService: IProxyAuthService
+		@IProxyAuthService private readonly proxyAuthService: IProxyAuthService,
 	) {
 		super();
 	}

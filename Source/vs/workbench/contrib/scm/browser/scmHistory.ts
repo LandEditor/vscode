@@ -14,10 +14,10 @@ import {
 	foreground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type ColorIdentifier,
 	asCssVariable,
 	registerColor,
 	transparent,
+	type ColorIdentifier,
 } from "../../../../platform/theme/common/colorUtils.js";
 import type {
 	ISCMHistoryItem,

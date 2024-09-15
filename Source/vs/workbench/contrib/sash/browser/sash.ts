@@ -26,15 +26,26 @@ export class SashSettingsController
 	private readonly disposables = new DisposableStore();
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILayoutService private readonly layoutService: ILayoutService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ILayoutService private readonly layoutService: ILayoutService,
 	) {
-		const onDidChangeSize = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('workbench.sash.size'));
+		const onDidChangeSize = Event.filter(
+			configurationService.onDidChangeConfiguration,
+			(e) => e.affectsConfiguration("workbench.sash.size"),
+		);
 		onDidChangeSize(this.onDidChangeSize, this, this.disposables);
 		this.onDidChangeSize();
 
-		const onDidChangeHoverDelay = Event.filter(configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('workbench.sash.hoverDelay'));
-		onDidChangeHoverDelay(this.onDidChangeHoverDelay, this, this.disposables);
+		const onDidChangeHoverDelay = Event.filter(
+			configurationService.onDidChangeConfiguration,
+			(e) => e.affectsConfiguration("workbench.sash.hoverDelay"),
+		);
+		onDidChangeHoverDelay(
+			this.onDidChangeHoverDelay,
+			this,
+			this.disposables,
+		);
 		this.onDidChangeHoverDelay();
 	}
 

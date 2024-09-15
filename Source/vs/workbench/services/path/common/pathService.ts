@@ -5,8 +5,8 @@
 
 import { isValidBasename } from "../../../../base/common/extpath.js";
 import { Schemas } from "../../../../base/common/network.js";
-import { type IPath, posix, win32 } from "../../../../base/common/path.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
+import { posix, win32, type IPath } from "../../../../base/common/path.js";
+import { OperatingSystem, OS } from "../../../../base/common/platform.js";
 import { basename } from "../../../../base/common/resources.js";
 import { URI } from "../../../../base/common/uri.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
@@ -91,11 +91,13 @@ export abstract class AbstractPathService implements IPathService {
 
 	constructor(
 		private localUserHome: URI,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private contextService: IWorkspaceContextService
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private contextService: IWorkspaceContextService,
 	) {
-
 		// OS
 		this.resolveOS = (async () => {
 			const env = await this.remoteAgentService.getEnvironment();
@@ -106,7 +108,8 @@ export abstract class AbstractPathService implements IPathService {
 		// User Home
 		this.resolveUserHome = (async () => {
 			const env = await this.remoteAgentService.getEnvironment();
-			const userHome = this.maybeUnresolvedUserHome = env?.userHome ?? localUserHome;
+			const userHome = (this.maybeUnresolvedUserHome =
+				env?.userHome ?? localUserHome);
 
 			return userHome;
 		})();

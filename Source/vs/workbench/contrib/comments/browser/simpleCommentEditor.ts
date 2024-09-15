@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
+import { clamp } from "../../../../base/common/numbers.js";
+import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
-	type EditorAction,
 	EditorContributionInstantiation,
 	EditorExtensionsRegistry,
+	type EditorAction,
 	type IEditorContributionDescription,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
@@ -18,16 +20,6 @@ import {
 	EditorOption,
 	type IEditorOptions,
 } from "../../../../editor/common/config/editorOptions.js";
-import { ICommandService } from "../../../../platform/commands/common/commands.js";
-import {
-	type IContextKey,
-	type IContextKeyService,
-	RawContextKey,
-} from "../../../../platform/contextkey/common/contextkey.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-
-import { clamp } from "../../../../base/common/numbers.js";
-import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import { ILanguageConfigurationService } from "../../../../editor/common/languages/languageConfigurationRegistry.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
 import { CodeActionController } from "../../../../editor/contrib/codeAction/browser/codeActionController.js";
@@ -43,7 +35,14 @@ import { SnippetController2 } from "../../../../editor/contrib/snippet/browser/s
 import { SuggestController } from "../../../../editor/contrib/suggest/browser/suggestController.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
+import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import type { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
+import {
+	RawContextKey,
+	type IContextKey,
+	type IContextKeyService,
+} from "../../../../platform/contextkey/common/contextkey.js";
+import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import { EditorDictation } from "../../codeEditor/browser/dictation/editorDictation.js";
@@ -81,8 +80,10 @@ export class SimpleCommentEditor extends CodeEditorWidget {
 		@IThemeService themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
-		@ILanguageConfigurationService languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageConfigurationService
+		languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
 			contributions: <IEditorContributionDescription[]>[

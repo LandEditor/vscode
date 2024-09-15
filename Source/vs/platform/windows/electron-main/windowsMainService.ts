@@ -5,7 +5,8 @@
 
 import * as fs from "fs";
 import { arch, hostname, release } from "os";
-import { BrowserWindow, type WebContents, app, shell } from "electron";
+import { app, BrowserWindow, shell, type WebContents } from "electron";
+
 import { coalesce, distinct } from "../../../base/common/arrays.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { CharCode } from "../../../base/common/charCode.js";
@@ -26,10 +27,10 @@ import { Schemas } from "../../../base/common/network.js";
 import { basename, join, normalize, posix } from "../../../base/common/path.js";
 import { getMarks, mark } from "../../../base/common/performance.js";
 import {
-	type IProcessEnvironment,
-	OS,
 	isMacintosh,
 	isWindows,
+	OS,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import { cwd } from "../../../base/common/process.js";
 import {
@@ -70,6 +71,9 @@ import { IThemeMainService } from "../../theme/electron-main/themeMainService.js
 import type { IUserDataProfile } from "../../userDataProfile/common/userDataProfile.js";
 import { IUserDataProfilesMainService } from "../../userDataProfile/electron-main/userDataProfile.js";
 import {
+	isFileToOpen,
+	isFolderToOpen,
+	isWorkspaceToOpen,
 	type IAddFoldersRequest,
 	type INativeOpenFileRequest,
 	type INativeWindowConfiguration,
@@ -78,22 +82,19 @@ import {
 	type IPathsToWaitFor,
 	type IWindowOpenable,
 	type IWindowSettings,
-	isFileToOpen,
-	isFolderToOpen,
-	isWorkspaceToOpen,
 } from "../../window/common/window.js";
 import {
-	type ICodeWindow,
 	UnloadReason,
+	type ICodeWindow,
 } from "../../window/electron-main/window.js";
 import {
-	type IAnyWorkspaceIdentifier,
-	type ISingleFolderWorkspaceIdentifier,
-	type IWorkspaceIdentifier,
 	hasWorkspaceFileExtension,
 	isSingleFolderWorkspaceIdentifier,
 	isWorkspaceIdentifier,
 	toWorkspaceIdentifier,
+	type IAnyWorkspaceIdentifier,
+	type ISingleFolderWorkspaceIdentifier,
+	type IWorkspaceIdentifier,
 } from "../../workspace/common/workspace.js";
 import type { IRecent } from "../../workspaces/common/workspaces.js";
 import { IWorkspacesHistoryMainService } from "../../workspaces/electron-main/workspacesHistoryMainService.js";
@@ -105,12 +106,12 @@ import {
 } from "../../workspaces/node/workspaces.js";
 import { CodeWindow } from "./windowImpl.js";
 import {
+	getLastFocused,
+	OpenContext,
 	type IOpenConfiguration,
 	type IOpenEmptyConfiguration,
 	type IWindowsCountChangedEvent,
 	type IWindowsMainService,
-	OpenContext,
-	getLastFocused,
 } from "./windows.js";
 import {
 	findWindowOnExtensionDevelopmentPath,
@@ -118,8 +119,8 @@ import {
 	findWindowOnWorkspaceOrFolder,
 } from "./windowsFinder.js";
 import {
-	type IWindowState,
 	WindowsStateHandler,
+	type IWindowState,
 } from "./windowsStateHandler.js";
 
 //#region Helper Interfaces
@@ -315,20 +316,32 @@ export class WindowsMainService
 		@ILoggerMainService private readonly loggerService: ILoggerMainService,
 		@IStateService private readonly stateService: IStateService,
 		@IPolicyService private readonly policyService: IPolicyService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
-		@IUserDataProfilesMainService private readonly userDataProfilesMainService: IUserDataProfilesMainService,
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IBackupMainService private readonly backupMainService: IBackupMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspacesHistoryMainService private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
-		@IWorkspacesManagementMainService private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IDialogMainService private readonly dialogMainService: IDialogMainService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
+		@IUserDataProfilesMainService
+		private readonly userDataProfilesMainService: IUserDataProfilesMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@IBackupMainService
+		private readonly backupMainService: IBackupMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspacesHistoryMainService
+		private readonly workspacesHistoryMainService: IWorkspacesHistoryMainService,
+		@IWorkspacesManagementMainService
+		private readonly workspacesManagementMainService: IWorkspacesManagementMainService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IDialogMainService
+		private readonly dialogMainService: IDialogMainService,
 		@IFileService private readonly fileService: IFileService,
-		@IProtocolMainService private readonly protocolMainService: IProtocolMainService,
+		@IProtocolMainService
+		private readonly protocolMainService: IProtocolMainService,
 		@IThemeMainService private readonly themeMainService: IThemeMainService,
-		@IAuxiliaryWindowsMainService private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
-		@ICSSDevelopmentService private readonly cssDevelopmentService: ICSSDevelopmentService
+		@IAuxiliaryWindowsMainService
+		private readonly auxiliaryWindowsMainService: IAuxiliaryWindowsMainService,
+		@ICSSDevelopmentService
+		private readonly cssDevelopmentService: ICSSDevelopmentService,
 	) {
 		super();
 
@@ -745,7 +758,7 @@ export class WindowsMainService
 				filesToOpen.filesToOpenOrCreate[0] ||
 				filesToOpen.filesToDiff[0] ||
 				filesToOpen
-					.filesToMerge[3] /* [3] is the resulting merge file */;
+					.filesToMerge[3]; /* [3] is the resulting merge file */
 
 			// only look at the windows with correct authority
 			const windows = this.getWindows().filter(
@@ -1493,7 +1506,8 @@ export class WindowsMainService
 								{
 									remoteAuthority:
 										lastSessionWindow.remoteAuthority,
-									rejectTransientWorkspaces: true /* https://github.com/microsoft/vscode/issues/119695 */,
+									rejectTransientWorkspaces:
+										true /* https://github.com/microsoft/vscode/issues/119695 */,
 								},
 							);
 							if (isWorkspacePathToOpen(pathToOpen)) {
@@ -1933,9 +1947,9 @@ export class WindowsMainService
 			IWindowSettings | undefined
 		>("window");
 		const openFolderInNewWindowConfig =
-			windowConfig?.openFoldersInNewWindow || "default" /* default */;
+			windowConfig?.openFoldersInNewWindow || "default"; /* default */
 		const openFilesInNewWindowConfig =
-			windowConfig?.openFilesInNewWindow || "off" /* default */;
+			windowConfig?.openFilesInNewWindow || "off"; /* default */
 
 		let openFolderInNewWindow =
 			(openConfig.preferNewWindow || openConfig.forceNewWindow) &&

@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	timeout,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import type { VSBufferReadableStream } from "../../../base/common/buffer.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
@@ -38,11 +38,11 @@ import { getServiceMachineId } from "../../externalServices/common/serviceMachin
 import { IFileService } from "../../files/common/files.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	IRequestService,
 	asJson,
 	asText,
 	asTextOrError,
 	hasNoContent,
+	IRequestService,
 	isSuccess,
 	isSuccess as isSuccessContext,
 } from "../../request/common/request.js";
@@ -54,18 +54,18 @@ import {
 import {
 	HEADER_EXECUTION_ID,
 	HEADER_OPERATION_ID,
+	IUserDataSyncLogService,
+	IUserDataSyncStoreManagementService,
+	SYNC_SERVICE_URL_TYPE,
+	UserDataSyncErrorCode,
+	UserDataSyncStoreError,
 	type IAuthenticationProvider,
 	type IResourceRefHandle,
 	type IUserData,
 	type IUserDataManifest,
-	IUserDataSyncLogService,
 	type IUserDataSyncStore,
-	IUserDataSyncStoreManagementService,
 	type IUserDataSyncStoreService,
-	SYNC_SERVICE_URL_TYPE,
 	type ServerResource,
-	UserDataSyncErrorCode,
-	UserDataSyncStoreError,
 	type UserDataSyncStoreType,
 } from "./userDataSync.js";
 
@@ -103,9 +103,9 @@ export abstract class AbstractUserDataSyncStoreManagementService
 			StorageScope.APPLICATION,
 		) as UserDataSyncStoreType;
 	}
-	protected set userDataSyncStoreType(type:
-		| UserDataSyncStoreType
-		| undefined) {
+	protected set userDataSyncStoreType(
+		type: UserDataSyncStoreType | undefined,
+	) {
 		this.storageService.store(
 			SYNC_SERVICE_URL_TYPE,
 			type,
@@ -118,13 +118,25 @@ export abstract class AbstractUserDataSyncStoreManagementService
 
 	constructor(
 		@IProductService protected readonly productService: IProductService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@IStorageService protected readonly storageService: IStorageService,
 	) {
 		super();
 		this.updateUserDataSyncStore();
 		const disposable = this._register(new DisposableStore());
-		this._register(Event.filter(storageService.onDidChangeValue(StorageScope.APPLICATION, SYNC_SERVICE_URL_TYPE, disposable), () => this.userDataSyncStoreType !== this.userDataSyncStore?.type, disposable)(() => this.updateUserDataSyncStore()));
+		this._register(
+			Event.filter(
+				storageService.onDidChangeValue(
+					StorageScope.APPLICATION,
+					SYNC_SERVICE_URL_TYPE,
+					disposable,
+				),
+				() =>
+					this.userDataSyncStoreType !== this.userDataSyncStore?.type,
+				disposable,
+			)(() => this.updateUserDataSyncStore()),
+		);
 	}
 
 	protected updateUserDataSyncStore(): void {
@@ -286,34 +298,45 @@ export class UserDataSyncStoreClient extends Disposable {
 		userDataSyncStoreUrl: URI | undefined,
 		@IProductService productService: IProductService,
 		@IRequestService private readonly requestService: IRequestService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
 		@IStorageService private readonly storageService: IStorageService,
 	) {
 		super();
 		this.updateUserDataSyncStoreUrl(userDataSyncStoreUrl);
-		this.commonHeadersPromise = getServiceMachineId(environmentService, fileService, storageService)
-			.then(uuid => {
-				const headers: IHeaders = {
-					'X-Client-Name': `${productService.applicationName}${isWeb ? '-web' : ''}`,
-					'X-Client-Version': productService.version,
-				};
-				if (productService.commit) {
-					headers['X-Client-Commit'] = productService.commit;
-				}
-				return headers;
-			});
+		this.commonHeadersPromise = getServiceMachineId(
+			environmentService,
+			fileService,
+			storageService,
+		).then((uuid) => {
+			const headers: IHeaders = {
+				"X-Client-Name": `${productService.applicationName}${isWeb ? "-web" : ""}`,
+				"X-Client-Version": productService.version,
+			};
+			if (productService.commit) {
+				headers["X-Client-Commit"] = productService.commit;
+			}
+			return headers;
+		});
 
 		/* A requests session that limits requests per sessions */
-		this.session = new RequestsSession(REQUEST_SESSION_LIMIT, REQUEST_SESSION_INTERVAL, this.requestService, this.logService);
+		this.session = new RequestsSession(
+			REQUEST_SESSION_LIMIT,
+			REQUEST_SESSION_INTERVAL,
+			this.requestService,
+			this.logService,
+		);
 		this.initDonotMakeRequestsUntil();
-		this._register(toDisposable(() => {
-			if (this.resetDonotMakeRequestsUntilPromise) {
-				this.resetDonotMakeRequestsUntilPromise.cancel();
-				this.resetDonotMakeRequestsUntilPromise = undefined;
-			}
-		}));
+		this._register(
+			toDisposable(() => {
+				if (this.resetDonotMakeRequestsUntilPromise) {
+					this.resetDonotMakeRequestsUntilPromise.cancel();
+					this.resetDonotMakeRequestsUntilPromise = undefined;
+				}
+			}),
+		);
 	}
 
 	setAuthToken(token: string, type: string): void {
@@ -1140,7 +1163,8 @@ export class UserDataSyncStoreService
 	_serviceBrand: any;
 
 	constructor(
-		@IUserDataSyncStoreManagementService userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IUserDataSyncStoreManagementService
+		userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@IProductService productService: IProductService,
 		@IRequestService requestService: IRequestService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,

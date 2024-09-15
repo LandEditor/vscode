@@ -7,9 +7,9 @@ import { Emitter, Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import type { URI, UriDto } from "../../../base/common/uri.js";
 import {
-	type IURITransformer,
 	transformIncomingURIs,
 	transformOutgoingURIs,
+	type IURITransformer,
 } from "../../../base/common/uriIpc.js";
 import type {
 	IChannel,
@@ -17,12 +17,12 @@ import type {
 } from "../../../base/parts/ipc/common/ipc.js";
 import type { IAnyWorkspaceIdentifier } from "../../workspace/common/workspace.js";
 import {
+	reviveProfile,
 	type DidChangeProfilesEvent,
 	type IUserDataProfile,
 	type IUserDataProfileOptions,
-	type IUserDataProfileUpdateOptions,
 	type IUserDataProfilesService,
-	reviveProfile,
+	type IUserDataProfileUpdateOptions,
 } from "./userDataProfile.js";
 
 export class RemoteUserDataProfilesServiceChannel implements IServerChannel {

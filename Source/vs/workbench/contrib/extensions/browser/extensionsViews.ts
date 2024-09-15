@@ -11,14 +11,14 @@ import type { IListContextMenuEvent } from "../../../../base/browser/ui/list/lis
 import {
 	Action,
 	ActionRunner,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { coalesce, distinct } from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
-	ThrottledDelayer,
 	createCancelablePromise,
+	ThrottledDelayer,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { createErrorWithActions } from "../../../../base/common/errorMessage.js";
@@ -34,9 +34,9 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import {
 	DelayedPagedModel,
+	PagedModel,
 	type IPagedModel,
 	type IPager,
-	PagedModel,
 } from "../../../../base/common/paging.js";
 import { isString } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -49,9 +49,9 @@ import {
 	ExtensionGalleryError,
 	ExtensionGalleryErrorCode,
 	SortBy as GallerySortBy,
+	SortOrder,
 	type IQueryOptions as IGalleryQueryOptions,
 	type InstallExtensionInfo,
-	SortOrder,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
 	areSameExtensions,
@@ -60,10 +60,10 @@ import {
 import {
 	ExtensionIdentifier,
 	ExtensionIdentifierMap,
+	isLanguagePackExtension,
 	type ExtensionUntrustedWorkspaceSupportType,
 	type ExtensionVirtualWorkspaceSupportType,
 	type IExtensionDescription,
-	isLanguagePackExtension,
 } from "../../../../platform/extensions/common/extensions.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -91,9 +91,9 @@ import { isVirtualWorkspace } from "../../../../platform/workspace/common/virtua
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
 	ViewPaneShowActions,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import type { IViewletViewOptions } from "../../../browser/parts/views/viewsViewlet.js";
 import {
@@ -102,16 +102,16 @@ import {
 } from "../../../common/views.js";
 import {
 	Extensions,
-	type IExtensionFeatureRenderer,
 	IExtensionFeaturesManagementService,
+	type IExtensionFeatureRenderer,
 	type IExtensionFeaturesRegistry,
 } from "../../../services/extensionManagement/common/extensionFeatures.js";
 import {
 	EnablementState,
-	type IExtensionManagementServer,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionEnablementService,
 	IWorkbenchExtensionManagementService,
+	type IExtensionManagementServer,
 } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { IExtensionRecommendationsService } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import { IExtensionManifestPropertiesService } from "../../../services/extensions/common/extensionManifestPropertiesService.js";
@@ -127,19 +127,19 @@ import { IPreferencesService } from "../../../services/preferences/common/prefer
 import { Query } from "../common/extensionQuery.js";
 import {
 	ExtensionState,
-	type IExtension,
 	IExtensionsWorkbenchService,
+	type IExtension,
 	type IWorkspaceRecommendedExtensionsView,
 } from "../common/extensions.js";
 import {
 	ExtensionAction,
-	ManageExtensionAction,
 	getContextMenuActions,
+	ManageExtensionAction,
 } from "./extensionsActions.js";
 import {
 	Delegate,
-	type IExtensionsViewState,
 	Renderer,
+	type IExtensionsViewState,
 } from "./extensionsList.js";
 
 export const NONE_CATEGORY = "none";
@@ -221,45 +221,87 @@ export class ExtensionsListView extends ViewPane {
 	constructor(
 		protected readonly options: ExtensionsListViewOptions,
 		viewletViewOptions: IViewletViewOptions,
-		@INotificationService protected notificationService: INotificationService,
+		@INotificationService
+		protected notificationService: INotificationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionsWorkbenchService protected extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionRecommendationsService protected extensionRecommendationsService: IExtensionRecommendationsService,
+		@IExtensionsWorkbenchService
+		protected extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionRecommendationsService
+		protected extensionRecommendationsService: IExtensionRecommendationsService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IWorkspaceContextService protected contextService: IWorkspaceContextService,
-		@IExtensionManagementServerService protected readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IWorkbenchExtensionManagementService protected readonly extensionManagementService: IWorkbenchExtensionManagementService,
-		@IWorkspaceContextService protected readonly workspaceService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		protected contextService: IWorkspaceContextService,
+		@IExtensionManagementServerService
+		protected readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkbenchExtensionManagementService
+		protected readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkspaceContextService
+		protected readonly workspaceService: IWorkspaceContextService,
 		@IProductService protected readonly productService: IProductService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IOpenerService openerService: IOpenerService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
-		@ILogService private readonly logService: ILogService
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
+		@ILogService private readonly logService: ILogService,
 	) {
-		super({
-			...(viewletViewOptions as IViewPaneOptions),
-			showActions: ViewPaneShowActions.Always,
-			maximumBodySize: options.flexibleHeight ? (storageService.getNumber(`${viewletViewOptions.id}.size`, StorageScope.PROFILE, 0) ? undefined : 0) : undefined
-		}, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			{
+				...(viewletViewOptions as IViewPaneOptions),
+				showActions: ViewPaneShowActions.Always,
+				maximumBodySize: options.flexibleHeight
+					? storageService.getNumber(
+							`${viewletViewOptions.id}.size`,
+							StorageScope.PROFILE,
+							0,
+						)
+						? undefined
+						: 0
+					: undefined,
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 		if (this.options.onDidChangeTitle) {
-			this._register(this.options.onDidChangeTitle(title => this.updateTitle(title)));
+			this._register(
+				this.options.onDidChangeTitle((title) =>
+					this.updateTitle(title),
+				),
+			);
 		}
 
-		this._register(this.contextMenuActionRunner.onDidRun(({ error }) => error && this.notificationService.error(error)));
+		this._register(
+			this.contextMenuActionRunner.onDidRun(
+				({ error }) => error && this.notificationService.error(error),
+			),
+		);
 		this.registerActions();
 	}
 
@@ -2303,15 +2345,20 @@ export class StaticQueryExtensionsView extends ExtensionsListView {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
 		@IExtensionService extensionService: IExtensionService,
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionRecommendationsService extensionRecommendationsService: IExtensionRecommendationsService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionRecommendationsService
+		extensionRecommendationsService: IExtensionRecommendationsService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IWorkbenchExtensionManagementService extensionManagementService: IWorkbenchExtensionManagementService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkbenchExtensionManagementService
+		extensionManagementService: IWorkbenchExtensionManagementService,
 		@IWorkspaceContextService workspaceService: IWorkspaceContextService,
 		@IProductService productService: IProductService,
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -2319,10 +2366,13 @@ export class StaticQueryExtensionsView extends ExtensionsListView {
 		@IOpenerService openerService: IOpenerService,
 		@IPreferencesService preferencesService: IPreferencesService,
 		@IStorageService storageService: IStorageService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkbenchExtensionEnablementService extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkbenchExtensionEnablementService
+		extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IWorkbenchLayoutService layoutService: IWorkbenchLayoutService,
-		@IExtensionFeaturesManagementService extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IExtensionFeaturesManagementService
+		extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILogService logService: ILogService,
 	) {

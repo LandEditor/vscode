@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import * as nls from "../../../nls.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
@@ -17,17 +18,17 @@ import { createDecorator } from "../../../platform/instantiation/common/instanti
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
 	DisposableTunnel,
+	TunnelPrivacyId,
 	type ProvidedOnAutoForward,
 	type ProvidedPortAttributes,
 	type RemoteTunnel,
 	type TunnelCreationOptions,
 	type TunnelOptions,
-	TunnelPrivacyId,
 } from "../../../platform/tunnel/common/tunnel.js";
 import type { CandidatePort } from "../../services/remote/common/tunnelModel.js";
 import {
-	type ExtHostTunnelServiceShape,
 	MainContext,
+	type ExtHostTunnelServiceShape,
 	type MainThreadTunnelServiceShape,
 	type PortAttributesSelector,
 	type TunnelDto,
@@ -138,7 +139,7 @@ export class ExtHostTunnelService
 	constructor(
 		@IExtHostRpcService extHostRpc: IExtHostRpcService,
 		@IExtHostInitDataService initData: IExtHostInitDataService,
-		@ILogService protected readonly logService: ILogService
+		@ILogService protected readonly logService: ILogService,
 	) {
 		super();
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadTunnelService);

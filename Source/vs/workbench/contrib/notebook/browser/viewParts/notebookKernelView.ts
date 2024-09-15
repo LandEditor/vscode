@@ -40,8 +40,8 @@ import {
 	SELECT_KERNEL_ID,
 } from "../controller/coreActions.js";
 import {
-	type INotebookEditor,
 	getNotebookEditorFromEditorPane,
+	type INotebookEditor,
 } from "../notebookBrowser.js";
 import { selectKernelIcon } from "../notebookIcons.js";
 import {
@@ -209,23 +209,58 @@ export class NotebooKernelActionViewItem extends ActionViewItem {
 
 	constructor(
 		actualAction: IAction,
-		private readonly _editor: { onDidChangeModel: Event<void>; textModel: NotebookTextModel | undefined; scopedContextKeyService?: IContextKeyService } | INotebookEditor,
+		private readonly _editor:
+			| {
+					onDidChangeModel: Event<void>;
+					textModel: NotebookTextModel | undefined;
+					scopedContextKeyService?: IContextKeyService;
+			  }
+			| INotebookEditor,
 		options: IActionViewItemOptions,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookKernelHistoryService private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookKernelHistoryService
+		private readonly _notebookKernelHistoryService: INotebookKernelHistoryService,
 	) {
 		super(
 			undefined,
-			new Action('fakeAction', undefined, ThemeIcon.asClassName(selectKernelIcon), true, (event) => actualAction.run(event)),
-			{ ...options, label: false, icon: true }
+			new Action(
+				"fakeAction",
+				undefined,
+				ThemeIcon.asClassName(selectKernelIcon),
+				true,
+				(event) => actualAction.run(event),
+			),
+			{ ...options, label: false, icon: true },
 		);
 		this._register(_editor.onDidChangeModel(this._update, this));
-		this._register(_notebookKernelService.onDidAddKernel(this._update, this));
-		this._register(_notebookKernelService.onDidRemoveKernel(this._update, this));
-		this._register(_notebookKernelService.onDidChangeNotebookAffinity(this._update, this));
-		this._register(_notebookKernelService.onDidChangeSelectedNotebooks(this._update, this));
-		this._register(_notebookKernelService.onDidChangeSourceActions(this._update, this));
-		this._register(_notebookKernelService.onDidChangeKernelDetectionTasks(this._update, this));
+		this._register(
+			_notebookKernelService.onDidAddKernel(this._update, this),
+		);
+		this._register(
+			_notebookKernelService.onDidRemoveKernel(this._update, this),
+		);
+		this._register(
+			_notebookKernelService.onDidChangeNotebookAffinity(
+				this._update,
+				this,
+			),
+		);
+		this._register(
+			_notebookKernelService.onDidChangeSelectedNotebooks(
+				this._update,
+				this,
+			),
+		);
+		this._register(
+			_notebookKernelService.onDidChangeSourceActions(this._update, this),
+		);
+		this._register(
+			_notebookKernelService.onDidChangeKernelDetectionTasks(
+				this._update,
+				this,
+			),
+		);
 	}
 
 	override render(container: HTMLElement): void {

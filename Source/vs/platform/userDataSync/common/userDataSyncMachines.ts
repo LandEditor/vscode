@@ -6,15 +6,15 @@
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import {
-	Platform,
-	PlatformToString,
 	isAndroid,
 	isChrome,
 	isEdge,
 	isFirefox,
 	isSafari,
 	isWeb,
+	Platform,
 	platform,
+	PlatformToString,
 } from "../../../base/common/platform.js";
 import { escapeRegExpCharacters } from "../../../base/common/strings.js";
 import { localize } from "../../../nls.js";
@@ -29,10 +29,10 @@ import {
 	StorageTarget,
 } from "../../storage/common/storage.js";
 import {
-	type IUserData,
-	type IUserDataManifest,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
+	type IUserData,
+	type IUserDataManifest,
 } from "./userDataSync.js";
 
 export interface IMachineData {
@@ -127,12 +127,18 @@ export class UserDataSyncMachinesService
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
 		@IProductService private readonly productService: IProductService,
 	) {
 		super();
-		this.currentMachineIdPromise = getServiceMachineId(environmentService, fileService, storageService);
+		this.currentMachineIdPromise = getServiceMachineId(
+			environmentService,
+			fileService,
+			storageService,
+		);
 	}
 
 	async getMachines(

@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { onUnexpectedExternalError } from "../../../base/common/errors.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
@@ -18,10 +19,10 @@ import type {
 } from "../../contrib/chat/common/chatVariables.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostChatVariablesShape,
 	type IChatVariableResolverProgressDto,
 	type IMainContext,
-	MainContext,
 	type MainThreadChatVariablesShape,
 } from "./extHost.protocol.js";
 import * as typeConvert from "./extHostTypeConverters.js";

@@ -17,7 +17,10 @@
 }
 
 .monaco-workbench:not(.reduce-motion) .monaco-editor .dirty-diff-glyph:before {
-	transition: width 80ms linear, left 80ms linear, transform 80ms linear;
+	transition:
+		width 80ms linear,
+		left 80ms linear,
+		transform 80ms linear;
 }
 
 /* Hide glyph decorations when inside the inline diff editor */
@@ -133,8 +136,11 @@
 }
 
 .monaco-workbench:not(.reduce-motion) .monaco-editor .dirty-diff-deleted:after {
-	transition: border-top-width 80ms linear, border-bottom-width 80ms linear,
-		bottom 80ms linear, opacity 0.5s;
+	transition:
+		border-top-width 80ms linear,
+		border-bottom-width 80ms linear,
+		bottom 80ms linear,
+		opacity 0.5s;
 }
 
 .monaco-editor .dirty-diff-deleted:before {

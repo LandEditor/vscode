@@ -19,11 +19,13 @@ import { KeyCode } from "../../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { observableValue } from "../../../../../base/common/observable.js";
+
 import "./testResultsViewContent.css";
+
 import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js";
 import { ITextModelService } from "../../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../../nls.js";
@@ -37,8 +39,8 @@ import {
 } from "../../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../../platform/commands/common/commands.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
 	IInstantiationService,
@@ -50,33 +52,33 @@ import { IUriIdentityService } from "../../../../../platform/uriIdentity/common/
 import { CustomStackFrame } from "../../../debug/browser/callStackWidget.js";
 import { TestCommandId } from "../../common/constants.js";
 import type { IObservableValue } from "../../common/observableValue.js";
+import { TestingContextKeys } from "../../common/testingContextKeys.js";
 import {
-	ITestProfileService,
 	capabilityContextKeys,
+	ITestProfileService,
 } from "../../common/testProfileService.js";
 import { LiveTestResult } from "../../common/testResult.js";
-import { type ITestFollowup, ITestService } from "../../common/testService.js";
+import { ITestService, type ITestFollowup } from "../../common/testService.js";
 import {
-	type ITestMessageStackFrame,
 	TestRunProfileBitset,
+	type ITestMessageStackFrame,
 } from "../../common/testTypes.js";
-import { TestingContextKeys } from "../../common/testingContextKeys.js";
 import * as icons from "../icons.js";
 import { TestResultStackWidget } from "./testMessageStack.js";
 import {
 	DiffContentProvider,
-	type IPeekOutputRenderer,
 	MarkdownTestMessagePeek,
 	PlainTextMessagePeek,
 	TerminalMessagePeek,
+	type IPeekOutputRenderer,
 } from "./testResultsOutput.js";
 import {
-	type InspectSubject,
+	equalsSubject,
+	getSubjectTestItem,
 	MessageSubject,
 	TaskSubject,
 	TestOutputSubject,
-	equalsSubject,
-	getSubjectTestItem,
+	type InspectSubject,
 } from "./testResultsSubject.js";
 import { OutputPeekTree } from "./testResultsTree.js";
 
@@ -99,17 +101,21 @@ class MessageStackFrame extends CustomStackFrame {
 		private readonly message: HTMLElement,
 		private readonly followup: FollowupActionWidget,
 		private readonly subject: InspectSubject,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ITestProfileService private readonly profileService: ITestProfileService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ITestProfileService
+		private readonly profileService: ITestProfileService,
 	) {
 		super();
 
-		this.label = subject instanceof MessageSubject
-			? subject.test.label
-			: subject instanceof TestOutputSubject
-				? subject.test.item.label
-				: subject.result.name;
+		this.label =
+			subject instanceof MessageSubject
+				? subject.test.label
+				: subject instanceof TestOutputSubject
+					? subject.test.item.label
+					: subject.result.name;
 	}
 
 	public override render(container: HTMLElement): IDisposable {
@@ -304,10 +310,13 @@ export class TestResultsViewContent extends Disposable {
 			showRevealLocationOnMessages: boolean;
 			locationForProgress: string;
 		},
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextModelService protected readonly modelService: ITextModelService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 	}
@@ -457,10 +466,7 @@ export class TestResultsViewContent extends Disposable {
 	 * Shows a message in-place without showing or changing the peek location.
 	 * This is mostly used if peeking a message without a location.
 	 */
-	public reveal(opts: {
-		subject: InspectSubject;
-		preserveFocus: boolean;
-	}) {
+	public reveal(opts: { subject: InspectSubject; preserveFocus: boolean }) {
 		this.didReveal.fire(opts);
 
 		if (this.current && equalsSubject(this.current, opts.subject)) {

@@ -3,8 +3,6 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../../../nls.js";
-
 // base
 import * as browser from "../../../../base/browser/browser.js";
 import {
@@ -13,9 +11,9 @@ import {
 } from "../../../../base/browser/canIUse.js";
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	StandardKeyboardEvent,
 	printKeyboardEvent,
 	printStandardKeyboardEvent,
+	StandardKeyboardEvent,
 } from "../../../../base/browser/keyboardEvent.js";
 import { mainWindow } from "../../../../base/browser/window.js";
 import {
@@ -25,6 +23,14 @@ import {
 import { Emitter, Event } from "../../../../base/common/event.js";
 import { parse } from "../../../../base/common/json.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
+import { UserSettingsLabelProvider } from "../../../../base/common/keybindingLabels.js";
+import { KeybindingParser } from "../../../../base/common/keybindingParser.js";
+import {
+	KeyCodeChord,
+	ScanCodeChord,
+	type Keybinding,
+	type ResolvedKeybinding,
+} from "../../../../base/common/keybindings.js";
 import {
 	IMMUTABLE_CODE_TO_KEY_CODE,
 	KeyCode,
@@ -33,14 +39,6 @@ import {
 	ScanCode,
 	ScanCodeUtils,
 } from "../../../../base/common/keyCodes.js";
-import { UserSettingsLabelProvider } from "../../../../base/common/keybindingLabels.js";
-import { KeybindingParser } from "../../../../base/common/keybindingParser.js";
-import {
-	KeyCodeChord,
-	type Keybinding,
-	type ResolvedKeybinding,
-	ScanCodeChord,
-} from "../../../../base/common/keybindings.js";
 import {
 	Disposable,
 	DisposableStore,
@@ -48,15 +46,15 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import * as objects from "../../../../base/common/objects.js";
 import {
-	OS,
-	OperatingSystem,
 	isMacintosh,
+	OperatingSystem,
+	OS,
 } from "../../../../base/common/platform.js";
 import { dirname } from "../../../../base/common/resources.js";
-
+import * as nls from "../../../../nls.js";
 import {
-	type ILocalizedString,
 	isLocalizedString,
+	type ILocalizedString,
 } from "../../../../platform/action/common/action.js";
 // platform
 import { MenuRegistry } from "../../../../platform/actions/common/actions.js";
@@ -66,9 +64,9 @@ import {
 } from "../../../../platform/commands/common/commands.js";
 import {
 	ContextKeyExpr,
+	IContextKeyService,
 	type ContextKeyExpression,
 	type IContextKey,
-	IContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import {
@@ -91,10 +89,10 @@ import {
 } from "../../../../platform/keybinding/common/keybinding.js";
 import { KeybindingResolver } from "../../../../platform/keybinding/common/keybindingResolver.js";
 import {
+	KeybindingsRegistry,
+	KeybindingWeight,
 	type IExtensionKeybindingRule,
 	type IKeybindingItem,
-	KeybindingWeight,
-	KeybindingsRegistry,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { ResolvedKeybindingItem } from "../../../../platform/keybinding/common/resolvedKeybindingItem.js";
 import { IKeyboardLayoutService } from "../../../../platform/keyboardLayout/common/keyboardLayout.js";
@@ -104,20 +102,19 @@ import { INotificationService } from "../../../../platform/notification/common/n
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
-
 // workbench
 import { commandsExtensionPoint } from "../../actions/common/menusExtensionPoint.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import {
-	type ExtensionMessageCollector,
 	ExtensionsRegistry,
+	type ExtensionMessageCollector,
 } from "../../extensions/common/extensionsRegistry.js";
 import { IHostService } from "../../host/browser/host.js";
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type IUserKeybindingItem,
 	KeybindingIO,
 	OutputBuilder,
+	type IUserKeybindingItem,
 } from "../common/keybindingIO.js";
 import type { IKeyboard, INavigatorWithKeyboard } from "./navigatorKeyboard.js";
 import { getAllUnboundCommands } from "./unboundCommands.js";
@@ -322,46 +319,74 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		@ICommandService commandService: ICommandService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@INotificationService notificationService: INotificationService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 		@IHostService private readonly hostService: IHostService,
 		@IExtensionService extensionService: IExtensionService,
 		@IFileService fileService: IFileService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILogService logService: ILogService,
-		@IKeyboardLayoutService private readonly keyboardLayoutService: IKeyboardLayoutService
+		@IKeyboardLayoutService
+		private readonly keyboardLayoutService: IKeyboardLayoutService,
 	) {
-		super(contextKeyService, commandService, telemetryService, notificationService, logService);
+		super(
+			contextKeyService,
+			commandService,
+			telemetryService,
+			notificationService,
+			logService,
+		);
 
-		this.isComposingGlobalContextKey = contextKeyService.createKey('isComposing', false);
+		this.isComposingGlobalContextKey = contextKeyService.createKey(
+			"isComposing",
+			false,
+		);
 
 		this.kbsJsonSchema = new KeybindingsJsonSchema();
 		this.updateKeybindingsJsonSchema();
 
 		this._keyboardMapper = this.keyboardLayoutService.getKeyboardMapper();
-		this._register(this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
-			this._keyboardMapper = this.keyboardLayoutService.getKeyboardMapper();
-			this.updateResolver();
-		}));
+		this._register(
+			this.keyboardLayoutService.onDidChangeKeyboardLayout(() => {
+				this._keyboardMapper =
+					this.keyboardLayoutService.getKeyboardMapper();
+				this.updateResolver();
+			}),
+		);
 
 		this._keybindingHoldMode = null;
 		this._cachedResolver = null;
 
-		this.userKeybindings = this._register(new UserKeybindings(userDataProfileService, uriIdentityService, fileService, logService));
+		this.userKeybindings = this._register(
+			new UserKeybindings(
+				userDataProfileService,
+				uriIdentityService,
+				fileService,
+				logService,
+			),
+		);
 		this.userKeybindings.initialize().then(() => {
 			if (this.userKeybindings.keybindings.length) {
 				this.updateResolver();
 			}
 		});
-		this._register(this.userKeybindings.onDidChange(() => {
-			logService.debug('User keybindings changed');
-			this.updateResolver();
-		}));
+		this._register(
+			this.userKeybindings.onDidChange(() => {
+				logService.debug("User keybindings changed");
+				this.updateResolver();
+			}),
+		);
 
 		keybindingsExtPoint.setHandler((extensions) => {
-
 			const keybindings: IExtensionKeybindingRule[] = [];
 			for (const extension of extensions) {
-				this._handleKeybindingsExtensionPointUser(extension.description.identifier, extension.description.isBuiltin, extension.value, extension.collector, keybindings);
+				this._handleKeybindingsExtensionPointUser(
+					extension.description.identifier,
+					extension.description.isBuiltin,
+					extension.value,
+					extension.collector,
+					keybindings,
+				);
 			}
 
 			KeybindingsRegistry.setExtensionKeybindings(keybindings);
@@ -369,31 +394,46 @@ export class WorkbenchKeybindingService extends AbstractKeybindingService {
 		});
 
 		this.updateKeybindingsJsonSchema();
-		this._register(extensionService.onDidRegisterExtensions(() => this.updateKeybindingsJsonSchema()));
+		this._register(
+			extensionService.onDidRegisterExtensions(() =>
+				this.updateKeybindingsJsonSchema(),
+			),
+		);
 
-		this._register(Event.runAndSubscribe(dom.onDidRegisterWindow, ({ window, disposables }) => disposables.add(this._registerKeyListeners(window)), { window: mainWindow, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				dom.onDidRegisterWindow,
+				({ window, disposables }) =>
+					disposables.add(this._registerKeyListeners(window)),
+				{ window: mainWindow, disposables: this._store },
+			),
+		);
 
-		this._register(browser.onDidChangeFullscreen(windowId => {
-			if (windowId !== mainWindow.vscodeWindowId) {
-				return;
-			}
+		this._register(
+			browser.onDidChangeFullscreen((windowId) => {
+				if (windowId !== mainWindow.vscodeWindowId) {
+					return;
+				}
 
-			const keyboard: IKeyboard | null = (<INavigatorWithKeyboard>navigator).keyboard;
+				const keyboard: IKeyboard | null = (<INavigatorWithKeyboard>(
+					navigator
+				)).keyboard;
 
-			if (BrowserFeatures.keyboard === KeyboardSupport.None) {
-				return;
-			}
+				if (BrowserFeatures.keyboard === KeyboardSupport.None) {
+					return;
+				}
 
-			if (browser.isFullscreen(mainWindow)) {
-				keyboard?.lock(['Escape']);
-			} else {
-				keyboard?.unlock();
-			}
+				if (browser.isFullscreen(mainWindow)) {
+					keyboard?.lock(["Escape"]);
+				} else {
+					keyboard?.unlock();
+				}
 
-			// update resolver which will bring back all unbound keyboard shortcuts
-			this._cachedResolver = null;
-			this._onDidUpdateKeybindings.fire();
-		}));
+				// update resolver which will bring back all unbound keyboard shortcuts
+				this._cachedResolver = null;
+				this._onDidUpdateKeybindings.fire();
+			}),
+		);
 	}
 
 	private _registerKeyListeners(window: Window): IDisposable {

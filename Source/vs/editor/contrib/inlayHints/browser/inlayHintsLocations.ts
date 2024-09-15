@@ -6,16 +6,16 @@
 import * as dom from "../../../../base/browser/dom.js";
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
+	isIMenuItem,
 	MenuId,
 	MenuItemAction,
 	MenuRegistry,
-	isIMenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";

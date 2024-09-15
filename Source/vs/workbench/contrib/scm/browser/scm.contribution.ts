@@ -36,8 +36,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
 	IListService,
@@ -46,16 +46,16 @@ import {
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js";
 import {
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
-	type IViewContainersRegistry,
-	type IViewsRegistry,
 	Extensions as ViewContainerExtensions,
 	ViewContainerLocation,
+	type IViewContainersRegistry,
+	type IViewsRegistry,
 } from "../../../common/views.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
@@ -67,12 +67,12 @@ import { IQuickDiffService } from "../common/quickDiff.js";
 import { QuickDiffService } from "../common/quickDiffService.js";
 import {
 	HISTORY_VIEW_PANE_ID,
-	type ISCMProvider,
 	ISCMService,
 	ISCMViewService,
 	REPOSITORIES_VIEW_PANE_ID,
-	VIEWLET_ID,
 	VIEW_PANE_ID,
+	VIEWLET_ID,
+	type ISCMProvider,
 } from "../common/scm.js";
 import { SCMService } from "../common/scmService.js";
 import {

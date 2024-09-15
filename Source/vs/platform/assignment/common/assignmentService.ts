@@ -8,6 +8,7 @@ import type {
 	IKeyValueStorage,
 	ExperimentationService as TASClient,
 } from "tas-client-umd";
+
 import { importAMDNodeModule } from "../../../amdX.js";
 import type { IConfigurationService } from "../../configuration/common/configuration.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
@@ -18,8 +19,8 @@ import {
 	ASSIGNMENT_REFETCH_INTERVAL,
 	ASSIGNMENT_STORAGE_KEY,
 	AssignmentFilterProvider,
-	type IAssignmentService,
 	TargetPopulation,
+	type IAssignmentService,
 } from "./assignment.js";
 
 export abstract class BaseAssignmentService implements IAssignmentService {

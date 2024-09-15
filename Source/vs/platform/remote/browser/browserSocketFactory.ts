@@ -13,11 +13,11 @@ import {
 	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
-	type ISocket,
-	type SocketCloseEvent,
 	SocketCloseEventType,
 	SocketDiagnostics,
 	SocketDiagnosticsEventType,
+	type ISocket,
+	type SocketCloseEvent,
 } from "../../../base/parts/ipc/common/ipc.net.js";
 import {
 	RemoteAuthorityResolverError,

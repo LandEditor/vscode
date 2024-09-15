@@ -24,20 +24,20 @@ import type {
 	StrictPropertyCheck,
 } from "./gdprTypings.js";
 import {
-	type ICommonProperties,
-	type ITelemetryData,
-	type ITelemetryService,
 	TELEMETRY_CRASH_REPORTER_SETTING_ID,
 	TELEMETRY_OLD_SETTING_ID,
 	TELEMETRY_SECTION_ID,
 	TELEMETRY_SETTING_ID,
 	TelemetryConfiguration,
 	TelemetryLevel,
+	type ICommonProperties,
+	type ITelemetryData,
+	type ITelemetryService,
 } from "./telemetry.js";
 import {
-	type ITelemetryAppender,
 	cleanData,
 	getTelemetryLevel,
+	type ITelemetryAppender,
 } from "./telemetryUtils.js";
 
 export interface ITelemetryServiceConfig {
@@ -72,45 +72,63 @@ export class TelemetryService implements ITelemetryService {
 
 	constructor(
 		config: ITelemetryServiceConfig,
-		@IConfigurationService private _configurationService: IConfigurationService,
-		@IProductService private _productService: IProductService
+		@IConfigurationService
+		private _configurationService: IConfigurationService,
+		@IProductService private _productService: IProductService,
 	) {
 		this._appenders = config.appenders;
 		this._commonProperties = config.commonProperties ?? Object.create(null);
 
-		this.sessionId = this._commonProperties['sessionID'] as string;
-		this.machineId = this._commonProperties['common.machineId'] as string;
-		this.sqmId = this._commonProperties['common.sqmId'] as string;
-		this.devDeviceId = this._commonProperties['common.devDeviceId'] as string;
-		this.firstSessionDate = this._commonProperties['common.firstSessionDate'] as string;
-		this.msftInternal = this._commonProperties['common.msftInternal'] as boolean | undefined;
+		this.sessionId = this._commonProperties["sessionID"] as string;
+		this.machineId = this._commonProperties["common.machineId"] as string;
+		this.sqmId = this._commonProperties["common.sqmId"] as string;
+		this.devDeviceId = this._commonProperties[
+			"common.devDeviceId"
+		] as string;
+		this.firstSessionDate = this._commonProperties[
+			"common.firstSessionDate"
+		] as string;
+		this.msftInternal = this._commonProperties["common.msftInternal"] as
+			| boolean
+			| undefined;
 
 		this._piiPaths = config.piiPaths || [];
 		this._telemetryLevel = TelemetryLevel.USAGE;
 		this._sendErrorTelemetry = !!config.sendErrorTelemetry;
 
 		// static cleanup pattern for: `vscode-file:///DANGEROUS/PATH/resources/app/Useful/Information`
-		this._cleanupPatterns = [/(vscode-)?file:\/\/\/.*?\/resources\/app\//gi];
+		this._cleanupPatterns = [
+			/(vscode-)?file:\/\/\/.*?\/resources\/app\//gi,
+		];
 
 		for (const piiPath of this._piiPaths) {
-			this._cleanupPatterns.push(new RegExp(escapeRegExpCharacters(piiPath), 'gi'));
+			this._cleanupPatterns.push(
+				new RegExp(escapeRegExpCharacters(piiPath), "gi"),
+			);
 
-			if (piiPath.indexOf('\\') >= 0) {
-				this._cleanupPatterns.push(new RegExp(escapeRegExpCharacters(piiPath.replace(/\\/g, '/')), 'gi'));
+			if (piiPath.indexOf("\\") >= 0) {
+				this._cleanupPatterns.push(
+					new RegExp(
+						escapeRegExpCharacters(piiPath.replace(/\\/g, "/")),
+						"gi",
+					),
+				);
 			}
 		}
 
 		this._updateTelemetryLevel();
-		this._disposables.add(this._configurationService.onDidChangeConfiguration(e => {
-			// Check on the telemetry settings and update the state if changed
-			const affectsTelemetryConfig =
-				e.affectsConfiguration(TELEMETRY_SETTING_ID)
-				|| e.affectsConfiguration(TELEMETRY_OLD_SETTING_ID)
-				|| e.affectsConfiguration(TELEMETRY_CRASH_REPORTER_SETTING_ID);
-			if (affectsTelemetryConfig) {
-				this._updateTelemetryLevel();
-			}
-		}));
+		this._disposables.add(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				// Check on the telemetry settings and update the state if changed
+				const affectsTelemetryConfig =
+					e.affectsConfiguration(TELEMETRY_SETTING_ID) ||
+					e.affectsConfiguration(TELEMETRY_OLD_SETTING_ID) ||
+					e.affectsConfiguration(TELEMETRY_CRASH_REPORTER_SETTING_ID);
+				if (affectsTelemetryConfig) {
+					this._updateTelemetryLevel();
+				}
+			}),
+		);
 	}
 
 	setExperimentProperty(name: string, value: string): void {

@@ -12,7 +12,9 @@ import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { assertIsDefined } from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
+
 import "./media/searchEditor.css";
+
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import {
@@ -32,8 +34,8 @@ import { localize } from "../../../../nls.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextViewService } from "../../../../platform/contextview/browser/contextView.js";
 import type { IEditorOptions } from "../../../../platform/editor/common/editor.js";
@@ -68,20 +70,20 @@ import {
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type ITextQueryBuilderOptions,
 	QueryBuilder,
+	type ITextQueryBuilderOptions,
 } from "../../../services/search/common/queryBuilder.js";
 import {
+	SearchSortOrder,
 	type IPatternInfo,
 	type ISearchComplete,
 	type ISearchConfigurationProperties,
 	type ITextQuery,
-	SearchSortOrder,
 } from "../../../services/search/common/search.js";
 import type { TextSearchCompleteMessage } from "../../../services/search/common/searchExtTypes.js";
 import {
@@ -150,31 +152,51 @@ export class SearchEditor extends AbstractTextCodeEditor<SearchEditorViewState> 
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
 		@IModelService private readonly modelService: IModelService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IEditorProgressService progressService: IEditorProgressService,
-		@ITextResourceConfigurationService textResourceService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceService: ITextResourceConfigurationService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 		@IEditorService editorService: IEditorService,
-		@IConfigurationService protected configurationService: IConfigurationService,
+		@IConfigurationService
+		protected configurationService: IConfigurationService,
 		@IFileService fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-		@IHoverService private readonly hoverService: IHoverService
+		@IHoverService private readonly hoverService: IHoverService,
 	) {
-		super(SearchEditor.ID, group, telemetryService, instantiationService, storageService, textResourceService, themeService, editorService, editorGroupService, fileService);
-		this.container = DOM.$('.search-editor');
+		super(
+			SearchEditor.ID,
+			group,
+			telemetryService,
+			instantiationService,
+			storageService,
+			textResourceService,
+			themeService,
+			editorService,
+			editorGroupService,
+			fileService,
+		);
+		this.container = DOM.$(".search-editor");
 
-		this.searchOperation = this._register(new LongRunningOperation(progressService));
-		this._register(this.messageDisposables = new DisposableStore());
+		this.searchOperation = this._register(
+			new LongRunningOperation(progressService),
+		);
+		this._register((this.messageDisposables = new DisposableStore()));
 
 		this.searchHistoryDelayer = new Delayer<void>(2000);
 
-		this.searchModel = this._register(this.instantiationService.createInstance(SearchModel));
+		this.searchModel = this._register(
+			this.instantiationService.createInstance(SearchModel),
+		);
 	}
 
 	protected override createEditor(parent: HTMLElement) {

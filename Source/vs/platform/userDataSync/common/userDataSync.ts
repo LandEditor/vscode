@@ -16,13 +16,13 @@ import type { URI } from "../../../base/common/uri.js";
 import type { IHeaders } from "../../../base/parts/request/common/request.js";
 import { localize } from "../../../nls.js";
 import {
+	allSettings,
 	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
-	type IConfigurationRegistry,
-	type IRegisteredConfigurationPropertySchema,
-	allSettings,
 	getAllConfigurationProperties,
 	parseScope,
+	type IConfigurationRegistry,
+	type IRegisteredConfigurationPropertySchema,
 } from "../../configuration/common/configurationRegistry.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
 import {
@@ -32,8 +32,8 @@ import {
 import type { IExtensionManifest } from "../../extensions/common/extensions.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../jsonschemas/common/jsonContributionRegistry.js";
 import type { ILogService } from "../../log/common/log.js";
 import { Registry } from "../../registry/common/platform.js";

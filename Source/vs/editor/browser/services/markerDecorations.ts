@@ -16,7 +16,8 @@ export class MarkerDecorationsContribution implements IEditorContribution {
 
 	constructor(
 		_editor: ICodeEditor,
-		@IMarkerDecorationsService _markerDecorationsService: IMarkerDecorationsService,
+		@IMarkerDecorationsService
+		_markerDecorationsService: IMarkerDecorationsService,
 	) {
 		// Doesn't do anything, just requires `IMarkerDecorationsService` to make sure it gets instantiated
 	}

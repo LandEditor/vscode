@@ -8,8 +8,8 @@ import type { URI } from "../../../base/common/uri.js";
 import { USER_MANIFEST_CACHE_FILE } from "../../extensions/common/extensions.js";
 import {
 	FileOperationResult,
-	type IFileService,
 	toFileOperationResult,
+	type IFileService,
 } from "../../files/common/files.js";
 import type { ILogService } from "../../log/common/log.js";
 import type { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";

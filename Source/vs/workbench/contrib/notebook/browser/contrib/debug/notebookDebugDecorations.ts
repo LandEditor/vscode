@@ -6,8 +6,8 @@
 import { Delayer } from "../../../../../../base/common/async.js";
 import { Disposable } from "../../../../../../base/common/lifecycle.js";
 import {
-	type IRange,
 	Range,
+	type IRange,
 } from "../../../../../../editor/common/core/range.js";
 import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
 import { debugIconBreakpointForeground } from "../../../../debug/browser/breakpointEditorContribution.js";
@@ -28,11 +28,11 @@ import {
 	NotebookExecutionType,
 } from "../../../common/notebookExecutionStateService.js";
 import {
+	NotebookOverviewRulerLane,
 	type INotebookCellDecorationOptions,
 	type INotebookDeltaDecoration,
 	type INotebookEditor,
 	type INotebookEditorContribution,
-	NotebookOverviewRulerLane,
 } from "../../notebookBrowser.js";
 import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 import { runningCellRulerDecorationColor } from "../../notebookEditorWidget.js";
@@ -55,18 +55,33 @@ export class PausedCellDecorationContribution
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@IDebugService private readonly _debugService: IDebugService,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
 	) {
 		super();
 
 		const delayer = this._register(new Delayer(200));
-		this._register(_debugService.getModel().onDidChangeCallStack(() => this.updateExecutionDecorations()));
-		this._register(_debugService.getViewModel().onDidFocusStackFrame(() => this.updateExecutionDecorations()));
-		this._register(_notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.type === NotebookExecutionType.cell && this._notebookEditor.textModel && e.affectsNotebook(this._notebookEditor.textModel.uri)) {
-				delayer.trigger(() => this.updateExecutionDecorations());
-			}
-		}));
+		this._register(
+			_debugService
+				.getModel()
+				.onDidChangeCallStack(() => this.updateExecutionDecorations()),
+		);
+		this._register(
+			_debugService
+				.getViewModel()
+				.onDidFocusStackFrame(() => this.updateExecutionDecorations()),
+		);
+		this._register(
+			_notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (
+					e.type === NotebookExecutionType.cell &&
+					this._notebookEditor.textModel &&
+					e.affectsNotebook(this._notebookEditor.textModel.uri)
+				) {
+					delayer.trigger(() => this.updateExecutionDecorations());
+				}
+			}),
+		);
 	}
 
 	private updateExecutionDecorations(): void {
@@ -224,11 +239,23 @@ export class NotebookBreakpointDecorations
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
 		@IDebugService private readonly _debugService: IDebugService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 	) {
 		super();
-		this._register(_debugService.getModel().onDidChangeBreakpoints(() => this.updateDecorations()));
-		this._register(_configService.onDidChangeConfiguration(e => e.affectsConfiguration('debug.showBreakpointsInOverviewRuler') && this.updateDecorations()));
+		this._register(
+			_debugService
+				.getModel()
+				.onDidChangeBreakpoints(() => this.updateDecorations()),
+		);
+		this._register(
+			_configService.onDidChangeConfiguration(
+				(e) =>
+					e.affectsConfiguration(
+						"debug.showBreakpointsInOverviewRuler",
+					) && this.updateDecorations(),
+			),
+		);
 	}
 
 	private updateDecorations(): void {

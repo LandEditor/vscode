@@ -9,8 +9,8 @@ import { BugIndicatingError } from "../../../../base/common/errors.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import type { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
@@ -25,12 +25,12 @@ import { EditorHoverStatusBar } from "./contentHoverStatusBar.js";
 import type { ContentHoverResult } from "./contentHoverTypes.js";
 import type { HoverStartSource } from "./hoverOperation.js";
 import {
+	RenderedHoverParts,
 	type IEditorHoverContext,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "./hoverTypes.js";
 import { MarkdownHoverParticipant } from "./markdownHoverParticipant.js";
 

@@ -15,8 +15,8 @@ import { revive } from "../../../../base/common/marshalling.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { URI, type UriComponents } from "../../../../base/common/uri.js";
 import {
-	type IWorkerClient,
 	logOnceWebWorkerWarning,
+	type IWorkerClient,
 } from "../../../../base/common/worker/simpleWorker.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import { localize } from "../../../../nls.js";
@@ -34,19 +34,19 @@ import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uri
 import { IEditorService } from "../../editor/common/editorService.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import {
-	type ILocalFileSearchSimpleWorker,
 	LocalFileSearchSimpleWorkerHost,
+	type ILocalFileSearchSimpleWorker,
 } from "../common/localFileSearchWorkerTypes.js";
 import {
+	ISearchService,
+	SearchProviderType,
+	TextSearchCompleteMessageType,
 	type IFileMatch,
 	type IFileQuery,
 	type ISearchComplete,
 	type ISearchProgressItem,
 	type ISearchResultProvider,
-	ISearchService,
 	type ITextQuery,
-	SearchProviderType,
-	TextSearchCompleteMessageType,
 } from "../common/search.js";
 import { SearchService } from "../common/searchService.js";
 
@@ -58,13 +58,32 @@ export class RemoteSearchService extends SearchService {
 		@ILogService logService: ILogService,
 		@IExtensionService extensionService: IExtensionService,
 		@IFileService fileService: IFileService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
-		super(modelService, editorService, telemetryService, logService, extensionService, fileService, uriIdentityService);
-		const searchProvider = this.instantiationService.createInstance(LocalFileSearchWorkerClient);
-		this.registerSearchResultProvider(Schemas.file, SearchProviderType.file, searchProvider);
-		this.registerSearchResultProvider(Schemas.file, SearchProviderType.text, searchProvider);
+		super(
+			modelService,
+			editorService,
+			telemetryService,
+			logService,
+			extensionService,
+			fileService,
+			uriIdentityService,
+		);
+		const searchProvider = this.instantiationService.createInstance(
+			LocalFileSearchWorkerClient,
+		);
+		this.registerSearchResultProvider(
+			Schemas.file,
+			SearchProviderType.file,
+			searchProvider,
+		);
+		this.registerSearchResultProvider(
+			Schemas.file,
+			SearchProviderType.text,
+			searchProvider,
+		);
 	}
 }
 

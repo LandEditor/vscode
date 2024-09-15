@@ -9,9 +9,9 @@ import { localize } from "../../../../nls.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	type IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 	TriggerAction,
+	type IPickerQuickAccessItem,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import type { IQuickPickSeparator } from "../../../../platform/quickinput/common/quickInput.js";
 import {
@@ -28,14 +28,19 @@ import { debugConfigure, debugRemoveConfig } from "./debugIcons.js";
 export class StartDebugQuickAccessProvider extends PickerQuickAccessProvider<IPickerQuickAccessItem> {
 	constructor(
 		@IDebugService private readonly debugService: IDebugService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ICommandService private readonly commandService: ICommandService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super(DEBUG_QUICK_ACCESS_PREFIX, {
 			noResultsPick: {
-				label: localize('noDebugResults', "No matching launch configurations")
-			}
+				label: localize(
+					"noDebugResults",
+					"No matching launch configurations",
+				),
+			},
 		});
 	}
 

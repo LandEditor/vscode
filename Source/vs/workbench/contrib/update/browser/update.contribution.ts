@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "../../../../platform/update/common/update.config.contribution.js";
+
 import { mnemonicButtonLabel } from "../../../../base/common/labels.js";
 import { isWindows } from "../../../../base/common/platform.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -30,8 +31,8 @@ import {
 	StateType,
 } from "../../../../platform/update/common/update.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
@@ -43,9 +44,9 @@ import {
 	DOWNLOAD_URL,
 	ProductContribution,
 	RELEASE_NOTES_URL,
+	showReleaseNotesInEditor,
 	SwitchProductQualityContribution,
 	UpdateContribution,
-	showReleaseNotesInEditor,
 } from "./update.js";
 
 const workbench = Registry.as<IWorkbenchContributionsRegistry>(

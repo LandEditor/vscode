@@ -12,8 +12,8 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { CancellationError } from "../../../../base/common/errors.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap, ResourceSet } from "../../../../base/common/map.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -33,7 +33,15 @@ import { IEditorService } from "../../editor/common/editorService.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
+	deserializeSearchError,
 	FileMatch,
+	isFileMatch,
+	isProgressMessage,
+	pathIncludedInQuery,
+	QueryType,
+	SEARCH_RESULT_LANGUAGE_ID,
+	SearchErrorCode,
+	SearchProviderType,
 	type IAITextQuery,
 	type ICachedSearchStats,
 	type IFileMatch,
@@ -48,15 +56,7 @@ import {
 	type ISearchResultProvider,
 	type ISearchService,
 	type ITextQuery,
-	QueryType,
-	SEARCH_RESULT_LANGUAGE_ID,
 	type SearchError,
-	SearchErrorCode,
-	SearchProviderType,
-	deserializeSearchError,
-	isFileMatch,
-	isProgressMessage,
-	pathIncludedInQuery,
 } from "./search.js";
 import {
 	editorMatchesToTextSearchResults,
@@ -101,7 +101,8 @@ export class SearchService extends Disposable implements ISearchService {
 		@ILogService private readonly logService: ILogService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 	}

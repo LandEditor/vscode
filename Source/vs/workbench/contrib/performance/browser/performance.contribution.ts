@@ -21,8 +21,8 @@ import {
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
 	Extensions,
-	type IWorkbenchContributionsRegistry,
 	registerWorkbenchContribution2,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,

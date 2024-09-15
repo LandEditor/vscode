@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "../colorPicker.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { Emitter } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
@@ -28,8 +29,8 @@ import type { IEditorHoverRenderContext } from "../../../hover/browser/hoverType
 import type { InsertButton } from "../colorPickerParts/colorPickerInsertButton.js";
 import { DefaultDocumentColorProvider } from "../defaultDocumentColorProvider.js";
 import {
-	type StandaloneColorPickerHover,
 	StandaloneColorPickerParticipant,
+	type StandaloneColorPickerHover,
 } from "./standaloneColorPickerParticipant.js";
 
 class StandaloneColorPickerResult {
@@ -67,49 +68,77 @@ export class StandaloneColorPickerWidget
 		private readonly _standaloneColorPickerVisible: IContextKey<boolean>,
 		private readonly _standaloneColorPickerFocused: IContextKey<boolean>,
 		@IInstantiationService _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 	) {
 		super();
 		this._standaloneColorPickerVisible.set(true);
-		this._standaloneColorPickerParticipant = _instantiationService.createInstance(StandaloneColorPickerParticipant, this._editor);
-		this._position = this._editor._getViewModel()?.getPrimaryCursorState().modelState.position;
+		this._standaloneColorPickerParticipant =
+			_instantiationService.createInstance(
+				StandaloneColorPickerParticipant,
+				this._editor,
+			);
+		this._position = this._editor
+			._getViewModel()
+			?.getPrimaryCursorState().modelState.position;
 		const editorSelection = this._editor.getSelection();
-		const selection = editorSelection ?
-			{
-				startLineNumber: editorSelection.startLineNumber,
-				startColumn: editorSelection.startColumn,
-				endLineNumber: editorSelection.endLineNumber,
-				endColumn: editorSelection.endColumn
-			} : { startLineNumber: 0, endLineNumber: 0, endColumn: 0, startColumn: 0 };
+		const selection = editorSelection
+			? {
+					startLineNumber: editorSelection.startLineNumber,
+					startColumn: editorSelection.startColumn,
+					endLineNumber: editorSelection.endLineNumber,
+					endColumn: editorSelection.endColumn,
+				}
+			: {
+					startLineNumber: 0,
+					endLineNumber: 0,
+					endColumn: 0,
+					startColumn: 0,
+				};
 		const focusTracker = this._register(dom.trackFocus(this._body));
-		this._register(focusTracker.onDidBlur(_ => {
-			this.hide();
-		}));
-		this._register(focusTracker.onDidFocus(_ => {
-			this.focus();
-		}));
+		this._register(
+			focusTracker.onDidBlur((_) => {
+				this.hide();
+			}),
+		);
+		this._register(
+			focusTracker.onDidFocus((_) => {
+				this.focus();
+			}),
+		);
 		// When the cursor position changes, hide the color picker
-		this._register(this._editor.onDidChangeCursorPosition(() => {
-			// Do not hide the color picker when the cursor changes position due to the keybindings
-			if (this._selectionSetInEditor) {
-				this._selectionSetInEditor = false;
-			} else {
-				this.hide();
-			}
-		}));
-		this._register(this._editor.onMouseMove((e) => {
-			const classList = e.target.element?.classList;
-			if (classList && classList.contains('colorpicker-color-decoration')) {
-				this.hide();
-			}
-		}));
-		this._register(this.onResult((result) => {
-			this._render(result.value, result.foundInEditor);
-		}));
+		this._register(
+			this._editor.onDidChangeCursorPosition(() => {
+				// Do not hide the color picker when the cursor changes position due to the keybindings
+				if (this._selectionSetInEditor) {
+					this._selectionSetInEditor = false;
+				} else {
+					this.hide();
+				}
+			}),
+		);
+		this._register(
+			this._editor.onMouseMove((e) => {
+				const classList = e.target.element?.classList;
+				if (
+					classList &&
+					classList.contains("colorpicker-color-decoration")
+				) {
+					this.hide();
+				}
+			}),
+		);
+		this._register(
+			this.onResult((result) => {
+				this._render(result.value, result.foundInEditor);
+			}),
+		);
 		this._start(selection);
-		this._body.style.zIndex = '50';
+		this._body.style.zIndex = "50";
 		this._editor.addContentWidget(this);
 	}
 
@@ -178,9 +207,7 @@ export class StandaloneColorPickerWidget
 		);
 	}
 
-	private async _computeAsync(
-		range: IRange,
-	): Promise<{
+	private async _computeAsync(range: IRange): Promise<{
 		result: StandaloneColorPickerHover;
 		foundInEditor: boolean;
 	} | null> {

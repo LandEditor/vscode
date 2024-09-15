@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type AppResourcePath,
 	FileAccess,
+	type AppResourcePath,
 } from "../../../../base/common/network.js";
 import Severity from "../../../../base/common/severity.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -32,8 +32,8 @@ import {
 	LifecyclePhase,
 } from "../../lifecycle/common/lifecycle.js";
 import {
-	type ChecksumPair,
 	IIntegrityService,
+	type ChecksumPair,
 	type IntegrityTestResult,
 } from "../common/integrity.js";
 
@@ -93,13 +93,14 @@ export class IntegrityService implements IIntegrityService {
 	}
 
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IProductService private readonly productService: IProductService,
 		@IChecksumService private readonly checksumService: IChecksumService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		this._compute();
 	}

@@ -6,10 +6,10 @@
 import {
 	AsyncReferenceCollection,
 	Disposable,
-	type IDisposable,
-	type IReference,
 	ReferenceCollection,
 	toDisposable,
+	type IDisposable,
+	type IReference,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -17,11 +17,11 @@ import type { ITextModel } from "../../../../editor/common/model.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import { ModelUndoRedoParticipant } from "../../../../editor/common/services/modelUndoRedoParticipant.js";
 import {
+	isResolvedTextEditorModel,
+	ITextModelService,
 	type IResolvedTextEditorModel,
 	type ITextEditorModel,
 	type ITextModelContentProvider,
-	ITextModelService,
-	isResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import {
@@ -46,10 +46,11 @@ class ResourceModelCollection extends ReferenceCollection<
 	private readonly modelsToDispose = new Set<string>();
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IFileService private readonly fileService: IFileService,
-		@IModelService private readonly modelService: IModelService
+		@IModelService private readonly modelService: IModelService,
 	) {
 		super();
 	}
@@ -275,15 +276,23 @@ export class TextModelResolverService
 	}
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
 		@IUndoRedoService private readonly undoRedoService: IUndoRedoService,
 		@IModelService private readonly modelService: IModelService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 
-		this._register(new ModelUndoRedoParticipant(this.modelService, this, this.undoRedoService));
+		this._register(
+			new ModelUndoRedoParticipant(
+				this.modelService,
+				this,
+				this.undoRedoService,
+			),
+		);
 	}
 
 	async createModelReference(

@@ -3,16 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type IAction, Separator } from "../../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../../base/common/actions.js";
 import {
 	Disposable,
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isMacintosh } from "../../../../base/common/platform.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorContributionInstantiation,
@@ -86,15 +86,21 @@ export class EditorLineNumberContextMenu
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._register(this.editor.onMouseDown((e: IEditorMouseEvent) => this.doShow(e, false)));
-
+		this._register(
+			this.editor.onMouseDown((e: IEditorMouseEvent) =>
+				this.doShow(e, false),
+			),
+		);
 	}
 
 	public show(e: IEditorMouseEvent) {

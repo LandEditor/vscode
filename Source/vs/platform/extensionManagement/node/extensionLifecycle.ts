@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type ChildProcess, fork } from "child_process";
+import { fork, type ChildProcess } from "child_process";
+
 import { Limiter } from "../../../base/common/async.js";
 import { toErrorMessage } from "../../../base/common/errorMessage.js";
 import { Event } from "../../../base/common/event.js";
@@ -19,8 +20,9 @@ export class ExtensionsLifecycle extends Disposable {
 	private processesLimiter: Limiter<void> = new Limiter(5); // Run max 5 processes in parallel
 
 	constructor(
-		@IUserDataProfilesService private userDataProfilesService: IUserDataProfilesService,
-		@ILogService private readonly logService: ILogService
+		@IUserDataProfilesService
+		private userDataProfilesService: IUserDataProfilesService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 	}

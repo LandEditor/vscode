@@ -39,8 +39,9 @@ export class ChatAttachmentsContentPart extends Disposable {
 	constructor(
 		private readonly variables: IChatRequestVariableEntry[],
 		private readonly contentReferences: ReadonlyArray<IChatContentReference> = [],
-		public readonly domNode: HTMLElement = dom.$('.chat-attached-context'),
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		public readonly domNode: HTMLElement = dom.$(".chat-attached-context"),
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IOpenerService private readonly openerService: IOpenerService,
 	) {
 		super();
@@ -64,9 +65,9 @@ export class ChatAttachmentsContentPart extends Disposable {
 			const file = URI.isUri(attachment.value)
 				? attachment.value
 				: attachment.value &&
-						typeof attachment.value === "object" &&
-						"uri" in attachment.value &&
-						URI.isUri(attachment.value.uri)
+					  typeof attachment.value === "object" &&
+					  "uri" in attachment.value &&
+					  URI.isUri(attachment.value.uri)
 					? attachment.value.uri
 					: undefined;
 			const range =

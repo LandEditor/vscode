@@ -25,19 +25,20 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { asCssVariable } from "../../../../platform/theme/common/colorUtils.js";
-import { type ContentRefData, contentRefUrl } from "../common/annotations.js";
+import { contentRefUrl, type ContentRefData } from "../common/annotations.js";
 import {
-	type IChatAgentCommand,
-	type IChatAgentData,
+	getFullyQualifiedId,
 	IChatAgentNameService,
 	IChatAgentService,
-	getFullyQualifiedId,
+	type IChatAgentCommand,
+	type IChatAgentData,
 } from "../common/chatAgents.js";
 import {
 	chatSlashCommandBackground,
 	chatSlashCommandForeground,
 } from "../common/chatColors.js";
 import {
+	chatAgentLeader,
 	ChatRequestAgentPart,
 	ChatRequestAgentSubcommandPart,
 	ChatRequestDynamicVariablePart,
@@ -45,10 +46,9 @@ import {
 	ChatRequestTextPart,
 	ChatRequestToolPart,
 	ChatRequestVariablePart,
+	chatSubcommandLeader,
 	type IParsedChatRequest,
 	type IParsedChatRequestPart,
-	chatAgentLeader,
-	chatSubcommandLeader,
 } from "../common/chatParserTypes.js";
 import { IChatService } from "../common/chatService.js";
 import { IChatVariablesService } from "../common/chatVariables.js";
@@ -56,6 +56,7 @@ import { ILanguageModelToolsService } from "../common/languageModelToolsService.
 import { IChatWidgetService } from "./chat.js";
 import { ChatAgentHover, getChatAgentHoverOptions } from "./chatAgentHover.js";
 import { InlineAnchorWidget } from "./chatInlineAnchorWidget.js";
+
 import "./media/chatInlineAnchorWidget.css";
 
 /** For rendering slash commands, variables */
@@ -115,17 +116,22 @@ interface IDecorationWidgetArgs {
 
 export class ChatMarkdownDecorationsRenderer extends Disposable {
 	constructor(
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@ILogService private readonly logService: ILogService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@IChatService private readonly chatService: IChatService,
-		@IChatWidgetService private readonly chatWidgetService: IChatWidgetService,
+		@IChatWidgetService
+		private readonly chatWidgetService: IChatWidgetService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IChatVariablesService private readonly chatVariablesService: IChatVariablesService,
+		@IChatVariablesService
+		private readonly chatVariablesService: IChatVariablesService,
 		@ILabelService private readonly labelService: ILabelService,
-		@ILanguageModelToolsService private readonly toolsService: ILanguageModelToolsService,
+		@ILanguageModelToolsService
+		private readonly toolsService: ILanguageModelToolsService,
 	) {
 		super();
 	}

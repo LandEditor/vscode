@@ -10,21 +10,24 @@
 // import * as net from 'net';
 // ESM-comment-end
 
+// ESM-uncomment-begin
+import { createRequire } from "node:module";
 import {
-	LogLevel,
-	type ProxyAgentParams,
-	type ProxySupportSetting,
 	createHttpPatch,
 	createNetPatch,
 	createProxyResolver,
 	createTlsPatch,
 	loadSystemCertificates,
+	LogLevel,
+	type ProxyAgentParams,
+	type ProxySupportSetting,
 } from "@vscode/proxy-agent";
+
 import { URI } from "../../../base/common/uri.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
-	type ILogService,
 	LogLevel as LogServiceLevel,
+	type ILogService,
 } from "../../../platform/log/common/log.js";
 import type { AuthInfo } from "../../../platform/request/common/request.js";
 import type { IExtensionHostInitData } from "../../services/extensions/common/extensionHostProtocol.js";
@@ -33,8 +36,6 @@ import type { ExtHostConfigProvider } from "../common/extHostConfiguration.js";
 import type { IExtHostWorkspaceProvider } from "../common/extHostWorkspace.js";
 import type { ExtHostExtensionService } from "./extHostExtensionService.js";
 
-// ESM-uncomment-begin
-import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const http = require("http");
 const https = require("https");

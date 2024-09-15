@@ -22,9 +22,9 @@ import { ITelemetryService } from "../../../../../platform/telemetry/common/tele
 import { listDropOverBackground } from "../../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import {
+	isTemporaryWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState,
-	isTemporaryWorkspace,
 } from "../../../../../platform/workspace/common/workspace.js";
 import { ResourcesDropHandler } from "../../../../browser/dnd.js";
 import { ViewPane } from "../../../../browser/parts/views/viewPane.js";
@@ -46,7 +46,8 @@ export class EmptyView extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILabelService private labelService: ILabelService,
 		@IContextKeyService contextKeyService: IContextKeyService,
@@ -54,10 +55,28 @@ export class EmptyView extends ViewPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this._register(this.contextService.onDidChangeWorkbenchState(() => this.refreshTitle()));
-		this._register(this.labelService.onDidChangeFormatters(() => this.refreshTitle()));
+		this._register(
+			this.contextService.onDidChangeWorkbenchState(() =>
+				this.refreshTitle(),
+			),
+		);
+		this._register(
+			this.labelService.onDidChangeFormatters(() => this.refreshTitle()),
+		);
 	}
 
 	override shouldShowWelcome(): boolean {

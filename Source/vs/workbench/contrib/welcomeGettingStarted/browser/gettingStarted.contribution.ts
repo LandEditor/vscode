@@ -6,10 +6,10 @@
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
 import {
-	OperatingSystem as OS,
 	isLinux,
 	isMacintosh,
 	isWindows,
+	OperatingSystem as OS,
 } from "../../../../base/common/platform.js";
 import { localize, localize2 } from "../../../../nls.js";
 import { AccessibleViewRegistry } from "../../../../platform/accessibility/browser/accessibleViewRegistry.js";
@@ -50,8 +50,8 @@ import {
 } from "../../../browser/editor.js";
 import { workbenchConfigurationNodeBase } from "../../../common/configuration.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -73,8 +73,8 @@ import {
 } from "./gettingStarted.js";
 import { GettingStartedAccessibleView } from "./gettingStartedAccessibleView.js";
 import {
-	type GettingStartedEditorOptions,
 	GettingStartedInput,
+	type GettingStartedEditorOptions,
 } from "./gettingStartedInput.js";
 import { IWalkthroughsService } from "./gettingStartedService.js";
 import {
@@ -440,32 +440,48 @@ class WorkspacePlatformContribution {
 	static readonly ID = "workbench.contrib.workspacePlatform";
 
 	constructor(
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
 		@IContextKeyService private readonly contextService: IContextKeyService,
 	) {
-		this.remoteAgentService.getEnvironment().then(env => {
+		this.remoteAgentService.getEnvironment().then((env) => {
 			const remoteOS = env?.os;
 
-			const remotePlatform = remoteOS === OS.Macintosh ? 'mac'
-				: remoteOS === OS.Windows ? 'windows'
-					: remoteOS === OS.Linux ? 'linux'
-						: undefined;
+			const remotePlatform =
+				remoteOS === OS.Macintosh
+					? "mac"
+					: remoteOS === OS.Windows
+						? "windows"
+						: remoteOS === OS.Linux
+							? "linux"
+							: undefined;
 
 			if (remotePlatform) {
-				WorkspacePlatform.bindTo(this.contextService).set(remotePlatform);
-			} else if (this.extensionManagementServerService.localExtensionManagementServer) {
+				WorkspacePlatform.bindTo(this.contextService).set(
+					remotePlatform,
+				);
+			} else if (
+				this.extensionManagementServerService
+					.localExtensionManagementServer
+			) {
 				if (isMacintosh) {
-					WorkspacePlatform.bindTo(this.contextService).set('mac');
+					WorkspacePlatform.bindTo(this.contextService).set("mac");
 				} else if (isLinux) {
-					WorkspacePlatform.bindTo(this.contextService).set('linux');
+					WorkspacePlatform.bindTo(this.contextService).set("linux");
 				} else if (isWindows) {
-					WorkspacePlatform.bindTo(this.contextService).set('windows');
+					WorkspacePlatform.bindTo(this.contextService).set(
+						"windows",
+					);
 				}
-			} else if (this.extensionManagementServerService.webExtensionManagementServer) {
-				WorkspacePlatform.bindTo(this.contextService).set('webworker');
+			} else if (
+				this.extensionManagementServerService
+					.webExtensionManagementServer
+			) {
+				WorkspacePlatform.bindTo(this.contextService).set("webworker");
 			} else {
-				console.error('Error: Unable to detect workspace platform');
+				console.error("Error: Unable to detect workspace platform");
 			}
 		});
 	}

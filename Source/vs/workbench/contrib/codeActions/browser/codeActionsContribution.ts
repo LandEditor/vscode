@@ -170,7 +170,8 @@ export class CodeActionsContribution
 	constructor(
 		codeActionsExtensionPoint: IExtensionPoint<CodeActionsExtensionPoint[]>,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@ILanguageFeaturesService private readonly languageFeatures: ILanguageFeaturesService
+		@ILanguageFeaturesService
+		private readonly languageFeatures: ILanguageFeaturesService,
 	) {
 		super();
 
@@ -180,8 +181,10 @@ export class CodeActionsContribution
 			this.updateConfigurationSchemaFromContribs();
 		}, 2000);
 
-		codeActionsExtensionPoint.setHandler(extensionPoints => {
-			this._contributedCodeActions = extensionPoints.flatMap(x => x.value).filter(x => Array.isArray(x.actions));
+		codeActionsExtensionPoint.setHandler((extensionPoints) => {
+			this._contributedCodeActions = extensionPoints
+				.flatMap((x) => x.value)
+				.filter((x) => Array.isArray(x.actions));
 			this.updateConfigurationSchema(this._contributedCodeActions);
 			this._onDidChangeContributions.fire();
 		});

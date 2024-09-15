@@ -26,17 +26,17 @@ import {
 } from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
-	MarkdownString,
 	isMarkdownString,
+	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { ResolvedKeybinding } from "../../../../base/common/keybindings.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { OS } from "../../../../base/common/platform.js";
 import Severity from "../../../../base/common/severity.js";
@@ -65,13 +65,13 @@ import {
 import { PANEL_SECTION_BORDER } from "../../../common/theme.js";
 import {
 	Extensions,
+	IExtensionFeaturesManagementService,
 	type IExtensionFeatureDescriptor,
 	type IExtensionFeatureMarkdownAndTableRenderer,
 	type IExtensionFeatureMarkdownRenderer,
 	type IExtensionFeatureRenderer,
-	type IExtensionFeatureTableRenderer,
-	IExtensionFeaturesManagementService,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type ITableData,
 } from "../../../services/extensionManagement/common/extensionFeatures.js";
@@ -87,7 +87,8 @@ class RuntimeStatusMarkdownRenderer
 
 	constructor(
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 	) {
 		super();
 	}
@@ -257,12 +258,15 @@ export class ExtensionFeaturesTab extends Themable {
 		private readonly manifest: IExtensionManifest,
 		private readonly feature: string | undefined,
 		@IThemeService themeService: IThemeService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super(themeService);
 
-		this.extensionId = new ExtensionIdentifier(getExtensionId(manifest.publisher, manifest.name));
-		this.domNode = $('div.subcontent.feature-contributions');
+		this.extensionId = new ExtensionIdentifier(
+			getExtensionId(manifest.publisher, manifest.name),
+		);
+		this.domNode = $("div.subcontent.feature-contributions");
 		this.create();
 	}
 
@@ -475,8 +479,9 @@ class ExtensionFeatureItemRenderer
 
 	constructor(
 		private readonly extensionId: ExtensionIdentifier,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService
-	) { }
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IExtensionFeatureItemTemplateData {
 		container.classList.add("extension-feature-list-item");
@@ -584,13 +589,15 @@ class ExtensionFeatureView extends Disposable {
 		private readonly manifest: IExtensionManifest,
 		readonly feature: IExtensionFeatureDescriptor,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 		@IDialogService private readonly dialogService: IDialogService,
 	) {
 		super();
 
-		this.domNode = $('.extension-feature-content');
+		this.domNode = $(".extension-feature-content");
 		this.create(this.domNode);
 	}
 

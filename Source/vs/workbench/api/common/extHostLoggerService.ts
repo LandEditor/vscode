@@ -13,8 +13,8 @@ import {
 	type LogLevel,
 } from "../../../platform/log/common/log.js";
 import {
-	type ExtHostLogLevelServiceShape,
 	MainContext,
+	type ExtHostLogLevelServiceShape,
 	type MainThreadLoggerShape,
 } from "./extHost.protocol.js";
 import { IExtHostInitDataService } from "./extHostInitDataService.js";

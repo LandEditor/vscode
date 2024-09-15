@@ -30,7 +30,7 @@ export class ContextViewHandler
 	);
 
 	constructor(
-		@ILayoutService private readonly layoutService: ILayoutService
+		@ILayoutService private readonly layoutService: ILayoutService,
 	) {
 		super();
 

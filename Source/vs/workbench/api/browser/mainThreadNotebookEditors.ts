@@ -9,9 +9,9 @@ import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { IConfigurationService } from "../../../platform/configuration/common/configuration.js";
 import { EditorActivation } from "../../../platform/editor/common/editor.js";
 import {
+	getNotebookEditorFromEditorPane,
 	type INotebookEditor,
 	type INotebookEditorOptions,
-	getNotebookEditorFromEditorPane,
 } from "../../contrib/notebook/browser/notebookBrowser.js";
 import { INotebookEditorService } from "../../contrib/notebook/browser/services/notebookEditorService.js";
 import type { ICellRange } from "../../contrib/notebook/common/notebookRange.js";
@@ -24,11 +24,11 @@ import { IEditorService } from "../../services/editor/common/editorService.js";
 import type { IExtHostContext } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	NotebookEditorRevealType,
 	type ExtHostNotebookEditorsShape,
 	type INotebookDocumentShowOptions,
 	type INotebookEditorViewColumnInfo,
 	type MainThreadNotebookEditorsShape,
-	NotebookEditorRevealType,
 } from "../common/extHost.protocol.js";
 
 class MainThreadNotebook {
@@ -55,15 +55,32 @@ export class MainThreadNotebookEditors
 	constructor(
 		extHostContext: IExtHostContext,
 		@IEditorService private readonly _editorService: IEditorService,
-		@INotebookEditorService private readonly _notebookEditorService: INotebookEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@INotebookEditorService
+		private readonly _notebookEditorService: INotebookEditorService,
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostNotebookEditors);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostNotebookEditors,
+		);
 
-		this._editorService.onDidActiveEditorChange(() => this._updateEditorViewColumns(), this, this._disposables);
-		this._editorGroupService.onDidRemoveGroup(() => this._updateEditorViewColumns(), this, this._disposables);
-		this._editorGroupService.onDidMoveGroup(() => this._updateEditorViewColumns(), this, this._disposables);
+		this._editorService.onDidActiveEditorChange(
+			() => this._updateEditorViewColumns(),
+			this,
+			this._disposables,
+		);
+		this._editorGroupService.onDidRemoveGroup(
+			() => this._updateEditorViewColumns(),
+			this,
+			this._disposables,
+		);
+		this._editorGroupService.onDidMoveGroup(
+			() => this._updateEditorViewColumns(),
+			this,
+			this._disposables,
+		);
 	}
 
 	dispose(): void {

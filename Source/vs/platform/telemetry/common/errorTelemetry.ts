@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { binarySearch } from "../../../base/common/arrays.js";
-import { ErrorNoTelemetry, errorHandler } from "../../../base/common/errors.js";
+import { errorHandler, ErrorNoTelemetry } from "../../../base/common/errors.js";
 import {
 	DisposableStore,
 	toDisposable,

@@ -7,9 +7,9 @@ import type { ILogService } from "../../log/common/log.js";
 import type { IStateService } from "../../state/node/state.js";
 import { devDeviceIdKey, machineIdKey, sqmIdKey } from "../common/telemetry.js";
 import {
+	resolvedevDeviceId as resolveNodedevDeviceId,
 	resolveMachineId as resolveNodeMachineId,
 	resolveSqmId as resolveNodeSqmId,
-	resolvedevDeviceId as resolveNodedevDeviceId,
 } from "../node/telemetryUtils.js";
 
 export async function resolveMachineId(

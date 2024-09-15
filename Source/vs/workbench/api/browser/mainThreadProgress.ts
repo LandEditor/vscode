@@ -7,21 +7,21 @@ import { Action } from "../../../base/common/actions.js";
 import { localize } from "../../../nls.js";
 import { ICommandService } from "../../../platform/commands/common/commands.js";
 import {
+	IProgressService,
+	ProgressLocation,
 	type IProgress,
 	type IProgressNotificationOptions,
 	type IProgressOptions,
-	IProgressService,
 	type IProgressStep,
-	ProgressLocation,
 } from "../../../platform/progress/common/progress.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostProgressShape,
 	MainContext,
+	type ExtHostProgressShape,
 	type MainThreadProgressShape,
 } from "../common/extHost.protocol.js";
 
@@ -52,7 +52,7 @@ export class MainThreadProgress implements MainThreadProgressShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IProgressService progressService: IProgressService,
-		@ICommandService private readonly _commandService: ICommandService
+		@ICommandService private readonly _commandService: ICommandService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostProgress);
 		this._progressService = progressService;

@@ -46,8 +46,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { FileKind } from "../../../../platform/files/common/files.js";
@@ -77,14 +77,14 @@ import type { IChatRequestVariableEntry } from "../common/chatModel.js";
 import type { IChatFollowup } from "../common/chatService.js";
 import type { IChatResponseViewModel } from "../common/chatViewModel.js";
 import {
-	type IChatHistoryEntry,
 	IChatWidgetHistoryService,
+	type IChatHistoryEntry,
 } from "../common/chatWidgetHistoryService.js";
 import {
 	CancelAction,
 	ChatSubmitSecondaryAgentAction,
-	type IChatExecuteActionContext,
 	SubmitAction,
+	type IChatExecuteActionContext,
 } from "./actions/chatExecuteActions.js";
 import type { IChatWidget } from "./chat.js";
 import { ChatFollowups } from "./chatFollowups.js";
@@ -205,31 +205,58 @@ export class ChatInputPart
 		private readonly location: ChatAgentLocation,
 		private readonly options: IChatInputPartOptions,
 		private readonly getInputState: () => any,
-		@IChatWidgetHistoryService private readonly historyService: IChatWidgetHistoryService,
+		@IChatWidgetHistoryService
+		private readonly historyService: IChatWidgetHistoryService,
 		@IModelService private readonly modelService: IModelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
-		this.inputEditorMaxHeight = this.options.renderStyle === 'compact' ? INPUT_EDITOR_MAX_HEIGHT / 3 : INPUT_EDITOR_MAX_HEIGHT;
+		this.inputEditorMaxHeight =
+			this.options.renderStyle === "compact"
+				? INPUT_EDITOR_MAX_HEIGHT / 3
+				: INPUT_EDITOR_MAX_HEIGHT;
 
-		this.inputEditorHasText = CONTEXT_CHAT_INPUT_HAS_TEXT.bindTo(contextKeyService);
-		this.chatCursorAtTop = CONTEXT_CHAT_INPUT_CURSOR_AT_TOP.bindTo(contextKeyService);
-		this.inputEditorHasFocus = CONTEXT_CHAT_INPUT_HAS_FOCUS.bindTo(contextKeyService);
+		this.inputEditorHasText =
+			CONTEXT_CHAT_INPUT_HAS_TEXT.bindTo(contextKeyService);
+		this.chatCursorAtTop =
+			CONTEXT_CHAT_INPUT_CURSOR_AT_TOP.bindTo(contextKeyService);
+		this.inputEditorHasFocus =
+			CONTEXT_CHAT_INPUT_HAS_FOCUS.bindTo(contextKeyService);
 
 		this.history = this.loadHistory();
-		this._register(this.historyService.onDidClearHistory(() => this.history = new HistoryNavigator2([{ text: '' }], 50, historyKeyFn)));
+		this._register(
+			this.historyService.onDidClearHistory(
+				() =>
+					(this.history = new HistoryNavigator2(
+						[{ text: "" }],
+						50,
+						historyKeyFn,
+					)),
+			),
+		);
 
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.Chat)) {
-				this.inputEditor.updateOptions({ ariaLabel: this._getAriaLabel() });
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(AccessibilityVerbositySettingId.Chat)
+				) {
+					this.inputEditor.updateOptions({
+						ariaLabel: this._getAriaLabel(),
+					});
+				}
+			}),
+		);
 	}
 
 	private loadHistory(): HistoryNavigator2<IChatHistoryEntry> {
@@ -791,9 +818,9 @@ export class ChatInputPart
 			const file = URI.isUri(attachment.value)
 				? attachment.value
 				: attachment.value &&
-						typeof attachment.value === "object" &&
-						"uri" in attachment.value &&
-						URI.isUri(attachment.value.uri)
+					  typeof attachment.value === "object" &&
+					  "uri" in attachment.value &&
+					  URI.isUri(attachment.value.uri)
 					? attachment.value.uri
 					: undefined;
 			const range =

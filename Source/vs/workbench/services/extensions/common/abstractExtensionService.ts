@@ -7,8 +7,8 @@ import { Barrier } from "../../../../base/common/async.js";
 import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import { Emitter } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import {
 	Disposable,
@@ -46,11 +46,11 @@ import {
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	getRemoteAuthorityPrefix,
 	IRemoteAuthorityResolverService,
 	RemoteAuthorityResolverError,
 	RemoteAuthorityResolverErrorCode,
 	type ResolverResult,
-	getRemoteAuthorityPrefix,
 } from "../../../../platform/remote/common/remoteAuthorityResolver.js";
 import { IRemoteExtensionsScannerService } from "../../../../platform/remote/common/remoteExtensionsScanner.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
@@ -71,14 +71,14 @@ import {
 	WillShutdownJoinerOrder,
 } from "../../lifecycle/common/lifecycle.js";
 import {
-	type IExtensionHostExitInfo,
 	IRemoteAgentService,
+	type IExtensionHostExitInfo,
 } from "../../remote/common/remoteAgentService.js";
 import {
+	LockableExtensionDescriptionRegistry,
 	type ExtensionDescriptionRegistryLock,
 	type ExtensionDescriptionRegistrySnapshot,
 	type IActivationEventsReader,
-	LockableExtensionDescriptionRegistry,
 } from "./extensionDescriptionRegistry.js";
 import { parseExtensionDevOptions } from "./extensionDevOptions.js";
 import {
@@ -91,10 +91,10 @@ import type { IExtensionHostManager } from "./extensionHostManagers.js";
 import type { IResolveAuthorityErrorResult } from "./extensionHostProxy.js";
 import { IExtensionManifestPropertiesService } from "./extensionManifestPropertiesService.js";
 import {
-	type ExtensionRunningLocation,
 	LocalProcessRunningLocation,
 	LocalWebWorkerRunningLocation,
 	RemoteRunningLocation,
+	type ExtensionRunningLocation,
 } from "./extensionRunningLocation.js";
 import {
 	ExtensionRunningLocationTracker,
@@ -103,9 +103,11 @@ import {
 import {
 	ActivationKind,
 	ActivationTimes,
-	type ExtensionActivationReason,
 	ExtensionHostStartup,
 	ExtensionPointContribution,
+	toExtension,
+	toExtensionDescription,
+	type ExtensionActivationReason,
 	type IExtensionHost,
 	type IExtensionService,
 	type IExtensionsStatus,
@@ -114,23 +116,21 @@ import {
 	type IResponsiveStateChangeEvent,
 	type IWillActivateEvent,
 	type WillStopExtensionHostsEvent,
-	toExtension,
-	toExtensionDescription,
 } from "./extensions.js";
 import type { ExtensionsProposedApi } from "./extensionsProposedApi.js";
 import {
 	ExtensionMessageCollector,
-	type ExtensionPoint,
 	ExtensionsRegistry,
+	type ExtensionPoint,
 	type IExtensionPoint,
 	type IExtensionPointUser,
 } from "./extensionsRegistry.js";
 import { LazyCreateExtensionHostManager } from "./lazyCreateExtensionHostManager.js";
 import { ResponsiveState } from "./rpcProtocol.js";
 import {
-	type IExtensionActivationHost as IWorkspaceContainsActivationHost,
 	checkActivateWorkspaceContainsExtension,
 	checkGlobFileExists,
+	type IExtensionActivationHost as IWorkspaceContainsActivationHost,
 } from "./workspaceContains.js";
 
 const hasOwnProperty = Object.hasOwnProperty;
@@ -203,32 +203,47 @@ export abstract class AbstractExtensionService
 		private readonly _extensionsProposedApi: ExtensionsProposedApi,
 		private readonly _extensionHostFactory: IExtensionHostFactory,
 		private readonly _extensionHostKindPicker: IExtensionHostKindPicker,
-		@IInstantiationService protected readonly _instantiationService: IInstantiationService,
-		@INotificationService protected readonly _notificationService: INotificationService,
-		@IWorkbenchEnvironmentService protected readonly _environmentService: IWorkbenchEnvironmentService,
-		@ITelemetryService protected readonly _telemetryService: ITelemetryService,
-		@IWorkbenchExtensionEnablementService protected readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IInstantiationService
+		protected readonly _instantiationService: IInstantiationService,
+		@INotificationService
+		protected readonly _notificationService: INotificationService,
+		@IWorkbenchEnvironmentService
+		protected readonly _environmentService: IWorkbenchEnvironmentService,
+		@ITelemetryService
+		protected readonly _telemetryService: ITelemetryService,
+		@IWorkbenchExtensionEnablementService
+		protected readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IFileService protected readonly _fileService: IFileService,
 		@IProductService protected readonly _productService: IProductService,
-		@IWorkbenchExtensionManagementService protected readonly _extensionManagementService: IWorkbenchExtensionManagementService,
-		@IWorkspaceContextService private readonly _contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IExtensionManifestPropertiesService private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkbenchExtensionManagementService
+		protected readonly _extensionManagementService: IWorkbenchExtensionManagementService,
+		@IWorkspaceContextService
+		private readonly _contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IExtensionManifestPropertiesService
+		private readonly _extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 		@ILogService protected readonly _logService: ILogService,
-		@IRemoteAgentService protected readonly _remoteAgentService: IRemoteAgentService,
-		@IRemoteExtensionsScannerService protected readonly _remoteExtensionsScannerService: IRemoteExtensionsScannerService,
-		@ILifecycleService private readonly _lifecycleService: ILifecycleService,
-		@IRemoteAuthorityResolverService protected readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAgentService
+		protected readonly _remoteAgentService: IRemoteAgentService,
+		@IRemoteExtensionsScannerService
+		protected readonly _remoteExtensionsScannerService: IRemoteExtensionsScannerService,
+		@ILifecycleService
+		private readonly _lifecycleService: ILifecycleService,
+		@IRemoteAuthorityResolverService
+		protected readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@IDialogService private readonly _dialogService: IDialogService,
 	) {
 		super();
 
 		// help the file service to activate providers by activating extensions by file system event
-		this._register(this._fileService.onWillActivateFileSystemProvider(e => {
-			if (e.scheme !== Schemas.vscodeRemote) {
-				e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
-			}
-		}));
+		this._register(
+			this._fileService.onWillActivateFileSystemProvider((e) => {
+				if (e.scheme !== Schemas.vscodeRemote) {
+					e.join(this.activateByEvent(`onFileSystem:${e.scheme}`));
+				}
+			}),
+		);
 
 		this._runningLocations = new ExtensionRunningLocationTracker(
 			this._registry,
@@ -236,91 +251,150 @@ export abstract class AbstractExtensionService
 			this._environmentService,
 			this._configurationService,
 			this._logService,
-			this._extensionManifestPropertiesService
+			this._extensionManifestPropertiesService,
 		);
 
-		this._register(this._extensionEnablementService.onEnablementChanged((extensions) => {
-			const toAdd: IExtension[] = [];
-			const toRemove: IExtension[] = [];
-			for (const extension of extensions) {
-				if (this._safeInvokeIsEnabled(extension)) {
-					// an extension has been enabled
-					toAdd.push(extension);
+		this._register(
+			this._extensionEnablementService.onEnablementChanged(
+				(extensions) => {
+					const toAdd: IExtension[] = [];
+					const toRemove: IExtension[] = [];
+					for (const extension of extensions) {
+						if (this._safeInvokeIsEnabled(extension)) {
+							// an extension has been enabled
+							toAdd.push(extension);
+						} else {
+							// an extension has been disabled
+							toRemove.push(extension);
+						}
+					}
+					if (isCI) {
+						this._logService.info(
+							`AbstractExtensionService.onEnablementChanged fired for ${extensions.map((e) => e.identifier.id).join(", ")}`,
+						);
+					}
+					this._handleDeltaExtensions(
+						new DeltaExtensionsQueueItem(toAdd, toRemove),
+					);
+				},
+			),
+		);
+
+		this._register(
+			this._extensionManagementService.onDidChangeProfile(
+				({ added, removed }) => {
+					if (added.length || removed.length) {
+						if (isCI) {
+							this._logService.info(
+								`AbstractExtensionService.onDidChangeProfile fired`,
+							);
+						}
+						this._handleDeltaExtensions(
+							new DeltaExtensionsQueueItem(added, removed),
+						);
+					}
+				},
+			),
+		);
+
+		this._register(
+			this._extensionManagementService.onDidEnableExtensions(
+				(extensions) => {
+					if (extensions.length) {
+						if (isCI) {
+							this._logService.info(
+								`AbstractExtensionService.onDidEnableExtensions fired`,
+							);
+						}
+						this._handleDeltaExtensions(
+							new DeltaExtensionsQueueItem(extensions, []),
+						);
+					}
+				},
+			),
+		);
+
+		this._register(
+			this._extensionManagementService.onDidInstallExtensions(
+				(result) => {
+					const extensions: IExtension[] = [];
+					for (const { local, operation } of result) {
+						if (
+							local &&
+							local.isValid &&
+							operation !== InstallOperation.Migrate &&
+							this._safeInvokeIsEnabled(local)
+						) {
+							extensions.push(local);
+						}
+					}
+					if (extensions.length) {
+						if (isCI) {
+							this._logService.info(
+								`AbstractExtensionService.onDidInstallExtensions fired for ${extensions.map((e) => e.identifier.id).join(", ")}`,
+							);
+						}
+						this._handleDeltaExtensions(
+							new DeltaExtensionsQueueItem(extensions, []),
+						);
+					}
+				},
+			),
+		);
+
+		this._register(
+			this._extensionManagementService.onDidUninstallExtension(
+				(event) => {
+					if (!event.error) {
+						// an extension has been uninstalled
+						if (isCI) {
+							this._logService.info(
+								`AbstractExtensionService.onDidUninstallExtension fired for ${event.identifier.id}`,
+							);
+						}
+						this._handleDeltaExtensions(
+							new DeltaExtensionsQueueItem(
+								[],
+								[event.identifier.id],
+							),
+						);
+					}
+				},
+			),
+		);
+
+		this._register(
+			this._lifecycleService.onWillShutdown((event) => {
+				if (this._remoteAgentService.getConnection()) {
+					event.join(
+						async () => {
+							// We need to disconnect the management connection before killing the local extension host.
+							// Otherwise, the local extension host might terminate the underlying tunnel before the
+							// management connection has a chance to send its disconnection message.
+							await this._remoteAgentService.endConnection();
+							await this._doStopExtensionHosts();
+							this._remoteAgentService.getConnection()?.dispose();
+						},
+						{
+							id: "join.disconnectRemote",
+							label: nls.localize(
+								"disconnectRemote",
+								"Disconnect Remote Agent",
+							),
+							order: WillShutdownJoinerOrder.Last, // after others have joined that might depend on a remote connection
+						},
+					);
 				} else {
-					// an extension has been disabled
-					toRemove.push(extension);
+					event.join(this._doStopExtensionHosts(), {
+						id: "join.stopExtensionHosts",
+						label: nls.localize(
+							"stopExtensionHosts",
+							"Stopping Extension Hosts",
+						),
+					});
 				}
-			}
-			if (isCI) {
-				this._logService.info(`AbstractExtensionService.onEnablementChanged fired for ${extensions.map(e => e.identifier.id).join(', ')}`);
-			}
-			this._handleDeltaExtensions(new DeltaExtensionsQueueItem(toAdd, toRemove));
-		}));
-
-		this._register(this._extensionManagementService.onDidChangeProfile(({ added, removed }) => {
-			if (added.length || removed.length) {
-				if (isCI) {
-					this._logService.info(`AbstractExtensionService.onDidChangeProfile fired`);
-				}
-				this._handleDeltaExtensions(new DeltaExtensionsQueueItem(added, removed));
-			}
-		}));
-
-		this._register(this._extensionManagementService.onDidEnableExtensions(extensions => {
-			if (extensions.length) {
-				if (isCI) {
-					this._logService.info(`AbstractExtensionService.onDidEnableExtensions fired`);
-				}
-				this._handleDeltaExtensions(new DeltaExtensionsQueueItem(extensions, []));
-			}
-		}));
-
-		this._register(this._extensionManagementService.onDidInstallExtensions((result) => {
-			const extensions: IExtension[] = [];
-			for (const { local, operation } of result) {
-				if (local && local.isValid && operation !== InstallOperation.Migrate && this._safeInvokeIsEnabled(local)) {
-					extensions.push(local);
-				}
-			}
-			if (extensions.length) {
-				if (isCI) {
-					this._logService.info(`AbstractExtensionService.onDidInstallExtensions fired for ${extensions.map(e => e.identifier.id).join(', ')}`);
-				}
-				this._handleDeltaExtensions(new DeltaExtensionsQueueItem(extensions, []));
-			}
-		}));
-
-		this._register(this._extensionManagementService.onDidUninstallExtension((event) => {
-			if (!event.error) {
-				// an extension has been uninstalled
-				if (isCI) {
-					this._logService.info(`AbstractExtensionService.onDidUninstallExtension fired for ${event.identifier.id}`);
-				}
-				this._handleDeltaExtensions(new DeltaExtensionsQueueItem([], [event.identifier.id]));
-			}
-		}));
-
-		this._register(this._lifecycleService.onWillShutdown(event => {
-			if (this._remoteAgentService.getConnection()) {
-				event.join(async () => {
-					// We need to disconnect the management connection before killing the local extension host.
-					// Otherwise, the local extension host might terminate the underlying tunnel before the
-					// management connection has a chance to send its disconnection message.
-					await this._remoteAgentService.endConnection();
-					await this._doStopExtensionHosts();
-					this._remoteAgentService.getConnection()?.dispose();
-				}, {
-					id: 'join.disconnectRemote',
-					label: nls.localize('disconnectRemote', "Disconnect Remote Agent"),
-					order: WillShutdownJoinerOrder.Last // after others have joined that might depend on a remote connection
-				});
-			} else {
-				event.join(this._doStopExtensionHosts(), {
-					id: 'join.stopExtensionHosts',
-					label: nls.localize('stopExtensionHosts', "Stopping Extension Hosts"),
-				});
-			}
-		}));
+			}),
+		);
 	}
 
 	protected _getExtensionHostManagers(

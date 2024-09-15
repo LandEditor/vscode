@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	WindowIntervalTimer,
 	getTotalWidth,
+	WindowIntervalTimer,
 } from "../../../../base/browser/dom.js";
 import { coalesceInPlace } from "../../../../base/common/arrays.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
@@ -16,8 +16,8 @@ import { Schemas } from "../../../../base/common/network.js";
 import { observableValue } from "../../../../base/common/observable.js";
 import { isEqual } from "../../../../base/common/resources.js";
 import {
-	ThemeIcon,
 	themeColorFromId,
+	ThemeIcon,
 } from "../../../../base/common/themables.js";
 import { assertType } from "../../../../base/common/types.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
@@ -31,8 +31,8 @@ import type {
 import { StableEditorScrollState } from "../../../../editor/browser/stableEditorScroll.js";
 import {
 	LineSource,
-	RenderOptions,
 	renderLines,
+	RenderOptions,
 } from "../../../../editor/browser/widget/diffEditor/components/diffEditorViewZones/renderLines.js";
 import { EditorOption } from "../../../../editor/common/config/editorOptions.js";
 import type { ISingleEditOperation } from "../../../../editor/common/core/editOperation.js";
@@ -41,12 +41,12 @@ import type { Position } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import type { IEditorDecorationsCollection } from "../../../../editor/common/editorCommon.js";
 import {
-	type IModelDecorationsChangeAccessor,
-	type IModelDeltaDecoration,
-	type IValidEditOperation,
 	MinimapPosition,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type IModelDecorationsChangeAccessor,
+	type IModelDeltaDecoration,
+	type IValidEditOperation,
 } from "../../../../editor/common/model.js";
 import { ModelDecorationOptions } from "../../../../editor/common/model/textModel.js";
 import { IEditorWorkerService } from "../../../../editor/common/services/editorWorker.js";
@@ -63,8 +63,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { Progress } from "../../../../platform/progress/common/progress.js";
@@ -88,8 +88,8 @@ import {
 	overviewRulerInlineChatDiffInserted,
 } from "../common/inlineChat.js";
 import {
-	type HunkInformation,
 	HunkState,
+	type HunkInformation,
 	type Session,
 } from "./inlineChatSession.js";
 import type { InlineChatZoneWidget } from "./inlineChatZoneWidget.js";
@@ -127,8 +127,9 @@ export abstract class EditModeStrategy {
 		protected readonly _editor: ICodeEditor,
 		protected readonly _zone: InlineChatZoneWidget,
 		@ITextFileService private readonly _textFileService: ITextFileService,
-		@IInstantiationService protected readonly _instaService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		protected readonly _instaService: IInstantiationService,
+	) {}
 
 	dispose(): void {
 		this._store.dispose();
@@ -333,21 +334,29 @@ export class LiveStrategy extends EditModeStrategy {
 		zone: InlineChatZoneWidget,
 		private readonly _showOverlayToolbar: boolean,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IEditorWorkerService protected readonly _editorWorkerService: IEditorWorkerService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
+		@IEditorWorkerService
+		protected readonly _editorWorkerService: IEditorWorkerService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IContextKeyService private readonly _contextService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextService: IContextKeyService,
 		@ITextFileService textFileService: ITextFileService,
-		@IInstantiationService instaService: IInstantiationService
+		@IInstantiationService instaService: IInstantiationService,
 	) {
 		super(session, editor, zone, textFileService, instaService);
-		this._ctxCurrentChangeHasDiff = CTX_INLINE_CHAT_CHANGE_HAS_DIFF.bindTo(contextKeyService);
-		this._ctxCurrentChangeShowsDiff = CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF.bindTo(contextKeyService);
+		this._ctxCurrentChangeHasDiff =
+			CTX_INLINE_CHAT_CHANGE_HAS_DIFF.bindTo(contextKeyService);
+		this._ctxCurrentChangeShowsDiff =
+			CTX_INLINE_CHAT_CHANGE_SHOWS_DIFF.bindTo(contextKeyService);
 
-		this._progressiveEditingDecorations = this._editor.createDecorationsCollection();
-		this._lensActionsFactory = this._store.add(new ConflictActionsFactory(this._editor));
-
+		this._progressiveEditingDecorations =
+			this._editor.createDecorationsCollection();
+		this._lensActionsFactory = this._store.add(
+			new ConflictActionsFactory(this._editor),
+		);
 	}
 
 	override dispose(): void {
@@ -952,30 +961,45 @@ class InlineChangeOverlay implements IOverlayWidget {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		private readonly _hunkInfo: HunkInformation,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 	) {
-
-		this._domNode.classList.add('inline-chat-diff-overlay');
+		this._domNode.classList.add("inline-chat-diff-overlay");
 
 		if (_hunkInfo.getState() === HunkState.Pending) {
+			const menuBar = this._store.add(
+				this._instaService.createInstance(
+					MenuWorkbenchButtonBar,
+					this._domNode,
+					MENU_INLINE_CHAT_ZONE,
+					{
+						menuOptions: { arg: _hunkInfo },
+						telemetrySource: "inlineChat-changesZone",
+						buttonConfigProvider: (_action, idx) => {
+							return {
+								isSecondary: idx > 0,
+								showIcon: true,
+								showLabel: false,
+							};
+						},
+					},
+				),
+			);
 
-			const menuBar = this._store.add(this._instaService.createInstance(MenuWorkbenchButtonBar, this._domNode, MENU_INLINE_CHAT_ZONE, {
-				menuOptions: { arg: _hunkInfo },
-				telemetrySource: 'inlineChat-changesZone',
-				buttonConfigProvider: (_action, idx) => {
-					return {
-						isSecondary: idx > 0,
-						showIcon: true,
-						showLabel: false
-					};
-				},
-			}));
-
-			this._store.add(menuBar.onDidChange(() => this._editor.layoutOverlayWidget(this)));
+			this._store.add(
+				menuBar.onDidChange(() =>
+					this._editor.layoutOverlayWidget(this),
+				),
+			);
 		}
 
 		this._editor.addOverlayWidget(this);
-		this._store.add(Event.any(this._editor.onDidLayoutChange, this._editor.onDidScrollChange)(() => this._editor.layoutOverlayWidget(this)));
+		this._store.add(
+			Event.any(
+				this._editor.onDidLayoutChange,
+				this._editor.onDidScrollChange,
+			)(() => this._editor.layoutOverlayWidget(this)),
+		);
 		queueMicrotask(() => this._editor.layoutOverlayWidget(this)); // FUNKY but needed to get the initial layout right
 	}
 

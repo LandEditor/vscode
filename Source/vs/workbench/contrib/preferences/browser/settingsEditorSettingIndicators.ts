@@ -14,8 +14,8 @@ import { SimpleIconLabel } from "../../../../base/browser/ui/iconLabel/simpleIco
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import type { Emitter } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
@@ -87,14 +87,21 @@ export class SettingsTreeIndicatorsLabel implements IDisposable {
 
 	constructor(
 		container: HTMLElement,
-		@IWorkbenchConfigurationService private readonly configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		private readonly configurationService: IWorkbenchConfigurationService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@ICommandService private readonly commandService: ICommandService) {
-		this.indicatorsContainerElement = DOM.append(container, $('.setting-indicators-container'));
-		this.indicatorsContainerElement.style.display = 'inline';
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@ICommandService private readonly commandService: ICommandService,
+	) {
+		this.indicatorsContainerElement = DOM.append(
+			container,
+			$(".setting-indicators-container"),
+		);
+		this.indicatorsContainerElement.style.display = "inline";
 
 		this.profilesEnabled = this.userDataProfilesService.isEnabled();
 
@@ -102,7 +109,12 @@ export class SettingsTreeIndicatorsLabel implements IDisposable {
 		this.scopeOverridesIndicator = this.createScopeOverridesIndicator();
 		this.syncIgnoredIndicator = this.createSyncIgnoredIndicator();
 		this.defaultOverrideIndicator = this.createDefaultOverrideIndicator();
-		this.allIndicators = [this.workspaceTrustIndicator, this.scopeOverridesIndicator, this.syncIgnoredIndicator, this.defaultOverrideIndicator];
+		this.allIndicators = [
+			this.workspaceTrustIndicator,
+			this.scopeOverridesIndicator,
+			this.syncIgnoredIndicator,
+			this.defaultOverrideIndicator,
+		];
 	}
 
 	private defaultHoverOptions: Partial<IHoverOptions> = {
@@ -128,9 +140,7 @@ export class SettingsTreeIndicatorsLabel implements IDisposable {
 				if (hover) {
 					disposables.add(hover);
 				}
-			}, this.configurationService.getValue<number>(
-				"workbench.hover.delay",
-			)),
+			}, this.configurationService.getValue<number>("workbench.hover.delay")),
 		);
 		disposables.add(
 			DOM.addDisposableListener(element, DOM.EventType.MOUSE_OVER, () => {

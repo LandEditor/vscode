@@ -10,9 +10,9 @@ import { isUndefined, isUndefinedOrNull } from "../../../base/common/types.js";
 import type { URI } from "../../../base/common/uri.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../files/common/files.js";
 import { ILogService } from "../../log/common/log.js";
 import type { IStateReadService, IStateService } from "./state.js";

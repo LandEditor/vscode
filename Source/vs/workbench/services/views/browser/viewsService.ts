@@ -8,8 +8,8 @@ import {
 	Disposable,
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isString } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -27,9 +27,9 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
@@ -61,12 +61,12 @@ import {
 } from "../../../common/contextkeys.js";
 import type { IPaneComposite } from "../../../common/panecomposite.js";
 import {
+	IViewDescriptorService,
+	ViewContainerLocation,
 	type IView,
 	type IViewDescriptor,
-	IViewDescriptorService,
 	type IViewPaneContainer,
 	type ViewContainer,
-	ViewContainerLocation,
 } from "../../../common/views.js";
 import { IEditorGroupsService } from "../../editor/common/editorGroupsService.js";
 import { IEditorService } from "../../editor/common/editorService.js";
@@ -119,33 +119,78 @@ export class ViewsService extends Disposable implements IViewsService {
 	private readonly focusedViewContextKey: IContextKey<string>;
 
 	constructor(
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IPaneCompositePartService private readonly paneCompositeService: IPaneCompositePartService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IEditorService private readonly editorService: IEditorService
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IPaneCompositePartService
+		private readonly paneCompositeService: IPaneCompositePartService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IEditorService private readonly editorService: IEditorService,
 	) {
 		super();
 
 		this.viewDisposable = new Map<IViewDescriptor, IDisposable>();
-		this.enabledViewContainersContextKeys = new Map<string, IContextKey<boolean>>();
+		this.enabledViewContainersContextKeys = new Map<
+			string,
+			IContextKey<boolean>
+		>();
 		this.visibleViewContextKeys = new Map<string, IContextKey<boolean>>();
 		this.viewPaneContainers = new Map<string, ViewPaneContainer>();
 
-		this._register(toDisposable(() => {
-			this.viewDisposable.forEach(disposable => disposable.dispose());
-			this.viewDisposable.clear();
-		}));
+		this._register(
+			toDisposable(() => {
+				this.viewDisposable.forEach((disposable) =>
+					disposable.dispose(),
+				);
+				this.viewDisposable.clear();
+			}),
+		);
 
-		this.viewDescriptorService.viewContainers.forEach(viewContainer => this.onDidRegisterViewContainer(viewContainer, this.viewDescriptorService.getViewContainerLocation(viewContainer)!));
-		this._register(this.viewDescriptorService.onDidChangeViewContainers(({ added, removed }) => this.onDidChangeContainers(added, removed)));
-		this._register(this.viewDescriptorService.onDidChangeContainerLocation(({ viewContainer, from, to }) => this.onDidChangeContainerLocation(viewContainer, from, to)));
+		this.viewDescriptorService.viewContainers.forEach((viewContainer) =>
+			this.onDidRegisterViewContainer(
+				viewContainer,
+				this.viewDescriptorService.getViewContainerLocation(
+					viewContainer,
+				)!,
+			),
+		);
+		this._register(
+			this.viewDescriptorService.onDidChangeViewContainers(
+				({ added, removed }) =>
+					this.onDidChangeContainers(added, removed),
+			),
+		);
+		this._register(
+			this.viewDescriptorService.onDidChangeContainerLocation(
+				({ viewContainer, from, to }) =>
+					this.onDidChangeContainerLocation(viewContainer, from, to),
+			),
+		);
 
 		// View Container Visibility
-		this._register(this.paneCompositeService.onDidPaneCompositeOpen(e => this._onDidChangeViewContainerVisibility.fire({ id: e.composite.getId(), visible: true, location: e.viewContainerLocation })));
-		this._register(this.paneCompositeService.onDidPaneCompositeClose(e => this._onDidChangeViewContainerVisibility.fire({ id: e.composite.getId(), visible: false, location: e.viewContainerLocation })));
+		this._register(
+			this.paneCompositeService.onDidPaneCompositeOpen((e) =>
+				this._onDidChangeViewContainerVisibility.fire({
+					id: e.composite.getId(),
+					visible: true,
+					location: e.viewContainerLocation,
+				}),
+			),
+		);
+		this._register(
+			this.paneCompositeService.onDidPaneCompositeClose((e) =>
+				this._onDidChangeViewContainerVisibility.fire({
+					id: e.composite.getId(),
+					visible: false,
+					location: e.viewContainerLocation,
+				}),
+			),
+		);
 
-		this.focusedViewContextKey = FocusedViewContext.bindTo(contextKeyService);
+		this.focusedViewContextKey =
+			FocusedViewContext.bindTo(contextKeyService);
 	}
 
 	private onViewsAdded(added: IView[]): void {
@@ -850,15 +895,15 @@ export class ViewsService extends Disposable implements IViewsService {
 								precondition: ContextKeyExpr.has(
 									`${viewDescriptor.id}.active`,
 								),
-								keybinding:
-									viewDescriptor.openCommandActionDescriptor!
-										.keybindings
-										? {
-												...viewDescriptor.openCommandActionDescriptor!
-													.keybindings,
-												weight: KeybindingWeight.WorkbenchContrib,
-											}
-										: undefined,
+								keybinding: viewDescriptor
+									.openCommandActionDescriptor!.keybindings
+									? {
+											...viewDescriptor
+												.openCommandActionDescriptor!
+												.keybindings,
+											weight: KeybindingWeight.WorkbenchContrib,
+										}
+									: undefined,
 								f1: true,
 							});
 						}
@@ -1104,9 +1149,11 @@ export class ViewsService extends Disposable implements IViewsService {
 		class PaneContainer extends PaneComposite {
 			constructor(
 				@ITelemetryService telemetryService: ITelemetryService,
-				@IWorkspaceContextService contextService: IWorkspaceContextService,
+				@IWorkspaceContextService
+				contextService: IWorkspaceContextService,
 				@IStorageService storageService: IStorageService,
-				@IInstantiationService instantiationService: IInstantiationService,
+				@IInstantiationService
+				instantiationService: IInstantiationService,
 				@IThemeService themeService: IThemeService,
 				@IContextMenuService contextMenuService: IContextMenuService,
 				@IExtensionService extensionService: IExtensionService,

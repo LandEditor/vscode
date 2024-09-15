@@ -5,14 +5,14 @@
 
 import type { INodeProcess } from "../../../../base/common/platform.js";
 import {
-	type IStorageService,
 	StorageScope,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import { resolveCommonProperties } from "../../../../platform/telemetry/common/commonProperties.js";
 import {
-	type ICommonProperties,
 	firstSessionDateStorageKey,
 	lastSessionDateStorageKey,
+	type ICommonProperties,
 } from "../../../../platform/telemetry/common/telemetry.js";
 import { cleanRemoteAuthority } from "../../../../platform/telemetry/common/telemetryUtils.js";
 

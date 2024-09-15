@@ -23,8 +23,8 @@ import type {
 	ITreeSorter,
 } from "../../../../../base/browser/ui/tree/tree.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../../base/common/filters.js";
 import {
 	DisposableStore,
@@ -51,10 +51,10 @@ import type {
 	ResourceLabels,
 } from "../../../../browser/labels.js";
 import {
+	BulkFileOperations,
+	BulkFileOperationType,
 	type BulkCategory,
 	type BulkFileOperation,
-	BulkFileOperationType,
-	BulkFileOperations,
 	type BulkTextEdit,
 } from "./bulkEditPreview.js";
 
@@ -249,9 +249,11 @@ export class BulkEditDataSource
 	public groupByFile = true;
 
 	constructor(
-		@ITextModelService private readonly _textModelService: ITextModelService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-	) { }
+		@ITextModelService
+		private readonly _textModelService: ITextModelService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+	) {}
 
 	hasChildren(element: BulkFileOperations | BulkEditElement): boolean {
 		if (element instanceof FileElement) {
@@ -415,7 +417,7 @@ export function compareBulkFileOperations(
 export class BulkEditAccessibilityProvider
 	implements IListAccessibilityProvider<BulkEditElement>
 {
-	constructor(@ILabelService private readonly _labelService: ILabelService) { }
+	constructor(@ILabelService private readonly _labelService: ILabelService) {}
 
 	getWidgetAriaLabel(): string {
 		return localize("bulkEdit", "Bulk Edit");
@@ -582,7 +584,7 @@ export class CategoryElementRenderer
 
 	readonly templateId: string = CategoryElementRenderer.id;
 
-	constructor(@IThemeService private readonly _themeService: IThemeService) { }
+	constructor(@IThemeService private readonly _themeService: IThemeService) {}
 
 	renderTemplate(container: HTMLElement): CategoryElementTemplate {
 		return new CategoryElementTemplate(container);
@@ -657,17 +659,18 @@ class FileElementTemplate {
 		resourceLabels: ResourceLabels,
 		@ILabelService private readonly _labelService: ILabelService,
 	) {
-
-		this._checkbox = document.createElement('input');
-		this._checkbox.className = 'edit-checkbox';
-		this._checkbox.type = 'checkbox';
-		this._checkbox.setAttribute('role', 'checkbox');
+		this._checkbox = document.createElement("input");
+		this._checkbox.className = "edit-checkbox";
+		this._checkbox.type = "checkbox";
+		this._checkbox.setAttribute("role", "checkbox");
 		container.appendChild(this._checkbox);
 
-		this._label = resourceLabels.create(container, { supportHighlights: true });
+		this._label = resourceLabels.create(container, {
+			supportHighlights: true,
+		});
 
-		this._details = document.createElement('span');
-		this._details.className = 'details';
+		this._details = document.createElement("span");
+		this._details.className = "details";
 		container.appendChild(this._details);
 	}
 
@@ -747,7 +750,7 @@ export class FileElementRenderer
 	constructor(
 		private readonly _resourceLabels: ResourceLabels,
 		@ILabelService private readonly _labelService: ILabelService,
-	) { }
+	) {}
 
 	renderTemplate(container: HTMLElement): FileElementTemplate {
 		return new FileElementTemplate(
@@ -778,16 +781,19 @@ class TextEditElementTemplate {
 	private readonly _icon: HTMLDivElement;
 	private readonly _label: HighlightedLabel;
 
-	constructor(container: HTMLElement, @IThemeService private readonly _themeService: IThemeService) {
-		container.classList.add('textedit');
+	constructor(
+		container: HTMLElement,
+		@IThemeService private readonly _themeService: IThemeService,
+	) {
+		container.classList.add("textedit");
 
-		this._checkbox = document.createElement('input');
-		this._checkbox.className = 'edit-checkbox';
-		this._checkbox.type = 'checkbox';
-		this._checkbox.setAttribute('role', 'checkbox');
+		this._checkbox = document.createElement("input");
+		this._checkbox.className = "edit-checkbox";
+		this._checkbox.type = "checkbox";
+		this._checkbox.setAttribute("role", "checkbox");
 		container.appendChild(this._checkbox);
 
-		this._icon = document.createElement('div');
+		this._icon = document.createElement("div");
 		container.appendChild(this._icon);
 
 		this._label = this._disposables.add(new HighlightedLabel(container));
@@ -904,7 +910,7 @@ export class TextEditElementRenderer
 
 	readonly templateId: string = TextEditElementRenderer.id;
 
-	constructor(@IThemeService private readonly _themeService: IThemeService) { }
+	constructor(@IThemeService private readonly _themeService: IThemeService) {}
 
 	renderTemplate(container: HTMLElement): TextEditElementTemplate {
 		return new TextEditElementTemplate(container, this._themeService);

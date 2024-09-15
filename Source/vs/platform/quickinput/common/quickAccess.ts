@@ -6,8 +6,8 @@
 import { coalesce } from "../../../base/common/arrays.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { Registry } from "../../registry/common/platform.js";
 import type {

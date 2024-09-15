@@ -20,8 +20,8 @@ import type { IFilesConfiguration } from "../../../../platform/files/common/file
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import type { ITelemetryData } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type GlobPattern,
 	TextSearchCompleteMessageType,
+	type GlobPattern,
 } from "./searchExtTypes.js";
 
 export { TextSearchCompleteMessageType };

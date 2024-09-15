@@ -12,14 +12,14 @@ import type { Range } from "../../../../common/core/range.js";
 import type { DocumentColorProvider } from "../../../../common/languages.js";
 import type { IModelDecoration } from "../../../../common/model.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
+	RenderedHoverParts,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "../../../hover/browser/hoverTypes.js";
 import { ColorDetector } from "../colorDetector.js";
 import type { ColorPickerModel } from "../colorPickerModel.js";
@@ -62,7 +62,7 @@ export class HoverColorPickerParticipant
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@IThemeService private readonly _themeService: IThemeService,
-	) { }
+	) {}
 
 	public computeSync(
 		_anchor: HoverAnchor,

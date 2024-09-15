@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { Emitter } from "../../../base/common/event.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { NotebookDocumentMetadata } from "../../contrib/notebook/common/notebookCommon.js";

@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	ModifierKeyEmitter,
 	isHTMLElement,
+	ModifierKeyEmitter,
 } from "../../../../base/browser/dom.js";
 import { isNonEmptyArray } from "../../../../base/common/arrays.js";
 import {
-	RunOnceScheduler,
 	disposableTimeout,
+	RunOnceScheduler,
 } from "../../../../base/common/async.js";
 import {
 	CancellationToken,
@@ -19,9 +19,9 @@ import {
 import { onUnexpectedError } from "../../../../base/common/errors.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LRUCache } from "../../../../base/common/map.js";
 import type { IRange } from "../../../../base/common/range.js";
@@ -36,8 +36,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	INotificationService,
@@ -46,15 +46,15 @@ import {
 import * as colors from "../../../../platform/theme/common/colorRegistry.js";
 import { themeColorFromId } from "../../../../platform/theme/common/themeService.js";
 import {
+	MouseTargetType,
 	type IActiveCodeEditor,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import {
+	DynamicCssRules,
 	type ClassNameReference,
 	type CssProperties,
-	DynamicCssRules,
 } from "../../../browser/editorDom.js";
 import { StableEditorScrollState } from "../../../browser/stableEditorScroll.js";
 import {
@@ -67,16 +67,16 @@ import { Range } from "../../../common/core/range.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";
 import * as languages from "../../../common/languages.js";
 import {
-	type IModelDeltaDecoration,
-	type ITextModel,
 	InjectedTextCursorStops,
-	type InjectedTextOptions,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
+	type InjectedTextOptions,
+	type ITextModel,
 } from "../../../common/model.js";
 import { ModelDecorationInjectedTextOptions } from "../../../common/model/textModel.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { ITextModelService } from "../../../common/services/resolverService.js";
@@ -86,8 +86,8 @@ import {
 } from "../../gotoSymbol/browser/link/clickLinkGesture.js";
 import {
 	InlayHintAnchor,
-	type InlayHintItem,
 	InlayHintsFragments,
+	type InlayHintItem,
 } from "./inlayHints.js";
 import {
 	goToDefinitionWithLocation,
@@ -187,24 +187,39 @@ export class InlayHintsController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService _featureDebounce: ILanguageFeatureDebounceService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		_featureDebounce: ILanguageFeatureDebounceService,
 		@IInlayHintsCache private readonly _inlayHintsCache: IInlayHintsCache,
 		@ICommandService private readonly _commandService: ICommandService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 	) {
-		this._debounceInfo = _featureDebounce.for(_languageFeaturesService.inlayHintsProvider, 'InlayHint', { min: 25 });
-		this._disposables.add(_languageFeaturesService.inlayHintsProvider.onDidChange(() => this._update()));
+		this._debounceInfo = _featureDebounce.for(
+			_languageFeaturesService.inlayHintsProvider,
+			"InlayHint",
+			{ min: 25 },
+		);
+		this._disposables.add(
+			_languageFeaturesService.inlayHintsProvider.onDidChange(() =>
+				this._update(),
+			),
+		);
 		this._disposables.add(_editor.onDidChangeModel(() => this._update()));
-		this._disposables.add(_editor.onDidChangeModelLanguage(() => this._update()));
-		this._disposables.add(_editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.inlayHints)) {
-				this._update();
-			}
-		}));
+		this._disposables.add(
+			_editor.onDidChangeModelLanguage(() => this._update()),
+		);
+		this._disposables.add(
+			_editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.inlayHints)) {
+					this._update();
+				}
+			}),
+		);
 		this._update();
-
 	}
 
 	dispose(): void {

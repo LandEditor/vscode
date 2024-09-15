@@ -20,7 +20,6 @@ import type {
 import type { IFindWidgetStyles } from "../../../base/browser/ui/tree/abstractTree.js";
 import { Color } from "../../../base/common/color.js";
 import {
-	type ColorIdentifier,
 	activeContrastBorder,
 	asCssVariable,
 	asCssVariableWithDefault,
@@ -121,6 +120,7 @@ import {
 	treeInactiveIndentGuidesStroke,
 	treeIndentGuidesStroke,
 	widgetShadow,
+	type ColorIdentifier,
 } from "../common/colorRegistry.js";
 
 export type IStyleOverride<T> = {

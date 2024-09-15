@@ -17,19 +17,19 @@ import {
 } from "../../../../platform/notification/common/notification.js";
 import type { IPickerQuickAccessItem } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import {
+	IQuickInputService,
 	type IKeyMods,
 	type IPickOptions,
 	type IQuickInputButton,
-	IQuickInputService,
 	type IQuickPickItem,
 	type IQuickPickSeparator,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import {
+	TerminalSettingPrefix,
 	type IExtensionTerminalProfile,
 	type ITerminalExecutable,
 	type ITerminalProfile,
 	type ITerminalProfileObject,
-	TerminalSettingPrefix,
 } from "../../../../platform/terminal/common/terminal.js";
 import { getIconRegistry } from "../../../../platform/theme/common/iconRegistry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
@@ -51,13 +51,18 @@ import { configureTerminalProfileIcon } from "./terminalIcons.js";
 type DefaultProfileName = string;
 export class TerminalProfileQuickpick {
 	constructor(
-		@ITerminalProfileService private readonly _terminalProfileService: ITerminalProfileService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@ITerminalProfileService
+		private readonly _terminalProfileService: ITerminalProfileService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@INotificationService private readonly _notificationService: INotificationService
-	) { }
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+	) {}
 
 	async showAndGetResult(
 		type: "setDefault" | "createInstance",

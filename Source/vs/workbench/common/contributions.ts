@@ -5,8 +5,8 @@
 
 import {
 	DeferredPromise,
-	type IdleDeadline,
 	runWhenGlobalIdle,
+	type IdleDeadline,
 } from "../../base/common/async.js";
 import {
 	Disposable,
@@ -17,9 +17,9 @@ import { getOrSet } from "../../base/common/map.js";
 import { mark } from "../../base/common/performance.js";
 import { IEnvironmentService } from "../../platform/environment/common/environment.js";
 import {
+	IInstantiationService,
 	type BrandedService,
 	type IConstructorSignature,
-	IInstantiationService,
 	type ServicesAccessor,
 } from "../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../platform/log/common/log.js";

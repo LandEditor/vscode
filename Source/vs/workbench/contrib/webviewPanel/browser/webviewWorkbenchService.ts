@@ -4,44 +4,44 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	DeferredPromise,
 	createCancelablePromise,
+	DeferredPromise,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { memoize } from "../../../../base/common/decorators.js";
 import { isCancellationError } from "../../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { Iterable } from "../../../../base/common/iterator.js";
 import {
-	Disposable,
-	type IDisposable,
 	combinedDisposable,
+	Disposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { EditorActivation } from "../../../../platform/editor/common/editor.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import type { GroupIdentifier } from "../../../common/editor.js";
 import { DiffEditorInput } from "../../../common/editor/diffEditorInput.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import {
-	type ACTIVE_GROUP_TYPE,
 	IEditorService,
+	type ACTIVE_GROUP_TYPE,
 	type SIDE_GROUP_TYPE,
 } from "../../../services/editor/common/editorService.js";
 import {
-	type IOverlayWebview,
 	IWebviewService,
+	type IOverlayWebview,
 	type WebviewInitInfo,
 } from "../../webview/browser/webview.js";
 import { CONTEXT_ACTIVE_WEBVIEW_PANEL_ID } from "./webviewEditor.js";
@@ -166,7 +166,8 @@ export class LazilyResolvedWebviewEditorInput extends WebviewInput {
 	constructor(
 		init: WebviewInputInitInfo,
 		webview: IOverlayWebview,
-		@IWebviewWorkbenchService private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
+		@IWebviewWorkbenchService
+		private readonly _webviewWorkbenchService: IWebviewWorkbenchService,
 	) {
 		super(init, webview, _webviewWorkbenchService.iconManager);
 	}
@@ -278,26 +279,36 @@ export class WebviewEditorService
 	constructor(
 		@IEditorGroupsService editorGroupsService: IEditorGroupsService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IWebviewService private readonly _webviewService: IWebviewService,
 	) {
 		super();
 
-		this._iconManager = this._register(this._instantiationService.createInstance(WebviewIconManager));
+		this._iconManager = this._register(
+			this._instantiationService.createInstance(WebviewIconManager),
+		);
 
-		this._register(editorGroupsService.registerContextKeyProvider({
-			contextKey: CONTEXT_ACTIVE_WEBVIEW_PANEL_ID,
-			getGroupContextKeyValue: (group) => this.getWebviewId(group.activeEditor),
-		}));
+		this._register(
+			editorGroupsService.registerContextKeyProvider({
+				contextKey: CONTEXT_ACTIVE_WEBVIEW_PANEL_ID,
+				getGroupContextKeyValue: (group) =>
+					this.getWebviewId(group.activeEditor),
+			}),
+		);
 
-		this._register(_editorService.onDidActiveEditorChange(() => {
-			this.updateActiveWebview();
-		}));
+		this._register(
+			_editorService.onDidActiveEditorChange(() => {
+				this.updateActiveWebview();
+			}),
+		);
 
 		// The user may have switched focus between two sides of a diff editor
-		this._register(_webviewService.onDidChangeActiveWebview(() => {
-			this.updateActiveWebview();
-		}));
+		this._register(
+			_webviewService.onDidChangeActiveWebview(() => {
+				this.updateActiveWebview();
+			}),
+		);
 
 		this.updateActiveWebview();
 	}

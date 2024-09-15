@@ -14,8 +14,8 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import {
-	type IMarkdownRendererOptions,
 	MarkdownRenderer,
+	type IMarkdownRendererOptions,
 } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import type { IRange } from "../../../../editor/common/core/range.js";
 import * as languages from "../../../../editor/common/languages.js";
@@ -71,12 +71,26 @@ export class CommentThreadBody<
 	) {
 		super();
 
-		this._register(dom.addDisposableListener(container, dom.EventType.FOCUS_IN, e => {
-			// TODO @rebornix, limit T to IRange | ICellRange
-			this.commentService.setActiveEditingCommentThread(this._commentThread);
-		}));
+		this._register(
+			dom.addDisposableListener(
+				container,
+				dom.EventType.FOCUS_IN,
+				(e) => {
+					// TODO @rebornix, limit T to IRange | ICellRange
+					this.commentService.setActiveEditingCommentThread(
+						this._commentThread,
+					);
+				},
+			),
+		);
 
-		this._markdownRenderer = this._register(new MarkdownRenderer(this._options, this.languageService, this.openerService));
+		this._markdownRenderer = this._register(
+			new MarkdownRenderer(
+				this._options,
+				this.languageService,
+				this.openerService,
+			),
+		);
 	}
 
 	focus() {
@@ -200,9 +214,7 @@ export class CommentThreadBody<
 		return pendingEdits;
 	}
 
-	getCommentCoords(
-		commentUniqueId: number,
-	):
+	getCommentCoords(commentUniqueId: number):
 		| {
 				thread: dom.IDomNodePagePosition;
 				comment: dom.IDomNodePagePosition;

@@ -21,13 +21,13 @@ import {
 } from "../../../platform/telemetry/common/telemetry.js";
 import { supportsTelemetry } from "../../../platform/telemetry/common/telemetryUtils.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostTelemetryShape,
 	MainContext,
+	type ExtHostTelemetryShape,
 	type MainThreadTelemetryShape,
 } from "../common/extHost.protocol.js";
 
@@ -42,9 +42,12 @@ export class MainThreadTelemetry
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IEnvironmentService private readonly _environmentService: IEnvironmentService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IEnvironmentService
+		private readonly _environmentService: IEnvironmentService,
 		@IProductService private readonly _productService: IProductService,
 	) {
 		super();
@@ -52,13 +55,24 @@ export class MainThreadTelemetry
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTelemetry);
 
 		if (supportsTelemetry(this._productService, this._environmentService)) {
-			this._register(this._configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration(TELEMETRY_SETTING_ID) || e.affectsConfiguration(TELEMETRY_OLD_SETTING_ID)) {
-					this._proxy.$onDidChangeTelemetryLevel(this.telemetryLevel);
-				}
-			}));
+			this._register(
+				this._configurationService.onDidChangeConfiguration((e) => {
+					if (
+						e.affectsConfiguration(TELEMETRY_SETTING_ID) ||
+						e.affectsConfiguration(TELEMETRY_OLD_SETTING_ID)
+					) {
+						this._proxy.$onDidChangeTelemetryLevel(
+							this.telemetryLevel,
+						);
+					}
+				}),
+			);
 		}
-		this._proxy.$initializeTelemetryLevel(this.telemetryLevel, supportsTelemetry(this._productService, this._environmentService), this._productService.enabledTelemetryLevels);
+		this._proxy.$initializeTelemetryLevel(
+			this.telemetryLevel,
+			supportsTelemetry(this._productService, this._environmentService),
+			this._productService.enabledTelemetryLevels,
+		);
 	}
 
 	private get telemetryLevel(): TelemetryLevel {

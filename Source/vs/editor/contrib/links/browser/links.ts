@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	RunOnceScheduler,
 	createCancelablePromise,
+	RunOnceScheduler,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../base/common/errors.js";
@@ -17,20 +17,22 @@ import * as platform from "../../../../base/common/platform.js";
 import * as resources from "../../../../base/common/resources.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { URI } from "../../../../base/common/uri.js";
+
 import "./links.css";
+
 import * as nls from "../../../../nls.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
-	type ICodeEditor,
 	MouseTargetType,
+	type ICodeEditor,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { Position } from "../../../common/core/position.js";
@@ -38,14 +40,14 @@ import type { IEditorContribution } from "../../../common/editorCommon.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import type { LinkProvider } from "../../../common/languages.js";
 import {
+	TrackedRangeStickiness,
 	type IModelDecorationsChangeAccessor,
 	type IModelDeltaDecoration,
-	TrackedRangeStickiness,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import {
@@ -53,7 +55,7 @@ import {
 	type ClickLinkKeyboardEvent,
 	type ClickLinkMouseEvent,
 } from "../../gotoSymbol/browser/link/clickLinkGesture.js";
-import { type Link, type LinksList, getLinks } from "./getLinks.js";
+import { getLinks, type Link, type LinksList } from "./getLinks.js";
 
 export class LinkDetector extends Disposable implements IEditorContribution {
 	public static readonly ID: string = "editor.linkDetector";
@@ -73,15 +75,24 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 	constructor(
 		private readonly editor: ICodeEditor,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		languageFeatureDebounceService: ILanguageFeatureDebounceService,
 	) {
 		super();
 
 		this.providers = this.languageFeaturesService.linkProvider;
-		this.debounceInformation = languageFeatureDebounceService.for(this.providers, 'Links', { min: 1000, max: 4000 });
-		this.computeLinks = this._register(new RunOnceScheduler(() => this.computeLinksNow(), 1000));
+		this.debounceInformation = languageFeatureDebounceService.for(
+			this.providers,
+			"Links",
+			{ min: 1000, max: 4000 },
+		);
+		this.computeLinks = this._register(
+			new RunOnceScheduler(() => this.computeLinksNow(), 1000),
+		);
 		this.computePromise = null;
 		this.activeLinksList = null;
 		this.currentOccurrences = {};
@@ -89,48 +100,68 @@ export class LinkDetector extends Disposable implements IEditorContribution {
 
 		const clickLinkGesture = this._register(new ClickLinkGesture(editor));
 
-		this._register(clickLinkGesture.onMouseMoveOrRelevantKeyDown(([mouseEvent, keyboardEvent]) => {
-			this._onEditorMouseMove(mouseEvent, keyboardEvent);
-		}));
-		this._register(clickLinkGesture.onExecute((e) => {
-			this.onEditorMouseUp(e);
-		}));
-		this._register(clickLinkGesture.onCancel((e) => {
-			this.cleanUpActiveLinkDecoration();
-		}));
-		this._register(editor.onDidChangeConfiguration((e) => {
-			if (!e.hasChanged(EditorOption.links)) {
-				return;
-			}
-			// Remove any links (for the getting disabled case)
-			this.updateDecorations([]);
+		this._register(
+			clickLinkGesture.onMouseMoveOrRelevantKeyDown(
+				([mouseEvent, keyboardEvent]) => {
+					this._onEditorMouseMove(mouseEvent, keyboardEvent);
+				},
+			),
+		);
+		this._register(
+			clickLinkGesture.onExecute((e) => {
+				this.onEditorMouseUp(e);
+			}),
+		);
+		this._register(
+			clickLinkGesture.onCancel((e) => {
+				this.cleanUpActiveLinkDecoration();
+			}),
+		);
+		this._register(
+			editor.onDidChangeConfiguration((e) => {
+				if (!e.hasChanged(EditorOption.links)) {
+					return;
+				}
+				// Remove any links (for the getting disabled case)
+				this.updateDecorations([]);
 
-			// Stop any computation (for the getting disabled case)
-			this.stop();
+				// Stop any computation (for the getting disabled case)
+				this.stop();
 
-			// Start computing (for the getting enabled case)
-			this.computeLinks.schedule(0);
-		}));
-		this._register(editor.onDidChangeModelContent((e) => {
-			if (!this.editor.hasModel()) {
-				return;
-			}
-			this.computeLinks.schedule(this.debounceInformation.get(this.editor.getModel()));
-		}));
-		this._register(editor.onDidChangeModel((e) => {
-			this.currentOccurrences = {};
-			this.activeLinkDecorationId = null;
-			this.stop();
-			this.computeLinks.schedule(0);
-		}));
-		this._register(editor.onDidChangeModelLanguage((e) => {
-			this.stop();
-			this.computeLinks.schedule(0);
-		}));
-		this._register(this.providers.onDidChange((e) => {
-			this.stop();
-			this.computeLinks.schedule(0);
-		}));
+				// Start computing (for the getting enabled case)
+				this.computeLinks.schedule(0);
+			}),
+		);
+		this._register(
+			editor.onDidChangeModelContent((e) => {
+				if (!this.editor.hasModel()) {
+					return;
+				}
+				this.computeLinks.schedule(
+					this.debounceInformation.get(this.editor.getModel()),
+				);
+			}),
+		);
+		this._register(
+			editor.onDidChangeModel((e) => {
+				this.currentOccurrences = {};
+				this.activeLinkDecorationId = null;
+				this.stop();
+				this.computeLinks.schedule(0);
+			}),
+		);
+		this._register(
+			editor.onDidChangeModelLanguage((e) => {
+				this.stop();
+				this.computeLinks.schedule(0);
+			}),
+		);
+		this._register(
+			this.providers.onDidChange((e) => {
+				this.stop();
+				this.computeLinks.schedule(0);
+			}),
+		);
 
 		this.computeLinks.schedule(0);
 	}

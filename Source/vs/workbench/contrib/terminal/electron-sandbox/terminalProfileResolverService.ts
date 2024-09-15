@@ -16,14 +16,18 @@ import { ITerminalProfileService } from "../common/terminal.js";
 
 export class ElectronTerminalProfileResolverService extends BaseTerminalProfileResolverService {
 	constructor(
-		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
+		@IConfigurationResolverService
+		configurationResolverService: IConfigurationResolverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHistoryService historyService: IHistoryService,
 		@ITerminalLogService logService: ITerminalLogService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
-		@ITerminalProfileService terminalProfileService: ITerminalProfileService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
+		@ITerminalProfileService
+		terminalProfileService: ITerminalProfileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@ITerminalInstanceService terminalInstanceService: ITerminalInstanceService,
+		@ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		super(
 			{

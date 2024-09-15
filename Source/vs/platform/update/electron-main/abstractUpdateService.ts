@@ -16,12 +16,12 @@ import { ILogService } from "../../log/common/log.js";
 import { IProductService } from "../../product/common/productService.js";
 import { IRequestService } from "../../request/common/request.js";
 import {
-	type AvailableForDownload,
 	DisablementReason,
-	type IUpdateService,
 	State,
 	StateType,
 	UpdateType,
+	type AvailableForDownload,
+	type IUpdateService,
 } from "../common/update.js";
 
 export function createUpdateURL(
@@ -73,14 +73,18 @@ export abstract class AbstractUpdateService implements IUpdateService {
 	}
 
 	constructor(
-		@ILifecycleMainService protected readonly lifecycleMainService: ILifecycleMainService,
-		@IConfigurationService protected configurationService: IConfigurationService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
+		@ILifecycleMainService
+		protected readonly lifecycleMainService: ILifecycleMainService,
+		@IConfigurationService
+		protected configurationService: IConfigurationService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 		@IRequestService protected requestService: IRequestService,
 		@ILogService protected logService: ILogService,
-		@IProductService protected readonly productService: IProductService
+		@IProductService protected readonly productService: IProductService,
 	) {
-		lifecycleMainService.when(LifecycleMainPhase.AfterWindowOpen)
+		lifecycleMainService
+			.when(LifecycleMainPhase.AfterWindowOpen)
 			.finally(() => this.initialize());
 	}
 

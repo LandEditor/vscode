@@ -20,7 +20,7 @@ export class BinaryEditorModel extends EditorModel {
 	constructor(
 		readonly resource: URI,
 		private readonly name: string,
-		@IFileService private readonly fileService: IFileService
+		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 	}

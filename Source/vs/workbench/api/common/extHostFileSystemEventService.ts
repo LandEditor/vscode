@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
 	AsyncEmitter,
@@ -12,7 +13,7 @@ import {
 	type IWaitUntil,
 	type IWaitUntilData,
 } from "../../../base/common/event.js";
-import { GLOBSTAR, GLOB_SPLIT, parse } from "../../../base/common/glob.js";
+import { GLOB_SPLIT, GLOBSTAR, parse } from "../../../base/common/glob.js";
 import { Lazy } from "../../../base/common/lazy.js";
 import { URI } from "../../../base/common/uri.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
@@ -22,13 +23,13 @@ import {
 } from "../../../platform/files/common/files.js";
 import type { ILogService } from "../../../platform/log/common/log.js";
 import {
+	MainContext,
 	type ExtHostFileSystemEventServiceShape,
 	type FileSystemEvents,
 	type IMainContext,
 	type IRelativePatternDto,
 	type IWillRunFileOperationParticipation,
 	type IWorkspaceEditDto,
-	MainContext,
 	type SourceTargetPair,
 } from "./extHost.protocol.js";
 import type { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";

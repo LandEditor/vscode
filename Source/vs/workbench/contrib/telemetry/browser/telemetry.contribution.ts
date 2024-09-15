@@ -42,9 +42,9 @@ import {
 	WorkbenchState,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { ViewContainerLocation } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
@@ -57,9 +57,9 @@ import {
 } from "../../../services/lifecycle/common/lifecycle.js";
 import { IPaneCompositePartService } from "../../../services/panecomposite/browser/panecomposite.js";
 import {
+	ITextFileService,
 	type ITextFileResolveEvent,
 	type ITextFileSaveEvent,
-	ITextFileService,
 } from "../../../services/textfile/common/textfiles.js";
 import { IWorkbenchThemeService } from "../../../services/themes/common/workbenchThemeService.js";
 import { IUserDataProfileService } from "../../../services/userDataProfile/common/userDataProfile.js";
@@ -128,53 +128,125 @@ export class TelemetryContribution
 
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IEditorService editorService: IEditorService,
 		@IKeybindingService keybindingsService: IKeybindingService,
 		@IWorkbenchThemeService themeService: IWorkbenchThemeService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IPaneCompositePartService paneCompositeService: IPaneCompositePartService,
-		@ITextFileService textFileService: ITextFileService
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IPaneCompositePartService
+		paneCompositeService: IPaneCompositePartService,
+		@ITextFileService textFileService: ITextFileService,
 	) {
 		super();
 
-		const { filesToOpenOrCreate, filesToDiff, filesToMerge } = environmentService;
-		const activeViewlet = paneCompositeService.getActivePaneComposite(ViewContainerLocation.Sidebar);
+		const { filesToOpenOrCreate, filesToDiff, filesToMerge } =
+			environmentService;
+		const activeViewlet = paneCompositeService.getActivePaneComposite(
+			ViewContainerLocation.Sidebar,
+		);
 
 		type WindowSizeFragment = {
-			innerHeight: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The height of the current window.' };
-			innerWidth: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The width of the current window.' };
-			outerHeight: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The height of the current window with all decoration removed.' };
-			outerWidth: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The width of the current window with all decoration removed.' };
-			owner: 'bpasero';
-			comment: 'The size of the window.';
+			innerHeight: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The height of the current window.";
+			};
+			innerWidth: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The width of the current window.";
+			};
+			outerHeight: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The height of the current window with all decoration removed.";
+			};
+			outerWidth: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The width of the current window with all decoration removed.";
+			};
+			owner: "bpasero";
+			comment: "The size of the window.";
 		};
 
 		type WorkspaceLoadClassification = {
-			owner: 'bpasero';
-			emptyWorkbench: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Whether a folder or workspace is opened or not.' };
+			owner: "bpasero";
+			emptyWorkbench: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "Whether a folder or workspace is opened or not.";
+			};
 			windowSize: WindowSizeFragment;
-			'workbench.filesToOpenOrCreate': { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Number of files that should open or be created.' };
-			'workbench.filesToDiff': { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Number of files that should be compared.' };
-			'workbench.filesToMerge': { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Number of files that should be merged.' };
-			customKeybindingsCount: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'Number of custom keybindings' };
-			theme: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The current theme of the window.' };
-			language: { classification: 'SystemMetaData'; purpose: 'BusinessInsight'; comment: 'The display language of the window.' };
-			pinnedViewlets: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The identifiers of views that are pinned.' };
-			restoredViewlet?: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The identifier of the view that is restored.' };
-			restoredEditors: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'The number of editors that restored.' };
-			startupKind: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'How the window was opened, e.g via reload or not.' };
-			comment: 'Metadata around the workspace that is being loaded into a window.';
+			"workbench.filesToOpenOrCreate": {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "Number of files that should open or be created.";
+			};
+			"workbench.filesToDiff": {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "Number of files that should be compared.";
+			};
+			"workbench.filesToMerge": {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "Number of files that should be merged.";
+			};
+			customKeybindingsCount: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "Number of custom keybindings";
+			};
+			theme: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The current theme of the window.";
+			};
+			language: {
+				classification: "SystemMetaData";
+				purpose: "BusinessInsight";
+				comment: "The display language of the window.";
+			};
+			pinnedViewlets: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The identifiers of views that are pinned.";
+			};
+			restoredViewlet?: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The identifier of the view that is restored.";
+			};
+			restoredEditors: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "The number of editors that restored.";
+			};
+			startupKind: {
+				classification: "SystemMetaData";
+				purpose: "FeatureInsight";
+				comment: "How the window was opened, e.g via reload or not.";
+			};
+			comment: "Metadata around the workspace that is being loaded into a window.";
 		};
 
 		type WorkspaceLoadEvent = {
-			windowSize: { innerHeight: number; innerWidth: number; outerHeight: number; outerWidth: number };
+			windowSize: {
+				innerHeight: number;
+				innerWidth: number;
+				outerHeight: number;
+				outerWidth: number;
+			};
 			emptyWorkbench: boolean;
-			'workbench.filesToOpenOrCreate': number;
-			'workbench.filesToDiff': number;
-			'workbench.filesToMerge': number;
+			"workbench.filesToOpenOrCreate": number;
+			"workbench.filesToDiff": number;
+			"workbench.filesToMerge": number;
 			customKeybindingsCount: number;
 			theme: string;
 			language: string;
@@ -184,27 +256,48 @@ export class TelemetryContribution
 			startupKind: StartupKind;
 		};
 
-		telemetryService.publicLog2<WorkspaceLoadEvent, WorkspaceLoadClassification>('workspaceLoad', {
-			windowSize: { innerHeight: mainWindow.innerHeight, innerWidth: mainWindow.innerWidth, outerHeight: mainWindow.outerHeight, outerWidth: mainWindow.outerWidth },
-			emptyWorkbench: contextService.getWorkbenchState() === WorkbenchState.EMPTY,
-			'workbench.filesToOpenOrCreate': filesToOpenOrCreate && filesToOpenOrCreate.length || 0,
-			'workbench.filesToDiff': filesToDiff && filesToDiff.length || 0,
-			'workbench.filesToMerge': filesToMerge && filesToMerge.length || 0,
+		telemetryService.publicLog2<
+			WorkspaceLoadEvent,
+			WorkspaceLoadClassification
+		>("workspaceLoad", {
+			windowSize: {
+				innerHeight: mainWindow.innerHeight,
+				innerWidth: mainWindow.innerWidth,
+				outerHeight: mainWindow.outerHeight,
+				outerWidth: mainWindow.outerWidth,
+			},
+			emptyWorkbench:
+				contextService.getWorkbenchState() === WorkbenchState.EMPTY,
+			"workbench.filesToOpenOrCreate":
+				(filesToOpenOrCreate && filesToOpenOrCreate.length) || 0,
+			"workbench.filesToDiff": (filesToDiff && filesToDiff.length) || 0,
+			"workbench.filesToMerge":
+				(filesToMerge && filesToMerge.length) || 0,
 			customKeybindingsCount: keybindingsService.customKeybindingsCount(),
 			theme: themeService.getColorTheme().id,
 			language,
-			pinnedViewlets: paneCompositeService.getPinnedPaneCompositeIds(ViewContainerLocation.Sidebar),
+			pinnedViewlets: paneCompositeService.getPinnedPaneCompositeIds(
+				ViewContainerLocation.Sidebar,
+			),
 			restoredViewlet: activeViewlet ? activeViewlet.getId() : undefined,
 			restoredEditors: editorService.visibleEditors.length,
-			startupKind: lifecycleService.startupKind
+			startupKind: lifecycleService.startupKind,
 		});
 
 		// Error Telemetry
 		this._register(new ErrorTelemetry(telemetryService));
 
 		//  Files Telemetry
-		this._register(textFileService.files.onDidResolve(e => this.onTextFileModelResolved(e)));
-		this._register(textFileService.files.onDidSave(e => this.onTextFileModelSaved(e)));
+		this._register(
+			textFileService.files.onDidResolve((e) =>
+				this.onTextFileModelResolved(e),
+			),
+		);
+		this._register(
+			textFileService.files.onDidSave((e) =>
+				this.onTextFileModelSaved(e),
+			),
+		);
 
 		// Lifecycle
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
@@ -363,36 +456,60 @@ class ConfigurationTelemetryContribution
 		);
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super();
 
 		// Debounce the event by 1000 ms and merge all affected keys into one event
-		const debouncedConfigService = Event.debounce(configurationService.onDidChangeConfiguration, (last, cur) => {
-			const newAffectedKeys: ReadonlySet<string> = last ? new Set([...last.affectedKeys, ...cur.affectedKeys]) : cur.affectedKeys;
-			return { ...cur, affectedKeys: newAffectedKeys };
-		}, 1000, true);
+		const debouncedConfigService = Event.debounce(
+			configurationService.onDidChangeConfiguration,
+			(last, cur) => {
+				const newAffectedKeys: ReadonlySet<string> = last
+					? new Set([...last.affectedKeys, ...cur.affectedKeys])
+					: cur.affectedKeys;
+				return { ...cur, affectedKeys: newAffectedKeys };
+			},
+			1000,
+			true,
+		);
 
-		this._register(debouncedConfigService(event => {
-			if (event.source !== ConfigurationTarget.DEFAULT) {
-				type UpdateConfigurationClassification = {
-					owner: 'sandy081';
-					comment: 'Event which fires when user updates settings';
-					configurationSource: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'What configuration file was updated i.e user or workspace' };
-					configurationKeys: { classification: 'SystemMetaData'; purpose: 'FeatureInsight'; comment: 'What configuration keys were updated' };
-				};
-				type UpdateConfigurationEvent = {
-					configurationSource: string;
-					configurationKeys: string[];
-				};
-				telemetryService.publicLog2<UpdateConfigurationEvent, UpdateConfigurationClassification>('updateConfiguration', {
-					configurationSource: ConfigurationTargetToString(event.source),
-					configurationKeys: Array.from(event.affectedKeys)
-				});
-			}
-		}));
+		this._register(
+			debouncedConfigService((event) => {
+				if (event.source !== ConfigurationTarget.DEFAULT) {
+					type UpdateConfigurationClassification = {
+						owner: "sandy081";
+						comment: "Event which fires when user updates settings";
+						configurationSource: {
+							classification: "SystemMetaData";
+							purpose: "FeatureInsight";
+							comment: "What configuration file was updated i.e user or workspace";
+						};
+						configurationKeys: {
+							classification: "SystemMetaData";
+							purpose: "FeatureInsight";
+							comment: "What configuration keys were updated";
+						};
+					};
+					type UpdateConfigurationEvent = {
+						configurationSource: string;
+						configurationKeys: string[];
+					};
+					telemetryService.publicLog2<
+						UpdateConfigurationEvent,
+						UpdateConfigurationClassification
+					>("updateConfiguration", {
+						configurationSource: ConfigurationTargetToString(
+							event.source,
+						),
+						configurationKeys: Array.from(event.affectedKeys),
+					});
+				}
+			}),
+		);
 
 		const { user, workspace } = configurationService.keys();
 		for (const setting of user) {
@@ -735,7 +852,7 @@ class ConfigurationTelemetryContribution
 					valueToReport === null
 						? "null"
 						: valueToReport ===
-								this.userDataProfilesService.defaultProfile.name
+							  this.userDataProfilesService.defaultProfile.name
 							? "default"
 							: "custom";
 				this.telemetryService.publicLog2<

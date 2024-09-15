@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/openeditors.css";
+
 import {
 	DataTransfers,
 	type IDragAndDropData,
@@ -11,13 +12,13 @@ import {
 import * as dom from "../../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../../base/browser/ui/actionbar/actionbar.js";
 import {
+	ListDragOverEffectPosition,
+	ListDragOverEffectType,
 	type IListContextMenuEvent,
 	type IListDragAndDrop,
 	type IListDragOverReaction,
 	type IListRenderer,
 	type IListVirtualDelegate,
-	ListDragOverEffectPosition,
-	ListDragOverEffectType,
 } from "../../../../../base/browser/ui/list/list.js";
 import {
 	ElementsDragAndDropData,
@@ -40,8 +41,8 @@ import { memoize } from "../../../../../base/common/decorators.js";
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import {
 	DisposableMap,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { extUriIgnorePathCase } from "../../../../../base/common/resources.js";
@@ -55,8 +56,8 @@ import {
 } from "../../../../../platform/actions/common/actions.js";
 import { ICommandService } from "../../../../../platform/commands/common/commands.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
@@ -86,12 +87,12 @@ import {
 } from "../../../../../platform/theme/common/colorRegistry.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import {
-	ResourcesDropHandler,
 	fillEditorsDragData,
+	ResourcesDropHandler,
 } from "../../../../browser/dnd.js";
 import {
-	type IResourceLabel,
 	ResourceLabels,
+	type IResourceLabel,
 } from "../../../../browser/labels.js";
 import {
 	CloseAllEditorsAction,
@@ -109,30 +110,30 @@ import {
 	EditorCloseMethod,
 	EditorResourceAccessor,
 	GroupModelChangeKind,
-	type IEditorIdentifier,
+	preventEditorClose,
 	SideBySideEditor,
 	Verbosity,
-	preventEditorClose,
+	type IEditorIdentifier,
 } from "../../../../common/editor.js";
 import type { EditorInput } from "../../../../common/editor/editorInput.js";
 import { IViewDescriptorService } from "../../../../common/views.js";
 import {
 	GroupOrientation,
 	GroupsOrder,
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../../services/editor/common/editorGroupsService.js";
 import { IFilesConfigurationService } from "../../../../services/filesConfiguration/common/filesConfigurationService.js";
 import {
-	type IWorkingCopy,
 	WorkingCopyCapabilities,
+	type IWorkingCopy,
 } from "../../../../services/workingCopy/common/workingCopy.js";
 import { IWorkingCopyService } from "../../../../services/workingCopy/common/workingCopyService.js";
 import {
 	ExplorerFocusedContext,
-	type IFilesConfiguration,
 	OpenEditor,
 	OpenEditorsFocusedContext,
+	type IFilesConfiguration,
 } from "../../common/files.js";
 import { CloseGroupAction, SaveAllInGroupAction } from "../fileActions.js";
 import {
@@ -172,30 +173,55 @@ export class OpenEditorsView extends ViewPane {
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 		@IOpenerService openerService: IOpenerService,
-		@IFileService private readonly fileService: IFileService
+		@IFileService private readonly fileService: IFileService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
 		this.structuralRefreshDelay = 0;
-		this.sortOrder = configurationService.getValue('explorer.openEditors.sortOrder');
+		this.sortOrder = configurationService.getValue(
+			"explorer.openEditors.sortOrder",
+		);
 
 		this.registerUpdateEvents();
 
 		// Also handle configuration updates
-		this._register(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationChange(e)));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.onConfigurationChange(e),
+			),
+		);
 
 		// Handle dirty counter
-		this._register(this.workingCopyService.onDidChangeDirty(workingCopy => this.updateDirtyIndicator(workingCopy)));
+		this._register(
+			this.workingCopyService.onDidChangeDirty((workingCopy) =>
+				this.updateDirtyIndicator(workingCopy),
+			),
+		);
 	}
 
 	private registerUpdateEvents(): void {

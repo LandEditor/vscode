@@ -14,6 +14,8 @@ import {
 	AbstractEditorInput,
 	EditorInputCapabilities,
 	EditorResourceAccessor,
+	isEditorInput,
+	Verbosity,
 	type GroupIdentifier,
 	type IEditorDescriptor,
 	type IEditorIdentifier,
@@ -22,8 +24,6 @@ import {
 	type IRevertOptions,
 	type ISaveOptions,
 	type IUntypedEditorInput,
-	Verbosity,
-	isEditorInput,
 } from "../editor.js";
 
 export interface IEditorCloseHandler {

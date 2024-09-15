@@ -4,12 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Iterable } from "../../../../base/common/iterator.js";
-import { TestResultState } from "./testTypes.js";
 import {
 	makeEmptyCounts,
 	maxPriority,
 	statePriority,
 } from "./testingStates.js";
+import { TestResultState } from "./testTypes.js";
 
 /**
  * Accessor for nodes in get and refresh computed state.

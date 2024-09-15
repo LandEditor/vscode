@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
 import { isString } from "../../../base/common/types.js";
@@ -22,9 +23,9 @@ import type {
 	TimelineProvider,
 } from "../../contrib/timeline/common/timeline.js";
 import {
+	MainContext,
 	type ExtHostTimelineShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadTimelineShape,
 } from "./extHost.protocol.js";
 import type { CommandsConverter, ExtHostCommands } from "./extHostCommands.js";

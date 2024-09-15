@@ -10,10 +10,10 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../base/common/map.js";
 import {
-	type Mutable,
 	isObject,
 	isString,
 	isUndefined,
+	type Mutable,
 } from "../../../base/common/types.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type {
@@ -31,8 +31,8 @@ import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import { IUserDataProfilesService } from "../../userDataProfile/common/userDataProfile.js";
 import {
-	type Metadata,
 	isIExtensionIdentifier,
+	type Metadata,
 } from "./extensionManagement.js";
 import { areSameExtensions } from "./extensionManagementUtil.js";
 
@@ -154,8 +154,10 @@ export abstract class AbstractExtensionsProfileScannerService
 	constructor(
 		private readonly extensionsLocation: URI,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILogService private readonly logService: ILogService,
 	) {

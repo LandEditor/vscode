@@ -18,8 +18,8 @@ import { ResourceContextKey } from "../../../common/contextkeys.js";
 import { IWorkingCopyHistoryService } from "../../../services/workingCopy/common/workingCopyHistory.js";
 import { LOCAL_HISTORY_MENU_CONTEXT_KEY } from "../browser/localHistory.js";
 import {
-	type ITimelineCommandArgument,
 	findLocalHistoryEntry,
+	type ITimelineCommandArgument,
 } from "../browser/localHistoryCommands.js";
 
 //#region Delete

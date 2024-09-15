@@ -6,6 +6,7 @@
 import * as net from "net";
 import minimist from "minimist";
 import type * as nativeWatchdog from "native-watchdog";
+
 import { ProcessTimeRunOnceScheduler } from "../../../base/common/async.js";
 import { VSBuffer } from "../../../base/common/buffer.js";
 import {
@@ -37,25 +38,28 @@ import {
 	readExtHostConnection,
 } from "../../services/extensions/common/extensionHostEnv.js";
 import {
+	createMessageOfType,
 	ExtensionHostExitCode,
+	isMessageOfType,
+	MessageType,
+	type IExtensionHostInitData,
 	type IExtHostReadyMessage,
 	type IExtHostReduceGraceTimeMessage,
 	type IExtHostSocketMessage,
-	type IExtensionHostInitData,
-	MessageType,
-	createMessageOfType,
-	isMessageOfType,
 } from "../../services/extensions/common/extensionHostProtocol.js";
-import type { IHostUtils } from "../common/extHostExtensionService.js";
 import {
 	ExtensionHostMain,
 	type IExitFn,
 } from "../common/extensionHostMain.js";
+import type { IHostUtils } from "../common/extHostExtensionService.js";
 import { createURITransformer } from "./uriTransformer.js";
+
 import "../common/extHost.common.services.js";
 import "./extHost.node.services.js";
+
 // ESM-uncomment-begin
 import { createRequire } from "node:module";
+
 const require = createRequire(import.meta.url);
 // ESM-uncomment-end
 

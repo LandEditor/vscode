@@ -8,10 +8,10 @@ import { normalizeDriveLetter } from "../../../../base/common/labels.js";
 import * as objects from "../../../../base/common/objects.js";
 import * as paths from "../../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
 	isLinux,
 	isMacintosh,
 	isWindows,
+	type IProcessEnvironment,
 } from "../../../../base/common/platform.js";
 import * as process from "../../../../base/common/process.js";
 import { replaceAsync } from "../../../../base/common/strings.js";
@@ -21,9 +21,9 @@ import { localize } from "../../../../nls.js";
 import type { ILabelService } from "../../../../platform/label/common/label.js";
 import type { IWorkspaceFolder } from "../../../../platform/workspace/common/workspace.js";
 import {
-	type IConfigurationResolverService,
 	VariableError,
 	VariableKind,
+	type IConfigurationResolverService,
 } from "./configurationResolver.js";
 
 interface IVariableResolveContext {

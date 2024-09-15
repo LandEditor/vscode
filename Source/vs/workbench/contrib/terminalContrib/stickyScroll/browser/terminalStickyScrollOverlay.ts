@@ -13,6 +13,7 @@ import type {
 	Terminal as RawXtermTerminal,
 	Terminal as XTermTerminal,
 } from "@xterm/xterm";
+
 import { importAMDNodeModule } from "../../../../../amdX.js";
 import {
 	$,
@@ -23,18 +24,20 @@ import {
 import { memoize, throttle } from "../../../../../base/common/decorators.js";
 import { Event } from "../../../../../base/common/event.js";
 import {
+	combinedDisposable,
 	Disposable,
 	MutableDisposable,
-	combinedDisposable,
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { removeAnsiEscapeCodes } from "../../../../../base/common/strings.js";
+
 import "./media/stickyScroll.css";
+
 import { localize } from "../../../../../nls.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
+	type IMenu,
 } from "../../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
@@ -105,62 +108,104 @@ export class TerminalStickyScrollOverlay extends Disposable {
 		xtermCtor: Promise<typeof XTermTerminal>,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IMenuService menuService: IMenuService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
 		@IThemeService private readonly _themeService: IThemeService,
 	) {
 		super();
 
-		this._contextMenu = this._register(menuService.createMenu(MenuId.TerminalStickyScrollContext, contextKeyService));
+		this._contextMenu = this._register(
+			menuService.createMenu(
+				MenuId.TerminalStickyScrollContext,
+				contextKeyService,
+			),
+		);
 
 		// Only show sticky scroll in the normal buffer
-		this._register(Event.runAndSubscribe(this._xterm.raw.buffer.onBufferChange, buffer => {
-			this._setState((buffer ?? this._xterm.raw.buffer.active).type === 'normal' ? OverlayState.On : OverlayState.Off);
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				this._xterm.raw.buffer.onBufferChange,
+				(buffer) => {
+					this._setState(
+						(buffer ?? this._xterm.raw.buffer.active).type ===
+							"normal"
+							? OverlayState.On
+							: OverlayState.Off,
+					);
+				},
+			),
+		);
 
 		// React to configuration changes
-		this._register(Event.runAndSubscribe(configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration(TerminalStickyScrollSettingId.MaxLineCount)) {
-				this._rawMaxLineCount = configurationService.getValue(TerminalStickyScrollSettingId.MaxLineCount);
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				configurationService.onDidChangeConfiguration,
+				(e) => {
+					if (
+						!e ||
+						e.affectsConfiguration(
+							TerminalStickyScrollSettingId.MaxLineCount,
+						)
+					) {
+						this._rawMaxLineCount = configurationService.getValue(
+							TerminalStickyScrollSettingId.MaxLineCount,
+						);
+					}
+				},
+			),
+		);
 
 		// React to terminal location changes
-		this._register(this._instance.onDidChangeTarget(() => this._syncOptions()));
+		this._register(
+			this._instance.onDidChangeTarget(() => this._syncOptions()),
+		);
 
 		// Eagerly create the overlay
-		xtermCtor.then(ctor => {
+		xtermCtor.then((ctor) => {
 			if (this._store.isDisposed) {
 				return;
 			}
-			this._stickyScrollOverlay = this._register(new ctor({
-				rows: 1,
-				cols: this._xterm.raw.cols,
-				allowProposedApi: true,
-				...this._getOptions()
-			}));
+			this._stickyScrollOverlay = this._register(
+				new ctor({
+					rows: 1,
+					cols: this._xterm.raw.cols,
+					allowProposedApi: true,
+					...this._getOptions(),
+				}),
+			);
 			this._refreshGpuAcceleration();
-			this._register(configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration(TERMINAL_CONFIG_SECTION)) {
+			this._register(
+				configurationService.onDidChangeConfiguration((e) => {
+					if (e.affectsConfiguration(TERMINAL_CONFIG_SECTION)) {
+						this._syncOptions();
+					}
+				}),
+			);
+			this._register(
+				this._themeService.onDidColorThemeChange(() => {
 					this._syncOptions();
-				}
-			}));
-			this._register(this._themeService.onDidColorThemeChange(() => {
-				this._syncOptions();
-			}));
-			this._register(this._xterm.raw.onResize(() => {
-				this._syncOptions();
-				this._refresh();
-			}));
-			this._register(this._instance.onDidChangeVisibility(isVisible => {
-				if (isVisible) {
+				}),
+			);
+			this._register(
+				this._xterm.raw.onResize(() => {
+					this._syncOptions();
 					this._refresh();
-				}
-			}));
+				}),
+			);
+			this._register(
+				this._instance.onDidChangeVisibility((isVisible) => {
+					if (isVisible) {
+						this._refresh();
+					}
+				}),
+			);
 
-			this._getSerializeAddonConstructor().then(SerializeAddon => {
+			this._getSerializeAddonConstructor().then((SerializeAddon) => {
 				if (this._store.isDisposed) {
 					return;
 				}

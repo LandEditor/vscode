@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as electron from "electron";
+
 import { memoize } from "../../../base/common/decorators.js";
 import { Event } from "../../../base/common/event.js";
 import { hash } from "../../../base/common/hash.js";
@@ -20,16 +21,16 @@ import { IProductService } from "../../product/common/productService.js";
 import { IRequestService } from "../../request/common/request.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type IUpdate,
 	State,
 	StateType,
 	UpdateType,
+	type IUpdate,
 } from "../common/update.js";
 import {
 	AbstractUpdateService,
+	createUpdateURL,
 	type UpdateErrorClassification,
 	type UpdateNotAvailableClassification,
-	createUpdateURL,
 } from "./abstractUpdateService.js";
 
 export class DarwinUpdateService
@@ -73,12 +74,20 @@ export class DarwinUpdateService
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@IRequestService requestService: IRequestService,
 		@ILogService logService: ILogService,
-		@IProductService productService: IProductService
+		@IProductService productService: IProductService,
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService,
+		);
 
 		lifecycleMainService.setRelaunchHandler(this);
 	}

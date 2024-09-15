@@ -15,8 +15,8 @@ import { MenuId } from "../../../../platform/actions/common/actions.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextViewService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -42,11 +42,11 @@ import {
 	EditorCommand,
 	EditorContributionInstantiation,
 	MultiEditorAction,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorCommand,
 	registerEditorContribution,
 	registerMultiEditorAction,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { overviewRulerRangeHighlight } from "../../../common/core/editorColorRegistry.js";
@@ -611,16 +611,25 @@ export class FindController
 
 	constructor(
 		editor: ICodeEditor,
-		@IContextViewService private readonly _contextViewService: IContextViewService,
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
 		@IContextKeyService _contextKeyService: IContextKeyService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IThemeService private readonly _themeService: IThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IStorageService _storageService: IStorageService,
 		@IClipboardService clipboardService: IClipboardService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		super(editor, _contextKeyService, _storageService, clipboardService, notificationService, hoverService);
+		super(
+			editor,
+			_contextKeyService,
+			_storageService,
+			clipboardService,
+			notificationService,
+			hoverService,
+		);
 		this._widget = null;
 		this._findOptionsWidget = null;
 	}

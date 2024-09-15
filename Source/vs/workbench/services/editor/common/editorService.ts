@@ -36,10 +36,10 @@ import type {
 import type { IGroupModelChangeEvent } from "../../../common/editor/editorGroupModel.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
+	isEditorGroup,
 	type ICloseEditorOptions,
 	type IEditorGroup,
 	type IEditorGroupsContainer,
-	isEditorGroup,
 } from "./editorGroupsService.js";
 
 export const IEditorService = createDecorator<IEditorService>("editorService");

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IMarker, Terminal as XTermTerminal } from "@xterm/xterm";
+
 import { importAMDNodeModule } from "../../../../amdX.js";
 import { isFirefox } from "../../../../base/browser/browser.js";
 import { BrowserFeatures } from "../../../../base/browser/canIUse.js";
@@ -14,10 +15,10 @@ import { Orientation } from "../../../../base/browser/ui/sash/sash.js";
 import { DomScrollableElement } from "../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import {
 	AutoOpenBarrier,
-	type Barrier,
-	Promises,
 	disposableTimeout,
+	Promises,
 	timeout,
+	type Barrier,
 } from "../../../../base/common/async.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { debounce } from "../../../../base/common/decorators.js";
@@ -27,22 +28,22 @@ import {
 } from "../../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
-import { type ISeparator, template } from "../../../../base/common/labels.js";
+import { template, type ISeparator } from "../../../../base/common/labels.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import * as path from "../../../../base/common/path.js";
 import {
-	OS,
-	OperatingSystem,
 	isMacintosh,
 	isWindows,
+	OperatingSystem,
+	OS,
 } from "../../../../base/common/platform.js";
 import { ScrollbarVisibility } from "../../../../base/common/scrollable.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -53,13 +54,15 @@ import {
 	AccessibilitySignal,
 	IAccessibilitySignalService,
 } from "../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js";
+import type { IMenu } from "../../../../platform/actions/common/actions.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
+import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
 	CodeDataTransfers,
 	containsDragType,
@@ -74,8 +77,8 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { ResultKind } from "../../../../platform/keybinding/common/keybindingResolver.js";
 import {
 	INotificationService,
-	type IPromptChoice,
 	Severity,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -91,9 +94,9 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	TerminalCapability,
 	type IMarkProperties,
 	type ITerminalCommand,
-	TerminalCapability,
 } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import { TerminalCapabilityStoreMultiplexer } from "../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js";
 import type {
@@ -103,30 +106,30 @@ import type {
 import { deserializeEnvironmentVariableCollections } from "../../../../platform/terminal/common/environmentVariableShared.js";
 import {
 	GeneralShellType,
+	ITerminalLogService,
+	PosixShellType,
+	ProcessPropertyType,
+	ShellIntegrationStatus,
+	TerminalExitReason,
+	TerminalLocation,
+	TerminalSettingId,
+	TitleEventSource,
 	type IProcessDataEvent,
 	type IProcessPropertyMap,
 	type IReconnectionProperties,
 	type IShellLaunchConfig,
 	type ITerminalDimensionsOverride,
 	type ITerminalLaunchError,
-	ITerminalLogService,
-	PosixShellType,
-	ProcessPropertyType,
-	ShellIntegrationStatus,
-	TerminalExitReason,
 	type TerminalIcon,
-	TerminalLocation,
-	TerminalSettingId,
 	type TerminalShellType,
-	TitleEventSource,
 	type WindowsShellType,
 } from "../../../../platform/terminal/common/terminal.js";
 import { formatMessageForTerminal } from "../../../../platform/terminal/common/terminalStrings.js";
 import { editorBackground } from "../../../../platform/theme/common/colorRegistry.js";
 import { getIconRegistry } from "../../../../platform/theme/common/iconRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import {
 	IWorkspaceContextService,
@@ -146,24 +149,27 @@ import { IWorkbenchEnvironmentService } from "../../../services/environment/comm
 import { IHistoryService } from "../../../services/history/common/history.js";
 import { IHostService } from "../../../services/host/browser/host.js";
 import {
-	IWorkbenchLayoutService,
 	isHorizontal,
+	IWorkbenchLayoutService,
 } from "../../../services/layout/browser/layoutService.js";
 import { IPathService } from "../../../services/path/common/pathService.js";
 import { IPreferencesService } from "../../../services/preferences/common/preferences.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
 import { AccessibilityCommandId } from "../../accessibility/common/accessibilityCommands.js";
+// HACK: This file should not depend on terminalContrib
+// eslint-disable-next-line local/code-import-patterns
+import { TerminalAccessibilityCommandId } from "../../terminalContrib/accessibility/common/terminal.accessibility.js";
 import type { IEnvironmentVariableInfo } from "../common/environmentVariable.js";
 import { getCommandHistory, getDirectoryHistory } from "../common/history.js";
 import {
 	DEFAULT_COMMANDS_TO_SKIP_SHELL,
-	type ITerminalProcessManager,
 	ITerminalProfileResolverService,
 	ProcessState,
 	TERMINAL_CREATION_COMMANDS,
 	TERMINAL_VIEW_ID,
 	TerminalCommandId,
+	type ITerminalProcessManager,
 } from "../common/terminal.js";
 import { shouldPasteTerminalText } from "../common/terminalClipboard.js";
 import { TERMINAL_BACKGROUND_COLOR } from "../common/terminalColorRegistry.js";
@@ -174,14 +180,15 @@ import {
 } from "../common/terminalEnvironment.js";
 import { terminalStrings } from "../common/terminalStrings.js";
 import {
-	type IRequestAddInstanceToGroupEvent,
 	ITerminalConfigurationService,
+	TerminalDataTransfers,
+	type IRequestAddInstanceToGroupEvent,
 	type ITerminalContribution,
 	type ITerminalInstance,
 	type IXtermColorProvider,
-	TerminalDataTransfers,
 } from "./terminal.js";
 import { TerminalLaunchHelpAction } from "./terminalActions.js";
+import { openContextMenu } from "./terminalContextMenu.js";
 import { TerminalEditorInput } from "./terminalEditorInput.js";
 import { TerminalExtensionsRegistry } from "./terminalExtensions.js";
 import {
@@ -194,9 +201,9 @@ import { TerminalProcessManager } from "./terminalProcessManager.js";
 import { TerminalResizeDebouncer } from "./terminalResizeDebouncer.js";
 import { showRunRecentQuickPick } from "./terminalRunRecentQuickPick.js";
 import {
-	type ITerminalStatusList,
 	TerminalStatus,
 	TerminalStatusList,
+	type ITerminalStatusList,
 } from "./terminalStatusList.js";
 import {
 	getTerminalResourcesFromDragEvent,
@@ -205,16 +212,9 @@ import {
 import { TerminalWidgetManager } from "./widgets/widgetManager.js";
 import { LineDataEventAddon } from "./xterm/lineDataEventAddon.js";
 import {
-	XtermTerminal,
 	getXtermScaledDimensions,
+	XtermTerminal,
 } from "./xterm/xtermTerminal.js";
-
-import type { IMenu } from "../../../../platform/actions/common/actions.js";
-import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
-// HACK: This file should not depend on terminalContrib
-// eslint-disable-next-line local/code-import-patterns
-import { TerminalAccessibilityCommandId } from "../../terminalContrib/accessibility/common/terminal.accessibility.js";
-import { openContextMenu } from "./terminalContextMenu.js";
 
 enum Constants {
 	/**
@@ -634,41 +634,60 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		private readonly _terminalShellTypeContextKey: IContextKey<string>,
 		private readonly _terminalInRunCommandPicker: IContextKey<boolean>,
 		private _shellLaunchConfig: IShellLaunchConfig,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@ITerminalProfileResolverService private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@ITerminalProfileResolverService
+		private readonly _terminalProfileResolverService: ITerminalProfileResolverService,
 		@IPathService private readonly _pathService: IPathService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IPreferencesService private readonly _preferencesService: IPreferencesService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IPreferencesService
+		private readonly _preferencesService: IPreferencesService,
 		@IViewsService private readonly _viewsService: IViewsService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 		@IProductService private readonly _productService: IProductService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
-		@IWorkbenchEnvironmentService workbenchEnvironmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
+		@IWorkbenchEnvironmentService
+		workbenchEnvironmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IWorkspaceTrustRequestService private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IWorkspaceTrustRequestService
+		private readonly _workspaceTrustRequestService: IWorkspaceTrustRequestService,
 		@IHistoryService private readonly _historyService: IHistoryService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
 	) {
 		super();
 
-		this._wrapperElement = document.createElement('div');
-		this._wrapperElement.classList.add('terminal-wrapper');
+		this._wrapperElement = document.createElement("div");
+		this._wrapperElement.classList.add("terminal-wrapper");
 
-		this._widgetManager = this._register(instantiationService.createInstance(TerminalWidgetManager));
+		this._widgetManager = this._register(
+			instantiationService.createInstance(TerminalWidgetManager),
+		);
 
 		this._skipTerminalCommands = [];
 		this._isExiting = false;
@@ -676,78 +695,148 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		this._isVisible = false;
 		this._instanceId = TerminalInstance._instanceIdCounter++;
 		this._hasHadInput = false;
-		this._fixedRows = _shellLaunchConfig.attachPersistentProcess?.fixedDimensions?.rows;
-		this._fixedCols = _shellLaunchConfig.attachPersistentProcess?.fixedDimensions?.cols;
+		this._fixedRows =
+			_shellLaunchConfig.attachPersistentProcess?.fixedDimensions?.rows;
+		this._fixedCols =
+			_shellLaunchConfig.attachPersistentProcess?.fixedDimensions?.cols;
 
-		this._resource = getTerminalUri(this._workspaceContextService.getWorkspace().id, this.instanceId, this.title);
+		this._resource = getTerminalUri(
+			this._workspaceContextService.getWorkspace().id,
+			this.instanceId,
+			this.title,
+		);
 
 		if (this._shellLaunchConfig.attachPersistentProcess?.hideFromUser) {
-			this._shellLaunchConfig.hideFromUser = this._shellLaunchConfig.attachPersistentProcess.hideFromUser;
+			this._shellLaunchConfig.hideFromUser =
+				this._shellLaunchConfig.attachPersistentProcess.hideFromUser;
 		}
 
-		if (this._shellLaunchConfig.attachPersistentProcess?.isFeatureTerminal) {
-			this._shellLaunchConfig.isFeatureTerminal = this._shellLaunchConfig.attachPersistentProcess.isFeatureTerminal;
+		if (
+			this._shellLaunchConfig.attachPersistentProcess?.isFeatureTerminal
+		) {
+			this._shellLaunchConfig.isFeatureTerminal =
+				this._shellLaunchConfig.attachPersistentProcess.isFeatureTerminal;
 		}
 
 		if (this._shellLaunchConfig.attachPersistentProcess?.type) {
-			this._shellLaunchConfig.type = this._shellLaunchConfig.attachPersistentProcess.type;
+			this._shellLaunchConfig.type =
+				this._shellLaunchConfig.attachPersistentProcess.type;
 		}
 
 		if (this.shellLaunchConfig.cwd) {
-			const cwdUri = typeof this._shellLaunchConfig.cwd === 'string' ? URI.from({
-				scheme: Schemas.file,
-				path: this._shellLaunchConfig.cwd
-			}) : this._shellLaunchConfig.cwd;
+			const cwdUri =
+				typeof this._shellLaunchConfig.cwd === "string"
+					? URI.from({
+							scheme: Schemas.file,
+							path: this._shellLaunchConfig.cwd,
+						})
+					: this._shellLaunchConfig.cwd;
 			if (cwdUri) {
-				this._workspaceFolder = this._workspaceContextService.getWorkspaceFolder(cwdUri) ?? undefined;
+				this._workspaceFolder =
+					this._workspaceContextService.getWorkspaceFolder(cwdUri) ??
+					undefined;
 			}
 		}
 		if (!this._workspaceFolder) {
-			const activeWorkspaceRootUri = this._historyService.getLastActiveWorkspaceRoot();
-			this._workspaceFolder = activeWorkspaceRootUri ? this._workspaceContextService.getWorkspaceFolder(activeWorkspaceRootUri) ?? undefined : undefined;
+			const activeWorkspaceRootUri =
+				this._historyService.getLastActiveWorkspaceRoot();
+			this._workspaceFolder = activeWorkspaceRootUri
+				? (this._workspaceContextService.getWorkspaceFolder(
+						activeWorkspaceRootUri,
+					) ?? undefined)
+				: undefined;
 		}
 
-		const scopedContextKeyService = this._register(_contextKeyService.createScoped(this._wrapperElement));
+		const scopedContextKeyService = this._register(
+			_contextKeyService.createScoped(this._wrapperElement),
+		);
 		this._scopedContextKeyService = scopedContextKeyService;
-		this._scopedInstantiationService = this._register(instantiationService.createChild(new ServiceCollection(
-			[IContextKeyService, scopedContextKeyService]
-		)));
+		this._scopedInstantiationService = this._register(
+			instantiationService.createChild(
+				new ServiceCollection([
+					IContextKeyService,
+					scopedContextKeyService,
+				]),
+			),
+		);
 
-		this._terminalFocusContextKey = TerminalContextKeys.focus.bindTo(scopedContextKeyService);
-		this._terminalHasFixedWidth = TerminalContextKeys.terminalHasFixedWidth.bindTo(scopedContextKeyService);
-		this._terminalHasTextContextKey = TerminalContextKeys.textSelected.bindTo(scopedContextKeyService);
-		this._terminalAltBufferActiveContextKey = TerminalContextKeys.altBufferActive.bindTo(scopedContextKeyService);
-		this._terminalShellIntegrationEnabledContextKey = TerminalContextKeys.terminalShellIntegrationEnabled.bindTo(scopedContextKeyService);
+		this._terminalFocusContextKey = TerminalContextKeys.focus.bindTo(
+			scopedContextKeyService,
+		);
+		this._terminalHasFixedWidth =
+			TerminalContextKeys.terminalHasFixedWidth.bindTo(
+				scopedContextKeyService,
+			);
+		this._terminalHasTextContextKey =
+			TerminalContextKeys.textSelected.bindTo(scopedContextKeyService);
+		this._terminalAltBufferActiveContextKey =
+			TerminalContextKeys.altBufferActive.bindTo(scopedContextKeyService);
+		this._terminalShellIntegrationEnabledContextKey =
+			TerminalContextKeys.terminalShellIntegrationEnabled.bindTo(
+				scopedContextKeyService,
+			);
 
-		this._logService.trace(`terminalInstance#ctor (instanceId: ${this.instanceId})`, this._shellLaunchConfig);
-		this._register(this.capabilities.onDidAddCapabilityType(e => {
-			this._logService.debug('terminalInstance added capability', e);
-			if (e === TerminalCapability.CwdDetection) {
-				this.capabilities.get(TerminalCapability.CwdDetection)?.onDidChangeCwd(e => {
-					this._cwd = e;
-					this._setTitle(this.title, TitleEventSource.Config);
-					this._scopedInstantiationService.invokeFunction(getDirectoryHistory)?.add(e, { remoteAuthority: this.remoteAuthority });
-				});
-			} else if (e === TerminalCapability.CommandDetection) {
-				const commandCapability = this.capabilities.get(TerminalCapability.CommandDetection);
-				commandCapability?.onCommandFinished(e => {
-					if (e.command.trim().length > 0) {
-						this._scopedInstantiationService.invokeFunction(getCommandHistory)?.add(e.command, { shellType: this._shellType });
-					}
-				});
-			}
-		}));
-		this._register(this.capabilities.onDidRemoveCapabilityType(e => this._logService.debug('terminalInstance removed capability', e)));
+		this._logService.trace(
+			`terminalInstance#ctor (instanceId: ${this.instanceId})`,
+			this._shellLaunchConfig,
+		);
+		this._register(
+			this.capabilities.onDidAddCapabilityType((e) => {
+				this._logService.debug("terminalInstance added capability", e);
+				if (e === TerminalCapability.CwdDetection) {
+					this.capabilities
+						.get(TerminalCapability.CwdDetection)
+						?.onDidChangeCwd((e) => {
+							this._cwd = e;
+							this._setTitle(this.title, TitleEventSource.Config);
+							this._scopedInstantiationService
+								.invokeFunction(getDirectoryHistory)
+								?.add(e, {
+									remoteAuthority: this.remoteAuthority,
+								});
+						});
+				} else if (e === TerminalCapability.CommandDetection) {
+					const commandCapability = this.capabilities.get(
+						TerminalCapability.CommandDetection,
+					);
+					commandCapability?.onCommandFinished((e) => {
+						if (e.command.trim().length > 0) {
+							this._scopedInstantiationService
+								.invokeFunction(getCommandHistory)
+								?.add(e.command, {
+									shellType: this._shellType,
+								});
+						}
+					});
+				}
+			}),
+		);
+		this._register(
+			this.capabilities.onDidRemoveCapabilityType((e) =>
+				this._logService.debug(
+					"terminalInstance removed capability",
+					e,
+				),
+			),
+		);
 
 		// Resolve just the icon ahead of time so that it shows up immediately in the tabs. This is
 		// disabled in remote because this needs to be sync and the OS may differ on the remote
 		// which would result in the wrong profile being selected and the wrong icon being
 		// permanently attached to the terminal. This also doesn't work when the default profile
 		// setting is set to null, that's handled after the process is created.
-		if (!this.shellLaunchConfig.executable && !workbenchEnvironmentService.remoteAuthority) {
-			this._terminalProfileResolverService.resolveIcon(this._shellLaunchConfig, OS);
+		if (
+			!this.shellLaunchConfig.executable &&
+			!workbenchEnvironmentService.remoteAuthority
+		) {
+			this._terminalProfileResolverService.resolveIcon(
+				this._shellLaunchConfig,
+				OS,
+			);
 		}
-		this._icon = _shellLaunchConfig.attachPersistentProcess?.icon || _shellLaunchConfig.icon;
+		this._icon =
+			_shellLaunchConfig.attachPersistentProcess?.icon ||
+			_shellLaunchConfig.icon;
 
 		// When a custom pty is used set the name immediately so it gets passed over to the exthost
 		// and is available when Pseudoterminal.open fires.
@@ -755,133 +844,191 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			this._setTitle(this._shellLaunchConfig.name, TitleEventSource.Api);
 		}
 
-		this.statusList = this._register(this._scopedInstantiationService.createInstance(TerminalStatusList));
+		this.statusList = this._register(
+			this._scopedInstantiationService.createInstance(TerminalStatusList),
+		);
 		this._initDimensions();
 		this._processManager = this._createProcessManager();
 
-		this._containerReadyBarrier = new AutoOpenBarrier(Constants.WaitForContainerThreshold);
+		this._containerReadyBarrier = new AutoOpenBarrier(
+			Constants.WaitForContainerThreshold,
+		);
 		this._attachBarrier = new AutoOpenBarrier(1000);
 		this._xtermReadyPromise = this._createXterm();
-		this._xtermReadyPromise.then(async () => {
-			// Wait for a period to allow a container to be ready
-			await this._containerReadyBarrier.wait();
+		this._xtermReadyPromise
+			.then(async () => {
+				// Wait for a period to allow a container to be ready
+				await this._containerReadyBarrier.wait();
 
-			// Resolve the executable ahead of time if shell integration is enabled, this should not
-			// be done for custom PTYs as that would cause extension Pseudoterminal-based terminals
-			// to hang in resolver extensions
-			if (!this.shellLaunchConfig.customPtyImplementation && this._terminalConfigurationService.config.shellIntegration?.enabled && !this.shellLaunchConfig.executable) {
-				const os = await this._processManager.getBackendOS();
-				const defaultProfile = (await this._terminalProfileResolverService.getDefaultProfile({ remoteAuthority: this.remoteAuthority, os }));
-				this.shellLaunchConfig.executable = defaultProfile.path;
-				this.shellLaunchConfig.args = defaultProfile.args;
-				if (this.shellLaunchConfig.isExtensionOwnedTerminal) {
-					// Only use default icon and color and env if they are undefined in the SLC
-					this.shellLaunchConfig.icon ??= defaultProfile.icon;
-					this.shellLaunchConfig.color ??= defaultProfile.color;
-					this.shellLaunchConfig.env ??= defaultProfile.env;
-				} else {
-					this.shellLaunchConfig.icon = defaultProfile.icon;
-					this.shellLaunchConfig.color = defaultProfile.color;
-					this.shellLaunchConfig.env = defaultProfile.env;
+				// Resolve the executable ahead of time if shell integration is enabled, this should not
+				// be done for custom PTYs as that would cause extension Pseudoterminal-based terminals
+				// to hang in resolver extensions
+				if (
+					!this.shellLaunchConfig.customPtyImplementation &&
+					this._terminalConfigurationService.config.shellIntegration
+						?.enabled &&
+					!this.shellLaunchConfig.executable
+				) {
+					const os = await this._processManager.getBackendOS();
+					const defaultProfile =
+						await this._terminalProfileResolverService.getDefaultProfile(
+							{ remoteAuthority: this.remoteAuthority, os },
+						);
+					this.shellLaunchConfig.executable = defaultProfile.path;
+					this.shellLaunchConfig.args = defaultProfile.args;
+					if (this.shellLaunchConfig.isExtensionOwnedTerminal) {
+						// Only use default icon and color and env if they are undefined in the SLC
+						this.shellLaunchConfig.icon ??= defaultProfile.icon;
+						this.shellLaunchConfig.color ??= defaultProfile.color;
+						this.shellLaunchConfig.env ??= defaultProfile.env;
+					} else {
+						this.shellLaunchConfig.icon = defaultProfile.icon;
+						this.shellLaunchConfig.color = defaultProfile.color;
+						this.shellLaunchConfig.env = defaultProfile.env;
+					}
 				}
-			}
 
-			await this._createProcess();
+				await this._createProcess();
 
-			// Re-establish the title after reconnect
-			if (this.shellLaunchConfig.attachPersistentProcess) {
-				this._cwd = this.shellLaunchConfig.attachPersistentProcess.cwd;
-				this._setTitle(this.shellLaunchConfig.attachPersistentProcess.title, this.shellLaunchConfig.attachPersistentProcess.titleSource);
-				this.setShellType(this.shellType);
-			}
+				// Re-establish the title after reconnect
+				if (this.shellLaunchConfig.attachPersistentProcess) {
+					this._cwd =
+						this.shellLaunchConfig.attachPersistentProcess.cwd;
+					this._setTitle(
+						this.shellLaunchConfig.attachPersistentProcess.title,
+						this.shellLaunchConfig.attachPersistentProcess
+							.titleSource,
+					);
+					this.setShellType(this.shellType);
+				}
 
-			if (this._fixedCols) {
-				await this._addScrollbar();
-			}
-		}).catch((err) => {
-			// Ignore exceptions if the terminal is already disposed
-			if (!this.isDisposed) {
-				throw err;
-			}
-		});
+				if (this._fixedCols) {
+					await this._addScrollbar();
+				}
+			})
+			.catch((err) => {
+				// Ignore exceptions if the terminal is already disposed
+				if (!this.isDisposed) {
+					throw err;
+				}
+			});
 
-		this._register(this._configurationService.onDidChangeConfiguration(async e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.Terminal)) {
-				this._setAriaLabel(this.xterm?.raw, this._instanceId, this.title);
-			}
-			if (e.affectsConfiguration('terminal.integrated')) {
-				this.updateConfig();
-				this.setVisible(this._isVisible);
-			}
-			const layoutSettings: string[] = [
-				TerminalSettingId.FontSize,
-				TerminalSettingId.FontFamily,
-				TerminalSettingId.FontWeight,
-				TerminalSettingId.FontWeightBold,
-				TerminalSettingId.LetterSpacing,
-				TerminalSettingId.LineHeight,
-				'editor.fontFamily'
-			];
-			if (layoutSettings.some(id => e.affectsConfiguration(id))) {
-				this._layoutSettingsChanged = true;
-				await this._resize();
-			}
-			if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
-				this._updateUnicodeVersion();
-			}
-			if (e.affectsConfiguration('editor.accessibilitySupport')) {
-				this.updateAccessibilitySupport();
-			}
-			if (
-				e.affectsConfiguration(TerminalSettingId.TerminalTitle) ||
-				e.affectsConfiguration(TerminalSettingId.TerminalTitleSeparator) ||
-				e.affectsConfiguration(TerminalSettingId.TerminalDescription)) {
-				this._labelComputer?.refreshLabel(this);
-			}
-		}));
-		this._register(this._workspaceContextService.onDidChangeWorkspaceFolders(() => this._labelComputer?.refreshLabel(this)));
+		this._register(
+			this._configurationService.onDidChangeConfiguration(async (e) => {
+				if (
+					e.affectsConfiguration(
+						AccessibilityVerbositySettingId.Terminal,
+					)
+				) {
+					this._setAriaLabel(
+						this.xterm?.raw,
+						this._instanceId,
+						this.title,
+					);
+				}
+				if (e.affectsConfiguration("terminal.integrated")) {
+					this.updateConfig();
+					this.setVisible(this._isVisible);
+				}
+				const layoutSettings: string[] = [
+					TerminalSettingId.FontSize,
+					TerminalSettingId.FontFamily,
+					TerminalSettingId.FontWeight,
+					TerminalSettingId.FontWeightBold,
+					TerminalSettingId.LetterSpacing,
+					TerminalSettingId.LineHeight,
+					"editor.fontFamily",
+				];
+				if (layoutSettings.some((id) => e.affectsConfiguration(id))) {
+					this._layoutSettingsChanged = true;
+					await this._resize();
+				}
+				if (e.affectsConfiguration(TerminalSettingId.UnicodeVersion)) {
+					this._updateUnicodeVersion();
+				}
+				if (e.affectsConfiguration("editor.accessibilitySupport")) {
+					this.updateAccessibilitySupport();
+				}
+				if (
+					e.affectsConfiguration(TerminalSettingId.TerminalTitle) ||
+					e.affectsConfiguration(
+						TerminalSettingId.TerminalTitleSeparator,
+					) ||
+					e.affectsConfiguration(
+						TerminalSettingId.TerminalDescription,
+					)
+				) {
+					this._labelComputer?.refreshLabel(this);
+				}
+			}),
+		);
+		this._register(
+			this._workspaceContextService.onDidChangeWorkspaceFolders(() =>
+				this._labelComputer?.refreshLabel(this),
+			),
+		);
 
 		// Clear out initial data events after 10 seconds, hopefully extension hosts are up and
 		// running at that point.
-		let initialDataEventsTimeout: number | undefined = dom.getWindow(this._container).setTimeout(() => {
-			initialDataEventsTimeout = undefined;
-			this._initialDataEvents = undefined;
-			this._initialDataEventsListener.clear();
-		}, 10000);
-		this._register(toDisposable(() => {
-			if (initialDataEventsTimeout) {
-				dom.getWindow(this._container).clearTimeout(initialDataEventsTimeout);
-			}
-		}));
+		let initialDataEventsTimeout: number | undefined = dom
+			.getWindow(this._container)
+			.setTimeout(() => {
+				initialDataEventsTimeout = undefined;
+				this._initialDataEvents = undefined;
+				this._initialDataEventsListener.clear();
+			}, 10000);
+		this._register(
+			toDisposable(() => {
+				if (initialDataEventsTimeout) {
+					dom.getWindow(this._container).clearTimeout(
+						initialDataEventsTimeout,
+					);
+				}
+			}),
+		);
 
 		// Initialize contributions
-		const contributionDescs = TerminalExtensionsRegistry.getTerminalContributions();
+		const contributionDescs =
+			TerminalExtensionsRegistry.getTerminalContributions();
 		for (const desc of contributionDescs) {
 			if (this._contributions.has(desc.id)) {
-				onUnexpectedError(new Error(`Cannot have two terminal contributions with the same id ${desc.id}`));
+				onUnexpectedError(
+					new Error(
+						`Cannot have two terminal contributions with the same id ${desc.id}`,
+					),
+				);
 				continue;
 			}
 			let contribution: ITerminalContribution;
 			try {
-				contribution = this._register(this._scopedInstantiationService.createInstance(desc.ctor, this, this._processManager, this._widgetManager));
+				contribution = this._register(
+					this._scopedInstantiationService.createInstance(
+						desc.ctor,
+						this,
+						this._processManager,
+						this._widgetManager,
+					),
+				);
 				this._contributions.set(desc.id, contribution);
 			} catch (err) {
 				onUnexpectedError(err);
 			}
-			this._xtermReadyPromise.then(xterm => {
+			this._xtermReadyPromise.then((xterm) => {
 				contribution.xtermReady?.(xterm);
 			});
-			this._register(this.onDisposed(() => {
-				contribution.dispose();
-				this._contributions.delete(desc.id);
-				// Just in case to prevent potential future memory leaks due to cyclic dependency.
-				if ('instance' in contribution) {
-					delete contribution.instance;
-				}
-				if ('_instance' in contribution) {
-					delete contribution._instance;
-				}
-			}));
+			this._register(
+				this.onDisposed(() => {
+					contribution.dispose();
+					this._contributions.delete(desc.id);
+					// Just in case to prevent potential future memory leaks due to cyclic dependency.
+					if ("instance" in contribution) {
+						delete contribution.instance;
+					}
+					if ("_instance" in contribution) {
+						delete contribution._instance;
+					}
+				}),
+			);
 		}
 	}
 
@@ -1015,7 +1162,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		const horizontalPadding =
 			Number.parseInt(computedStyle.paddingLeft) +
 			Number.parseInt(computedStyle.paddingRight) +
-			14 /*scroll bar padding*/;
+			14; /*scroll bar padding*/
 		const verticalPadding =
 			Number.parseInt(computedStyle.paddingTop) +
 			Number.parseInt(computedStyle.paddingBottom);
@@ -3409,8 +3556,10 @@ class TerminalInstanceDragAndDropController
 
 	constructor(
 		private readonly _container: HTMLElement,
-		@IWorkbenchLayoutService private readonly _layoutService: IWorkbenchLayoutService,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
+		@IWorkbenchLayoutService
+		private readonly _layoutService: IWorkbenchLayoutService,
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
 		@IHostService private readonly _hostService: IHostService,
 	) {
 		super();
@@ -3588,8 +3737,10 @@ export class TerminalLabelComputer extends Disposable {
 
 	constructor(
 		@IFileService private readonly _fileService: IFileService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 	}
@@ -3869,9 +4020,9 @@ export function parseExitResult(
 export class TerminalInstanceColorProvider implements IXtermColorProvider {
 	constructor(
 		private readonly _instance: ITerminalInstance,
-		@IViewDescriptorService private readonly _viewDescriptorService: IViewDescriptorService,
-	) {
-	}
+		@IViewDescriptorService
+		private readonly _viewDescriptorService: IViewDescriptorService,
+	) {}
 
 	getBackgroundColor(theme: IColorTheme) {
 		const terminalBackground = theme.getColor(TERMINAL_BACKGROUND_COLOR);

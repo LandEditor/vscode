@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import type { IDimension } from "../../../../../base/browser/dom.js";
 import { KeyCode, KeyMod } from "../../../../../base/common/keyCodes.js";
 import { Lazy } from "../../../../../base/common/lazy.js";
@@ -14,12 +15,12 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { findInFilesCommand } from "../../../search/browser/searchActionsFind.js";
 import {
+	isDetachedTerminalInstance,
+	ITerminalService,
 	type IDetachedTerminalInstance,
 	type ITerminalContribution,
 	type ITerminalInstance,
-	ITerminalService,
 	type IXtermTerminal,
-	isDetachedTerminalInstance,
 } from "../../../terminal/browser/terminal.js";
 import {
 	registerActiveInstanceAction,
@@ -34,6 +35,7 @@ import type {
 import { TerminalContextKeys } from "../../../terminal/common/terminalContextKey.js";
 import { TerminalFindCommandId } from "../common/terminal.find.js";
 import { TerminalFindWidget } from "./terminalFindWidget.js";
+
 import "./media/terminalFind.css";
 
 // #region Terminal Contributions

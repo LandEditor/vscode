@@ -13,8 +13,6 @@ import { Event } from "../../../../base/common/event.js";
 import { readHotReloadableExport } from "../../../../base/common/hotReloadHelpers.js";
 import { toDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ITransaction,
 	autorun,
 	autorunWithStore,
 	derived,
@@ -25,6 +23,8 @@ import {
 	recomputeInitiallyAndOnChange,
 	subtransaction,
 	transaction,
+	type IObservable,
+	type ITransaction,
 } from "../../../../base/common/observable.js";
 import {
 	AccessibilitySignal,
@@ -95,14 +95,16 @@ import { HideUnchangedRegionsFeature } from "./features/hideUnchangedRegionsFeat
 import { MovedBlocksLinesFeature } from "./features/movedBlocksLinesFeature.js";
 import { OverviewRulerFeature } from "./features/overviewRulerFeature.js";
 import { RevertButtonsFeature } from "./features/revertButtonsFeature.js";
+
 import "./style.css";
+
 import {
-	type CSSStyle,
-	ObservableElementSizeObserver,
-	RefCounted,
 	applyStyle,
 	applyViewZones,
+	ObservableElementSizeObserver,
+	RefCounted,
 	translatePosition,
+	type CSSStyle,
 } from "./utils.js";
 
 export interface IDiffCodeEditorWidgetOptions {
@@ -193,171 +195,293 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 		private readonly _domElement: HTMLElement,
 		options: Readonly<IDiffEditorConstructionOptions>,
 		codeEditorWidgetOptions: IDiffCodeEditorWidgetOptions,
-		@IContextKeyService private readonly _parentContextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _parentInstantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _parentContextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _parentInstantiationService: IInstantiationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService,
-		@IEditorProgressService private readonly _editorProgressService: IEditorProgressService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
+		@IEditorProgressService
+		private readonly _editorProgressService: IEditorProgressService,
 	) {
 		super();
 		codeEditorService.willCreateDiffEditor();
 
-		this._contextKeyService.createKey('isInDiffEditor', true);
+		this._contextKeyService.createKey("isInDiffEditor", true);
 
 		this._domElement.appendChild(this.elements.root);
 		this._register(toDisposable(() => this.elements.root.remove()));
 
-		this._rootSizeObserver = this._register(new ObservableElementSizeObserver(this.elements.root, options.dimension));
-		this._rootSizeObserver.setAutomaticLayout(options.automaticLayout ?? false);
+		this._rootSizeObserver = this._register(
+			new ObservableElementSizeObserver(
+				this.elements.root,
+				options.dimension,
+			),
+		);
+		this._rootSizeObserver.setAutomaticLayout(
+			options.automaticLayout ?? false,
+		);
 
-		this._options = this._instantiationService.createInstance(DiffEditorOptions, options);
-		this._register(autorun(reader => {
-			this._options.setWidth(this._rootSizeObserver.width.read(reader));
-		}));
+		this._options = this._instantiationService.createInstance(
+			DiffEditorOptions,
+			options,
+		);
+		this._register(
+			autorun((reader) => {
+				this._options.setWidth(
+					this._rootSizeObserver.width.read(reader),
+				);
+			}),
+		);
 
-		this._contextKeyService.createKey(EditorContextKeys.isEmbeddedDiffEditor.key, false);
-		this._register(bindContextKey(EditorContextKeys.isEmbeddedDiffEditor, this._contextKeyService,
-			reader => this._options.isInEmbeddedEditor.read(reader)
-		));
-		this._register(bindContextKey(EditorContextKeys.comparingMovedCode, this._contextKeyService,
-			reader => !!this._diffModel.read(reader)?.movedTextToCompare.read(reader)
-		));
-		this._register(bindContextKey(EditorContextKeys.diffEditorRenderSideBySideInlineBreakpointReached, this._contextKeyService,
-			reader => this._options.couldShowInlineViewBecauseOfSize.read(reader)
-		));
-		this._register(bindContextKey(EditorContextKeys.diffEditorInlineMode, this._contextKeyService,
-			reader => !this._options.renderSideBySide.read(reader)
-		));
+		this._contextKeyService.createKey(
+			EditorContextKeys.isEmbeddedDiffEditor.key,
+			false,
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.isEmbeddedDiffEditor,
+				this._contextKeyService,
+				(reader) => this._options.isInEmbeddedEditor.read(reader),
+			),
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.comparingMovedCode,
+				this._contextKeyService,
+				(reader) =>
+					!!this._diffModel
+						.read(reader)
+						?.movedTextToCompare.read(reader),
+			),
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.diffEditorRenderSideBySideInlineBreakpointReached,
+				this._contextKeyService,
+				(reader) =>
+					this._options.couldShowInlineViewBecauseOfSize.read(reader),
+			),
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.diffEditorInlineMode,
+				this._contextKeyService,
+				(reader) => !this._options.renderSideBySide.read(reader),
+			),
+		);
 
-		this._register(bindContextKey(EditorContextKeys.hasChanges, this._contextKeyService,
-			reader => (this._diffModel.read(reader)?.diff.read(reader)?.mappings.length ?? 0) > 0
-		));
+		this._register(
+			bindContextKey(
+				EditorContextKeys.hasChanges,
+				this._contextKeyService,
+				(reader) =>
+					(this._diffModel.read(reader)?.diff.read(reader)?.mappings
+						.length ?? 0) > 0,
+			),
+		);
 
-		this._editors = this._register(this._instantiationService.createInstance(
-			DiffEditorEditors,
-			this.elements.original,
-			this.elements.modified,
-			this._options,
-			codeEditorWidgetOptions,
-			(i, c, o, o2) => this._createInnerEditor(i, c, o, o2),
-		));
+		this._editors = this._register(
+			this._instantiationService.createInstance(
+				DiffEditorEditors,
+				this.elements.original,
+				this.elements.modified,
+				this._options,
+				codeEditorWidgetOptions,
+				(i, c, o, o2) => this._createInnerEditor(i, c, o, o2),
+			),
+		);
 
-		this._register(bindContextKey(EditorContextKeys.diffEditorOriginalWritable, this._contextKeyService,
-			reader => this._options.originalEditable.read(reader)
-		));
-		this._register(bindContextKey(EditorContextKeys.diffEditorModifiedWritable, this._contextKeyService,
-			reader => !this._options.readOnly.read(reader)
-		));
-		this._register(bindContextKey(EditorContextKeys.diffEditorOriginalUri, this._contextKeyService,
-			reader => this._diffModel.read(reader)?.model.original.uri.toString() ?? ''
-		));
-		this._register(bindContextKey(EditorContextKeys.diffEditorModifiedUri, this._contextKeyService,
-			reader => this._diffModel.read(reader)?.model.modified.uri.toString() ?? ''
-		));
+		this._register(
+			bindContextKey(
+				EditorContextKeys.diffEditorOriginalWritable,
+				this._contextKeyService,
+				(reader) => this._options.originalEditable.read(reader),
+			),
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.diffEditorModifiedWritable,
+				this._contextKeyService,
+				(reader) => !this._options.readOnly.read(reader),
+			),
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.diffEditorOriginalUri,
+				this._contextKeyService,
+				(reader) =>
+					this._diffModel
+						.read(reader)
+						?.model.original.uri.toString() ?? "",
+			),
+		);
+		this._register(
+			bindContextKey(
+				EditorContextKeys.diffEditorModifiedUri,
+				this._contextKeyService,
+				(reader) =>
+					this._diffModel
+						.read(reader)
+						?.model.modified.uri.toString() ?? "",
+			),
+		);
 
-		this._overviewRulerPart = derivedDisposable(this, reader =>
+		this._overviewRulerPart = derivedDisposable(this, (reader) =>
 			this._options.renderOverviewRuler.read(reader)
 				? this._instantiationService.createInstance(
-					readHotReloadableExport(OverviewRulerFeature, reader),
-					this._editors,
-					this.elements.root,
-					this._diffModel,
-					this._rootSizeObserver.width,
-					this._rootSizeObserver.height,
-					this._layoutInfo.map(i => i.modifiedEditor),
-				) : undefined
+						readHotReloadableExport(OverviewRulerFeature, reader),
+						this._editors,
+						this.elements.root,
+						this._diffModel,
+						this._rootSizeObserver.width,
+						this._rootSizeObserver.height,
+						this._layoutInfo.map((i) => i.modifiedEditor),
+					)
+				: undefined,
 		).recomputeInitiallyAndOnChange(this._store);
 
 		const dimensions = {
 			height: this._rootSizeObserver.height,
-			width: this._rootSizeObserver.width.map((w, reader) => w - (this._overviewRulerPart.read(reader)?.width ?? 0)),
+			width: this._rootSizeObserver.width.map(
+				(w, reader) =>
+					w - (this._overviewRulerPart.read(reader)?.width ?? 0),
+			),
 		};
 
 		this._sashLayout = new SashLayout(this._options, dimensions);
 
-		this._sash = derivedDisposable(this, reader => {
+		this._sash = derivedDisposable(this, (reader) => {
 			const showSash = this._options.renderSideBySide.read(reader);
-			this.elements.root.classList.toggle('side-by-side', showSash);
-			return showSash ? new DiffEditorSash(
-				this.elements.root,
-				dimensions,
-				this._options.enableSplitViewResizing,
-				this._boundarySashes,
-				this._sashLayout.sashLeft,
-				() => this._sashLayout.resetSash(),
-			) : undefined;
+			this.elements.root.classList.toggle("side-by-side", showSash);
+			return showSash
+				? new DiffEditorSash(
+						this.elements.root,
+						dimensions,
+						this._options.enableSplitViewResizing,
+						this._boundarySashes,
+						this._sashLayout.sashLeft,
+						() => this._sashLayout.resetSash(),
+					)
+				: undefined;
 		}).recomputeInitiallyAndOnChange(this._store);
 
-		const unchangedRangesFeature = derivedDisposable(this, reader => /** @description UnchangedRangesFeature */
-			this._instantiationService.createInstance(
-				readHotReloadableExport(HideUnchangedRegionsFeature, reader),
-				this._editors, this._diffModel, this._options
-			)
+		const unchangedRangesFeature = derivedDisposable(
+			this,
+			(reader /** @description UnchangedRangesFeature */) =>
+				this._instantiationService.createInstance(
+					readHotReloadableExport(
+						HideUnchangedRegionsFeature,
+						reader,
+					),
+					this._editors,
+					this._diffModel,
+					this._options,
+				),
 		).recomputeInitiallyAndOnChange(this._store);
 
-		derivedDisposable(this, reader => /** @description DiffEditorDecorations */
-			this._instantiationService.createInstance(
-				readHotReloadableExport(DiffEditorDecorations, reader),
-				this._editors, this._diffModel, this._options, this,
-			)
+		derivedDisposable(
+			this,
+			(reader /** @description DiffEditorDecorations */) =>
+				this._instantiationService.createInstance(
+					readHotReloadableExport(DiffEditorDecorations, reader),
+					this._editors,
+					this._diffModel,
+					this._options,
+					this,
+				),
 		).recomputeInitiallyAndOnChange(this._store);
 
 		const origViewZoneIdsToIgnore = new Set<string>();
 		const modViewZoneIdsToIgnore = new Set<string>();
 		let isUpdatingViewZones = false;
-		const viewZoneManager = derivedDisposable(this, reader => /** @description ViewZoneManager */
-			this._instantiationService.createInstance(
-				readHotReloadableExport(DiffEditorViewZones, reader),
-				getWindow(this._domElement),
-				this._editors,
-				this._diffModel,
-				this._options,
-				this,
-				() => isUpdatingViewZones || unchangedRangesFeature.get().isUpdatingHiddenAreas,
-				origViewZoneIdsToIgnore,
-				modViewZoneIdsToIgnore
-			)
+		const viewZoneManager = derivedDisposable(
+			this,
+			(reader /** @description ViewZoneManager */) =>
+				this._instantiationService.createInstance(
+					readHotReloadableExport(DiffEditorViewZones, reader),
+					getWindow(this._domElement),
+					this._editors,
+					this._diffModel,
+					this._options,
+					this,
+					() =>
+						isUpdatingViewZones ||
+						unchangedRangesFeature.get().isUpdatingHiddenAreas,
+					origViewZoneIdsToIgnore,
+					modViewZoneIdsToIgnore,
+				),
 		).recomputeInitiallyAndOnChange(this._store);
 
-		const originalViewZones = derived(this, (reader) => { /** @description originalViewZones */
-			const orig = viewZoneManager.read(reader).viewZones.read(reader).orig;
-			const orig2 = unchangedRangesFeature.read(reader).viewZones.read(reader).origViewZones;
+		const originalViewZones = derived(this, (reader) => {
+			/** @description originalViewZones */
+			const orig = viewZoneManager
+				.read(reader)
+				.viewZones.read(reader).orig;
+			const orig2 = unchangedRangesFeature
+				.read(reader)
+				.viewZones.read(reader).origViewZones;
 			return orig.concat(orig2);
 		});
-		const modifiedViewZones = derived(this, (reader) => { /** @description modifiedViewZones */
+		const modifiedViewZones = derived(this, (reader) => {
+			/** @description modifiedViewZones */
 			const mod = viewZoneManager.read(reader).viewZones.read(reader).mod;
-			const mod2 = unchangedRangesFeature.read(reader).viewZones.read(reader).modViewZones;
+			const mod2 = unchangedRangesFeature
+				.read(reader)
+				.viewZones.read(reader).modViewZones;
 			return mod.concat(mod2);
 		});
-		this._register(applyViewZones(this._editors.original, originalViewZones, isUpdatingOrigViewZones => {
-			isUpdatingViewZones = isUpdatingOrigViewZones;
-		}, origViewZoneIdsToIgnore));
+		this._register(
+			applyViewZones(
+				this._editors.original,
+				originalViewZones,
+				(isUpdatingOrigViewZones) => {
+					isUpdatingViewZones = isUpdatingOrigViewZones;
+				},
+				origViewZoneIdsToIgnore,
+			),
+		);
 		let scrollState: StableEditorScrollState | undefined;
-		this._register(applyViewZones(this._editors.modified, modifiedViewZones, isUpdatingModViewZones => {
-			isUpdatingViewZones = isUpdatingModViewZones;
-			if (isUpdatingViewZones) {
-				scrollState = StableEditorScrollState.capture(this._editors.modified);
-			} else {
-				scrollState?.restore(this._editors.modified);
-				scrollState = undefined;
-			}
-		}, modViewZoneIdsToIgnore));
+		this._register(
+			applyViewZones(
+				this._editors.modified,
+				modifiedViewZones,
+				(isUpdatingModViewZones) => {
+					isUpdatingViewZones = isUpdatingModViewZones;
+					if (isUpdatingViewZones) {
+						scrollState = StableEditorScrollState.capture(
+							this._editors.modified,
+						);
+					} else {
+						scrollState?.restore(this._editors.modified);
+						scrollState = undefined;
+					}
+				},
+				modViewZoneIdsToIgnore,
+			),
+		);
 
-		this._accessibleDiffViewer = derivedDisposable(this, reader =>
+		this._accessibleDiffViewer = derivedDisposable(this, (reader) =>
 			this._instantiationService.createInstance(
 				readHotReloadableExport(AccessibleDiffViewer, reader),
 				this.elements.accessibleDiffViewer,
 				this._accessibleDiffViewerVisible,
-				(visible, tx) => this._accessibleDiffViewerShouldBeVisible.set(visible, tx),
-				this._options.onlyShowAccessibleDiffViewer.map(v => !v),
+				(visible, tx) =>
+					this._accessibleDiffViewerShouldBeVisible.set(visible, tx),
+				this._options.onlyShowAccessibleDiffViewer.map((v) => !v),
 				this._rootSizeObserver.width,
 				this._rootSizeObserver.height,
-				this._diffModel.map((m, r) => m?.diff.read(r)?.mappings.map(m => m.lineRangeMapping)),
+				this._diffModel.map((m, r) =>
+					m?.diff.read(r)?.mappings.map((m) => m.lineRangeMapping),
+				),
 				new AccessibleDiffViewerModelFromEditors(this._editors),
-			)
+			),
 		).recomputeInitiallyAndOnChange(this._store);
 
-		const visibility = this._accessibleDiffViewerVisible.map<CSSStyle['visibility']>(v => v ? 'hidden' : 'visible');
+		const visibility = this._accessibleDiffViewerVisible.map<
+			CSSStyle["visibility"]
+		>((v) => (v ? "hidden" : "visible"));
 		this._register(applyStyle(this.elements.modified, { visibility }));
 		this._register(applyStyle(this.elements.original, { visibility }));
 
@@ -365,69 +489,109 @@ export class DiffEditorWidget extends DelegatingEditor implements IDiffEditor {
 
 		codeEditorService.addDiffEditor(this);
 
-		this._gutter = derivedDisposable(this, reader => {
+		this._gutter = derivedDisposable(this, (reader) => {
 			return this._options.shouldRenderGutterMenu.read(reader)
 				? this._instantiationService.createInstance(
-					readHotReloadableExport(DiffEditorGutter, reader),
-					this.elements.root,
-					this._diffModel,
-					this._editors,
-					this._options,
-					this._sashLayout,
-					this._boundarySashes,
-				)
+						readHotReloadableExport(DiffEditorGutter, reader),
+						this.elements.root,
+						this._diffModel,
+						this._editors,
+						this._options,
+						this._sashLayout,
+						this._boundarySashes,
+					)
 				: undefined;
 		});
 
 		this._register(recomputeInitiallyAndOnChange(this._layoutInfo));
 
-		derivedDisposable(this, reader => /** @description MovedBlocksLinesPart */
-			new (readHotReloadableExport(MovedBlocksLinesFeature, reader))(
-				this.elements.root,
-				this._diffModel,
-				this._layoutInfo.map(i => i.originalEditor),
-				this._layoutInfo.map(i => i.modifiedEditor),
-				this._editors,
-			)
-		).recomputeInitiallyAndOnChange(this._store, value => {
+		derivedDisposable(
+			this,
+			(reader /** @description MovedBlocksLinesPart */) =>
+				new (readHotReloadableExport(MovedBlocksLinesFeature, reader))(
+					this.elements.root,
+					this._diffModel,
+					this._layoutInfo.map((i) => i.originalEditor),
+					this._layoutInfo.map((i) => i.modifiedEditor),
+					this._editors,
+				),
+		).recomputeInitiallyAndOnChange(this._store, (value) => {
 			// This is to break the layout info <-> moved blocks lines part dependency cycle.
 			this._movedBlocksLinesPart.set(value, undefined);
 		});
 
-		this._register(Event.runAndSubscribe(this._editors.modified.onDidChangeCursorPosition, e => this._handleCursorPositionChange(e, true)));
-		this._register(Event.runAndSubscribe(this._editors.original.onDidChangeCursorPosition, e => this._handleCursorPositionChange(e, false)));
+		this._register(
+			Event.runAndSubscribe(
+				this._editors.modified.onDidChangeCursorPosition,
+				(e) => this._handleCursorPositionChange(e, true),
+			),
+		);
+		this._register(
+			Event.runAndSubscribe(
+				this._editors.original.onDidChangeCursorPosition,
+				(e) => this._handleCursorPositionChange(e, false),
+			),
+		);
 
 		const isInitializingDiff = this._diffModel.map(this, (m, reader) => {
 			/** @isInitializingDiff isDiffUpToDate */
-			if (!m) { return undefined; }
-			return m.diff.read(reader) === undefined && !m.isDiffUpToDate.read(reader);
+			if (!m) {
+				return undefined;
+			}
+			return (
+				m.diff.read(reader) === undefined &&
+				!m.isDiffUpToDate.read(reader)
+			);
 		});
-		this._register(autorunWithStore((reader, store) => {
-			/** @description DiffEditorWidgetHelper.ShowProgress */
-			if (isInitializingDiff.read(reader) === true) {
-				const r = this._editorProgressService.show(true, 1000);
-				store.add(toDisposable(() => r.done()));
-			}
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description DiffEditorWidgetHelper.ShowProgress */
+				if (isInitializingDiff.read(reader) === true) {
+					const r = this._editorProgressService.show(true, 1000);
+					store.add(toDisposable(() => r.done()));
+				}
+			}),
+		);
 
-		this._register(autorunWithStore((reader, store) => {
-			store.add(new (readHotReloadableExport(RevertButtonsFeature, reader))(this._editors, this._diffModel, this._options, this));
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				store.add(
+					new (readHotReloadableExport(RevertButtonsFeature, reader))(
+						this._editors,
+						this._diffModel,
+						this._options,
+						this,
+					),
+				);
+			}),
+		);
 
-		this._register(autorunWithStore((reader, store) => {
-			const model = this._diffModel.read(reader);
-			if (!model) { return; }
-			for (const m of [model.model.original, model.model.modified]) {
-				store.add(m.onWillDispose(e => {
-					onUnexpectedError(new BugIndicatingError('TextModel got disposed before DiffEditorWidget model got reset'));
-					this.setModel(null);
-				}));
-			}
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				const model = this._diffModel.read(reader);
+				if (!model) {
+					return;
+				}
+				for (const m of [model.model.original, model.model.modified]) {
+					store.add(
+						m.onWillDispose((e) => {
+							onUnexpectedError(
+								new BugIndicatingError(
+									"TextModel got disposed before DiffEditorWidget model got reset",
+								),
+							);
+							this.setModel(null);
+						}),
+					);
+				}
+			}),
+		);
 
-		this._register(autorun(reader => {
-			this._options.setModel(this._diffModel.read(reader));
-		}));
+		this._register(
+			autorun((reader) => {
+				this._options.setModel(this._diffModel.read(reader));
+			}),
+		);
 	}
 
 	public getViewWidth(): number {

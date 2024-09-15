@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	bufferToStream,
+	newWriteableBufferStream,
 	VSBuffer,
 	type VSBufferReadableStream,
 	type VSBufferWriteableStream,
-	bufferToStream,
-	newWriteableBufferStream,
 } from "../../../../base/common/buffer.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { isDefined } from "../../../../base/common/types.js";
@@ -76,7 +76,8 @@ export abstract class BaseTestResultStorage
 	);
 
 	constructor(
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
 	) {
@@ -279,7 +280,11 @@ export class TestResultStorage extends BaseTestResultStorage {
 		@IEnvironmentService environmentService: IEnvironmentService,
 	) {
 		super(uriIdentityService, storageService, logService);
-		this.directory = URI.joinPath(environmentService.workspaceStorageHome, workspaceContext.getWorkspace().id, 'testResults');
+		this.directory = URI.joinPath(
+			environmentService.workspaceStorageHome,
+			workspaceContext.getWorkspace().id,
+			"testResults",
+		);
 	}
 
 	protected async readForResultId(id: string) {

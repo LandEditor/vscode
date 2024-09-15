@@ -9,8 +9,8 @@ import {
 	DisposableStore,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js";
 import type { ITextModel } from "../../../../../editor/common/model.js";

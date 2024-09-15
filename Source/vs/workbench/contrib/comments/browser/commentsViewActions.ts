@@ -15,9 +15,9 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
+	RawContextKey,
 	type IContextKey,
 	type IContextKeyService,
-	RawContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";

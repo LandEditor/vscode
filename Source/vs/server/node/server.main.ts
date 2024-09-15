@@ -7,18 +7,19 @@ import * as fs from "fs";
 import type * as net from "net";
 import * as os from "os";
 import { performance } from "perf_hooks";
+
 import { FileAccess } from "../../base/common/network.js";
 import { dirname, join } from "../../base/common/path.js";
 import * as perf from "../../base/common/performance.js";
 import {
-	type ErrorReporter,
 	parseArgs,
+	type ErrorReporter,
 } from "../../platform/environment/node/argv.js";
 import product from "../../platform/product/common/product.js";
 import { run as runCli } from "./remoteExtensionHostAgentCli.js";
 import {
-	type IServerAPI,
 	createServer as doCreateServer,
+	type IServerAPI,
 } from "./remoteExtensionHostAgentServer.js";
 import { serverOptions } from "./serverEnvironmentService.js";
 

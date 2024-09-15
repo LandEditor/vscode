@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Permutation, compareBy } from "../../../../../base/common/arrays.js";
+import { compareBy, Permutation } from "../../../../../base/common/arrays.js";
 import { mapFindFirst } from "../../../../../base/common/arraysFind.js";
 import { itemsEquals } from "../../../../../base/common/equals.js";
 import {
@@ -13,9 +13,6 @@ import {
 } from "../../../../../base/common/errors.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ITransaction,
 	autorun,
 	derived,
 	derivedHandleChanges,
@@ -25,6 +22,9 @@ import {
 	recomputeInitiallyAndOnChange,
 	subtransaction,
 	transaction,
+	type IObservable,
+	type IReader,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import {
 	commonPrefixLength,
@@ -42,10 +42,10 @@ import { SingleTextEdit, TextEdit } from "../../../../common/core/textEdit.js";
 import { TextLength } from "../../../../common/core/textLength.js";
 import { ScrollType } from "../../../../common/editorCommon.js";
 import {
-	type Command,
-	type InlineCompletionContext,
 	InlineCompletionTriggerKind,
 	PartialAcceptTriggerKind,
+	type Command,
+	type InlineCompletionContext,
 } from "../../../../common/languages.js";
 import { ILanguageConfigurationService } from "../../../../common/languages/languageConfigurationRegistry.js";
 import {
@@ -58,13 +58,13 @@ import { SnippetController2 } from "../../../snippet/browser/snippetController2.
 import { addPositions, subtractPositions } from "../utils.js";
 import {
 	GhostText,
-	type GhostTextOrReplacement,
 	ghostTextOrReplacementEquals,
 	ghostTextsOrReplacementsEqual,
+	type GhostTextOrReplacement,
 } from "./ghostText.js";
 import {
-	type InlineCompletionWithUpdatedRange,
 	InlineCompletionsSource,
+	type InlineCompletionWithUpdatedRange,
 } from "./inlineCompletionsSource.js";
 import {
 	computeGhostText,
@@ -101,36 +101,55 @@ export class InlineCompletionsModel extends Disposable {
 
 	constructor(
 		public readonly textModel: ITextModel,
-		public readonly selectedSuggestItem: IObservable<SuggestItemInfo | undefined>,
-		public readonly _textModelVersionId: IObservable<number | null, IModelContentChangedEvent | undefined>,
+		public readonly selectedSuggestItem: IObservable<
+			SuggestItemInfo | undefined
+		>,
+		public readonly _textModelVersionId: IObservable<
+			number | null,
+			IModelContentChangedEvent | undefined
+		>,
 		private readonly _positions: IObservable<readonly Position[]>,
 		private readonly _debounceValue: IFeatureDebounceInformation,
 		private readonly _suggestPreviewEnabled: IObservable<boolean>,
-		private readonly _suggestPreviewMode: IObservable<'prefix' | 'subword' | 'subwordSmart'>,
-		private readonly _inlineSuggestMode: IObservable<'prefix' | 'subword' | 'subwordSmart'>,
+		private readonly _suggestPreviewMode: IObservable<
+			"prefix" | "subword" | "subwordSmart"
+		>,
+		private readonly _inlineSuggestMode: IObservable<
+			"prefix" | "subword" | "subwordSmart"
+		>,
 		private readonly _enabled: IObservable<boolean>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		super();
 
-		this._register(recomputeInitiallyAndOnChange(this._fetchInlineCompletionsPromise));
+		this._register(
+			recomputeInitiallyAndOnChange(this._fetchInlineCompletionsPromise),
+		);
 
-		let lastItem: InlineCompletionWithUpdatedRange | undefined ;
-		this._register(autorun(reader => {
-			/** @description call handleItemDidShow */
-			const item = this.state.read(reader);
-			const completion = item?.inlineCompletion;
-			if (completion?.semanticId !== lastItem?.semanticId) {
-				lastItem = completion;
-				if (completion) {
-					const i = completion.inlineCompletion;
-					const src = i.source;
-					src.provider.handleItemDidShow?.(src.inlineCompletions, i.sourceInlineCompletion, i.insertText);
+		let lastItem: InlineCompletionWithUpdatedRange | undefined;
+		this._register(
+			autorun((reader) => {
+				/** @description call handleItemDidShow */
+				const item = this.state.read(reader);
+				const completion = item?.inlineCompletion;
+				if (completion?.semanticId !== lastItem?.semanticId) {
+					lastItem = completion;
+					if (completion) {
+						const i = completion.inlineCompletion;
+						const src = i.source;
+						src.provider.handleItemDidShow?.(
+							src.inlineCompletions,
+							i.sourceInlineCompletion,
+							i.insertText,
+						);
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	private readonly _preserveCurrentCompletionReasons = new Set([

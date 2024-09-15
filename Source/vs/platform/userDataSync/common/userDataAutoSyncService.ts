@@ -4,11 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
-	ThrottledDelayer,
 	createCancelablePromise,
 	disposableTimeout,
+	ThrottledDelayer,
 	timeout,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { toLocalISOString } from "../../../base/common/date.js";
@@ -17,9 +17,9 @@ import { isCancellationError } from "../../../base/common/errors.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { isWeb } from "../../../base/common/platform.js";
 import { isEqual } from "../../../base/common/resources.js";
@@ -33,17 +33,17 @@ import {
 } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type IUserDataAutoSyncService,
-	type IUserDataManifest,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLogService,
 	IUserDataSyncService,
 	IUserDataSyncStoreManagementService,
 	IUserDataSyncStoreService,
-	type IUserDataSyncTask,
 	UserDataAutoSyncError,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
+	type IUserDataAutoSyncService,
+	type IUserDataManifest,
+	type IUserDataSyncTask,
 } from "./userDataSync.js";
 import { IUserDataSyncAccountService } from "./userDataSyncAccount.js";
 import { IUserDataSyncMachinesService } from "./userDataSyncMachines.js";
@@ -148,42 +148,68 @@ export class UserDataAutoSyncService
 
 	constructor(
 		@IProductService productService: IProductService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-		@IUserDataSyncAccountService private readonly userDataSyncAccountService: IUserDataSyncAccountService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncAccountService
+		private readonly userDataSyncAccountService: IUserDataSyncAccountService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
 		@IStorageService private readonly storageService: IStorageService,
 	) {
 		super();
-		this.syncTriggerDelayer = this._register(new ThrottledDelayer<void>(this.getSyncTriggerDelayTime()));
+		this.syncTriggerDelayer = this._register(
+			new ThrottledDelayer<void>(this.getSyncTriggerDelayTime()),
+		);
 
 		this.lastSyncUrl = this.syncUrl;
-		this.syncUrl = userDataSyncStoreManagementService.userDataSyncStore?.url;
+		this.syncUrl =
+			userDataSyncStoreManagementService.userDataSyncStore?.url;
 
 		this.previousProductQuality = this.productQuality;
 		this.productQuality = productService.quality;
 
 		if (this.syncUrl) {
-
-			this.logService.info('Using settings sync service', this.syncUrl.toString());
-			this._register(userDataSyncStoreManagementService.onDidChangeUserDataSyncStore(() => {
-				if (!isEqual(this.syncUrl, userDataSyncStoreManagementService.userDataSyncStore?.url)) {
-					this.lastSyncUrl = this.syncUrl;
-					this.syncUrl = userDataSyncStoreManagementService.userDataSyncStore?.url;
-					if (this.syncUrl) {
-						this.logService.info('Using settings sync service', this.syncUrl.toString());
-					}
-				}
-			}));
+			this.logService.info(
+				"Using settings sync service",
+				this.syncUrl.toString(),
+			);
+			this._register(
+				userDataSyncStoreManagementService.onDidChangeUserDataSyncStore(
+					() => {
+						if (
+							!isEqual(
+								this.syncUrl,
+								userDataSyncStoreManagementService
+									.userDataSyncStore?.url,
+							)
+						) {
+							this.lastSyncUrl = this.syncUrl;
+							this.syncUrl =
+								userDataSyncStoreManagementService.userDataSyncStore?.url;
+							if (this.syncUrl) {
+								this.logService.info(
+									"Using settings sync service",
+									this.syncUrl.toString(),
+								);
+							}
+						}
+					},
+				),
+			);
 
 			if (this.userDataSyncEnablementService.isEnabled()) {
-				this.logService.info('Auto Sync is enabled.');
+				this.logService.info("Auto Sync is enabled.");
 			} else {
-				this.logService.info('Auto Sync is disabled.');
+				this.logService.info("Auto Sync is disabled.");
 			}
 			this.updateAutoSync();
 
@@ -191,11 +217,38 @@ export class UserDataAutoSyncService
 				this.disableMachineEventually();
 			}
 
-			this._register(userDataSyncAccountService.onDidChangeAccount(() => this.updateAutoSync()));
-			this._register(userDataSyncStoreService.onDidChangeDonotMakeRequestsUntil(() => this.updateAutoSync()));
-			this._register(userDataSyncService.onDidChangeLocal(source => this.triggerSync([source], false, false)));
-			this._register(Event.filter(this.userDataSyncEnablementService.onDidChangeResourceEnablement, ([, enabled]) => enabled)(() => this.triggerSync(['resourceEnablement'], false, false)));
-			this._register(this.userDataSyncStoreManagementService.onDidChangeUserDataSyncStore(() => this.triggerSync(['userDataSyncStoreChanged'], false, false)));
+			this._register(
+				userDataSyncAccountService.onDidChangeAccount(() =>
+					this.updateAutoSync(),
+				),
+			);
+			this._register(
+				userDataSyncStoreService.onDidChangeDonotMakeRequestsUntil(() =>
+					this.updateAutoSync(),
+				),
+			);
+			this._register(
+				userDataSyncService.onDidChangeLocal((source) =>
+					this.triggerSync([source], false, false),
+				),
+			);
+			this._register(
+				Event.filter(
+					this.userDataSyncEnablementService
+						.onDidChangeResourceEnablement,
+					([, enabled]) => enabled,
+				)(() => this.triggerSync(["resourceEnablement"], false, false)),
+			);
+			this._register(
+				this.userDataSyncStoreManagementService.onDidChangeUserDataSyncStore(
+					() =>
+						this.triggerSync(
+							["userDataSyncStoreChanged"],
+							false,
+							false,
+						),
+				),
+			);
 		}
 	}
 
@@ -236,8 +289,7 @@ export class UserDataAutoSyncService
 				}
 				this.autoSync.clear();
 			} else if (
-
-			/* log message when auto sync is not disabled by user */
+				/* log message when auto sync is not disabled by user */
 				message &&
 				this.userDataSyncEnablementService.isEnabled()
 			) {

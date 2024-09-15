@@ -18,16 +18,16 @@ import { IEnvironmentService } from "../../environment/common/environment.js";
 import { IExtensionManagementService } from "../../extensionManagement/common/extensionManagement.js";
 import { ExtensionType } from "../../extensions/common/extensions.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../files/common/files.js";
 import { IStorageService } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	AbstractInitializer,
@@ -44,21 +44,21 @@ import {
 } from "./settingsMerge.js";
 import {
 	Change,
-	type IRemoteUserData,
-	type IUserDataResourceManifest,
-	type IUserDataSyncConfiguration,
+	getIgnoredSettingsForExtension,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
 	IUserDataSyncUtilService,
-	type IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_CONFIGURATION_SCOPE,
 	USER_DATA_SYNC_SCHEME,
 	UserDataSyncError,
 	UserDataSyncErrorCode,
-	getIgnoredSettingsForExtension,
+	type IRemoteUserData,
+	type IUserDataResourceManifest,
+	type IUserDataSyncConfiguration,
+	type IUserDataSynchroniser,
 } from "./userDataSync.js";
 
 interface ISettingsResourcePreview extends IFileResourcePreview {
@@ -120,17 +120,37 @@ export class SettingsSynchroniser
 		@IFileService fileService: IFileService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
-		@IUserDataSyncUtilService userDataSyncUtilService: IUserDataSyncUtilService,
+		@IUserDataSyncUtilService
+		userDataSyncUtilService: IUserDataSyncUtilService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
-		super(profile.settingsResource, { syncResource: SyncResource.Settings, profile }, collection, fileService, environmentService, storageService, userDataSyncStoreService, userDataSyncLocalStoreService, userDataSyncEnablementService, telemetryService, logService, userDataSyncUtilService, configurationService, uriIdentityService);
+		super(
+			profile.settingsResource,
+			{ syncResource: SyncResource.Settings, profile },
+			collection,
+			fileService,
+			environmentService,
+			storageService,
+			userDataSyncStoreService,
+			userDataSyncLocalStoreService,
+			userDataSyncEnablementService,
+			telemetryService,
+			logService,
+			userDataSyncUtilService,
+			configurationService,
+			uriIdentityService,
+		);
 	}
 
 	async getRemoteUserDataSyncConfiguration(
@@ -620,7 +640,8 @@ export class SettingsSynchroniser
 export class SettingsInitializer extends AbstractInitializer {
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,

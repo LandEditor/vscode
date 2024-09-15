@@ -28,15 +28,15 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type INotificationHandle,
 	INotificationService,
-	type IPromptChoice,
 	NotificationPriority,
 	Severity,
+	type INotificationHandle,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -47,8 +47,8 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { RemoteNameContext } from "../../../common/contextkeys.js";
 import {
@@ -123,16 +123,25 @@ class TroubleshootIssueService
 	private notificationHandle: INotificationHandle | undefined;
 
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileManagementService private readonly userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfileImportExportService private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileManagementService
+		private readonly userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfileImportExportService
+		private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IExtensionBisectService private readonly extensionBisectService: IExtensionBisectService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IWorkbenchIssueService private readonly issueService: IWorkbenchIssueService,
+		@IExtensionBisectService
+		private readonly extensionBisectService: IExtensionBisectService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchIssueService
+		private readonly issueService: IWorkbenchIssueService,
 		@IProductService private readonly productService: IProductService,
 		@IHostService private readonly hostService: IHostService,
 		@IStorageService private readonly storageService: IStorageService,
@@ -462,8 +471,10 @@ class IssueTroubleshootUi extends Disposable {
 	);
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ITroubleshootIssueService private readonly troubleshootIssueService: ITroubleshootIssueService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ITroubleshootIssueService
+		private readonly troubleshootIssueService: ITroubleshootIssueService,
 		@IStorageService storageService: IStorageService,
 	) {
 		super();
@@ -471,9 +482,15 @@ class IssueTroubleshootUi extends Disposable {
 		if (troubleshootIssueService.isActive()) {
 			troubleshootIssueService.resume();
 		}
-		this._register(storageService.onDidChangeValue(StorageScope.PROFILE, TroubleshootIssueService.storageKey, this._register(new DisposableStore()))(() => {
-			this.updateContext();
-		}));
+		this._register(
+			storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				TroubleshootIssueService.storageKey,
+				this._register(new DisposableStore()),
+			)(() => {
+				this.updateContext();
+			}),
+		);
 	}
 
 	private updateContext(): void {

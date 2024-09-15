@@ -17,9 +17,9 @@ import { ILanguageService } from "../../editor/common/languages/language.js";
 import { IModelService } from "../../editor/common/services/model.js";
 import { localize } from "../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../platform/contextkey/common/contextkey.js";
 import { IFileService } from "../../platform/files/common/files.js";
 import type { IEditorResolverService } from "../services/editor/common/editorResolverService.js";
@@ -664,36 +664,62 @@ export class ResourceContextKey {
 	private readonly _isFileSystemResource: IContextKey<boolean>;
 
 	constructor(
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IFileService private readonly _fileService: IFileService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IModelService private readonly _modelService: IModelService
+		@IModelService private readonly _modelService: IModelService,
 	) {
-		this._schemeKey = ResourceContextKey.Scheme.bindTo(this._contextKeyService);
-		this._filenameKey = ResourceContextKey.Filename.bindTo(this._contextKeyService);
-		this._dirnameKey = ResourceContextKey.Dirname.bindTo(this._contextKeyService);
+		this._schemeKey = ResourceContextKey.Scheme.bindTo(
+			this._contextKeyService,
+		);
+		this._filenameKey = ResourceContextKey.Filename.bindTo(
+			this._contextKeyService,
+		);
+		this._dirnameKey = ResourceContextKey.Dirname.bindTo(
+			this._contextKeyService,
+		);
 		this._pathKey = ResourceContextKey.Path.bindTo(this._contextKeyService);
-		this._langIdKey = ResourceContextKey.LangId.bindTo(this._contextKeyService);
-		this._resourceKey = ResourceContextKey.Resource.bindTo(this._contextKeyService);
-		this._extensionKey = ResourceContextKey.Extension.bindTo(this._contextKeyService);
-		this._hasResource = ResourceContextKey.HasResource.bindTo(this._contextKeyService);
-		this._isFileSystemResource = ResourceContextKey.IsFileSystemResource.bindTo(this._contextKeyService);
+		this._langIdKey = ResourceContextKey.LangId.bindTo(
+			this._contextKeyService,
+		);
+		this._resourceKey = ResourceContextKey.Resource.bindTo(
+			this._contextKeyService,
+		);
+		this._extensionKey = ResourceContextKey.Extension.bindTo(
+			this._contextKeyService,
+		);
+		this._hasResource = ResourceContextKey.HasResource.bindTo(
+			this._contextKeyService,
+		);
+		this._isFileSystemResource =
+			ResourceContextKey.IsFileSystemResource.bindTo(
+				this._contextKeyService,
+			);
 
-		this._disposables.add(_fileService.onDidChangeFileSystemProviderRegistrations(() => {
-			const resource = this.get();
-			this._isFileSystemResource.set(Boolean(resource && _fileService.hasProvider(resource)));
-		}));
+		this._disposables.add(
+			_fileService.onDidChangeFileSystemProviderRegistrations(() => {
+				const resource = this.get();
+				this._isFileSystemResource.set(
+					Boolean(resource && _fileService.hasProvider(resource)),
+				);
+			}),
+		);
 
-		this._disposables.add(_modelService.onModelAdded(model => {
-			if (isEqual(model.uri, this.get())) {
-				this._setLangId();
-			}
-		}));
-		this._disposables.add(_modelService.onModelLanguageChanged(e => {
-			if (isEqual(e.model.uri, this.get())) {
-				this._setLangId();
-			}
-		}));
+		this._disposables.add(
+			_modelService.onModelAdded((model) => {
+				if (isEqual(model.uri, this.get())) {
+					this._setLangId();
+				}
+			}),
+		);
+		this._disposables.add(
+			_modelService.onModelLanguageChanged((e) => {
+				if (isEqual(e.model.uri, this.get())) {
+					this._setLangId();
+				}
+			}),
+		);
 	}
 
 	dispose(): void {

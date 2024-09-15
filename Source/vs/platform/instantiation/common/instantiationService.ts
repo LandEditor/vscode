@@ -7,21 +7,21 @@ import { GlobalIdleValue } from "../../../base/common/async.js";
 import { illegalState } from "../../../base/common/errors.js";
 import type { Event } from "../../../base/common/event.js";
 import {
-	type DisposableStore,
-	type IDisposable,
 	dispose,
 	isDisposable,
 	toDisposable,
+	type DisposableStore,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../base/common/linkedList.js";
 import { SyncDescriptor, type SyncDescriptor0 } from "./descriptors.js";
 import { Graph } from "./graph.js";
 import {
-	type GetLeadingNonServiceArgs,
+	_util,
 	IInstantiationService,
+	type GetLeadingNonServiceArgs,
 	type ServiceIdentifier,
 	type ServicesAccessor,
-	_util,
 } from "./instantiation.js";
 import { ServiceCollection } from "./serviceCollection.js";
 
@@ -137,9 +137,7 @@ export class InstantiationService implements IInstantiationService {
 
 	createInstance<T>(descriptor: SyncDescriptor0<T>): T;
 	createInstance<
-		Ctor extends new (
-			...args: any[]
-		) => any,
+		Ctor extends new (...args: any[]) => any,
 		R extends InstanceType<Ctor>,
 	>(
 		ctor: Ctor,

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { createHash } from "crypto";
+
 import { isEqual } from "../../../base/common/extpath.js";
 import { Schemas } from "../../../base/common/network.js";
 import { join } from "../../../base/common/path.js";
@@ -21,19 +22,19 @@ import { IStateService } from "../../state/node/state.js";
 import { isWorkspaceIdentifier } from "../../workspace/common/workspace.js";
 import { createEmptyWorkspaceIdentifier } from "../../workspaces/node/workspaces.js";
 import {
+	isFolderBackupInfo,
 	type IFolderBackupInfo,
 	type IWorkspaceBackupInfo,
-	isFolderBackupInfo,
 } from "../common/backup.js";
 import {
+	deserializeFolderInfos,
+	deserializeWorkspaceInfos,
+	isEmptyWindowBackupInfo,
 	type IEmptyWindowBackupInfo,
 	type ISerializedBackupWorkspaces,
 	type ISerializedEmptyWindowBackupInfo,
 	type ISerializedFolderBackupInfo,
 	type ISerializedWorkspaceBackupInfo,
-	deserializeFolderInfos,
-	deserializeWorkspaceInfos,
-	isEmptyWindowBackupInfo,
 } from "../node/backup.js";
 import type { IBackupMainService } from "./backup.js";
 
@@ -59,12 +60,13 @@ export class BackupMainService implements IBackupMainService {
 	};
 
 	constructor(
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
-		@IStateService private readonly stateService: IStateService
-	) {
-	}
+		@IStateService private readonly stateService: IStateService,
+	) {}
 
 	async initialize(): Promise<void> {
 		// read backup workspaces

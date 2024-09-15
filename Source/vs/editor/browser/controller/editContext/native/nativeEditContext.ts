@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./nativeEditContext.css";
+
 import { isFirefox } from "../../../../../base/browser/browser.js";
 import { addDisposableListener } from "../../../../../base/browser/dom.js";
 import { FastDomNode } from "../../../../../base/browser/fastDomNode.js";
@@ -32,15 +33,15 @@ import type {
 } from "../../../view/renderingContext.js";
 import type { ViewController } from "../../../view/viewController.js";
 import {
-	type ClipboardStoredMetadata,
-	InMemoryClipboardMetadataManager,
 	getDataToCopy,
+	InMemoryClipboardMetadataManager,
+	type ClipboardStoredMetadata,
 } from "../clipboardUtils.js";
 import { AbstractEditContext } from "../editContextUtils.js";
 import {
+	editContextAddDisposableListener,
 	FocusTracker,
 	type ITypeData,
-	editContextAddDisposableListener,
 } from "./nativeEditContextUtils.js";
 import { ScreenReaderSupport } from "./screenReaderSupport.js";
 

@@ -6,15 +6,15 @@
 import type { Event } from "../../../base/common/event.js";
 import {
 	GLOBSTAR,
+	parse,
 	type IRelativePattern,
 	type ParsedPattern,
-	parse,
 } from "../../../base/common/glob.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { isAbsolute } from "../../../base/common/path.js";
 import { isLinux } from "../../../base/common/platform.js";
@@ -22,8 +22,8 @@ import { URI } from "../../../base/common/uri.js";
 import {
 	FileChangeFilter,
 	FileChangeType,
-	type IFileChange,
 	isParent,
+	type IFileChange,
 } from "./files.js";
 
 interface IWatchRequest {

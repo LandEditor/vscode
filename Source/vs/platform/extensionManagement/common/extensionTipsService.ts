@@ -18,17 +18,17 @@ import type { IConfigBasedExtensionTip as IRawConfigBasedExtensionTip } from "..
 import { joinPath } from "../../../base/common/resources.js";
 import { URI } from "../../../base/common/uri.js";
 import {
-	type IExtensionRecommendationNotificationService,
-	RecommendationSource,
 	RecommendationsNotificationResult,
+	RecommendationSource,
+	type IExtensionRecommendationNotificationService,
 } from "../../extensionRecommendations/common/extensionRecommendations.js";
 import { ExtensionType } from "../../extensions/common/extensions.js";
 import { IFileService } from "../../files/common/files.js";
 import { IProductService } from "../../product/common/productService.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../storage/common/storage.js";
 import type { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import type {
@@ -59,7 +59,11 @@ export class ExtensionTipsService
 	) {
 		super();
 		if (this.productService.configBasedExtensionTips) {
-			Object.entries(this.productService.configBasedExtensionTips).forEach(([, value]) => this.allConfigBasedTips.set(value.configPath, value));
+			Object.entries(
+				this.productService.configBasedExtensionTips,
+			).forEach(([, value]) =>
+				this.allConfigBasedTips.set(value.configPath, value),
+			);
 		}
 	}
 

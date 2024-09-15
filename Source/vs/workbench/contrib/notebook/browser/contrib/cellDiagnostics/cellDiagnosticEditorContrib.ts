@@ -7,24 +7,24 @@ import { Event } from "../../../../../../base/common/event.js";
 import { Iterable } from "../../../../../../base/common/iterator.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../../../base/common/uri.js";
 import type { IRange } from "../../../../../../editor/common/core/range.js";
 import { IConfigurationService } from "../../../../../../platform/configuration/common/configuration.js";
 import {
-	type IMarkerData,
 	IMarkerService,
+	type IMarkerData,
 } from "../../../../../../platform/markers/common/markers.js";
 import { IChatAgentService } from "../../../../chat/common/chatAgents.js";
 import { CellKind, NotebookSetting } from "../../../common/notebookCommon.js";
 import {
+	INotebookExecutionStateService,
+	NotebookExecutionType,
 	type ICellExecutionError,
 	type ICellExecutionStateChangedEvent,
 	type IExecutionStateChangedEvent,
-	INotebookExecutionStateService,
-	NotebookExecutionType,
 } from "../../../common/notebookExecutionStateService.js";
 import type {
 	INotebookEditor,
@@ -51,21 +51,31 @@ export class CellDiagnostics
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@INotebookExecutionStateService private readonly notebookExecutionStateService: INotebookExecutionStateService,
+		@INotebookExecutionStateService
+		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		@IMarkerService private readonly markerService: IMarkerService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
 		this.updateEnabled();
 
-		this._register(chatAgentService.onDidChangeAgents(() => this.updateEnabled()));
-		this._register(configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration(NotebookSetting.cellFailureDiagnostics)) {
-				this.updateEnabled();
-			}
-		}));
+		this._register(
+			chatAgentService.onDidChangeAgents(() => this.updateEnabled()),
+		);
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						NotebookSetting.cellFailureDiagnostics,
+					)
+				) {
+					this.updateEnabled();
+				}
+			}),
+		);
 	}
 
 	private updateEnabled() {

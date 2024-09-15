@@ -11,8 +11,8 @@ import {
 	dispose,
 } from "../../../base/common/lifecycle.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../platform/configuration/common/configuration.js";
 import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../platform/registry/common/platform.js";
@@ -20,12 +20,12 @@ import {
 	EditorCloseContext,
 	EditorExtensions,
 	EditorsOrder,
-	type GroupIdentifier,
 	GroupModelChangeKind,
+	SideBySideEditor,
+	type GroupIdentifier,
 	type IEditorFactoryRegistry,
 	type IMatchEditorOptions,
 	type IUntypedEditorInput,
-	SideBySideEditor,
 } from "../editor.js";
 import { EditorInput } from "./editorInput.js";
 import { SideBySideEditorInput } from "./sideBySideEditorInput.js";
@@ -303,8 +303,10 @@ export class EditorGroupModel extends Disposable implements IEditorGroupModel {
 
 	constructor(
 		labelOrSerializedGroup: ISerializedEditorGroupModel | undefined,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 

@@ -4,6 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CharCode } from "../../../../base/common/charCode.js";
+import { UILabelProvider } from "../../../../base/common/keybindingLabels.js";
+import {
+	KeyCodeChord,
+	ScanCodeChord,
+	type Chord,
+	type Keybinding,
+	type ResolvedKeybinding,
+	type SingleModifierChord,
+} from "../../../../base/common/keybindings.js";
 import {
 	IMMUTABLE_CODE_TO_KEY_CODE,
 	KeyCode,
@@ -12,15 +21,6 @@ import {
 	ScanCode,
 	ScanCodeUtils,
 } from "../../../../base/common/keyCodes.js";
-import { UILabelProvider } from "../../../../base/common/keybindingLabels.js";
-import {
-	type Chord,
-	KeyCodeChord,
-	type Keybinding,
-	type ResolvedKeybinding,
-	ScanCodeChord,
-	type SingleModifierChord,
-} from "../../../../base/common/keybindings.js";
 import { OperatingSystem } from "../../../../base/common/platform.js";
 import { BaseResolvedKeybinding } from "../../../../platform/keybinding/common/baseResolvedKeybinding.js";
 import type { IKeyboardEvent } from "../../../../platform/keybinding/common/keybinding.js";

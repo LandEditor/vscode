@@ -21,9 +21,9 @@ import {
 	StorageTarget,
 } from "../../../../../platform/storage/common/storage.js";
 import {
-	type INotebookKernel,
 	INotebookKernelHistoryService,
 	INotebookKernelService,
+	type INotebookKernel,
 	type INotebookTextModelLike,
 } from "../../common/notebookKernelService.js";
 import { INotebookLoggingService } from "../../common/notebookLoggingService.js";
@@ -49,16 +49,28 @@ export class NotebookKernelHistoryService
 		[key: string]: LinkedMap<string, string>;
 	} = {};
 
-	constructor(@IStorageService private readonly _storageService: IStorageService,
-		@INotebookKernelService private readonly _notebookKernelService: INotebookKernelService,
-		@INotebookLoggingService private readonly _notebookLoggingService: INotebookLoggingService) {
+	constructor(
+		@IStorageService private readonly _storageService: IStorageService,
+		@INotebookKernelService
+		private readonly _notebookKernelService: INotebookKernelService,
+		@INotebookLoggingService
+		private readonly _notebookLoggingService: INotebookLoggingService,
+	) {
 		super();
 
 		this._loadState();
-		this._register(this._storageService.onWillSaveState(() => this._saveState()));
-		this._register(this._storageService.onDidChangeValue(StorageScope.WORKSPACE, NotebookKernelHistoryService.STORAGE_KEY, this._register(new DisposableStore()))(() => {
-			this._loadState();
-		}));
+		this._register(
+			this._storageService.onWillSaveState(() => this._saveState()),
+		);
+		this._register(
+			this._storageService.onDidChangeValue(
+				StorageScope.WORKSPACE,
+				NotebookKernelHistoryService.STORAGE_KEY,
+				this._register(new DisposableStore()),
+			)(() => {
+				this._loadState();
+			}),
+		);
 	}
 
 	getKernels(notebook: INotebookTextModelLike): {

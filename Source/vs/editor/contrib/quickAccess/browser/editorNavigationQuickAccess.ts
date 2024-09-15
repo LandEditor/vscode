@@ -9,9 +9,9 @@ import type { Event } from "../../../../base/common/event.js";
 import { createSingleCallFunction } from "../../../../base/common/functional.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { TextEditorSelectionSource } from "../../../../platform/editor/common/editor.js";
 import type {
@@ -28,14 +28,14 @@ import { getCodeEditor, isDiffEditor } from "../../../browser/editorBrowser.js";
 import { overviewRulerRangeHighlight } from "../../../common/core/editorColorRegistry.js";
 import type { IRange } from "../../../common/core/range.js";
 import {
+	ScrollType,
 	type IDiffEditor,
 	type IEditor,
-	ScrollType,
 } from "../../../common/editorCommon.js";
 import {
+	OverviewRulerLane,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	OverviewRulerLane,
 } from "../../../common/model.js";
 
 interface IEditorLineDecoration {

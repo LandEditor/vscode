@@ -16,16 +16,16 @@ import {
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import {
-	IRequestService,
 	asJson,
+	IRequestService,
 } from "../../../../platform/request/common/request.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	IUserDataProfilesService,
 	type DidChangeProfilesEvent,
 	type IUserDataProfile,
 	type IUserDataProfileOptions,
 	type IUserDataProfileUpdateOptions,
-	IUserDataProfilesService,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	IWorkspaceContextService,
@@ -35,10 +35,10 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 import { IExtensionService } from "../../extensions/common/extensions.js";
 import { IHostService } from "../../host/browser/host.js";
 import {
-	type DidChangeUserDataProfileEvent,
-	type IProfileTemplateInfo,
 	IUserDataProfileManagementService,
 	IUserDataProfileService,
+	type DidChangeUserDataProfileEvent,
+	type IProfileTemplateInfo,
 } from "../common/userDataProfile.js";
 
 export type ProfileManagementActionExecutedClassification = {
@@ -62,28 +62,55 @@ export class UserDataProfileManagementService
 	readonly _serviceBrand: undefined;
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IHostService private readonly hostService: IHostService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IProductService private readonly productService: IProductService,
 		@IRequestService private readonly requestService: IRequestService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this._register(userDataProfilesService.onDidChangeProfiles(e => this.onDidChangeProfiles(e)));
-		this._register(userDataProfilesService.onDidResetWorkspaces(() => this.onDidResetWorkspaces()));
-		this._register(userDataProfileService.onDidChangeCurrentProfile(e => this.onDidChangeCurrentProfile(e)));
-		this._register(userDataProfilesService.onDidChangeProfiles(e => {
-			const updatedCurrentProfile = e.updated.find(p => this.userDataProfileService.currentProfile.id === p.id);
-			if (updatedCurrentProfile) {
-				this.changeCurrentProfile(updatedCurrentProfile, localize('reload message when updated', "The current profile has been updated. Please reload to switch back to the updated profile"));
-			}
-		}));
+		this._register(
+			userDataProfilesService.onDidChangeProfiles((e) =>
+				this.onDidChangeProfiles(e),
+			),
+		);
+		this._register(
+			userDataProfilesService.onDidResetWorkspaces(() =>
+				this.onDidResetWorkspaces(),
+			),
+		);
+		this._register(
+			userDataProfileService.onDidChangeCurrentProfile((e) =>
+				this.onDidChangeCurrentProfile(e),
+			),
+		);
+		this._register(
+			userDataProfilesService.onDidChangeProfiles((e) => {
+				const updatedCurrentProfile = e.updated.find(
+					(p) =>
+						this.userDataProfileService.currentProfile.id === p.id,
+				);
+				if (updatedCurrentProfile) {
+					this.changeCurrentProfile(
+						updatedCurrentProfile,
+						localize(
+							"reload message when updated",
+							"The current profile has been updated. Please reload to switch back to the updated profile",
+						),
+					);
+				}
+			}),
+		);
 	}
 
 	private onDidChangeProfiles(e: DidChangeProfilesEvent): void {

@@ -8,8 +8,8 @@ import { Iterable } from "../../../../base/common/iterator.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { deepClone } from "../../../../base/common/objects.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import {
@@ -19,15 +19,15 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { StoredValue } from "./storedValue.js";
 import { TestId } from "./testId.js";
+import { TestingContextKeys } from "./testingContextKeys.js";
 import type { IMainThreadTestController } from "./testService.js";
 import {
-	type ITestItem,
-	type ITestRunProfile,
-	type InternalTestItem,
 	TestRunProfileBitset,
 	testRunProfileBitsetList,
+	type InternalTestItem,
+	type ITestItem,
+	type ITestRunProfile,
 } from "./testTypes.js";
-import { TestingContextKeys } from "./testingContextKeys.js";
 
 export const ITestProfileService =
 	createDecorator<ITestProfileService>("testProfileService");

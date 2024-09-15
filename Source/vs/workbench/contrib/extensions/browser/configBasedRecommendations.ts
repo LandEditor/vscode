@@ -6,8 +6,8 @@
 import { Emitter } from "../../../../base/common/event.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IConfigBasedExtensionTip,
 	IExtensionTipsService,
+	type IConfigBasedExtensionTip,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
 	IWorkspaceContextService,
@@ -15,8 +15,8 @@ import {
 } from "../../../../platform/workspace/common/workspace.js";
 import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type ExtensionRecommendation,
 	ExtensionRecommendations,
+	type ExtensionRecommendation,
 } from "./extensionRecommendations.js";
 
 type ConfigBasedExtensionRecommendation = ExtensionRecommendation & {
@@ -47,8 +47,10 @@ export class ConfigBasedRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IExtensionTipsService private readonly extensionTipsService: IExtensionTipsService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IExtensionTipsService
+		private readonly extensionTipsService: IExtensionTipsService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		super();
 	}

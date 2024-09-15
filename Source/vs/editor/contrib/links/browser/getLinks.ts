@@ -13,7 +13,7 @@ import {
 import { assertType } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import type {
 	ILink,
@@ -114,6 +114,7 @@ export class LinksList {
 				oldLen = oldLinks.length,
 				newLen = newLinks.length;
 			oldIndex < oldLen && newIndex < newLen;
+
 		) {
 			const oldLink = oldLinks[oldIndex];
 			const newLink = newLinks[newIndex];

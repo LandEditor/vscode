@@ -4,20 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IBoundarySashes,
-	type ISashEvent,
 	Orientation,
 	Sash,
 	SashState,
+	type IBoundarySashes,
+	type ISashEvent,
 } from "../../../../../base/browser/ui/sash/sash.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ISettableObservable,
 	autorun,
 	derivedWithSetter,
 	observableValue,
+	type IObservable,
+	type IReader,
+	type ISettableObservable,
 } from "../../../../../base/common/observable.js";
 import type { DiffEditorOptions } from "../diffEditorOptions.js";
 

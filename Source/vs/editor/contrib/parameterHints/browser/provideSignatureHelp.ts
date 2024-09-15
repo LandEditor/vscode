@@ -9,7 +9,7 @@ import { assertType } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
 import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import * as languages from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";

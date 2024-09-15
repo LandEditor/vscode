@@ -8,8 +8,8 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { EnablementState } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -17,9 +17,11 @@ import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.
 
 class BracketPairColorizer2TelemetryContribution {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		this.init().catch(onUnexpectedError);
 	}

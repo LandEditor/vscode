@@ -6,13 +6,13 @@
 import type { IDisposable } from "../../../base/common/lifecycle.js";
 import { IThemeService } from "../../../platform/theme/common/themeService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostThemingShape,
 	MainContext,
+	type ExtHostThemingShape,
 	type MainThreadThemingShape,
 } from "../common/extHost.protocol.js";
 

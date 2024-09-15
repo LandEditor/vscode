@@ -4,23 +4,24 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import * as arrays from "../../../base/common/arrays.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostEditorsShape,
 	type IEditorPropertiesChangeData,
 	type IMainContext,
 	type ITextDocumentShowOptions,
 	type ITextEditorPositionData,
-	MainContext,
 	type MainThreadTextEditorsShape,
 } from "./extHost.protocol.js";
 import type { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";
 import {
-	type ExtHostTextEditor,
 	TextEditorDecorationType,
+	type ExtHostTextEditor,
 } from "./extHostTextEditor.js";
 import * as TypeConverters from "./extHostTypeConverters.js";
 import { TextEditorSelectionChangeKind } from "./extHostTypes.js";

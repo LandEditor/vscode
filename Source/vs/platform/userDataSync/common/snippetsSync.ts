@@ -14,16 +14,16 @@ import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
 	FileOperationError,
 	FileOperationResult,
-	type IFileContent,
 	IFileService,
+	type IFileContent,
 	type IFileStat,
 } from "../../files/common/files.js";
 import { IStorageService } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	AbstractInitializer,
@@ -33,21 +33,21 @@ import {
 	type IMergeResult,
 } from "./abstractSynchronizer.js";
 import {
-	type IMergeResult as ISnippetsMergeResult,
 	areSame,
 	merge,
+	type IMergeResult as ISnippetsMergeResult,
 } from "./snippetsMerge.js";
 import {
 	Change,
-	type IRemoteUserData,
-	type ISyncData,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
 	IUserDataSyncStoreService,
-	type IUserDataSynchroniser,
 	SyncResource,
 	USER_DATA_SYNC_SCHEME,
+	type IRemoteUserData,
+	type ISyncData,
+	type IUserDataSynchroniser,
 } from "./userDataSync.js";
 
 interface ISnippetsResourcePreview extends IFileResourcePreview {
@@ -75,11 +75,14 @@ export class SnippetsSynchroniser
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IFileService fileService: IFileService,
 		@IStorageService storageService: IStorageService,
-		@IUserDataSyncStoreService userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncLocalStoreService userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncStoreService
+		userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncLocalStoreService
+		userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataSyncEnablementService
+		userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 	) {
@@ -952,7 +955,8 @@ export class SnippetsSynchroniser
 export class SnippetsInitializer extends AbstractInitializer {
 	constructor(
 		@IFileService fileService: IFileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 		@IUserDataSyncLogService logService: IUserDataSyncLogService,
 		@IStorageService storageService: IStorageService,

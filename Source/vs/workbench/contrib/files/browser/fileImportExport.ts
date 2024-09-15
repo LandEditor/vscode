@@ -15,12 +15,12 @@ import {
 	RunOnceWorker,
 } from "../../../../base/common/async.js";
 import {
-	VSBuffer,
 	newWriteableBufferStream,
+	VSBuffer,
 } from "../../../../base/common/buffer.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { canceled } from "../../../../base/common/errors.js";
 import { createSingleCallFunction } from "../../../../base/common/functional.js";
@@ -42,11 +42,11 @@ import { ResourceFileEdit } from "../../../../editor/browser/services/bulkEditSe
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IConfirmation,
+	getFileNamesMessage,
 	IDialogService,
 	IFileDialogService,
+	type IConfirmation,
 	type IPromptButton,
-	getFileNamesMessage,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import { extractEditorsAndFilesDropData } from "../../../../platform/dnd/browser/dnd.js";
 import { WebFileSystemAccess } from "../../../../platform/files/browser/webFileSystemAccess.js";
@@ -63,10 +63,10 @@ import {
 	Severity,
 } from "../../../../platform/notification/common/notification.js";
 import {
-	type IProgress,
 	IProgressService,
-	type IProgressStep,
 	ProgressLocation,
+	type IProgress,
+	type IProgressStep,
 } from "../../../../platform/progress/common/progress.js";
 import {
 	IStorageService,
@@ -79,9 +79,9 @@ import { IHostService } from "../../../services/host/browser/host.js";
 import { IWorkspaceEditingService } from "../../../services/workspaces/common/workspaceEditing.js";
 import { ExplorerItem } from "../common/explorerModel.js";
 import {
-	type IFilesConfiguration,
 	UndoConfirmLevel,
 	VIEW_ID,
+	type IFilesConfiguration,
 } from "../common/files.js";
 import { IExplorerService } from "./files.js";
 
@@ -129,9 +129,8 @@ export class BrowserFileUpload {
 		@IDialogService private readonly dialogService: IDialogService,
 		@IExplorerService private readonly explorerService: IExplorerService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IFileService private readonly fileService: IFileService
-	) {
-	}
+		@IFileService private readonly fileService: IFileService,
+	) {}
 
 	upload(target: ExplorerItem, source: DragEvent | FileList): Promise<void> {
 		const cts = new CancellationTokenSource();
@@ -572,17 +571,21 @@ export class ExternalFileImport {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IHostService private readonly hostService: IHostService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkspaceEditingService private readonly workspaceEditingService: IWorkspaceEditingService,
+		@IWorkspaceEditingService
+		private readonly workspaceEditingService: IWorkspaceEditingService,
 		@IExplorerService private readonly explorerService: IExplorerService,
 		@IEditorService private readonly editorService: IEditorService,
 		@IProgressService private readonly progressService: IProgressService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) {
-	}
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	async import(
 		target: ExplorerItem,
@@ -928,10 +931,10 @@ export class FileDownload {
 		@IExplorerService private readonly explorerService: IExplorerService,
 		@IProgressService private readonly progressService: IProgressService,
 		@ILogService private readonly logService: ILogService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IStorageService private readonly storageService: IStorageService
-	) {
-	}
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IStorageService private readonly storageService: IStorageService,
+	) {}
 
 	download(source: ExplorerItem[]): Promise<void> {
 		const cts = new CancellationTokenSource();

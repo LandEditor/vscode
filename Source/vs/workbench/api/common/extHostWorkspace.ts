@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	delta as arrayDelta,
 	mapArrayOrNot,
@@ -23,10 +24,10 @@ import { revive } from "../../../base/common/marshalling.js";
 import { Schemas } from "../../../base/common/network.js";
 import { Counter } from "../../../base/common/numbers.js";
 import {
-	ExtUri,
 	basename,
 	basenameOrAuthority,
 	dirname,
+	ExtUri,
 	relativePath,
 } from "../../../base/common/resources.js";
 import { compare } from "../../../base/common/strings.js";
@@ -56,9 +57,9 @@ import type {
 	ITextQueryBuilderOptions,
 } from "../../services/search/common/queryBuilder.js";
 import {
+	resultIsMatch,
 	type IRawFileMatch2,
 	type ITextSearchResult,
-	resultIsMatch,
 } from "../../services/search/common/search.js";
 import {
 	ExcludeSettingOptions,
@@ -66,10 +67,10 @@ import {
 	TextSearchMatchNew,
 } from "../../services/search/common/searchExtTypes.js";
 import {
+	MainContext,
 	type ExtHostWorkspaceShape,
 	type IRelativePatternDto,
 	type IWorkspaceData,
-	MainContext,
 	type MainThreadMessageOptions,
 	type MainThreadMessageServiceShape,
 	type MainThreadWorkspaceShape,

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import electron from "electron";
+
 import { Emitter, Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import {
@@ -57,21 +58,39 @@ export class ThemeMainService extends Disposable implements IThemeMainService {
 	);
 	readonly onDidChangeColorScheme = this._onDidChangeColorScheme.event;
 
-	constructor(@IStateService private stateService: IStateService, @IConfigurationService private configurationService: IConfigurationService) {
+	constructor(
+		@IStateService private stateService: IStateService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
+	) {
 		super();
 
 		// System Theme
 		if (!isLinux) {
-			this._register(this.configurationService.onDidChangeConfiguration(e => {
-				if (e.affectsConfiguration(ThemeSettings.SYSTEM_COLOR_THEME) || e.affectsConfiguration(ThemeSettings.DETECT_COLOR_SCHEME)) {
-					this.updateSystemColorTheme();
-				}
-			}));
+			this._register(
+				this.configurationService.onDidChangeConfiguration((e) => {
+					if (
+						e.affectsConfiguration(
+							ThemeSettings.SYSTEM_COLOR_THEME,
+						) ||
+						e.affectsConfiguration(
+							ThemeSettings.DETECT_COLOR_SCHEME,
+						)
+					) {
+						this.updateSystemColorTheme();
+					}
+				}),
+			);
 		}
 		this.updateSystemColorTheme();
 
 		// Color Scheme changes
-		this._register(Event.fromNodeEventEmitter(electron.nativeTheme, 'updated')(() => this._onDidChangeColorScheme.fire(this.getColorScheme())));
+		this._register(
+			Event.fromNodeEventEmitter(
+				electron.nativeTheme,
+				"updated",
+			)(() => this._onDidChangeColorScheme.fire(this.getColorScheme())),
+		);
 	}
 
 	private updateSystemColorTheme(): void {

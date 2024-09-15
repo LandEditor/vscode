@@ -7,21 +7,21 @@ import type { IDisposable } from "../../../base/common/lifecycle.js";
 import type { URI, UriComponents } from "../../../base/common/uri.js";
 import { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import {
-	type IOpenURLOptions,
 	IURLService,
+	type IOpenURLOptions,
 } from "../../../platform/url/common/url.js";
 import {
-	type IExtensionContributedURLHandler,
 	IExtensionUrlHandler,
+	type IExtensionContributedURLHandler,
 } from "../../services/extensions/browser/extensionUrlHandler.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostUrlsShape,
 	MainContext,
+	type ExtHostUrlsShape,
 	type MainThreadUrlsShape,
 } from "../common/extHost.protocol.js";
 
@@ -55,7 +55,8 @@ export class MainThreadUrls implements MainThreadUrlsShape {
 	constructor(
 		context: IExtHostContext,
 		@IURLService private readonly urlService: IURLService,
-		@IExtensionUrlHandler private readonly extensionUrlHandler: IExtensionUrlHandler
+		@IExtensionUrlHandler
+		private readonly extensionUrlHandler: IExtensionUrlHandler,
 	) {
 		this.proxy = context.getProxy(ExtHostContext.ExtHostUrls);
 	}

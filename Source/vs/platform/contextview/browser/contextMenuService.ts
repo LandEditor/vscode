@@ -5,7 +5,7 @@
 
 import type { IContextMenuDelegate } from "../../../base/browser/contextmenu.js";
 import { ModifierKeyEmitter } from "../../../base/browser/dom.js";
-import { type IAction, Separator } from "../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../base/common/actions.js";
 import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { createAndFillInContextMenuActions } from "../../actions/browser/menuEntryActionViewItem.js";
@@ -19,9 +19,9 @@ import {
 	type IContextMenuHandlerOptions,
 } from "./contextMenuHandler.js";
 import {
+	IContextViewService,
 	type IContextMenuMenuDelegate,
 	type IContextMenuService,
-	IContextViewService,
 } from "./contextView.js";
 
 export class ContextMenuService
@@ -56,11 +56,15 @@ export class ContextMenuService
 
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 	}

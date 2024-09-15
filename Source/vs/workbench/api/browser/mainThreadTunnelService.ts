@@ -20,19 +20,19 @@ import {
 import { Registry } from "../../../platform/registry/common/platform.js";
 import type { TunnelDescription } from "../../../platform/remote/common/remoteAuthorityResolver.js";
 import {
-	type ITunnelProvider,
 	ITunnelService,
+	TunnelProtocol,
+	type ITunnelProvider,
 	type PortAttributesProvider,
 	type ProvidedPortAttributes,
 	type RemoteTunnel,
 	type TunnelCreationOptions,
 	type TunnelOptions,
-	TunnelProtocol,
 	type TunnelProviderFeatures,
 } from "../../../platform/tunnel/common/tunnel.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import { IRemoteAgentService } from "../../services/remote/common/remoteAgentService.js";
 import {
@@ -43,17 +43,17 @@ import {
 	PORT_AUTO_SOURCE_SETTING_OUTPUT,
 } from "../../services/remote/common/remoteExplorerService.js";
 import {
-	type CandidatePort,
-	TunnelCloseReason,
-	TunnelSource,
 	forwardedPortsViewEnabled,
 	makeAddress,
+	TunnelCloseReason,
+	TunnelSource,
+	type CandidatePort,
 } from "../../services/remote/common/tunnelModel.js";
 import {
 	CandidatePortSource,
 	ExtHostContext,
-	type ExtHostTunnelServiceShape,
 	MainContext,
+	type ExtHostTunnelServiceShape,
 	type MainThreadTunnelServiceShape,
 	type PortAttributesSelector,
 	type TunnelDto,
@@ -72,18 +72,33 @@ export class MainThreadTunnelService
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IRemoteExplorerService private readonly remoteExplorerService: IRemoteExplorerService,
+		@IRemoteExplorerService
+		private readonly remoteExplorerService: IRemoteExplorerService,
 		@ITunnelService private readonly tunnelService: ITunnelService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ILogService private readonly logService: ILogService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostTunnelService);
-		this._register(tunnelService.onTunnelOpened(() => this._proxy.$onDidTunnelsChange()));
-		this._register(tunnelService.onTunnelClosed(() => this._proxy.$onDidTunnelsChange()));
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostTunnelService,
+		);
+		this._register(
+			tunnelService.onTunnelOpened(() =>
+				this._proxy.$onDidTunnelsChange(),
+			),
+		);
+		this._register(
+			tunnelService.onTunnelClosed(() =>
+				this._proxy.$onDidTunnelsChange(),
+			),
+		);
 	}
 
 	private processFindingEnabled(): boolean {

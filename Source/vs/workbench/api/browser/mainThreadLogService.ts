@@ -13,19 +13,19 @@ import { CommandsRegistry } from "../../../platform/commands/common/commands.js"
 import { IEnvironmentService } from "../../../platform/environment/common/environment.js";
 import type { ServicesAccessor } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	ILogService,
-	type ILoggerOptions,
-	type ILoggerResource,
 	ILoggerService,
-	type LogLevel,
-	LogLevelToString,
+	ILogService,
 	isLogLevel,
 	log,
+	LogLevelToString,
 	parseLogLevel,
+	type ILoggerOptions,
+	type ILoggerResource,
+	type LogLevel,
 } from "../../../platform/log/common/log.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
@@ -41,14 +41,18 @@ export class MainThreadLoggerService implements MainThreadLoggerShape {
 		extHostContext: IExtHostContext,
 		@ILoggerService private readonly loggerService: ILoggerService,
 	) {
-		const proxy = extHostContext.getProxy(ExtHostContext.ExtHostLogLevelServiceShape);
-		this.disposables.add(loggerService.onDidChangeLogLevel(arg => {
-			if (isLogLevel(arg)) {
-				proxy.$setLogLevel(arg);
-			} else {
-				proxy.$setLogLevel(arg[1], arg[0]);
-			}
-		}));
+		const proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostLogLevelServiceShape,
+		);
+		this.disposables.add(
+			loggerService.onDidChangeLogLevel((arg) => {
+				if (isLogLevel(arg)) {
+					proxy.$setLogLevel(arg);
+				} else {
+					proxy.$setLogLevel(arg[1], arg[0]);
+				}
+			}),
+		);
 	}
 
 	$log(file: UriComponents, messages: [LogLevel, string][]): void {

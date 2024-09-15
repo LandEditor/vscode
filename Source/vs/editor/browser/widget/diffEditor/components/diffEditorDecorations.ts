@@ -5,8 +5,8 @@
 
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	derived,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import type { IModelDeltaDecoration } from "../../../../common/model.js";
 import type { DiffEditorOptions } from "../diffEditorOptions.js";

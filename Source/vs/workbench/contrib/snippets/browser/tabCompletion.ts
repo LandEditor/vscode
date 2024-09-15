@@ -27,9 +27,9 @@ import { showSimpleSuggestions } from "../../../../editor/contrib/suggest/browse
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { SnippetCompletion } from "./snippetCompletionProvider.js";
@@ -62,12 +62,15 @@ export class TabCompletionController implements IEditorContribution {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		@ISnippetsService private readonly _snippetService: ISnippetsService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 	) {
-		this._hasSnippets = TabCompletionController.ContextKey.bindTo(contextKeyService);
-		this._configListener = this._editor.onDidChangeConfiguration(e => {
+		this._hasSnippets =
+			TabCompletionController.ContextKey.bindTo(contextKeyService);
+		this._configListener = this._editor.onDidChangeConfiguration((e) => {
 			if (e.hasChanged(EditorOption.tabCompletion)) {
 				this._update();
 			}

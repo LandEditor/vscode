@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	getActiveElement,
 	getWindow,
 	isAncestor,
@@ -34,8 +34,8 @@ import { TimeoutTimer } from "../../../../base/common/async.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
@@ -65,16 +65,21 @@ export class HoverService extends Disposable implements IHoverService {
 	private _lastFocusedElementBeforeOpen: HTMLElement | undefined;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ILayoutService private readonly _layoutService: ILayoutService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 	) {
 		super();
 
 		contextMenuService.onDidShowContextMenu(() => this.hideHover());
-		this._contextViewHandler = this._register(new ContextViewHandler(this._layoutService));
+		this._contextViewHandler = this._register(
+			new ContextViewHandler(this._layoutService),
+		);
 	}
 
 	showHover(

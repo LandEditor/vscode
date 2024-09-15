@@ -6,9 +6,9 @@
 import {
 	AbstractMessageLogger,
 	DEFAULT_LOG_LEVEL,
+	log,
 	type ILogger,
 	type LogLevel,
-	log,
 } from "./log.js";
 
 interface ILog {

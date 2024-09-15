@@ -13,10 +13,10 @@ import { Range } from "../../../../editor/common/core/range.js";
 import type { IEditorContribution } from "../../../../editor/common/editorCommon.js";
 import {
 	GlyphMarginLane,
-	type IModelDecorationOptions,
-	type IModelDeltaDecoration,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type IModelDecorationOptions,
+	type IModelDeltaDecoration,
 } from "../../../../editor/common/model.js";
 import { localize } from "../../../../nls.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
@@ -25,6 +25,7 @@ import { themeColorFromId } from "../../../../platform/theme/common/themeService
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IDebugService, type IStackFrame } from "../common/debug.js";
 import { debugStackframe, debugStackframeFocused } from "./debugIcons.js";
+
 import "./media/callStackEditorContribution.css";
 
 export const topStackFrameColor = registerColor(
@@ -172,20 +173,29 @@ export class CallStackEditorContribution
 	constructor(
 		private readonly editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
-		const setDecorations = () => this.decorations.set(this.createCallStackDecorations());
-		this._register(Event.any(this.debugService.getViewModel().onDidFocusStackFrame, this.debugService.getModel().onDidChangeCallStack)(() => {
-			setDecorations();
-		}));
-		this._register(this.editor.onDidChangeModel(e => {
-			if (e.newModelUrl) {
+		const setDecorations = () =>
+			this.decorations.set(this.createCallStackDecorations());
+		this._register(
+			Event.any(
+				this.debugService.getViewModel().onDidFocusStackFrame,
+				this.debugService.getModel().onDidChangeCallStack,
+			)(() => {
 				setDecorations();
-			}
-		}));
+			}),
+		);
+		this._register(
+			this.editor.onDidChangeModel((e) => {
+				if (e.newModelUrl) {
+					setDecorations();
+				}
+			}),
+		);
 		setDecorations();
 	}
 

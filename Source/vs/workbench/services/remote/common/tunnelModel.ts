@@ -16,8 +16,8 @@ import { isNumber, isObject, isString } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import {
-	type ConfigurationTarget,
 	IConfigurationService,
+	type ConfigurationTarget,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	IContextKeyService,
@@ -37,16 +37,16 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import {
 	ALL_INTERFACES_ADDRESSES,
-	ITunnelService,
-	LOCALHOST_ADDRESSES,
-	type PortAttributesProvider,
-	ProvidedOnAutoForward,
-	type ProvidedPortAttributes,
-	type RemoteTunnel,
-	TunnelPrivacyId,
-	TunnelProtocol,
 	isAllInterfaces,
 	isLocalhost,
+	ITunnelService,
+	LOCALHOST_ADDRESSES,
+	ProvidedOnAutoForward,
+	TunnelPrivacyId,
+	TunnelProtocol,
+	type PortAttributesProvider,
+	type ProvidedPortAttributes,
+	type RemoteTunnel,
 } from "../../../../platform/tunnel/common/tunnel.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
@@ -584,35 +584,63 @@ export class TunnelModel extends Disposable {
 	constructor(
 		@ITunnelService private readonly tunnelService: ITunnelService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAuthorityResolverService private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAuthorityResolverService
+		private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@ILogService private readonly logService: ILogService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 		this.configPortsAttributes = new PortsAttributes(configurationService);
 		this.tunnelRestoreValue = this.getTunnelRestoreValue();
-		this._register(this.configPortsAttributes.onDidChangeAttributes(this.updateAttributes, this));
+		this._register(
+			this.configPortsAttributes.onDidChangeAttributes(
+				this.updateAttributes,
+				this,
+			),
+		);
 		this.forwarded = new Map();
 		this.remoteTunnels = new Map();
 		this.tunnelService.tunnels.then(async (tunnels) => {
-			const attributes = await this.getAttributes(tunnels.map(tunnel => {
-				return { port: tunnel.tunnelRemotePort, host: tunnel.tunnelRemoteHost };
-			}));
+			const attributes = await this.getAttributes(
+				tunnels.map((tunnel) => {
+					return {
+						port: tunnel.tunnelRemotePort,
+						host: tunnel.tunnelRemoteHost,
+					};
+				}),
+			);
 			for (const tunnel of tunnels) {
 				if (tunnel.localAddress) {
-					const key = makeAddress(tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort);
-					const matchingCandidate = mapHasAddressLocalhostOrAllInterfaces(this._candidates ?? new Map(), tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort);
+					const key = makeAddress(
+						tunnel.tunnelRemoteHost,
+						tunnel.tunnelRemotePort,
+					);
+					const matchingCandidate =
+						mapHasAddressLocalhostOrAllInterfaces(
+							this._candidates ?? new Map(),
+							tunnel.tunnelRemoteHost,
+							tunnel.tunnelRemotePort,
+						);
 					this.forwarded.set(key, {
 						remotePort: tunnel.tunnelRemotePort,
 						remoteHost: tunnel.tunnelRemoteHost,
 						localAddress: tunnel.localAddress,
-						protocol: attributes?.get(tunnel.tunnelRemotePort)?.protocol ?? TunnelProtocol.Http,
-						localUri: await this.makeLocalUri(tunnel.localAddress, attributes?.get(tunnel.tunnelRemotePort)),
+						protocol:
+							attributes?.get(tunnel.tunnelRemotePort)
+								?.protocol ?? TunnelProtocol.Http,
+						localUri: await this.makeLocalUri(
+							tunnel.localAddress,
+							attributes?.get(tunnel.tunnelRemotePort),
+						),
 						localPort: tunnel.tunnelLocalPort,
 						name: attributes?.get(tunnel.tunnelRemotePort)?.label,
 						runningProcess: matchingCandidate?.detail,
@@ -627,38 +655,74 @@ export class TunnelModel extends Disposable {
 		});
 
 		this.detected = new Map();
-		this._register(this.tunnelService.onTunnelOpened(async (tunnel) => {
-			const key = makeAddress(tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort);
-			if (!mapHasAddressLocalhostOrAllInterfaces(this.forwarded, tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort)
-				&& !mapHasAddressLocalhostOrAllInterfaces(this.detected, tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort)
-				&& !mapHasAddressLocalhostOrAllInterfaces(this.inProgress, tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort)
-				&& tunnel.localAddress) {
-				const matchingCandidate = mapHasAddressLocalhostOrAllInterfaces(this._candidates ?? new Map(), tunnel.tunnelRemoteHost, tunnel.tunnelRemotePort);
-				const attributes = (await this.getAttributes([{ port: tunnel.tunnelRemotePort, host: tunnel.tunnelRemoteHost }]))?.get(tunnel.tunnelRemotePort);
-				this.forwarded.set(key, {
-					remoteHost: tunnel.tunnelRemoteHost,
-					remotePort: tunnel.tunnelRemotePort,
-					localAddress: tunnel.localAddress,
-					protocol: attributes?.protocol ?? TunnelProtocol.Http,
-					localUri: await this.makeLocalUri(tunnel.localAddress, attributes),
-					localPort: tunnel.tunnelLocalPort,
-					name: attributes?.label,
-					closeable: true,
-					runningProcess: matchingCandidate?.detail,
-					hasRunningProcess: !!matchingCandidate,
-					pid: matchingCandidate?.pid,
-					privacy: tunnel.privacy,
-					source: UserTunnelSource,
-				});
-			}
-			await this.storeForwarded();
-			this.checkExtensionActivationEvents();
-			this.remoteTunnels.set(key, tunnel);
-			this._onForwardPort.fire(this.forwarded.get(key)!);
-		}));
-		this._register(this.tunnelService.onTunnelClosed(address => {
-			return this.onTunnelClosed(address, TunnelCloseReason.Other);
-		}));
+		this._register(
+			this.tunnelService.onTunnelOpened(async (tunnel) => {
+				const key = makeAddress(
+					tunnel.tunnelRemoteHost,
+					tunnel.tunnelRemotePort,
+				);
+				if (
+					!mapHasAddressLocalhostOrAllInterfaces(
+						this.forwarded,
+						tunnel.tunnelRemoteHost,
+						tunnel.tunnelRemotePort,
+					) &&
+					!mapHasAddressLocalhostOrAllInterfaces(
+						this.detected,
+						tunnel.tunnelRemoteHost,
+						tunnel.tunnelRemotePort,
+					) &&
+					!mapHasAddressLocalhostOrAllInterfaces(
+						this.inProgress,
+						tunnel.tunnelRemoteHost,
+						tunnel.tunnelRemotePort,
+					) &&
+					tunnel.localAddress
+				) {
+					const matchingCandidate =
+						mapHasAddressLocalhostOrAllInterfaces(
+							this._candidates ?? new Map(),
+							tunnel.tunnelRemoteHost,
+							tunnel.tunnelRemotePort,
+						);
+					const attributes = (
+						await this.getAttributes([
+							{
+								port: tunnel.tunnelRemotePort,
+								host: tunnel.tunnelRemoteHost,
+							},
+						])
+					)?.get(tunnel.tunnelRemotePort);
+					this.forwarded.set(key, {
+						remoteHost: tunnel.tunnelRemoteHost,
+						remotePort: tunnel.tunnelRemotePort,
+						localAddress: tunnel.localAddress,
+						protocol: attributes?.protocol ?? TunnelProtocol.Http,
+						localUri: await this.makeLocalUri(
+							tunnel.localAddress,
+							attributes,
+						),
+						localPort: tunnel.tunnelLocalPort,
+						name: attributes?.label,
+						closeable: true,
+						runningProcess: matchingCandidate?.detail,
+						hasRunningProcess: !!matchingCandidate,
+						pid: matchingCandidate?.pid,
+						privacy: tunnel.privacy,
+						source: UserTunnelSource,
+					});
+				}
+				await this.storeForwarded();
+				this.checkExtensionActivationEvents();
+				this.remoteTunnels.set(key, tunnel);
+				this._onForwardPort.fire(this.forwarded.get(key)!);
+			}),
+		);
+		this._register(
+			this.tunnelService.onTunnelClosed((address) => {
+				return this.onTunnelClosed(address, TunnelCloseReason.Other);
+			}),
+		);
 	}
 
 	private extensionHasActivationEvent() {

@@ -19,8 +19,8 @@ import type {
 	ITreeRenderer,
 } from "../../../../base/browser/ui/tree/tree.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import {
 	Disposable,
@@ -39,8 +39,8 @@ import { ILabelService } from "../../../../platform/label/common/label.js";
 import { defaultCountBadgeStyles } from "../../../../platform/theme/browser/defaultStyles.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IDebugConfiguration,
 	IDebugService,
+	type IDebugConfiguration,
 	type IDebugSession,
 	type IExpression,
 	type IExpressionContainer,
@@ -153,8 +153,9 @@ export class ReplGroupRenderer
 
 	constructor(
 		private readonly expressionRenderer: DebugExpressionRenderer,
-		@IInstantiationService private readonly instaService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instaService: IInstantiationService,
+	) {}
 
 	get templateId(): string {
 		return ReplGroupRenderer.ID;
@@ -259,8 +260,9 @@ export class ReplOutputElementRenderer
 
 	constructor(
 		private readonly expressionRenderer: DebugExpressionRenderer,
-		@IInstantiationService private readonly instaService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instaService: IInstantiationService,
+	) {}
 
 	get templateId(): string {
 		return ReplOutputElementRenderer.ID;
@@ -678,26 +680,28 @@ class SourceWidget extends Disposable {
 	private source?: IReplElementSource;
 	private hover?: IManagedHover;
 
-	constructor(container: HTMLElement,
+	constructor(
+		container: HTMLElement,
 		@IEditorService editorService: IEditorService,
 		@IHoverService private readonly hoverService: IHoverService,
 		@ILabelService private readonly labelService: ILabelService,
 	) {
 		super();
-		this.el = dom.append(container, $('.source'));
-		this._register(dom.addDisposableListener(this.el, 'click', e => {
-			e.preventDefault();
-			e.stopPropagation();
-			if (this.source) {
-				this.source.source.openInEditor(editorService, {
-					startLineNumber: this.source.lineNumber,
-					startColumn: this.source.column,
-					endLineNumber: this.source.lineNumber,
-					endColumn: this.source.column
-				});
-			}
-		}));
-
+		this.el = dom.append(container, $(".source"));
+		this._register(
+			dom.addDisposableListener(this.el, "click", (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				if (this.source) {
+					this.source.source.openInEditor(editorService, {
+						startLineNumber: this.source.lineNumber,
+						startColumn: this.source.column,
+						endLineNumber: this.source.lineNumber,
+						endColumn: this.source.column,
+					});
+				}
+			}),
+		);
 	}
 
 	public setSource(source?: IReplElementSource) {

@@ -10,10 +10,12 @@ import { KeyCode, KeyMod } from "../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
+
 import "./actionWidget.css";
+
 import { localize, localize2 } from "../../../nls.js";
 import { Action2, registerAction2 } from "../../actions/common/actions.js";
 import {
@@ -26,9 +28,9 @@ import {
 	registerSingleton,
 } from "../../instantiation/common/extensions.js";
 import {
+	createDecorator,
 	IInstantiationService,
 	type ServicesAccessor,
-	createDecorator,
 } from "../../instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../keybinding/common/keybindingsRegistry.js";
 import {
@@ -36,11 +38,11 @@ import {
 	registerColor,
 } from "../../theme/common/colorRegistry.js";
 import {
+	acceptSelectedActionCommand,
 	ActionList,
+	previewSelectedActionCommand,
 	type IActionListDelegate,
 	type IActionListItem,
-	acceptSelectedActionCommand,
-	previewSelectedActionCommand,
 } from "./actionList.js";
 
 registerColor(
@@ -100,9 +102,12 @@ class ActionWidgetService extends Disposable implements IActionWidgetService {
 	);
 
 	constructor(
-		@IContextViewService private readonly _contextViewService: IContextViewService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 	}

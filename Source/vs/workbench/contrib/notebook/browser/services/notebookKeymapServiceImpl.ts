@@ -9,9 +9,9 @@ import { Event } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import { localize } from "../../../../../nls.js";
 import {
-	type IExtensionIdentifier,
 	IExtensionManagementService,
 	InstallOperation,
+	type IExtensionIdentifier,
 } from "../../../../../platform/extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
@@ -34,8 +34,8 @@ import {
 } from "../../../../services/extensionManagement/common/extensionManagement.js";
 import { ILifecycleService } from "../../../../services/lifecycle/common/lifecycle.js";
 import {
-	type IExtensionStatus,
 	getInstalledExtensions,
+	type IExtensionStatus,
 } from "../../../extensions/common/extensionsUtils.js";
 import type { INotebookKeymapService } from "../../common/notebookKeymapService.js";
 
@@ -96,22 +96,38 @@ export class NotebookKeymapService
 	private notebookKeymap: MementoObject;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IStorageService storageService: IStorageService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 	) {
 		super();
 
-		this.notebookKeymapMemento = new Memento('notebookKeymap', storageService);
-		this.notebookKeymap = this.notebookKeymapMemento.getMemento(StorageScope.PROFILE, StorageTarget.USER);
+		this.notebookKeymapMemento = new Memento(
+			"notebookKeymap",
+			storageService,
+		);
+		this.notebookKeymap = this.notebookKeymapMemento.getMemento(
+			StorageScope.PROFILE,
+			StorageTarget.USER,
+		);
 
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
-		this._register(this.instantiationService.invokeFunction(onExtensionChanged)((identifiers => {
-			Promise.all(identifiers.map(identifier => this.checkForOtherKeymaps(identifier)))
-				.then(undefined, onUnexpectedError);
-		})));
+		this._register(
+			this.instantiationService.invokeFunction(onExtensionChanged)(
+				(identifiers) => {
+					Promise.all(
+						identifiers.map((identifier) =>
+							this.checkForOtherKeymaps(identifier),
+						),
+					).then(undefined, onUnexpectedError);
+				},
+			),
+		);
 	}
 
 	private checkForOtherKeymaps(

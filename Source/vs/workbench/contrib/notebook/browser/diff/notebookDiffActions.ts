@@ -28,8 +28,8 @@ import {
 	type ContextKeyExpression,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
-	type ITextEditorOptions,
 	TextEditorSelectionRevealType,
+	type ITextEditorOptions,
 } from "../../../../../platform/editor/common/editor.js";
 import type { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
@@ -39,8 +39,8 @@ import { DEFAULT_EDITOR_ASSOCIATION } from "../../../../common/editor.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import {
 	CellEditType,
-	type ICellEditOperation,
 	NOTEBOOK_DIFF_EDITOR_ID,
+	type ICellEditOperation,
 } from "../../common/notebookCommon.js";
 import type { NotebookDiffEditorInput } from "../../common/notebookDiffEditorInput.js";
 import {
@@ -52,12 +52,11 @@ import {
 	toggleWhitespace,
 } from "../notebookIcons.js";
 import {
-	type DiffElementCellViewModelBase,
 	SideBySideDiffElementViewModel,
+	type DiffElementCellViewModelBase,
 } from "./diffElementViewModel.js";
 import { NotebookTextDiffEditor } from "./notebookDiffEditor.js";
 import {
-	type INotebookTextDiffEditor,
 	NOTEBOOK_DIFF_CELL_IGNORE_WHITESPACE_KEY,
 	NOTEBOOK_DIFF_CELL_INPUT,
 	NOTEBOOK_DIFF_CELL_PROPERTY,
@@ -66,6 +65,7 @@ import {
 	NOTEBOOK_DIFF_ITEM_DIFF_STATE,
 	NOTEBOOK_DIFF_ITEM_KIND,
 	NOTEBOOK_DIFF_UNCHANGED_CELLS_HIDDEN,
+	type INotebookTextDiffEditor,
 } from "./notebookDiffEditorBrowser.js";
 import { NotebookMultiTextDiffEditor } from "./notebookMultiDiffEditor.js";
 

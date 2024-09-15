@@ -6,22 +6,23 @@
 import { registerAction2 } from "../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { ListResizeColumnAction } from "./listResizeColumnAction.js";
 
 export class ListContext implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.listContext";
 
-	constructor(
-		@IContextKeyService contextKeyService: IContextKeyService
-	) {
-		contextKeyService.createKey<boolean>('listSupportsTypeNavigation', true);
+	constructor(@IContextKeyService contextKeyService: IContextKeyService) {
+		contextKeyService.createKey<boolean>(
+			"listSupportsTypeNavigation",
+			true,
+		);
 
 		// @deprecated in favor of listSupportsTypeNavigation
-		contextKeyService.createKey('listSupportsKeyboardNavigation', true);
+		contextKeyService.createKey("listSupportsKeyboardNavigation", true);
 	}
 }
 

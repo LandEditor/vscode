@@ -8,17 +8,19 @@ import { Event } from "../../../base/common/event.js";
 import {
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import severity from "../../../base/common/severity.js";
 import { isDefined } from "../../../base/common/types.js";
-import { type UriComponents, URI as uri } from "../../../base/common/uri.js";
+import { URI as uri, type UriComponents } from "../../../base/common/uri.js";
 import { ExtensionIdentifier } from "../../../platform/extensions/common/extensions.js";
 import type { IWorkspaceFolder } from "../../../platform/workspace/common/workspace.js";
 import { AbstractDebugAdapter } from "../../contrib/debug/common/abstractDebugAdapter.js";
 import {
 	DataBreakpointSetType,
+	IDebugService,
+	IDebugVisualization,
 	type DebugConfigurationProviderTriggerKind,
 	type IBreakpoint,
 	type IBreakpointData,
@@ -28,10 +30,8 @@ import {
 	type IDebugAdapterDescriptorFactory,
 	type IDebugAdapterFactory,
 	type IDebugConfigurationProvider,
-	IDebugService,
 	type IDebugSession,
 	type IDebugSessionOptions,
-	IDebugVisualization,
 	type IFunctionBreakpoint,
 	type IInstructionBreakpoint,
 } from "../../contrib/debug/common/debug.js";
@@ -42,12 +42,13 @@ import {
 } from "../../contrib/debug/common/debugUtils.js";
 import { IDebugVisualizerService } from "../../contrib/debug/common/debugVisualizers.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type DebugSessionUUID,
 	ExtHostContext,
+	MainContext,
+	type DebugSessionUUID,
 	type ExtHostDebugServiceShape,
 	type IBreakpointsDeltaDto,
 	type IDataBreakpointDto,
@@ -59,7 +60,6 @@ import {
 	type IStackFrameFocusDto,
 	type IStartDebuggingOptions,
 	type IThreadFocusDto,
-	MainContext,
 	type MainThreadDebugServiceShape,
 } from "../common/extHost.protocol.js";
 
@@ -86,53 +86,87 @@ export class MainThreadDebugService
 	constructor(
 		extHostContext: IExtHostContext,
 		@IDebugService private readonly debugService: IDebugService,
-		@IDebugVisualizerService private readonly visualizerService: IDebugVisualizerService,
+		@IDebugVisualizerService
+		private readonly visualizerService: IDebugVisualizerService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDebugService);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostDebugService,
+		);
 
-		const sessionListeners = new DisposableMap<IDebugSession, DisposableStore>();
+		const sessionListeners = new DisposableMap<
+			IDebugSession,
+			DisposableStore
+		>();
 		this._toDispose.add(sessionListeners);
-		this._toDispose.add(debugService.onDidNewSession(session => {
-			this._proxy.$acceptDebugSessionStarted(this.getSessionDto(session));
-			const store = sessionListeners.get(session);
-			store?.add(session.onDidChangeName(name => {
-				this._proxy.$acceptDebugSessionNameChanged(this.getSessionDto(session), name);
-			}));
-		}));
+		this._toDispose.add(
+			debugService.onDidNewSession((session) => {
+				this._proxy.$acceptDebugSessionStarted(
+					this.getSessionDto(session),
+				);
+				const store = sessionListeners.get(session);
+				store?.add(
+					session.onDidChangeName((name) => {
+						this._proxy.$acceptDebugSessionNameChanged(
+							this.getSessionDto(session),
+							name,
+						);
+					}),
+				);
+			}),
+		);
 		// Need to start listening early to new session events because a custom event can come while a session is initialising
-		this._toDispose.add(debugService.onWillNewSession(session => {
-			let store = sessionListeners.get(session);
-			if (!store) {
-				store = new DisposableStore();
-				sessionListeners.set(session, store);
-			}
-			store.add(session.onDidCustomEvent(event => this._proxy.$acceptDebugSessionCustomEvent(this.getSessionDto(session), event)));
-		}));
-		this._toDispose.add(debugService.onDidEndSession(({ session, restart }) => {
-			this._proxy.$acceptDebugSessionTerminated(this.getSessionDto(session));
-			this._extHostKnownSessions.delete(session.getId());
-
-			// keep the session listeners around since we still will get events after they restart
-			if (!restart) {
-				sessionListeners.deleteAndDispose(session);
-			}
-
-			// any restarted session will create a new DA, so always throw the old one away.
-			for (const [handle, value] of this._debugAdapters) {
-				if (value.session === session) {
-					this._debugAdapters.delete(handle);
-					// break;
+		this._toDispose.add(
+			debugService.onWillNewSession((session) => {
+				let store = sessionListeners.get(session);
+				if (!store) {
+					store = new DisposableStore();
+					sessionListeners.set(session, store);
 				}
-			}
-		}));
-		this._toDispose.add(debugService.getViewModel().onDidFocusSession(session => {
-			this._proxy.$acceptDebugSessionActiveChanged(this.getSessionDto(session));
-		}));
-		this._toDispose.add(toDisposable(() => {
-			for (const [handle, da] of this._debugAdapters) {
-				da.fireError(handle, new Error('Extension host shut down'));
-			}
-		}));
+				store.add(
+					session.onDidCustomEvent((event) =>
+						this._proxy.$acceptDebugSessionCustomEvent(
+							this.getSessionDto(session),
+							event,
+						),
+					),
+				);
+			}),
+		);
+		this._toDispose.add(
+			debugService.onDidEndSession(({ session, restart }) => {
+				this._proxy.$acceptDebugSessionTerminated(
+					this.getSessionDto(session),
+				);
+				this._extHostKnownSessions.delete(session.getId());
+
+				// keep the session listeners around since we still will get events after they restart
+				if (!restart) {
+					sessionListeners.deleteAndDispose(session);
+				}
+
+				// any restarted session will create a new DA, so always throw the old one away.
+				for (const [handle, value] of this._debugAdapters) {
+					if (value.session === session) {
+						this._debugAdapters.delete(handle);
+						// break;
+					}
+				}
+			}),
+		);
+		this._toDispose.add(
+			debugService.getViewModel().onDidFocusSession((session) => {
+				this._proxy.$acceptDebugSessionActiveChanged(
+					this.getSessionDto(session),
+				);
+			}),
+		);
+		this._toDispose.add(
+			toDisposable(() => {
+				for (const [handle, da] of this._debugAdapters) {
+					da.fireError(handle, new Error("Extension host shut down"));
+				}
+			}),
+		);
 
 		this._debugAdapters = new Map();
 		this._debugConfigurationProviders = new Map();
@@ -140,26 +174,31 @@ export class MainThreadDebugService
 		this._extHostKnownSessions = new Set();
 
 		const viewModel = this.debugService.getViewModel();
-		this._toDispose.add(Event.any(viewModel.onDidFocusStackFrame, viewModel.onDidFocusThread)(() => {
-			const stackFrame = viewModel.focusedStackFrame;
-			const thread = viewModel.focusedThread;
-			if (stackFrame) {
-				this._proxy.$acceptStackFrameFocus({
-					kind: 'stackFrame',
-					threadId: stackFrame.thread.threadId,
-					frameId: stackFrame.frameId,
-					sessionId: stackFrame.thread.session.getId(),
-				} satisfies IStackFrameFocusDto);
-			} else if (thread) {
-				this._proxy.$acceptStackFrameFocus({
-					kind: 'thread',
-					threadId: thread.threadId,
-					sessionId: thread.session.getId(),
-				} satisfies IThreadFocusDto);
-			} else {
-				this._proxy.$acceptStackFrameFocus(undefined);
-			}
-		}));
+		this._toDispose.add(
+			Event.any(
+				viewModel.onDidFocusStackFrame,
+				viewModel.onDidFocusThread,
+			)(() => {
+				const stackFrame = viewModel.focusedStackFrame;
+				const thread = viewModel.focusedThread;
+				if (stackFrame) {
+					this._proxy.$acceptStackFrameFocus({
+						kind: "stackFrame",
+						threadId: stackFrame.thread.threadId,
+						frameId: stackFrame.frameId,
+						sessionId: stackFrame.thread.session.getId(),
+					} satisfies IStackFrameFocusDto);
+				} else if (thread) {
+					this._proxy.$acceptStackFrameFocus({
+						kind: "thread",
+						threadId: thread.threadId,
+						sessionId: thread.session.getId(),
+					} satisfies IThreadFocusDto);
+				} else {
+					this._proxy.$acceptStackFrameFocus(undefined);
+				}
+			}),
+		);
 
 		this.sendBreakpointsAndListen();
 	}

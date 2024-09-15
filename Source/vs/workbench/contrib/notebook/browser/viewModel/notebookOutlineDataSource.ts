@@ -14,19 +14,19 @@ import type { URI } from "../../../../../base/common/uri.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import { IMarkerService } from "../../../../../platform/markers/common/markers.js";
 import {
-	type OutlineChangeEvent,
 	OutlineConfigKeys,
+	type OutlineChangeEvent,
 } from "../../../../services/outline/browser/outline.js";
 import { CellKind } from "../../common/notebookCommon.js";
 import type {
 	IActiveNotebookEditor,
 	INotebookEditor,
 } from "../notebookBrowser.js";
-import type { OutlineEntry } from "./OutlineEntry.js";
 import {
 	INotebookOutlineEntryFactory,
 	type NotebookOutlineEntryFactory,
 } from "./notebookOutlineEntryFactory.js";
+import type { OutlineEntry } from "./OutlineEntry.js";
 
 export interface INotebookCellOutlineDataSource {
 	readonly activeElement: OutlineEntry | undefined;
@@ -48,8 +48,10 @@ export class NotebookCellOutlineDataSource
 	constructor(
 		private readonly _editor: INotebookEditor,
 		@IMarkerService private readonly _markerService: IMarkerService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@INotebookOutlineEntryFactory private readonly _outlineEntryFactory: NotebookOutlineEntryFactory
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@INotebookOutlineEntryFactory
+		private readonly _outlineEntryFactory: NotebookOutlineEntryFactory,
 	) {
 		this.recomputeState();
 	}

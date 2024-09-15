@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ITerminalAddon, Terminal } from "@xterm/xterm";
+
 import { debounce } from "../../../../../base/common/decorators.js";
 import { Event } from "../../../../../base/common/event.js";
 import {
@@ -13,8 +14,8 @@ import {
 import { IAccessibilityService } from "../../../../../platform/accessibility/common/accessibility.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type ITerminalCapabilityStore,
 	TerminalCapability,
+	type ITerminalCapabilityStore,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
 	ITerminalLogService,
@@ -32,19 +33,26 @@ export class TextAreaSyncAddon extends Disposable implements ITerminalAddon {
 
 	constructor(
 		private readonly _capabilities: ITerminalCapabilityStore,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ITerminalLogService private readonly _logService: ITerminalLogService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ITerminalLogService private readonly _logService: ITerminalLogService,
 	) {
 		super();
 
-		this._register(Event.runAndSubscribe(Event.any(
-			this._capabilities.onDidAddCapability,
-			this._capabilities.onDidRemoveCapability,
-			this._accessibilityService.onDidChangeScreenReaderOptimized,
-		), () => {
-			this._refreshListeners();
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				Event.any(
+					this._capabilities.onDidAddCapability,
+					this._capabilities.onDidRemoveCapability,
+					this._accessibilityService.onDidChangeScreenReaderOptimized,
+				),
+				() => {
+					this._refreshListeners();
+				},
+			),
+		);
 	}
 
 	private _refreshListeners(): void {

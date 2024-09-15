@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	renderMarkdown,
 	type MarkdownRenderOptions,
 	type MarkedOptions,
-	renderMarkdown,
 } from "../../../../../base/browser/markdownRenderer.js";
 import { createTrustedTypesPolicy } from "../../../../../base/browser/trustedTypes.js";
 import { onUnexpectedError } from "../../../../../base/common/errors.js";
@@ -19,7 +19,9 @@ import {
 	DisposableStore,
 	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
+
 import "./renderedMarkdown.css";
+
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { EditorOption } from "../../../../common/config/editorOptions.js";
 import { ILanguageService } from "../../../../common/languages/language.js";
@@ -59,7 +61,7 @@ export class MarkdownRenderer {
 		private readonly _options: IMarkdownRendererOptions,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-	) { }
+	) {}
 
 	dispose(): void {
 		this._onDidRenderAsync.dispose();

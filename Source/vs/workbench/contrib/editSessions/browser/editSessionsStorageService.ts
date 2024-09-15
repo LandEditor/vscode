@@ -20,8 +20,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
@@ -39,28 +39,28 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	createSyncHeaders,
 	type IAuthenticationProvider,
 	type IResourceRefHandle,
-	createSyncHeaders,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import {
-	type IUserDataSyncMachinesService,
 	UserDataSyncMachinesService,
+	type IUserDataSyncMachinesService,
 } from "../../../../platform/userDataSync/common/userDataSyncMachines.js";
 import { getCurrentAuthenticationSessionInfo } from "../../../services/authentication/browser/authenticationService.js";
 import {
+	IAuthenticationService,
 	type AuthenticationSession,
 	type AuthenticationSessionsChangeEvent,
-	IAuthenticationService,
 } from "../../../services/authentication/common/authentication.js";
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import {
+	EDIT_SESSION_SYNC_CATEGORY,
 	EDIT_SESSIONS_PENDING_KEY,
 	EDIT_SESSIONS_SIGNED_IN,
 	EDIT_SESSIONS_SIGNED_IN_KEY,
-	EDIT_SESSION_SYNC_CATEGORY,
-	type EditSession,
 	IEditSessionsLogService,
+	type EditSession,
 	type IEditSessionsStorageService,
 	type SyncResource,
 } from "../common/editSessions.js";
@@ -127,28 +127,46 @@ export class EditSessionsWorkbenchService
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IEditSessionsLogService private readonly logService: IEditSessionsLogService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IEditSessionsLogService
+		private readonly logService: IEditSessionsLogService,
 		@IProductService private readonly productService: IProductService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@ISecretStorageService private readonly secretStorageService: ISecretStorageService
+		@ISecretStorageService
+		private readonly secretStorageService: ISecretStorageService,
 	) {
 		super();
 
 		// If the user signs out of the current session, reset our cached auth state in memory and on disk
-		this._register(this.authenticationService.onDidChangeSessions((e) => this.onDidChangeSessions(e.event)));
+		this._register(
+			this.authenticationService.onDidChangeSessions((e) =>
+				this.onDidChangeSessions(e.event),
+			),
+		);
 
 		// If another window changes the preferred session storage, reset our cached auth state in memory
-		this._register(this.storageService.onDidChangeValue(StorageScope.APPLICATION, EditSessionsWorkbenchService.CACHED_SESSION_STORAGE_KEY, this._register(new DisposableStore()))(() => this.onDidChangeStorage()));
+		this._register(
+			this.storageService.onDidChangeValue(
+				StorageScope.APPLICATION,
+				EditSessionsWorkbenchService.CACHED_SESSION_STORAGE_KEY,
+				this._register(new DisposableStore()),
+			)(() => this.onDidChangeStorage()),
+		);
 
 		this.registerSignInAction();
 		this.registerResetAuthenticationAction();
 
-		this.signedInContext = EDIT_SESSIONS_SIGNED_IN.bindTo(this.contextKeyService);
+		this.signedInContext = EDIT_SESSIONS_SIGNED_IN.bindTo(
+			this.contextKeyService,
+		);
 		this.signedInContext.set(this.existingSessionId !== undefined);
 	}
 

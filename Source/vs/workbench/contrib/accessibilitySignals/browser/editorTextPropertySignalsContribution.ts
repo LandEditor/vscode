@@ -9,7 +9,6 @@ import {
 	DisposableStore,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IReader,
 	autorun,
 	autorunWithStore,
 	derived,
@@ -18,21 +17,22 @@ import {
 	observableFromValueWithChangeEvent,
 	observableSignalFromEvent,
 	wasEventTriggeredRecently,
+	type IReader,
 } from "../../../../base/common/observable.js";
 import { isDefined } from "../../../../base/common/types.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import type { Position } from "../../../../editor/common/core/position.js";
 import { CursorChangeReason } from "../../../../editor/common/cursorEvents.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { FoldingController } from "../../../../editor/contrib/folding/browser/folding.js";
 import {
-	type AccessibilityModality,
 	AccessibilitySignal,
 	IAccessibilitySignalService,
+	type AccessibilityModality,
 } from "../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
@@ -102,21 +102,29 @@ export class EditorTextPropertySignalsContribution
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IAccessibilitySignalService private readonly _accessibilitySignalService: IAccessibilitySignalService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IAccessibilitySignalService
+		private readonly _accessibilitySignalService: IAccessibilitySignalService,
 	) {
 		super();
 
-		this._register(autorunWithStore((reader, store) => {
-			/** @description updateSignalsEnabled */
-			if (!this._someAccessibilitySignalIsEnabled.read(reader)) {
-				return;
-			}
-			const activeEditor = this._activeEditorObservable.read(reader);
-			if (activeEditor) {
-				this._registerAccessibilitySignalsForEditor(activeEditor.editor, activeEditor.model, store);
-			}
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description updateSignalsEnabled */
+				if (!this._someAccessibilitySignalIsEnabled.read(reader)) {
+					return;
+				}
+				const activeEditor = this._activeEditorObservable.read(reader);
+				if (activeEditor) {
+					this._registerAccessibilitySignalsForEditor(
+						activeEditor.editor,
+						activeEditor.model,
+						store,
+					);
+				}
+			}),
+		);
 	}
 
 	private _registerAccessibilitySignalsForEditor(
@@ -347,8 +355,7 @@ class MarkerTextProperty implements TextProperty {
 		public readonly lineSignal: AccessibilitySignal,
 		private readonly severity: MarkerSeverity,
 		@IMarkerService private readonly markerService: IMarkerService,
-
-	) { }
+	) {}
 
 	createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource {
 		const obs = observableSignalFromEvent(
@@ -415,7 +422,7 @@ class FoldedAreaTextProperty implements TextProperty {
 class BreakpointTextProperty implements TextProperty {
 	public readonly lineSignal = AccessibilitySignal.break;
 
-	constructor(@IDebugService private readonly debugService: IDebugService) { }
+	constructor(@IDebugService private readonly debugService: IDebugService) {}
 
 	createSource(editor: ICodeEditor, model: ITextModel): TextPropertySource {
 		const signal = observableSignalFromEvent(

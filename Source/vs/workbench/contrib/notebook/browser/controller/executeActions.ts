@@ -49,8 +49,8 @@ import {
 	CellEditState,
 	CellFocusMode,
 	EXECUTE_CELL_COMMAND_ID,
-	type IFocusNotebookCellOptions,
 	ScrollToRevealBehavior,
+	type IFocusNotebookCellOptions,
 } from "../notebookBrowser.js";
 import * as icons from "../notebookIcons.js";
 import { insertCell } from "./cellOperations.js";
@@ -58,20 +58,20 @@ import { CTX_NOTEBOOK_CELL_CHAT_FOCUSED } from "./chat/notebookChatContext.js";
 import { NotebookChatController } from "./chat/notebookChatController.js";
 import {
 	CELL_TITLE_CELL_GROUP_ID,
+	cellExecutionArgs,
 	CellToolbarOrder,
-	type INotebookActionContext,
-	type INotebookCellActionContext,
-	type INotebookCellToolbarActionContext,
-	type INotebookCommandContext,
+	executeNotebookCondition,
+	getContextFromActiveEditor,
+	getContextFromUri,
 	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
 	NotebookAction,
 	NotebookCellAction,
 	NotebookMultiCellAction,
-	cellExecutionArgs,
-	executeNotebookCondition,
-	getContextFromActiveEditor,
-	getContextFromUri,
 	parseMultiCellExecutionArgs,
+	type INotebookActionContext,
+	type INotebookCellActionContext,
+	type INotebookCellToolbarActionContext,
+	type INotebookCommandContext,
 } from "./coreActions.js";
 
 const EXECUTE_NOTEBOOK_COMMAND_ID = "notebook.execute";

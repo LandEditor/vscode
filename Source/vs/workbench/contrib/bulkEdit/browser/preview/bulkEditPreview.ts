@@ -13,9 +13,9 @@ import { MicrotaskDelay } from "../../../../../base/common/symbols.js";
 import { URI } from "../../../../../base/common/uri.js";
 import { generateUuid } from "../../../../../base/common/uuid.js";
 import {
-	type ResourceEdit,
 	ResourceFileEdit,
 	ResourceTextEdit,
+	type ResourceEdit,
 } from "../../../../../editor/browser/services/bulkEditService.js";
 import {
 	EditOperation,
@@ -27,8 +27,8 @@ import { ILanguageService } from "../../../../../editor/common/languages/languag
 import { createTextBufferFactoryFromSnapshot } from "../../../../../editor/common/model/textModel.js";
 import { IModelService } from "../../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../../editor/common/services/resolverService.js";
 import { SnippetParser } from "../../../../../editor/contrib/snippet/browser/snippetParser.js";
 import { localize } from "../../../../../nls.js";
@@ -170,7 +170,10 @@ export class BulkFileOperations {
 		@IFileService private readonly _fileService: IFileService,
 		@IInstantiationService instaService: IInstantiationService,
 	) {
-		this.conflicts = instaService.createInstance(ConflictDetector, _bulkEdit);
+		this.conflicts = instaService.createInstance(
+			ConflictDetector,
+			_bulkEdit,
+		);
 	}
 
 	dispose(): void {
@@ -424,9 +427,15 @@ export class BulkEditPreviewProvider implements ITextModelContentProvider {
 		private readonly _operations: BulkFileOperations,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
 	) {
-		this._disposables.add(this._textModelResolverService.registerTextModelContentProvider(BulkEditPreviewProvider.Schema, this));
+		this._disposables.add(
+			this._textModelResolverService.registerTextModelContentProvider(
+				BulkEditPreviewProvider.Schema,
+				this,
+			),
+		);
 		this._ready = this._init();
 	}
 

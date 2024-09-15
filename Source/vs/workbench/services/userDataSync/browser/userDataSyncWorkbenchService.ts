@@ -5,8 +5,8 @@
 
 import { raceCancellationError } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { CancellationError } from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
@@ -19,8 +19,8 @@ import { escapeRegExpCharacters } from "../../../../base/common/strings.js";
 import { URI } from "../../../../base/common/uri.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	IDialogService,
@@ -56,17 +56,17 @@ import { ITelemetryService } from "../../../../platform/telemetry/common/telemet
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { UserDataSyncStoreTypeSynchronizer } from "../../../../platform/userDataSync/common/globalStateSync.js";
 import {
-	type IAuthenticationProvider,
-	type IResourcePreview,
+	isAuthenticationProvider,
 	IUserDataAutoSyncService,
 	IUserDataSyncEnablementService,
-	type IUserDataSyncResource,
 	IUserDataSyncService,
 	IUserDataSyncStoreManagementService,
 	SyncStatus,
 	USER_DATA_SYNC_LOG_ID,
 	USER_DATA_SYNC_SCHEME,
-	isAuthenticationProvider,
+	type IAuthenticationProvider,
+	type IResourcePreview,
+	type IUserDataSyncResource,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { IUserDataSyncAccountService } from "../../../../platform/userDataSync/common/userDataSyncAccount.js";
 import { IUserDataSyncMachinesService } from "../../../../platform/userDataSync/common/userDataSyncMachines.js";
@@ -75,9 +75,9 @@ import { isDiffEditorInput } from "../../../common/editor.js";
 import { IViewDescriptorService } from "../../../common/views.js";
 import { getCurrentAuthenticationSessionInfo } from "../../authentication/browser/authenticationService.js";
 import {
+	IAuthenticationService,
 	type AuthenticationSession,
 	type AuthenticationSessionsChangeEvent,
-	IAuthenticationService,
 } from "../../authentication/common/authentication.js";
 import { IEditorService } from "../../editor/common/editorService.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../environment/browser/environmentService.js";
@@ -93,13 +93,13 @@ import {
 	CONTEXT_HAS_CONFLICTS,
 	CONTEXT_SYNC_ENABLEMENT,
 	CONTEXT_SYNC_STATE,
-	type IUserDataSyncAccount,
-	type IUserDataSyncConflictsView,
 	IUserDataSyncWorkbenchService,
 	SHOW_SYNC_LOG_COMMAND_ID,
 	SYNC_CONFLICTS_VIEW_ID,
 	SYNC_TITLE,
 	SYNC_VIEW_CONTAINER_ID,
+	type IUserDataSyncAccount,
+	type IUserDataSyncConflictsView,
 } from "../common/userDataSync.js";
 
 type AccountQuickPickItem = {
@@ -193,48 +193,78 @@ export class UserDataSyncWorkbenchService
 		undefined;
 
 	constructor(
-		@IUserDataSyncService private readonly userDataSyncService: IUserDataSyncService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IAuthenticationService private readonly authenticationService: IAuthenticationService,
-		@IUserDataSyncAccountService private readonly userDataSyncAccountService: IUserDataSyncAccountService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IUserDataSyncService
+		private readonly userDataSyncService: IUserDataSyncService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IAuthenticationService
+		private readonly authenticationService: IAuthenticationService,
+		@IUserDataSyncAccountService
+		private readonly userDataSyncAccountService: IUserDataSyncAccountService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataAutoSyncService private readonly userDataAutoSyncService: IUserDataAutoSyncService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataAutoSyncService
+		private readonly userDataAutoSyncService: IUserDataAutoSyncService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILogService private readonly logService: ILogService,
 		@IProductService private readonly productService: IProductService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IBrowserWorkbenchEnvironmentService private readonly environmentService: IBrowserWorkbenchEnvironmentService,
-		@ISecretStorageService private readonly secretStorageService: ISecretStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly environmentService: IBrowserWorkbenchEnvironmentService,
+		@ISecretStorageService
+		private readonly secretStorageService: ISecretStorageService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IViewsService private readonly viewsService: IViewsService,
-		@IViewDescriptorService private readonly viewDescriptorService: IViewDescriptorService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IViewDescriptorService
+		private readonly viewDescriptorService: IViewDescriptorService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IUserDataInitializationService private readonly userDataInitializationService: IUserDataInitializationService,
+		@IUserDataInitializationService
+		private readonly userDataInitializationService: IUserDataInitializationService,
 		@IFileService private readonly fileService: IFileService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IUserDataSyncMachinesService private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IUserDataSyncMachinesService
+		private readonly userDataSyncMachinesService: IUserDataSyncMachinesService,
 	) {
 		super();
-		this.syncEnablementContext = CONTEXT_SYNC_ENABLEMENT.bindTo(contextKeyService);
+		this.syncEnablementContext =
+			CONTEXT_SYNC_ENABLEMENT.bindTo(contextKeyService);
 		this.syncStatusContext = CONTEXT_SYNC_STATE.bindTo(contextKeyService);
-		this.accountStatusContext = CONTEXT_ACCOUNT_STATE.bindTo(contextKeyService);
-		this.activityViewsEnablementContext = CONTEXT_ENABLE_ACTIVITY_VIEWS.bindTo(contextKeyService);
+		this.accountStatusContext =
+			CONTEXT_ACCOUNT_STATE.bindTo(contextKeyService);
+		this.activityViewsEnablementContext =
+			CONTEXT_ENABLE_ACTIVITY_VIEWS.bindTo(contextKeyService);
 		this.hasConflicts = CONTEXT_HAS_CONFLICTS.bindTo(contextKeyService);
-		this.enableConflictsViewContext = CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW.bindTo(contextKeyService);
+		this.enableConflictsViewContext =
+			CONTEXT_ENABLE_SYNC_CONFLICTS_VIEW.bindTo(contextKeyService);
 
 		if (this.userDataSyncStoreManagementService.userDataSyncStore) {
 			this.syncStatusContext.set(this.userDataSyncService.status);
-			this._register(userDataSyncService.onDidChangeStatus(status => this.syncStatusContext.set(status)));
-			this.syncEnablementContext.set(userDataSyncEnablementService.isEnabled());
-			this._register(userDataSyncEnablementService.onDidChangeEnablement(enabled => this.syncEnablementContext.set(enabled)));
+			this._register(
+				userDataSyncService.onDidChangeStatus((status) =>
+					this.syncStatusContext.set(status),
+				),
+			);
+			this.syncEnablementContext.set(
+				userDataSyncEnablementService.isEnabled(),
+			);
+			this._register(
+				userDataSyncEnablementService.onDidChangeEnablement((enabled) =>
+					this.syncEnablementContext.set(enabled),
+				),
+			);
 
 			this.waitAndInitialize();
 		}
@@ -1244,9 +1274,9 @@ export class UserDataSyncWorkbenchService
 		return this._cachedCurrentAuthenticationProviderId;
 	}
 
-	private set currentAuthenticationProviderId(currentAuthenticationProviderId:
-		| string
-		| undefined) {
+	private set currentAuthenticationProviderId(
+		currentAuthenticationProviderId: string | undefined,
+	) {
 		if (
 			this._cachedCurrentAuthenticationProviderId !==
 			currentAuthenticationProviderId

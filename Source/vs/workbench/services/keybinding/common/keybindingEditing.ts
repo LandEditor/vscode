@@ -17,8 +17,8 @@ import { Range } from "../../../../editor/common/core/range.js";
 import { Selection } from "../../../../editor/common/core/selection.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../nls.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
@@ -64,10 +64,12 @@ export class KeybindingsEditingService
 	private queue: Queue<void>;
 
 	constructor(
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 	) {
 		super();
 		this.queue = new Queue<void>();

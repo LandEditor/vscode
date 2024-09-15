@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { toDisposable } from "../../../base/common/lifecycle.js";
 import { isString } from "../../../base/common/types.js";
@@ -12,9 +13,9 @@ import type { IExtensionDescription } from "../../../platform/extensions/common/
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import type { ISaveProfileResult } from "../../services/userDataProfile/common/userDataProfile.js";
 import {
+	MainContext,
 	type ExtHostProfileContentHandlersShape,
 	type IMainContext,
-	MainContext,
 	type MainThreadProfileContentHandlersShape,
 } from "./extHost.protocol.js";
 

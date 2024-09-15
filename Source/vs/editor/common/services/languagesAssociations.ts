@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type ParsedPattern, parse } from "../../../base/common/glob.js";
+import { parse, type ParsedPattern } from "../../../base/common/glob.js";
 import { Mimes } from "../../../base/common/mime.js";
 import { Schemas } from "../../../base/common/network.js";
 import { basename, posix } from "../../../base/common/path.js";

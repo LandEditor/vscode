@@ -12,19 +12,16 @@
 //#region --- workbench common
 
 import "./workbench.common.main.js";
-
 //#endregion
 
 //#region --- workbench parts
 
 import "./browser/parts/dialogs/dialog.web.contribution.js";
-
 //#endregion
 
 //#region --- workbench (web main)
 
 import "./browser/web.main.js";
-
 //#endregion
 
 //#region --- workbench services
@@ -108,6 +105,73 @@ import {
 	TimerService,
 } from "./services/timer/browser/timerService.js";
 import { ITitleService } from "./services/title/browser/titleService.js";
+//#endregion
+
+//#region --- workbench contributions
+
+// Logs
+import "./contrib/logs/browser/logs.contribution.js";
+// Localization
+import "./contrib/localization/browser/localization.contribution.js";
+// Performance
+import "./contrib/performance/browser/performance.web.contribution.js";
+// Preferences
+import "./contrib/preferences/browser/keyboardLayoutPicker.js";
+// Debug
+import "./contrib/debug/browser/extensionHostDebugService.js";
+// Welcome Banner
+import "./contrib/welcomeBanner/browser/welcomeBanner.contribution.js";
+// Welcome Dialog
+import "./contrib/welcomeDialog/browser/welcomeDialog.contribution.js";
+// Webview
+import "./contrib/webview/browser/webview.web.contribution.js";
+// Extensions Management
+import "./contrib/extensions/browser/extensions.web.contribution.js";
+// Terminal
+import "./contrib/terminal/browser/terminal.web.contribution.js";
+import "./contrib/externalTerminal/browser/externalTerminal.contribution.js";
+import "./contrib/terminal/browser/terminalInstanceService.js";
+// Tasks
+import "./contrib/tasks/browser/taskService.js";
+// Tags
+import "./contrib/tags/browser/workspaceTagsService.js";
+// Issues
+import "./contrib/issue/browser/issue.contribution.js";
+// Splash
+import "./contrib/splash/browser/splash.contribution.js";
+// Remote Start Entry for the Web
+import "./contrib/remote/browser/remoteStartEntry.contribution.js";
+
+//#endregion
+
+//#region --- export workbench factory
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//
+// Do NOT change these exports in a way that something is removed unless
+// intentional. These exports are used by web embedders and thus require
+// an adoption when something changes.
+//
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+import { Emitter, Event } from "../base/common/event.js";
+import { Disposable } from "../base/common/lifecycle.js";
+import { URI } from "../base/common/uri.js";
+import {
+	RemoteAuthorityResolverError,
+	RemoteAuthorityResolverErrorCode,
+} from "../platform/remote/common/remoteAuthorityResolver.js";
+import { UserDataSyncResourceProviderService } from "../platform/userDataSync/common/userDataSyncResourceProvider.js";
+import { Menu } from "./browser/web.api.js";
+import {
+	commands,
+	create,
+	env,
+	logger,
+	window,
+	workspace,
+} from "./browser/web.factory.js";
+import { GroupOrientation } from "./services/editor/common/editorGroupsService.js";
 
 registerSingleton(
 	IWorkbenchExtensionManagementService,
@@ -181,88 +245,6 @@ registerSingleton(
 	WebLanguagePacksService,
 	InstantiationType.Delayed,
 );
-
-//#endregion
-
-//#region --- workbench contributions
-
-// Logs
-import "./contrib/logs/browser/logs.contribution.js";
-
-// Localization
-import "./contrib/localization/browser/localization.contribution.js";
-
-// Performance
-import "./contrib/performance/browser/performance.web.contribution.js";
-
-// Preferences
-import "./contrib/preferences/browser/keyboardLayoutPicker.js";
-
-// Debug
-import "./contrib/debug/browser/extensionHostDebugService.js";
-
-// Welcome Banner
-import "./contrib/welcomeBanner/browser/welcomeBanner.contribution.js";
-
-// Welcome Dialog
-import "./contrib/welcomeDialog/browser/welcomeDialog.contribution.js";
-
-// Webview
-import "./contrib/webview/browser/webview.web.contribution.js";
-
-// Extensions Management
-import "./contrib/extensions/browser/extensions.web.contribution.js";
-
-// Terminal
-import "./contrib/terminal/browser/terminal.web.contribution.js";
-import "./contrib/externalTerminal/browser/externalTerminal.contribution.js";
-import "./contrib/terminal/browser/terminalInstanceService.js";
-
-// Tasks
-import "./contrib/tasks/browser/taskService.js";
-
-// Tags
-import "./contrib/tags/browser/workspaceTagsService.js";
-
-// Issues
-import "./contrib/issue/browser/issue.contribution.js";
-
-// Splash
-import "./contrib/splash/browser/splash.contribution.js";
-
-// Remote Start Entry for the Web
-import "./contrib/remote/browser/remoteStartEntry.contribution.js";
-
-//#endregion
-
-//#region --- export workbench factory
-
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-//
-// Do NOT change these exports in a way that something is removed unless
-// intentional. These exports are used by web embedders and thus require
-// an adoption when something changes.
-//
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-import { Emitter, Event } from "../base/common/event.js";
-import { Disposable } from "../base/common/lifecycle.js";
-import { URI } from "../base/common/uri.js";
-import {
-	RemoteAuthorityResolverError,
-	RemoteAuthorityResolverErrorCode,
-} from "../platform/remote/common/remoteAuthorityResolver.js";
-import { UserDataSyncResourceProviderService } from "../platform/userDataSync/common/userDataSyncResourceProvider.js";
-import { Menu } from "./browser/web.api.js";
-import {
-	commands,
-	create,
-	env,
-	logger,
-	window,
-	workspace,
-} from "./browser/web.factory.js";
-import { GroupOrientation } from "./services/editor/common/editorGroupsService.js";
 
 // TODO@esm remove me once we stop supporting our web-esm-bridge
 if ((globalThis as any).__VSCODE_WEB_ESM_PROMISE) {

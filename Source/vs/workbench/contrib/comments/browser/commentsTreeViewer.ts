@@ -5,11 +5,11 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import { renderMarkdown } from "../../../../base/browser/markdownRenderer.js";
-import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import {
 	ActionBar,
 	type IActionViewItemProvider,
 } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import type {
 	IListRenderer,
@@ -17,11 +17,11 @@ import type {
 } from "../../../../base/browser/ui/list/list.js";
 import type { IListStyles } from "../../../../base/browser/ui/list/listWidget.js";
 import {
+	TreeVisibility,
 	type ITreeContextMenuEvent,
 	type ITreeFilter,
 	type ITreeNode,
 	type TreeFilterResult,
-	TreeVisibility,
 } from "../../../../base/browser/ui/tree/tree.js";
 import type { IAction } from "../../../../base/common/actions.js";
 import { Codicon } from "../../../../base/common/codicons.js";
@@ -58,14 +58,14 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import {
 	IListService,
-	type IWorkbenchAsyncDataTreeOptions,
 	WorkbenchObjectTree,
+	type IWorkbenchAsyncDataTreeOptions,
 } from "../../../../platform/list/browser/listService.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import type { IStyleOverride } from "../../../../platform/theme/browser/defaultStyles.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import type {
 	IResourceLabel,
@@ -196,9 +196,7 @@ export class ResourceWithCommentsRenderer
 export class CommentsMenus implements IDisposable {
 	private contextKeyService: IContextKeyService | undefined;
 
-	constructor(
-		@IMenuService private readonly menuService: IMenuService
-	) { }
+	constructor(@IMenuService private readonly menuService: IMenuService) {}
 
 	getResourceActions(element: CommentNode): { actions: IAction[] } {
 		const actions = this.getActions(
@@ -252,7 +250,8 @@ export class CommentsMenus implements IDisposable {
 }
 
 export class CommentNodeRenderer
-	implements IListRenderer<ITreeNode<CommentNode>, ICommentThreadTemplateData>
+	implements
+		IListRenderer<ITreeNode<CommentNode>, ICommentThreadTemplateData>
 {
 	templateId = "comment-node";
 
@@ -260,10 +259,11 @@ export class CommentNodeRenderer
 		private actionViewItemProvider: IActionViewItemProvider,
 		private menus: CommentsMenus,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHoverService private readonly hoverService: IHoverService,
-		@IThemeService private themeService: IThemeService
-	) { }
+		@IThemeService private themeService: IThemeService,
+	) {}
 
 	renderTemplate(container: HTMLElement) {
 		const threadContainer = dom.append(
@@ -561,7 +561,8 @@ interface CommentFilterData {
 type FilterData = ResourceFilterData | CommentFilterData;
 
 export class Filter
-	implements ITreeFilter<ResourceWithCommentThreads | CommentNode, FilterData>
+	implements
+		ITreeFilter<ResourceWithCommentThreads | CommentNode, FilterData>
 {
 	constructor(public options: FilterOptions) {}
 
@@ -705,20 +706,32 @@ export class CommentsList extends WorkbenchObjectTree<
 		@IListService listService: IListService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
 		const delegate = new CommentsModelVirtualDelegate();
-		const actionViewItemProvider = createActionViewItem.bind(undefined, instantiationService);
+		const actionViewItemProvider = createActionViewItem.bind(
+			undefined,
+			instantiationService,
+		);
 		const menus = instantiationService.createInstance(CommentsMenus);
 		menus.setContextKeyService(contextKeyService);
 		const renderers = [
-			instantiationService.createInstance(ResourceWithCommentsRenderer, labels),
-			instantiationService.createInstance(CommentNodeRenderer, actionViewItemProvider, menus)
+			instantiationService.createInstance(
+				ResourceWithCommentsRenderer,
+				labels,
+			),
+			instantiationService.createInstance(
+				CommentNodeRenderer,
+				actionViewItemProvider,
+				menus,
+			),
 		];
 
 		super(
-			'CommentsTree',
+			"CommentsTree",
 			container,
 			delegate,
 			renderers,
@@ -727,16 +740,19 @@ export class CommentsList extends WorkbenchObjectTree<
 				identityProvider: {
 					getId: (element: any) => {
 						if (element instanceof CommentsModel) {
-							return 'root';
+							return "root";
 						}
 						if (element instanceof ResourceWithCommentThreads) {
 							return `${element.uniqueOwner}-${element.id}`;
 						}
 						if (element instanceof CommentNode) {
-							return `${element.uniqueOwner}-${element.resource.toString()}-${element.threadId}-${element.comment.uniqueIdInThread}` + (element.isRoot ? '-root' : '');
+							return (
+								`${element.uniqueOwner}-${element.resource.toString()}-${element.threadId}-${element.comment.uniqueIdInThread}` +
+								(element.isRoot ? "-root" : "")
+							);
 						}
-						return '';
-					}
+						return "";
+					},
 				},
 				expandOnlyOnTwistieClick: true,
 				collapseByDefault: false,
@@ -752,7 +768,9 @@ export class CommentsList extends WorkbenchObjectTree<
 			configurationService,
 		);
 		this.menus = menus;
-		this.disposables.add(this.onContextMenu(e => this.commentsOnContextMenu(e)));
+		this.disposables.add(
+			this.onContextMenu((e) => this.commentsOnContextMenu(e)),
+		);
 	}
 
 	private commentsOnContextMenu(

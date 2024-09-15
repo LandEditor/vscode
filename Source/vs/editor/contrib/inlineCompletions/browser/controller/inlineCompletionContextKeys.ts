@@ -5,14 +5,14 @@
 
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import { firstNonWhitespaceIndex } from "../../../../../base/common/strings.js";
 import { localize } from "../../../../../nls.js";
 import {
-	type IContextKeyService,
 	RawContextKey,
+	type IContextKeyService,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { CursorColumns } from "../../../../common/core/cursorColumns.js";
 import type { InlineCompletionsModel } from "../model/inlineCompletionsModel.js";

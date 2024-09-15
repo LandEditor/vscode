@@ -23,10 +23,10 @@ import type {
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerDiffEditorContribution,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import { EditorOption } from "../../../../editor/common/config/editorOptions.js";
@@ -43,15 +43,15 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 
@@ -203,45 +203,62 @@ class ToggleWordWrapController
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
 	) {
 		super();
 
 		const options = this._editor.getOptions();
 		const wrappingInfo = options.get(EditorOption.wrappingInfo);
-		const isWordWrapMinified = this._contextKeyService.createKey(isWordWrapMinifiedKey, wrappingInfo.isWordWrapMinified);
-		const isDominatedByLongLines = this._contextKeyService.createKey(isDominatedByLongLinesKey, wrappingInfo.isDominatedByLongLines);
+		const isWordWrapMinified = this._contextKeyService.createKey(
+			isWordWrapMinifiedKey,
+			wrappingInfo.isWordWrapMinified,
+		);
+		const isDominatedByLongLines = this._contextKeyService.createKey(
+			isDominatedByLongLinesKey,
+			wrappingInfo.isDominatedByLongLines,
+		);
 		let currentlyApplyingEditorConfig = false;
 
-		this._register(_editor.onDidChangeConfiguration((e) => {
-			if (!e.hasChanged(EditorOption.wrappingInfo)) {
-				return;
-			}
-			const options = this._editor.getOptions();
-			const wrappingInfo = options.get(EditorOption.wrappingInfo);
-			isWordWrapMinified.set(wrappingInfo.isWordWrapMinified);
-			isDominatedByLongLines.set(wrappingInfo.isDominatedByLongLines);
-			if (!currentlyApplyingEditorConfig) {
-				// I am not the cause of the word wrap getting changed
+		this._register(
+			_editor.onDidChangeConfiguration((e) => {
+				if (!e.hasChanged(EditorOption.wrappingInfo)) {
+					return;
+				}
+				const options = this._editor.getOptions();
+				const wrappingInfo = options.get(EditorOption.wrappingInfo);
+				isWordWrapMinified.set(wrappingInfo.isWordWrapMinified);
+				isDominatedByLongLines.set(wrappingInfo.isDominatedByLongLines);
+				if (!currentlyApplyingEditorConfig) {
+					// I am not the cause of the word wrap getting changed
+					ensureWordWrapSettings();
+				}
+			}),
+		);
+
+		this._register(
+			_editor.onDidChangeModel((e) => {
 				ensureWordWrapSettings();
-			}
-		}));
+			}),
+		);
 
-		this._register(_editor.onDidChangeModel((e) => {
-			ensureWordWrapSettings();
-		}));
-
-		this._register(_codeEditorService.onDidChangeTransientModelProperty(() => {
-			ensureWordWrapSettings();
-		}));
+		this._register(
+			_codeEditorService.onDidChangeTransientModelProperty(() => {
+				ensureWordWrapSettings();
+			}),
+		);
 
 		const ensureWordWrapSettings = () => {
 			if (!canToggleWordWrap(this._codeEditorService, this._editor)) {
 				return;
 			}
 
-			const transientState = readTransientState(this._editor.getModel(), this._codeEditorService);
+			const transientState = readTransientState(
+				this._editor.getModel(),
+				this._codeEditorService,
+			);
 
 			// Apply the state
 			try {
@@ -269,13 +286,16 @@ class DiffToggleWordWrapController
 
 	constructor(
 		private readonly _diffEditor: IDiffEditor,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
 	) {
 		super();
 
-		this._register(this._diffEditor.onDidChangeModel(() => {
-			this._ensureSyncedWordWrapToggle();
-		}));
+		this._register(
+			this._diffEditor.onDidChangeModel(() => {
+				this._ensureSyncedWordWrapToggle();
+			}),
+		);
 	}
 
 	private _ensureSyncedWordWrapToggle(): void {
@@ -367,16 +387,42 @@ class EditorWordWrapContextKeyTracker
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
-		@IContextKeyService private readonly _contextService: IContextKeyService,
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
+		@IContextKeyService
+		private readonly _contextService: IContextKeyService,
 	) {
 		super();
-		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
-			disposables.add(addDisposableListener(window, 'focus', () => this._update(), true));
-			disposables.add(addDisposableListener(window, 'blur', () => this._update(), true));
-		}, { window: mainWindow, disposables: this._store }));
-		this._register(this._editorService.onDidActiveEditorChange(() => this._update()));
-		this._canToggleWordWrap = CAN_TOGGLE_WORD_WRAP.bindTo(this._contextService);
+		this._register(
+			Event.runAndSubscribe(
+				onDidRegisterWindow,
+				({ window, disposables }) => {
+					disposables.add(
+						addDisposableListener(
+							window,
+							"focus",
+							() => this._update(),
+							true,
+						),
+					);
+					disposables.add(
+						addDisposableListener(
+							window,
+							"blur",
+							() => this._update(),
+							true,
+						),
+					);
+				},
+				{ window: mainWindow, disposables: this._store },
+			),
+		);
+		this._register(
+			this._editorService.onDidActiveEditorChange(() => this._update()),
+		);
+		this._canToggleWordWrap = CAN_TOGGLE_WORD_WRAP.bindTo(
+			this._contextService,
+		);
 		this._editorWordWrap = EDITOR_WORD_WRAP.bindTo(this._contextService);
 		this._activeEditor = null;
 		this._activeEditorListener = new DisposableStore();

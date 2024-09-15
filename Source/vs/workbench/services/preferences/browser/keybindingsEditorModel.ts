@@ -5,19 +5,19 @@
 
 import { coalesce, distinct } from "../../../../base/common/arrays.js";
 import {
-	type IFilter,
-	type IMatch,
 	matchesCamelCase,
 	matchesContiguousSubString,
 	matchesPrefix,
 	matchesWords,
 	or,
+	type IFilter,
+	type IMatch,
 } from "../../../../base/common/filters.js";
 import {
 	AriaLabelProvider,
-	type ModifierLabels as ModLabels,
 	UILabelProvider,
 	UserSettingsLabelProvider,
+	type ModifierLabels as ModLabels,
 } from "../../../../base/common/keybindingLabels.js";
 import type {
 	ResolvedChord,
@@ -87,7 +87,8 @@ export class KeybindingsEditorModel extends EditorModel {
 
 	constructor(
 		os: OperatingSystem,
-		@IKeybindingService private readonly keybindingsService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingsService: IKeybindingService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super();
@@ -96,7 +97,7 @@ export class KeybindingsEditorModel extends EditorModel {
 		this.modifierLabels = {
 			ui: UILabelProvider.modifierLabels[os],
 			aria: AriaLabelProvider.modifierLabels[os],
-			user: UserSettingsLabelProvider.modifierLabels[os]
+			user: UserSettingsLabelProvider.modifierLabels[os],
 		};
 	}
 

@@ -20,9 +20,9 @@ import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import {
 	CodeActionAutoApply,
 	CodeActionCommandArgs,
-	type CodeActionFilter,
 	CodeActionKind,
 	CodeActionTriggerSource,
+	type CodeActionFilter,
 } from "../common/types.js";
 import {
 	autoFixCommandId,

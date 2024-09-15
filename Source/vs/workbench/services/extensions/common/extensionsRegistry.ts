@@ -11,8 +11,8 @@ import * as nls from "../../../../nls.js";
 import type { ExtensionKind } from "../../../../platform/environment/common/environment.js";
 import { EXTENSION_IDENTIFIER_PATTERN } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
-	type IActivationEventsGenerator,
 	ImplicitActivationEvents,
+	type IActivationEventsGenerator,
 } from "../../../../platform/extensionManagement/common/implicitActivationEvents.js";
 import {
 	EXTENSION_CATEGORIES,

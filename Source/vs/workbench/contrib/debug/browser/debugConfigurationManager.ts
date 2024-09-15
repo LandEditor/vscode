@@ -14,8 +14,8 @@ import * as json from "../../../../base/common/json.js";
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as objects from "../../../../base/common/objects.js";
 import * as resources from "../../../../base/common/resources.js";
@@ -27,14 +27,14 @@ import {
 	IConfigurationService,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	type IJSONContributionRegistry,
 	Extensions as JSONExtensions,
+	type IJSONContributionRegistry,
 } from "../../../../platform/jsonschemas/common/jsonContributionRegistry.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IQuickInputService } from "../../../../platform/quickinput/common/quickInput.js";
@@ -47,9 +47,9 @@ import {
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
 	IWorkspaceContextService,
+	WorkbenchState,
 	type IWorkspaceFolder,
 	type IWorkspaceFoldersChangeEvent,
-	WorkbenchState,
 } from "../../../../platform/workspace/common/workspace.js";
 import type { IEditorPane } from "../../../common/editor.js";
 import { launchSchemaId } from "../../../services/configuration/common/configuration.js";
@@ -112,14 +112,19 @@ export class ConfigurationManager implements IConfigurationManager {
 
 	constructor(
 		private readonly adapterManager: IAdapterManager,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IStorageService private readonly storageService: IStorageService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IHistoryService private readonly historyService: IHistoryService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@ILogService private readonly logService: ILogService,
 	) {
@@ -128,16 +133,43 @@ export class ConfigurationManager implements IConfigurationManager {
 		this.initLaunches();
 		this.setCompoundSchemaValues();
 		this.registerListeners();
-		const previousSelectedRoot = this.storageService.get(DEBUG_SELECTED_ROOT, StorageScope.WORKSPACE);
-		const previousSelectedType = this.storageService.get(DEBUG_SELECTED_TYPE, StorageScope.WORKSPACE);
-		const previousSelectedLaunch = this.launches.find(l => l.uri.toString() === previousSelectedRoot);
-		const previousSelectedName = this.storageService.get(DEBUG_SELECTED_CONFIG_NAME_KEY, StorageScope.WORKSPACE);
-		this.debugConfigurationTypeContext = CONTEXT_DEBUG_CONFIGURATION_TYPE.bindTo(contextKeyService);
-		const dynamicConfig = previousSelectedType ? { type: previousSelectedType } : undefined;
-		if (previousSelectedLaunch && previousSelectedLaunch.getConfigurationNames().length) {
-			this.selectConfiguration(previousSelectedLaunch, previousSelectedName, undefined, dynamicConfig);
+		const previousSelectedRoot = this.storageService.get(
+			DEBUG_SELECTED_ROOT,
+			StorageScope.WORKSPACE,
+		);
+		const previousSelectedType = this.storageService.get(
+			DEBUG_SELECTED_TYPE,
+			StorageScope.WORKSPACE,
+		);
+		const previousSelectedLaunch = this.launches.find(
+			(l) => l.uri.toString() === previousSelectedRoot,
+		);
+		const previousSelectedName = this.storageService.get(
+			DEBUG_SELECTED_CONFIG_NAME_KEY,
+			StorageScope.WORKSPACE,
+		);
+		this.debugConfigurationTypeContext =
+			CONTEXT_DEBUG_CONFIGURATION_TYPE.bindTo(contextKeyService);
+		const dynamicConfig = previousSelectedType
+			? { type: previousSelectedType }
+			: undefined;
+		if (
+			previousSelectedLaunch &&
+			previousSelectedLaunch.getConfigurationNames().length
+		) {
+			this.selectConfiguration(
+				previousSelectedLaunch,
+				previousSelectedName,
+				undefined,
+				dynamicConfig,
+			);
 		} else if (this.launches.length > 0) {
-			this.selectConfiguration(undefined, previousSelectedName, undefined, dynamicConfig);
+			this.selectConfiguration(
+				undefined,
+				previousSelectedName,
+				undefined,
+				dynamicConfig,
+			);
 		}
 	}
 
@@ -620,14 +652,16 @@ export class ConfigurationManager implements IConfigurationManager {
 			.reduce((first, second) => first.concat(second), []);
 		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf![0].enum =
 			launchNames;
-		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf![1]
-			.properties!.name.enum = launchNames;
+		(<IJSONSchema>(
+			compoundConfigurationsSchema.items
+		)).oneOf![1].properties!.name.enum = launchNames;
 
 		const folderNames = this.contextService
 			.getWorkspace()
 			.folders.map((f) => f.name);
-		(<IJSONSchema>compoundConfigurationsSchema.items).oneOf![1]
-			.properties!.folder.enum = folderNames;
+		(<IJSONSchema>(
+			compoundConfigurationsSchema.items
+		)).oneOf![1].properties!.folder.enum = folderNames;
 
 		jsonRegistry.registerSchema(launchSchemaId, launchSchema);
 	}
@@ -968,7 +1002,8 @@ class Launch extends AbstractLaunch implements ILaunch {
 		@IFileService private readonly fileService: IFileService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super(configurationManager, adapterManager);
 	}
@@ -1085,8 +1120,10 @@ class WorkspaceLaunch extends AbstractLaunch implements ILaunch {
 		configurationManager: ConfigurationManager,
 		adapterManager: IAdapterManager,
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 	) {
 		super(configurationManager, adapterManager);
 	}
@@ -1159,8 +1196,10 @@ class UserLaunch extends AbstractLaunch implements ILaunch {
 	constructor(
 		configurationManager: ConfigurationManager,
 		adapterManager: IAdapterManager,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 	) {
 		super(configurationManager, adapterManager);
 	}

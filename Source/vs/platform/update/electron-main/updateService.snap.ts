@@ -5,6 +5,7 @@
 
 import { spawn } from "child_process";
 import { realpath, watch } from "fs";
+
 import { timeout } from "../../../base/common/async.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import * as path from "../../../base/common/path.js";
@@ -13,11 +14,11 @@ import { ILifecycleMainService } from "../../lifecycle/electron-main/lifecycleMa
 import { ILogService } from "../../log/common/log.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type AvailableForDownload,
-	type IUpdateService,
 	State,
 	StateType,
 	UpdateType,
+	type AvailableForDownload,
+	type IUpdateService,
 } from "../common/update.js";
 import type { UpdateNotAvailableClassification } from "./abstractUpdateService.js";
 
@@ -40,19 +41,23 @@ abstract class AbstractUpdateService implements IUpdateService {
 	}
 
 	constructor(
-		@ILifecycleMainService private readonly lifecycleMainService: ILifecycleMainService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@ILifecycleMainService
+		private readonly lifecycleMainService: ILifecycleMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@ILogService protected logService: ILogService,
 	) {
 		if (environmentMainService.disableUpdates) {
-			this.logService.info('update#ctor - updates are disabled');
+			this.logService.info("update#ctor - updates are disabled");
 			return;
 		}
 
 		this.setState(State.Idle(this.getUpdateType()));
 
 		// Start checking for updates after 30 seconds
-		this.scheduleCheckForUpdates(30 * 1000).then(undefined, err => this.logService.error(err));
+		this.scheduleCheckForUpdates(30 * 1000).then(undefined, (err) =>
+			this.logService.error(err),
+		);
 	}
 
 	private scheduleCheckForUpdates(delay = 60 * 60 * 1000): Promise<void> {
@@ -163,17 +168,28 @@ export class SnapUpdateService extends AbstractUpdateService {
 		private snap: string,
 		private snapRevision: string,
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@ILogService logService: ILogService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super(lifecycleMainService, environmentMainService, logService);
 
 		const watcher = watch(path.dirname(this.snap));
-		const onChange = Event.fromNodeEventEmitter(watcher, 'change', (_, fileName: string) => fileName);
-		const onCurrentChange = Event.filter(onChange, n => n === 'current');
-		const onDebouncedCurrentChange = Event.debounce(onCurrentChange, (_, e) => e, 2000);
-		const listener = onDebouncedCurrentChange(() => this.checkForUpdates(false));
+		const onChange = Event.fromNodeEventEmitter(
+			watcher,
+			"change",
+			(_, fileName: string) => fileName,
+		);
+		const onCurrentChange = Event.filter(onChange, (n) => n === "current");
+		const onDebouncedCurrentChange = Event.debounce(
+			onCurrentChange,
+			(_, e) => e,
+			2000,
+		);
+		const listener = onDebouncedCurrentChange(() =>
+			this.checkForUpdates(false),
+		);
 
 		lifecycleMainService.onWillShutdown(() => {
 			listener.dispose();

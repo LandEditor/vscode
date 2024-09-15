@@ -17,8 +17,8 @@ import type {
 	IPartialEditorMouseEvent,
 } from "../../../browser/editorBrowser.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../common/config/editorOptions.js";
 import type {
 	IEditorContribution,
@@ -26,7 +26,9 @@ import type {
 } from "../../../common/editorCommon.js";
 import type { IHoverWidget } from "./hoverTypes.js";
 import { isMousePositionWithinElement } from "./hoverUtils.js";
+
 import "./hover.css";
+
 import { GlyphHoverWidget } from "./glyphHoverWidget.js";
 
 // sticky hover widget which doesn't disappear on focus out and such
@@ -64,21 +66,27 @@ export class GlyphHoverController
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 		this._reactToEditorMouseMoveRunner = this._register(
 			new RunOnceScheduler(
-				() => this._reactToEditorMouseMove(this._mouseMoveEvent), 0
-			)
+				() => this._reactToEditorMouseMove(this._mouseMoveEvent),
+				0,
+			),
 		);
 		this._hookListeners();
-		this._register(this._editor.onDidChangeConfiguration((e: ConfigurationChangedEvent) => {
-			if (e.hasChanged(EditorOption.hover)) {
-				this._unhookListeners();
-				this._hookListeners();
-			}
-		}));
+		this._register(
+			this._editor.onDidChangeConfiguration(
+				(e: ConfigurationChangedEvent) => {
+					if (e.hasChanged(EditorOption.hover)) {
+						this._unhookListeners();
+						this._hookListeners();
+					}
+				},
+			),
+		);
 	}
 
 	static get(editor: ICodeEditor): GlyphHoverController | null {

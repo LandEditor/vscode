@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBuffer, IDisposable, IMarker, Terminal } from "@xterm/headless";
+
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import { debounce } from "../../../../base/common/decorators.js";
 import { Emitter } from "../../../../base/common/event.js";
@@ -16,6 +17,7 @@ import { ILogService } from "../../../log/common/log.js";
 import type { ITerminalOutputMatcher } from "../terminal.js";
 import {
 	CommandInvalidationReason,
+	TerminalCapability,
 	type ICommandDetectionCapability,
 	type ICommandInvalidationRequest,
 	type IHandleCommandOptions,
@@ -23,16 +25,15 @@ import {
 	type ISerializedTerminalCommand,
 	type ITerminalCommand,
 	type IXtermMarker,
-	TerminalCapability,
 } from "./capabilities.js";
 import {
-	type IPromptInputModel,
 	PromptInputModel,
+	type IPromptInputModel,
 } from "./commandDetection/promptInputModel.js";
 import {
-	type ICurrentPartialCommand,
 	PartialTerminalCommand,
 	TerminalCommand,
+	type ICurrentPartialCommand,
 } from "./commandDetection/terminalCommand.js";
 
 interface ITerminalDimensions {
@@ -119,71 +120,117 @@ export class CommandDetectionCapability
 
 	constructor(
 		private readonly _terminal: Terminal,
-		@ILogService private readonly _logService: ILogService
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 
-		this._promptInputModel = this._register(new PromptInputModel(this._terminal, this.onCommandStarted, this.onCommandExecuted, this._logService));
+		this._promptInputModel = this._register(
+			new PromptInputModel(
+				this._terminal,
+				this.onCommandStarted,
+				this.onCommandExecuted,
+				this._logService,
+			),
+		);
 
 		// Pull command line from the buffer if it was not set explicitly
-		this._register(this.onCommandExecuted(command => {
-			if (command.commandLineConfidence !== 'high') {
-				// HACK: onCommandExecuted actually fired with PartialTerminalCommand
-				const typedCommand = (command as ITerminalCommand | PartialTerminalCommand);
-				command.command = typedCommand.extractCommandLine();
-				command.commandLineConfidence = 'low';
+		this._register(
+			this.onCommandExecuted((command) => {
+				if (command.commandLineConfidence !== "high") {
+					// HACK: onCommandExecuted actually fired with PartialTerminalCommand
+					const typedCommand = command as
+						| ITerminalCommand
+						| PartialTerminalCommand;
+					command.command = typedCommand.extractCommandLine();
+					command.commandLineConfidence = "low";
 
-				// ITerminalCommand
-				if ('getOutput' in typedCommand) {
-					if (
+					// ITerminalCommand
+					if ("getOutput" in typedCommand) {
+						if (
+							// Markers exist
+							typedCommand.promptStartMarker &&
+							typedCommand.marker &&
+							typedCommand.executedMarker &&
+							// Single line command
+							command.command.indexOf("\n") === -1 &&
+							// Start marker is not on the left-most column
+							typedCommand.startX !== undefined &&
+							typedCommand.startX > 0
+						) {
+							command.commandLineConfidence = "medium";
+						}
+					}
+					// PartialTerminalCommand
+					else if (
 						// Markers exist
-						typedCommand.promptStartMarker && typedCommand.marker && typedCommand.executedMarker &&
+						typedCommand.promptStartMarker &&
+						typedCommand.commandStartMarker &&
+						typedCommand.commandExecutedMarker &&
 						// Single line command
-						command.command.indexOf('\n') === -1 &&
+						command.command.indexOf("\n") === -1 &&
 						// Start marker is not on the left-most column
-						typedCommand.startX !== undefined && typedCommand.startX > 0
+						typedCommand.commandStartX !== undefined &&
+						typedCommand.commandStartX > 0
 					) {
-						command.commandLineConfidence = 'medium';
+						command.commandLineConfidence = "medium";
 					}
 				}
-				// PartialTerminalCommand
-				else if (
-						// Markers exist
-						typedCommand.promptStartMarker && typedCommand.commandStartMarker && typedCommand.commandExecutedMarker &&
-						// Single line command
-						command.command.indexOf('\n') === -1 &&
-						// Start marker is not on the left-most column
-						typedCommand.commandStartX !== undefined && typedCommand.commandStartX > 0
-					) {
-						command.commandLineConfidence = 'medium';
-					}
-			}
-		}));
+			}),
+		);
 
 		// Set up platform-specific behaviors
 		const that = this;
-		this._ptyHeuristicsHooks = new class implements ICommandDetectionHeuristicsHooks {
-			get onCurrentCommandInvalidatedEmitter() { return that._onCurrentCommandInvalidated; }
-			get onCommandStartedEmitter() { return that._onCommandStarted; }
-			get onCommandExecutedEmitter() { return that._onCommandExecuted; }
-			get dimensions() { return that._dimensions; }
-			get isCommandStorageDisabled() { return that.__isCommandStorageDisabled; }
-			get commandMarkers() { return that._commandMarkers; }
-			set commandMarkers(value) { that._commandMarkers = value; }
-			get clearCommandsInViewport() { return that._clearCommandsInViewport.bind(that); }
+		this._ptyHeuristicsHooks = new (class
+			implements ICommandDetectionHeuristicsHooks
+		{
+			get onCurrentCommandInvalidatedEmitter() {
+				return that._onCurrentCommandInvalidated;
+			}
+			get onCommandStartedEmitter() {
+				return that._onCommandStarted;
+			}
+			get onCommandExecutedEmitter() {
+				return that._onCommandExecuted;
+			}
+			get dimensions() {
+				return that._dimensions;
+			}
+			get isCommandStorageDisabled() {
+				return that.__isCommandStorageDisabled;
+			}
+			get commandMarkers() {
+				return that._commandMarkers;
+			}
+			set commandMarkers(value) {
+				that._commandMarkers = value;
+			}
+			get clearCommandsInViewport() {
+				return that._clearCommandsInViewport.bind(that);
+			}
 			commitCommandFinished() {
 				that._commitCommandFinished?.flush();
 				that._commitCommandFinished = undefined;
 			}
-		};
-		this._ptyHeuristics = this._register(new MandatoryMutableDisposable(new UnixPtyHeuristics(this._terminal, this, this._ptyHeuristicsHooks, this._logService)));
+		})();
+		this._ptyHeuristics = this._register(
+			new MandatoryMutableDisposable(
+				new UnixPtyHeuristics(
+					this._terminal,
+					this,
+					this._ptyHeuristicsHooks,
+					this._logService,
+				),
+			),
+		);
 
 		this._dimensions = {
 			cols: this._terminal.cols,
-			rows: this._terminal.rows
+			rows: this._terminal.rows,
 		};
-		this._register(this._terminal.onResize(e => this._handleResize(e)));
-		this._register(this._terminal.onCursorMove(() => this._handleCursorMove()));
+		this._register(this._terminal.onResize((e) => this._handleResize(e)));
+		this._register(
+			this._terminal.onCursorMove(() => this._handleCursorMove()),
+		);
 	}
 
 	private _handleResize(e: { cols: number; rows: number }) {
@@ -830,27 +877,39 @@ class WindowsPtyHeuristics extends Disposable {
 	) {
 		super();
 
-		this._register(_terminal.parser.registerCsiHandler({ final: 'J' }, params => {
-			// Clear commands when the viewport is cleared
-			if (params.length >= 1 && (params[0] === 2 || params[0] === 3)) {
-				this._hooks.clearCommandsInViewport();
-			}
-			// We don't want to override xterm.js' default behavior, just augment it
-			return false;
-		}));
+		this._register(
+			_terminal.parser.registerCsiHandler({ final: "J" }, (params) => {
+				// Clear commands when the viewport is cleared
+				if (
+					params.length >= 1 &&
+					(params[0] === 2 || params[0] === 3)
+				) {
+					this._hooks.clearCommandsInViewport();
+				}
+				// We don't want to override xterm.js' default behavior, just augment it
+				return false;
+			}),
+		);
 
-		this._register(this._capability.onBeforeCommandFinished(command => {
-			// For older Windows backends we cannot listen to CSI J, instead we assume running clear
-			// or cls will clear all commands in the viewport. This is not perfect but it's right
-			// most of the time.
-			if (command.command.trim().toLowerCase() === 'clear' || command.command.trim().toLowerCase() === 'cls') {
-				this._tryAdjustCommandStartMarkerScheduler?.cancel();
-				this._tryAdjustCommandStartMarkerScheduler = undefined;
-				this._hooks.clearCommandsInViewport();
-				this._capability.currentCommand.isInvalid = true;
-				this._hooks.onCurrentCommandInvalidatedEmitter.fire({ reason: CommandInvalidationReason.Windows });
-			}
-		}));
+		this._register(
+			this._capability.onBeforeCommandFinished((command) => {
+				// For older Windows backends we cannot listen to CSI J, instead we assume running clear
+				// or cls will clear all commands in the viewport. This is not perfect but it's right
+				// most of the time.
+				if (
+					command.command.trim().toLowerCase() === "clear" ||
+					command.command.trim().toLowerCase() === "cls"
+				) {
+					this._tryAdjustCommandStartMarkerScheduler?.cancel();
+					this._tryAdjustCommandStartMarkerScheduler = undefined;
+					this._hooks.clearCommandsInViewport();
+					this._capability.currentCommand.isInvalid = true;
+					this._hooks.onCurrentCommandInvalidatedEmitter.fire({
+						reason: CommandInvalidationReason.Windows,
+					});
+				}
+			}),
+		);
 	}
 
 	preHandleResize(e: { cols: number; rows: number }) {

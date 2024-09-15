@@ -12,9 +12,9 @@ import { localize } from "../../../../../../nls.js";
 import { DropdownWithPrimaryActionViewItem } from "../../../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js";
 import { createAndFillInActionBarActions } from "../../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuItemAction,
+	type IMenu,
 } from "../../../../../../platform/actions/common/actions.js";
 import type {
 	IContextKeyService,
@@ -50,15 +50,32 @@ export class RunToolbar extends CellContentPart {
 		readonly cellContainer: HTMLElement,
 		readonly runButtonContainer: HTMLElement,
 		@IMenuService menuService: IMenuService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this.primaryMenu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!, contextKeyService));
-		this.secondaryMenu = this._register(menuService.createMenu(this.notebookEditor.creationOptions.menuIds.cellExecuteToolbar, contextKeyService));
-		this.createRunCellToolbar(runButtonContainer, cellContainer, contextKeyService);
+		this.primaryMenu = this._register(
+			menuService.createMenu(
+				this.notebookEditor.creationOptions.menuIds.cellExecutePrimary!,
+				contextKeyService,
+			),
+		);
+		this.secondaryMenu = this._register(
+			menuService.createMenu(
+				this.notebookEditor.creationOptions.menuIds.cellExecuteToolbar,
+				contextKeyService,
+			),
+		);
+		this.createRunCellToolbar(
+			runButtonContainer,
+			cellContainer,
+			contextKeyService,
+		);
 		const updateActions = () => {
 			const actions = this.getCellToolbarActions(this.primaryMenu);
 			const primary = actions.primary[0]; // Only allow one primary action
@@ -67,7 +84,11 @@ export class RunToolbar extends CellContentPart {
 		updateActions();
 		this._register(this.primaryMenu.onDidChange(updateActions));
 		this._register(this.secondaryMenu.onDidChange(updateActions));
-		this._register(this.notebookEditor.notebookOptions.onDidChangeOptions(updateActions));
+		this._register(
+			this.notebookEditor.notebookOptions.onDidChangeOptions(
+				updateActions,
+			),
+		);
 	}
 
 	override didRenderCell(element: ICellViewModel): void {

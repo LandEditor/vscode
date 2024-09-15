@@ -11,8 +11,8 @@ import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import type { IObservable } from "../../../../base/common/observable.js";
 import {
-	type IPrefixTreeNode,
 	WellDefinedPrefixTree,
+	type IPrefixTreeNode,
 } from "../../../../base/common/prefixTree.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { Position } from "../../../../editor/common/core/position.js";
@@ -24,16 +24,16 @@ import type { TestExclusions } from "./testExclusions.js";
 import { TestId } from "./testId.js";
 import type { ITestResult } from "./testResult.js";
 import {
+	TestItemExpandState,
 	type AbstractIncrementalTestCollection,
 	type ICallProfileRunHandler,
+	type IncrementalTestCollectionItem,
+	type InternalTestItem,
 	type IStartControllerTests,
 	type IStartControllerTestsResult,
 	type ITestItemContext,
-	type IncrementalTestCollectionItem,
-	type InternalTestItem,
 	type ResolvedTestRunRequest,
 	type TestControllerCapability,
-	TestItemExpandState,
 	type TestMessageFollowupRequest,
 	type TestMessageFollowupResponse,
 	type TestRunProfileBitset,
@@ -174,6 +174,7 @@ export const expandAndGetTestById = async (
 	for (
 		let i = idPath.length - 1;
 		!ct.isCancellationRequested && i >= expandToLevel;
+
 	) {
 		const id = idPath[i].toString();
 		const existing = collection.getNodeById(id);

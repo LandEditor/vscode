@@ -22,8 +22,8 @@ import { assertNever } from "../../../../base/common/assert.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { memoize } from "../../../../base/common/decorators.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import { Iterable } from "../../../../base/common/iterator.js";
 import {
@@ -32,9 +32,9 @@ import {
 	MutableDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorun,
 	observableValue,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import type { IPrefixTreeNode } from "../../../../base/common/prefixTree.js";
 import { basenameOrAuthority } from "../../../../base/common/resources.js";
@@ -77,13 +77,13 @@ import {
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
-	type IResourceLabel,
 	ResourceLabels,
+	type IResourceLabel,
 } from "../../../browser/labels.js";
 import {
-	type IViewPaneOptions,
 	ViewAction,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../browser/parts/views/viewPane.js";
 import { IViewDescriptorService } from "../../../common/views.js";
 import {
@@ -95,26 +95,26 @@ import { TestCommandId, Testing } from "../common/constants.js";
 import { onObservableChange } from "../common/observableUtils.js";
 import {
 	BypassedFileCoverage,
-	type ComputedFileCoverage,
 	FileCoverage,
-	type TestCoverage,
 	getTotalCoveragePercent,
+	type ComputedFileCoverage,
+	type TestCoverage,
 } from "../common/testCoverage.js";
 import { ITestCoverageService } from "../common/testCoverageService.js";
 import { TestId } from "../common/testId.js";
+import { TestingContextKeys } from "../common/testingContextKeys.js";
 import {
-	type CoverageDetails,
 	DetailType,
+	TestResultState,
+	type CoverageDetails,
 	type ICoverageCount,
 	type IDeclarationCoverage,
-	TestResultState,
 } from "../common/testTypes.js";
-import { TestingContextKeys } from "../common/testingContextKeys.js";
 import * as coverUtils from "./codeCoverageDisplayUtils.js";
 import { testingStatesToIcons, testingWasCovered } from "./icons.js";
 import {
-	type CoverageBarSource,
 	ManagedTestCoverageBars,
+	type CoverageBarSource,
 } from "./testCoverageBars.js";
 
 enum CoverageSortOrder {
@@ -142,9 +142,22 @@ export class TestCoverageView extends ViewPane {
 		@IThemeService themeService: IThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
-		@ITestCoverageService private readonly coverageService: ITestCoverageService,
+		@ITestCoverageService
+		private readonly coverageService: ITestCoverageService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 	}
 
 	protected override renderBody(container: HTMLElement): void {
@@ -672,8 +685,9 @@ class FileCoverageRenderer
 	constructor(
 		private readonly labels: ResourceLabels,
 		@ILabelService private readonly labelService: ILabelService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	/** @inheritdoc */
 	public renderTemplate(container: HTMLElement): FileTemplateData {
@@ -792,8 +806,9 @@ class DeclarationCoverageRenderer
 	public readonly templateId = DeclarationCoverageRenderer.ID;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	/** @inheritdoc */
 	public renderTemplate(container: HTMLElement): DeclarationTemplateData {

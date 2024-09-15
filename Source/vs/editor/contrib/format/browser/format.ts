@@ -24,8 +24,8 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { ILogService } from "../../../../platform/log/common/log.js";
 import type { IProgress } from "../../../../platform/progress/common/progress.js";
 import {
-	type IActiveCodeEditor,
 	isCodeEditor,
+	type IActiveCodeEditor,
 } from "../../../browser/editorBrowser.js";
 import type { ServicesAccessor } from "../../../browser/editorExtensions.js";
 import { Position } from "../../../common/core/position.js";

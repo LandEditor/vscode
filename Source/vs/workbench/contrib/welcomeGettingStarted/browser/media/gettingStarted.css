@@ -61,7 +61,7 @@
 }
 
 .monaco-workbench .part.editor > .content .gettingStartedContainer .subtitle {
-	margin-top: .6em;
+	margin-top: 0.6em;
 	font-size: 2em;
 	display: block;
 }
@@ -121,7 +121,9 @@
 	.gettingStartedContainer.animatable
 	.gettingStartedSlide {
 	/* keep consistant with SLIDE_TRANSITION_TIME_MS in gettingStarted.ts */
-	transition: left 0.25s, opacity 0.25s;
+	transition:
+		left 0.25s,
+		opacity 0.25s;
 }
 
 .monaco-workbench.reduce-motion
@@ -135,7 +137,9 @@
 	.gettingStartedContainer.animatable
 	.gettingStartedSlide {
 	/* keep consistant with SLIDE_TRANSITION_TIME_MS in gettingStarted.ts */
-	transition: left 0.0s, opacity 0.0s;
+	transition:
+		left 0s,
+		opacity 0s;
 }
 
 .monaco-workbench
@@ -999,10 +1003,9 @@
 	.gettingStartedDetailsContent {
 	max-width: 500px;
 	grid-template-columns: auto;
-	grid-template-rows: 30px max-content minmax(30%, max-content) minmax(
-			30%,
-			1fr
-		) auto;
+	grid-template-rows:
+		30px max-content minmax(30%, max-content) minmax(30%, 1fr)
+		auto;
 	row-gap: 4px;
 	grid-template-areas: "back" "title" "steps" "media" "footer";
 }
@@ -1013,10 +1016,9 @@
 	.gettingStartedContainer.width-semi-constrained
 	.gettingStartedSlideDetails
 	.gettingStartedDetailsContent.markdown {
-	grid-template-rows: 30px max-content minmax(30%, max-content) minmax(
-			40%,
-			1fr
-		) auto;
+	grid-template-rows:
+		30px max-content minmax(30%, max-content) minmax(40%, 1fr)
+		auto;
 }
 
 .monaco-workbench
@@ -1711,7 +1713,10 @@
 	.gettingStartedContainer
 	button:hover {
 	background: var(--vscode-welcomePage-tileHoverBackground);
-	outline-color: var(--vscode-contrastActiveBorder, var(--vscode-focusBorder));
+	outline-color: var(
+		--vscode-contrastActiveBorder,
+		var(--vscode-focusBorder)
+	);
 }
 
 .monaco-workbench

@@ -8,9 +8,9 @@ import { Schemas } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 import type { IAddress } from "../../remote/common/remoteAgentConnection.js";
 import {
+	extractLocalHostUriMetaDataForPortMapping,
 	type ITunnelService,
 	type RemoteTunnel,
-	extractLocalHostUriMetaDataForPortMapping,
 } from "../../tunnel/common/tunnel.js";
 
 export interface IWebviewPortMapping {

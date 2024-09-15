@@ -11,10 +11,10 @@ import type { IChannel } from "../../../../base/parts/ipc/common/ipc.js";
 import type {
 	IGalleryExtension,
 	ILocalExtension,
-	IProductVersion,
 	InstallExtensionInfo,
 	InstallExtensionResult,
 	InstallOptions,
+	IProductVersion,
 	Metadata,
 	UninstallExtensionInfo,
 	UninstallOptions,

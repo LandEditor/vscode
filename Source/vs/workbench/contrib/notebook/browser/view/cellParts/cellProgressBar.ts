@@ -7,8 +7,8 @@ import { ProgressBar } from "../../../../../../base/browser/ui/progressbar/progr
 import { defaultProgressBarStyles } from "../../../../../../platform/theme/browser/defaultStyles.js";
 import { NotebookCellExecutionState } from "../../../common/notebookCommon.js";
 import {
-	type ICellExecutionStateChangedEvent,
 	INotebookExecutionStateService,
+	type ICellExecutionStateChangedEvent,
 } from "../../../common/notebookExecutionStateService.js";
 import type { ICellViewModel } from "../../notebookBrowser.js";
 import type { CellViewModelStateChangeEvent } from "../../notebookViewEvents.js";
@@ -21,13 +21,19 @@ export class CellProgressBar extends CellContentPart {
 	constructor(
 		editorContainer: HTMLElement,
 		collapsedInputContainer: HTMLElement,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService) {
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+	) {
 		super();
 
-		this._progressBar = this._register(new ProgressBar(editorContainer, defaultProgressBarStyles));
+		this._progressBar = this._register(
+			new ProgressBar(editorContainer, defaultProgressBarStyles),
+		);
 		this._progressBar.hide();
 
-		this._collapsedProgressBar = this._register(new ProgressBar(collapsedInputContainer, defaultProgressBarStyles));
+		this._collapsedProgressBar = this._register(
+			new ProgressBar(collapsedInputContainer, defaultProgressBarStyles),
+		);
 		this._collapsedProgressBar.hide();
 	}
 

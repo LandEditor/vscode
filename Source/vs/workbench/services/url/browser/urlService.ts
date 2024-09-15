@@ -11,8 +11,8 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IOpener,
 	IOpenerService,
+	type IOpener,
 	type OpenExternalOptions,
 	type OpenInternalOptions,
 } from "../../../../platform/opener/common/opener.js";
@@ -76,7 +76,8 @@ export class BrowserURLService extends AbstractURLService {
 	private provider: IURLCallbackProvider | undefined;
 
 	constructor(
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService,
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 		@IOpenerService openerService: IOpenerService,
 		@IProductService productService: IProductService,
 	) {

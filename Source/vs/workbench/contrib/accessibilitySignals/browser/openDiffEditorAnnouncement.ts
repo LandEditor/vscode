@@ -26,16 +26,29 @@ export class DiffEditorActiveAnnouncementContribution
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
-		this._register(Event.runAndSubscribe(_accessibilityService.onDidChangeScreenReaderOptimized, () => this._updateListener()));
-		this._register(_configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AccessibilityVerbositySettingId.DiffEditorActive)) {
-				this._updateListener();
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				_accessibilityService.onDidChangeScreenReaderOptimized,
+				() => this._updateListener(),
+			),
+		);
+		this._register(
+			_configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						AccessibilityVerbositySettingId.DiffEditorActive,
+					)
+				) {
+					this._updateListener();
+				}
+			}),
+		);
 	}
 
 	private _updateListener(): void {

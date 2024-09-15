@@ -26,8 +26,8 @@ import {
 	SelectionDirection,
 } from "../../../../../../editor/common/core/selection.js";
 import {
-	type IWordAtPosition,
 	USUAL_WORD_SEPARATORS,
+	type IWordAtPosition,
 } from "../../../../../../editor/common/core/wordHelper.js";
 import {
 	CommandExecutor,
@@ -64,14 +64,14 @@ import {
 import type { ServicesAccessor } from "../../../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
-	type IPastFutureElements,
-	type IUndoRedoElement,
 	IUndoRedoService,
 	UndoRedoElementType,
+	type IPastFutureElements,
+	type IUndoRedoElement,
 } from "../../../../../../platform/undoRedo/common/undoRedo.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../../../common/contributions.js";
 import { IEditorService } from "../../../../../services/editor/common/editorService.js";
 import {
@@ -79,14 +79,14 @@ import {
 	NOTEBOOK_IS_ACTIVE_EDITOR,
 } from "../../../common/notebookContextKeys.js";
 import {
-	type INotebookActionContext,
 	NotebookAction,
+	type INotebookActionContext,
 } from "../../controller/coreActions.js";
 import {
+	getNotebookEditorFromEditorPane,
 	type ICellViewModel,
 	type INotebookEditor,
 	type INotebookEditorContribution,
-	getNotebookEditorFromEditorPane,
 } from "../../notebookBrowser.js";
 import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 import { CellEditorOptions } from "../../view/cellParts/cellEditorOptions.js";
@@ -154,16 +154,24 @@ export class NotebookMultiCursorController
 
 	constructor(
 		private readonly notebookEditor: INotebookEditor,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IUndoRedoService private readonly undoRedoService: IUndoRedoService,
 	) {
 		super();
 
-		if (!this.configurationService.getValue<boolean>('notebook.multiSelect.enabled')) {
+		if (
+			!this.configurationService.getValue<boolean>(
+				"notebook.multiSelect.enabled",
+			)
+		) {
 			return;
 		}
 
@@ -172,10 +180,12 @@ export class NotebookMultiCursorController
 		// anchor cell will catch and relay all type, cut, paste events to the cursors controllers
 		// need to create new controllers when the anchor cell changes, then update their listeners
 		// ** cursor controllers need to happen first, because anchor listeners relay to them
-		this._register(this.onDidChangeAnchorCell(() => {
-			this.updateCursorsControllers();
-			this.updateAnchorListeners();
-		}));
+		this._register(
+			this.onDidChangeAnchorCell(() => {
+				this.updateCursorsControllers();
+				this.updateAnchorListeners();
+			}),
+		);
 	}
 
 	private updateCursorsControllers() {
@@ -957,50 +967,88 @@ class NotebookDeleteLeftMultiSelectionAction extends NotebookAction {
 class NotebookMultiCursorUndoRedoContribution extends Disposable {
 	static readonly ID = "workbench.contrib.notebook.multiCursorUndoRedo";
 
-	constructor(@IEditorService private readonly _editorService: IEditorService, @IConfigurationService private readonly configurationService: IConfigurationService) {
+	constructor(
+		@IEditorService private readonly _editorService: IEditorService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+	) {
 		super();
 
-		if (!this.configurationService.getValue<boolean>('notebook.multiSelect.enabled')) {
+		if (
+			!this.configurationService.getValue<boolean>(
+				"notebook.multiSelect.enabled",
+			)
+		) {
 			return;
 		}
 
 		const PRIORITY = 10005;
-		this._register(UndoCommand.addImplementation(PRIORITY, 'notebook-multicursor-undo-redo', () => {
-			const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
-			if (!editor) {
-				return false;
-			}
+		this._register(
+			UndoCommand.addImplementation(
+				PRIORITY,
+				"notebook-multicursor-undo-redo",
+				() => {
+					const editor = getNotebookEditorFromEditorPane(
+						this._editorService.activeEditorPane,
+					);
+					if (!editor) {
+						return false;
+					}
 
-			if (!editor.hasModel()) {
-				return false;
-			}
+					if (!editor.hasModel()) {
+						return false;
+					}
 
-			const controller = editor.getContribution<NotebookMultiCursorController>(NotebookMultiCursorController.id);
+					const controller =
+						editor.getContribution<NotebookMultiCursorController>(
+							NotebookMultiCursorController.id,
+						);
 
-			return controller.undo();
-		}, ContextKeyExpr.and(
-			ContextKeyExpr.equals('config.notebook.multiSelect.enabled', true),
-			NOTEBOOK_IS_ACTIVE_EDITOR,
-			NOTEBOOK_MULTI_SELECTION_CONTEXT.IsNotebookMultiSelect,
-		)));
+					return controller.undo();
+				},
+				ContextKeyExpr.and(
+					ContextKeyExpr.equals(
+						"config.notebook.multiSelect.enabled",
+						true,
+					),
+					NOTEBOOK_IS_ACTIVE_EDITOR,
+					NOTEBOOK_MULTI_SELECTION_CONTEXT.IsNotebookMultiSelect,
+				),
+			),
+		);
 
-		this._register(RedoCommand.addImplementation(PRIORITY, 'notebook-multicursor-undo-redo', () => {
-			const editor = getNotebookEditorFromEditorPane(this._editorService.activeEditorPane);
-			if (!editor) {
-				return false;
-			}
+		this._register(
+			RedoCommand.addImplementation(
+				PRIORITY,
+				"notebook-multicursor-undo-redo",
+				() => {
+					const editor = getNotebookEditorFromEditorPane(
+						this._editorService.activeEditorPane,
+					);
+					if (!editor) {
+						return false;
+					}
 
-			if (!editor.hasModel()) {
-				return false;
-			}
+					if (!editor.hasModel()) {
+						return false;
+					}
 
-			const controller = editor.getContribution<NotebookMultiCursorController>(NotebookMultiCursorController.id);
-			return controller.redo();
-		}, ContextKeyExpr.and(
-			ContextKeyExpr.equals('config.notebook.multiSelect.enabled', true),
-			NOTEBOOK_IS_ACTIVE_EDITOR,
-			NOTEBOOK_MULTI_SELECTION_CONTEXT.IsNotebookMultiSelect,
-		)));
+					const controller =
+						editor.getContribution<NotebookMultiCursorController>(
+							NotebookMultiCursorController.id,
+						);
+					return controller.redo();
+				},
+				ContextKeyExpr.and(
+					ContextKeyExpr.equals(
+						"config.notebook.multiSelect.enabled",
+						true,
+					),
+					NOTEBOOK_IS_ACTIVE_EDITOR,
+					NOTEBOOK_MULTI_SELECTION_CONTEXT.IsNotebookMultiSelect,
+				),
+			),
+		);
 	}
 }
 

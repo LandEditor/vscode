@@ -29,13 +29,13 @@ import type {
 } from "../common/editor.js";
 import type { EditorInput } from "../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../services/editor/common/editorGroupsService.js";
 import {
+	IEditorService,
 	type ACTIVE_GROUP_TYPE,
 	type AUX_WINDOW_GROUP_TYPE,
-	IEditorService,
 	type SIDE_GROUP_TYPE,
 } from "../services/editor/common/editorService.js";
 
@@ -103,7 +103,8 @@ export class PickerEditorState extends Disposable {
 
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupsService: IEditorGroupsService
+		@IEditorGroupsService
+		private readonly editorGroupsService: IEditorGroupsService,
 	) {
 		super();
 	}

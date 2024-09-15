@@ -22,12 +22,12 @@ import type { ILogger } from "../../log/common/log.js";
 import {
 	EXTENSION_IDENTIFIER_REGEX,
 	IExtensionGalleryService,
-	type IExtensionInfo,
 	IExtensionManagementService,
+	InstallOperation,
+	type IExtensionInfo,
 	type IGalleryExtension,
 	type ILocalExtension,
 	type InstallExtensionInfo,
-	InstallOperation,
 	type InstallOptions,
 } from "./extensionManagement.js";
 import {
@@ -55,9 +55,11 @@ type InstallGalleryExtensionInfo = {
 export class ExtensionManagementCLI {
 	constructor(
 		protected readonly logger: ILogger,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-	) { }
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+	) {}
 
 	protected get location(): string | undefined {
 		return undefined;

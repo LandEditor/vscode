@@ -6,8 +6,8 @@
 import { insert } from "../../../../base/common/arrays.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	InstantiationType,
@@ -15,10 +15,10 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
+	IEditSessionIdentityService,
 	type EditSessionIdentityMatch,
 	type IEditSessionIdentityCreateParticipant,
 	type IEditSessionIdentityProvider,
-	IEditSessionIdentityService,
 } from "../../../../platform/workspace/common/editSessions.js";
 import type { IWorkspaceFolder } from "../../../../platform/workspace/common/workspace.js";
 import { IExtensionService } from "../../extensions/common/extensions.js";
@@ -32,9 +32,10 @@ export class EditSessionIdentityService implements IEditSessionIdentityService {
 	>();
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@ILogService private readonly _logService: ILogService,
-	) { }
+	) {}
 
 	registerEditSessionIdentityProvider(
 		provider: IEditSessionIdentityProvider,

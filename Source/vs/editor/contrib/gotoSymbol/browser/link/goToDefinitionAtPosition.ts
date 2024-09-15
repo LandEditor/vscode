@@ -5,20 +5,22 @@
 
 import type { IKeyboardEvent } from "../../../../../base/browser/keyboardEvent.js";
 import {
-	type CancelablePromise,
 	createCancelablePromise,
+	type CancelablePromise,
 } from "../../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../../base/common/cancellation.js";
 import { onUnexpectedError } from "../../../../../base/common/errors.js";
 import { MarkdownString } from "../../../../../base/common/htmlContent.js";
 import { DisposableStore } from "../../../../../base/common/lifecycle.js";
+
 import "./goToDefinitionAtPosition.css";
+
 import * as nls from "../../../../../nls.js";
 import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
-	type ICodeEditor,
 	MouseTargetType,
+	type ICodeEditor,
 } from "../../../../browser/editorBrowser.js";
 import {
 	EditorContributionInstantiation,
@@ -26,7 +28,7 @@ import {
 } from "../../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../../common/config/editorOptions.js";
 import type { Position } from "../../../../common/core/position.js";
-import { type IRange, Range } from "../../../../common/core/range.js";
+import { Range, type IRange } from "../../../../common/core/range.js";
 import type { IWordAtPosition } from "../../../../common/core/wordHelper.js";
 import type {
 	IEditorContribution,
@@ -70,9 +72,11 @@ export class GotoDefinitionAtPositionEditorContribution
 
 	constructor(
 		editor: ICodeEditor,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 	) {
 		this.editor = editor;
 		this.linkDecorations = this.editor.createDecorationsCollection();
@@ -80,26 +84,40 @@ export class GotoDefinitionAtPositionEditorContribution
 		const linkGesture = new ClickLinkGesture(editor);
 		this.toUnhook.add(linkGesture);
 
-		this.toUnhook.add(linkGesture.onMouseMoveOrRelevantKeyDown(([mouseEvent, keyboardEvent]) => {
-			this.startFindDefinitionFromMouse(mouseEvent, keyboardEvent ?? undefined);
-		}));
+		this.toUnhook.add(
+			linkGesture.onMouseMoveOrRelevantKeyDown(
+				([mouseEvent, keyboardEvent]) => {
+					this.startFindDefinitionFromMouse(
+						mouseEvent,
+						keyboardEvent ?? undefined,
+					);
+				},
+			),
+		);
 
-		this.toUnhook.add(linkGesture.onExecute((mouseEvent: ClickLinkMouseEvent) => {
-			if (this.isEnabled(mouseEvent)) {
-				this.gotoDefinition(mouseEvent.target.position!, mouseEvent.hasSideBySideModifier)
-					.catch((error: Error) => {
-						onUnexpectedError(error);
-					})
-					.finally(() => {
-						this.removeLinkDecorations();
-					});
-			}
-		}));
+		this.toUnhook.add(
+			linkGesture.onExecute((mouseEvent: ClickLinkMouseEvent) => {
+				if (this.isEnabled(mouseEvent)) {
+					this.gotoDefinition(
+						mouseEvent.target.position!,
+						mouseEvent.hasSideBySideModifier,
+					)
+						.catch((error: Error) => {
+							onUnexpectedError(error);
+						})
+						.finally(() => {
+							this.removeLinkDecorations();
+						});
+				}
+			}),
+		);
 
-		this.toUnhook.add(linkGesture.onCancel(() => {
-			this.removeLinkDecorations();
-			this.currentWordAtPosition = null;
-		}));
+		this.toUnhook.add(
+			linkGesture.onCancel(() => {
+				this.removeLinkDecorations();
+				this.currentWordAtPosition = null;
+			}),
+		);
 	}
 
 	static get(

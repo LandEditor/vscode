@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/suggest.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import type {
 	IListEvent,
@@ -29,8 +30,8 @@ import type {
 	SimpleCompletionModel,
 } from "./simpleCompletionModel.js";
 import {
-	type ISimpleSuggestWidgetFontInfo,
 	SimpleSuggestWidgetItemRenderer,
+	type ISimpleSuggestWidgetFontInfo,
 } from "./simpleSuggestWidgetRenderer.js";
 
 const $ = dom.$;

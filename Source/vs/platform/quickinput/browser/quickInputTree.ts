@@ -14,8 +14,8 @@ import type {
 import type { IHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegate.js";
 import { HoverPosition } from "../../../base/browser/ui/hover/hoverWidget.js";
 import {
-	type IIconLabelValueOptions,
 	IconLabel,
+	type IIconLabelValueOptions,
 } from "../../../base/browser/ui/iconLabel/iconLabel.js";
 import { KeybindingLabel } from "../../../base/browser/ui/keybindingLabel/keybindingLabel.js";
 import type { IListVirtualDelegate } from "../../../base/browser/ui/list/list.js";
@@ -25,10 +25,10 @@ import type {
 } from "../../../base/browser/ui/list/listWidget.js";
 import { RenderIndentGuides } from "../../../base/browser/ui/tree/abstractTree.js";
 import {
+	TreeVisibility,
 	type IObjectTreeElement,
 	type ITreeNode,
 	type ITreeRenderer,
-	TreeVisibility,
 } from "../../../base/browser/ui/tree/tree.js";
 import { equals } from "../../../base/common/arrays.js";
 import { ThrottledDelayer } from "../../../base/common/async.js";
@@ -44,10 +44,10 @@ import {
 import type { IMatch } from "../../../base/common/filters.js";
 import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
-	type IParsedLabelWithIcons,
 	getCodiconAriaLabel,
 	matchesFuzzyIconAware,
 	parseLabelWithIcons,
+	type IParsedLabelWithIcons,
 } from "../../../base/common/iconLabels.js";
 import { KeyCode } from "../../../base/common/keyCodes.js";
 import { Lazy } from "../../../base/common/lazy.js";
@@ -67,11 +67,11 @@ import { WorkbenchObjectTree } from "../../list/browser/listService.js";
 import { isDark } from "../../theme/common/theme.js";
 import { IThemeService } from "../../theme/common/themeService.js";
 import {
+	QuickPickFocus,
 	type IQuickPickItem,
 	type IQuickPickItemButtonEvent,
 	type IQuickPickSeparator,
 	type IQuickPickSeparatorButtonEvent,
-	QuickPickFocus,
 	type QuickPickItem,
 } from "../common/quickInput.js";
 import { quickInputButtonToAction } from "./quickInputUtils.js";
@@ -925,49 +925,63 @@ export class QuickInputTree extends Disposable {
 		private linkOpenerDelegate: (content: string) => void,
 		id: string,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
 	) {
 		super();
-		this._container = dom.append(this.parent, $('.quick-input-list'));
-		this._separatorRenderer = new QuickPickSeparatorElementRenderer(hoverDelegate);
-		this._itemRenderer = instantiationService.createInstance(QuickPickItemElementRenderer, hoverDelegate);
-		this._tree = this._register(instantiationService.createInstance(
-			WorkbenchObjectTree<IQuickPickElement, void>,
-			'QuickInput',
-			this._container,
-			new QuickInputItemDelegate(),
-			[this._itemRenderer, this._separatorRenderer],
-			{
-				filter: {
-					filter(element) {
-						return element.hidden
-							? TreeVisibility.Hidden
-							: element instanceof QuickPickSeparatorElement
-								? TreeVisibility.Recurse
-								: TreeVisibility.Visible;
+		this._container = dom.append(this.parent, $(".quick-input-list"));
+		this._separatorRenderer = new QuickPickSeparatorElementRenderer(
+			hoverDelegate,
+		);
+		this._itemRenderer = instantiationService.createInstance(
+			QuickPickItemElementRenderer,
+			hoverDelegate,
+		);
+		this._tree = this._register(
+			instantiationService.createInstance(
+				WorkbenchObjectTree<IQuickPickElement, void>,
+				"QuickInput",
+				this._container,
+				new QuickInputItemDelegate(),
+				[this._itemRenderer, this._separatorRenderer],
+				{
+					filter: {
+						filter(element) {
+							return element.hidden
+								? TreeVisibility.Hidden
+								: element instanceof QuickPickSeparatorElement
+									? TreeVisibility.Recurse
+									: TreeVisibility.Visible;
+						},
 					},
-				},
-				sorter: {
-					compare: (element, otherElement) => {
-						if (!this.sortByLabel || !this._lastQueryString) {
-							return 0;
-						}
-						const normalizedSearchValue = this._lastQueryString.toLowerCase();
-						return compareEntries(element, otherElement, normalizedSearchValue);
+					sorter: {
+						compare: (element, otherElement) => {
+							if (!this.sortByLabel || !this._lastQueryString) {
+								return 0;
+							}
+							const normalizedSearchValue =
+								this._lastQueryString.toLowerCase();
+							return compareEntries(
+								element,
+								otherElement,
+								normalizedSearchValue,
+							);
+						},
 					},
+					accessibilityProvider:
+						new QuickInputAccessibilityProvider(),
+					setRowLineHeight: false,
+					multipleSelectionSupport: false,
+					hideTwistiesOfChildlessElements: true,
+					renderIndentGuides: RenderIndentGuides.None,
+					findWidgetEnabled: false,
+					indent: 0,
+					horizontalScrolling: false,
+					allowNonCollapsibleParents: true,
+					alwaysConsumeMouseWheel: true,
 				},
-				accessibilityProvider: new QuickInputAccessibilityProvider(),
-				setRowLineHeight: false,
-				multipleSelectionSupport: false,
-				hideTwistiesOfChildlessElements: true,
-				renderIndentGuides: RenderIndentGuides.None,
-				findWidgetEnabled: false,
-				indent: 0,
-				horizontalScrolling: false,
-				allowNonCollapsibleParents: true,
-				alwaysConsumeMouseWheel: true
-			}
-		));
+			),
+		);
 		this._tree.getHTMLElement().id = id;
 		this._registerListeners();
 	}
@@ -2049,7 +2063,7 @@ function matchesContiguousIconAware(
 				iconOffsets[
 					match.start + leadingWhitespaceOffset
 				] /* icon offsets at index */ +
-				leadingWhitespaceOffset /* overall leading whitespace offset */;
+				leadingWhitespaceOffset; /* overall leading whitespace offset */
 			match.start += iconOffset;
 			match.end += iconOffset;
 		}

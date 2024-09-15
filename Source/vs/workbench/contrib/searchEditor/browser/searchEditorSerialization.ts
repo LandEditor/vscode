@@ -5,7 +5,9 @@
 
 import { coalesce } from "../../../../base/common/arrays.js";
 import type { URI } from "../../../../base/common/uri.js";
+
 import "./media/searchEditor.css";
+
 import type { ServicesAccessor } from "../../../../editor/browser/editorExtensions.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
@@ -16,12 +18,12 @@ import type {
 } from "../../../services/search/common/search.js";
 import { ITextFileService } from "../../../services/textfile/common/textfiles.js";
 import {
+	searchMatchComparer,
 	type CellMatch,
 	type FileMatch,
 	type FolderMatch,
 	type Match,
 	type SearchResult,
-	searchMatchComparer,
 } from "../../search/browser/searchModel.js";
 import type { SearchConfiguration } from "./searchEditorInput.js";
 
@@ -58,7 +60,10 @@ const matchToSearchResultFormat = (
 		const rangeOnThisLine = ({
 			start,
 			end,
-		}: { start?: number; end?: number }) =>
+		}: {
+			start?: number;
+			end?: number;
+		}) =>
 			new Range(
 				1,
 				(start ?? 1) + prefixOffset,

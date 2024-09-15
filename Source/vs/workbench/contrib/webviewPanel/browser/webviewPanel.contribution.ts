@@ -17,9 +17,9 @@ import {
 	type IEditorPaneRegistry,
 } from "../../../browser/editor.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -27,8 +27,8 @@ import {
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
@@ -65,16 +65,19 @@ class WebviewPanelContribution
 
 	constructor(
 		@IEditorService editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 	) {
 		super();
 
-		this._register(editorService.onWillOpenEditor(e => {
-			const group = editorGroupService.getGroup(e.groupId);
-			if (group) {
-				this.onEditorOpening(e.editor, group);
-			}
-		}));
+		this._register(
+			editorService.onWillOpenEditor((e) => {
+				const group = editorGroupService.getGroup(e.groupId);
+				if (group) {
+					this.onEditorOpening(e.editor, group);
+				}
+			}),
+		);
 	}
 
 	private onEditorOpening(editor: EditorInput, group: IEditorGroup): void {

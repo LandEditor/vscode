@@ -11,15 +11,15 @@ import type { ICommandHandler } from "../../commands/common/commands.js";
 import { ContextKeyExpr } from "../../contextkey/common/contextkey.js";
 import { InputFocusedContext } from "../../contextkey/common/contextkeys.js";
 import {
-	type ICommandAndKeybindingRule,
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
+	type ICommandAndKeybindingRule,
 } from "../../keybinding/common/keybindingsRegistry.js";
 import {
 	IQuickInputService,
-	type IQuickPick,
 	QuickInputType,
 	QuickPickFocus,
+	type IQuickPick,
 } from "../common/quickInput.js";
 import {
 	endOfQuickInputBoxContext,

@@ -7,13 +7,13 @@ import { $ } from "../../../../base/browser/dom.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Disposable, toDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	ObservablePromise,
 	autorun,
 	autorunWithStore,
 	derived,
 	derivedDisposable,
+	ObservablePromise,
 	observableSignalFromEvent,
+	type IObservable,
 } from "../../../../base/common/observable.js";
 import { URI } from "../../../../base/common/uri.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -37,13 +37,14 @@ import {
 } from "../../../browser/widget/diffEditor/registrations.contribution.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { DetailedLineRangeMapping } from "../../../common/diff/rangeMapping.js";
 import type { IInlineEdit } from "../../../common/languages.js";
 import { PLAINTEXT_LANGUAGE_ID } from "../../../common/languages/modesRegistry.js";
 import type { IModelDeltaDecoration } from "../../../common/model.js";
 import { TextModel } from "../../../common/model/textModel.js";
 import { IModelService } from "../../../common/services/model.js";
+
 import "./inlineEditSideBySideWidget.css";
 
 function* range(start: number, end: number, step = 1) {
@@ -196,32 +197,42 @@ export class InlineEditSideBySideWidget extends Disposable {
 	constructor(
 		private readonly _editor: ICodeEditor,
 		private readonly _model: IObservable<IInlineEdit | undefined>,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IDiffProviderFactoryService private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IDiffProviderFactoryService
+		private readonly _diffProviderFactoryService: IDiffProviderFactoryService,
 		@IModelService private readonly _modelService: IModelService,
 	) {
 		super();
 
-		this._register(autorunWithStore((reader, store) => {
-			/** @description setup content widget */
-			const model = this._model.read(reader);
-			if (!model) {
-				return;
-			}
-			if (this._position.get() === null) {
-				return;
-			}
-			const contentWidget = store.add(this._instantiationService.createInstance(
-				InlineEditSideBySideContentWidget,
-				this._editor,
-				this._position,
-				this._text.map(t => t.text),
-				this._text.map(t => t.shift),
-				this._diff
-			));
-			_editor.addOverlayWidget(contentWidget);
-			store.add(toDisposable(() => _editor.removeOverlayWidget(contentWidget)));
-		}));
+		this._register(
+			autorunWithStore((reader, store) => {
+				/** @description setup content widget */
+				const model = this._model.read(reader);
+				if (!model) {
+					return;
+				}
+				if (this._position.get() === null) {
+					return;
+				}
+				const contentWidget = store.add(
+					this._instantiationService.createInstance(
+						InlineEditSideBySideContentWidget,
+						this._editor,
+						this._position,
+						this._text.map((t) => t.text),
+						this._text.map((t) => t.shift),
+						this._diff,
+					),
+				);
+				_editor.addOverlayWidget(contentWidget);
+				store.add(
+					toDisposable(() =>
+						_editor.removeOverlayWidget(contentWidget),
+					),
+				);
+			}),
+		);
 	}
 }
 
@@ -236,8 +247,7 @@ class InlineEditSideBySideContentWidget
 
 	private static id = 0;
 
-	private readonly id =
-		`InlineEditSideBySideContentWidget${InlineEditSideBySideContentWidget.id++}`;
+	private readonly id = `InlineEditSideBySideContentWidget${InlineEditSideBySideContentWidget.id++}`;
 	public readonly allowEditorOverflow = false;
 
 	private readonly _nodes = $("div.inlineEditSideBySide", undefined);
@@ -409,42 +419,56 @@ class InlineEditSideBySideContentWidget
 		private readonly _position: IObservable<Pos | null>,
 		private readonly _text: IObservable<string>,
 		private readonly _shift: IObservable<number>,
-		private readonly _diff: IObservable<readonly DetailedLineRangeMapping[] | undefined>,
+		private readonly _diff: IObservable<
+			readonly DetailedLineRangeMapping[] | undefined
+		>,
 
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 
 		this._previewEditor.setModel(this._previewTextModel);
 
-		this._register(this._editorObs.setDecorations(this._originalDecorations));
-		this._register(this._previewEditorObs.setDecorations(this._modifiedDecorations));
+		this._register(
+			this._editorObs.setDecorations(this._originalDecorations),
+		);
+		this._register(
+			this._previewEditorObs.setDecorations(this._modifiedDecorations),
+		);
 
-		this._register(autorun(reader => {
-			const width = this._previewEditorObs.contentWidth.read(reader);
-			const lines = this._text.read(reader).split('\n').length - 1;
-			const height = this._editor.getOption(EditorOption.lineHeight) * lines;
-			if (width <= 0) {
-				return;
-			}
-			this._previewEditor.layout({ height: height, width: width });
-		}));
+		this._register(
+			autorun((reader) => {
+				const width = this._previewEditorObs.contentWidth.read(reader);
+				const lines = this._text.read(reader).split("\n").length - 1;
+				const height =
+					this._editor.getOption(EditorOption.lineHeight) * lines;
+				if (width <= 0) {
+					return;
+				}
+				this._previewEditor.layout({ height: height, width: width });
+			}),
+		);
 
-		this._register(autorun(reader => {
-			/** @description update position */
-			this._position.read(reader);
-			this._editor.layoutOverlayWidget(this);
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description update position */
+				this._position.read(reader);
+				this._editor.layoutOverlayWidget(this);
+			}),
+		);
 
-		this._register(autorun(reader => {
-			/** @description scroll change */
-			this._scrollChanged.read(reader);
-			const position = this._position.read(reader);
-			if (!position) {
-				return;
-			}
-			this._editor.layoutOverlayWidget(this);
-		}));
+		this._register(
+			autorun((reader) => {
+				/** @description scroll change */
+				this._scrollChanged.read(reader);
+				const position = this._position.read(reader);
+				if (!position) {
+					return;
+				}
+				this._editor.layoutOverlayWidget(this);
+			}),
+		);
 	}
 
 	getId(): string {

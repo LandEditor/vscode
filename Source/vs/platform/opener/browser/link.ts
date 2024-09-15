@@ -5,10 +5,10 @@
 
 import {
 	$,
-	EventHelper,
-	type EventLike,
 	append,
 	clearNode,
+	EventHelper,
+	type EventLike,
 } from "../../../base/browser/dom.js";
 import { DomEmitter } from "../../../base/browser/event.js";
 import { StandardKeyboardEvent } from "../../../base/browser/keyboardEvent.js";
@@ -20,7 +20,9 @@ import { Event } from "../../../base/common/event.js";
 import { KeyCode } from "../../../base/common/keyCodes.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { IOpenerService } from "../common/opener.js";
+
 import "./link.css";
+
 import type { IManagedHover } from "../../../base/browser/ui/hover/hover.js";
 import type { IHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegate.js";
 import { getDefaultHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegateFactory.js";
@@ -94,43 +96,62 @@ export class Link extends Disposable {
 		private _link: ILinkDescriptor,
 		options: ILinkOptions = {},
 		@IHoverService private readonly _hoverService: IHoverService,
-		@IOpenerService openerService: IOpenerService
+		@IOpenerService openerService: IOpenerService,
 	) {
 		super();
 
-		this.el = append(container, $('a.monaco-link', {
-			tabIndex: _link.tabIndex ?? 0,
-			href: _link.href,
-		}, _link.label));
+		this.el = append(
+			container,
+			$(
+				"a.monaco-link",
+				{
+					tabIndex: _link.tabIndex ?? 0,
+					href: _link.href,
+				},
+				_link.label,
+			),
+		);
 
-		this.hoverDelegate = options.hoverDelegate ?? getDefaultHoverDelegate('mouse');
+		this.hoverDelegate =
+			options.hoverDelegate ?? getDefaultHoverDelegate("mouse");
 		this.setTooltip(_link.title);
 
-		this.el.setAttribute('role', 'button');
+		this.el.setAttribute("role", "button");
 
-		const onClickEmitter = this._register(new DomEmitter(this.el, 'click'));
-		const onKeyPress = this._register(new DomEmitter(this.el, 'keypress'));
-		const onEnterPress = Event.chain(onKeyPress.event, $ =>
-			$.map(e => new StandardKeyboardEvent(e))
-				.filter(e => e.keyCode === KeyCode.Enter)
+		const onClickEmitter = this._register(new DomEmitter(this.el, "click"));
+		const onKeyPress = this._register(new DomEmitter(this.el, "keypress"));
+		const onEnterPress = Event.chain(onKeyPress.event, ($) =>
+			$.map((e) => new StandardKeyboardEvent(e)).filter(
+				(e) => e.keyCode === KeyCode.Enter,
+			),
 		);
-		const onTap = this._register(new DomEmitter(this.el, TouchEventType.Tap)).event;
+		const onTap = this._register(
+			new DomEmitter(this.el, TouchEventType.Tap),
+		).event;
 		this._register(Gesture.addTarget(this.el));
-		const onOpen = Event.any<EventLike>(onClickEmitter.event, onEnterPress, onTap);
+		const onOpen = Event.any<EventLike>(
+			onClickEmitter.event,
+			onEnterPress,
+			onTap,
+		);
 
-		this._register(onOpen(e => {
-			if (!this.enabled) {
-				return;
-			}
+		this._register(
+			onOpen((e) => {
+				if (!this.enabled) {
+					return;
+				}
 
-			EventHelper.stop(e, true);
+				EventHelper.stop(e, true);
 
-			if (options?.opener) {
-				options.opener(this._link.href);
-			} else {
-				openerService.open(this._link.href, { allowCommands: true });
-			}
-		}));
+				if (options?.opener) {
+					options.opener(this._link.href);
+				} else {
+					openerService.open(this._link.href, {
+						allowCommands: true,
+					});
+				}
+			}),
+		);
 
 		this.enabled = true;
 	}

@@ -28,6 +28,7 @@ import {
 	ToggleShowMovedCodeBlocks,
 	ToggleUseInlineViewWhenSpaceIsLimited,
 } from "./commands.js";
+
 import "./registrations.contribution.js";
 
 registerAction2(ToggleCollapseUnchangedRegions);

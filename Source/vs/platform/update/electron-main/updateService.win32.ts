@@ -6,6 +6,7 @@
 import { spawn } from "child_process";
 import * as fs from "fs";
 import { tmpdir } from "os";
+
 import { timeout } from "../../../base/common/async.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { memoize } from "../../../base/common/decorators.js";
@@ -25,21 +26,21 @@ import {
 import { ILogService } from "../../log/common/log.js";
 import { INativeHostMainService } from "../../native/electron-main/nativeHostMainService.js";
 import { IProductService } from "../../product/common/productService.js";
-import { IRequestService, asJson } from "../../request/common/request.js";
+import { asJson, IRequestService } from "../../request/common/request.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type AvailableForDownload,
 	DisablementReason,
-	type IUpdate,
 	State,
 	StateType,
 	UpdateType,
+	type AvailableForDownload,
+	type IUpdate,
 } from "../common/update.js";
 import {
 	AbstractUpdateService,
+	createUpdateURL,
 	type UpdateErrorClassification,
 	type UpdateNotAvailableClassification,
-	createUpdateURL,
 } from "./abstractUpdateService.js";
 
 async function pollUntil(fn: () => boolean, millis = 1000): Promise<void> {
@@ -87,14 +88,23 @@ export class Win32UpdateService
 		@ILifecycleMainService lifecycleMainService: ILifecycleMainService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentMainService environmentMainService: IEnvironmentMainService,
+		@IEnvironmentMainService
+		environmentMainService: IEnvironmentMainService,
 		@IRequestService requestService: IRequestService,
 		@ILogService logService: ILogService,
 		@IFileService private readonly fileService: IFileService,
-		@INativeHostMainService private readonly nativeHostMainService: INativeHostMainService,
-		@IProductService productService: IProductService
+		@INativeHostMainService
+		private readonly nativeHostMainService: INativeHostMainService,
+		@IProductService productService: IProductService,
 	) {
-		super(lifecycleMainService, configurationService, environmentMainService, requestService, logService, productService);
+		super(
+			lifecycleMainService,
+			configurationService,
+			environmentMainService,
+			requestService,
+			logService,
+			productService,
+		);
 
 		lifecycleMainService.setRelaunchHandler(this);
 	}

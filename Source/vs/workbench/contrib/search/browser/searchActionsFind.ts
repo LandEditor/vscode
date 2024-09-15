@@ -38,8 +38,8 @@ import type {
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import type { ExplorerViewPaneContainer } from "../../files/browser/explorerViewlet.js";
 import {
-	IExplorerService,
 	getMultiSelectedResources,
+	IExplorerService,
 } from "../../files/browser/files.js";
 import {
 	ExplorerFolderContext,
@@ -58,8 +58,8 @@ import {
 } from "./searchActionsBase.js";
 import {
 	FileMatch,
-	type FolderMatchWithResource,
 	Match,
+	type FolderMatchWithResource,
 	type RenderableMatch,
 } from "./searchModel.js";
 

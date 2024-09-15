@@ -5,10 +5,10 @@
 
 import {
 	$,
-	type Dimension,
 	addDisposableListener,
 	append,
 	setParentFlowTo,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { getDefaultHoverDelegate } from "../../../../base/browser/ui/hover/hoverDelegateFactory.js";
@@ -27,17 +27,19 @@ import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
 } from "../../../../base/common/lifecycle.js";
-import { Schemas, matchesScheme } from "../../../../base/common/network.js";
+import { matchesScheme, Schemas } from "../../../../base/common/network.js";
 import { language } from "../../../../base/common/platform.js";
 import * as semver from "../../../../base/common/semver/semver.js";
 import { isUndefined } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
+
 import "./media/extensionEditor.css";
+
 import { EditorContextKeys } from "../../../../editor/common/editorContextKeys.js";
 import { TokenizationRegistry } from "../../../../editor/common/languages.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
@@ -49,10 +51,10 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
-	type IScopedContextKeyService,
 	RawContextKey,
+	type IContextKey,
+	type IScopedContextKeyService,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import {
@@ -83,10 +85,10 @@ import {
 	textLinkForeground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
-	type ICssStyleCollector,
 	IThemeService,
 	registerThemingParticipant,
+	type IColorTheme,
+	type ICssStyleCollector,
 } from "../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
@@ -104,17 +106,17 @@ import {
 	renderMarkdownDocument,
 } from "../../markdown/browser/markdownDocumentRenderer.js";
 import {
-	type IWebview,
 	IWebviewService,
 	KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED,
+	type IWebview,
 } from "../../webview/browser/webview.js";
 import {
 	ExtensionContainers,
 	ExtensionEditorTab,
 	ExtensionState,
+	IExtensionsWorkbenchService,
 	type IExtension,
 	type IExtensionContainer,
-	IExtensionsWorkbenchService,
 } from "../common/extensions.js";
 import type {
 	ExtensionsInput,
@@ -160,11 +162,11 @@ import {
 	ExtensionStatusWidget,
 	ExtensionWidget,
 	InstallCountWidget,
+	onClick,
 	RatingsWidget,
 	RemoteBadgeWidget,
 	SponsorWidget,
 	VerifiedPublisherWidget,
-	onClick,
 } from "./extensionsWidgets.js";
 
 class NavBar extends Disposable {
@@ -337,26 +339,41 @@ export class ExtensionEditor extends EditorPane {
 	constructor(
 		group: IEditorGroup,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
 		@IThemeService themeService: IThemeService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IExtensionRecommendationsService private readonly extensionRecommendationsService: IExtensionRecommendationsService,
+		@IExtensionRecommendationsService
+		private readonly extensionRecommendationsService: IExtensionRecommendationsService,
 		@IStorageService storageService: IStorageService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IWebviewService private readonly webviewService: IWebviewService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IExplorerService private readonly explorerService: IExplorerService,
 		@IViewsService private readonly viewsService: IViewsService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
-		super(ExtensionEditor.ID, group, telemetryService, themeService, storageService);
+		super(
+			ExtensionEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 		this.extensionReadme = null;
 		this.extensionChangelog = null;
 		this.extensionManifest = null;

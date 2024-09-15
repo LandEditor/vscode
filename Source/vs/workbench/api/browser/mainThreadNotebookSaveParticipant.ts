@@ -14,17 +14,17 @@ import type {
 } from "../../../platform/progress/common/progress.js";
 import { NotebookFileWorkingCopyModel } from "../../contrib/notebook/common/notebookEditorModel.js";
 import {
-	type IExtHostContext,
 	extHostCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import type {
 	IStoredFileWorkingCopy,
 	IStoredFileWorkingCopyModel,
 } from "../../services/workingCopy/common/storedFileWorkingCopy.js";
 import {
+	IWorkingCopyFileService,
 	type IStoredFileWorkingCopySaveParticipant,
 	type IStoredFileWorkingCopySaveParticipantContext,
-	IWorkingCopyFileService,
 } from "../../services/workingCopy/common/workingCopyFileService.js";
 import {
 	ExtHostContext,
@@ -90,9 +90,16 @@ export class SaveParticipant {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
 	) {
-		this._saveParticipantDisposable = this.workingCopyFileService.addSaveParticipant(instantiationService.createInstance(ExtHostNotebookDocumentSaveParticipant, extHostContext));
+		this._saveParticipantDisposable =
+			this.workingCopyFileService.addSaveParticipant(
+				instantiationService.createInstance(
+					ExtHostNotebookDocumentSaveParticipant,
+					extHostContext,
+				),
+			);
 	}
 
 	dispose(): void {

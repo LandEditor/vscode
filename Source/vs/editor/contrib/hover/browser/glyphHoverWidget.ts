@@ -11,16 +11,16 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import { MarkdownRenderer } from "../../../browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../common/config/editorOptions.js";
 import { ILanguageService } from "../../../common/languages/language.js";
 import {
@@ -31,8 +31,8 @@ import {
 } from "./glyphHoverComputer.js";
 import {
 	HoverOperation,
-	type HoverResult,
 	HoverStartMode,
+	type HoverResult,
 } from "./hoverOperation.js";
 import type { IHoverWidget } from "./hoverTypes.js";
 import { isMousePositionWithinElement } from "./hoverUtils.js";

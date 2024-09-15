@@ -6,15 +6,15 @@
 import * as DOM from "../../../base/browser/dom.js";
 import { StandardKeyboardEvent } from "../../../base/browser/keyboardEvent.js";
 import {
-	type ActionViewItem,
 	BaseActionViewItem,
+	type ActionViewItem,
 } from "../../../base/browser/ui/actionbar/actionViewItems.js";
 import { DropdownMenuActionViewItem } from "../../../base/browser/ui/dropdown/dropdownActionViewItem.js";
 import type { IHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegate.js";
 import type { IAction, IActionRunner } from "../../../base/common/actions.js";
 import type { Event } from "../../../base/common/event.js";
-import { KeyCode } from "../../../base/common/keyCodes.js";
 import type { ResolvedKeybinding } from "../../../base/common/keybindings.js";
+import { KeyCode } from "../../../base/common/keyCodes.js";
 import { IAccessibilityService } from "../../accessibility/common/accessibility.js";
 import { IContextKeyService } from "../../contextkey/common/contextkey.js";
 import type { IContextMenuService } from "../../contextview/browser/contextView.js";

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	RunOnceScheduler,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
@@ -21,10 +21,10 @@ import type { IEditorContribution } from "../../../common/editorCommon.js";
 import { StandardTokenType } from "../../../common/encodedTokenAttributes.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
 import {
-	type IModelDeltaDecoration,
 	MinimapPosition,
 	MinimapSectionHeaderStyle,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import { IEditorWorkerService } from "../../../common/services/editorWorker.js";
@@ -49,69 +49,97 @@ export class SectionHeaderDetector
 
 	constructor(
 		private readonly editor: ICodeEditor,
-		@ILanguageConfigurationService private readonly languageConfigurationService: ILanguageConfigurationService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
+		@ILanguageConfigurationService
+		private readonly languageConfigurationService: ILanguageConfigurationService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
 	) {
 		super();
 
-		this.options = this.createOptions(editor.getOption(EditorOption.minimap));
+		this.options = this.createOptions(
+			editor.getOption(EditorOption.minimap),
+		);
 		this.computePromise = null;
 		this.currentOccurrences = {};
 
-		this._register(editor.onDidChangeModel((e) => {
-			this.currentOccurrences = {};
-			this.options = this.createOptions(editor.getOption(EditorOption.minimap));
-			this.stop();
-			this.computeSectionHeaders.schedule(0);
-		}));
-
-		this._register(editor.onDidChangeModelLanguage((e) => {
-			this.currentOccurrences = {};
-			this.options = this.createOptions(editor.getOption(EditorOption.minimap));
-			this.stop();
-			this.computeSectionHeaders.schedule(0);
-		}));
-
-		this._register(languageConfigurationService.onDidChange((e) => {
-			const editorLanguageId = this.editor.getModel()?.getLanguageId();
-			if (editorLanguageId && e.affects(editorLanguageId)) {
+		this._register(
+			editor.onDidChangeModel((e) => {
 				this.currentOccurrences = {};
-				this.options = this.createOptions(editor.getOption(EditorOption.minimap));
+				this.options = this.createOptions(
+					editor.getOption(EditorOption.minimap),
+				);
 				this.stop();
 				this.computeSectionHeaders.schedule(0);
-			}
-		}));
+			}),
+		);
 
-		this._register(editor.onDidChangeConfiguration(e => {
-			if (this.options && !e.hasChanged(EditorOption.minimap)) {
-				return;
-			}
+		this._register(
+			editor.onDidChangeModelLanguage((e) => {
+				this.currentOccurrences = {};
+				this.options = this.createOptions(
+					editor.getOption(EditorOption.minimap),
+				);
+				this.stop();
+				this.computeSectionHeaders.schedule(0);
+			}),
+		);
 
-			this.options = this.createOptions(editor.getOption(EditorOption.minimap));
+		this._register(
+			languageConfigurationService.onDidChange((e) => {
+				const editorLanguageId = this.editor
+					.getModel()
+					?.getLanguageId();
+				if (editorLanguageId && e.affects(editorLanguageId)) {
+					this.currentOccurrences = {};
+					this.options = this.createOptions(
+						editor.getOption(EditorOption.minimap),
+					);
+					this.stop();
+					this.computeSectionHeaders.schedule(0);
+				}
+			}),
+		);
 
-			// Remove any links (for the getting disabled case)
-			this.updateDecorations([]);
+		this._register(
+			editor.onDidChangeConfiguration((e) => {
+				if (this.options && !e.hasChanged(EditorOption.minimap)) {
+					return;
+				}
 
-			// Stop any computation (for the getting disabled case)
-			this.stop();
+				this.options = this.createOptions(
+					editor.getOption(EditorOption.minimap),
+				);
 
-			// Start computing (for the getting enabled case)
-			this.computeSectionHeaders.schedule(0);
-		}));
+				// Remove any links (for the getting disabled case)
+				this.updateDecorations([]);
 
-		this._register(this.editor.onDidChangeModelContent(e => {
-			this.computeSectionHeaders.schedule();
-		}));
+				// Stop any computation (for the getting disabled case)
+				this.stop();
 
-		this._register(editor.onDidChangeModelTokens((e) => {
-			if (!this.computeSectionHeaders.isScheduled()) {
-				this.computeSectionHeaders.schedule(1000);
-			}
-		}));
+				// Start computing (for the getting enabled case)
+				this.computeSectionHeaders.schedule(0);
+			}),
+		);
 
-		this.computeSectionHeaders = this._register(new RunOnceScheduler(() => {
-			this.findSectionHeaders();
-		}, 250));
+		this._register(
+			this.editor.onDidChangeModelContent((e) => {
+				this.computeSectionHeaders.schedule();
+			}),
+		);
+
+		this._register(
+			editor.onDidChangeModelTokens((e) => {
+				if (!this.computeSectionHeaders.isScheduled()) {
+					this.computeSectionHeaders.schedule(1000);
+				}
+			}),
+		);
+
+		this.computeSectionHeaders = this._register(
+			new RunOnceScheduler(() => {
+				this.findSectionHeaders();
+			}, 250),
+		);
 
 		this.computeSectionHeaders.schedule(0);
 	}

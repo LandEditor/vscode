@@ -24,11 +24,13 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 
 export class BrowserClipboardService extends BaseBrowserClipboardService {
 	constructor(
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ILogService logService: ILogService,
-		@ILayoutService layoutService: ILayoutService
+		@ILayoutService layoutService: ILayoutService,
 	) {
 		super(layoutService, logService);
 	}

@@ -28,13 +28,13 @@ import {
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import { NativeHostService } from "../../../../platform/native/common/nativeHostService.js";
 import {
+	isFolderToOpen,
+	isWorkspaceToOpen,
 	type IOpenEmptyWindowOptions,
 	type IOpenWindowOptions,
 	type IPoint,
 	type IRectangle,
 	type IWindowOpenable,
-	isFolderToOpen,
-	isWorkspaceToOpen,
 } from "../../../../platform/window/common/window.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { INativeWorkbenchEnvironmentService } from "../../environment/electron-sandbox/environmentService.js";
@@ -42,7 +42,8 @@ import { IHostService } from "../browser/host.js";
 
 class WorkbenchNativeHostService extends NativeHostService {
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IMainProcessService mainProcessService: IMainProcessService,
 	) {
 		super(environmentService.window.id, mainProcessService);
@@ -53,9 +54,11 @@ class WorkbenchHostService extends Disposable implements IHostService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@ILabelService private readonly labelService: ILabelService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
 	}

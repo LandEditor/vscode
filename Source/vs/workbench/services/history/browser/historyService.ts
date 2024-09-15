@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	addDisposableListener,
 	EventHelper,
 	EventType,
 	WindowIdleValue,
-	addDisposableListener,
 } from "../../../../base/browser/dom.js";
 import { mainWindow } from "../../../../base/browser/window.js";
 import { coalesce, remove } from "../../../../base/common/arrays.js";
@@ -16,8 +16,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { URI } from "../../../../base/common/uri.js";
@@ -32,11 +32,11 @@ import type {
 	IResourceEditorInput,
 } from "../../../../platform/editor/common/editor.js";
 import {
-	FILES_EXCLUDE_CONFIG,
-	FileChangeType,
 	FileChangesEvent,
+	FileChangeType,
 	FileOperation,
 	FileOperationEvent,
+	FILES_EXCLUDE_CONFIG,
 	IFileService,
 } from "../../../../platform/files/common/files.js";
 import {
@@ -60,8 +60,13 @@ import {
 	EditorPaneSelectionCompareResult,
 	EditorResourceAccessor,
 	EditorsOrder,
-	type GroupIdentifier,
 	GroupModelChangeKind,
+	isEditorInput,
+	isEditorPaneWithSelection,
+	isResourceEditorInput,
+	isSideBySideEditorInput,
+	SideBySideEditor,
+	type GroupIdentifier,
 	type IEditorCloseEvent,
 	type IEditorIdentifier,
 	type IEditorPane,
@@ -70,17 +75,12 @@ import {
 	type IEditorPaneWithSelection,
 	type IEditorWillMoveEvent,
 	type IUntypedEditorInput,
-	SideBySideEditor,
-	isEditorInput,
-	isEditorPaneWithSelection,
-	isResourceEditorInput,
-	isSideBySideEditorInput,
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import { ResourceGlobMatcher } from "../../../common/resources.js";
 import {
-	type IEditorGroup,
 	IEditorGroupsService,
+	type IEditorGroup,
 } from "../../editor/common/editorGroupsService.js";
 import { IEditorService } from "../../editor/common/editorService.js";
 import { IWorkbenchLayoutService } from "../../layout/browser/layoutService.js";
@@ -90,9 +90,9 @@ import {
 } from "../../lifecycle/common/lifecycle.js";
 import { IPathService } from "../../path/common/pathService.js";
 import {
-	type ISearchConfiguration,
-	SEARCH_EXCLUDE_CONFIG,
 	getExcludes,
+	SEARCH_EXCLUDE_CONFIG,
+	type ISearchConfiguration,
 } from "../../search/common/search.js";
 import { GoFilter, GoScope, IHistoryService } from "../common/history.js";
 
@@ -131,16 +131,23 @@ export class HistoryService extends Disposable implements IHistoryService {
 
 	constructor(
 		@IEditorService private readonly editorService: EditorServiceImpl,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkspacesService private readonly workspacesService: IWorkspacesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@ILogService private readonly logService: ILogService
+		@IWorkspacesService
+		private readonly workspacesService: IWorkspacesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
@@ -1834,7 +1841,8 @@ class EditorNavigationStacks
 
 	constructor(
 		private readonly scope: GoScope,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -2027,10 +2035,12 @@ export class EditorNavigationStack extends Disposable {
 	constructor(
 		private readonly filter: GoFilter,
 		private readonly scope: GoScope,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
-		@ILogService private readonly logService: ILogService
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
@@ -2745,11 +2755,12 @@ ${entryLabels.join("\n")}
 
 class EditorHelper {
 	constructor(
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@IFileService private readonly fileService: IFileService,
-		@IPathService private readonly pathService: IPathService
-	) { }
+		@IPathService private readonly pathService: IPathService,
+	) {}
 
 	preferResourceEditorInput(
 		editor: EditorInput,

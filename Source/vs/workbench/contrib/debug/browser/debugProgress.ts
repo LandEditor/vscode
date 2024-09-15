@@ -5,8 +5,8 @@
 
 import { Event } from "../../../../base/common/event.js";
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
 	IProgressService,
@@ -16,8 +16,8 @@ import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	IDebugService,
-	type IDebugSession,
 	VIEWLET_ID,
+	type IDebugSession,
 } from "../common/debug.js";
 
 export class DebugProgressContribution implements IWorkbenchContribution {

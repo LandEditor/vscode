@@ -17,14 +17,14 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	type IWorkspace,
 	IWorkspaceContextService,
 	WorkbenchState,
+	type IWorkspace,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
-	type ITextFileContent,
 	ITextFileService,
+	type ITextFileContent,
 } from "../../../services/textfile/common/textfiles.js";
 import {
 	GradleDependencyCompactRegex,
@@ -452,10 +452,12 @@ export class WorkspaceTagsService implements IWorkspaceTagsService {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@ITextFileService private readonly textFileService: ITextFileService
-	) { }
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@ITextFileService private readonly textFileService: ITextFileService,
+	) {}
 
 	async getTags(): Promise<Tags> {
 		if (!this._tags) {

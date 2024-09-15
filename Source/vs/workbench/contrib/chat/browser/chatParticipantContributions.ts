@@ -8,8 +8,8 @@ import { Codicon } from "../../../../base/common/codicons.js";
 import {
 	DisposableMap,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as strings from "../../../../base/common/strings.js";
 import { localize, localize2 } from "../../../../nls.js";
@@ -26,12 +26,12 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ViewPaneContainer } from "../../../browser/parts/views/viewPaneContainer.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
+	ViewContainerLocation,
+	Extensions as ViewExtensions,
 	type IViewContainersRegistry,
 	type IViewDescriptor,
 	type IViewsRegistry,
 	type ViewContainer,
-	ViewContainerLocation,
-	Extensions as ViewExtensions,
 } from "../../../common/views.js";
 import { isProposedApiEnabled } from "../../../services/extensions/common/extensions.js";
 import * as extensionsRegistry from "../../../services/extensions/common/extensionsRegistry.js";
@@ -39,8 +39,8 @@ import { showExtensionsWithIdsCommandId } from "../../extensions/browser/extensi
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
 import {
 	ChatAgentLocation,
-	type IChatAgentData,
 	IChatAgentService,
+	type IChatAgentData,
 } from "../common/chatAgents.js";
 import {
 	CONTEXT_CHAT_EXTENSION_INVALID,
@@ -290,8 +290,9 @@ export class ChatExtensionPointHandler implements IWorkbenchContribution {
 	private _participantRegistrationDisposables = new DisposableMap<string>();
 
 	constructor(
-		@IChatAgentService private readonly _chatAgentService: IChatAgentService,
-		@ILogService private readonly logService: ILogService
+		@IChatAgentService
+		private readonly _chatAgentService: IChatAgentService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		this._viewContainer = this.registerViewContainer();
 		this.registerDefaultParticipantView();
@@ -544,7 +545,8 @@ export class ChatCompatibilityNotifier implements IWorkbenchContribution {
 	static readonly ID = "workbench.contrib.chatCompatNotifier";
 
 	constructor(
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IChatAgentService chatAgentService: IChatAgentService,
 		@IProductService productService: IProductService,

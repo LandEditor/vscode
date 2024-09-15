@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/welcomeWidget.css";
+
 import { $, append, hide } from "../../../../base/browser/dom.js";
 import { renderFormattedText } from "../../../../base/browser/formattedTextRenderer.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
@@ -20,15 +21,15 @@ import { MarkdownString } from "../../../../base/common/htmlContent.js";
 import { mnemonicButtonLabel } from "../../../../base/common/labels.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
-	type LinkedText,
 	parseLinkedText,
+	type LinkedText,
 } from "../../../../base/common/linkedText.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import {
+	OverlayWidgetPositionPreference,
 	type ICodeEditor,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
-	OverlayWidgetPositionPreference,
 } from "../../../../editor/browser/editorBrowser.js";
 import { MarkdownRenderer } from "../../../../editor/browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { localize } from "../../../../nls.js";

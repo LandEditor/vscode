@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/stickyScroll.css";
+
 import { localize, localize2 } from "../../../../../nls.js";
 import { MenuId } from "../../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
@@ -12,6 +13,11 @@ import { registerTerminalAction } from "../../../terminal/browser/terminalAction
 import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
 import { TerminalStickyScrollSettingId } from "../common/terminalStickyScrollConfiguration.js";
 import { TerminalStickyScrollContribution } from "./terminalStickyScrollContribution.js";
+// #endregion
+
+// #region Colors
+
+import "./terminalStickyScrollColorRegistry.js";
 
 // #region Terminal Contributions
 
@@ -58,11 +64,5 @@ registerTerminalAction({
 	},
 	menu: [{ id: MenuId.TerminalStickyScrollContext }],
 });
-
-// #endregion
-
-// #region Colors
-
-import "./terminalStickyScrollColorRegistry.js";
 
 // #endregion

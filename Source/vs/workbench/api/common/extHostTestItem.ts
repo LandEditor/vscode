@@ -1,4 +1,5 @@
 import type * as vscode from "vscode";
+
 import { URI } from "../../../base/common/uri.js";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
@@ -10,24 +11,24 @@ import {
 	TestIdPathParts,
 } from "../../contrib/testing/common/testId.js";
 import {
+	createTestItemChildren,
+	TestItemCollection,
+	TestItemEventOp,
 	type ExtHostTestItemEvent,
 	type ITestChildrenLike,
 	type ITestItemApi,
 	type ITestItemChildren,
-	TestItemCollection,
-	TestItemEventOp,
-	createTestItemChildren,
 } from "../../contrib/testing/common/testItemCollection.js";
 import {
+	denamespaceTestTag,
 	type ITestItem,
 	type ITestItemContext,
-	denamespaceTestTag,
 } from "../../contrib/testing/common/testTypes.js";
 import type { ExtHostDocumentsAndEditors } from "./extHostDocumentsAndEditors.js";
 import {
-	type IExtHostTestItemApi,
 	createPrivateApiFor,
 	getPrivateApiFor,
+	type IExtHostTestItemApi,
 } from "./extHostTestingPrivateApi.js";
 import * as Convert from "./extHostTypeConverters.js";
 

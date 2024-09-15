@@ -29,15 +29,15 @@ import { WorkbenchCompressibleAsyncDataTree } from "../../../../../platform/list
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import {
-	type IResourceLabel,
 	ResourceLabels,
+	type IResourceLabel,
 } from "../../../../browser/labels.js";
 import { createFileIconThemableTreeContainerScope } from "../../../files/browser/views/explorerView.js";
 import type { IFilesConfiguration } from "../../../files/common/files.js";
 import type { IChatProgressRenderableResponseContent } from "../../common/chatModel.js";
 import type { IChatResponseProgressFileTreeData } from "../../common/chatService.js";
 import type { ChatTreeItem } from "../chat.js";
-import { type IDisposableReference, ResourcePool } from "./chatCollections.js";
+import { ResourcePool, type IDisposableReference } from "./chatCollections.js";
 import type { IChatContentPart } from "./chatContentParts.js";
 
 const $ = dom.$;
@@ -64,7 +64,7 @@ export class ChatTreeContentPart
 		element: ChatTreeItem,
 		treePool: TreePool,
 		treeDataIndex: number,
-		@IOpenerService private readonly openerService: IOpenerService
+		@IOpenerService private readonly openerService: IOpenerService,
 	) {
 		super();
 
@@ -72,18 +72,24 @@ export class ChatTreeContentPart
 		this.tree = ref.object;
 		this.onDidFocus = this.tree.onDidFocus;
 
-		this._register(this.tree.onDidOpen((e) => {
-			if (e.element && !('children' in e.element)) {
-				this.openerService.open(e.element.uri);
-			}
-		}));
-		this._register(this.tree.onDidChangeCollapseState(() => {
-			this._onDidChangeHeight.fire();
-		}));
-		this._register(this.tree.onContextMenu((e) => {
-			e.browserEvent.preventDefault();
-			e.browserEvent.stopPropagation();
-		}));
+		this._register(
+			this.tree.onDidOpen((e) => {
+				if (e.element && !("children" in e.element)) {
+					this.openerService.open(e.element.uri);
+				}
+			}),
+		);
+		this._register(
+			this.tree.onDidChangeCollapseState(() => {
+				this._onDidChangeHeight.fire();
+			}),
+		);
+		this._register(
+			this.tree.onContextMenu((e) => {
+				e.browserEvent.preventDefault();
+				e.browserEvent.stopPropagation();
+			}),
+		);
 
 		this.tree.setInput(data).then(() => {
 			if (!ref.isStale()) {
@@ -130,8 +136,10 @@ export class TreePool extends Disposable {
 
 	constructor(
 		private _onDidChangeVisibility: Event<boolean>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configService: IConfigurationService,
 		@IThemeService private readonly themeService: IThemeService,
 	) {
 		super();

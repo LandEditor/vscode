@@ -15,8 +15,8 @@ import { Toggle } from "../../../../base/browser/ui/toggle/toggle.js";
 import { Widget } from "../../../../base/browser/ui/widget.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
-	type Event as CommonEvent,
 	Emitter,
+	type Event as CommonEvent,
 } from "../../../../base/common/event.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import * as nls from "../../../../nls.js";
@@ -53,15 +53,21 @@ export class PatternInputWidget extends Widget {
 	private _onCancel = this._register(new Emitter<void>());
 	onCancel: CommonEvent<void> = this._onCancel.event;
 
-	constructor(parent: HTMLElement, private contextViewProvider: IContextViewProvider, options: IOptions,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+	constructor(
+		parent: HTMLElement,
+		private contextViewProvider: IContextViewProvider,
+		options: IOptions,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
 		options = {
 			...{
-				ariaLabel: nls.localize('defaultLabel', "input")
+				ariaLabel: nls.localize("defaultLabel", "input"),
 			},
 			...options,
 		};

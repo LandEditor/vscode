@@ -3,10 +3,9 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../../../nls.js";
-
 // Import the effects we need
 import { Color, RGBA } from "../../../../base/common/color.js";
+import * as nls from "../../../../nls.js";
 import {
 	darken,
 	lessProminent,
@@ -14,7 +13,6 @@ import {
 	registerColor,
 	transparent,
 } from "../colorUtils.js";
-
 // Import the colors we need
 import {
 	activeContrastBorder,

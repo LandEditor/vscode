@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import * as performance from "../../../base/common/performance.js";
 import { escapeRegExpCharacters } from "../../../base/common/strings.js";
 import { URI } from "../../../base/common/uri.js";
@@ -20,12 +21,12 @@ import {
 	type MainThreadTelemetryShape,
 } from "./extHost.protocol.js";
 import {
-	type ExtHostConfigProvider,
 	IExtHostConfiguration,
+	type ExtHostConfigProvider,
 } from "./extHostConfiguration.js";
 import {
-	type ExtensionPaths,
 	IExtHostExtensionService,
+	type ExtensionPaths,
 } from "./extHostExtensionService.js";
 import { IExtHostInitDataService } from "./extHostInitDataService.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -52,10 +53,14 @@ export abstract class RequireInterceptor {
 	constructor(
 		private _apiFactory: IExtensionApiFactory,
 		private _extensionRegistry: IExtensionRegistries,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@IExtHostConfiguration private readonly _extHostConfiguration: IExtHostConfiguration,
-		@IExtHostExtensionService private readonly _extHostExtensionService: IExtHostExtensionService,
-		@IExtHostInitDataService private readonly _initData: IExtHostInitDataService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@IExtHostConfiguration
+		private readonly _extHostConfiguration: IExtHostConfiguration,
+		@IExtHostExtensionService
+		private readonly _extHostExtensionService: IExtHostExtensionService,
+		@IExtHostInitDataService
+		private readonly _initData: IExtHostInitDataService,
 		@ILogService private readonly _logService: ILogService,
 	) {
 		this._factories = new Map<string, INodeModuleFactory>();
@@ -133,15 +138,24 @@ class NodeModuleAliasingModuleFactory implements IAlternativeModuleProvider {
 	private readonly re?: RegExp;
 
 	constructor(@IExtHostInitDataService initData: IExtHostInitDataService) {
-		if (initData.environment.appRoot && NodeModuleAliasingModuleFactory.aliased.size) {
-			const root = escapeRegExpCharacters(this.forceForwardSlashes(initData.environment.appRoot.fsPath));
+		if (
+			initData.environment.appRoot &&
+			NodeModuleAliasingModuleFactory.aliased.size
+		) {
+			const root = escapeRegExpCharacters(
+				this.forceForwardSlashes(initData.environment.appRoot.fsPath),
+			);
 			// decompose ${appRoot}/node_modules/foo/bin to ['${appRoot}/node_modules/', 'foo', '/bin'],
 			// and likewise the more complex form ${appRoot}/node_modules.asar.unpacked/@vcode/foo/bin
 			// to ['${appRoot}/node_modules.asar.unpacked/',' @vscode/foo', '/bin'].
 			const npmIdChrs = `[a-z0-9_.-]`;
 			const npmModuleName = `@${npmIdChrs}+\\/${npmIdChrs}+|${npmIdChrs}+`;
-			const moduleFolders = 'node_modules|node_modules\\.asar(?:\\.unpacked)?';
-			this.re = new RegExp(`^(${root}/${moduleFolders}\\/)(${npmModuleName})(.*)$`, 'i');
+			const moduleFolders =
+				"node_modules|node_modules\\.asar(?:\\.unpacked)?";
+			this.re = new RegExp(
+				`^(${root}/${moduleFolders}\\/)(${npmModuleName})(.*)$`,
+				"i",
+			);
 		}
 	}
 

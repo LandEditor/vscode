@@ -10,8 +10,8 @@ import { URI } from "../../../../base/common/uri.js";
 import type { CommentThread } from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import {
-	type ICommentThreadChangedEvent,
 	ResourceWithCommentThreads,
+	type ICommentThreadChangedEvent,
 } from "../common/commentModel.js";
 
 export function threadHasMeaningfulComments(thread: CommentThread): boolean {

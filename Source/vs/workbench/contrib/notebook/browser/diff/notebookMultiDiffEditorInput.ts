@@ -10,8 +10,8 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { ITextFileService } from "../../../../services/textfile/common/textfiles.js";
 import { MultiDiffEditorInput } from "../../../multiDiffEditor/browser/multiDiffEditorInput.js";
 import {
-	type IMultiDiffSourceResolver,
 	IMultiDiffSourceResolverService,
+	type IMultiDiffSourceResolver,
 	type IResolvedMultiDiffSource,
 } from "../../../multiDiffEditor/browser/multiDiffSourceResolverService.js";
 import { NotebookDiffEditorInput } from "../../common/notebookDiffEditorInput.js";
@@ -75,9 +75,11 @@ export class NotebookMultiDiffEditorWidgetInput
 		multiDiffSource: URI,
 		private readonly notebookDiffViewModel: NotebookDiffViewModel,
 		@ITextModelService _textModelService: ITextModelService,
-		@ITextResourceConfigurationService _textResourceConfigurationService: ITextResourceConfigurationService,
+		@ITextResourceConfigurationService
+		_textResourceConfigurationService: ITextResourceConfigurationService,
 		@IInstantiationService _instantiationService: IInstantiationService,
-		@IMultiDiffSourceResolverService _multiDiffSourceResolverService: IMultiDiffSourceResolverService,
+		@IMultiDiffSourceResolverService
+		_multiDiffSourceResolverService: IMultiDiffSourceResolverService,
 		@ITextFileService _textFileService: ITextFileService,
 	) {
 		super(

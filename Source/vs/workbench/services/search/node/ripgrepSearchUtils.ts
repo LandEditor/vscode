@@ -36,7 +36,10 @@ export interface IOutputChannel {
 }
 
 export class OutputChannel implements IOutputChannel {
-	constructor(private prefix: string, @ILogService private readonly logService: ILogService) { }
+	constructor(
+		private prefix: string,
+		@ILogService private readonly logService: ILogService,
+	) {}
 
 	appendLine(msg: string): void {
 		this.logService.debug(`${this.prefix}#search`, msg);

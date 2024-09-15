@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./selections.css";
+
 import { editorSelectionForeground } from "../../../../platform/theme/common/colorRegistry.js";
 import { registerThemingParticipant } from "../../../../platform/theme/common/themeService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";

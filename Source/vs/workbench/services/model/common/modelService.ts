@@ -19,12 +19,18 @@ import { IPathService } from "../../path/common/pathService.js";
 export class WorkbenchModelService extends ModelService {
 	constructor(
 		@IConfigurationService configurationService: IConfigurationService,
-		@ITextResourcePropertiesService resourcePropertiesService: ITextResourcePropertiesService,
+		@ITextResourcePropertiesService
+		resourcePropertiesService: ITextResourcePropertiesService,
 		@IUndoRedoService undoRedoService: IUndoRedoService,
 		@IPathService private readonly _pathService: IPathService,
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		super(configurationService, resourcePropertiesService, undoRedoService, instantiationService);
+		super(
+			configurationService,
+			resourcePropertiesService,
+			undoRedoService,
+			instantiationService,
+		);
 	}
 
 	protected override _schemaShouldMaintainUndoRedoElements(resource: URI) {

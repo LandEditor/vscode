@@ -8,9 +8,9 @@ import { generateUuid, isUUID } from "../../../base/common/uuid.js";
 import type { IEnvironmentService } from "../../environment/common/environment.js";
 import type { IFileService } from "../../files/common/files.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../storage/common/storage.js";
 
 export async function getServiceMachineId(

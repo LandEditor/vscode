@@ -28,7 +28,7 @@ class UserDataAutoSyncService implements IUserDataAutoSyncService {
 	constructor(
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
 	) {
-		this.channel = sharedProcessService.getChannel('userDataAutoSync');
+		this.channel = sharedProcessService.getChannel("userDataAutoSync");
 	}
 
 	triggerSync(

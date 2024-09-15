@@ -10,9 +10,9 @@ import type { IExtensionDescription } from "../../../platform/extensions/common/
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import {
+	MainContext,
 	type ExtHostLocalizationShape,
 	type IStringDetails,
-	MainContext,
 	type MainThreadLocalizationShape,
 } from "./extHost.protocol.js";
 import { IExtHostInitDataService } from "./extHostInitDataService.js";
@@ -33,7 +33,7 @@ export class ExtHostLocalizationService implements ExtHostLocalizationShape {
 	constructor(
 		@IExtHostInitDataService initData: IExtHostInitDataService,
 		@IExtHostRpcService rpc: IExtHostRpcService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		this._proxy = rpc.getProxy(MainContext.MainThreadLocalization);
 		this.currentLanguage = initData.environment.appLanguage;

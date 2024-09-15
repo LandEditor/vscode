@@ -4,32 +4,33 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { VSBuffer } from "../../../base/common/buffer.js";
 import { CharCode } from "../../../base/common/charCode.js";
 import {
-	type IMarkdownString,
 	isMarkdownString,
+	type IMarkdownString,
 } from "../../../base/common/htmlContent.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { commonPrefixLength } from "../../../base/common/strings.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
-	type Edge,
 	LinkComputer,
 	State,
 	StateMachine,
+	type Edge,
 } from "../../../editor/common/languages/linkComputer.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import * as files from "../../../platform/files/common/files.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostFileSystemShape,
 	type IFileChangeDto,
 	type IMainContext,
-	MainContext,
 	type MainThreadFileSystemShape,
 } from "./extHost.protocol.js";
 import type { ExtHostLanguageFeatures } from "./extHostLanguageFeatures.js";

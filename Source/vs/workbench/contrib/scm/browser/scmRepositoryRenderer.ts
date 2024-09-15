@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/scm.css";
+
 import { $, append } from "../../../../base/browser/dom.js";
 import type { IActionViewItemProvider } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { CountBadge } from "../../../../base/browser/ui/countBadge/countBadge.js";
@@ -15,9 +16,9 @@ import type { ITreeNode } from "../../../../base/browser/ui/tree/tree.js";
 import { ActionRunner, type IAction } from "../../../../base/common/actions.js";
 import type { FuzzyScore } from "../../../../base/common/filters.js";
 import {
+	combinedDisposable,
 	DisposableStore,
 	type IDisposable,
-	combinedDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { autorun } from "../../../../base/common/observable.js";
 import { WorkbenchToolBar } from "../../../../platform/actions/browser/toolbar.js";
@@ -34,15 +35,15 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { defaultCountBadgeStyles } from "../../../../platform/theme/browser/defaultStyles.js";
 import {
+	ISCMViewService,
 	type ISCMProvider,
 	type ISCMRepository,
-	ISCMViewService,
 } from "../common/scm.js";
 import {
-	StatusBarAction,
 	connectPrimaryMenu,
 	getRepositoryResourceCount,
 	isSCMRepository,
+	StatusBarAction,
 } from "./util.js";
 
 export class RepositoryActionRunner extends ActionRunner {
@@ -105,8 +106,8 @@ export class RepositoryRenderer
 		@IKeybindingService private keybindingService: IKeybindingService,
 		@IMenuService private menuService: IMenuService,
 		@ISCMViewService private scmViewService: ISCMViewService,
-		@ITelemetryService private telemetryService: ITelemetryService
-	) { }
+		@ITelemetryService private telemetryService: ITelemetryService,
+	) {}
 
 	renderTemplate(container: HTMLElement): RepositoryTemplate {
 		// hack

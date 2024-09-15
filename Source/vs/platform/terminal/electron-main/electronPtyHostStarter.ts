@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IpcMainEvent } from "electron";
+
 import { Emitter } from "../../../base/common/event.js";
 import {
 	Disposable,
@@ -22,8 +23,8 @@ import { ILogService } from "../../log/common/log.js";
 import { NullTelemetryService } from "../../telemetry/common/telemetryUtils.js";
 import { UtilityProcess } from "../../utilityProcess/electron-main/utilityProcess.js";
 import {
-	type IReconnectConstants,
 	TerminalSettingId,
+	type IReconnectConstants,
 } from "../common/terminal.js";
 import type { IPtyHostConnection, IPtyHostStarter } from "../node/ptyHost.js";
 
@@ -40,19 +41,32 @@ export class ElectronPtyHostStarter
 
 	constructor(
 		private readonly _reconnectConstants: IReconnectConstants,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IEnvironmentMainService private readonly _environmentMainService: IEnvironmentMainService,
-		@ILifecycleMainService private readonly _lifecycleMainService: ILifecycleMainService,
-		@ILogService private readonly _logService: ILogService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IEnvironmentMainService
+		private readonly _environmentMainService: IEnvironmentMainService,
+		@ILifecycleMainService
+		private readonly _lifecycleMainService: ILifecycleMainService,
+		@ILogService private readonly _logService: ILogService,
 	) {
 		super();
 
-		this._register(this._lifecycleMainService.onWillShutdown(() => this._onWillShutdown.fire()));
+		this._register(
+			this._lifecycleMainService.onWillShutdown(() =>
+				this._onWillShutdown.fire(),
+			),
+		);
 		// Listen for new windows to establish connection directly to pty host
-		validatedIpcMain.on('vscode:createPtyHostMessageChannel', (e, nonce) => this._onWindowConnection(e, nonce));
-		this._register(toDisposable(() => {
-			validatedIpcMain.removeHandler('vscode:createPtyHostMessageChannel');
-		}));
+		validatedIpcMain.on("vscode:createPtyHostMessageChannel", (e, nonce) =>
+			this._onWindowConnection(e, nonce),
+		);
+		this._register(
+			toDisposable(() => {
+				validatedIpcMain.removeHandler(
+					"vscode:createPtyHostMessageChannel",
+				);
+			}),
+		);
 	}
 
 	start(): IPtyHostConnection {

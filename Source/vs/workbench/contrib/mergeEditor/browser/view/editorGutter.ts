@@ -6,16 +6,16 @@
 import { h, reset } from "../../../../../base/browser/dom.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IReader,
 	autorun,
 	observableFromEvent,
 	observableSignal,
 	observableSignalFromEvent,
 	transaction,
+	type IReader,
 } from "../../../../../base/common/observable.js";
 import type { CodeEditorWidget } from "../../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
 import { LineRange } from "../model/lineRange.js";

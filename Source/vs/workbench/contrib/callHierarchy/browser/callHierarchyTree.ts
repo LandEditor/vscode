@@ -17,22 +17,22 @@ import type {
 } from "../../../../base/browser/ui/tree/tree.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import { compare } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import {
-	type Location,
 	SymbolKinds,
 	SymbolTag,
+	type Location,
 } from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import {
 	CallHierarchyDirection,
-	type CallHierarchyItem,
 	CallHierarchyModel,
+	type CallHierarchyItem,
 } from "../common/callHierarchy.js";
 
 export class Call {

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	h,
 } from "../../../../../base/browser/dom.js";
 import { renderIcon } from "../../../../../base/browser/ui/iconLabel/iconLabels.js";
@@ -15,9 +15,9 @@ import {
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	autorunWithStore,
 	derived,
+	type IObservable,
 } from "../../../../../base/common/observable.js";
 import { localize } from "../../../../../nls.js";
 import { LineRange, LineRangeSet } from "../../../../common/core/lineRange.js";
@@ -77,8 +77,9 @@ export class RevertButtonsFeature extends Disposable {
 
 					const btn = store.add(
 						new RevertButton(
-							selections[selections.length - 1]
-								.positionLineNumber,
+							selections[
+								selections.length - 1
+							].positionLineNumber,
 							this._widget,
 							selectedDiffs.flatMap((d) => d.rangeMappings),
 							true,

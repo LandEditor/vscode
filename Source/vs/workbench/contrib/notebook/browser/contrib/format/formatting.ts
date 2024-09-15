@@ -23,8 +23,8 @@ import { IEditorWorkerService } from "../../../../../../editor/common/services/e
 import { ILanguageFeaturesService } from "../../../../../../editor/common/services/languageFeatures.js";
 import { ITextModelService } from "../../../../../../editor/common/services/resolverService.js";
 import {
-	FormattingMode,
 	formatDocumentWithSelectedProvider,
+	FormattingMode,
 	getDocumentFormattingEditsWithSelectedProvider,
 } from "../../../../../../editor/contrib/format/browser/format.js";
 import { localize, localize2 } from "../../../../../../nls.js";
@@ -43,9 +43,9 @@ import { KeybindingWeight } from "../../../../../../platform/keybinding/common/k
 import { Progress } from "../../../../../../platform/progress/common/progress.js";
 import { Registry } from "../../../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchContributionsExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchContributionsExtensions,
 } from "../../../../../common/contributions.js";
 import { IEditorService } from "../../../../../services/editor/common/editorService.js";
 import { LifecyclePhase } from "../../../../../services/lifecycle/common/lifecycle.js";
@@ -55,8 +55,8 @@ import {
 	NOTEBOOK_IS_ACTIVE_EDITOR,
 } from "../../../common/notebookContextKeys.js";
 import {
-	type ICellExecutionParticipant,
 	INotebookExecutionService,
+	type ICellExecutionParticipant,
 } from "../../../common/notebookExecutionService.js";
 import type { INotebookCellExecution } from "../../../common/notebookExecutionStateService.js";
 import { INotebookService } from "../../../common/notebookService.js";
@@ -235,13 +235,15 @@ registerEditorAction(
 class FormatOnCellExecutionParticipant implements ICellExecutionParticipant {
 	constructor(
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@INotebookService private readonly _notebookService: INotebookService,
-	) {
-	}
+	) {}
 
 	async onWillExecuteCell(
 		executions: INotebookCellExecution[],
@@ -326,8 +328,10 @@ export class CellExecutionParticipantsContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@INotebookExecutionService private readonly notebookExecutionService: INotebookExecutionService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@INotebookExecutionService
+		private readonly notebookExecutionService: INotebookExecutionService,
 	) {
 		super();
 		this.registerKernelExecutionParticipants();

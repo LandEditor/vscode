@@ -5,7 +5,6 @@
 
 import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import * as nls from "../../../../nls.js";
-
 import { Schemas } from "./problemMatcher.js";
 
 const schema: IJSONSchema = {

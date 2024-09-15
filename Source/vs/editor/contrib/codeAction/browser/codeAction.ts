@@ -28,8 +28,8 @@ import {
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	type IProgress,
 	Progress,
+	type IProgress,
 } from "../../../../platform/progress/common/progress.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
@@ -43,14 +43,14 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import { IModelService } from "../../../common/services/model.js";
 import { TextModelCancellationTokenSource } from "../../editorState/browser/editorState.js";
 import {
-	type CodeActionFilter,
 	CodeActionItem,
 	CodeActionKind,
-	type CodeActionSet,
-	type CodeActionTrigger,
 	CodeActionTriggerSource,
 	filtersAction,
 	mayIncludeActionsOfKind,
+	type CodeActionFilter,
+	type CodeActionSet,
+	type CodeActionTrigger,
 } from "../common/types.js";
 
 export const codeActionCommandId = "editor.action.codeAction";

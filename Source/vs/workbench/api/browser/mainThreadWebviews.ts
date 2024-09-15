@@ -50,7 +50,9 @@ export class MainThreadWebviews
 	) {
 		super();
 
-		this._proxy = context.getProxy(extHostProtocol.ExtHostContext.ExtHostWebviews);
+		this._proxy = context.getProxy(
+			extHostProtocol.ExtHostContext.ExtHostWebviews,
+		);
 	}
 
 	public addWebview(

@@ -76,22 +76,38 @@ export class CellEditorStatusBar extends CellContentPart {
 		private readonly _cellContainer: HTMLElement,
 		editorPart: HTMLElement,
 		private readonly _editor: ICodeEditor | undefined,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@IHoverService hoverService: IHoverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IThemeService private readonly _themeService: IThemeService,
 	) {
 		super();
-		this.statusBarContainer = DOM.append(editorPart, $('.cell-statusbar-container'));
+		this.statusBarContainer = DOM.append(
+			editorPart,
+			$(".cell-statusbar-container"),
+		);
 		this.statusBarContainer.tabIndex = -1;
-		const leftItemsContainer = DOM.append(this.statusBarContainer, $('.cell-status-left'));
-		const rightItemsContainer = DOM.append(this.statusBarContainer, $('.cell-status-right'));
-		this.leftItemsContainer = DOM.append(leftItemsContainer, $('.cell-contributed-items.cell-contributed-items-left'));
-		this.rightItemsContainer = DOM.append(rightItemsContainer, $('.cell-contributed-items.cell-contributed-items-right'));
+		const leftItemsContainer = DOM.append(
+			this.statusBarContainer,
+			$(".cell-status-left"),
+		);
+		const rightItemsContainer = DOM.append(
+			this.statusBarContainer,
+			$(".cell-status-right"),
+		);
+		this.leftItemsContainer = DOM.append(
+			leftItemsContainer,
+			$(".cell-contributed-items.cell-contributed-items-left"),
+		);
+		this.rightItemsContainer = DOM.append(
+			rightItemsContainer,
+			$(".cell-contributed-items.cell-contributed-items-right"),
+		);
 
 		this.itemsDisposable = this._register(new DisposableStore());
 
-		this.hoverDelegate = new class implements IHoverDelegate {
+		this.hoverDelegate = new (class implements IHoverDelegate {
 			private _lastHoverHideTime = 0;
 
 			readonly showHover = (options: IHoverDelegateOptions) => {
@@ -100,53 +116,80 @@ export class CellEditorStatusBar extends CellContentPart {
 				return hoverService.showHover(options);
 			};
 
-			readonly placement = 'element';
+			readonly placement = "element";
 
 			get delay(): number {
 				return Date.now() - this._lastHoverHideTime < 200
-					? 0  // show instantly when a hover was recently shown
-					: configurationService.getValue<number>('workbench.hover.delay');
+					? 0 // show instantly when a hover was recently shown
+					: configurationService.getValue<number>(
+							"workbench.hover.delay",
+						);
 			}
 
 			onDidHideHover() {
 				this._lastHoverHideTime = Date.now();
 			}
-		};
+		})();
 
-		this._register(this._themeService.onDidColorThemeChange(() => this.currentContext && this.updateContext(this.currentContext)));
+		this._register(
+			this._themeService.onDidColorThemeChange(
+				() =>
+					this.currentContext &&
+					this.updateContext(this.currentContext),
+			),
+		);
 
-		this._register(DOM.addDisposableListener(this.statusBarContainer, DOM.EventType.CLICK, e => {
-			if (e.target === leftItemsContainer || e.target === rightItemsContainer || e.target === this.statusBarContainer) {
-				// hit on empty space
-				this._onDidClick.fire({
-					type: ClickTargetType.Container,
-					event: e
-				});
-			} else {
-				const target = e.target;
-				let itemHasCommand = false;
-				if (target && DOM.isHTMLElement(target)) {
-					const targetElement = <HTMLElement>target;
-					if (targetElement.classList.contains('cell-status-item-has-command')) {
-						itemHasCommand = true;
-					} else if (targetElement.parentElement && targetElement.parentElement.classList.contains('cell-status-item-has-command')) {
-						itemHasCommand = true;
+		this._register(
+			DOM.addDisposableListener(
+				this.statusBarContainer,
+				DOM.EventType.CLICK,
+				(e) => {
+					if (
+						e.target === leftItemsContainer ||
+						e.target === rightItemsContainer ||
+						e.target === this.statusBarContainer
+					) {
+						// hit on empty space
+						this._onDidClick.fire({
+							type: ClickTargetType.Container,
+							event: e,
+						});
+					} else {
+						const target = e.target;
+						let itemHasCommand = false;
+						if (target && DOM.isHTMLElement(target)) {
+							const targetElement = <HTMLElement>target;
+							if (
+								targetElement.classList.contains(
+									"cell-status-item-has-command",
+								)
+							) {
+								itemHasCommand = true;
+							} else if (
+								targetElement.parentElement &&
+								targetElement.parentElement.classList.contains(
+									"cell-status-item-has-command",
+								)
+							) {
+								itemHasCommand = true;
+							}
+						}
+						if (itemHasCommand) {
+							this._onDidClick.fire({
+								type: ClickTargetType.ContributedCommandItem,
+								event: e,
+							});
+						} else {
+							// text
+							this._onDidClick.fire({
+								type: ClickTargetType.ContributedTextItem,
+								event: e,
+							});
+						}
 					}
-				}
-				if (itemHasCommand) {
-					this._onDidClick.fire({
-						type: ClickTargetType.ContributedCommandItem,
-						event: e
-					});
-				} else {
-					// text
-					this._onDidClick.fire({
-						type: ClickTargetType.ContributedTextItem,
-						event: e
-					});
-				}
-			}
-		}));
+				},
+			),
+		);
 	}
 
 	override didRenderCell(element: ICellViewModel): void {
@@ -384,9 +427,11 @@ class CellStatusBarItem extends Disposable {
 		private readonly _editor: ICodeEditor | undefined,
 		itemModel: INotebookCellStatusBarItem,
 		maxWidth: number | undefined,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IThemeService private readonly _themeService: IThemeService,
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {

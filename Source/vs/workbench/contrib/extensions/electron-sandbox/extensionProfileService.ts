@@ -17,8 +17,8 @@ import * as nls from "../../../../nls.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import {
-	type ExtensionIdentifier,
 	ExtensionIdentifierMap,
+	type ExtensionIdentifier,
 } from "../../../../platform/extensions/common/extensions.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
@@ -26,21 +26,21 @@ import { IProductService } from "../../../../platform/product/common/productServ
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { ExtensionHostKind } from "../../../services/extensions/common/extensionHostKind.js";
 import {
-	type IExtensionHostProfile,
 	IExtensionService,
+	type IExtensionHostProfile,
 	type ProfileSession,
 } from "../../../services/extensions/common/extensions.js";
 import { ExtensionHostProfiler } from "../../../services/extensions/electron-sandbox/extensionHostProfiler.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { RuntimeExtensionsInput } from "../common/runtimeExtensionsInput.js";
 import {
-	type IExtensionHostProfileService,
 	ProfileSessionState,
+	type IExtensionHostProfileService,
 } from "./runtimeExtensionsEditor.js";
 
 export class ExtensionHostProfileService
@@ -81,23 +81,33 @@ export class ExtensionHostProfileService
 	}
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IStatusbarService private readonly _statusbarService: IStatusbarService,
-		@IProductService private readonly _productService: IProductService
+		@IStatusbarService
+		private readonly _statusbarService: IStatusbarService,
+		@IProductService private readonly _productService: IProductService,
 	) {
 		super();
 		this._profile = null;
 		this._profileSession = null;
 		this._setState(ProfileSessionState.None);
 
-		CommandsRegistry.registerCommand('workbench.action.extensionHostProfiler.stop', () => {
-			this.stopProfiling();
-			this._editorService.openEditor(RuntimeExtensionsInput.instance, { pinned: true });
-		});
+		CommandsRegistry.registerCommand(
+			"workbench.action.extensionHostProfiler.stop",
+			() => {
+				this.stopProfiling();
+				this._editorService.openEditor(
+					RuntimeExtensionsInput.instance,
+					{ pinned: true },
+				);
+			},
+		);
 	}
 
 	private _setState(state: ProfileSessionState): void {

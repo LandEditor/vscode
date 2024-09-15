@@ -15,13 +15,13 @@ import { IEditorWorkerService } from "../../../editor/common/services/editorWork
 import { IModelService } from "../../../editor/common/services/model.js";
 import { ITextModelService } from "../../../editor/common/services/resolverService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostDocumentContentProvidersShape,
 	MainContext,
+	type ExtHostDocumentContentProvidersShape,
 	type MainThreadDocumentContentProvidersShape,
 } from "../common/extHost.protocol.js";
 
@@ -38,12 +38,16 @@ export class MainThreadDocumentContentProviders
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ITextModelService private readonly _textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly _textModelResolverService: ITextModelService,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IModelService private readonly _modelService: IModelService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 	) {
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostDocumentContentProviders);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostDocumentContentProviders,
+		);
 	}
 
 	dispose(): void {

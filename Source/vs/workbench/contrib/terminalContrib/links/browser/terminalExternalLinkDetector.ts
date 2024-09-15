@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBufferLine, Terminal } from "@xterm/xterm";
+
 import type { ITerminalExternalLinkProvider } from "../../../terminal/browser/terminal.js";
 import type {
 	ITerminalLinkDetector,

@@ -27,10 +27,11 @@ export class GettingStartedDetailsRenderer {
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ILanguageService private readonly languageService: ILanguageService,
-	) { }
+	) {}
 
 	async renderMarkdown(path: URI, base: URI): Promise<string> {
 		const content = await this.readAndCacheStepMarkdown(path, base);

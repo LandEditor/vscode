@@ -11,15 +11,14 @@ import * as platform from "../../base/common/platform.js";
 import { cwd } from "../../base/common/process.js";
 import { URI } from "../../base/common/uri.js";
 import {
-	type IURITransformer,
 	transformOutgoingURIs,
+	type IURITransformer,
 } from "../../base/common/uriIpc.js";
 import type { IServerChannel } from "../../base/parts/ipc/common/ipc.js";
 import {
 	ContextKeyDefinedExpr,
 	ContextKeyEqualsExpr,
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	ContextKeyGreaterEqualsExpr,
 	ContextKeyGreaterExpr,
 	ContextKeyInExpr,
@@ -29,6 +28,7 @@ import {
 	ContextKeyRegexExpr,
 	ContextKeySmallerEqualsExpr,
 	ContextKeySmallerExpr,
+	type ContextKeyExpression,
 	type IContextKeyExprMapper,
 } from "../../platform/contextkey/common/contextkey.js";
 import type {
@@ -37,8 +37,8 @@ import type {
 } from "../../platform/extensionManagement/common/extensionManagement.js";
 import type { ExtensionManagementCLI } from "../../platform/extensionManagement/common/extensionManagementCLI.js";
 import {
-	type IExtensionsScannerService,
 	toExtensionDescription,
+	type IExtensionsScannerService,
 } from "../../platform/extensionManagement/common/extensionsScannerService.js";
 import {
 	ExtensionType,

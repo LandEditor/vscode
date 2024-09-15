@@ -10,8 +10,8 @@ import { localize, localize2 } from "../../../../../nls.js";
 import type { ILocalizedString } from "../../../../../platform/action/common/action.js";
 import {
 	Action2,
-	type IAction2Options,
 	MenuId,
+	type IAction2Options,
 } from "../../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../../platform/dialogs/common/dialogs.js";
@@ -28,16 +28,16 @@ import type {
 } from "../../../../common/editor.js";
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import {
-	StorageCloseWithConflicts,
 	ctxIsMergeEditor,
 	ctxMergeEditorLayout,
 	ctxMergeEditorShowBase,
 	ctxMergeEditorShowBaseAtTop,
 	ctxMergeEditorShowNonConflictingChanges,
+	StorageCloseWithConflicts,
 } from "../../common/mergeEditor.js";
 import {
-	type MergeEditorInput,
 	MergeEditorInputData,
+	type MergeEditorInput,
 } from "../mergeEditorInput.js";
 import type { IMergeEditorInputModel } from "../mergeEditorInputModel.js";
 import { MergeEditor } from "../view/mergeEditor.js";

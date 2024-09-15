@@ -64,7 +64,7 @@ class RunAndDebugAccessibilityHelpProvider
 	private _focusedView: string | undefined;
 	constructor(
 		@ICommandService private readonly _commandService: ICommandService,
-		@IViewsService private readonly _viewsService: IViewsService
+		@IViewsService private readonly _viewsService: IViewsService,
 	) {
 		super();
 		this._focusedView = this._viewsService.getFocusedViewName();

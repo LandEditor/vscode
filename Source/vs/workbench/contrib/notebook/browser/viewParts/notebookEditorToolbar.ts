@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as DOM from "../../../../../base/browser/dom.js";
-import type { IActionViewItemOptions } from "../../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type {
 	IActionViewItem,
 	IActionViewItemProvider,
 } from "../../../../../base/browser/ui/actionbar/actionbar.js";
+import type { IActionViewItemOptions } from "../../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { DomScrollableElement } from "../../../../../base/browser/ui/scrollbar/scrollableElement.js";
 import { ToolBar } from "../../../../../base/browser/ui/toolbar/toolbar.js";
-import { type IAction, Separator } from "../../../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../../../base/common/actions.js";
 import { disposableTimeout } from "../../../../../base/common/async.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
 import {
@@ -25,15 +25,15 @@ import {
 } from "../../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
 	HiddenItemStrategy,
-	type IWorkbenchToolBarOptions,
 	WorkbenchToolBar,
+	type IWorkbenchToolBarOptions,
 } from "../../../../../platform/actions/browser/toolbar.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
 	MenuItemAction,
 	SubmenuItemAction,
+	type IMenu,
 } from "../../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import type { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
@@ -432,13 +432,18 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		readonly contextKeyService: IContextKeyService,
 		readonly notebookOptions: NotebookOptions,
 		readonly domNode: HTMLElement,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 		@IMenuService private readonly menuService: IMenuService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
-		@IWorkbenchAssignmentService private readonly experimentService: IWorkbenchAssignmentService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+		@IWorkbenchAssignmentService
+		private readonly experimentService: IWorkbenchAssignmentService,
 	) {
 		super();
 
@@ -446,11 +451,13 @@ export class NotebookEditorWorkbenchToolbar extends Disposable {
 		this._secondaryActions = [];
 		this._buildBody();
 
-		this._register(Event.debounce<void, void>(
-			this.editorService.onDidActiveEditorChange,
-			(last, _current) => last,
-			200
-		)(this._updatePerEditorChange, this));
+		this._register(
+			Event.debounce<void, void>(
+				this.editorService.onDidActiveEditorChange,
+				(last, _current) => last,
+				200,
+			)(this._updatePerEditorChange, this),
+		);
 
 		this._registerNotebookActionsToolbar();
 	}

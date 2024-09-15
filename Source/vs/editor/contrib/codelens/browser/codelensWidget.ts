@@ -6,7 +6,9 @@
 import * as dom from "../../../../base/browser/dom.js";
 import { renderLabelWithIcons } from "../../../../base/browser/ui/iconLabel/iconLabels.js";
 import { Constants } from "../../../../base/common/uint.js";
+
 import "./codelensWidget.css";
+
 import {
 	ContentWidgetPositionPreference,
 	type IActiveCodeEditor,

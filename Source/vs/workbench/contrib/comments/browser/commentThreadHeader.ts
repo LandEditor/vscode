@@ -10,9 +10,9 @@ import { Action, ActionRunner } from "../../../../base/common/actions.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import * as strings from "../../../../base/common/strings.js";

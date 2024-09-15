@@ -17,8 +17,8 @@ import * as nls from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { IExtensionDescription } from "../../../../platform/extensions/common/extensions.js";
 import type { ITelemetryEndpoint } from "../../../../platform/telemetry/common/telemetry.js";
@@ -29,15 +29,15 @@ import * as ConfigurationResolverUtils from "../../../services/configurationReso
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import {
 	DebugConfigurationProviderTriggerKind,
+	debuggerDisabledMessage,
+	IDebugService,
 	type IAdapterManager,
 	type IConfig,
 	type IDebugAdapter,
-	IDebugService,
-	type IDebugSession,
 	type IDebugger,
 	type IDebuggerContribution,
 	type IDebuggerMetadata,
-	debuggerDisabledMessage,
+	type IDebugSession,
 } from "./debug.js";
 import { isDebuggerMainContribution } from "./debugUtils.js";
 
@@ -53,18 +53,31 @@ export class Debugger implements IDebugger, IDebuggerMetadata {
 		private adapterManager: IAdapterManager,
 		dbgContribution: IDebuggerContribution,
 		extensionDescription: IExtensionDescription,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ITextResourcePropertiesService private readonly resourcePropertiesService: ITextResourcePropertiesService,
-		@IConfigurationResolverService private readonly configurationResolverService: IConfigurationResolverService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ITextResourcePropertiesService
+		private readonly resourcePropertiesService: ITextResourcePropertiesService,
+		@IConfigurationResolverService
+		private readonly configurationResolverService: IConfigurationResolverService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IDebugService private readonly debugService: IDebugService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		this.debuggerContribution = { type: dbgContribution.type };
 		this.merge(dbgContribution, extensionDescription);
 
-		this.debuggerWhen = typeof this.debuggerContribution.when === 'string' ? ContextKeyExpr.deserialize(this.debuggerContribution.when) : undefined;
-		this.debuggerHiddenWhen = typeof this.debuggerContribution.hiddenWhen === 'string' ? ContextKeyExpr.deserialize(this.debuggerContribution.hiddenWhen) : undefined;
+		this.debuggerWhen =
+			typeof this.debuggerContribution.when === "string"
+				? ContextKeyExpr.deserialize(this.debuggerContribution.when)
+				: undefined;
+		this.debuggerHiddenWhen =
+			typeof this.debuggerContribution.hiddenWhen === "string"
+				? ContextKeyExpr.deserialize(
+						this.debuggerContribution.hiddenWhen,
+					)
+				: undefined;
 	}
 
 	merge(

@@ -32,8 +32,8 @@ import {
 	scrollbarSliderHoverBackground,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
-	type IColorTheme,
 	IThemeService,
+	type IColorTheme,
 } from "../../../../platform/theme/common/themeService.js";
 import { INativeWorkbenchEnvironmentService } from "../../../services/environment/electron-sandbox/environmentService.js";
 import { IWorkbenchProcessService } from "../common/issue.js";
@@ -42,11 +42,13 @@ export class ProcessService implements IWorkbenchProcessService {
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
-		@IProcessMainService private readonly processMainService: IProcessMainService,
+		@IProcessMainService
+		private readonly processMainService: IProcessMainService,
 		@IThemeService private readonly themeService: IThemeService,
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
 		@IProductService private readonly productService: IProductService,
-	) { }
+	) {}
 
 	openProcessExplorer(): Promise<void> {
 		const theme = this.themeService.getColorTheme();

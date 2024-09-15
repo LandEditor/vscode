@@ -7,9 +7,9 @@ import * as nls from "../../../../nls.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
+	registerEditorAction,
 	type IActionOptions,
 	type ServicesAccessor,
-	registerEditorAction,
 } from "../../../browser/editorExtensions.js";
 import type { ICommand } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";

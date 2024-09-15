@@ -24,15 +24,15 @@ import {
 } from "../../../base/common/lifecycle.js";
 import { LRUCache } from "../../../base/common/map.js";
 import {
-	TfIdfCalculator,
 	normalizeTfIdfScores,
+	TfIdfCalculator,
 } from "../../../base/common/tfIdf.js";
 import { localize } from "../../../nls.js";
 import type { ILocalizedString } from "../../action/common/action.js";
 import { ICommandService } from "../../commands/common/commands.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../configuration/common/configuration.js";
 import { IDialogService } from "../../dialogs/common/dialogs.js";
 import { IInstantiationService } from "../../instantiation/common/instantiation.js";
@@ -48,10 +48,10 @@ import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import type { IQuickAccessProviderRunOptions } from "../common/quickAccess.js";
 import type { IQuickPickSeparator } from "../common/quickInput.js";
 import {
+	PickerQuickAccessProvider,
 	type FastAndSlowPicks,
 	type IPickerQuickAccessItem,
 	type IPickerQuickAccessProviderOptions,
-	PickerQuickAccessProvider,
 	type Picks,
 } from "./pickerQuickAccess.js";
 
@@ -93,11 +93,13 @@ export abstract class AbstractCommandsQuickAccessProvider
 
 	constructor(
 		options: ICommandsQuickAccessOptions,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IKeybindingService protected readonly keybindingService: IKeybindingService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IKeybindingService
+		protected readonly keybindingService: IKeybindingService,
 		@ICommandService private readonly commandService: ICommandService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IDialogService private readonly dialogService: IDialogService
+		@IDialogService private readonly dialogService: IDialogService,
 	) {
 		super(AbstractCommandsQuickAccessProvider.PREFIX, options);
 
@@ -487,8 +489,9 @@ export class CommandsHistory extends Disposable {
 
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ILogService private readonly logService: ILogService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 

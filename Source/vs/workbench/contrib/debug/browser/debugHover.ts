@@ -13,8 +13,8 @@ import type { AsyncDataTree } from "../../../../base/browser/ui/tree/asyncDataTr
 import type { ITreeContextMenuEvent } from "../../../../base/browser/ui/tree/tree.js";
 import { coalesce } from "../../../../base/common/arrays.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import * as lifecycle from "../../../../base/common/lifecycle.js";
@@ -28,8 +28,8 @@ import {
 	type IContentWidgetPosition,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../../editor/common/config/editorOptions.js";
 import type { IDimension } from "../../../../editor/common/core/dimension.js";
 import type { Position } from "../../../../editor/common/core/position.js";
@@ -68,9 +68,9 @@ import { getEvaluatableExpressionAtPosition } from "../common/debugUtils.js";
 import { AbstractExpressionDataSource } from "./baseDebugView.js";
 import { DebugExpressionRenderer } from "./debugExpressionRenderer.js";
 import {
+	openContextMenuForVariableTreeElement,
 	VariablesRenderer,
 	VisualizedVariableRenderer,
-	openContextMenuForVariableTreeElement,
 } from "./variablesView.js";
 
 const $ = dom.$;
@@ -159,17 +159,28 @@ export class DebugHoverWidget implements IContentWidget {
 	constructor(
 		private editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IMenuService private readonly menuService: IMenuService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 	) {
 		this.toDispose = [];
 
 		this.showAtPosition = null;
-		this.positionPreference = [ContentWidgetPositionPreference.ABOVE, ContentWidgetPositionPreference.BELOW];
-		this.debugHoverComputer = this.instantiationService.createInstance(DebugHoverComputer, this.editor);
-		this.expressionRenderer = this.instantiationService.createInstance(DebugExpressionRenderer);
+		this.positionPreference = [
+			ContentWidgetPositionPreference.ABOVE,
+			ContentWidgetPositionPreference.BELOW,
+		];
+		this.debugHoverComputer = this.instantiationService.createInstance(
+			DebugHoverComputer,
+			this.editor,
+		);
+		this.expressionRenderer = this.instantiationService.createInstance(
+			DebugExpressionRenderer,
+		);
 	}
 
 	private create(): void {
@@ -651,9 +662,10 @@ class DebugHoverComputer {
 	constructor(
 		private editor: ICodeEditor,
 		@IDebugService private readonly debugService: IDebugService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 		@ILogService private readonly logService: ILogService,
-	) { }
+	) {}
 
 	public async compute(
 		position: Position,

@@ -24,8 +24,8 @@ import type {
 	IRemoteDiagnosticInfo,
 } from "../../../../platform/diagnostics/common/diagnostics.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { INativeHostService } from "../../../../platform/native/common/native.js";
@@ -44,11 +44,11 @@ import {
 	WorkbenchState,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchContributionsExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	OpenLocalFileCommand,
@@ -129,7 +129,8 @@ class RemoteAgentDiagnosticListener implements IWorkbenchContribution {
 class RemoteExtensionHostEnvironmentUpdater implements IWorkbenchContribution {
 	constructor(
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IRemoteAuthorityResolverService remoteResolverService: IRemoteAuthorityResolverService,
+		@IRemoteAuthorityResolverService
+		remoteResolverService: IRemoteAuthorityResolverService,
 		@IExtensionService extensionService: IExtensionService,
 	) {
 		const connection = remoteAgentService.getConnection();
@@ -161,18 +162,22 @@ class RemoteTelemetryEnablementUpdater
 	static readonly ID = "workbench.contrib.remoteTelemetryEnablementUpdater";
 
 	constructor(
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
 		this.updateRemoteTelemetryEnablement();
 
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(TELEMETRY_SETTING_ID)) {
-				this.updateRemoteTelemetryEnablement();
-			}
-		}));
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(TELEMETRY_SETTING_ID)) {
+					this.updateRemoteTelemetryEnablement();
+				}
+			}),
+		);
 	}
 
 	private updateRemoteTelemetryEnablement(): Promise<void> {
@@ -189,8 +194,10 @@ class RemoteEmptyWorkbenchPresentation
 	static readonly ID = "workbench.contrib.remoteEmptyWorkbenchPresentation";
 
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@ICommandService commandService: ICommandService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,

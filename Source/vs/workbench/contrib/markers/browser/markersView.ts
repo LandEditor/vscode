@@ -7,8 +7,8 @@ import "./media/markers.css";
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type IKeyboardEvent,
 	StandardKeyboardEvent,
+	type IKeyboardEvent,
 } from "../../../../base/browser/keyboardEvent.js";
 import { ActionViewItem } from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import type {
@@ -26,7 +26,7 @@ import type {
 	ITreeNode,
 	ITreeRenderer,
 } from "../../../../base/browser/ui/tree/tree.js";
-import { type IAction, Separator } from "../../../../base/common/actions.js";
+import { Separator, type IAction } from "../../../../base/common/actions.js";
 import { groupBy } from "../../../../base/common/arrays.js";
 import { Event, Relay } from "../../../../base/common/event.js";
 import type { IExpression } from "../../../../base/common/glob.js";
@@ -34,8 +34,8 @@ import { Iterable } from "../../../../base/common/iterator.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { deepClone } from "../../../../base/common/objects.js";
@@ -45,8 +45,8 @@ import { localize } from "../../../../nls.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -55,9 +55,9 @@ import { IKeybindingService } from "../../../../platform/keybinding/common/keybi
 import { ResultKind } from "../../../../platform/keybinding/common/keybindingResolver.js";
 import {
 	IListService,
+	WorkbenchObjectTree,
 	type IOpenEvent,
 	type IWorkbenchObjectTreeOptions,
-	WorkbenchObjectTree,
 } from "../../../../platform/list/browser/listService.js";
 import {
 	IMarkerService,
@@ -103,29 +103,29 @@ import {
 import type { IMarkersView } from "./markers.js";
 import { FilterOptions } from "./markersFilterOptions.js";
 import {
+	compareMarkersByUri,
 	Marker,
-	type MarkerChangesEvent,
-	type MarkerElement,
-	MarkerTableItem,
 	MarkersModel,
+	MarkerTableItem,
 	RelatedInformation,
 	ResourceMarkers,
-	compareMarkersByUri,
+	type MarkerChangesEvent,
+	type MarkerElement,
 } from "./markersModel.js";
 import { MarkersTable } from "./markersTable.js";
 import {
 	Filter,
-	type FilterData,
 	MarkerRenderer,
 	MarkersViewModel,
 	MarkersWidgetAccessibilityProvider,
 	RelatedInformationRenderer,
 	ResourceMarkersRenderer,
 	VirtualDelegate,
+	type FilterData,
 } from "./markersTreeViewer.js";
 import {
-	type IMarkersFiltersChangeEvent,
 	MarkersFilters,
+	type IMarkersFiltersChangeEvent,
 } from "./markersViewActions.js";
 import Messages from "./messages.js";
 
@@ -230,58 +230,113 @@ export class MarkersView extends FilterViewPane implements IMarkersView {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IMarkerService private readonly markerService: IMarkerService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@IContextMenuService contextMenuService: IContextMenuService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IStorageService storageService: IStorageService,
 		@IOpenerService openerService: IOpenerService,
 		@IThemeService themeService: IThemeService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		const memento = new Memento(Markers.MARKERS_VIEW_STORAGE_ID, storageService);
-		const panelState = memento.getMemento(StorageScope.WORKSPACE, StorageTarget.MACHINE);
-		super({
-			...options,
-			filterOptions: {
-				ariaLabel: Messages.MARKERS_PANEL_FILTER_ARIA_LABEL,
-				placeholder: Messages.MARKERS_PANEL_FILTER_PLACEHOLDER,
-				focusContextKey: MarkersContextKeys.MarkerViewFilterFocusContextKey.key,
-				text: panelState['filter'] || '',
-				history: panelState['filterHistory'] || []
-			}
-		}, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		const memento = new Memento(
+			Markers.MARKERS_VIEW_STORAGE_ID,
+			storageService,
+		);
+		const panelState = memento.getMemento(
+			StorageScope.WORKSPACE,
+			StorageTarget.MACHINE,
+		);
+		super(
+			{
+				...options,
+				filterOptions: {
+					ariaLabel: Messages.MARKERS_PANEL_FILTER_ARIA_LABEL,
+					placeholder: Messages.MARKERS_PANEL_FILTER_PLACEHOLDER,
+					focusContextKey:
+						MarkersContextKeys.MarkerViewFilterFocusContextKey.key,
+					text: panelState["filter"] || "",
+					history: panelState["filterHistory"] || [],
+				},
+			},
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 		this.memento = memento;
 		this.panelState = panelState;
 
-		this.markersModel = this._register(instantiationService.createInstance(MarkersModel));
-		this.markersViewModel = this._register(instantiationService.createInstance(MarkersViewModel, this.panelState['multiline'], this.panelState['viewMode'] ?? this.getDefaultViewMode()));
-		this._register(this.onDidChangeVisibility(visible => this.onDidChangeMarkersViewVisibility(visible)));
-		this._register(this.markersViewModel.onDidChangeViewMode(_ => this.onDidChangeViewMode()));
+		this.markersModel = this._register(
+			instantiationService.createInstance(MarkersModel),
+		);
+		this.markersViewModel = this._register(
+			instantiationService.createInstance(
+				MarkersViewModel,
+				this.panelState["multiline"],
+				this.panelState["viewMode"] ?? this.getDefaultViewMode(),
+			),
+		);
+		this._register(
+			this.onDidChangeVisibility((visible) =>
+				this.onDidChangeMarkersViewVisibility(visible),
+			),
+		);
+		this._register(
+			this.markersViewModel.onDidChangeViewMode((_) =>
+				this.onDidChangeViewMode(),
+			),
+		);
 
-		this.widgetAccessibilityProvider = instantiationService.createInstance(MarkersWidgetAccessibilityProvider);
-		this.widgetIdentityProvider = { getId(element: MarkerElement | MarkerTableItem) { return element.id; } };
+		this.widgetAccessibilityProvider = instantiationService.createInstance(
+			MarkersWidgetAccessibilityProvider,
+		);
+		this.widgetIdentityProvider = {
+			getId(element: MarkerElement | MarkerTableItem) {
+				return element.id;
+			},
+		};
 
 		this.setCurrentActiveEditor();
 
 		this.filter = new Filter(FilterOptions.EMPTY(uriIdentityService));
-		this.rangeHighlightDecorations = this._register(this.instantiationService.createInstance(RangeHighlightDecorations));
+		this.rangeHighlightDecorations = this._register(
+			this.instantiationService.createInstance(RangeHighlightDecorations),
+		);
 
-		this.filters = this._register(new MarkersFilters({
-			filterHistory: this.panelState['filterHistory'] || [],
-			showErrors: this.panelState['showErrors'] !== false,
-			showWarnings: this.panelState['showWarnings'] !== false,
-			showInfos: this.panelState['showInfos'] !== false,
-			excludedFiles: !!this.panelState['useFilesExclude'],
-			activeFile: !!this.panelState['activeFile'],
-		}, this.contextKeyService));
+		this.filters = this._register(
+			new MarkersFilters(
+				{
+					filterHistory: this.panelState["filterHistory"] || [],
+					showErrors: this.panelState["showErrors"] !== false,
+					showWarnings: this.panelState["showWarnings"] !== false,
+					showInfos: this.panelState["showInfos"] !== false,
+					excludedFiles: !!this.panelState["useFilesExclude"],
+					activeFile: !!this.panelState["activeFile"],
+				},
+				this.contextKeyService,
+			),
+		);
 
 		// Update filter, whenever the "files.exclude" setting is changed
-		this._register(this.configurationService.onDidChangeConfiguration(e => {
-			if (this.filters.excludedFiles && e.affectsConfiguration('files.exclude')) {
-				this.updateFilter();
-			}
-		}));
+		this._register(
+			this.configurationService.onDidChangeConfiguration((e) => {
+				if (
+					this.filters.excludedFiles &&
+					e.affectsConfiguration("files.exclude")
+				) {
+					this.updateFilter();
+				}
+			}),
+		);
 	}
 
 	override render(): void {

@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import { IHostService } from "../../../services/host/browser/host.js";

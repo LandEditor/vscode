@@ -6,14 +6,14 @@
 import { coalesce, tail } from "../../../../base/common/arrays.js";
 import type { IStringDictionary } from "../../../../base/common/collections.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
-import { type JSONVisitor, visit } from "../../../../base/common/json.js";
+import { visit, type JSONVisitor } from "../../../../base/common/json.js";
 import {
 	Disposable,
 	type IReference,
 } from "../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../base/common/uri.js";
 import type { ISingleEditOperation } from "../../../../editor/common/core/editOperation.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import { Selection } from "../../../../editor/common/core/selection.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import type { ITextEditorModel } from "../../../../editor/common/services/resolverService.js";
@@ -23,14 +23,14 @@ import {
 	IConfigurationService,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type ConfigurationDefaultValueSource,
 	ConfigurationScope,
 	Extensions,
+	OVERRIDE_PROPERTY_REGEX,
+	type ConfigurationDefaultValueSource,
 	type IConfigurationNode,
 	type IConfigurationPropertySchema,
 	type IConfigurationRegistry,
 	type IRegisteredConfigurationPropertySchema,
-	OVERRIDE_PROPERTY_REGEX,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
@@ -40,6 +40,7 @@ import {
 	WORKSPACE_SCOPES,
 } from "../../configuration/common/configuration.js";
 import {
+	SettingMatchType,
 	type IFilterMetadata,
 	type IFilterResult,
 	type IGroupFilter,
@@ -50,7 +51,6 @@ import {
 	type ISettingMatcher,
 	type ISettingsEditorModel,
 	type ISettingsGroup,
-	SettingMatchType,
 } from "./preferences.js";
 import { createValidator } from "./preferencesValidation.js";
 
@@ -683,11 +683,9 @@ export class DefaultSettings extends Disposable {
 		const groups = this.removeEmptySettingsGroups(
 			configurations
 				.sort(this.compareConfigurationNodes)
-				.reduce<ISettingsGroup[]>(
-					(result, config, index, array) =>
-						this.parseConfig(config, result, array),
-					[],
-				),
+				.reduce<
+					ISettingsGroup[]
+				>((result, config, index, array) => this.parseConfig(config, result, array), []),
 		);
 
 		return this.sortGroups(groups);
@@ -1549,9 +1547,11 @@ export class DefaultKeybindingsEditorModel
 {
 	private _content: string | undefined;
 
-	constructor(private _uri: URI,
-		@IKeybindingService private readonly keybindingService: IKeybindingService) {
-	}
+	constructor(
+		private _uri: URI,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
+	) {}
 
 	get uri(): URI {
 		return this._uri;

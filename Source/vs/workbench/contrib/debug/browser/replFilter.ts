@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	TreeVisibility,
 	type ITreeFilter,
 	type TreeFilterResult,
-	TreeVisibility,
 } from "../../../../base/browser/ui/tree/tree.js";
 import { matchesFuzzy } from "../../../../base/common/filters.js";
 import { splitGlobAware } from "../../../../base/common/glob.js";

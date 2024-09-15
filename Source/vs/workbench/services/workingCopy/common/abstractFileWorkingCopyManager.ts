@@ -7,8 +7,8 @@ import { Promises } from "../../../../base/common/async.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -70,7 +70,8 @@ export abstract class BaseFileWorkingCopyManager<
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
 		@ILogService protected readonly logService: ILogService,
-		@IWorkingCopyBackupService protected readonly workingCopyBackupService: IWorkingCopyBackupService
+		@IWorkingCopyBackupService
+		protected readonly workingCopyBackupService: IWorkingCopyBackupService,
 	) {
 		super();
 	}

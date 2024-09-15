@@ -5,13 +5,13 @@
 
 import {
 	Action,
-	type IAction,
 	Separator,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import {
-	type CancelablePromise,
-	RunOnceScheduler,
 	createCancelablePromise,
+	RunOnceScheduler,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import {
 	CancellationToken,
@@ -42,14 +42,14 @@ import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type DidChangeProfilesEvent,
-	type IUserDataProfile,
+	isUserDataProfile,
 	IUserDataProfilesService,
 	ProfileResourceType,
+	toUserDataProfile,
+	type DidChangeProfilesEvent,
+	type IUserDataProfile,
 	type ProfileResourceTypeFlags,
 	type UseDefaultProfileFlags,
-	isUserDataProfile,
-	toUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { API_OPEN_EDITOR_COMMAND_ID } from "../../../browser/parts/editor/editorCommands.js";
 import { CONFIG_NEW_WINDOW_PROFILE } from "../../../common/configuration.js";
@@ -78,13 +78,13 @@ import {
 	TasksResourceTreeItem,
 } from "../../../services/userDataProfile/browser/tasksResource.js";
 import {
-	type IProfileResourceChildTreeItem,
-	type IProfileTemplateInfo,
+	isProfileURL,
 	IUserDataProfileImportExportService,
 	IUserDataProfileManagementService,
 	IUserDataProfileService,
+	type IProfileResourceChildTreeItem,
+	type IProfileTemplateInfo,
 	type IUserDataProfileTemplate,
-	isProfileURL,
 } from "../../../services/userDataProfile/common/userDataProfile.js";
 
 export type ChangeEvent = {
@@ -145,22 +145,27 @@ export abstract class AbstractUserDataProfileElement extends Disposable {
 		icon: string | undefined,
 		flags: UseDefaultProfileFlags | undefined,
 		isActive: boolean,
-		@IUserDataProfileManagementService protected readonly userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfilesService protected readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileManagementService
+		protected readonly userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfilesService
+		protected readonly userDataProfilesService: IUserDataProfilesService,
 		@ICommandService protected readonly commandService: ICommandService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
 	) {
 		super();
 		this._name = name;
 		this._icon = icon;
 		this._flags = flags;
 		this._active = isActive;
-		this._register(this.onDidChange(e => {
-			if (!e.message) {
-				this.validate();
-			}
-			this.save();
-		}));
+		this._register(
+			this.onDidChange((e) => {
+				if (!e.message) {
+					this.validate();
+				}
+				this.save();
+			}),
+		);
 	}
 
 	private _name = "";
@@ -481,10 +486,14 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 		private _profile: IUserDataProfile,
 		readonly titleButtons: [Action[], Action[]],
 		readonly actions: [IAction[], IAction[]],
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IUserDataProfileManagementService userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IUserDataProfileManagementService
+		userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@ICommandService commandService: ICommandService,
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
@@ -498,22 +507,37 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 			commandService,
 			instantiationService,
 		);
-		this._isNewWindowProfile = this.configurationService.getValue(CONFIG_NEW_WINDOW_PROFILE) === this.profile.name;
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(CONFIG_NEW_WINDOW_PROFILE)) {
-				this.isNewWindowProfile = this.configurationService.getValue(CONFIG_NEW_WINDOW_PROFILE) === this.profile.name;
-			}
-		}
-		));
-		this._register(this.userDataProfileService.onDidChangeCurrentProfile(() => this.active = this.userDataProfileService.currentProfile.id === this.profile.id));
-		this._register(this.userDataProfilesService.onDidChangeProfiles(({ updated }) => {
-			const profile = updated.find(p => p.id === this.profile.id);
-			if (profile) {
-				this._profile = profile;
-				this.reset();
-				this._onDidChange.fire({ profile: true });
-			}
-		}));
+		this._isNewWindowProfile =
+			this.configurationService.getValue(CONFIG_NEW_WINDOW_PROFILE) ===
+			this.profile.name;
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(CONFIG_NEW_WINDOW_PROFILE)) {
+					this.isNewWindowProfile =
+						this.configurationService.getValue(
+							CONFIG_NEW_WINDOW_PROFILE,
+						) === this.profile.name;
+				}
+			}),
+		);
+		this._register(
+			this.userDataProfileService.onDidChangeCurrentProfile(
+				() =>
+					(this.active =
+						this.userDataProfileService.currentProfile.id ===
+						this.profile.id),
+			),
+		);
+		this._register(
+			this.userDataProfilesService.onDidChangeProfiles(({ updated }) => {
+				const profile = updated.find((p) => p.id === this.profile.id);
+				if (profile) {
+					this._profile = profile;
+					this.reset();
+					this._onDidChange.fire({ profile: true });
+				}
+			}),
+		);
 	}
 
 	reset(): void {
@@ -595,9 +619,12 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 		readonly titleButtons: [Action[], Action[]],
 		readonly actions: [IAction[], IAction[]],
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataProfileImportExportService private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
-		@IUserDataProfileManagementService userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileImportExportService
+		private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
+		@IUserDataProfileManagementService
+		userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
 		@ICommandService commandService: ICommandService,
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
@@ -615,7 +642,12 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 		this._copyFrom = copyFrom;
 		this._copyFlags = this.getCopyFlagsFrom(copyFrom);
 		this.initialize();
-		this._register(this.fileService.registerProvider(USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME, this._register(new InMemoryFileSystemProvider())));
+		this._register(
+			this.fileService.registerProvider(
+				USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME,
+				this._register(new InMemoryFileSystemProvider()),
+			),
+		);
 	}
 
 	private _copyFrom: IUserDataProfile | URI | undefined;
@@ -965,16 +997,21 @@ export class UserDataProfilesEditorModel extends EditorModel {
 	private templates: Promise<readonly IProfileTemplateInfo[]> | undefined;
 
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileManagementService private readonly userDataProfileManagementService: IUserDataProfileManagementService,
-		@IUserDataProfileImportExportService private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileManagementService
+		private readonly userDataProfileManagementService: IUserDataProfileManagementService,
+		@IUserDataProfileImportExportService
+		private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IHostService private readonly hostService: IHostService,
 		@IProductService private readonly productService: IProductService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 		for (const profile of userDataProfilesService.profiles) {
@@ -982,8 +1019,18 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				this._profiles.push(this.createProfileElement(profile));
 			}
 		}
-		this._register(toDisposable(() => this._profiles.splice(0, this._profiles.length).map(([, disposables]) => disposables.dispose())));
-		this._register(userDataProfilesService.onDidChangeProfiles(e => this.onDidChangeProfiles(e)));
+		this._register(
+			toDisposable(() =>
+				this._profiles
+					.splice(0, this._profiles.length)
+					.map(([, disposables]) => disposables.dispose()),
+			),
+		);
+		this._register(
+			userDataProfilesService.onDidChangeProfiles((e) =>
+				this.onDidChangeProfiles(e),
+			),
+		);
 	}
 
 	private onDidChangeProfiles(e: DidChangeProfilesEvent): void {

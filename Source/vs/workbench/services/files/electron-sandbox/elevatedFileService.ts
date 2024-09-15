@@ -28,10 +28,12 @@ export class NativeElevatedFileService implements IElevatedFileService {
 	readonly _serviceBrand: undefined;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IFileService private readonly fileService: IFileService,
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService
-	) { }
+		@INativeWorkbenchEnvironmentService
+		private readonly environmentService: INativeWorkbenchEnvironmentService,
+	) {}
 
 	isSupported(resource: URI): boolean {
 		// Saving elevated is currently only supported for local

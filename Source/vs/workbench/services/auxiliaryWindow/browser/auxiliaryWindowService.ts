@@ -5,29 +5,29 @@
 
 import { getZoomLevel } from "../../../../base/browser/browser.js";
 import {
-	type Dimension,
-	EventHelper,
-	EventType,
-	ModifierKeyEmitter,
 	addDisposableListener,
 	cloneGlobalStylesheets,
 	copyAttributes,
 	createLinkElement,
 	createMetaElement,
+	EventHelper,
+	EventType,
 	getActiveWindow,
 	getClientArea,
 	getWindowId,
 	isGlobalStylesheet,
 	isHTMLElement,
+	ModifierKeyEmitter,
 	position,
 	registerWindow,
 	sharedMutationObserver,
 	trackAttributes,
+	type Dimension,
 } from "../../../../base/browser/dom.js";
 import {
-	type CodeWindow,
 	ensureCodeWindow,
 	mainWindow,
+	type CodeWindow,
 } from "../../../../base/browser/window.js";
 import { coalesce } from "../../../../base/common/arrays.js";
 import { Barrier } from "../../../../base/common/async.js";
@@ -36,8 +36,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { mark } from "../../../../base/common/performance.js";
 import { isFirefox, isWeb } from "../../../../base/common/platform.js";
@@ -52,8 +52,8 @@ import {
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type IRectangle,
 	WindowMinimumSize,
+	type IRectangle,
 } from "../../../../platform/window/common/window.js";
 import { BaseWindow } from "../../../browser/window.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
@@ -140,13 +140,17 @@ export class AuxiliaryWindow extends BaseWindow implements IAuxiliaryWindow {
 		readonly window: CodeWindow,
 		readonly container: HTMLElement,
 		stylesHaveLoaded: Barrier,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IHostService hostService: IHostService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 	) {
 		super(window, undefined, hostService, environmentService);
 
-		this.whenStylesHaveLoaded = stylesHaveLoaded.wait().then(() => undefined);
+		this.whenStylesHaveLoaded = stylesHaveLoaded
+			.wait()
+			.then(() => undefined);
 
 		this.registerListeners();
 	}
@@ -335,12 +339,15 @@ export class BrowserAuxiliaryWindowService
 	private readonly windows = new Map<number, IAuxiliaryWindow>();
 
 	constructor(
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IDialogService protected readonly dialogService: IDialogService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IHostService protected readonly hostService: IHostService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
 	}

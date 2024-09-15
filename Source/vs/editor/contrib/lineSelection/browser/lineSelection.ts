@@ -9,8 +9,8 @@ import { KeybindingWeight } from "../../../../platform/keybinding/common/keybind
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
-	type ServicesAccessor,
 	registerEditorAction,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { CursorMoveCommands } from "../../../common/cursor/cursorMoveCommands.js";
 import { CursorChangeReason } from "../../../common/cursorEvents.js";

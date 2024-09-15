@@ -15,8 +15,8 @@ import { ILoggerService } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
 	Extensions,
-	type IOutputChannelRegistry,
 	IOutputService,
+	type IOutputChannelRegistry,
 } from "../../../services/output/common/output.js";
 
 registerAction2(

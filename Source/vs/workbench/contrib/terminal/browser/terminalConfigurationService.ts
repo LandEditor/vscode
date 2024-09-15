@@ -16,15 +16,15 @@ import {
 	DEFAULT_FONT_WEIGHT,
 	DEFAULT_LETTER_SPACING,
 	DEFAULT_LINE_HEIGHT,
-	type FontWeight,
-	type ITerminalConfiguration,
-	type ITerminalFont,
 	MAXIMUM_FONT_WEIGHT,
 	MINIMUM_FONT_WEIGHT,
 	MINIMUM_LETTER_SPACING,
 	TERMINAL_CONFIG_SECTION,
+	type FontWeight,
+	type ITerminalConfiguration,
+	type ITerminalFont,
 } from "../common/terminal.js";
-import { type ITerminalConfigurationService, LinuxDistro } from "./terminal.js";
+import { LinuxDistro, type ITerminalConfigurationService } from "./terminal.js";
 import type { IXtermCore } from "./xterm-private.js";
 
 // #region TerminalConfigurationService
@@ -48,17 +48,25 @@ export class TerminalConfigurationService
 	}
 
 	constructor(
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 
-		this._fontMetrics = this._register(new TerminalFontMetrics(this, this._configurationService));
+		this._fontMetrics = this._register(
+			new TerminalFontMetrics(this, this._configurationService),
+		);
 
-		this._register(Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration(TERMINAL_CONFIG_SECTION)) {
-				this._updateConfig();
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				this._configurationService.onDidChangeConfiguration,
+				(e) => {
+					if (!e || e.affectsConfiguration(TERMINAL_CONFIG_SECTION)) {
+						this._updateConfig();
+					}
+				},
+			),
+		);
 	}
 
 	setPanelContainer(panelContainer: HTMLElement): void {

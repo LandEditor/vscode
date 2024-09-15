@@ -4,25 +4,26 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { hostname, release } from "os";
+
 import { Emitter, type Event } from "../../base/common/event.js";
 import {
-	type DisposableStore,
 	toDisposable,
+	type DisposableStore,
 } from "../../base/common/lifecycle.js";
 import { Schemas } from "../../base/common/network.js";
 import * as path from "../../base/common/path.js";
 import type { IURITransformer } from "../../base/common/uriIpc.js";
 import {
+	getdevDeviceId,
 	getMachineId,
 	getSqmMachineId,
-	getdevDeviceId,
 } from "../../base/node/id.js";
 import { Promises } from "../../base/node/pfs.js";
 import {
-	type ClientConnectionEvent,
-	type IMessagePassingProtocol,
 	IPCServer,
 	StaticRouter,
+	type ClientConnectionEvent,
+	type IMessagePassingProtocol,
 } from "../../base/parts/ipc/common/ipc.js";
 import { ProtocolConstants } from "../../base/parts/ipc/common/ipc.net.js";
 import { localize } from "../../nls.js";
@@ -54,8 +55,8 @@ import {
 	IExtensionSignatureVerificationService,
 } from "../../platform/extensionManagement/node/extensionSignatureVerificationService.js";
 import { ExtensionsProfileScannerService } from "../../platform/extensionManagement/node/extensionsProfileScannerService.js";
-import { FileService } from "../../platform/files/common/fileService.js";
 import { IFileService } from "../../platform/files/common/files.js";
+import { FileService } from "../../platform/files/common/fileService.js";
 import { DiskFileSystemProvider } from "../../platform/files/node/diskFileSystemProvider.js";
 import { SyncDescriptor } from "../../platform/instantiation/common/descriptors.js";
 import type { IInstantiationService } from "../../platform/instantiation/common/instantiation.js";
@@ -66,12 +67,12 @@ import { NativeLanguagePackService } from "../../platform/languagePacks/node/lan
 import {
 	AbstractLogger,
 	DEFAULT_LOG_LEVEL,
-	ILogService,
+	getLogLevel,
 	ILoggerService,
+	ILogService,
+	log,
 	LogLevel,
 	LogLevelToString,
-	getLogLevel,
-	log,
 } from "../../platform/log/common/log.js";
 import { LoggerChannel } from "../../platform/log/common/logIpc.js";
 import { LogService } from "../../platform/log/common/logService.js";
@@ -97,12 +98,12 @@ import {
 } from "../../platform/telemetry/common/telemetry.js";
 import type { ITelemetryServiceConfig } from "../../platform/telemetry/common/telemetryService.js";
 import {
-	type ITelemetryAppender,
-	NullAppender,
 	getPiiPathsFromEnvironment,
 	isInternalTelemetry,
 	isLoggingOnly,
+	NullAppender,
 	supportsTelemetry,
+	type ITelemetryAppender,
 } from "../../platform/telemetry/common/telemetryUtils.js";
 import { OneDataSystemAppender } from "../../platform/telemetry/node/1dsAppender.js";
 import ErrorTelemetry from "../../platform/telemetry/node/errorTelemetry.js";

@@ -6,14 +6,14 @@
 import { illegalArgument } from "../../../base/common/errors.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { equals as objectEquals } from "../../../base/common/objects.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	getCodeEditor,
+	type ICodeEditor,
 } from "../../../editor/browser/editorBrowser.js";
 import { ICodeEditorService } from "../../../editor/browser/services/codeEditorService.js";
 import type { ISingleEditOperation } from "../../../editor/common/core/editOperation.js";
@@ -38,9 +38,9 @@ import type { ServicesAccessor } from "../../../platform/instantiation/common/in
 import type { IEditorControl } from "../../common/editor.js";
 import type { DirtyDiffContribution } from "../../contrib/scm/browser/dirtydiffDecorator.js";
 import {
-	type EditorGroupColumn,
 	columnToEditorGroup,
 	editorGroupToColumn,
+	type EditorGroupColumn,
 } from "../../services/editor/common/editorGroupColumn.js";
 import { IEditorGroupsService } from "../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../services/editor/common/editorService.js";
@@ -78,10 +78,13 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 	constructor(
 		private readonly _editorLocator: IMainThreadEditorLocator,
 		extHostContext: IExtHostContext,
-		@ICodeEditorService private readonly _codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly _codeEditorService: ICodeEditorService,
 		@IEditorService private readonly _editorService: IEditorService,
-		@IEditorGroupsService private readonly _editorGroupService: IEditorGroupsService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IEditorGroupsService
+		private readonly _editorGroupService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		this._instanceId = String(++MainThreadTextEditors.INSTANCE_COUNT);
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostEditors);
@@ -89,9 +92,21 @@ export class MainThreadTextEditors implements MainThreadTextEditorsShape {
 		this._textEditorsListenersMap = Object.create(null);
 		this._editorPositionData = null;
 
-		this._toDispose.add(this._editorService.onDidVisibleEditorsChange(() => this._updateActiveAndVisibleTextEditors()));
-		this._toDispose.add(this._editorGroupService.onDidRemoveGroup(() => this._updateActiveAndVisibleTextEditors()));
-		this._toDispose.add(this._editorGroupService.onDidMoveGroup(() => this._updateActiveAndVisibleTextEditors()));
+		this._toDispose.add(
+			this._editorService.onDidVisibleEditorsChange(() =>
+				this._updateActiveAndVisibleTextEditors(),
+			),
+		);
+		this._toDispose.add(
+			this._editorGroupService.onDidRemoveGroup(() =>
+				this._updateActiveAndVisibleTextEditors(),
+			),
+		);
+		this._toDispose.add(
+			this._editorGroupService.onDidMoveGroup(() =>
+				this._updateActiveAndVisibleTextEditors(),
+			),
+		);
 
 		this._registeredDecorationTypes = Object.create(null);
 	}

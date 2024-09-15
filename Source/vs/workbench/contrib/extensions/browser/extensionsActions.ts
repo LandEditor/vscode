@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/extensionActions.css";
+
 import type { IContextMenuProvider } from "../../../../base/browser/contextmenu.js";
 import * as DOM from "../../../../base/browser/dom.js";
 import {
@@ -17,10 +18,10 @@ import {
 } from "../../../../base/browser/ui/dropdown/dropdownActionViewItem.js";
 import {
 	Action,
-	type IAction,
-	type IActionChangeEvent,
 	Separator,
 	SubmenuAction,
+	type IAction,
+	type IActionChangeEvent,
 } from "../../../../base/common/actions.js";
 import { Delayer, Promises, Throttler } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
@@ -31,9 +32,9 @@ import {
 } from "../../../../base/common/errors.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import {
-	type IMarkdownString,
-	MarkdownString,
 	escapeMarkdownSyntaxTokens,
+	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import * as json from "../../../../base/common/json.js";
 import { disposeIfDisposable } from "../../../../base/common/lifecycle.js";
@@ -64,11 +65,11 @@ import type { ITextEditorSelection } from "../../../../platform/editor/common/ed
 import {
 	ExtensionManagementErrorCode,
 	IExtensionGalleryService,
+	InstallOperation,
+	TargetPlatformToString,
 	type IGalleryExtension,
 	type ILocalExtension,
-	InstallOperation,
 	type InstallOptions,
-	TargetPlatformToString,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import {
 	areSameExtensions,
@@ -77,16 +78,16 @@ import {
 import {
 	ExtensionIdentifier,
 	ExtensionType,
-	type IExtensionDescription,
-	type IExtensionManifest,
-	TargetPlatform,
 	getWorkspaceSupportTypeMessage,
 	isApplicationScopedExtension,
 	isLanguagePackExtension,
+	TargetPlatform,
+	type IExtensionDescription,
+	type IExtensionManifest,
 } from "../../../../platform/extensions/common/extensions.js";
 import {
-	type IFileContent,
 	IFileService,
+	type IFileContent,
 } from "../../../../platform/files/common/files.js";
 import {
 	IInstantiationService,
@@ -97,8 +98,8 @@ import { getLocale } from "../../../../platform/languagePacks/common/languagePac
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
 	INotificationService,
-	type IPromptChoice,
 	Severity,
+	type IPromptChoice,
 } from "../../../../platform/notification/common/notification.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IProductService } from "../../../../platform/product/common/productService.js";
@@ -124,17 +125,17 @@ import {
 	registerColor,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import {
+	registerThemingParticipant,
 	type IColorTheme,
 	type ICssStyleCollector,
-	registerThemingParticipant,
 } from "../../../../platform/theme/common/themeService.js";
 import { IUpdateService } from "../../../../platform/update/common/update.js";
 import { IUserDataSyncEnablementService } from "../../../../platform/userDataSync/common/userDataSync.js";
 import { isVirtualWorkspace } from "../../../../platform/workspace/common/virtualWorkspace.js";
 import {
 	IWorkspaceContextService,
-	type IWorkspaceFolder,
 	WorkbenchState,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
 	IWorkspaceTrustEnablementService,
@@ -150,10 +151,10 @@ import {
 } from "../../../services/extensionManagement/common/extensionFeatures.js";
 import {
 	EnablementState,
-	type IExtensionManagementServer,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionEnablementService,
 	IWorkbenchExtensionManagementService,
+	type IExtensionManagementServer,
 } from "../../../services/extensionManagement/common/extensionManagement.js";
 import {
 	ExtensionRecommendationReason,
@@ -176,26 +177,26 @@ import { showWindowLogActionId } from "../../../services/log/common/logConstants
 import { IPreferencesService } from "../../../services/preferences/common/preferences.js";
 import { ITextFileService } from "../../../services/textfile/common/textfiles.js";
 import {
+	IWorkbenchThemeService,
 	type IWorkbenchColorTheme,
 	type IWorkbenchFileIconTheme,
 	type IWorkbenchProductIconTheme,
 	type IWorkbenchTheme,
-	IWorkbenchThemeService,
 } from "../../../services/themes/common/workbenchThemeService.js";
 import {
 	AutoUpdateConfigurationKey,
 	ExtensionEditorTab,
 	ExtensionRuntimeActionType,
 	ExtensionState,
-	type IExtension,
-	type IExtensionArg,
-	type IExtensionContainer,
 	IExtensionsWorkbenchService,
 	INSTALL_ACTIONS_GROUP,
 	SELECT_INSTALL_VSIX_EXTENSION_COMMAND_ID,
 	THEME_ACTIONS_GROUP,
 	TOGGLE_IGNORE_EXTENSION_ACTION_ID,
 	UPDATE_ACTIONS_GROUP,
+	type IExtension,
+	type IExtensionArg,
+	type IExtensionContainer,
 } from "../common/extensions.js";
 import { ExtensionsConfigurationInitialContent } from "../common/extensionsFileTemplate.js";
 import {
@@ -217,16 +218,21 @@ export class PromptExtensionInstallFailureAction extends Action {
 		private readonly error: Error,
 		@IProductService private readonly productService: IProductService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@ICommandService private readonly commandService: ICommandService,
 		@ILogService private readonly logService: ILogService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
-		super('extension.promptExtensionInstallFailure');
+		super("extension.promptExtensionInstallFailure");
 	}
 
 	override async run(): Promise<void> {
@@ -474,14 +480,10 @@ export abstract class ExtensionAction
 	override readonly onDidChange = this._onDidChange.event;
 
 	static readonly EXTENSION_ACTION_CLASS = "extension-action";
-	static readonly TEXT_ACTION_CLASS =
-		`${ExtensionAction.EXTENSION_ACTION_CLASS} text`;
-	static readonly LABEL_ACTION_CLASS =
-		`${ExtensionAction.EXTENSION_ACTION_CLASS} label`;
-	static readonly PROMINENT_LABEL_ACTION_CLASS =
-		`${ExtensionAction.LABEL_ACTION_CLASS} prominent`;
-	static readonly ICON_ACTION_CLASS =
-		`${ExtensionAction.EXTENSION_ACTION_CLASS} icon`;
+	static readonly TEXT_ACTION_CLASS = `${ExtensionAction.EXTENSION_ACTION_CLASS} text`;
+	static readonly LABEL_ACTION_CLASS = `${ExtensionAction.EXTENSION_ACTION_CLASS} label`;
+	static readonly PROMINENT_LABEL_ACTION_CLASS = `${ExtensionAction.LABEL_ACTION_CLASS} prominent`;
+	static readonly ICON_ACTION_CLASS = `${ExtensionAction.EXTENSION_ACTION_CLASS} icon`;
 
 	private _extension: IExtension | null = null;
 	get extension(): IExtension | null {
@@ -655,21 +657,37 @@ export class InstallAction extends ExtensionAction {
 
 	constructor(
 		options: InstallOptions,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionService private readonly runtimeExtensionService: IExtensionService,
-		@IWorkbenchThemeService private readonly workbenchThemeService: IWorkbenchThemeService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionService
+		private readonly runtimeExtensionService: IExtensionService,
+		@IWorkbenchThemeService
+		private readonly workbenchThemeService: IWorkbenchThemeService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 	) {
-		super('extensions.install', localize('install', "Install"), InstallAction.CLASS, false);
+		super(
+			"extensions.install",
+			localize("install", "Install"),
+			InstallAction.CLASS,
+			false,
+		);
 		this.hideOnDisabled = false;
 		this.options = { isMachineScoped: false, ...options };
 		this.update();
-		this._register(this.labelService.onDidChangeFormatters(() => this.updateLabel(), this));
+		this._register(
+			this.labelService.onDidChangeFormatters(
+				() => this.updateLabel(),
+				this,
+			),
+		);
 	}
 
 	update(): void {
@@ -1037,7 +1055,8 @@ export class InstallDropdownAction extends ButtonWithDropDownExtensionAction {
 
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		super(`extensions.installActions`, InstallAction.CLASS, [
 			[
@@ -1060,8 +1079,7 @@ export class InstallDropdownAction extends ButtonWithDropDownExtensionAction {
 
 export class InstallingLabelAction extends ExtensionAction {
 	private static readonly LABEL = localize("installing", "Installing");
-	private static readonly CLASS =
-		`${ExtensionAction.LABEL_ACTION_CLASS} install installing`;
+	private static readonly CLASS = `${ExtensionAction.LABEL_ACTION_CLASS} install installing`;
 
 	constructor() {
 		super(
@@ -1084,10 +1102,8 @@ export abstract class InstallInOtherServerAction extends ExtensionAction {
 		"Installing",
 	);
 
-	private static readonly Class =
-		`${ExtensionAction.LABEL_ACTION_CLASS} prominent install-other-server`;
-	private static readonly InstallingClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} install-other-server installing`;
+	private static readonly Class = `${ExtensionAction.LABEL_ACTION_CLASS} prominent install-other-server`;
+	private static readonly InstallingClass = `${ExtensionAction.LABEL_ACTION_CLASS} install-other-server installing`;
 
 	updateWhenCounterExtensionChanges = true;
 
@@ -1095,11 +1111,19 @@ export abstract class InstallInOtherServerAction extends ExtensionAction {
 		id: string,
 		private readonly server: IExtensionManagementServer | null,
 		private readonly canInstallAnyWhere: boolean,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementServerService protected readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementServerService
+		protected readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
-		super(id, InstallInOtherServerAction.INSTALL_LABEL, InstallInOtherServerAction.Class, false);
+		super(
+			id,
+			InstallInOtherServerAction.INSTALL_LABEL,
+			InstallInOtherServerAction.Class,
+			false,
+		);
 		this.update();
 	}
 
@@ -1252,9 +1276,12 @@ export abstract class InstallInOtherServerAction extends ExtensionAction {
 export class RemoteInstallAction extends InstallInOtherServerAction {
 	constructor(
 		canInstallAnyWhere: boolean,
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(
 			`extensions.remoteinstall`,
@@ -1286,9 +1313,12 @@ export class RemoteInstallAction extends InstallInOtherServerAction {
 
 export class LocalInstallAction extends InstallInOtherServerAction {
 	constructor(
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(
 			`extensions.localinstall`,
@@ -1307,9 +1337,12 @@ export class LocalInstallAction extends InstallInOtherServerAction {
 
 export class WebInstallAction extends InstallInOtherServerAction {
 	constructor(
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementServerService
+		extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManifestPropertiesService
+		extensionManifestPropertiesService: IExtensionManifestPropertiesService,
 	) {
 		super(
 			`extensions.webInstall`,
@@ -1333,16 +1366,20 @@ export class UninstallAction extends ExtensionAction {
 		"Uninstalling",
 	);
 
-	static readonly UninstallClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} uninstall`;
-	private static readonly UnInstallingClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} uninstall uninstalling`;
+	static readonly UninstallClass = `${ExtensionAction.LABEL_ACTION_CLASS} uninstall`;
+	private static readonly UnInstallingClass = `${ExtensionAction.LABEL_ACTION_CLASS} uninstall uninstalling`;
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IDialogService private readonly dialogService: IDialogService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IDialogService private readonly dialogService: IDialogService,
 	) {
-		super('extensions.uninstall', UninstallAction.UninstallLabel, UninstallAction.UninstallClass, false);
+		super(
+			"extensions.uninstall",
+			UninstallAction.UninstallLabel,
+			UninstallAction.UninstallClass,
+			false,
+		);
 		this.update();
 	}
 
@@ -1408,20 +1445,26 @@ export class UninstallAction extends ExtensionAction {
 }
 
 export class UpdateAction extends ExtensionAction {
-	private static readonly EnabledClass =
-		`${this.LABEL_ACTION_CLASS} prominent update`;
+	private static readonly EnabledClass = `${this.LABEL_ACTION_CLASS} prominent update`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	private readonly updateThrottler = new Throttler();
 
 	constructor(
 		private readonly verbose: boolean,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
-		super(`extensions.update`, localize('update', "Update"), UpdateAction.DisabledClass, false);
+		super(
+			`extensions.update`,
+			localize("update", "Update"),
+			UpdateAction.DisabledClass,
+			false,
+		);
 		this.update();
 	}
 
@@ -1562,21 +1605,28 @@ export class ToggleAutoUpdateForExtensionAction extends ExtensionAction {
 		"workbench.extensions.action.toggleAutoUpdateForExtension";
 	static readonly LABEL = localize2("enableAutoUpdateLabel", "Auto Update");
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.EXTENSION_ACTION_CLASS} auto-update`;
+	private static readonly EnabledClass = `${ExtensionAction.EXTENSION_ACTION_CLASS} auto-update`;
 	private static readonly DisabledClass = `${this.EnabledClass} hide`;
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IConfigurationService configurationService: IConfigurationService,
 	) {
-		super(ToggleAutoUpdateForExtensionAction.ID, ToggleAutoUpdateForExtensionAction.LABEL.value, ToggleAutoUpdateForExtensionAction.DisabledClass);
-		this._register(configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration(AutoUpdateConfigurationKey)) {
-				this.update();
-			}
-		}));
+		super(
+			ToggleAutoUpdateForExtensionAction.ID,
+			ToggleAutoUpdateForExtensionAction.LABEL.value,
+			ToggleAutoUpdateForExtensionAction.DisabledClass,
+		);
+		this._register(
+			configurationService.onDidChangeConfiguration((e) => {
+				if (e.affectsConfiguration(AutoUpdateConfigurationKey)) {
+					this.update();
+				}
+			}),
+		);
 		this.update();
 	}
 
@@ -1651,9 +1701,13 @@ export class ToggleAutoUpdatesForPublisherAction extends ExtensionAction {
 	);
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super(ToggleAutoUpdatesForPublisherAction.ID, ToggleAutoUpdatesForPublisherAction.LABEL);
+		super(
+			ToggleAutoUpdatesForPublisherAction.ID,
+			ToggleAutoUpdatesForPublisherAction.LABEL,
+		);
 	}
 
 	override update() {}
@@ -1698,15 +1752,20 @@ export class ToggleAutoUpdatesForPublisherAction extends ExtensionAction {
 }
 
 export class MigrateDeprecatedExtensionAction extends ExtensionAction {
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} migrate`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} migrate`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	constructor(
 		private readonly small: boolean,
-		@IExtensionsWorkbenchService private extensionsWorkbenchService: IExtensionsWorkbenchService
+		@IExtensionsWorkbenchService
+		private extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super('extensionsAction.migrateDeprecatedExtension', localize('migrateExtension', "Migrate"), MigrateDeprecatedExtensionAction.DisabledClass, false);
+		super(
+			"extensionsAction.migrateDeprecatedExtension",
+			localize("migrateExtension", "Migrate"),
+			MigrateDeprecatedExtensionAction.DisabledClass,
+			false,
+		);
 		this.update();
 	}
 
@@ -1768,7 +1827,8 @@ export abstract class DropDownExtensionAction extends ExtensionAction {
 		label: string,
 		cssClass: string,
 		enabled: boolean,
-		@IInstantiationService protected instantiationService: IInstantiationService
+		@IInstantiationService
+		protected instantiationService: IInstantiationService,
 	) {
 		super(id, label, cssClass, enabled);
 	}
@@ -1801,7 +1861,8 @@ export class DropDownExtensionActionViewItem extends ActionViewItem {
 	constructor(
 		action: DropDownExtensionAction,
 		options: IActionViewItemOptions,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
 	) {
 		super(null, action, { ...options, icon: true, label: true });
 	}
@@ -2059,12 +2120,12 @@ export class ManageExtensionAction extends DropDownExtensionAction {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
+		super(ManageExtensionAction.ID, "", "", true, instantiationService);
 
-		super(ManageExtensionAction.ID, '', '', true, instantiationService);
-
-		this.tooltip = localize('manage', "Manage");
+		this.tooltip = localize("manage", "Manage");
 
 		this.update();
 	}
@@ -2209,7 +2270,8 @@ export class ExtensionEditorManageExtensionAction extends DropDownExtensionActio
 export class MenuItemExtensionAction extends ExtensionAction {
 	constructor(
 		private readonly action: IAction,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
 		super(action.id, action.label);
 	}
@@ -2273,14 +2335,18 @@ export class TogglePreReleaseExtensionAction extends ExtensionAction {
 	static readonly ID = "workbench.extensions.action.togglePreRlease";
 	static readonly LABEL = localize("togglePreRleaseLabel", "Pre-Release");
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} pre-release`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} pre-release`;
 	private static readonly DisabledClass = `${this.EnabledClass} hide`;
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super(TogglePreReleaseExtensionAction.ID, TogglePreReleaseExtensionAction.LABEL, TogglePreReleaseExtensionAction.DisabledClass);
+		super(
+			TogglePreReleaseExtensionAction.ID,
+			TogglePreReleaseExtensionAction.LABEL,
+			TogglePreReleaseExtensionAction.DisabledClass,
+		);
 		this.update();
 	}
 
@@ -2356,14 +2422,23 @@ export class InstallAnotherVersionAction extends ExtensionAction {
 	constructor(
 		extension: IExtension | null,
 		private readonly whenInstalled: boolean,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionManagementService private readonly extensionManagementService: IWorkbenchExtensionManagementService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionManagementService
+		private readonly extensionManagementService: IWorkbenchExtensionManagementService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IDialogService private readonly dialogService: IDialogService,
 	) {
-		super(InstallAnotherVersionAction.ID, InstallAnotherVersionAction.LABEL, ExtensionAction.LABEL_ACTION_CLASS);
+		super(
+			InstallAnotherVersionAction.ID,
+			InstallAnotherVersionAction.LABEL,
+			ExtensionAction.LABEL_ACTION_CLASS,
+		);
 		this.extension = extension;
 		this.update();
 	}
@@ -2461,11 +2536,20 @@ export class EnableForWorkspaceAction extends ExtensionAction {
 	);
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
-		super(EnableForWorkspaceAction.ID, EnableForWorkspaceAction.LABEL, ExtensionAction.LABEL_ACTION_CLASS);
-		this.tooltip = localize('enableForWorkspaceActionToolTip', "Enable this extension only in this workspace");
+		super(
+			EnableForWorkspaceAction.ID,
+			EnableForWorkspaceAction.LABEL,
+			ExtensionAction.LABEL_ACTION_CLASS,
+		);
+		this.tooltip = localize(
+			"enableForWorkspaceActionToolTip",
+			"Enable this extension only in this workspace",
+		);
 		this.update();
 	}
 
@@ -2503,11 +2587,20 @@ export class EnableGloballyAction extends ExtensionAction {
 	static readonly LABEL = localize("enableGloballyAction", "Enable");
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
-		super(EnableGloballyAction.ID, EnableGloballyAction.LABEL, ExtensionAction.LABEL_ACTION_CLASS);
-		this.tooltip = localize('enableGloballyActionToolTip', "Enable this extension");
+		super(
+			EnableGloballyAction.ID,
+			EnableGloballyAction.LABEL,
+			ExtensionAction.LABEL_ACTION_CLASS,
+		);
+		this.tooltip = localize(
+			"enableGloballyActionToolTip",
+			"Enable this extension",
+		);
 		this.update();
 	}
 
@@ -2548,15 +2641,27 @@ export class DisableForWorkspaceAction extends ExtensionAction {
 	);
 
 	constructor(
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
-		super(DisableForWorkspaceAction.ID, DisableForWorkspaceAction.LABEL, ExtensionAction.LABEL_ACTION_CLASS);
-		this.tooltip = localize('disableForWorkspaceActionToolTip', "Disable this extension only in this workspace");
+		super(
+			DisableForWorkspaceAction.ID,
+			DisableForWorkspaceAction.LABEL,
+			ExtensionAction.LABEL_ACTION_CLASS,
+		);
+		this.tooltip = localize(
+			"disableForWorkspaceActionToolTip",
+			"Disable this extension only in this workspace",
+		);
 		this.update();
-		this._register(this.extensionService.onDidChangeExtensions(() => this.update()));
+		this._register(
+			this.extensionService.onDidChangeExtensions(() => this.update()),
+		);
 	}
 
 	update(): void {
@@ -2603,14 +2708,25 @@ export class DisableGloballyAction extends ExtensionAction {
 	static readonly LABEL = localize("disableGloballyAction", "Disable");
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
-		super(DisableGloballyAction.ID, DisableGloballyAction.LABEL, ExtensionAction.LABEL_ACTION_CLASS);
-		this.tooltip = localize('disableGloballyActionToolTip', "Disable this extension");
+		super(
+			DisableGloballyAction.ID,
+			DisableGloballyAction.LABEL,
+			ExtensionAction.LABEL_ACTION_CLASS,
+		);
+		this.tooltip = localize(
+			"disableGloballyActionToolTip",
+			"Disable this extension",
+		);
 		this.update();
-		this._register(this.extensionService.onDidChangeExtensions(() => this.update()));
+		this._register(
+			this.extensionService.onDidChangeExtensions(() => this.update()),
+		);
 	}
 
 	update(): void {
@@ -2651,45 +2767,54 @@ export class DisableGloballyAction extends ExtensionAction {
 
 export class EnableDropDownAction extends ButtonWithDropDownExtensionAction {
 	constructor(
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		super('extensions.enable', ExtensionAction.LABEL_ACTION_CLASS, [
+		super("extensions.enable", ExtensionAction.LABEL_ACTION_CLASS, [
 			[
 				instantiationService.createInstance(EnableGloballyAction),
-				instantiationService.createInstance(EnableForWorkspaceAction)
-			]
+				instantiationService.createInstance(EnableForWorkspaceAction),
+			],
 		]);
 	}
 }
 
 export class DisableDropDownAction extends ButtonWithDropDownExtensionAction {
 	constructor(
-		@IInstantiationService instantiationService: IInstantiationService
+		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		super('extensions.disable', ExtensionAction.LABEL_ACTION_CLASS, [[
-			instantiationService.createInstance(DisableGloballyAction),
-			instantiationService.createInstance(DisableForWorkspaceAction)
-		]]);
+		super("extensions.disable", ExtensionAction.LABEL_ACTION_CLASS, [
+			[
+				instantiationService.createInstance(DisableGloballyAction),
+				instantiationService.createInstance(DisableForWorkspaceAction),
+			],
+		]);
 	}
 }
 
 export class ExtensionRuntimeStateAction extends ExtensionAction {
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} reload`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} reload`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	updateWhenCounterExtensionChanges = true;
 
 	constructor(
 		@IHostService private readonly hostService: IHostService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IUpdateService private readonly updateService: IUpdateService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IProductService private readonly productService: IProductService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
-		super('extensions.runtimeState', '', ExtensionRuntimeStateAction.DisabledClass, false);
-		this._register(this.extensionService.onDidChangeExtensions(() => this.update()));
+		super(
+			"extensions.runtimeState",
+			"",
+			ExtensionRuntimeStateAction.DisabledClass,
+			false,
+		);
+		this._register(
+			this.extensionService.onDidChangeExtensions(() => this.update()),
+		);
 		this.update();
 	}
 
@@ -2732,14 +2857,14 @@ export class ExtensionRuntimeStateAction extends ExtensionAction {
 			runtimeState.action === ExtensionRuntimeActionType.ReloadWindow
 				? localize("reload window", "Reload Window")
 				: runtimeState.action ===
-						ExtensionRuntimeActionType.RestartExtensions
+					  ExtensionRuntimeActionType.RestartExtensions
 					? localize("restart extensions", "Restart Extensions")
 					: runtimeState.action ===
-							ExtensionRuntimeActionType.QuitAndInstall
+						  ExtensionRuntimeActionType.QuitAndInstall
 						? localize("restart product", "Restart to Update")
 						: runtimeState.action ===
 									ExtensionRuntimeActionType.ApplyUpdate ||
-								runtimeState.action ===
+							  runtimeState.action ===
 									ExtensionRuntimeActionType.DownloadUpdate
 							? localize(
 									"update product",
@@ -2843,18 +2968,30 @@ export class SetColorThemeAction extends ExtensionAction {
 		"Set Color Theme",
 	);
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} theme`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} theme`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
-		@IWorkbenchThemeService private readonly workbenchThemeService: IWorkbenchThemeService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchThemeService
+		private readonly workbenchThemeService: IWorkbenchThemeService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
-		super(SetColorThemeAction.ID, SetColorThemeAction.TITLE.value, SetColorThemeAction.DisabledClass, false);
-		this._register(Event.any<any>(extensionService.onDidChangeExtensions, workbenchThemeService.onDidColorThemeChange)(() => this.update(), this));
+		super(
+			SetColorThemeAction.ID,
+			SetColorThemeAction.TITLE.value,
+			SetColorThemeAction.DisabledClass,
+			false,
+		);
+		this._register(
+			Event.any<any>(
+				extensionService.onDidChangeExtensions,
+				workbenchThemeService.onDidColorThemeChange,
+			)(() => this.update(), this),
+		);
 		this.update();
 	}
 
@@ -2926,18 +3063,30 @@ export class SetFileIconThemeAction extends ExtensionAction {
 		"Set File Icon Theme",
 	);
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} theme`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} theme`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
-		@IWorkbenchThemeService private readonly workbenchThemeService: IWorkbenchThemeService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchThemeService
+		private readonly workbenchThemeService: IWorkbenchThemeService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
-		super(SetFileIconThemeAction.ID, SetFileIconThemeAction.TITLE.value, SetFileIconThemeAction.DisabledClass, false);
-		this._register(Event.any<any>(extensionService.onDidChangeExtensions, workbenchThemeService.onDidFileIconThemeChange)(() => this.update(), this));
+		super(
+			SetFileIconThemeAction.ID,
+			SetFileIconThemeAction.TITLE.value,
+			SetFileIconThemeAction.DisabledClass,
+			false,
+		);
+		this._register(
+			Event.any<any>(
+				extensionService.onDidChangeExtensions,
+				workbenchThemeService.onDidFileIconThemeChange,
+			)(() => this.update(), this),
+		);
 		this.update();
 	}
 
@@ -3018,18 +3167,30 @@ export class SetProductIconThemeAction extends ExtensionAction {
 		"Set Product Icon Theme",
 	);
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} theme`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} theme`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	constructor(
 		@IExtensionService extensionService: IExtensionService,
-		@IWorkbenchThemeService private readonly workbenchThemeService: IWorkbenchThemeService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IWorkbenchThemeService
+		private readonly workbenchThemeService: IWorkbenchThemeService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
-		super(SetProductIconThemeAction.ID, SetProductIconThemeAction.TITLE.value, SetProductIconThemeAction.DisabledClass, false);
-		this._register(Event.any<any>(extensionService.onDidChangeExtensions, workbenchThemeService.onDidProductIconThemeChange)(() => this.update(), this));
+		super(
+			SetProductIconThemeAction.ID,
+			SetProductIconThemeAction.TITLE.value,
+			SetProductIconThemeAction.DisabledClass,
+			false,
+		);
+		this._register(
+			Event.any<any>(
+				extensionService.onDidChangeExtensions,
+				workbenchThemeService.onDidProductIconThemeChange,
+			)(() => this.update(), this),
+		);
 		this.update();
 	}
 
@@ -3111,14 +3272,19 @@ export class SetLanguageAction extends ExtensionAction {
 		"Set Display Language",
 	);
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} language`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} language`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super(SetLanguageAction.ID, SetLanguageAction.TITLE.value, SetLanguageAction.DisabledClass, false);
+		super(
+			SetLanguageAction.ID,
+			SetLanguageAction.TITLE.value,
+			SetLanguageAction.DisabledClass,
+			false,
+		);
 		this.update();
 	}
 
@@ -3156,15 +3322,20 @@ export class ClearLanguageAction extends ExtensionAction {
 		"Clear Display Language",
 	);
 
-	private static readonly EnabledClass =
-		`${ExtensionAction.LABEL_ACTION_CLASS} language`;
+	private static readonly EnabledClass = `${ExtensionAction.LABEL_ACTION_CLASS} language`;
 	private static readonly DisabledClass = `${this.EnabledClass} disabled`;
 
 	constructor(
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@ILocaleService private readonly localeService: ILocaleService,
 	) {
-		super(ClearLanguageAction.ID, ClearLanguageAction.TITLE.value, ClearLanguageAction.DisabledClass, false);
+		super(
+			ClearLanguageAction.ID,
+			ClearLanguageAction.TITLE.value,
+			ClearLanguageAction.DisabledClass,
+			false,
+		);
 		this.update();
 	}
 
@@ -3203,9 +3374,15 @@ export class ShowRecommendedExtensionAction extends Action {
 
 	constructor(
 		extensionId: string,
-		@IExtensionsWorkbenchService private readonly extensionWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		private readonly extensionWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super(ShowRecommendedExtensionAction.ID, ShowRecommendedExtensionAction.LABEL, undefined, false);
+		super(
+			ShowRecommendedExtensionAction.ID,
+			ShowRecommendedExtensionAction.LABEL,
+			undefined,
+			false,
+		);
 		this.extensionId = extensionId;
 	}
 
@@ -3237,10 +3414,17 @@ export class InstallRecommendedExtensionAction extends Action {
 
 	constructor(
 		extensionId: string,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionsWorkbenchService private readonly extensionWorkbenchService: IExtensionsWorkbenchService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionWorkbenchService: IExtensionsWorkbenchService,
 	) {
-		super(InstallRecommendedExtensionAction.ID, InstallRecommendedExtensionAction.LABEL, undefined, false);
+		super(
+			InstallRecommendedExtensionAction.ID,
+			InstallRecommendedExtensionAction.LABEL,
+			undefined,
+			false,
+		);
 		this.extensionId = extensionId;
 	}
 
@@ -3276,17 +3460,20 @@ export class InstallRecommendedExtensionAction extends Action {
 export class IgnoreExtensionRecommendationAction extends Action {
 	static readonly ID = "extensions.ignore";
 
-	private static readonly Class =
-		`${ExtensionAction.LABEL_ACTION_CLASS} ignore`;
+	private static readonly Class = `${ExtensionAction.LABEL_ACTION_CLASS} ignore`;
 
 	constructor(
 		private readonly extension: IExtension,
-		@IExtensionIgnoredRecommendationsService private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
 	) {
-		super(IgnoreExtensionRecommendationAction.ID, 'Ignore Recommendation');
+		super(IgnoreExtensionRecommendationAction.ID, "Ignore Recommendation");
 
 		this.class = IgnoreExtensionRecommendationAction.Class;
-		this.tooltip = localize('ignoreExtensionRecommendation', "Do not recommend this extension again");
+		this.tooltip = localize(
+			"ignoreExtensionRecommendation",
+			"Do not recommend this extension again",
+		);
 		this.enabled = true;
 	}
 
@@ -3302,17 +3489,17 @@ export class IgnoreExtensionRecommendationAction extends Action {
 export class UndoIgnoreExtensionRecommendationAction extends Action {
 	static readonly ID = "extensions.ignore";
 
-	private static readonly Class =
-		`${ExtensionAction.LABEL_ACTION_CLASS} undo-ignore`;
+	private static readonly Class = `${ExtensionAction.LABEL_ACTION_CLASS} undo-ignore`;
 
 	constructor(
 		private readonly extension: IExtension,
-		@IExtensionIgnoredRecommendationsService private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
 	) {
-		super(UndoIgnoreExtensionRecommendationAction.ID, 'Undo');
+		super(UndoIgnoreExtensionRecommendationAction.ID, "Undo");
 
 		this.class = UndoIgnoreExtensionRecommendationAction.Class;
-		this.tooltip = localize('undo', "Undo");
+		this.tooltip = localize("undo", "Undo");
 		this.enabled = true;
 	}
 
@@ -3329,12 +3516,15 @@ export abstract class AbstractConfigureRecommendedExtensionsAction extends Actio
 	constructor(
 		id: string,
 		label: string,
-		@IWorkspaceContextService protected contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		protected contextService: IWorkspaceContextService,
 		@IFileService private readonly fileService: IFileService,
 		@ITextFileService private readonly textFileService: ITextFileService,
 		@IEditorService protected editorService: IEditorService,
-		@IJSONEditingService private readonly jsonEditingService: IJSONEditingService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService
+		@IJSONEditingService
+		private readonly jsonEditingService: IJSONEditingService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 	) {
 		super(id, label);
 	}
@@ -3458,9 +3648,7 @@ export abstract class AbstractConfigureRecommendedExtensionsAction extends Actio
 		return Promise.resolve(undefined);
 	}
 
-	private getOrCreateExtensionsFile(
-		extensionsFileResource: URI,
-	): Promise<{
+	private getOrCreateExtensionsFile(extensionsFileResource: URI): Promise<{
 		created: boolean;
 		extensionsFileResource: URI;
 		content: string;
@@ -3569,9 +3757,18 @@ export class ConfigureWorkspaceFolderRecommendedExtensionsAction extends Abstrac
 		@IEditorService editorService: IEditorService,
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@ITextModelService textModelResolverService: ITextModelService,
-		@ICommandService private readonly commandService: ICommandService
+		@ICommandService private readonly commandService: ICommandService,
 	) {
-		super(id, label, contextService, fileService, textFileService, editorService, jsonEditingService, textModelResolverService);
+		super(
+			id,
+			label,
+			contextService,
+			fileService,
+			textFileService,
+			editorService,
+			jsonEditingService,
+			textModelResolverService,
+		);
 	}
 
 	public override run(): Promise<any> {
@@ -3597,8 +3794,7 @@ export class ExtensionStatusLabelAction
 	extends Action
 	implements IExtensionContainer
 {
-	private static readonly ENABLED_CLASS =
-		`${ExtensionAction.TEXT_ACTION_CLASS} extension-status-label`;
+	private static readonly ENABLED_CLASS = `${ExtensionAction.TEXT_ACTION_CLASS} extension-status-label`;
 	private static readonly DISABLED_CLASS = `${this.ENABLED_CLASS} hide`;
 
 	private initialStatus: ExtensionState | null = null;
@@ -3632,10 +3828,17 @@ export class ExtensionStatusLabelAction
 
 	constructor(
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
-		super('extensions.action.statusLabel', '', ExtensionStatusLabelAction.DISABLED_CLASS, false);
+		super(
+			"extensions.action.statusLabel",
+			"",
+			ExtensionStatusLabelAction.DISABLED_CLASS,
+			false,
+		);
 	}
 
 	update(): void {
@@ -3769,20 +3972,36 @@ export class ExtensionStatusLabelAction
 }
 
 export class ToggleSyncExtensionAction extends DropDownExtensionAction {
-	private static readonly IGNORED_SYNC_CLASS =
-		`${ExtensionAction.ICON_ACTION_CLASS} extension-sync ${ThemeIcon.asClassName(syncIgnoredIcon)}`;
-	private static readonly SYNC_CLASS =
-		`${this.ICON_ACTION_CLASS} extension-sync ${ThemeIcon.asClassName(syncEnabledIcon)}`;
+	private static readonly IGNORED_SYNC_CLASS = `${ExtensionAction.ICON_ACTION_CLASS} extension-sync ${ThemeIcon.asClassName(syncIgnoredIcon)}`;
+	private static readonly SYNC_CLASS = `${this.ICON_ACTION_CLASS} extension-sync ${ThemeIcon.asClassName(syncEnabledIcon)}`;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
-		super('extensions.sync', '', ToggleSyncExtensionAction.SYNC_CLASS, false, instantiationService);
-		this._register(Event.filter(this.configurationService.onDidChangeConfiguration, e => e.affectsConfiguration('settingsSync.ignoredExtensions'))(() => this.update()));
-		this._register(userDataSyncEnablementService.onDidChangeEnablement(() => this.update()));
+		super(
+			"extensions.sync",
+			"",
+			ToggleSyncExtensionAction.SYNC_CLASS,
+			false,
+			instantiationService,
+		);
+		this._register(
+			Event.filter(
+				this.configurationService.onDidChangeConfiguration,
+				(e) => e.affectsConfiguration("settingsSync.ignoredExtensions"),
+			)(() => this.update()),
+		);
+		this._register(
+			userDataSyncEnablementService.onDidChangeEnablement(() =>
+				this.update(),
+			),
+		);
 		this.update();
 	}
 
@@ -3839,8 +4058,7 @@ export type ExtensionStatus = {
 };
 
 export class ExtensionStatusAction extends ExtensionAction {
-	private static readonly CLASS =
-		`${ExtensionAction.ICON_ACTION_CLASS} extension-status`;
+	private static readonly CLASS = `${ExtensionAction.ICON_ACTION_CLASS} extension-status`;
 
 	updateWhenCounterExtensionChanges = true;
 
@@ -3855,23 +4073,44 @@ export class ExtensionStatusAction extends ExtensionAction {
 	private readonly updateThrottler = new Throttler();
 
 	constructor(
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
 		@ILabelService private readonly labelService: ILabelService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkspaceTrustEnablementService private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustService: IWorkspaceTrustManagementService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkspaceTrustEnablementService
+		private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustService: IWorkspaceTrustManagementService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IExtensionManifestPropertiesService private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IExtensionManifestPropertiesService
+		private readonly extensionManifestPropertiesService: IExtensionManifestPropertiesService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IProductService private readonly productService: IProductService,
-		@IWorkbenchExtensionEnablementService private readonly workbenchExtensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IExtensionFeaturesManagementService private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IWorkbenchExtensionEnablementService
+		private readonly workbenchExtensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionFeaturesManagementService
+		private readonly extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 	) {
-		super('extensions.status', '', `${ExtensionStatusAction.CLASS} hide`, false);
-		this._register(this.labelService.onDidChangeFormatters(() => this.update(), this));
-		this._register(this.extensionService.onDidChangeExtensions(() => this.update()));
-		this._register(this.extensionFeaturesManagementService.onDidChangeAccessData(() => this.update()));
+		super(
+			"extensions.status",
+			"",
+			`${ExtensionStatusAction.CLASS} hide`,
+			false,
+		);
+		this._register(
+			this.labelService.onDidChangeFormatters(() => this.update(), this),
+		);
+		this._register(
+			this.extensionService.onDidChangeExtensions(() => this.update()),
+		);
+		this._register(
+			this.extensionFeaturesManagementService.onDidChangeAccessData(() =>
+				this.update(),
+			),
+		);
 		this.update();
 	}
 
@@ -4655,13 +4894,18 @@ export class ReinstallAction extends Action {
 	static readonly LABEL = localize("reinstall", "Reinstall Extension...");
 
 	constructor(
-		id: string = ReinstallAction.ID, label: string = ReinstallAction.LABEL,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INotificationService private readonly notificationService: INotificationService,
+		id: string = ReinstallAction.ID,
+		label: string = ReinstallAction.LABEL,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IHostService private readonly hostService: IHostService,
-		@IExtensionService private readonly extensionService: IExtensionService
+		@IExtensionService private readonly extensionService: IExtensionService,
 	) {
 		super(id, label);
 	}
@@ -4767,11 +5011,16 @@ export class InstallSpecificVersionOfExtensionAction extends Action {
 	);
 
 	constructor(
-		id: string = InstallSpecificVersionOfExtensionAction.ID, label: string = InstallSpecificVersionOfExtensionAction.LABEL,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		id: string = InstallSpecificVersionOfExtensionAction.ID,
+		label: string = InstallSpecificVersionOfExtensionAction.LABEL,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
 	) {
 		super(id, label);
 	}
@@ -4844,19 +5093,26 @@ export abstract class AbstractInstallExtensionsInServerAction extends Action {
 
 	constructor(
 		id: string,
-		@IExtensionsWorkbenchService protected readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IExtensionsWorkbenchService
+		protected readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IProgressService private readonly progressService: IProgressService,
 	) {
 		super(id);
 		this.update();
-		this.extensionsWorkbenchService.queryLocal().then(() => this.updateExtensions());
-		this._register(this.extensionsWorkbenchService.onChange(() => {
-			if (this.extensions) {
-				this.updateExtensions();
-			}
-		}));
+		this.extensionsWorkbenchService
+			.queryLocal()
+			.then(() => this.updateExtensions());
+		this._register(
+			this.extensionsWorkbenchService.onChange(() => {
+				if (this.extensions) {
+					this.updateExtensions();
+				}
+			}),
+		);
 	}
 
 	private updateExtensions(): void {
@@ -4962,17 +5218,27 @@ export abstract class AbstractInstallExtensionsInServerAction extends Action {
 
 export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensionsInServerAction {
 	constructor(
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@IProgressService progressService: IProgressService,
 		@INotificationService notificationService: INotificationService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
 	) {
-		super('workbench.extensions.actions.installLocalExtensionsInRemote', extensionsWorkbenchService, quickInputService, notificationService, progressService);
+		super(
+			"workbench.extensions.actions.installLocalExtensionsInRemote",
+			extensionsWorkbenchService,
+			quickInputService,
+			notificationService,
+			progressService,
+		);
 	}
 
 	override get label(): string {
@@ -5076,16 +5342,25 @@ export class InstallLocalExtensionsInRemoteAction extends AbstractInstallExtensi
 export class InstallRemoteExtensionsInLocalAction extends AbstractInstallExtensionsInServerAction {
 	constructor(
 		id: string,
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IQuickInputService quickInputService: IQuickInputService,
 		@IProgressService progressService: IProgressService,
 		@INotificationService notificationService: INotificationService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
 	) {
-		super(id, extensionsWorkbenchService, quickInputService, notificationService, progressService);
+		super(
+			id,
+			extensionsWorkbenchService,
+			quickInputService,
+			notificationService,
+			progressService,
+		);
 	}
 
 	override get label(): string {

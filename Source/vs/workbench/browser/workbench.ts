@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./style.js";
+
 import { isChrome, isFirefox, isSafari } from "../../base/browser/browser.js";
 import { runWhenWindowIdle } from "../../base/browser/dom.js";
 import { PixelRatio } from "../../base/browser/pixelRatio.js";
@@ -39,8 +40,8 @@ import { localize } from "../../nls.js";
 import { AccessibleViewRegistry } from "../../platform/accessibility/browser/accessibleViewRegistry.js";
 import { AccessibilityProgressSignalScheduler } from "../../platform/accessibilitySignal/browser/progressAccessibilitySignalScheduler.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../platform/configuration/common/configuration.js";
 import { IDialogService } from "../../platform/dialogs/common/dialogs.js";
 import {
@@ -61,8 +62,8 @@ import {
 	WillSaveStateReason,
 } from "../../platform/storage/common/storage.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../common/contributions.js";
 import {
 	EditorExtensions,

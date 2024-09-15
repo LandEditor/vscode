@@ -8,9 +8,9 @@ import { FontMeasurements } from "../../../../editor/browser/config/fontMeasurem
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 
@@ -18,14 +18,14 @@ class DisplayChangeRemeasureFonts
 	extends Disposable
 	implements IWorkbenchContribution
 {
-	constructor(
-		@INativeHostService nativeHostService: INativeHostService
-	) {
+	constructor(@INativeHostService nativeHostService: INativeHostService) {
 		super();
 
-		this._register(nativeHostService.onDidChangeDisplay(() => {
-			FontMeasurements.clearAllFontInfos();
-		}));
+		this._register(
+			nativeHostService.onDidChangeDisplay(() => {
+				FontMeasurements.clearAllFontInfos();
+			}),
+		);
 	}
 }
 

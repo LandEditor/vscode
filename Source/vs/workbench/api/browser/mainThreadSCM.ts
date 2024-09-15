@@ -9,22 +9,22 @@ import { structuralEquals } from "../../../base/common/equals.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import type { IMarkdownString } from "../../../base/common/htmlContent.js";
 import {
+	combinedDisposable,
 	Disposable,
 	DisposableStore,
-	type IDisposable,
-	combinedDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../base/common/marshallingIds.js";
 import { Schemas } from "../../../base/common/network.js";
 import {
-	type IObservable,
 	observableValue,
 	observableValueOpts,
 	transaction,
+	type IObservable,
 } from "../../../base/common/observable.js";
-import { ResourceTree } from "../../../base/common/resourceTree.js";
 import { basename } from "../../../base/common/resources.js";
+import { ResourceTree } from "../../../base/common/resourceTree.js";
 import { ThemeIcon } from "../../../base/common/themables.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { Command } from "../../../editor/common/languages.js";
@@ -32,8 +32,8 @@ import { ILanguageService } from "../../../editor/common/languages/language.js";
 import type { ITextModel } from "../../../editor/common/model.js";
 import { IModelService } from "../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../editor/common/services/resolverService.js";
 import type { ColorIdentifier } from "../../../platform/theme/common/colorUtils.js";
 import { IUriIdentityService } from "../../../platform/uriIdentity/common/uriIdentity.js";
@@ -56,25 +56,25 @@ import {
 	type QuickDiffProvider,
 } from "../../contrib/scm/common/quickDiff.js";
 import {
+	ISCMService,
+	ISCMViewService,
 	type IInputValidation,
+	type InputValidationType,
 	type ISCMActionButtonDescriptor,
 	type ISCMProvider,
 	type ISCMRepository,
 	type ISCMResource,
 	type ISCMResourceDecorations,
 	type ISCMResourceGroup,
-	ISCMService,
-	ISCMViewService,
-	type InputValidationType,
 } from "../../contrib/scm/common/scm.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostSCMShape,
 	MainContext,
+	type ExtHostSCMShape,
 	type MainThreadSCMShape,
 	type SCMGroupFeatures,
 	type SCMHistoryItemDto,
@@ -781,12 +781,20 @@ export class MainThreadSCM implements MainThreadSCMShape {
 		@IModelService private readonly modelService: IModelService,
 		@ITextModelService private readonly textModelService: ITextModelService,
 		@IQuickDiffService private readonly quickDiffService: IQuickDiffService,
-		@IUriIdentityService private readonly _uriIdentService: IUriIdentityService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService
+		@IUriIdentityService
+		private readonly _uriIdentService: IUriIdentityService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostSCM);
 
-		this._disposables.add(new SCMInputBoxContentProvider(this.textModelService, this.modelService, this.languageService));
+		this._disposables.add(
+			new SCMInputBoxContentProvider(
+				this.textModelService,
+				this.modelService,
+				this.languageService,
+			),
+		);
 	}
 
 	dispose(): void {

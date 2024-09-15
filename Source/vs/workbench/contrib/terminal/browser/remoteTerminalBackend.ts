@@ -7,12 +7,12 @@ import { DeferredPromise } from "../../../../base/common/async.js";
 import { Emitter } from "../../../../base/common/event.js";
 import { revive } from "../../../../base/common/marshalling.js";
 import {
-	type PerformanceMark,
 	mark,
+	type PerformanceMark,
 } from "../../../../base/common/performance.js";
 import {
-	type IProcessEnvironment,
 	OperatingSystem,
+	type IProcessEnvironment,
 } from "../../../../base/common/platform.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
@@ -27,6 +27,9 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import type { ISerializedTerminalCommand } from "../../../../platform/terminal/common/capabilities/capabilities.js";
 import {
+	ITerminalLogService,
+	TerminalExtensions,
+	TerminalSettingId,
 	type IPtyHostLatencyMeasurement,
 	type IShellLaunchConfig,
 	type IShellLaunchConfigDto,
@@ -34,15 +37,12 @@ import {
 	type ITerminalBackendRegistry,
 	type ITerminalChildProcess,
 	type ITerminalEnvironment,
-	ITerminalLogService,
 	type ITerminalProcessOptions,
 	type ITerminalProfile,
 	type ITerminalsLayoutInfo,
 	type ITerminalsLayoutInfoById,
 	type ProcessPropertyType,
-	TerminalExtensions,
 	type TerminalIcon,
-	TerminalSettingId,
 	type TitleEventSource,
 } from "../../../../platform/terminal/common/terminal.js";
 import type { IProcessDetails } from "../../../../platform/terminal/common/terminalProcess.js";
@@ -57,9 +57,9 @@ import {
 	RemoteTerminalChannelClient,
 } from "../common/remote/remoteTerminalChannel.js";
 import {
+	TERMINAL_CONFIG_SECTION,
 	type ICompleteTerminalConfiguration,
 	type ITerminalConfiguration,
-	TERMINAL_CONFIG_SECTION,
 } from "../common/terminal.js";
 import { TerminalStorageKeys } from "../common/terminalStorageKeys.js";
 import { BaseTerminalBackend } from "./baseTerminalBackend.js";
@@ -74,7 +74,8 @@ export class RemoteTerminalBackendContribution
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@ITerminalInstanceService terminalInstanceService: ITerminalInstanceService,
+		@ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
 	) {
 		const connection = remoteAgentService.getConnection();
 		if (connection?.remoteAuthority) {
@@ -126,32 +127,58 @@ class RemoteTerminalBackend
 	constructor(
 		readonly remoteAuthority: string | undefined,
 		private readonly _remoteTerminalChannel: RemoteTerminalChannelClient,
-		@IRemoteAgentService private readonly _remoteAgentService: IRemoteAgentService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IRemoteAgentService
+		private readonly _remoteAgentService: IRemoteAgentService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalLogService logService: ITerminalLogService,
 		@ICommandService private readonly _commandService: ICommandService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
-		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
+		@IConfigurationResolverService
+		configurationResolverService: IConfigurationResolverService,
 		@IHistoryService private readonly _historyService: IHistoryService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IStatusbarService statusBarService: IStatusbarService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IStatusbarService statusBarService: IStatusbarService,
 	) {
-		super(_remoteTerminalChannel, logService, _historyService, configurationResolverService, statusBarService, workspaceContextService);
+		super(
+			_remoteTerminalChannel,
+			logService,
+			_historyService,
+			configurationResolverService,
+			statusBarService,
+			workspaceContextService,
+		);
 
-		this._remoteTerminalChannel.onProcessData(e => this._ptys.get(e.id)?.handleData(e.event));
-		this._remoteTerminalChannel.onProcessReplay(e => {
+		this._remoteTerminalChannel.onProcessData((e) =>
+			this._ptys.get(e.id)?.handleData(e.event),
+		);
+		this._remoteTerminalChannel.onProcessReplay((e) => {
 			this._ptys.get(e.id)?.handleReplay(e.event);
 			if (e.event.commands.commands.length > 0) {
-				this._onRestoreCommands.fire({ id: e.id, commands: e.event.commands.commands });
+				this._onRestoreCommands.fire({
+					id: e.id,
+					commands: e.event.commands.commands,
+				});
 			}
 		});
-		this._remoteTerminalChannel.onProcessOrphanQuestion(e => this._ptys.get(e.id)?.handleOrphanQuestion());
-		this._remoteTerminalChannel.onDidRequestDetach(e => this._onDidRequestDetach.fire(e));
-		this._remoteTerminalChannel.onProcessReady(e => this._ptys.get(e.id)?.handleReady(e.event));
-		this._remoteTerminalChannel.onDidChangeProperty(e => this._ptys.get(e.id)?.handleDidChangeProperty(e.property));
-		this._remoteTerminalChannel.onProcessExit(e => {
+		this._remoteTerminalChannel.onProcessOrphanQuestion((e) =>
+			this._ptys.get(e.id)?.handleOrphanQuestion(),
+		);
+		this._remoteTerminalChannel.onDidRequestDetach((e) =>
+			this._onDidRequestDetach.fire(e),
+		);
+		this._remoteTerminalChannel.onProcessReady((e) =>
+			this._ptys.get(e.id)?.handleReady(e.event),
+		);
+		this._remoteTerminalChannel.onDidChangeProperty((e) =>
+			this._ptys.get(e.id)?.handleDidChangeProperty(e.property),
+		);
+		this._remoteTerminalChannel.onProcessExit((e) => {
 			const pty = this._ptys.get(e.id);
 			if (pty) {
 				pty.handleExit(e.event);
@@ -159,8 +186,13 @@ class RemoteTerminalBackend
 			}
 		});
 
-		const allowedCommands = ['_remoteCLI.openExternal', '_remoteCLI.windowOpen', '_remoteCLI.getSystemStatus', '_remoteCLI.manageExtensions'];
-		this._remoteTerminalChannel.onExecuteCommand(async e => {
+		const allowedCommands = [
+			"_remoteCLI.openExternal",
+			"_remoteCLI.windowOpen",
+			"_remoteCLI.getSystemStatus",
+			"_remoteCLI.manageExtensions",
+		];
+		this._remoteTerminalChannel.onExecuteCommand(async (e) => {
 			// Ensure this request for for this window
 			const pty = this._ptys.get(e.persistentProcessId);
 			if (!pty) {
@@ -169,20 +201,34 @@ class RemoteTerminalBackend
 			const reqId = e.reqId;
 			const commandId = e.commandId;
 			if (!allowedCommands.includes(commandId)) {
-				this._remoteTerminalChannel.sendCommandResult(reqId, true, 'Invalid remote cli command: ' + commandId);
+				this._remoteTerminalChannel.sendCommandResult(
+					reqId,
+					true,
+					"Invalid remote cli command: " + commandId,
+				);
 				return;
 			}
-			const commandArgs = e.commandArgs.map(arg => revive(arg));
+			const commandArgs = e.commandArgs.map((arg) => revive(arg));
 			try {
-				const result = await this._commandService.executeCommand(e.commandId, ...commandArgs);
-				this._remoteTerminalChannel.sendCommandResult(reqId, false, result);
+				const result = await this._commandService.executeCommand(
+					e.commandId,
+					...commandArgs,
+				);
+				this._remoteTerminalChannel.sendCommandResult(
+					reqId,
+					false,
+					result,
+				);
 			} catch (err) {
 				this._remoteTerminalChannel.sendCommandResult(reqId, true, err);
 			}
 		});
 
 		// Listen for config changes
-		const initialConfig = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION);
+		const initialConfig =
+			this._configurationService.getValue<ITerminalConfiguration>(
+				TERMINAL_CONFIG_SECTION,
+			);
 		for (const match of Object.keys(initialConfig.autoReplies)) {
 			// Ensure the value is truthy
 			const reply = initialConfig.autoReplies[match];
@@ -191,19 +237,27 @@ class RemoteTerminalBackend
 			}
 		}
 		// TODO: Could simplify update to a single call
-		this._register(this._configurationService.onDidChangeConfiguration(async e => {
-			if (e.affectsConfiguration(TerminalSettingId.AutoReplies)) {
-				this._remoteTerminalChannel.uninstallAllAutoReplies();
-				const config = this._configurationService.getValue<ITerminalConfiguration>(TERMINAL_CONFIG_SECTION);
-				for (const match of Object.keys(config.autoReplies)) {
-					// Ensure the value is truthy
-					const reply = config.autoReplies[match];
-					if (reply) {
-						await this._remoteTerminalChannel.installAutoReply(match, reply);
+		this._register(
+			this._configurationService.onDidChangeConfiguration(async (e) => {
+				if (e.affectsConfiguration(TerminalSettingId.AutoReplies)) {
+					this._remoteTerminalChannel.uninstallAllAutoReplies();
+					const config =
+						this._configurationService.getValue<ITerminalConfiguration>(
+							TERMINAL_CONFIG_SECTION,
+						);
+					for (const match of Object.keys(config.autoReplies)) {
+						// Ensure the value is truthy
+						const reply = config.autoReplies[match];
+						if (reply) {
+							await this._remoteTerminalChannel.installAutoReply(
+								match,
+								reply,
+							);
+						}
 					}
 				}
-			}
-		}));
+			}),
+		);
 
 		this._onPtyHostConnected.fire();
 	}

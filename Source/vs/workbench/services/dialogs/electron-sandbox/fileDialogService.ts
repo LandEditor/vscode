@@ -31,8 +31,8 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	type INativeHostOptions,
 	INativeHostService,
+	type INativeHostOptions,
 } from "../../../../platform/native/common/native.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
@@ -52,12 +52,14 @@ export class FileDialogService
 		@IHostService hostService: IHostService,
 		@IWorkspaceContextService contextService: IWorkspaceContextService,
 		@IHistoryService historyService: IHistoryService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IFileService fileService: IFileService,
 		@IOpenerService openerService: IOpenerService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IDialogService dialogService: IDialogService,
 		@ILanguageService languageService: ILanguageService,
 		@IWorkspacesService workspacesService: IWorkspacesService,
@@ -66,10 +68,27 @@ export class FileDialogService
 		@ICommandService commandService: ICommandService,
 		@IEditorService editorService: IEditorService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
-		super(hostService, contextService, historyService, environmentService, instantiationService,
-			configurationService, fileService, openerService, dialogService, languageService, workspacesService, labelService, pathService, commandService, editorService, codeEditorService, logService);
+		super(
+			hostService,
+			contextService,
+			historyService,
+			environmentService,
+			instantiationService,
+			configurationService,
+			fileService,
+			openerService,
+			dialogService,
+			languageService,
+			workspacesService,
+			labelService,
+			pathService,
+			commandService,
+			editorService,
+			codeEditorService,
+			logService,
+		);
 	}
 
 	private toNativeOpenDialogOptions(

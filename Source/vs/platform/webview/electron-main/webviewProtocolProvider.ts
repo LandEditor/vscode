@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { protocol } from "electron";
+
 import { Disposable } from "../../../base/common/lifecycle.js";
 import {
-	type AppResourcePath,
 	COI,
 	FileAccess,
 	Schemas,
+	type AppResourcePath,
 } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 
@@ -49,16 +50,14 @@ export class WebviewProtocolProvider extends Disposable {
 				});
 			} else {
 				return callback({
-					error:
-						-10 /* ACCESS_DENIED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
+					error: -10 /* ACCESS_DENIED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
 				});
 			}
 		} catch {
 			// noop
 		}
 		return callback({
-			error:
-				-2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
+			error: -2 /* FAILED - https://cs.chromium.org/chromium/src/net/base/net_error_list.h?l=32 */,
 		});
 	}
 }

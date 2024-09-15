@@ -11,13 +11,13 @@ import type { IPosition, Position } from "../../../common/core/position.js";
 import type { IRange, Range } from "../../../common/core/range.js";
 import type { ISelection, Selection } from "../../../common/core/selection.js";
 import {
+	ScrollType,
 	type IDiffEditorViewModel,
 	type IEditor,
 	type IEditorAction,
 	type IEditorDecorationsCollection,
 	type IEditorModel,
 	type IEditorViewState,
-	ScrollType,
 } from "../../../common/editorCommon.js";
 import type {
 	IModelDecorationsChangeAccessor,

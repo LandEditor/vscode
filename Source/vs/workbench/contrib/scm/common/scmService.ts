@@ -10,15 +10,15 @@ import { Iterable } from "../../../../base/common/iterator.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
@@ -29,15 +29,15 @@ import {
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import {
+	SCMInputChangeReason,
 	type IInputValidation,
 	type IInputValidator,
+	type InputValidationType,
 	type ISCMInput,
 	type ISCMInputChangeEvent,
 	type ISCMProvider,
 	type ISCMRepository,
 	type ISCMService,
-	type InputValidationType,
-	SCMInputChangeReason,
 } from "./scm.js";
 
 class SCMInput extends Disposable implements ISCMInput {
@@ -273,11 +273,14 @@ class SCMInputHistory {
 
 	constructor(
 		@IStorageService private storageService: IStorageService,
-		@IWorkspaceContextService private workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private workspaceContextService: IWorkspaceContextService,
 	) {
 		this.histories = new Map();
 
-		const entries = this.storageService.getObject<[string, URI, string[]][]>('scm.history', StorageScope.WORKSPACE, []);
+		const entries = this.storageService.getObject<
+			[string, URI, string[]][]
+		>("scm.history", StorageScope.WORKSPACE, []);
 
 		for (const [providerLabel, rootUri, history] of entries) {
 			let providerHistories = this.histories.get(providerLabel);
@@ -294,28 +297,38 @@ class SCMInputHistory {
 			this.saveToStorage();
 		}
 
-		this.disposables.add(this.storageService.onDidChangeValue(StorageScope.WORKSPACE, 'scm.history', this.disposables)(e => {
-			if (e.external && e.key === 'scm.history') {
-				const raw = this.storageService.getObject<[string, URI, string[]][]>('scm.history', StorageScope.WORKSPACE, []);
+		this.disposables.add(
+			this.storageService.onDidChangeValue(
+				StorageScope.WORKSPACE,
+				"scm.history",
+				this.disposables,
+			)((e) => {
+				if (e.external && e.key === "scm.history") {
+					const raw = this.storageService.getObject<
+						[string, URI, string[]][]
+					>("scm.history", StorageScope.WORKSPACE, []);
 
-				for (const [providerLabel, uri, rawHistory] of raw) {
-					const history = this.getHistory(providerLabel, uri);
+					for (const [providerLabel, uri, rawHistory] of raw) {
+						const history = this.getHistory(providerLabel, uri);
 
-					for (const value of Iterable.reverse(rawHistory)) {
-						history.prepend(value);
+						for (const value of Iterable.reverse(rawHistory)) {
+							history.prepend(value);
+						}
 					}
 				}
-			}
-		}));
+			}),
+		);
 
-		this.disposables.add(this.storageService.onWillSaveState(_ => {
-			const event = new WillSaveHistoryEvent();
-			this._onWillSaveHistory.fire(event);
+		this.disposables.add(
+			this.storageService.onWillSaveState((_) => {
+				const event = new WillSaveHistoryEvent();
+				this._onWillSaveHistory.fire(event);
 
-			if (event.didChangeHistory) {
-				this.saveToStorage();
-			}
-		}));
+				if (event.didChangeHistory) {
+					this.saveToStorage();
+				}
+			}),
+		);
 	}
 
 	private saveToStorage(): void {
@@ -435,13 +448,21 @@ export class SCMService implements ISCMService {
 
 	constructor(
 		@ILogService private readonly logService: ILogService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IStorageService storageService: IStorageService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
-		this.inputHistory = new SCMInputHistory(storageService, workspaceContextService);
-		this.providerCount = contextKeyService.createKey('scm.providerCount', 0);
+		this.inputHistory = new SCMInputHistory(
+			storageService,
+			workspaceContextService,
+		);
+		this.providerCount = contextKeyService.createKey(
+			"scm.providerCount",
+			0,
+		);
 	}
 
 	registerSCMProvider(provider: ISCMProvider): ISCMRepository {

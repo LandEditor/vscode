@@ -13,8 +13,8 @@ import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction2,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import type { Position } from "../../../../editor/common/core/position.js";
@@ -28,9 +28,9 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
@@ -103,17 +103,34 @@ class TypeHierarchyController implements IEditorContribution {
 
 	constructor(
 		readonly _editor: ICodeEditor,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
-		this._ctxHasProvider = _ctxHasTypeHierarchyProvider.bindTo(this._contextKeyService);
-		this._ctxIsVisible = _ctxTypeHierarchyVisible.bindTo(this._contextKeyService);
-		this._ctxDirection = _ctxTypeHierarchyDirection.bindTo(this._contextKeyService);
-		this._disposables.add(Event.any<any>(_editor.onDidChangeModel, _editor.onDidChangeModelLanguage, TypeHierarchyProviderRegistry.onDidChange)(() => {
-			this._ctxHasProvider.set(_editor.hasModel() && TypeHierarchyProviderRegistry.has(_editor.getModel()));
-		}));
+		this._ctxHasProvider = _ctxHasTypeHierarchyProvider.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxIsVisible = _ctxTypeHierarchyVisible.bindTo(
+			this._contextKeyService,
+		);
+		this._ctxDirection = _ctxTypeHierarchyDirection.bindTo(
+			this._contextKeyService,
+		);
+		this._disposables.add(
+			Event.any<any>(
+				_editor.onDidChangeModel,
+				_editor.onDidChangeModelLanguage,
+				TypeHierarchyProviderRegistry.onDidChange,
+			)(() => {
+				this._ctxHasProvider.set(
+					_editor.hasModel() &&
+						TypeHierarchyProviderRegistry.has(_editor.getModel()),
+				);
+			}),
+		);
 		this._disposables.add(this._sessionDisposables);
 	}
 

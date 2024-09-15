@@ -62,7 +62,8 @@ export class TerminalContributionService
 function hasValidTerminalIcon(profile: ITerminalProfileContribution): boolean {
 	return (
 		!profile.icon ||
-		typeof profile.icon === "string" || URI.isUri(profile.icon) ||
+		typeof profile.icon === "string" ||
+		URI.isUri(profile.icon) ||
 		("light" in profile.icon &&
 			"dark" in profile.icon &&
 			URI.isUri(profile.icon.light) &&

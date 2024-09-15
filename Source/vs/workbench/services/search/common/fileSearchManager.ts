@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { toErrorMessage } from "../../../../base/common/errorMessage.js";
 import * as glob from "../../../../base/common/glob.js";
@@ -16,15 +16,15 @@ import { TernarySearchTree } from "../../../../base/common/ternarySearchTree.js"
 import type { URI } from "../../../../base/common/uri.js";
 import {
 	DEFAULT_MAX_SEARCH_RESULTS,
+	excludeToGlobPattern,
+	hasSiblingFn,
+	QueryGlobTester,
+	resolvePatternsForProvider,
 	type IFileMatch,
 	type IFileQuery,
 	type IFileSearchProviderStats,
 	type IFolderQuery,
 	type ISearchCompleteStats,
-	QueryGlobTester,
-	excludeToGlobPattern,
-	hasSiblingFn,
-	resolvePatternsForProvider,
 } from "./search.js";
 import { OldFileSearchProviderConverter } from "./searchExtConversionTypes.js";
 import type {

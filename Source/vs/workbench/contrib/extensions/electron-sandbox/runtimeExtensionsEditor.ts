@@ -20,9 +20,9 @@ import { IClipboardService } from "../../../../platform/clipboard/common/clipboa
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IFileDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -30,15 +30,15 @@ import type { ExtensionIdentifier } from "../../../../platform/extensions/common
 import { IFileService } from "../../../../platform/files/common/files.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import {
+	createDecorator,
 	IInstantiationService,
 	type ServicesAccessor,
-	createDecorator,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import {
-	type IV8Profile,
 	Utils,
+	type IV8Profile,
 } from "../../../../platform/profiling/common/profiling.js";
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
@@ -52,8 +52,8 @@ import {
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import { IExtensionFeaturesManagementService } from "../../../services/extensionManagement/common/extensionFeatures.js";
 import {
-	type IExtensionHostProfile,
 	IExtensionService,
+	type IExtensionHostProfile,
 } from "../../../services/extensions/common/extensions.js";
 import {
 	AbstractRuntimeExtensionsEditor,
@@ -113,34 +113,64 @@ export class RuntimeExtensionsEditor extends AbstractRuntimeExtensionsEditor {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IExtensionsWorkbenchService extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IExtensionsWorkbenchService
+		extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IExtensionService extensionService: IExtensionService,
 		@INotificationService notificationService: INotificationService,
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IStorageService storageService: IStorageService,
 		@ILabelService labelService: ILabelService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IClipboardService clipboardService: IClipboardService,
-		@IExtensionHostProfileService private readonly _extensionHostProfileService: IExtensionHostProfileService,
-		@IExtensionFeaturesManagementService extensionFeaturesManagementService: IExtensionFeaturesManagementService,
+		@IExtensionHostProfileService
+		private readonly _extensionHostProfileService: IExtensionHostProfileService,
+		@IExtensionFeaturesManagementService
+		extensionFeaturesManagementService: IExtensionFeaturesManagementService,
 		@IHoverService hoverService: IHoverService,
 		@IMenuService menuService: IMenuService,
 	) {
-		super(group, telemetryService, themeService, contextKeyService, extensionsWorkbenchService, extensionService, notificationService, contextMenuService, instantiationService, storageService, labelService, environmentService, clipboardService, extensionFeaturesManagementService, hoverService, menuService);
+		super(
+			group,
+			telemetryService,
+			themeService,
+			contextKeyService,
+			extensionsWorkbenchService,
+			extensionService,
+			notificationService,
+			contextMenuService,
+			instantiationService,
+			storageService,
+			labelService,
+			environmentService,
+			clipboardService,
+			extensionFeaturesManagementService,
+			hoverService,
+			menuService,
+		);
 		this._profileInfo = this._extensionHostProfileService.lastProfile;
-		this._extensionsHostRecorded = CONTEXT_EXTENSION_HOST_PROFILE_RECORDED.bindTo(contextKeyService);
-		this._profileSessionState = CONTEXT_PROFILE_SESSION_STATE.bindTo(contextKeyService);
+		this._extensionsHostRecorded =
+			CONTEXT_EXTENSION_HOST_PROFILE_RECORDED.bindTo(contextKeyService);
+		this._profileSessionState =
+			CONTEXT_PROFILE_SESSION_STATE.bindTo(contextKeyService);
 
-		this._register(this._extensionHostProfileService.onDidChangeLastProfile(() => {
-			this._profileInfo = this._extensionHostProfileService.lastProfile;
-			this._extensionsHostRecorded.set(!!this._profileInfo);
-			this._updateExtensions();
-		}));
-		this._register(this._extensionHostProfileService.onDidChangeState(() => {
-			const state = this._extensionHostProfileService.state;
-			this._profileSessionState.set(ProfileSessionState[state].toLowerCase());
-		}));
+		this._register(
+			this._extensionHostProfileService.onDidChangeLastProfile(() => {
+				this._profileInfo =
+					this._extensionHostProfileService.lastProfile;
+				this._extensionsHostRecorded.set(!!this._profileInfo);
+				this._updateExtensions();
+			}),
+		);
+		this._register(
+			this._extensionHostProfileService.onDidChangeState(() => {
+				const state = this._extensionHostProfileService.state;
+				this._profileSessionState.set(
+					ProfileSessionState[state].toLowerCase(),
+				);
+			}),
+		);
 	}
 
 	protected _getProfileInfo(): IExtensionHostProfile | null {

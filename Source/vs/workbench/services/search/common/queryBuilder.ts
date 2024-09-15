@@ -20,8 +20,8 @@ import * as strings from "../../../../base/common/strings.js";
 import { assertIsDefined, isDefined } from "../../../../base/common/types.js";
 import {
 	URI,
-	type UriComponents,
 	URI as uri,
+	type UriComponents,
 } from "../../../../base/common/uri.js";
 import { isMultilineRegexSource } from "../../../../editor/common/model/textModelSearch.js";
 import * as nls from "../../../../nls.js";
@@ -30,13 +30,16 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
 	IWorkspaceContextService,
-	type IWorkspaceFolderData,
-	WorkbenchState,
 	toWorkspaceFolder,
+	WorkbenchState,
+	type IWorkspaceFolderData,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IEditorGroupsService } from "../../editor/common/editorGroupsService.js";
 import { IPathService } from "../../path/common/pathService.js";
 import {
+	getExcludes,
+	pathIncludedInQuery,
+	QueryType,
 	type ExcludeGlobPattern,
 	type ICommonQueryProps,
 	type IFileQuery,
@@ -45,9 +48,6 @@ import {
 	type ISearchConfiguration,
 	type ITextQuery,
 	type ITextSearchPreviewOptions,
-	QueryType,
-	getExcludes,
-	pathIncludedInQuery,
 } from "./search.js";
 import type { GlobPattern } from "./searchExtTypes.js";
 
@@ -149,14 +149,17 @@ export interface ITextQueryBuilderOptions<U extends UriComponents = URI>
 
 export class QueryBuilder {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IEditorGroupsService private readonly editorGroupsService: IEditorGroupsService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IEditorGroupsService
+		private readonly editorGroupsService: IEditorGroupsService,
 		@ILogService private readonly logService: ILogService,
 		@IPathService private readonly pathService: IPathService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
-	) {
-	}
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+	) {}
 
 	text(
 		contentPattern: IPatternInfo,

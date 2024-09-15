@@ -10,9 +10,9 @@ import {
 import { createInstantHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegateFactory.js";
 import {
 	ActionRunner,
+	SubmenuAction,
 	type IAction,
 	type IActionRunner,
-	SubmenuAction,
 	type WorkbenchActionExecutedClassification,
 	type WorkbenchActionExecutedEvent,
 } from "../../../base/common/actions.js";
@@ -27,10 +27,10 @@ import { IHoverService } from "../../hover/browser/hover.js";
 import { IKeybindingService } from "../../keybinding/common/keybinding.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type IMenuActionOptions,
 	IMenuService,
-	type MenuId,
 	MenuItemAction,
+	type IMenuActionOptions,
+	type MenuId,
 } from "../common/actions.js";
 import { createAndFillInActionBarActions } from "./menuEntryActionViewItem.js";
 import type { IToolBarRenderOptions } from "./toolbar.js";
@@ -62,8 +62,10 @@ export class WorkbenchButtonBar extends ButtonBar {
 	constructor(
 		container: HTMLElement,
 		private readonly _options: IWorkbenchButtonBarOptions | undefined,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
@@ -71,12 +73,19 @@ export class WorkbenchButtonBar extends ButtonBar {
 
 		this._actionRunner = this._store.add(new ActionRunner());
 		if (_options?.telemetrySource) {
-			this._actionRunner.onDidRun(e => {
-				telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>(
-					'workbenchActionExecuted',
-					{ id: e.action.id, from: _options.telemetrySource! }
-				);
-			}, undefined, this._store);
+			this._actionRunner.onDidRun(
+				(e) => {
+					telemetryService.publicLog2<
+						WorkbenchActionExecutedEvent,
+						WorkbenchActionExecutedClassification
+					>("workbenchActionExecuted", {
+						id: e.action.id,
+						from: _options.telemetrySource!,
+					});
+				},
+				undefined,
+				this._store,
+			);
 		}
 	}
 

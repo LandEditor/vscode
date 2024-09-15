@@ -7,11 +7,11 @@ import type { VSBuffer } from "../../../../../base/common/buffer.js";
 import { Emitter } from "../../../../../base/common/event.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
+	compressOutputItemStreams,
+	isTextStreamMime,
 	type ICellOutput,
 	type IOutputDto,
 	type IOutputItemDto,
-	compressOutputItemStreams,
-	isTextStreamMime,
 } from "../notebookCommon.js";
 
 export class NotebookCellOutputTextModel

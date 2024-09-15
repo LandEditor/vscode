@@ -22,8 +22,8 @@ import {
 import { ILogService } from "../../log/common/log.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type ExtensionVerificationStatus,
 	toExtensionManagementError,
+	type ExtensionVerificationStatus,
 } from "../common/abstractExtensionManagementService.js";
 import {
 	ExtensionManagementError,
@@ -39,8 +39,8 @@ import {
 import { fromExtractError } from "./extensionManagementUtil.js";
 import {
 	ExtensionSignatureVerificationCode,
-	type ExtensionSignatureVerificationError,
 	IExtensionSignatureVerificationService,
+	type ExtensionSignatureVerificationError,
 } from "./extensionSignatureVerificationService.js";
 
 type RetryDownloadClassification = {
@@ -71,15 +71,19 @@ export class ExtensionsDownloader extends Disposable {
 	private readonly cleanUpPromise: Promise<void>;
 
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IExtensionSignatureVerificationService private readonly extensionSignatureVerificationService: IExtensionSignatureVerificationService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IExtensionSignatureVerificationService
+		private readonly extensionSignatureVerificationService: IExtensionSignatureVerificationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
-		this.extensionsDownloadDir = environmentService.extensionsDownloadLocation;
+		this.extensionsDownloadDir =
+			environmentService.extensionsDownloadLocation;
 		this.cache = 20; // Cache 20 downloaded VSIX files
 		this.cleanUpPromise = this.cleanUp();
 	}

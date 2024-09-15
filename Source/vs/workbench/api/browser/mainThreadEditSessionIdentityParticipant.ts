@@ -9,13 +9,13 @@ import type { IDisposable } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";
 import { IInstantiationService } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type IEditSessionIdentityCreateParticipant,
 	IEditSessionIdentityService,
+	type IEditSessionIdentityCreateParticipant,
 } from "../../../platform/workspace/common/editSessions.js";
 import type { WorkspaceFolder } from "../../../platform/workspace/common/workspace.js";
 import {
-	type IExtHostContext,
 	extHostCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
@@ -69,9 +69,16 @@ export class EditSessionIdentityCreateParticipant {
 	constructor(
 		extHostContext: IExtHostContext,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IEditSessionIdentityService private readonly _editSessionIdentityService: IEditSessionIdentityService
+		@IEditSessionIdentityService
+		private readonly _editSessionIdentityService: IEditSessionIdentityService,
 	) {
-		this._saveParticipantDisposable = this._editSessionIdentityService.addEditSessionIdentityCreateParticipant(instantiationService.createInstance(ExtHostEditSessionIdentityCreateParticipant, extHostContext));
+		this._saveParticipantDisposable =
+			this._editSessionIdentityService.addEditSessionIdentityCreateParticipant(
+				instantiationService.createInstance(
+					ExtHostEditSessionIdentityCreateParticipant,
+					extHostContext,
+				),
+			);
 	}
 
 	dispose(): void {

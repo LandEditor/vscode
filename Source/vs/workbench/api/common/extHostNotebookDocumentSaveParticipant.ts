@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { NotebookDocumentWillSaveEvent } from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { AsyncEmitter, type Event } from "../../../base/common/event.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";

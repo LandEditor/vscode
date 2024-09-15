@@ -10,8 +10,8 @@ import { URI, type UriComponents } from "../../../../base/common/uri.js";
 import {
 	FileOperationError,
 	FileOperationResult,
-	type IFileContent,
 	IFileService,
+	type IFileContent,
 } from "../../../../platform/files/common/files.js";
 import type {
 	IRemoteResourceProvider,

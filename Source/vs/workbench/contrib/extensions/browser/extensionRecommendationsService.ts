@@ -5,8 +5,8 @@
 
 import { shuffle } from "../../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
 	timeout,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { Emitter, Event } from "../../../../base/common/event.js";
 import { Disposable, toDisposable } from "../../../../base/common/lifecycle.js";
@@ -16,8 +16,8 @@ import { IEnvironmentService } from "../../../../platform/environment/common/env
 import {
 	IExtensionGalleryService,
 	IExtensionManagementService,
-	type InstallExtensionResult,
 	InstallOperation,
+	type InstallExtensionResult,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import { IExtensionRecommendationNotificationService } from "../../../../platform/extensionRecommendations/common/extensionRecommendations.js";
@@ -25,8 +25,8 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { IRemoteExtensionsScannerService } from "../../../../platform/remote/common/remoteExtensionsScanner.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
-	type ExtensionRecommendationReason,
 	IExtensionIgnoredRecommendationsService,
+	type ExtensionRecommendationReason,
 	type IExtensionRecommendationsService,
 } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
@@ -86,26 +86,50 @@ export class ExtensionRecommendationsService
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
-		@IExtensionManagementService private readonly extensionManagementService: IExtensionManagementService,
-		@IExtensionIgnoredRecommendationsService private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
-		@IExtensionRecommendationNotificationService private readonly extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IRemoteExtensionsScannerService private readonly remoteExtensionsScannerService: IRemoteExtensionsScannerService,
-		@IUserDataInitializationService private readonly userDataInitializationService: IUserDataInitializationService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
+		@IExtensionManagementService
+		private readonly extensionManagementService: IExtensionManagementService,
+		@IExtensionIgnoredRecommendationsService
+		private readonly extensionRecommendationsManagementService: IExtensionIgnoredRecommendationsService,
+		@IExtensionRecommendationNotificationService
+		private readonly extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IRemoteExtensionsScannerService
+		private readonly remoteExtensionsScannerService: IRemoteExtensionsScannerService,
+		@IUserDataInitializationService
+		private readonly userDataInitializationService: IUserDataInitializationService,
 	) {
 		super();
 
-		this.workspaceRecommendations = this._register(instantiationService.createInstance(WorkspaceRecommendations));
-		this.fileBasedRecommendations = this._register(instantiationService.createInstance(FileBasedRecommendations));
-		this.configBasedRecommendations = this._register(instantiationService.createInstance(ConfigBasedRecommendations));
-		this.exeBasedRecommendations = this._register(instantiationService.createInstance(ExeBasedRecommendations));
-		this.keymapRecommendations = this._register(instantiationService.createInstance(KeymapRecommendations));
-		this.webRecommendations = this._register(instantiationService.createInstance(WebRecommendations));
-		this.languageRecommendations = this._register(instantiationService.createInstance(LanguageRecommendations));
-		this.remoteRecommendations = this._register(instantiationService.createInstance(RemoteRecommendations));
+		this.workspaceRecommendations = this._register(
+			instantiationService.createInstance(WorkspaceRecommendations),
+		);
+		this.fileBasedRecommendations = this._register(
+			instantiationService.createInstance(FileBasedRecommendations),
+		);
+		this.configBasedRecommendations = this._register(
+			instantiationService.createInstance(ConfigBasedRecommendations),
+		);
+		this.exeBasedRecommendations = this._register(
+			instantiationService.createInstance(ExeBasedRecommendations),
+		);
+		this.keymapRecommendations = this._register(
+			instantiationService.createInstance(KeymapRecommendations),
+		);
+		this.webRecommendations = this._register(
+			instantiationService.createInstance(WebRecommendations),
+		);
+		this.languageRecommendations = this._register(
+			instantiationService.createInstance(LanguageRecommendations),
+		);
+		this.remoteRecommendations = this._register(
+			instantiationService.createInstance(RemoteRecommendations),
+		);
 
 		if (!this.isEnabled()) {
 			this.sessionSeed = 0;
@@ -118,7 +142,11 @@ export class ExtensionRecommendationsService
 		// Activation
 		this.activationPromise = this.activate();
 
-		this._register(this.extensionManagementService.onDidInstallExtensions(e => this.onDidInstallExtensions(e)));
+		this._register(
+			this.extensionManagementService.onDidInstallExtensions((e) =>
+				this.onDidInstallExtensions(e),
+			),
+		);
 	}
 
 	private async activate(): Promise<void> {

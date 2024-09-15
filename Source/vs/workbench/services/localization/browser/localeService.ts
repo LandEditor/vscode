@@ -5,8 +5,8 @@
 
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	LANGUAGE_DEFAULT,
 	Language,
+	LANGUAGE_DEFAULT,
 } from "../../../../base/common/platform.js";
 import { localize } from "../../../../nls.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -71,8 +71,8 @@ export class WebLocaleService implements ILocaleService {
 	constructor(
 		@IDialogService private readonly dialogService: IDialogService,
 		@IHostService private readonly hostService: IHostService,
-		@IProductService private readonly productService: IProductService
-	) { }
+		@IProductService private readonly productService: IProductService,
+	) {}
 
 	async setLocale(
 		languagePackItem: ILanguagePackItem,
@@ -153,9 +153,10 @@ class WebActiveLanguagePackService implements IActiveLanguagePackService {
 	_serviceBrand: undefined;
 
 	constructor(
-		@IExtensionGalleryService private readonly galleryService: IExtensionGalleryService,
-		@ILogService private readonly logService: ILogService
-	) { }
+		@IExtensionGalleryService
+		private readonly galleryService: IExtensionGalleryService,
+		@ILogService private readonly logService: ILogService,
+	) {}
 
 	async getExtensionIdProvidingCurrentLocale(): Promise<string | undefined> {
 		const language = Language.value();

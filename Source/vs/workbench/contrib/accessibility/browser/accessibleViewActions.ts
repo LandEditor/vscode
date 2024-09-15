@@ -6,8 +6,8 @@
 import { Codicon } from "../../../../base/common/codicons.js";
 import { KeyCode, KeyMod } from "../../../../base/common/keyCodes.js";
 import {
-	type Command,
 	MultiCommand,
+	type Command,
 	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";

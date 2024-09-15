@@ -13,12 +13,10 @@ import {
 	DisposableStore,
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
-import { URI } from "../../../../base/common/uri.js";
-
-import type { IModelService } from "../../../../editor/common/services/model.js";
-
 import { isWindows } from "../../../../base/common/platform.js";
+import { URI } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
+import type { IModelService } from "../../../../editor/common/services/model.js";
 import type { IFileService } from "../../../../platform/files/common/files.js";
 import {
 	IMarkerData,
@@ -27,12 +25,12 @@ import {
 } from "../../../../platform/markers/common/markers.js";
 import {
 	ApplyToKind,
+	createLineMatcher,
+	getResource,
 	type ILineMatcher,
 	type IProblemMatch,
 	type IWatchingPattern,
 	type ProblemMatcher,
-	createLineMatcher,
-	getResource,
 } from "./problemMatcher.js";
 
 export enum ProblemCollectorEventKind {

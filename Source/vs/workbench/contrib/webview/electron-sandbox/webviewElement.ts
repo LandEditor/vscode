@@ -56,35 +56,64 @@ export class ElectronWebviewElement extends WebviewElement {
 		@ITunnelService tunnelService: ITunnelService,
 		@IFileService fileService: IFileService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
-		@IRemoteAuthorityResolverService remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
+		@IRemoteAuthorityResolverService
+		remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ILogService logService: ILogService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IMainProcessService mainProcessService: IMainProcessService,
 		@INotificationService notificationService: INotificationService,
-		@INativeHostService private readonly _nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly _nativeHostService: INativeHostService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IAccessibilityService accessibilityService: IAccessibilityService,
 	) {
-		super(initInfo, webviewThemeDataProvider,
-			configurationService, contextMenuService, notificationService, environmentService,
-			fileService, logService, remoteAuthorityResolverService, telemetryService, tunnelService, instantiationService, accessibilityService);
+		super(
+			initInfo,
+			webviewThemeDataProvider,
+			configurationService,
+			contextMenuService,
+			notificationService,
+			environmentService,
+			fileService,
+			logService,
+			remoteAuthorityResolverService,
+			telemetryService,
+			tunnelService,
+			instantiationService,
+			accessibilityService,
+		);
 
-		this._webviewKeyboardHandler = new WindowIgnoreMenuShortcutsManager(configurationService, mainProcessService, _nativeHostService);
+		this._webviewKeyboardHandler = new WindowIgnoreMenuShortcutsManager(
+			configurationService,
+			mainProcessService,
+			_nativeHostService,
+		);
 
-		this._webviewMainService = ProxyChannel.toService<IWebviewManagerService>(mainProcessService.getChannel('webview'));
+		this._webviewMainService =
+			ProxyChannel.toService<IWebviewManagerService>(
+				mainProcessService.getChannel("webview"),
+			);
 
 		if (initInfo.options.enableFindWidget) {
-			this._register(this.onDidHtmlChange((newContent) => {
-				if (this._findStarted && this._cachedHtmlContent !== newContent) {
-					this.stopFind(false);
-					this._cachedHtmlContent = newContent;
-				}
-			}));
+			this._register(
+				this.onDidHtmlChange((newContent) => {
+					if (
+						this._findStarted &&
+						this._cachedHtmlContent !== newContent
+					) {
+						this.stopFind(false);
+						this._cachedHtmlContent = newContent;
+					}
+				}),
+			);
 
-			this._register(this._webviewMainService.onFoundInFrame((result) => {
-				this._hasFindResult.fire(result.matches > 0);
-			}));
+			this._register(
+				this._webviewMainService.onFoundInFrame((result) => {
+					this._hasFindResult.fire(result.matches > 0);
+				}),
+			);
 		}
 	}
 

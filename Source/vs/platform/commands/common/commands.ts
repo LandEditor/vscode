@@ -7,18 +7,18 @@ import { Emitter, type Event } from "../../../base/common/event.js";
 import { Iterable } from "../../../base/common/iterator.js";
 import type { IJSONSchema } from "../../../base/common/jsonSchema.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../base/common/linkedList.js";
 import {
-	type TypeConstraint,
 	validateConstraints,
+	type TypeConstraint,
 } from "../../../base/common/types.js";
 import type { ILocalizedString } from "../../action/common/action.js";
 import {
-	type ServicesAccessor,
 	createDecorator,
+	type ServicesAccessor,
 } from "../../instantiation/common/instantiation.js";
 
 export const ICommandService =

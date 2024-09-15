@@ -6,7 +6,7 @@
 import type { IStringDictionary } from "../../../base/common/collections.js";
 import * as objects from "../../../base/common/objects.js";
 import type { ILogService } from "../../log/common/log.js";
-import { type IStorageValue, SYNC_SERVICE_URL_TYPE } from "./userDataSync.js";
+import { SYNC_SERVICE_URL_TYPE, type IStorageValue } from "./userDataSync.js";
 
 export interface IMergeResult {
 	local: {

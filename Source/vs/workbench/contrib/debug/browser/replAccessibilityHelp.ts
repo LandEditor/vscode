@@ -15,7 +15,7 @@ import type { IAccessibleViewImplentation } from "../../../../platform/accessibi
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
-import { type Repl, getReplView } from "./repl.js";
+import { getReplView, type Repl } from "./repl.js";
 
 export class ReplAccessibilityHelp implements IAccessibleViewImplentation {
 	priority = 120;

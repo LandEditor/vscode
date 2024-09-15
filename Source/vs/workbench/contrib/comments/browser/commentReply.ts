@@ -9,8 +9,8 @@ import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "../../../../base/browser/ui/mo
 import type { IAction } from "../../../../base/common/actions.js";
 import {
 	Disposable,
-	type IDisposable,
 	dispose,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -37,10 +37,10 @@ import { CommentFormActions } from "./commentFormActions.js";
 import type { CommentMenus } from "./commentMenus.js";
 import { ICommentService } from "./commentService.js";
 import {
-	type LayoutableEditor,
+	calculateEditorHeight,
 	MIN_EDITOR_HEIGHT,
 	SimpleCommentEditor,
-	calculateEditorHeight,
+	type LayoutableEditor,
 } from "./simpleCommentEditor.js";
 
 let INMEM_MODEL_ID = 0;
@@ -76,13 +76,23 @@ export class CommentReply<T extends IRange | ICellRange> extends Disposable {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IKeybindingService private keybindingService: IKeybindingService,
 		@IHoverService private hoverService: IHoverService,
-		@ITextModelService private readonly textModelService: ITextModelService
+		@ITextModelService private readonly textModelService: ITextModelService,
 	) {
 		super();
 
-		this.form = dom.append(container, dom.$('.comment-form'));
-		this.commentEditor = this._register(this._scopedInstatiationService.createInstance(SimpleCommentEditor, this.form, SimpleCommentEditor.getEditorOptions(configurationService), _contextKeyService, this._parentThread));
-		this.commentEditorIsEmpty = CommentContextKeys.commentIsEmpty.bindTo(this._contextKeyService);
+		this.form = dom.append(container, dom.$(".comment-form"));
+		this.commentEditor = this._register(
+			this._scopedInstatiationService.createInstance(
+				SimpleCommentEditor,
+				this.form,
+				SimpleCommentEditor.getEditorOptions(configurationService),
+				_contextKeyService,
+				this._parentThread,
+			),
+		);
+		this.commentEditorIsEmpty = CommentContextKeys.commentIsEmpty.bindTo(
+			this._contextKeyService,
+		);
 		this.commentEditorIsEmpty.set(!this._pendingComment);
 
 		this.initialize(focus);

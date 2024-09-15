@@ -7,8 +7,8 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import type {
@@ -22,7 +22,7 @@ import {
 } from "../../../common/config/editorOptions.js";
 import type { IPosition } from "../../../common/core/position.js";
 import type { IRange } from "../../../common/core/range.js";
-import { type IEditor, ScrollType } from "../../../common/editorCommon.js";
+import { ScrollType, type IEditor } from "../../../common/editorCommon.js";
 import {
 	AbstractEditorNavigationQuickAccessProvider,
 	type IQuickAccessTextEditorContext,

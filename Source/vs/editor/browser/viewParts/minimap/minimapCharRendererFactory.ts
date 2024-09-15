@@ -5,7 +5,7 @@
 
 import { toUint8 } from "../../../../base/common/uint.js";
 import { MinimapCharRenderer } from "./minimapCharRenderer.js";
-import { Constants, allCharCodes } from "./minimapCharSheet.js";
+import { allCharCodes, Constants } from "./minimapCharSheet.js";
 import { prebakedMiniMaps } from "./minimapPreBaked.js";
 
 /**

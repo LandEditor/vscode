@@ -5,10 +5,11 @@
 
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import type { InputNumber } from "./model/modifiedBaseRange.js";
+
 export class MergeEditorTelemetry {
 	constructor(
-		@ITelemetryService private readonly telemetryService: ITelemetryService
-	) { }
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
+	) {}
 
 	reportMergeEditorOpened(args: {
 		conflictCount: number;

@@ -7,8 +7,8 @@ import * as dom from "../../../base/browser/dom.js";
 import { Lazy } from "../../../base/common/lazy.js";
 import type { Mutable } from "../../../base/common/types.js";
 import {
-	type EditorLayoutInfo,
 	EditorOption,
+	type EditorLayoutInfo,
 } from "../../common/config/editorOptions.js";
 import { CursorColumns } from "../../common/core/cursorColumns.js";
 import { Position } from "../../common/core/position.js";
@@ -22,6 +22,7 @@ import type { InjectedText } from "../../common/modelLineProjectionData.js";
 import type { IViewModel } from "../../common/viewModel.js";
 import type { ViewContext } from "../../common/viewModel/viewContext.js";
 import {
+	MouseTargetType,
 	type IMouseTarget,
 	type IMouseTargetContentEmpty,
 	type IMouseTargetContentEmptyData,
@@ -37,14 +38,13 @@ import {
 	type IMouseTargetUnknown,
 	type IMouseTargetViewZone,
 	type IMouseTargetViewZoneData,
-	MouseTargetType,
 } from "../editorBrowser.js";
 import {
+	PageCoordinates,
 	type ClientCoordinates,
 	type CoordinatesRelativeToEditor,
 	type EditorMouseEvent,
 	type EditorPagePosition,
-	PageCoordinates,
 } from "../editorDom.js";
 import type { HorizontalPosition } from "../view/renderingContext.js";
 import { PartFingerprint, PartFingerprints } from "../view/viewPart.js";

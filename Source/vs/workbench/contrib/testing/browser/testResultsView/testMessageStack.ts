@@ -8,9 +8,9 @@ import { Disposable } from "../../../../../base/common/lifecycle.js";
 import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
-	type AnyStackFrame,
 	CallStackFrame,
 	CallStackWidget,
+	type AnyStackFrame,
 } from "../../../debug/browser/callStackWidget.js";
 import type { ITestMessageStackFrame } from "../../common/testTypes.js";
 

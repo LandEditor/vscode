@@ -8,10 +8,10 @@ import { Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { localize } from "../../../../nls.js";
 import {
-	type IExtensionIdentifier,
 	IExtensionManagementService,
-	type ILocalExtension,
 	InstallOperation,
+	type IExtensionIdentifier,
+	type ILocalExtension,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { areSameExtensions } from "../../../../platform/extensionManagement/common/extensionManagementUtil.js";
 import {
@@ -41,18 +41,29 @@ export class KeymapExtensions
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IExtensionRecommendationsService private readonly tipsService: IExtensionRecommendationsService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IExtensionRecommendationsService
+		private readonly tipsService: IExtensionRecommendationsService,
 		@ILifecycleService lifecycleService: ILifecycleService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
 		this._register(lifecycleService.onDidShutdown(() => this.dispose()));
-		this._register(instantiationService.invokeFunction(onExtensionChanged)((identifiers => {
-			Promise.all(identifiers.map(identifier => this.checkForOtherKeymaps(identifier)))
-				.then(undefined, onUnexpectedError);
-		})));
+		this._register(
+			instantiationService.invokeFunction(onExtensionChanged)(
+				(identifiers) => {
+					Promise.all(
+						identifiers.map((identifier) =>
+							this.checkForOtherKeymaps(identifier),
+						),
+					).then(undefined, onUnexpectedError);
+				},
+			),
+		);
 	}
 
 	private checkForOtherKeymaps(

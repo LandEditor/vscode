@@ -7,13 +7,13 @@ import * as dom from "../../../../base/browser/dom.js";
 import { DomEmitter } from "../../../../base/browser/event.js";
 import { StandardMouseEvent } from "../../../../base/browser/mouseEvent.js";
 import {
-	ActionViewItem,
-	type IActionViewItemOptions,
-} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
-import {
 	ActionBar,
 	ActionsOrientation,
 } from "../../../../base/browser/ui/actionbar/actionbar.js";
+import {
+	ActionViewItem,
+	type IActionViewItemOptions,
+} from "../../../../base/browser/ui/actionbar/actionViewItems.js";
 import { AnchorAlignment } from "../../../../base/browser/ui/contextview/contextview.js";
 import { DropdownMenuActionViewItem } from "../../../../base/browser/ui/dropdown/dropdownActionViewItem.js";
 import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "../../../../base/browser/ui/mouseCursor/mouseCursor.js";
@@ -22,18 +22,18 @@ import { ToolBar } from "../../../../base/browser/ui/toolbar/toolbar.js";
 import {
 	Action,
 	ActionRunner,
+	Separator,
 	type IAction,
 	type IActionRunner,
-	Separator,
 } from "../../../../base/common/actions.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import type { IMarkdownString } from "../../../../base/common/htmlContent.js";
 import {
 	Disposable,
+	dispose,
 	type IDisposable,
 	type IReference,
-	dispose,
 } from "../../../../base/common/lifecycle.js";
 import { MarshalledId } from "../../../../base/common/marshallingIds.js";
 import { FileAccess, Schemas } from "../../../../base/common/network.js";
@@ -48,8 +48,8 @@ import type { IRange } from "../../../../editor/common/core/range.js";
 import { Selection } from "../../../../editor/common/core/selection.js";
 import * as languages from "../../../../editor/common/languages.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import * as nls from "../../../../nls.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
@@ -58,15 +58,15 @@ import {
 	SubmenuEntryActionViewItem,
 } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
 import {
-	type IMenu,
 	MenuId,
 	MenuItemAction,
 	SubmenuItemAction,
+	type IMenu,
 } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -76,11 +76,11 @@ import { INotificationService } from "../../../../platform/notification/common/n
 import type { MarshalledCommentThread } from "../../../common/comments.js";
 import type { ICellRange } from "../../notebook/common/notebookRange.js";
 import { CommentContextKeys } from "../common/commentContextKeys.js";
-import type { ICommentThreadWidget } from "../common/commentThreadWidget.js";
 import {
 	COMMENTS_SECTION,
 	type ICommentsConfiguration,
 } from "../common/commentsConfiguration.js";
+import type { ICommentThreadWidget } from "../common/commentThreadWidget.js";
 import { CommentFormActions } from "./commentFormActions.js";
 import type { CommentMenus } from "./commentMenus.js";
 import { ICommentService } from "./commentService.js";
@@ -90,10 +90,10 @@ import {
 	ToggleReactionsAction,
 } from "./reactionsAction.js";
 import {
-	type LayoutableEditor,
+	calculateEditorHeight,
 	MIN_EDITOR_HEIGHT,
 	SimpleCommentEditor,
-	calculateEditorHeight,
+	type LayoutableEditor,
 } from "./simpleCommentEditor.js";
 import { TimestampWidget } from "./timestamp.js";
 
@@ -158,62 +158,101 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 		private resource: URI,
 		private parentThread: ICommentThreadWidget,
 		private markdownRenderer: MarkdownRenderer,
-		@IInstantiationService private instantiationService: IInstantiationService,
+		@IInstantiationService
+		private instantiationService: IInstantiationService,
 		@ICommentService private commentService: ICommentService,
 		@INotificationService private notificationService: INotificationService,
 		@IContextMenuService private contextMenuService: IContextMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private configurationService: IConfigurationService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
 		@IHoverService private hoverService: IHoverService,
-		@IAccessibilityService private accessibilityService: IAccessibilityService,
+		@IAccessibilityService
+		private accessibilityService: IAccessibilityService,
 		@IKeybindingService private keybindingService: IKeybindingService,
 		@ITextModelService private readonly textModelService: ITextModelService,
 	) {
 		super();
 
-		this._domNode = dom.$('div.review-comment');
-		this._contextKeyService = this._register(contextKeyService.createScoped(this._domNode));
-		this._commentContextValue = CommentContextKeys.commentContext.bindTo(this._contextKeyService);
+		this._domNode = dom.$("div.review-comment");
+		this._contextKeyService = this._register(
+			contextKeyService.createScoped(this._domNode),
+		);
+		this._commentContextValue = CommentContextKeys.commentContext.bindTo(
+			this._contextKeyService,
+		);
 		if (this.comment.contextValue) {
 			this._commentContextValue.set(this.comment.contextValue);
 		}
 		this._commentMenus = this.commentService.getCommentMenus(this.owner);
 
 		this._domNode.tabIndex = -1;
-		this._avatar = dom.append(this._domNode, dom.$('div.avatar-container'));
+		this._avatar = dom.append(this._domNode, dom.$("div.avatar-container"));
 		this.updateCommentUserIcon(this.comment.userIconPath);
 
-		this._commentDetailsContainer = dom.append(this._domNode, dom.$('.review-comment-contents'));
+		this._commentDetailsContainer = dom.append(
+			this._domNode,
+			dom.$(".review-comment-contents"),
+		);
 
 		this.createHeader(this._commentDetailsContainer);
 		this._body = document.createElement(`div`);
-		this._body.classList.add('comment-body', MOUSE_CURSOR_TEXT_CSS_CLASS_NAME);
-		if (configurationService.getValue<ICommentsConfiguration | undefined>(COMMENTS_SECTION)?.maxHeight !== false) {
-			this._body.classList.add('comment-body-max-height');
+		this._body.classList.add(
+			"comment-body",
+			MOUSE_CURSOR_TEXT_CSS_CLASS_NAME,
+		);
+		if (
+			configurationService.getValue<ICommentsConfiguration | undefined>(
+				COMMENTS_SECTION,
+			)?.maxHeight !== false
+		) {
+			this._body.classList.add("comment-body-max-height");
 		}
 
 		this.createScroll(this._commentDetailsContainer, this._body);
 		this.updateCommentBody(this.comment.body);
 
-		if (this.comment.commentReactions && this.comment.commentReactions.length && this.comment.commentReactions.filter(reaction => !!reaction.count).length) {
+		if (
+			this.comment.commentReactions &&
+			this.comment.commentReactions.length &&
+			this.comment.commentReactions.filter((reaction) => !!reaction.count)
+				.length
+		) {
 			this.createReactionsContainer(this._commentDetailsContainer);
 		}
 
-		this._domNode.setAttribute('aria-label', `${comment.userName}, ${this.commentBodyValue}`);
-		this._domNode.setAttribute('role', 'treeitem');
+		this._domNode.setAttribute(
+			"aria-label",
+			`${comment.userName}, ${this.commentBodyValue}`,
+		);
+		this._domNode.setAttribute("role", "treeitem");
 		this._clearTimeout = null;
 
-		this._register(dom.addDisposableListener(this._domNode, dom.EventType.CLICK, () => this.isEditing || this._onDidClick.fire(this)));
-		this._register(dom.addDisposableListener(this._domNode, dom.EventType.CONTEXT_MENU, e => {
-			return this.onContextMenu(e);
-		}));
+		this._register(
+			dom.addDisposableListener(
+				this._domNode,
+				dom.EventType.CLICK,
+				() => this.isEditing || this._onDidClick.fire(this),
+			),
+		);
+		this._register(
+			dom.addDisposableListener(
+				this._domNode,
+				dom.EventType.CONTEXT_MENU,
+				(e) => {
+					return this.onContextMenu(e);
+				},
+			),
+		);
 
 		if (pendingEdit) {
 			this.switchToEditMode();
 		}
-		this._register(this.accessibilityService.onDidChangeScreenReaderOptimized(() => {
-			this.toggleToolbarHidden(true);
-		}));
+		this._register(
+			this.accessibilityService.onDidChangeScreenReaderOptimized(() => {
+				this.toggleToolbarHidden(true);
+			}),
+		);
 
 		this.activeCommentListeners();
 	}
@@ -665,7 +704,7 @@ export class CommentNode<T extends IRange | ICellRange> extends Disposable {
 					`reaction.${reaction.label}`,
 					`${reaction.label}`,
 					reaction.hasReacted &&
-						(reaction.canEdit || hasReactionHandler)
+					(reaction.canEdit || hasReactionHandler)
 						? "active"
 						: "",
 					reaction.canEdit || hasReactionHandler,

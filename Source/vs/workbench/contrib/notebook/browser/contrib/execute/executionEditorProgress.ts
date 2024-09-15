@@ -11,8 +11,8 @@ import {
 import { IUserActivityService } from "../../../../../services/userActivity/common/userActivityService.js";
 import { NotebookCellExecutionState } from "../../../common/notebookCommon.js";
 import {
-	type INotebookCellExecution,
 	INotebookExecutionStateService,
+	type INotebookCellExecution,
 } from "../../../common/notebookExecutionStateService.js";
 import type {
 	INotebookEditor,
@@ -30,20 +30,27 @@ export class ExecutionEditorProgressController
 
 	constructor(
 		private readonly _notebookEditor: INotebookEditor,
-		@INotebookExecutionStateService private readonly _notebookExecutionStateService: INotebookExecutionStateService,
-		@IUserActivityService private readonly _userActivity: IUserActivityService,
+		@INotebookExecutionStateService
+		private readonly _notebookExecutionStateService: INotebookExecutionStateService,
+		@IUserActivityService
+		private readonly _userActivity: IUserActivityService,
 	) {
 		super();
 
 		this._register(_notebookEditor.onDidScroll(() => this._update()));
 
-		this._register(_notebookExecutionStateService.onDidChangeExecution(e => {
-			if (e.notebook.toString() !== this._notebookEditor.textModel?.uri.toString()) {
-				return;
-			}
+		this._register(
+			_notebookExecutionStateService.onDidChangeExecution((e) => {
+				if (
+					e.notebook.toString() !==
+					this._notebookEditor.textModel?.uri.toString()
+				) {
+					return;
+				}
 
-			this._update();
-		}));
+				this._update();
+			}),
+		);
 
 		this._register(_notebookEditor.onDidChangeModel(() => this._update()));
 	}

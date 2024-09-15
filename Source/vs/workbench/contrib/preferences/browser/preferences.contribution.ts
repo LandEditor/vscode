@@ -16,7 +16,9 @@ import {
 	isString,
 } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
+
 import "./media/preferences.css";
+
 import { isCodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorContributionInstantiation,
@@ -46,16 +48,16 @@ import {
 	type ServicesAccessor,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	IWorkspaceContextService,
-	type IWorkspaceFolder,
 	WorkbenchState,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import { PICK_WORKSPACE_FOLDER_COMMAND_ID } from "../../../browser/actions/workspaceCommands.js";
 import {
@@ -68,11 +70,11 @@ import {
 	WorkbenchStateContext,
 } from "../../../common/contextkeys.js";
 import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -87,8 +89,8 @@ import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js"
 import { KeybindingsEditorInput } from "../../../services/preferences/browser/keybindingsEditorInput.js";
 import {
 	DEFINE_KEYBINDING_EDITOR_CONTRIB_ID,
-	type IDefineKeybindingEditorContribution,
 	IPreferencesService,
+	type IDefineKeybindingEditorContribution,
 } from "../../../services/preferences/common/preferences.js";
 import { SettingsEditor2Input } from "../../../services/preferences/common/preferencesEditorInput.js";
 import {
@@ -100,9 +102,9 @@ import {
 	ExplorerRootContext,
 } from "../../files/common/files.js";
 import {
+	CONTEXT_KEYBINDING_FOCUS,
 	CONTEXT_KEYBINDINGS_EDITOR,
 	CONTEXT_KEYBINDINGS_SEARCH_FOCUS,
-	CONTEXT_KEYBINDING_FOCUS,
 	CONTEXT_SETTINGS_EDITOR,
 	CONTEXT_SETTINGS_JSON_EDITOR,
 	CONTEXT_SETTINGS_ROW_FOCUS,
@@ -287,13 +289,18 @@ class PreferencesActionsContribution
 	static readonly ID = "workbench.contrib.preferencesActions";
 
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
 
@@ -301,8 +308,16 @@ class PreferencesActionsContribution
 		this.registerKeybindingsActions();
 
 		this.updatePreferencesEditorMenuItem();
-		this._register(workspaceContextService.onDidChangeWorkbenchState(() => this.updatePreferencesEditorMenuItem()));
-		this._register(workspaceContextService.onDidChangeWorkspaceFolders(() => this.updatePreferencesEditorMenuItemForWorkspaceFolders()));
+		this._register(
+			workspaceContextService.onDidChangeWorkbenchState(() =>
+				this.updatePreferencesEditorMenuItem(),
+			),
+		);
+		this._register(
+			workspaceContextService.onDidChangeWorkspaceFolders(() =>
+				this.updatePreferencesEditorMenuItemForWorkspaceFolders(),
+			),
+		);
 	}
 
 	private registerSettingsActions() {
@@ -580,12 +595,10 @@ class PreferencesActionsContribution
 						});
 					}
 					async run(accessor: ServicesAccessor) {
-						await accessor
-							.get(IPreferencesService)
-							.openSettings({
-								jsonEditor: false,
-								query: "@tag:accessibility",
-							});
+						await accessor.get(IPreferencesService).openSettings({
+							jsonEditor: false,
+							query: "@tag:accessibility",
+						});
 					}
 				},
 			),
@@ -779,12 +792,10 @@ class PreferencesActionsContribution
 						if (editorPane instanceof SettingsEditor2) {
 							editorPane.focusSearch(`@tag:usesOnlineServices`);
 						} else {
-							accessor
-								.get(IPreferencesService)
-								.openSettings({
-									jsonEditor: false,
-									query: "@tag:usesOnlineServices",
-								});
+							accessor.get(IPreferencesService).openSettings({
+								jsonEditor: false,
+								query: "@tag:usesOnlineServices",
+							});
 						}
 					}
 				},
@@ -836,12 +847,10 @@ class PreferencesActionsContribution
 						if (editorPane instanceof SettingsEditor2) {
 							editorPane.focusSearch(`@tag:telemetry`);
 						} else {
-							accessor
-								.get(IPreferencesService)
-								.openSettings({
-									jsonEditor: false,
-									query: "@tag:telemetry",
-								});
+							accessor.get(IPreferencesService).openSettings({
+								jsonEditor: false,
+								query: "@tag:telemetry",
+							});
 						}
 					}
 				},
@@ -1971,8 +1980,10 @@ class SettingsEditorTitleContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
 		this.registerSettingsEditorTitleActions();

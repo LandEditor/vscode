@@ -5,11 +5,11 @@
 
 import { Emitter } from "../../../../base/common/event.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
-import { type IOutlineViewState, OutlineSortOrder } from "./outline.js";
+import { OutlineSortOrder, type IOutlineViewState } from "./outline.js";
 
 export class OutlineViewState implements IOutlineViewState {
 	private _followCursor = false;

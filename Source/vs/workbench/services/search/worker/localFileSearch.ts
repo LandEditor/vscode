@@ -5,8 +5,8 @@
 
 import { Promises } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import * as glob from "../../../../base/common/glob.js";
 import { revive } from "../../../../base/common/marshalling.js";
@@ -21,12 +21,12 @@ import type {
 import { getFileResults } from "../common/getFileResults.js";
 import { IgnoreFile } from "../common/ignoreFile.js";
 import {
+	LocalFileSearchSimpleWorkerHost,
 	type ILocalFileSearchSimpleWorker,
 	type IWorkerFileSearchComplete,
 	type IWorkerFileSystemDirectoryHandle,
 	type IWorkerFileSystemHandle,
 	type IWorkerTextSearchComplete,
-	LocalFileSearchSimpleWorkerHost,
 } from "../common/localFileSearchWorkerTypes.js";
 import type {
 	ICommonQueryProps,

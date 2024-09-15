@@ -8,16 +8,16 @@ import type { ResolvedKeybinding } from "../../../../base/common/keybindings.js"
 import * as nls from "../../../../nls.js";
 import type { WorkbenchCompressibleObjectTree } from "../../../../platform/list/browser/listService.js";
 import {
-	type ISearchConfigurationProperties,
 	VIEW_ID,
+	type ISearchConfigurationProperties,
 } from "../../../services/search/common/search.js";
 import type { IViewsService } from "../../../services/views/common/viewsService.js";
 import {
 	FileMatch,
 	FolderMatch,
 	Match,
-	type RenderableMatch,
 	searchComparer,
+	type RenderableMatch,
 } from "./searchModel.js";
 import type { SearchView } from "./searchView.js";
 

@@ -7,16 +7,16 @@ import type { URI } from "../../../../../base/common/uri.js";
 import type { Range } from "../../../../../editor/common/core/range.js";
 import type { Selection } from "../../../../../editor/common/core/selection.js";
 import {
-	type IResourceUndoRedoElement,
 	UndoRedoElementType,
+	type IResourceUndoRedoElement,
 } from "../../../../../platform/undoRedo/common/undoRedo.js";
 import type { ITextCellEditingDelegate } from "../../common/model/cellEdit.js";
 import type { NotebookCellTextModel } from "../../common/model/notebookCellTextModel.js";
 import {
+	SelectionStateType,
 	type CellKind,
 	type IOutputDto,
 	type NotebookCellMetadata,
-	SelectionStateType,
 } from "../../common/notebookCommon.js";
 import { CellFocusMode } from "../notebookBrowser.js";
 import type { BaseCellViewModel } from "./baseCellViewModel.js";

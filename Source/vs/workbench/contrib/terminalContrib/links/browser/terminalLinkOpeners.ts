@@ -14,8 +14,8 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { IQuickInputService } from "../../../../../platform/quickinput/common/quickInput.js";
 import {
-	type ITerminalCapabilityStore,
 	TerminalCapability,
+	type ITerminalCapabilityStore,
 } from "../../../../../platform/terminal/common/capabilities/capabilities.js";
 import { ITerminalLogService } from "../../../../../platform/terminal/common/terminal.js";
 import { IWorkspaceContextService } from "../../../../../platform/workspace/common/workspace.js";
@@ -34,8 +34,7 @@ import { detectLinks, getLinkSuffix } from "./terminalLinkParsing.js";
 export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-	) {
-	}
+	) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -66,8 +65,9 @@ export class TerminalLocalFileLinkOpener implements ITerminalLinkOpener {
 export class TerminalLocalFolderInWorkspaceLinkOpener
 	implements ITerminalLinkOpener
 {
-	constructor(@ICommandService private readonly _commandService: ICommandService) {
-	}
+	constructor(
+		@ICommandService private readonly _commandService: ICommandService,
+	) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -82,8 +82,7 @@ export class TerminalLocalFolderInWorkspaceLinkOpener
 export class TerminalLocalFolderOutsideWorkspaceLinkOpener
 	implements ITerminalLinkOpener
 {
-	constructor(@IHostService private readonly _hostService: IHostService) {
-	}
+	constructor(@IHostService private readonly _hostService: IHostService) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {
@@ -108,14 +107,17 @@ export class TerminalSearchLinkOpener implements ITerminalLinkOpener {
 		private readonly _localFolderInWorkspaceOpener: TerminalLocalFolderInWorkspaceLinkOpener,
 		private readonly _getOS: () => OperatingSystem,
 		@IFileService private readonly _fileService: IFileService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@ISearchService private readonly _searchService: ISearchService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
-		@IWorkbenchEnvironmentService private readonly _workbenchEnvironmentService: IWorkbenchEnvironmentService,
-	) {
-	}
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+		@IWorkbenchEnvironmentService
+		private readonly _workbenchEnvironmentService: IWorkbenchEnvironmentService,
+	) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		const osPath = osPathModule(this._getOS());
@@ -336,9 +338,9 @@ export class TerminalUrlLinkOpener implements ITerminalLinkOpener {
 	constructor(
 		private readonly _isRemote: boolean,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
-	) {
-	}
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+	) {}
 
 	async open(link: ITerminalSimpleLink): Promise<void> {
 		if (!link.uri) {

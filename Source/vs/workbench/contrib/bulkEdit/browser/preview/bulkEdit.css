@@ -65,7 +65,7 @@
 }
 
 .monaco-workbench .bulk-edit-panel .monaco-tl-contents .details {
-	margin-left: .5em;
+	margin-left: 0.5em;
 	opacity: 0.7;
 	font-size: 0.9em;
 	white-space: pre;

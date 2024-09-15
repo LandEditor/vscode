@@ -16,11 +16,11 @@ import type { ServicesAccessor } from "../../../../platform/instantiation/common
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type IWebview,
 	IWebviewService,
 	KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_ENABLED,
 	KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_FOCUSED,
 	KEYBINDING_CONTEXT_WEBVIEW_FIND_WIDGET_VISIBLE,
+	type IWebview,
 } from "../../webview/browser/webview.js";
 import { WebviewEditor } from "./webviewEditor.js";
 import { WebviewInput } from "./webviewEditorInput.js";

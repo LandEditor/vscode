@@ -13,7 +13,9 @@ import {
 	InvisibleCharacters,
 	isBasicASCII,
 } from "../../../../base/common/strings.js";
+
 import "./unicodeHighlighter.css";
+
 import * as nls from "../../../../nls.js";
 import {
 	ConfigurationTarget,
@@ -34,25 +36,25 @@ import type {
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import {
 	EditorOption,
-	type InUntrustedWorkspace,
-	type InternalUnicodeHighlightOptions,
 	inUntrustedWorkspace,
 	unicodeHighlightConfigKeys,
+	type InternalUnicodeHighlightOptions,
+	type InUntrustedWorkspace,
 } from "../../../common/config/editorOptions.js";
 import type { Range } from "../../../common/core/range.js";
 import type { IEditorContribution } from "../../../common/editorCommon.js";
 import { ILanguageService } from "../../../common/languages/language.js";
 import {
+	TrackedRangeStickiness,
 	type IModelDecoration,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	TrackedRangeStickiness,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 import {
@@ -60,10 +62,10 @@ import {
 	type IUnicodeHighlightsResult,
 } from "../../../common/services/editorWorker.js";
 import {
-	type UnicodeHighlighterOptions,
-	type UnicodeHighlighterReason,
 	UnicodeHighlighterReasonKind,
 	UnicodeTextModelHighlighter,
+	type UnicodeHighlighterOptions,
+	type UnicodeHighlighterReason,
 } from "../../../common/services/unicodeTextModelHighlighter.js";
 import {
 	isModelDecorationInComment,
@@ -71,9 +73,9 @@ import {
 	isModelDecorationVisible,
 } from "../../../common/viewModel/viewModelDecorations.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
 	HoverParticipantRegistry,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
@@ -111,31 +113,43 @@ export class UnicodeHighlighter
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustService: IWorkspaceTrustManagementService,
 		@IInstantiationService instantiationService: IInstantiationService,
 	) {
 		super();
 
-		this._bannerController = this._register(instantiationService.createInstance(BannerController, _editor));
+		this._bannerController = this._register(
+			instantiationService.createInstance(BannerController, _editor),
+		);
 
-		this._register(this._editor.onDidChangeModel(() => {
-			this._bannerClosed = false;
-			this._updateHighlighter();
-		}));
+		this._register(
+			this._editor.onDidChangeModel(() => {
+				this._bannerClosed = false;
+				this._updateHighlighter();
+			}),
+		);
 
 		this._options = _editor.getOption(EditorOption.unicodeHighlighting);
 
-		this._register(_workspaceTrustService.onDidChangeTrust(e => {
-			this._updateHighlighter();
-		}));
-
-		this._register(_editor.onDidChangeConfiguration(e => {
-			if (e.hasChanged(EditorOption.unicodeHighlighting)) {
-				this._options = _editor.getOption(EditorOption.unicodeHighlighting);
+		this._register(
+			_workspaceTrustService.onDidChangeTrust((e) => {
 				this._updateHighlighter();
-			}
-		}));
+			}),
+		);
+
+		this._register(
+			_editor.onDidChangeConfiguration((e) => {
+				if (e.hasChanged(EditorOption.unicodeHighlighting)) {
+					this._options = _editor.getOption(
+						EditorOption.unicodeHighlighting,
+					);
+					this._updateHighlighter();
+				}
+			}),
+		);
 
 		this._updateHighlighter();
 	}
@@ -343,15 +357,22 @@ class DocumentUnicodeHighlighter extends Disposable {
 	constructor(
 		private readonly _editor: IActiveCodeEditor,
 		private readonly _options: UnicodeHighlighterOptions,
-		private readonly _updateState: (state: IUnicodeHighlightsResult | null) => void,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
+		private readonly _updateState: (
+			state: IUnicodeHighlightsResult | null,
+		) => void,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 	) {
 		super();
-		this._updateSoon = this._register(new RunOnceScheduler(() => this._update(), 250));
+		this._updateSoon = this._register(
+			new RunOnceScheduler(() => this._update(), 250),
+		);
 
-		this._register(this._editor.onDidChangeModelContent(() => {
-			this._updateSoon.schedule();
-		}));
+		this._register(
+			this._editor.onDidChangeModelContent(() => {
+				this._updateSoon.schedule();
+			}),
+		);
 
 		this._updateSoon.schedule();
 	}
@@ -571,8 +592,7 @@ export class UnicodeHighlighterHoverParticipant
 		private readonly _editor: ICodeEditor,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-	) {
-	}
+	) {}
 
 	computeSync(
 		anchor: HoverAnchor,

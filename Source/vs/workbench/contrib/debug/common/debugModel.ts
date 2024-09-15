@@ -10,15 +10,15 @@ import {
 	RunOnceScheduler,
 } from "../../../../base/common/async.js";
 import {
-	VSBuffer,
 	decodeBase64,
 	encodeBase64,
+	VSBuffer,
 } from "../../../../base/common/buffer.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import {
 	Emitter,
-	type Event,
 	trackSetChanges,
+	type Event,
 } from "../../../../base/common/event.js";
 import { stringHash } from "../../../../base/common/hash.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
@@ -28,7 +28,7 @@ import * as resources from "../../../../base/common/resources.js";
 import { isString, isUndefinedOrNull } from "../../../../base/common/types.js";
 import { URI, type URI as uri } from "../../../../base/common/uri.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import * as nls from "../../../../nls.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
@@ -36,15 +36,18 @@ import type { IEditorPane } from "../../../common/editor.js";
 import type { IEditorService } from "../../../services/editor/common/editorService.js";
 import { ITextFileService } from "../../../services/textfile/common/textfiles.js";
 import {
-	DEBUG_MEMORY_SCHEME,
 	DataBreakpointSetType,
-	type DataBreakpointSource,
+	DEBUG_MEMORY_SCHEME,
 	DebugTreeItemCollapsibleState,
+	isFrameDeemphasized,
+	MemoryRangeType,
+	State,
+	type DataBreakpointSource,
 	type IBaseBreakpoint,
 	type IBreakpoint,
 	type IBreakpointData,
-	type IBreakpointUpdateData,
 	type IBreakpointsChangeEvent,
+	type IBreakpointUpdateData,
 	type IDataBreakpoint,
 	type IDebugEvaluatePosition,
 	type IDebugModel,
@@ -66,14 +69,11 @@ import {
 	type IThread,
 	type ITreeElement,
 	type MemoryRange,
-	MemoryRangeType,
-	State,
-	isFrameDeemphasized,
 } from "./debug.js";
 import {
-	type Source,
-	UNKNOWN_SOURCE_LABEL,
 	getUriFromSource,
+	UNKNOWN_SOURCE_LABEL,
+	type Source,
 } from "./debugSource.js";
 import type { DebugStorage } from "./debugStorage.js";
 import type { IDebugVisualizerService } from "./debugVisualizers.js";
@@ -771,9 +771,9 @@ export class StackFrame implements IStackFrame {
 								rs.namedVariables,
 								rs.indexedVariables,
 								rs.line &&
-									rs.column &&
-									rs.endLine &&
-									rs.endColumn
+								rs.column &&
+								rs.endLine &&
+								rs.endColumn
 									? new Range(
 											rs.line,
 											rs.column,
@@ -1938,28 +1938,42 @@ export class DebugModel extends Disposable implements IDebugModel {
 	constructor(
 		debugStorage: DebugStorage,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@ILogService private readonly logService: ILogService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
-		this._register(autorun(reader => {
-			this.breakpoints = debugStorage.breakpoints.read(reader);
-			this.functionBreakpoints = debugStorage.functionBreakpoints.read(reader);
-			this.exceptionBreakpoints = debugStorage.exceptionBreakpoints.read(reader);
-			this.dataBreakpoints = debugStorage.dataBreakpoints.read(reader);
-			this._onDidChangeBreakpoints.fire(undefined);
-		}));
+		this._register(
+			autorun((reader) => {
+				this.breakpoints = debugStorage.breakpoints.read(reader);
+				this.functionBreakpoints =
+					debugStorage.functionBreakpoints.read(reader);
+				this.exceptionBreakpoints =
+					debugStorage.exceptionBreakpoints.read(reader);
+				this.dataBreakpoints =
+					debugStorage.dataBreakpoints.read(reader);
+				this._onDidChangeBreakpoints.fire(undefined);
+			}),
+		);
 
-		this._register(autorun(reader => {
-			this.watchExpressions = debugStorage.watchExpressions.read(reader);
-			this._onDidChangeWatchExpressions.fire(undefined);
-		}));
+		this._register(
+			autorun((reader) => {
+				this.watchExpressions =
+					debugStorage.watchExpressions.read(reader);
+				this._onDidChangeWatchExpressions.fire(undefined);
+			}),
+		);
 
-		this._register(trackSetChanges(
-			() => new Set(this.watchExpressions),
-			this.onDidChangeWatchExpressions,
-			(we) => we.onDidChangeValue((e) => this._onDidChangeWatchExpressionValue.fire(e)))
+		this._register(
+			trackSetChanges(
+				() => new Set(this.watchExpressions),
+				this.onDidChangeWatchExpressions,
+				(we) =>
+					we.onDidChangeValue((e) =>
+						this._onDidChangeWatchExpressionValue.fire(e),
+					),
+			),
 		);
 
 		this.instructionBreakpoints = [];

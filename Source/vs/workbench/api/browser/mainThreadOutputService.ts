@@ -9,22 +9,22 @@ import { isNumber } from "../../../base/common/types.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import { Registry } from "../../../platform/registry/common/platform.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	Extensions,
-	type IOutputChannel,
-	type IOutputChannelRegistry,
 	IOutputService,
 	OUTPUT_VIEW_ID,
 	OutputChannelUpdateMode,
+	type IOutputChannel,
+	type IOutputChannelRegistry,
 } from "../../services/output/common/output.js";
 import { IViewsService } from "../../services/views/common/viewsService.js";
 import {
 	ExtHostContext,
-	type ExtHostOutputServiceShape,
 	MainContext,
+	type ExtHostOutputServiceShape,
 	type MainThreadOutputServiceShape,
 } from "../common/extHost.protocol.js";
 

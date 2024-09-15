@@ -13,8 +13,8 @@ import {
 } from "../../../../platform/actions/common/actions.js";
 import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	KeybindingWeight,
 	KeybindingsRegistry,
+	KeybindingWeight,
 } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import { HelpQuickAccessProvider } from "../../../../platform/quickinput/browser/helpQuickAccess.js";
 import {

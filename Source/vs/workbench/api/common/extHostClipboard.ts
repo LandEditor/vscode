@@ -4,7 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
-import { type IMainContext, MainContext } from "./extHost.protocol.js";
+
+import { MainContext, type IMainContext } from "./extHost.protocol.js";
 
 export class ExtHostClipboard {
 	readonly value: vscode.Clipboard;

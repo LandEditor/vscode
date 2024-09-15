@@ -16,17 +16,17 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorCommand,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorCommand,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { editorConfigurationBaseNode } from "../../../common/config/editorConfigurationSchema.js";
 import { registerEditorFeature } from "../../../common/editorFeatures.js";
 import { DefaultDropProvidersFeature } from "./defaultProviders.js";
 import {
-	DropIntoEditorController,
 	changeDropTypeCommandId,
 	defaultProviderConfig,
+	DropIntoEditorController,
 	dropWidgetVisibleCtx,
 } from "./dropIntoEditorController.js";
 

@@ -104,7 +104,7 @@ export class ExtensionSignatureVerificationService
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-	) { }
+	) {}
 
 	private vsceSign(): Promise<typeof vsceSign> {
 		if (!this.moduleLoadingPromise) {

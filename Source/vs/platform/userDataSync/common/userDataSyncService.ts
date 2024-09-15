@@ -5,21 +5,21 @@
 
 import { equals } from "../../../base/common/arrays.js";
 import {
-	type CancelablePromise,
-	RunOnceScheduler,
 	createCancelablePromise,
+	RunOnceScheduler,
+	type CancelablePromise,
 } from "../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import { toErrorMessage } from "../../../base/common/errorMessage.js";
 import { Emitter, type Event } from "../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { isEqual } from "../../../base/common/resources.js";
 import { isBoolean, isUndefined } from "../../../base/common/types.js";
@@ -36,8 +36,8 @@ import {
 } from "../../storage/common/storage.js";
 import { ITelemetryService } from "../../telemetry/common/telemetry.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import { ExtensionsSynchroniser } from "./extensionsSync.js";
 import { GlobalStateSynchroniser } from "./globalStateSync.js";
@@ -49,25 +49,13 @@ import { UserDataProfilesManifestSynchroniser } from "./userDataProfilesManifest
 import {
 	ALL_SYNC_RESOURCES,
 	Change,
-	type ISyncResourceHandle,
-	type ISyncUserDataProfile,
-	type IUserDataActivityData,
-	type IUserDataManifest,
-	type IUserDataManualSyncTask,
-	type IUserDataResourceManifest,
-	type IUserDataSyncConfiguration,
+	createSyncHeaders,
 	IUserDataSyncEnablementService,
 	IUserDataSyncLocalStoreService,
 	IUserDataSyncLogService,
-	type IUserDataSyncResource,
-	type IUserDataSyncResourceConflicts,
-	type IUserDataSyncResourceError,
 	IUserDataSyncResourceProviderService,
-	type IUserDataSyncService,
 	IUserDataSyncStoreManagementService,
 	IUserDataSyncStoreService,
-	type IUserDataSyncTask,
-	type IUserDataSynchroniser,
 	MergeState,
 	SyncResource,
 	SyncStatus,
@@ -75,7 +63,19 @@ import {
 	UserDataSyncError,
 	UserDataSyncErrorCode,
 	UserDataSyncStoreError,
-	createSyncHeaders,
+	type ISyncResourceHandle,
+	type ISyncUserDataProfile,
+	type IUserDataActivityData,
+	type IUserDataManifest,
+	type IUserDataManualSyncTask,
+	type IUserDataResourceManifest,
+	type IUserDataSyncConfiguration,
+	type IUserDataSynchroniser,
+	type IUserDataSyncResource,
+	type IUserDataSyncResourceConflicts,
+	type IUserDataSyncResourceError,
+	type IUserDataSyncService,
+	type IUserDataSyncTask,
 } from "./userDataSync.js";
 
 type SyncErrorClassification = {
@@ -172,23 +172,44 @@ export class UserDataSyncService
 
 	constructor(
 		@IFileService private readonly fileService: IFileService,
-		@IUserDataSyncStoreService private readonly userDataSyncStoreService: IUserDataSyncStoreService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
+		@IUserDataSyncStoreService
+		private readonly userDataSyncStoreService: IUserDataSyncStoreService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IUserDataSyncResourceProviderService private readonly userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
-		@IUserDataSyncLocalStoreService private readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IUserDataSyncResourceProviderService
+		private readonly userDataSyncResourceProviderService: IUserDataSyncResourceProviderService,
+		@IUserDataSyncLocalStoreService
+		private readonly userDataSyncLocalStoreService: IUserDataSyncLocalStoreService,
 	) {
 		super();
-		this._status = userDataSyncStoreManagementService.userDataSyncStore ? SyncStatus.Idle : SyncStatus.Uninitialized;
-		this._lastSyncTime = this.storageService.getNumber(LAST_SYNC_TIME_KEY, StorageScope.APPLICATION, undefined);
-		this._register(toDisposable(() => this.clearActiveProfileSynchronizers()));
+		this._status = userDataSyncStoreManagementService.userDataSyncStore
+			? SyncStatus.Idle
+			: SyncStatus.Uninitialized;
+		this._lastSyncTime = this.storageService.getNumber(
+			LAST_SYNC_TIME_KEY,
+			StorageScope.APPLICATION,
+			undefined,
+		);
+		this._register(
+			toDisposable(() => this.clearActiveProfileSynchronizers()),
+		);
 
-		this._register(new RunOnceScheduler(() => this.cleanUpStaleStorageData(), 5 * 1000 /* after 5s */)).schedule();
+		this._register(
+			new RunOnceScheduler(
+				() => this.cleanUpStaleStorageData(),
+				5 * 1000 /* after 5s */,
+			),
+		).schedule();
 	}
 
 	async createSyncTask(
@@ -1098,18 +1119,39 @@ class ProfileSynchronizer extends Disposable {
 	constructor(
 		readonly profile: IUserDataProfile,
 		readonly collection: string | undefined,
-		@IUserDataSyncEnablementService private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IExtensionGalleryService private readonly extensionGalleryService: IExtensionGalleryService,
-		@IUserDataSyncStoreManagementService private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
+		@IUserDataSyncEnablementService
+		private readonly userDataSyncEnablementService: IUserDataSyncEnablementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IExtensionGalleryService
+		private readonly extensionGalleryService: IExtensionGalleryService,
+		@IUserDataSyncStoreManagementService
+		private readonly userDataSyncStoreManagementService: IUserDataSyncStoreManagementService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
-		this._register(userDataSyncEnablementService.onDidChangeResourceEnablement(([syncResource, enablement]) => this.onDidChangeResourceEnablement(syncResource, enablement)));
-		this._register(toDisposable(() => this._enabled.splice(0, this._enabled.length).forEach(([, , disposable]) => disposable.dispose())));
+		this._register(
+			userDataSyncEnablementService.onDidChangeResourceEnablement(
+				([syncResource, enablement]) =>
+					this.onDidChangeResourceEnablement(
+						syncResource,
+						enablement,
+					),
+			),
+		);
+		this._register(
+			toDisposable(() =>
+				this._enabled
+					.splice(0, this._enabled.length)
+					.forEach(([, , disposable]) => disposable.dispose()),
+			),
+		);
 		for (const syncResource of ALL_SYNC_RESOURCES) {
 			if (userDataSyncEnablementService.isResourceEnabled(syncResource)) {
 				this.registerSynchronizer(syncResource);

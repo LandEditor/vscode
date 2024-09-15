@@ -16,8 +16,8 @@ import {
 import type { IExtHostContext } from "../../services/extensions/common/extHostCustomers.js";
 import * as extHostProtocol from "../common/extHost.protocol.js";
 import {
-	type MainThreadWebviews,
 	reviveWebviewExtension,
+	type MainThreadWebviews,
 } from "./mainThreadWebviews.js";
 
 export class MainThreadWebviewsViews
@@ -36,12 +36,16 @@ export class MainThreadWebviewsViews
 	constructor(
 		context: IExtHostContext,
 		private readonly mainThreadWebviews: MainThreadWebviews,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-		@IWebviewViewService private readonly _webviewViewService: IWebviewViewService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+		@IWebviewViewService
+		private readonly _webviewViewService: IWebviewViewService,
 	) {
 		super();
 
-		this._proxy = context.getProxy(extHostProtocol.ExtHostContext.ExtHostWebviewViews);
+		this._proxy = context.getProxy(
+			extHostProtocol.ExtHostContext.ExtHostWebviewViews,
+		);
 	}
 
 	public $setWebviewViewTitle(

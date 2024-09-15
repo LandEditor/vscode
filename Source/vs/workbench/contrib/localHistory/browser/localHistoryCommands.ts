@@ -58,14 +58,14 @@ import { IEditorService } from "../../../services/editor/common/editorService.js
 import { IHistoryService } from "../../../services/history/common/history.js";
 import { IPathService } from "../../../services/path/common/pathService.js";
 import {
-	type IWorkingCopyHistoryEntry,
 	IWorkingCopyHistoryService,
+	type IWorkingCopyHistoryEntry,
 } from "../../../services/workingCopy/common/workingCopyHistory.js";
 import { IWorkingCopyService } from "../../../services/workingCopy/common/workingCopyService.js";
 import {
+	getLocalHistoryDateFormatter,
 	LOCAL_HISTORY_ICON_RESTORE,
 	LOCAL_HISTORY_MENU_CONTEXT_KEY,
-	getLocalHistoryDateFormatter,
 } from "./localHistory.js";
 import { LocalHistoryFileSystemProvider } from "./localHistoryFileSystemProvider.js";
 

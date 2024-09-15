@@ -12,9 +12,9 @@ import { IModelService } from "../../../../editor/common/services/model.js";
 import * as nls from "../../../../nls.js";
 import { isLocalizedString } from "../../../../platform/action/common/action.js";
 import {
+	isIMenuItem,
 	MenuId,
 	MenuRegistry,
-	isIMenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import { CommandsRegistry } from "../../../../platform/commands/common/commands.js";
 import {
@@ -41,8 +41,10 @@ export class ConfigureLanguageBasedSettingsAction extends Action {
 		label: string,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 	) {
 		super(id, label);
 	}

@@ -9,17 +9,18 @@ import * as path from "../../../base/common/path.js";
 import * as performance from "../../../base/common/performance.js";
 import type { IMessagePassingProtocol } from "../../../base/parts/ipc/common/ipc.js";
 import {
-	type IExtensionHostInitData,
-	MessageType,
 	createMessageOfType,
 	isMessageOfType,
+	MessageType,
+	type IExtensionHostInitData,
 } from "../../services/extensions/common/extensionHostProtocol.js";
 import { NestedWorker } from "../../services/extensions/worker/polyfillNestedWorker.js";
-import type { IHostUtils } from "../common/extHostExtensionService.js";
 import { ExtensionHostMain } from "../common/extensionHostMain.js";
+import type { IHostUtils } from "../common/extHostExtensionService.js";
 
 import "../common/extHost.common.services.js";
 import "./extHost.worker.services.js";
+
 import { FileAccess } from "../../../base/common/network.js";
 import { URI } from "../../../base/common/uri.js";
 

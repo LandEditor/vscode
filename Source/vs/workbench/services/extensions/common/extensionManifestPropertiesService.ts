@@ -93,24 +93,49 @@ export class ExtensionManifestPropertiesService
 
 	constructor(
 		@IProductService private readonly productService: IProductService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceTrustEnablementService private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceTrustEnablementService
+		private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
 		// Workspace trust request type (settings.json)
-		this._configuredExtensionWorkspaceTrustRequestMap = new ExtensionIdentifierMap<{ supported: ExtensionUntrustedWorkspaceSupportType; version?: string }>();
-		const configuredExtensionWorkspaceTrustRequests = configurationService.inspect<{ [key: string]: { supported: ExtensionUntrustedWorkspaceSupportType; version?: string } }>(WORKSPACE_TRUST_EXTENSION_SUPPORT).userValue || {};
-		for (const id of Object.keys(configuredExtensionWorkspaceTrustRequests)) {
-			this._configuredExtensionWorkspaceTrustRequestMap.set(id, configuredExtensionWorkspaceTrustRequests[id]);
+		this._configuredExtensionWorkspaceTrustRequestMap =
+			new ExtensionIdentifierMap<{
+				supported: ExtensionUntrustedWorkspaceSupportType;
+				version?: string;
+			}>();
+		const configuredExtensionWorkspaceTrustRequests =
+			configurationService.inspect<{
+				[key: string]: {
+					supported: ExtensionUntrustedWorkspaceSupportType;
+					version?: string;
+				};
+			}>(WORKSPACE_TRUST_EXTENSION_SUPPORT).userValue || {};
+		for (const id of Object.keys(
+			configuredExtensionWorkspaceTrustRequests,
+		)) {
+			this._configuredExtensionWorkspaceTrustRequestMap.set(
+				id,
+				configuredExtensionWorkspaceTrustRequests[id],
+			);
 		}
 
 		// Workspace trust request type (product.json)
-		this._productExtensionWorkspaceTrustRequestMap = new Map<string, ExtensionUntrustedWorkspaceSupport>();
+		this._productExtensionWorkspaceTrustRequestMap = new Map<
+			string,
+			ExtensionUntrustedWorkspaceSupport
+		>();
 		if (productService.extensionUntrustedWorkspaceSupport) {
-			for (const id of Object.keys(productService.extensionUntrustedWorkspaceSupport)) {
-				this._productExtensionWorkspaceTrustRequestMap.set(id, productService.extensionUntrustedWorkspaceSupport[id]);
+			for (const id of Object.keys(
+				productService.extensionUntrustedWorkspaceSupport,
+			)) {
+				this._productExtensionWorkspaceTrustRequestMap.set(
+					id,
+					productService.extensionUntrustedWorkspaceSupport[id],
+				);
 			}
 		}
 	}

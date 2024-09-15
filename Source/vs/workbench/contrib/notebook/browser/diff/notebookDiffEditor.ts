@@ -12,14 +12,14 @@ import { PixelRatio } from "../../../../../base/browser/pixelRatio.js";
 import { findLastIdx } from "../../../../../base/common/arraysFind.js";
 import { SequencerByKey } from "../../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
 import {
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import type { URI } from "../../../../../base/common/uri.js";
 import { generateUuid } from "../../../../../base/common/uuid.js";
@@ -38,8 +38,8 @@ import { IContextKeyService } from "../../../../../platform/contextkey/common/co
 import type { IEditorOptions } from "../../../../../platform/editor/common/editor.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import {
-	ZIndex,
 	registerZIndex,
+	ZIndex,
 } from "../../../../../platform/layout/browser/zIndexRegistry.js";
 import { IStorageService } from "../../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
@@ -67,9 +67,9 @@ import {
 import type { IEditorGroup } from "../../../../services/editor/common/editorGroupsService.js";
 import {
 	CellUri,
-	type INotebookDiffEditorModel,
 	NOTEBOOK_DIFF_EDITOR_ID,
 	NotebookSetting,
+	type INotebookDiffEditorModel,
 } from "../../common/notebookCommon.js";
 import type { NotebookDiffEditorInput } from "../../common/notebookDiffEditorInput.js";
 import {
@@ -95,9 +95,9 @@ import {
 	type INotebookDelegateForWebview,
 } from "../view/renderers/backLayerWebView.js";
 import {
+	SideBySideDiffElementViewModel,
 	type DiffElementCellViewModelBase,
 	type IDiffElementViewModelBase,
-	SideBySideDiffElementViewModel,
 } from "./diffElementViewModel.js";
 import type { DiffNestedCellViewModel } from "./diffNestedCellViewModel.js";
 import {
@@ -236,20 +236,38 @@ export class NotebookTextDiffEditor
 
 	constructor(
 		group: IEditorGroup,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
-		@INotebookEditorWorkerService private readonly notebookEditorWorkerService: INotebookEditorWorkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
+		@INotebookEditorWorkerService
+		private readonly notebookEditorWorkerService: INotebookEditorWorkerService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService storageService: IStorageService,
 		@INotebookService private readonly notebookService: INotebookService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
-		@ITextResourceConfigurationService private readonly textConfigurationService: ITextResourceConfigurationService
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
+		@ITextResourceConfigurationService
+		private readonly textConfigurationService: ITextResourceConfigurationService,
 	) {
-		super(NotebookTextDiffEditor.ID, group, telemetryService, themeService, storageService);
-		this._notebookOptions = instantiationService.createInstance(NotebookOptions, this.window, false, undefined);
+		super(
+			NotebookTextDiffEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
+		this._notebookOptions = instantiationService.createInstance(
+			NotebookOptions,
+			this.window,
+			false,
+			undefined,
+		);
 		this._register(this._notebookOptions);
 		this._revealFirst = true;
 	}

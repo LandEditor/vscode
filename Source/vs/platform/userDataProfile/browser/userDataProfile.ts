@@ -11,13 +11,13 @@ import { IFileService } from "../../files/common/files.js";
 import { ILogService } from "../../log/common/log.js";
 import { IUriIdentityService } from "../../uriIdentity/common/uriIdentity.js";
 import {
+	reviveProfile,
+	UserDataProfilesService,
 	type DidChangeProfilesEvent,
 	type IUserDataProfile,
 	type IUserDataProfilesService,
 	type StoredProfileAssociations,
 	type StoredUserDataProfile,
-	UserDataProfilesService,
-	reviveProfile,
 } from "../common/userDataProfile.js";
 
 type BroadcastedProfileChanges = UriDto<Omit<DidChangeProfilesEvent, "all">>;

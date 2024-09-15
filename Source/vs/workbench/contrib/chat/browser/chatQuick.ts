@@ -11,8 +11,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import type { Selection } from "../../../../editor/common/core/selection.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
@@ -34,11 +34,11 @@ import { IViewsService } from "../../../services/views/common/viewsService.js";
 import { ChatAgentLocation } from "../common/chatAgents.js";
 import type { ChatModel } from "../common/chatModel.js";
 import type { IParsedChatRequest } from "../common/chatParserTypes.js";
-import { type IChatProgress, IChatService } from "../common/chatService.js";
+import { IChatService, type IChatProgress } from "../common/chatService.js";
 import {
+	showChatView,
 	type IQuickChatOpenOptions,
 	type IQuickChatService,
-	showChatView,
 } from "./chat.js";
 import { ChatWidget } from "./chatWidget.js";
 
@@ -54,9 +54,11 @@ export class QuickChatService extends Disposable implements IQuickChatService {
 	private _container: HTMLElement | undefined;
 
 	constructor(
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
 		@IChatService private readonly chatService: IChatService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -172,8 +174,10 @@ class QuickChat extends Disposable {
 	private _deferUpdatingDynamicLayout = false;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IChatService private readonly chatService: IChatService,
 		@ILayoutService private readonly layoutService: ILayoutService,
 		@IViewsService private readonly viewsService: IViewsService,

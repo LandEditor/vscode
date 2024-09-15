@@ -31,8 +31,8 @@ import {
 	InputFocusedContextKey,
 } from "../../../../../platform/contextkey/common/contextkeys.js";
 import {
-	type IConfirmationResult,
 	IDialogService,
+	type IConfirmationResult,
 } from "../../../../../platform/dialogs/common/dialogs.js";
 import {
 	IInstantiationService,
@@ -52,9 +52,9 @@ import { CTX_INLINE_CHAT_FOCUSED } from "../../../inlineChat/common/inlineChat.j
 import {
 	CellEditType,
 	CellKind,
-	type ICellEditOperation,
 	NotebookCellExecutionState,
 	NotebookSetting,
+	type ICellEditOperation,
 } from "../../common/notebookCommon.js";
 import {
 	NOTEBOOK_CELL_EDITABLE,
@@ -75,11 +75,11 @@ import { INotebookExecutionStateService } from "../../common/notebookExecutionSt
 import { INotebookKernelService } from "../../common/notebookKernelService.js";
 import type { ICellRange } from "../../common/notebookRange.js";
 import {
-	CHANGE_CELL_LANGUAGE,
 	CellEditState,
+	CHANGE_CELL_LANGUAGE,
 	DETECT_CELL_LANGUAGE,
-	QUIT_EDIT_CELL_COMMAND_ID,
 	getNotebookEditorFromEditorPane,
+	QUIT_EDIT_CELL_COMMAND_ID,
 } from "../notebookBrowser.js";
 import * as icons from "../notebookIcons.js";
 import { changeCellToKind, runDeleteAction } from "./cellOperations.js";
@@ -87,22 +87,22 @@ import {
 	CELL_TITLE_CELL_GROUP_ID,
 	CELL_TITLE_OUTPUT_GROUP_ID,
 	CellToolbarOrder,
-	type INotebookActionContext,
-	type INotebookCellActionContext,
-	type INotebookCommandContext,
+	executeNotebookCondition,
+	findTargetCellEditor,
 	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
 	NotebookAction,
 	NotebookCellAction,
 	NotebookMultiCellAction,
-	executeNotebookCondition,
-	findTargetCellEditor,
+	type INotebookActionContext,
+	type INotebookCellActionContext,
+	type INotebookCommandContext,
 } from "./coreActions.js";
 import {
 	NotebookChangeTabDisplaySize,
-	NotebookIndentUsingSpaces,
-	NotebookIndentUsingTabs,
 	NotebookIndentationToSpacesAction,
 	NotebookIndentationToTabsAction,
+	NotebookIndentUsingSpaces,
+	NotebookIndentUsingTabs,
 } from "./notebookIndentationActions.js";
 
 const CLEAR_ALL_CELLS_OUTPUTS_COMMAND_ID = "notebook.clearAllCellsOutputs";

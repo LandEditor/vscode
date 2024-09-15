@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./highlightDecorations.css";
+
 import * as nls from "../../../../nls.js";
 import {
 	activeContrastBorder,

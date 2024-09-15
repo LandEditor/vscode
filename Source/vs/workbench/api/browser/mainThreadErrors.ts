@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type SerializedError,
 	onUnexpectedError,
 	transformErrorFromSerialization,
+	type SerializedError,
 } from "../../../base/common/errors.js";
 import { extHostNamedCustomer } from "../../services/extensions/common/extHostCustomers.js";
 import {

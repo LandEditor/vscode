@@ -16,15 +16,15 @@ import {
 } from "../../../../base/common/arrays.js";
 import { AsyncIterableObject } from "../../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
 import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
 import {
-	type IMarkdownString,
-	MarkdownString,
 	isEmptyMarkdownString,
+	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
@@ -49,10 +49,10 @@ import type { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import {
+	HoverVerbosityAction,
 	type Hover,
 	type HoverContext,
 	type HoverProvider,
-	HoverVerbosityAction,
 } from "../../../common/languages.js";
 import { ILanguageService } from "../../../common/languages/language.js";
 import type { IModelDecoration, ITextModel } from "../../../common/model.js";
@@ -63,15 +63,15 @@ import {
 	INCREASE_HOVER_VERBOSITY_ACTION_ID,
 } from "./hoverActionIds.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
+	RenderedHoverParts,
+	type HoverAnchor,
 	type HoverRangeAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "./hoverTypes.js";
 
 const $ = dom.$;
@@ -141,12 +141,15 @@ export class MarkdownHoverParticipant
 		protected readonly _editor: ICodeEditor,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@ILanguageFeaturesService protected readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@ILanguageFeaturesService
+		protected readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IHoverService private readonly _hoverService: IHoverService,
 		@ICommandService private readonly _commandService: ICommandService,
-	) { }
+	) {}
 
 	public createLoadingMessage(anchor: HoverAnchor): MarkdownHover | null {
 		return new MarkdownHover(

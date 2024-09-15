@@ -13,12 +13,12 @@ import type { IActiveCodeEditor } from "../../../browser/editorBrowser.js";
 import type { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
 import {
-	type FindMatch,
-	type IModelDecorationsChangeAccessor,
-	type IModelDeltaDecoration,
 	MinimapPosition,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type FindMatch,
+	type IModelDecorationsChangeAccessor,
+	type IModelDeltaDecoration,
 } from "../../../common/model.js";
 import { ModelDecorationOptions } from "../../../common/model/textModel.js";
 

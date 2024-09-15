@@ -28,18 +28,18 @@ import { StopWatch } from "../../../../base/common/stopwatch.js";
 import { assertType } from "../../../../base/common/types.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
-	type IPosition,
 	Position,
+	type IPosition,
 } from "../../../../editor/common/core/position.js";
-import { type IRange, Range } from "../../../../editor/common/core/range.js";
+import { Range, type IRange } from "../../../../editor/common/core/range.js";
 import {
-	type ISelection,
 	Selection,
 	SelectionDirection,
+	type ISelection,
 } from "../../../../editor/common/core/selection.js";
 import type { IEditorContribution } from "../../../../editor/common/editorCommon.js";
 import { TextEdit } from "../../../../editor/common/languages.js";
@@ -51,8 +51,8 @@ import { MessageController } from "../../../../editor/contrib/message/browser/me
 import { localize } from "../../../../nls.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import {
@@ -73,8 +73,8 @@ import {
 	CONTEXT_RESPONSE_ERROR,
 } from "../../chat/common/chatContextKeys.js";
 import {
-	type ChatModel,
 	ChatRequestRemovalReason,
+	type ChatModel,
 	type IChatRequestModel,
 	type IChatTextEditGroup,
 	type IChatTextEditGroupState,
@@ -95,19 +95,19 @@ import {
 } from "../common/inlineChat.js";
 import { IInlineChatSavingService } from "./inlineChatSavingService.js";
 import {
-	type HunkInformation,
 	HunkState,
 	Session,
+	type HunkInformation,
 	type StashedSession,
 } from "./inlineChatSession.js";
 import { IInlineChatSessionService } from "./inlineChatSessionService.js";
 import { InlineChatError } from "./inlineChatSessionServiceImpl.js";
 import {
-	type EditModeStrategy,
 	HunkAction,
-	type IEditObserver,
 	LiveStrategy,
 	PreviewStrategy,
+	type EditModeStrategy,
+	type IEditObserver,
 	type ProgressingEditsOptions,
 } from "./inlineChatStrategies.js";
 import { InlineChatZoneWidget } from "./inlineChatZoneWidget.js";
@@ -213,12 +213,17 @@ export class InlineChatController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@IInlineChatSessionService private readonly _inlineChatSessionService: IInlineChatSessionService,
-		@IInlineChatSavingService private readonly _inlineChatSavingService: IInlineChatSavingService,
-		@IEditorWorkerService private readonly _editorWorkerService: IEditorWorkerService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@IInlineChatSessionService
+		private readonly _inlineChatSessionService: IInlineChatSessionService,
+		@IInlineChatSavingService
+		private readonly _inlineChatSavingService: IInlineChatSavingService,
+		@IEditorWorkerService
+		private readonly _editorWorkerService: IEditorWorkerService,
 		@ILogService private readonly _logService: ILogService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IDialogService private readonly _dialogService: IDialogService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IChatService private readonly _chatService: IChatService,
@@ -227,15 +232,17 @@ export class InlineChatController implements IEditorContribution {
 	) {
 		this._ctxVisible = CTX_INLINE_CHAT_VISIBLE.bindTo(contextKeyService);
 		this._ctxEditing = CTX_INLINE_CHAT_EDITING.bindTo(contextKeyService);
-		this._ctxUserDidEdit = CTX_INLINE_CHAT_USER_DID_EDIT.bindTo(contextKeyService);
-		this._ctxResponseType = CTX_INLINE_CHAT_RESPONSE_TYPE.bindTo(contextKeyService);
-		this._ctxRequestInProgress = CTX_INLINE_CHAT_REQUEST_IN_PROGRESS.bindTo(contextKeyService);
+		this._ctxUserDidEdit =
+			CTX_INLINE_CHAT_USER_DID_EDIT.bindTo(contextKeyService);
+		this._ctxResponseType =
+			CTX_INLINE_CHAT_RESPONSE_TYPE.bindTo(contextKeyService);
+		this._ctxRequestInProgress =
+			CTX_INLINE_CHAT_REQUEST_IN_PROGRESS.bindTo(contextKeyService);
 
 		this._ctxResponse = CONTEXT_RESPONSE.bindTo(contextKeyService);
 		CONTEXT_RESPONSE_ERROR.bindTo(contextKeyService);
 
 		this._ui = new Lazy(() => {
-
 			const location: IChatWidgetLocationOptions = {
 				location: ChatAgentLocation.Editor,
 				resolveData: () => {
@@ -245,9 +252,10 @@ export class InlineChatController implements IEditorContribution {
 						type: ChatAgentLocation.Editor,
 						selection: this._editor.getSelection(),
 						document: this._session.textModelN.uri,
-						wholeRange: this._session?.wholeRange.trackedInitialRange,
+						wholeRange:
+							this._session?.wholeRange.trackedInitialRange,
 					};
-				}
+				},
 			};
 
 			// inline chat in notebooks
@@ -263,39 +271,55 @@ export class InlineChatController implements IEditorContribution {
 				}
 			}
 
-			return this._store.add(_instaService.createInstance(InlineChatZoneWidget, location, this._editor));
+			return this._store.add(
+				_instaService.createInstance(
+					InlineChatZoneWidget,
+					location,
+					this._editor,
+				),
+			);
 		});
 
-		this._store.add(this._editor.onDidChangeModel(async e => {
-			if (this._session || !e.newModelUrl) {
-				return;
-			}
+		this._store.add(
+			this._editor.onDidChangeModel(async (e) => {
+				if (this._session || !e.newModelUrl) {
+					return;
+				}
 
-			const existingSession = this._inlineChatSessionService.getSession(this._editor, e.newModelUrl);
-			if (!existingSession) {
-				return;
-			}
+				const existingSession =
+					this._inlineChatSessionService.getSession(
+						this._editor,
+						e.newModelUrl,
+					);
+				if (!existingSession) {
+					return;
+				}
 
-			this._log('session RESUMING after model change', e);
-			await this.run({ existingSession });
-		}));
+				this._log("session RESUMING after model change", e);
+				await this.run({ existingSession });
+			}),
+		);
 
-		this._store.add(this._inlineChatSessionService.onDidEndSession(e => {
-			if (e.session === this._session && e.endedByExternalCause) {
-				this._log('session ENDED by external cause');
-				this._session = undefined;
-				this._strategy?.cancel();
-				this._resetWidget();
-				this.cancelSession();
-			}
-		}));
+		this._store.add(
+			this._inlineChatSessionService.onDidEndSession((e) => {
+				if (e.session === this._session && e.endedByExternalCause) {
+					this._log("session ENDED by external cause");
+					this._session = undefined;
+					this._strategy?.cancel();
+					this._resetWidget();
+					this.cancelSession();
+				}
+			}),
+		);
 
-		this._store.add(this._inlineChatSessionService.onDidMoveSession(async e => {
-			if (e.editor === this._editor) {
-				this._log('session RESUMING after move', e);
-				await this.run({ existingSession: e.session });
-			}
-		}));
+		this._store.add(
+			this._inlineChatSessionService.onDidMoveSession(async (e) => {
+				if (e.editor === this._editor) {
+					this._log("session RESUMING after move", e);
+					await this.run({ existingSession: e.session });
+				}
+			}),
+		);
 
 		this._log(`NEW controller`);
 	}

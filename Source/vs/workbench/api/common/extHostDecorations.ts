@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { asArray, groupBy } from "../../../base/common/arrays.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { dirname } from "../../../base/common/path.js";
@@ -14,11 +15,11 @@ import { createDecorator } from "../../../platform/instantiation/common/instanti
 import { ILogService } from "../../../platform/log/common/log.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type DecorationData,
 	type DecorationReply,
 	type DecorationRequest,
 	type ExtHostDecorationsShape,
-	MainContext,
 	type MainThreadDecorationsShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";

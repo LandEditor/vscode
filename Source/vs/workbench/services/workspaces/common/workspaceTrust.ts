@@ -8,8 +8,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedList } from "../../../../base/common/linkedList.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -36,25 +36,25 @@ import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uri
 import type { IPath } from "../../../../platform/window/common/window.js";
 import { isVirtualResource } from "../../../../platform/workspace/common/virtualWorkspace.js";
 import {
-	type ISingleFolderWorkspaceIdentifier,
-	type IWorkspace,
-	IWorkspaceContextService,
-	type IWorkspaceFolder,
-	WorkbenchState,
 	isSavedWorkspace,
 	isSingleFolderWorkspaceIdentifier,
 	isTemporaryWorkspace,
+	IWorkspaceContextService,
 	toWorkspaceIdentifier,
+	WorkbenchState,
+	type ISingleFolderWorkspaceIdentifier,
+	type IWorkspace,
+	type IWorkspaceFolder,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
 	IWorkspaceTrustEnablementService,
-	type IWorkspaceTrustInfo,
 	IWorkspaceTrustManagementService,
 	IWorkspaceTrustRequestService,
+	WorkspaceTrustUriResponse,
+	type IWorkspaceTrustInfo,
 	type IWorkspaceTrustTransitionParticipant,
 	type IWorkspaceTrustUriInfo,
 	type WorkspaceTrustRequestOptions,
-	WorkspaceTrustUriResponse,
 } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { Memento, type MementoObject } from "../../../common/memento.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
@@ -111,8 +111,10 @@ export class WorkspaceTrustEnablementService
 	_serviceBrand: undefined;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 	) {
 		super();
 	}
@@ -159,25 +161,41 @@ export class WorkspaceTrustManagementService
 	private readonly _trustTransitionManager: WorkspaceTrustTransitionManager;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IRemoteAuthorityResolverService private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IRemoteAuthorityResolverService
+		private readonly remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly workspaceService: IWorkspaceContextService,
-		@IWorkspaceTrustEnablementService private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IFileService private readonly fileService: IFileService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly workspaceService: IWorkspaceContextService,
+		@IWorkspaceTrustEnablementService
+		private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 
 		this._canonicalUrisResolved = false;
 		this._canonicalWorkspace = this.workspaceService.getWorkspace();
 
-		({ promise: this._workspaceResolvedPromise, resolve: this._workspaceResolvedPromiseResolve } = promiseWithResolvers());
-		({ promise: this._workspaceTrustInitializedPromise, resolve: this._workspaceTrustInitializedPromiseResolve } = promiseWithResolvers());
+		({
+			promise: this._workspaceResolvedPromise,
+			resolve: this._workspaceResolvedPromiseResolve,
+		} = promiseWithResolvers());
+		({
+			promise: this._workspaceTrustInitializedPromise,
+			resolve: this._workspaceTrustInitializedPromiseResolve,
+		} = promiseWithResolvers());
 
-		this._storedTrustState = new WorkspaceTrustMemento(isWeb && this.isEmptyWorkspace() ? undefined : this.storageService);
-		this._trustTransitionManager = this._register(new WorkspaceTrustTransitionManager());
+		this._storedTrustState = new WorkspaceTrustMemento(
+			isWeb && this.isEmptyWorkspace() ? undefined : this.storageService,
+		);
+		this._trustTransitionManager = this._register(
+			new WorkspaceTrustTransitionManager(),
+		);
 
 		this._trustStateInfo = this.loadTrustInfo();
 		this._isTrusted = this.calculateWorkspaceTrust();
@@ -899,8 +917,10 @@ export class WorkspaceTrustRequestService
 		this._onDidInitiateWorkspaceTrustRequestOnStartup.event;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
 	}
@@ -930,7 +950,8 @@ export class WorkspaceTrustRequestService
 
 		// Set acceptsOutOfWorkspaceFiles
 		if (result === WorkspaceTrustUriResponse.Open) {
-			this.workspaceTrustManagementService.acceptsOutOfWorkspaceFiles = true;
+			this.workspaceTrustManagementService.acceptsOutOfWorkspaceFiles =
+				true;
 		}
 
 		// Save response

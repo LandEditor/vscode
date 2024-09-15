@@ -10,25 +10,25 @@ import { Schemas } from "../../../../base/common/network.js";
 import { deepClone } from "../../../../base/common/objects.js";
 import * as path from "../../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
-	OS,
 	OperatingSystem,
+	OS,
+	type IProcessEnvironment,
 } from "../../../../base/common/platform.js";
 import { env } from "../../../../base/common/process.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IShellLaunchConfig,
 	ITerminalLogService,
+	TerminalSettingId,
+	type IShellLaunchConfig,
 	type ITerminalProfile,
 	type TerminalIcon,
-	TerminalSettingId,
 } from "../../../../platform/terminal/common/terminal.js";
 import { isUriComponents } from "../../../../platform/terminal/common/terminalProfiles.js";
 import {
-	type IIconRegistry,
 	getIconRegistry,
+	type IIconRegistry,
 } from "../../../../platform/theme/common/iconRegistry.js";
 import {
 	IWorkspaceContextService,
@@ -38,9 +38,9 @@ import { IConfigurationResolverService } from "../../../services/configurationRe
 import { IHistoryService } from "../../../services/history/common/history.js";
 import { IRemoteAgentService } from "../../../services/remote/common/remoteAgentService.js";
 import {
+	ITerminalProfileService,
 	type IShellLaunchConfigResolveOptions,
 	type ITerminalProfileResolverService,
-	ITerminalProfileService,
 } from "../common/terminal.js";
 import { ITerminalInstanceService } from "./terminal.js";
 
@@ -545,13 +545,17 @@ export abstract class BaseTerminalProfileResolverService
 
 export class BrowserTerminalProfileResolverService extends BaseTerminalProfileResolverService {
 	constructor(
-		@IConfigurationResolverService configurationResolverService: IConfigurationResolverService,
+		@IConfigurationResolverService
+		configurationResolverService: IConfigurationResolverService,
 		@IConfigurationService configurationService: IConfigurationService,
 		@IHistoryService historyService: IHistoryService,
 		@ITerminalLogService logService: ITerminalLogService,
-		@ITerminalInstanceService terminalInstanceService: ITerminalInstanceService,
-		@ITerminalProfileService terminalProfileService: ITerminalProfileService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@ITerminalInstanceService
+		terminalInstanceService: ITerminalInstanceService,
+		@ITerminalProfileService
+		terminalProfileService: ITerminalProfileService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 	) {
 		super(

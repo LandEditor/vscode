@@ -38,18 +38,27 @@ export class CellComments extends CellContentPart {
 	constructor(
 		private readonly notebookEditor: INotebookEditorDelegate,
 		private readonly container: HTMLElement,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IThemeService private readonly themeService: IThemeService,
 		@ICommentService private readonly commentService: ICommentService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		this.container.classList.add('review-widget');
+		this.container.classList.add("review-widget");
 
-		this._register(this._commentThreadWidget = new MutableDisposable<CommentThreadWidget<ICellRange>>());
+		this._register(
+			(this._commentThreadWidget = new MutableDisposable<
+				CommentThreadWidget<ICellRange>
+			>()),
+		);
 
-		this._register(this.themeService.onDidColorThemeChange(this._applyTheme, this));
+		this._register(
+			this.themeService.onDidColorThemeChange(this._applyTheme, this),
+		);
 		// TODO @rebornix onDidChangeLayout (font change)
 		// this._register(this.notebookEditor.onDidchangeLa)
 		this._applyTheme();
@@ -169,13 +178,11 @@ export class CellComments extends CellContentPart {
 			bodyHeight +
 			arrowHeight +
 			frameThickness +
-			8 /** margin bottom to avoid margin collapse */;
+			8; /** margin bottom to avoid margin collapse */
 		return computedHeight;
 	}
 
-	private async _getCommentThreadForCell(
-		element: ICellViewModel,
-	): Promise<{
+	private async _getCommentThreadForCell(element: ICellViewModel): Promise<{
 		thread: languages.CommentThread<ICellRange>;
 		owner: string;
 	} | null> {

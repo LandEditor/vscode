@@ -19,10 +19,10 @@ import { showExtensionsWithIdsCommandId } from "../../extensions/browser/extensi
 import { verifiedPublisherIcon } from "../../extensions/browser/extensionsIcons.js";
 import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.js";
 import {
-	type IChatAgentData,
+	getFullyQualifiedId,
 	IChatAgentNameService,
 	IChatAgentService,
-	getFullyQualifiedId,
+	type IChatAgentData,
 } from "../common/chatAgents.js";
 
 export class ChatAgentHover extends Disposable {
@@ -40,28 +40,28 @@ export class ChatAgentHover extends Disposable {
 
 	constructor(
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
-		@IExtensionsWorkbenchService private readonly extensionService: IExtensionsWorkbenchService,
-		@IChatAgentNameService private readonly chatAgentNameService: IChatAgentNameService,
+		@IExtensionsWorkbenchService
+		private readonly extensionService: IExtensionsWorkbenchService,
+		@IChatAgentNameService
+		private readonly chatAgentNameService: IChatAgentNameService,
 	) {
 		super();
 
-		const hoverElement = dom.h(
-			'.chat-agent-hover@root',
-			[
-				dom.h('.chat-agent-hover-header', [
-					dom.h('.chat-agent-hover-icon@icon'),
-					dom.h('.chat-agent-hover-details', [
-						dom.h('.chat-agent-hover-name@name'),
-						dom.h('.chat-agent-hover-extension', [
-							dom.h('.chat-agent-hover-extension-name@extensionName'),
-							dom.h('.chat-agent-hover-separator@separator'),
-							dom.h('.chat-agent-hover-publisher@publisher'),
-						]),
+		const hoverElement = dom.h(".chat-agent-hover@root", [
+			dom.h(".chat-agent-hover-header", [
+				dom.h(".chat-agent-hover-icon@icon"),
+				dom.h(".chat-agent-hover-details", [
+					dom.h(".chat-agent-hover-name@name"),
+					dom.h(".chat-agent-hover-extension", [
+						dom.h(".chat-agent-hover-extension-name@extensionName"),
+						dom.h(".chat-agent-hover-separator@separator"),
+						dom.h(".chat-agent-hover-publisher@publisher"),
 					]),
 				]),
-				dom.h('.chat-agent-hover-warning@warning'),
-				dom.h('span.chat-agent-hover-description@description'),
-			]);
+			]),
+			dom.h(".chat-agent-hover-warning@warning"),
+			dom.h("span.chat-agent-hover-description@description"),
+		]);
 		this.domNode = hoverElement.root;
 
 		this.icon = hoverElement.icon;
@@ -69,18 +69,28 @@ export class ChatAgentHover extends Disposable {
 		this.extensionName = hoverElement.extensionName;
 		this.description = hoverElement.description;
 
-		hoverElement.separator.textContent = '|';
+		hoverElement.separator.textContent = "|";
 
-		const verifiedBadge = dom.$('span.extension-verified-publisher', undefined, renderIcon(verifiedPublisherIcon));
+		const verifiedBadge = dom.$(
+			"span.extension-verified-publisher",
+			undefined,
+			renderIcon(verifiedPublisherIcon),
+		);
 
-		this.publisherName = dom.$('span.chat-agent-hover-publisher-name');
-		dom.append(
-			hoverElement.publisher,
-			verifiedBadge,
-			this.publisherName);
+		this.publisherName = dom.$("span.chat-agent-hover-publisher-name");
+		dom.append(hoverElement.publisher, verifiedBadge, this.publisherName);
 
 		hoverElement.warning.appendChild(renderIcon(Codicon.warning));
-		hoverElement.warning.appendChild(dom.$('span', undefined, localize('reservedName', "This chat extension is using a reserved name.")));
+		hoverElement.warning.appendChild(
+			dom.$(
+				"span",
+				undefined,
+				localize(
+					"reservedName",
+					"This chat extension is using a reserved name.",
+				),
+			),
+		);
 	}
 
 	setAgent(id: string): void {

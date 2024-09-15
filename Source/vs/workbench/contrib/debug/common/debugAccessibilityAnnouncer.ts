@@ -5,8 +5,8 @@
 
 import {
 	Disposable,
-	type IDisposable,
 	MutableDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -26,16 +26,24 @@ export class DebugWatchAccessibilityAnnouncer
 	constructor(
 		@IDebugService private readonly _debugService: IDebugService,
 		@ILogService private readonly _logService: ILogService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 		this._setListener();
-		this._register(_configurationService.onDidChangeConfiguration(e => {
-			if (e.affectsConfiguration('accessibility.debugWatchVariableAnnouncements')) {
-				this._setListener();
-			}
-		}));
+		this._register(
+			_configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration(
+						"accessibility.debugWatchVariableAnnouncements",
+					)
+				) {
+					this._setListener();
+				}
+			}),
+		);
 	}
 
 	private _setListener(): void {

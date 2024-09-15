@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/notebookFind.css";
+
 import { KeyCode, KeyMod } from "../../../../../../base/common/keyCodes.js";
 import { Schemas } from "../../../../../../base/common/network.js";
 import { isEqual } from "../../../../../../base/common/resources.js";
@@ -15,10 +16,10 @@ import { EditorContextKeys } from "../../../../../../editor/common/editorContext
 import type { ITextModel } from "../../../../../../editor/common/model.js";
 import {
 	FindStartFocusAction,
-	type IFindStartOptions,
+	getSelectionSearchString,
 	StartFindAction,
 	StartFindReplaceAction,
-	getSelectionSearchString,
+	type IFindStartOptions,
 } from "../../../../../../editor/contrib/find/browser/findController.js";
 import { localize2 } from "../../../../../../nls.js";
 import {
@@ -40,14 +41,14 @@ import {
 	NOTEBOOK_IS_ACTIVE_EDITOR,
 } from "../../../common/notebookContextKeys.js";
 import {
-	type INotebookCommandContext,
 	NotebookMultiCellAction,
+	type INotebookCommandContext,
 } from "../../controller/coreActions.js";
 import { getNotebookEditorFromEditorPane } from "../../notebookBrowser.js";
 import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 import {
-	type IShowNotebookFindWidgetOptions,
 	NotebookFindContrib,
+	type IShowNotebookFindWidgetOptions,
 } from "./notebookFindWidget.js";
 
 registerNotebookContribution(NotebookFindContrib.id, NotebookFindContrib);

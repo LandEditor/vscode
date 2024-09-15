@@ -10,9 +10,9 @@ import type { IProcessEnvironment } from "../../../../base/common/platform.js";
 import * as Types from "../../../../base/common/types.js";
 import type { URI as uri } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	isCodeEditor,
 	isDiffEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import * as nls from "../../../../nls.js";
 import type { ICommandService } from "../../../../platform/commands/common/commands.js";
@@ -29,14 +29,14 @@ import type {
 	IQuickPickItem,
 } from "../../../../platform/quickinput/common/quickInput.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	WorkbenchState,
 	type IWorkspaceContextService,
 	type IWorkspaceFolder,
-	WorkbenchState,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
 	EditorResourceAccessor,

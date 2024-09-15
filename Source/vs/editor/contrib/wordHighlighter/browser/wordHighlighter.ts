@@ -5,10 +5,10 @@
 
 import { alert } from "../../../../base/browser/ui/aria/aria.js";
 import {
-	type CancelablePromise,
-	Delayer,
 	createCancelablePromise,
+	Delayer,
 	first,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
@@ -21,29 +21,29 @@ import {
 	DisposableStore,
 } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
-import { Schemas, matchesScheme } from "../../../../base/common/network.js";
+import { matchesScheme, Schemas } from "../../../../base/common/network.js";
 import { isEqual } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { KeybindingWeight } from "../../../../platform/keybinding/common/keybindingsRegistry.js";
 import {
+	isDiffEditor,
 	type IActiveCodeEditor,
 	type ICodeEditor,
-	isDiffEditor,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type IActionOptions,
 	registerEditorAction,
 	registerEditorContribution,
 	registerModelAndPositionCommand,
+	type IActionOptions,
 } from "../../../browser/editorExtensions.js";
 import { ICodeEditorService } from "../../../browser/services/codeEditorService.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
@@ -63,16 +63,16 @@ import type {
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import { registerEditorFeature } from "../../../common/editorFeatures.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
-import { score } from "../../../common/languageSelector.js";
 import type {
 	DocumentHighlight,
 	DocumentHighlightProvider,
 	MultiDocumentHighlightProvider,
 } from "../../../common/languages.js";
+import { score } from "../../../common/languageSelector.js";
 import {
+	shouldSynchronizeModel,
 	type IModelDeltaDecoration,
 	type ITextModel,
-	shouldSynchronizeModel,
 } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { ITextModelService } from "../../../common/services/resolverService.js";
@@ -1133,7 +1133,8 @@ export class WordHighlighterContribution
 	constructor(
 		editor: ICodeEditor,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
 		@ITextModelService textModelService: ITextModelService,
 	) {

@@ -12,20 +12,20 @@ import {
 	type IChatTask,
 } from "../../contrib/chat/common/chatService.js";
 import {
-	type CountTokensCallback,
 	ILanguageModelToolsService,
+	type CountTokensCallback,
 	type IToolData,
 	type IToolInvocation,
 	type IToolResult,
 } from "../../contrib/chat/common/languageModelToolsService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostLanguageModelToolsShape,
 	MainContext,
+	type ExtHostLanguageModelToolsShape,
 	type MainThreadLanguageModelToolsShape,
 } from "../common/extHost.protocol.js";
 import { MainThreadChatTask } from "./mainThreadChatAgents2.js";
@@ -44,13 +44,22 @@ export class MainThreadLanguageModelTools
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ILanguageModelToolsService private readonly _languageModelToolsService: ILanguageModelToolsService,
+		@ILanguageModelToolsService
+		private readonly _languageModelToolsService: ILanguageModelToolsService,
 		@IChatService private readonly _chatService: IChatService,
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostLanguageModelTools);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostLanguageModelTools,
+		);
 
-		this._register(this._languageModelToolsService.onDidChangeTools(e => this._proxy.$onDidChangeTools([...this._languageModelToolsService.getTools()])));
+		this._register(
+			this._languageModelToolsService.onDidChangeTools((e) =>
+				this._proxy.$onDidChangeTools([
+					...this._languageModelToolsService.getTools(),
+				]),
+			),
+		);
 	}
 
 	async $getTools(): Promise<IToolData[]> {

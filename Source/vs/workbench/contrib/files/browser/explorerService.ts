@@ -16,22 +16,22 @@ import {
 } from "../../../../editor/browser/services/bulkEditService.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../platform/configuration/common/configuration.js";
 import {
 	FileChangeType,
-	type FileChangesEvent,
 	FileOperation,
-	type FileOperationEvent,
 	IFileService,
+	type FileChangesEvent,
+	type FileOperationEvent,
 	type IResolveFileOptions,
 } from "../../../../platform/files/common/files.js";
 import {
-	type IProgressCompositeOptions,
-	type IProgressOptions,
 	IProgressService,
 	ProgressLocation,
+	type IProgressCompositeOptions,
+	type IProgressOptions,
 } from "../../../../platform/progress/common/progress.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { UndoRedoSource } from "../../../../platform/undoRedo/common/undoRedo.js";
@@ -44,10 +44,10 @@ import { IFilesConfigurationService } from "../../../services/filesConfiguration
 import { IHostService } from "../../../services/host/browser/host.js";
 import { ExplorerItem, ExplorerModel } from "../common/explorerModel.js";
 import {
-	type IFilesConfiguration,
-	type ISortOrderConfiguration,
 	LexicographicOptions,
 	SortOrder,
+	type IFilesConfiguration,
+	type ISortOrderConfiguration,
 } from "../common/files.js";
 import type { IExplorerService, IExplorerView } from "./files.js";
 
@@ -70,22 +70,36 @@ export class ExplorerService implements IExplorerService {
 
 	constructor(
 		@IFileService private fileService: IFileService,
-		@IConfigurationService private configurationService: IConfigurationService,
-		@IWorkspaceContextService private contextService: IWorkspaceContextService,
+		@IConfigurationService
+		private configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private contextService: IWorkspaceContextService,
 		@IClipboardService private clipboardService: IClipboardService,
 		@IEditorService private editorService: IEditorService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IBulkEditService private readonly bulkEditService: IBulkEditService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IHostService hostService: IHostService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
-		this.config = this.configurationService.getValue('explorer');
+		this.config = this.configurationService.getValue("explorer");
 
-		this.model = new ExplorerModel(this.contextService, this.uriIdentityService, this.fileService, this.configurationService, this.filesConfigurationService);
+		this.model = new ExplorerModel(
+			this.contextService,
+			this.uriIdentityService,
+			this.fileService,
+			this.configurationService,
+			this.filesConfigurationService,
+		);
 		this.disposables.add(this.model);
-		this.disposables.add(this.fileService.onDidRunOperation(e => this.onDidRunOperation(e)));
+		this.disposables.add(
+			this.fileService.onDidRunOperation((e) =>
+				this.onDidRunOperation(e),
+			),
+		);
 
 		this.onFileChangesScheduler = new RunOnceScheduler(async () => {
 			const events = this.fileChangeEvents;
@@ -99,17 +113,24 @@ export class ExplorerService implements IExplorerService {
 
 			let shouldRefresh = false;
 			// For DELETED and UPDATED events go through the explorer model and check if any of the items got affected
-			this.roots.forEach(r => {
+			this.roots.forEach((r) => {
 				if (this.view && !shouldRefresh) {
-					shouldRefresh = doesFileEventAffect(r, this.view, events, types);
+					shouldRefresh = doesFileEventAffect(
+						r,
+						this.view,
+						events,
+						types,
+					);
 				}
 			});
 			// For ADDED events we need to go through all the events and check if the explorer is already aware of some of them
 			// Or if they affect not yet resolved parts of the explorer. If that is the case we will not refresh.
-			events.forEach(e => {
+			events.forEach((e) => {
 				if (!shouldRefresh) {
 					for (const resource of e.rawAdded) {
-						const parent = this.model.findClosest(dirname(resource));
+						const parent = this.model.findClosest(
+							dirname(resource),
+						);
 						// Parent of the added resource is resolved and the explorer model is not aware of the added resource - we need to refresh
 						if (parent && !parent.getChild(basename(resource))) {
 							shouldRefresh = true;
@@ -122,48 +143,69 @@ export class ExplorerService implements IExplorerService {
 			if (shouldRefresh) {
 				await this.refresh(false);
 			}
-
 		}, ExplorerService.EXPLORER_FILE_CHANGES_REACT_DELAY);
 
-		this.disposables.add(this.fileService.onDidFilesChange(e => {
-			this.fileChangeEvents.push(e);
-			// Don't mess with the file tree while in the process of editing. #112293
-			if (this.editable) {
-				return;
-			}
-			if (!this.onFileChangesScheduler.isScheduled()) {
-				this.onFileChangesScheduler.schedule();
-			}
-		}));
-		this.disposables.add(this.configurationService.onDidChangeConfiguration(e => this.onConfigurationUpdated(e)));
-		this.disposables.add(Event.any<{ scheme: string }>(this.fileService.onDidChangeFileSystemProviderRegistrations, this.fileService.onDidChangeFileSystemProviderCapabilities)(async e => {
-			let affected = false;
-			this.model.roots.forEach(r => {
-				if (r.resource.scheme === e.scheme) {
-					affected = true;
-					r.forgetChildren();
+		this.disposables.add(
+			this.fileService.onDidFilesChange((e) => {
+				this.fileChangeEvents.push(e);
+				// Don't mess with the file tree while in the process of editing. #112293
+				if (this.editable) {
+					return;
 				}
-			});
-			if (affected) {
-				if (this.view) {
-					await this.view.setTreeInput();
+				if (!this.onFileChangesScheduler.isScheduled()) {
+					this.onFileChangesScheduler.schedule();
 				}
-			}
-		}));
-		this.disposables.add(this.model.onDidChangeRoots(() => {
-			this.view?.setTreeInput();
-		}));
+			}),
+		);
+		this.disposables.add(
+			this.configurationService.onDidChangeConfiguration((e) =>
+				this.onConfigurationUpdated(e),
+			),
+		);
+		this.disposables.add(
+			Event.any<{ scheme: string }>(
+				this.fileService.onDidChangeFileSystemProviderRegistrations,
+				this.fileService.onDidChangeFileSystemProviderCapabilities,
+			)(async (e) => {
+				let affected = false;
+				this.model.roots.forEach((r) => {
+					if (r.resource.scheme === e.scheme) {
+						affected = true;
+						r.forgetChildren();
+					}
+				});
+				if (affected) {
+					if (this.view) {
+						await this.view.setTreeInput();
+					}
+				}
+			}),
+		);
+		this.disposables.add(
+			this.model.onDidChangeRoots(() => {
+				this.view?.setTreeInput();
+			}),
+		);
 
 		// Refresh explorer when window gets focus to compensate for missing file events #126817
-		this.disposables.add(hostService.onDidChangeFocus(hasFocus => {
-			if (hasFocus) {
-				this.refresh(false);
-			}
-		}));
+		this.disposables.add(
+			hostService.onDidChangeFocus((hasFocus) => {
+				if (hasFocus) {
+					this.refresh(false);
+				}
+			}),
+		);
 		this.revealExcludeMatcher = new ResourceGlobMatcher(
-			(uri) => getRevealExcludes(configurationService.getValue<IFilesConfiguration>({ resource: uri })),
-			(event) => event.affectsConfiguration('explorer.autoRevealExclude'),
-			contextService, configurationService);
+			(uri) =>
+				getRevealExcludes(
+					configurationService.getValue<IFilesConfiguration>({
+						resource: uri,
+					}),
+				),
+			(event) => event.affectsConfiguration("explorer.autoRevealExclude"),
+			contextService,
+			configurationService,
+		);
 		this.disposables.add(this.revealExcludeMatcher);
 	}
 

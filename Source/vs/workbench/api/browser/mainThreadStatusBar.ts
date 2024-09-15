@@ -12,12 +12,12 @@ import type { ThemeColor } from "../../../base/common/themables.js";
 import type { Command } from "../../../editor/common/languages.js";
 import type { IAccessibilityInformation } from "../../../platform/accessibility/common/accessibility.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type IStatusbarEntry,
 	StatusbarAlignment,
+	type IStatusbarEntry,
 } from "../../services/statusbar/browser/statusbar.js";
 import {
 	ExtHostContext,
@@ -36,7 +36,8 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IExtensionStatusBarItemService private readonly statusbarService: IExtensionStatusBarItemService
+		@IExtensionStatusBarItemService
+		private readonly statusbarService: IExtensionStatusBarItemService,
 	) {
 		const proxy = extHostContext.getProxy(ExtHostContext.ExtHostStatusBar);
 
@@ -48,22 +49,38 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 
 		proxy.$acceptStaticEntries(entries);
 
-		this._store.add(statusbarService.onDidChange(e => {
-			if (e.added) {
-				proxy.$acceptStaticEntries([asDto(e.added[0], e.added[1])]);
-			}
-		}));
+		this._store.add(
+			statusbarService.onDidChange((e) => {
+				if (e.added) {
+					proxy.$acceptStaticEntries([asDto(e.added[0], e.added[1])]);
+				}
+			}),
+		);
 
-		function asDto(entryId: string, item: { entry: IStatusbarEntry; alignment: StatusbarAlignment; priority: number }): StatusBarItemDto {
+		function asDto(
+			entryId: string,
+			item: {
+				entry: IStatusbarEntry;
+				alignment: StatusbarAlignment;
+				priority: number;
+			},
+		): StatusBarItemDto {
 			return {
 				entryId,
 				name: item.entry.name,
 				text: item.entry.text,
 				tooltip: item.entry.tooltip as string | undefined,
-				command: typeof item.entry.command === 'string' ? item.entry.command : typeof item.entry.command === 'object' ? item.entry.command.id : undefined,
+				command:
+					typeof item.entry.command === "string"
+						? item.entry.command
+						: typeof item.entry.command === "object"
+							? item.entry.command.id
+							: undefined,
 				priority: item.priority,
 				alignLeft: item.alignment === StatusbarAlignment.LEFT,
-				accessibilityInformation: item.entry.ariaLabel ? { label: item.entry.ariaLabel, role: item.entry.role } : undefined
+				accessibilityInformation: item.entry.ariaLabel
+					? { label: item.entry.ariaLabel, role: item.entry.role }
+					: undefined,
 			};
 		}
 	}

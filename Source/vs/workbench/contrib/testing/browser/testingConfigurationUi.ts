@@ -18,12 +18,12 @@ import {
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { testConfigurationGroupNames } from "../common/constants.js";
 import {
-	ITestProfileService,
 	canUseProfileWithTest,
+	ITestProfileService,
 } from "../common/testProfileService.js";
 import type {
-	ITestRunProfile,
 	InternalTestItem,
+	ITestRunProfile,
 	TestRunProfileBitset,
 } from "../common/testTypes.js";
 import { testingUpdateProfiles } from "./icons.js";

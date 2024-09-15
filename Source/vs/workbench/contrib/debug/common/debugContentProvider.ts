@@ -15,8 +15,8 @@ import { IEditorWorkerService } from "../../../../editor/common/services/editorW
 import { getMimeTypes } from "../../../../editor/common/services/languagesAssociations.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
 import {
-	type ITextModelContentProvider,
 	ITextModelService,
+	type ITextModelContentProvider,
 } from "../../../../editor/common/services/resolverService.js";
 import { localize } from "../../../../nls.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
@@ -51,9 +51,13 @@ export class DebugContentProvider
 		@IDebugService private readonly debugService: IDebugService,
 		@IModelService private readonly modelService: IModelService,
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
 	) {
-		textModelResolverService.registerTextModelContentProvider(DEBUG_SCHEME, this);
+		textModelResolverService.registerTextModelContentProvider(
+			DEBUG_SCHEME,
+			this,
+		);
 		DebugContentProvider.INSTANCE = this;
 	}
 

@@ -31,10 +31,10 @@ import {
 	NOTEBOOK_EDITOR_FOCUSED,
 } from "../../../common/notebookContextKeys.js";
 import {
-	type INotebookCellToolbarActionContext,
-	type INotebookCommandContext,
 	NOTEBOOK_ACTIONS_CATEGORY,
 	NotebookMultiCellAction,
+	type INotebookCellToolbarActionContext,
+	type INotebookCommandContext,
 } from "../../controller/coreActions.js";
 import type {
 	IBaseCellEditorOptions,

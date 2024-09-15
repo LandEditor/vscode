@@ -16,14 +16,14 @@ import { ICodeEditorService } from "../../../browser/services/codeEditorService.
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { ISingleEditOperation } from "../../../common/core/editOperation.js";
 import type { IPosition, Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { IWordAtPosition } from "../../../common/core/wordHelper.js";
 import { registerEditorFeature } from "../../../common/editorFeatures.js";
 import {
-	type Command,
 	CompletionItemInsertTextRule,
-	type CompletionItemProvider,
 	CompletionTriggerKind,
+	type Command,
+	type CompletionItemProvider,
 	type InlineCompletion,
 	type InlineCompletionContext,
 	type InlineCompletions,
@@ -33,11 +33,11 @@ import type { ITextModel } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { CompletionModel, LineContext } from "./completionModel.js";
 import {
+	CompletionOptions,
+	provideSuggestionItems,
+	QuickSuggestionsOptions,
 	type CompletionItem,
 	type CompletionItemModel,
-	CompletionOptions,
-	QuickSuggestionsOptions,
-	provideSuggestionItems,
 } from "./suggest.js";
 import { ISuggestMemoryService } from "./suggestMemory.js";
 import { SuggestModel } from "./suggestModel.js";
@@ -64,7 +64,8 @@ class InlineCompletionResults
 		readonly word: IWordAtPosition,
 		readonly completionModel: CompletionModel,
 		completions: CompletionItemModel,
-		@ISuggestMemoryService private readonly _suggestMemoryService: ISuggestMemoryService,
+		@ISuggestMemoryService
+		private readonly _suggestMemoryService: ISuggestMemoryService,
 	) {
 		super(completions.disposable);
 	}
@@ -148,13 +149,21 @@ export class SuggestInlineCompletions
 	private _lastResult?: InlineCompletionResults;
 
 	constructor(
-		@ILanguageFeaturesService private readonly _languageFeatureService: ILanguageFeaturesService,
-		@IClipboardService private readonly _clipboardService: IClipboardService,
-		@ISuggestMemoryService private readonly _suggestMemoryService: ISuggestMemoryService,
+		@ILanguageFeaturesService
+		private readonly _languageFeatureService: ILanguageFeaturesService,
+		@IClipboardService
+		private readonly _clipboardService: IClipboardService,
+		@ISuggestMemoryService
+		private readonly _suggestMemoryService: ISuggestMemoryService,
 		@ICodeEditorService private readonly _editorService: ICodeEditorService,
 	) {
 		super();
-		this._store.add(_languageFeatureService.inlineCompletionsProvider.register('*', this));
+		this._store.add(
+			_languageFeatureService.inlineCompletionsProvider.register(
+				"*",
+				this,
+			),
+		);
 	}
 
 	async provideInlineCompletions(

@@ -7,6 +7,7 @@ import type {
 	ModelOperations,
 	ModelResult,
 } from "@vscode/vscode-languagedetection";
+
 import { importAMDNodeModule } from "../../../../amdX.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import type {
@@ -15,8 +16,8 @@ import type {
 } from "../../../../base/common/worker/simpleWorker.js";
 import { WorkerTextModelSyncServer } from "../../../../editor/common/services/textModelSync/textModelSync.impl.js";
 import {
-	type ILanguageDetectionWorker,
 	LanguageDetectionWorkerHost,
+	type ILanguageDetectionWorker,
 } from "./languageDetectionWorker.protocol.js";
 
 type RegexpModel = {

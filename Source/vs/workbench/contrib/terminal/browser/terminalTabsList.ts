@@ -17,16 +17,16 @@ import {
 	MessageType,
 } from "../../../../base/browser/ui/inputbox/inputBox.js";
 import {
+	ListDragOverEffectPosition,
+	ListDragOverEffectType,
 	type IListDragAndDrop,
 	type IListDragOverReaction,
 	type IListRenderer,
-	ListDragOverEffectPosition,
-	ListDragOverEffectType,
 } from "../../../../base/browser/ui/list/list.js";
 import {
 	ElementsDragAndDropData,
-	type ListViewTargetSector,
 	NativeDragAndDropData,
+	type ListViewTargetSector,
 } from "../../../../base/browser/ui/list/listView.js";
 import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
 import { Action } from "../../../../base/common/actions.js";
@@ -38,9 +38,9 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	dispose,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import Severity from "../../../../base/common/severity.js";
@@ -51,8 +51,8 @@ import { MenuEntryActionViewItem } from "../../../../platform/actions/browser/me
 import { MenuItemAction } from "../../../../platform/actions/common/actions.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextViewService } from "../../../../platform/contextview/browser/contextView.js";
 import {
@@ -67,23 +67,23 @@ import {
 	WorkbenchList,
 } from "../../../../platform/list/browser/listService.js";
 import {
-	type ITerminalBackend,
 	TerminalLocation,
 	TerminalSettingId,
+	type ITerminalBackend,
 } from "../../../../platform/terminal/common/terminal.js";
 import type { IProcessDetails } from "../../../../platform/terminal/common/terminalProcess.js";
 import { defaultInputBoxStyles } from "../../../../platform/theme/browser/defaultStyles.js";
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import {
 	DEFAULT_LABELS_CONTAINER,
-	type IResourceLabel,
 	ResourceLabels,
+	type IResourceLabel,
 } from "../../../browser/labels.js";
 import type { IEditableData } from "../../../common/views.js";
 import {
+	IDecorationsService,
 	type IDecorationData,
 	type IDecorationsProvider,
-	IDecorationsService,
 } from "../../../services/decorations/common/decorations.js";
 import { IHostService } from "../../../services/host/browser/host.js";
 import { ILifecycleService } from "../../../services/lifecycle/common/lifecycle.js";
@@ -93,9 +93,9 @@ import { terminalStrings } from "../common/terminalStrings.js";
 import {
 	ITerminalConfigurationService,
 	ITerminalGroupService,
-	type ITerminalInstance,
 	ITerminalService,
 	TerminalDataTransfers,
+	type ITerminalInstance,
 } from "./terminal.js";
 import { TerminalContextActionRunner } from "./terminalContextMenu.js";
 import { getColorClass, getIconId, getUriClasses } from "./terminalIcon.js";
@@ -130,34 +130,54 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IListService listService: IListService,
 		@IThemeService themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IDecorationsService decorationsService: IDecorationsService,
 		@IThemeService private readonly _themeService: IThemeService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@IHoverService private readonly _hoverService: IHoverService,
 	) {
-		super('TerminalTabsList', container,
+		super(
+			"TerminalTabsList",
+			container,
 			{
 				getHeight: () => TerminalTabsListSizes.TabHeight,
-				getTemplateId: () => 'terminal.tabs'
+				getTemplateId: () => "terminal.tabs",
 			},
-			[instantiationService.createInstance(TerminalTabsRenderer, container, instantiationService.createInstance(ResourceLabels, DEFAULT_LABELS_CONTAINER), () => this.getSelectedElements())],
+			[
+				instantiationService.createInstance(
+					TerminalTabsRenderer,
+					container,
+					instantiationService.createInstance(
+						ResourceLabels,
+						DEFAULT_LABELS_CONTAINER,
+					),
+					() => this.getSelectedElements(),
+				),
+			],
 			{
 				horizontalScrolling: false,
 				supportDynamicHeights: false,
 				selectionNavigation: true,
 				identityProvider: {
-					getId: e => e?.instanceId
+					getId: (e) => e?.instanceId,
 				},
-				accessibilityProvider: instantiationService.createInstance(TerminalTabsAccessibilityProvider),
-				smoothScrolling: _configurationService.getValue<boolean>('workbench.list.smoothScrolling'),
+				accessibilityProvider: instantiationService.createInstance(
+					TerminalTabsAccessibilityProvider,
+				),
+				smoothScrolling: _configurationService.getValue<boolean>(
+					"workbench.list.smoothScrolling",
+				),
 				multipleSelectionSupport: true,
 				paddingBottom: TerminalTabsListSizes.TabHeight,
-				dnd: instantiationService.createInstance(TerminalTabsDragAndDrop),
-				openOnSingleClick: true
+				dnd: instantiationService.createInstance(
+					TerminalTabsDragAndDrop,
+				),
+				openOnSingleClick: true,
 			},
 			contextKeyService,
 			listService,
@@ -166,101 +186,148 @@ export class TerminalTabList extends WorkbenchList<ITerminalInstance> {
 		);
 
 		const instanceDisposables: IDisposable[] = [
-			this._terminalGroupService.onDidChangeInstances(() => this.refresh()),
+			this._terminalGroupService.onDidChangeInstances(() =>
+				this.refresh(),
+			),
 			this._terminalGroupService.onDidChangeGroups(() => this.refresh()),
 			this._terminalGroupService.onDidShow(() => this.refresh()),
-			this._terminalGroupService.onDidChangeInstanceCapability(() => this.refresh()),
-			this._terminalService.onAnyInstanceTitleChange(() => this.refresh()),
+			this._terminalGroupService.onDidChangeInstanceCapability(() =>
+				this.refresh(),
+			),
+			this._terminalService.onAnyInstanceTitleChange(() =>
+				this.refresh(),
+			),
 			this._terminalService.onAnyInstanceIconChange(() => this.refresh()),
-			this._terminalService.onAnyInstancePrimaryStatusChange(() => this.refresh()),
-			this._terminalService.onDidChangeConnectionState(() => this.refresh()),
+			this._terminalService.onAnyInstancePrimaryStatusChange(() =>
+				this.refresh(),
+			),
+			this._terminalService.onDidChangeConnectionState(() =>
+				this.refresh(),
+			),
 			this._themeService.onDidColorThemeChange(() => this.refresh()),
-			this._terminalGroupService.onDidChangeActiveInstance(e => {
+			this._terminalGroupService.onDidChangeActiveInstance((e) => {
 				if (e) {
 					const i = this._terminalGroupService.instances.indexOf(e);
 					this.setSelection([i]);
 					this.reveal(i);
 				}
 				this.refresh();
-			})
+			}),
 		];
 
 		// Dispose of instance listeners on shutdown to avoid extra work and so tabs don't disappear
 		// briefly
-		this.disposables.add(lifecycleService.onWillShutdown(e => {
-			dispose(instanceDisposables);
-			instanceDisposables.length = 0;
-		}));
-		this.disposables.add(toDisposable(() => {
-			dispose(instanceDisposables);
-			instanceDisposables.length = 0;
-		}));
+		this.disposables.add(
+			lifecycleService.onWillShutdown((e) => {
+				dispose(instanceDisposables);
+				instanceDisposables.length = 0;
+			}),
+		);
+		this.disposables.add(
+			toDisposable(() => {
+				dispose(instanceDisposables);
+				instanceDisposables.length = 0;
+			}),
+		);
 
-		this.disposables.add(this.onMouseDblClick(async e => {
-			const focus = this.getFocus();
-			if (focus.length === 0) {
-				const instance = await this._terminalService.createTerminal({ location: TerminalLocation.Panel });
-				this._terminalGroupService.setActiveInstance(instance);
-				await instance.focusWhenReady();
-			}
+		this.disposables.add(
+			this.onMouseDblClick(async (e) => {
+				const focus = this.getFocus();
+				if (focus.length === 0) {
+					const instance = await this._terminalService.createTerminal(
+						{ location: TerminalLocation.Panel },
+					);
+					this._terminalGroupService.setActiveInstance(instance);
+					await instance.focusWhenReady();
+				}
 
-			if (this._terminalService.getEditingTerminal()?.instanceId === e.element?.instanceId) {
-				return;
-			}
+				if (
+					this._terminalService.getEditingTerminal()?.instanceId ===
+					e.element?.instanceId
+				) {
+					return;
+				}
 
-			if (this._getFocusMode() === 'doubleClick' && this.getFocus().length === 1) {
-				e.element?.focus(true);
-			}
-		}));
+				if (
+					this._getFocusMode() === "doubleClick" &&
+					this.getFocus().length === 1
+				) {
+					e.element?.focus(true);
+				}
+			}),
+		);
 
 		// on left click, if focus mode = single click, focus the element
 		// unless multi-selection is in progress
-		this.disposables.add(this.onMouseClick(async e => {
-			if (this._terminalService.getEditingTerminal()?.instanceId === e.element?.instanceId) {
-				return;
-			}
-
-			if (e.browserEvent.altKey && e.element) {
-				await this._terminalService.createTerminal({ location: { parentTerminal: e.element } });
-			} else if (this._getFocusMode() === 'singleClick') {
-				if (this.getSelection().length <= 1) {
-					e.element?.focus(true);
+		this.disposables.add(
+			this.onMouseClick(async (e) => {
+				if (
+					this._terminalService.getEditingTerminal()?.instanceId ===
+					e.element?.instanceId
+				) {
+					return;
 				}
-			}
-		}));
+
+				if (e.browserEvent.altKey && e.element) {
+					await this._terminalService.createTerminal({
+						location: { parentTerminal: e.element },
+					});
+				} else if (this._getFocusMode() === "singleClick") {
+					if (this.getSelection().length <= 1) {
+						e.element?.focus(true);
+					}
+				}
+			}),
+		);
 
 		// on right click, set the focus to that element
 		// unless multi-selection is in progress
-		this.disposables.add(this.onContextMenu(e => {
-			if (!e.element) {
-				this.setSelection([]);
-				return;
-			}
-			const selection = this.getSelectedElements();
-			if (!selection || !selection.find(s => e.element === s)) {
-				this.setFocus(e.index !== undefined ? [e.index] : []);
-			}
-		}));
+		this.disposables.add(
+			this.onContextMenu((e) => {
+				if (!e.element) {
+					this.setSelection([]);
+					return;
+				}
+				const selection = this.getSelectedElements();
+				if (!selection || !selection.find((s) => e.element === s)) {
+					this.setFocus(e.index !== undefined ? [e.index] : []);
+				}
+			}),
+		);
 
-		this._terminalTabsSingleSelectedContextKey = TerminalContextKeys.tabsSingularSelection.bindTo(contextKeyService);
-		this._isSplitContextKey = TerminalContextKeys.splitTerminal.bindTo(contextKeyService);
+		this._terminalTabsSingleSelectedContextKey =
+			TerminalContextKeys.tabsSingularSelection.bindTo(contextKeyService);
+		this._isSplitContextKey =
+			TerminalContextKeys.splitTerminal.bindTo(contextKeyService);
 
-		this.disposables.add(this.onDidChangeSelection(e => this._updateContextKey()));
-		this.disposables.add(this.onDidChangeFocus(() => this._updateContextKey()));
+		this.disposables.add(
+			this.onDidChangeSelection((e) => this._updateContextKey()),
+		);
+		this.disposables.add(
+			this.onDidChangeFocus(() => this._updateContextKey()),
+		);
 
-		this.disposables.add(this.onDidOpen(async e => {
-			const instance = e.element;
-			if (!instance) {
-				return;
-			}
-			this._terminalGroupService.setActiveInstance(instance);
-			if (!e.editorOptions.preserveFocus) {
-				await instance.focusWhenReady();
-			}
-		}));
+		this.disposables.add(
+			this.onDidOpen(async (e) => {
+				const instance = e.element;
+				if (!instance) {
+					return;
+				}
+				this._terminalGroupService.setActiveInstance(instance);
+				if (!e.editorOptions.preserveFocus) {
+					await instance.focusWhenReady();
+				}
+			}),
+		);
 		if (!this._decorationsProvider) {
-			this._decorationsProvider = this.disposables.add(instantiationService.createInstance(TabDecorationsProvider));
-			this.disposables.add(decorationsService.registerDecorationsProvider(this._decorationsProvider));
+			this._decorationsProvider = this.disposables.add(
+				instantiationService.createInstance(TabDecorationsProvider),
+			);
+			this.disposables.add(
+				decorationsService.registerDecorationsProvider(
+					this._decorationsProvider,
+				),
+			);
 		}
 		this.refresh();
 	}
@@ -320,18 +387,23 @@ class TerminalTabsRenderer
 		private readonly _container: HTMLElement,
 		private readonly _labels: ResourceLabels,
 		private readonly _getSelection: () => ITerminalInstance[],
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITerminalConfigurationService private readonly _terminalConfigurationService: ITerminalConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITerminalConfigurationService
+		private readonly _terminalConfigurationService: ITerminalConfigurationService,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IHoverService private readonly _hoverService: IHoverService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@IListService private readonly _listService: IListService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IContextViewService private readonly _contextViewService: IContextViewService
-	) {
-	}
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
+	) {}
 
 	renderTemplate(container: HTMLElement): ITerminalTabEntryTemplate {
 		const element = DOM.append(container, $(".terminal-tabs-entry"));
@@ -721,8 +793,9 @@ class TerminalTabsAccessibilityProvider
 	implements IListAccessibilityProvider<ITerminalInstance>
 {
 	constructor(
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
-	) { }
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
+	) {}
 
 	getWidgetAriaLabel(): string {
 		return localize("terminal.tabs", "Terminal tabs");
@@ -774,7 +847,8 @@ class TerminalTabsDragAndDrop
 
 	constructor(
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@ITerminalGroupService private readonly _terminalGroupService: ITerminalGroupService,
+		@ITerminalGroupService
+		private readonly _terminalGroupService: ITerminalGroupService,
 		@IHostService private readonly _hostService: IHostService,
 	) {
 		super();
@@ -1015,10 +1089,14 @@ class TabDecorationsProvider
 	readonly onDidChange = this._onDidChange.event;
 
 	constructor(
-		@ITerminalService private readonly _terminalService: ITerminalService
+		@ITerminalService private readonly _terminalService: ITerminalService,
 	) {
 		super();
-		this._register(this._terminalService.onAnyInstancePrimaryStatusChange(e => this._onDidChange.fire([e.resource])));
+		this._register(
+			this._terminalService.onAnyInstancePrimaryStatusChange((e) =>
+				this._onDidChange.fire([e.resource]),
+			),
+		);
 	}
 
 	provideDecorations(resource: URI): IDecorationData | undefined {

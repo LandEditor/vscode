@@ -17,10 +17,10 @@ import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
 	EditorInputCapabilities,
+	isResourceMergeEditorInput,
 	type IResourceMergeEditorInput,
 	type IRevertOptions,
 	type IUntypedEditorInput,
-	isResourceMergeEditorInput,
 } from "../../../common/editor.js";
 import type {
 	EditorInput,
@@ -31,14 +31,14 @@ import { ICustomEditorLabelService } from "../../../services/editor/common/custo
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
 import {
+	ITextFileService,
 	type ILanguageSupport,
 	type ITextFileSaveOptions,
-	ITextFileService,
 } from "../../../services/textfile/common/textfiles.js";
 import {
-	type IMergeEditorInputModel,
 	TempFileMergeEditorModeFactory,
 	WorkspaceMergeEditorModeFactory,
+	type IMergeEditorInputModel,
 } from "./mergeEditorInputModel.js";
 import { MergeEditorTelemetry } from "./telemetry.js";
 
@@ -84,17 +84,32 @@ export class MergeEditorInput
 		public readonly input1: MergeEditorInputData,
 		public readonly input2: MergeEditorInputData,
 		public readonly result: URI,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@IEditorService editorService: IEditorService,
 		@ITextFileService textFileService: ITextFileService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super(result, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			result,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
 	}
 
 	override dispose(): void {

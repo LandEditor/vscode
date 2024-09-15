@@ -29,8 +29,10 @@ export class LargeFileOptimizationsWarner
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@INotificationService private readonly _notificationService: INotificationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
 		super();
 

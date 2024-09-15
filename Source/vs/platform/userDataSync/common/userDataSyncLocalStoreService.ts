@@ -14,15 +14,15 @@ import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
 	FileOperationResult,
 	IFileService,
-	type IFileStat,
 	toFileOperationResult,
+	type IFileStat,
 } from "../../files/common/files.js";
 import { IUserDataProfilesService } from "../../userDataProfile/common/userDataProfile.js";
 import {
 	ALL_SYNC_RESOURCES,
+	IUserDataSyncLogService,
 	type IResourceRefHandle,
 	type IUserDataSyncLocalStoreService,
-	IUserDataSyncLogService,
 	type SyncResource,
 } from "./userDataSync.js";
 
@@ -33,11 +33,15 @@ export class UserDataSyncLocalStoreService
 	_serviceBrand: any;
 
 	constructor(
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IUserDataSyncLogService private readonly logService: IUserDataSyncLogService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IUserDataSyncLogService
+		private readonly logService: IUserDataSyncLogService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 	) {
 		super();
 		this.cleanUp();
@@ -214,7 +218,7 @@ export class UserDataSyncLocalStoreService
 					24 *
 					(this.configurationService.getValue<number>(
 						"sync.localBackupDuration",
-					) || 30) /* Default 30 days */;
+					) || 30); /* Default 30 days */
 				let toDelete = all.filter(
 					(stat) =>
 						Date.now() - this.getCreationTime(stat) > backUpMaxAge,

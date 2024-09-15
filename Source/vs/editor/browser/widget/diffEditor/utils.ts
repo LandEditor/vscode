@@ -9,19 +9,19 @@ import { CancellationTokenSource } from "../../../../base/common/cancellation.js
 import {
 	Disposable,
 	DisposableStore,
+	toDisposable,
 	type IDisposable,
 	type IReference,
-	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type ISettableObservable,
 	autorun,
 	autorunHandleChanges,
 	autorunOpts,
 	autorunWithStore,
 	observableValue,
 	transaction,
+	type IObservable,
+	type ISettableObservable,
 } from "../../../../base/common/observable.js";
 import { Position } from "../../../common/core/position.js";
 import { Range } from "../../../common/core/range.js";
@@ -335,8 +335,7 @@ export class PlaceholderViewZone implements IObservableViewZone {
 
 export class ManagedOverlayWidget implements IDisposable {
 	private static _counter = 0;
-	private readonly _overlayWidgetId =
-		`managedOverlayWidget-${ManagedOverlayWidget._counter++}`;
+	private readonly _overlayWidgetId = `managedOverlayWidget-${ManagedOverlayWidget._counter++}`;
 
 	private readonly _overlayWidget: IOverlayWidget = {
 		getId: () => this._overlayWidgetId,

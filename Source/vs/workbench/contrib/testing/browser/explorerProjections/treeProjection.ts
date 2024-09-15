@@ -9,33 +9,33 @@ import type { FuzzyScore } from "../../../../../base/common/filters.js";
 import { Iterable } from "../../../../../base/common/iterator.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IComputedStateAndDurationAccessor,
 	refreshComputedState,
+	type IComputedStateAndDurationAccessor,
 } from "../../common/getComputedState.js";
 import { TestId } from "../../common/testId.js";
 import { TestResultItemChangeReason } from "../../common/testResult.js";
 import { ITestResultService } from "../../common/testResultService.js";
 import { ITestService } from "../../common/testService.js";
 import {
-	type ITestItemUpdate,
-	type InternalTestItem,
+	applyTestItemUpdate,
 	TestDiffOpType,
 	TestItemExpandState,
 	TestResultState,
+	type InternalTestItem,
+	type ITestItemUpdate,
 	type TestsDiff,
-	applyTestItemUpdate,
 } from "../../common/testTypes.js";
 import {
-	type ITestTreeProjection,
-	type TestExplorerTreeElement,
-	TestItemTreeElement,
-	TestTreeErrorMessage,
 	getChildrenForParent,
 	testIdentityProvider,
+	TestItemTreeElement,
+	TestTreeErrorMessage,
+	type ITestTreeProjection,
+	type TestExplorerTreeElement,
 } from "./index.js";
 import {
-	type ISerializedTestTreeCollapseState,
 	isCollapsedInSerializedTestTree,
+	type ISerializedTestTreeCollapseState,
 } from "./testingViewState.js";
 
 const computedStateAccessor: IComputedStateAndDurationAccessor<TreeTestItemElement> =
@@ -159,57 +159,83 @@ export class TreeProjection extends Disposable implements ITestTreeProjection {
 		@ITestResultService private readonly results: ITestResultService,
 	) {
 		super();
-		this._register(testService.onDidProcessDiff((diff) => this.applyDiff(diff)));
+		this._register(
+			testService.onDidProcessDiff((diff) => this.applyDiff(diff)),
+		);
 
 		// when test results are cleared, recalculate all state
-		this._register(results.onResultsChanged((evt) => {
-			if (!('removed' in evt)) {
-				return;
-			}
+		this._register(
+			results.onResultsChanged((evt) => {
+				if (!("removed" in evt)) {
+					return;
+				}
 
-			for (const inTree of [...this.items.values()].sort((a, b) => b.depth - a.depth)) {
-				const lookup = this.results.getStateById(inTree.test.item.extId)?.[1];
-				inTree.ownDuration = lookup?.ownDuration;
-				refreshComputedState(computedStateAccessor, inTree, lookup?.ownComputedState ?? TestResultState.Unset).forEach(i => i.fireChange());
-			}
-		}));
+				for (const inTree of [...this.items.values()].sort(
+					(a, b) => b.depth - a.depth,
+				)) {
+					const lookup = this.results.getStateById(
+						inTree.test.item.extId,
+					)?.[1];
+					inTree.ownDuration = lookup?.ownDuration;
+					refreshComputedState(
+						computedStateAccessor,
+						inTree,
+						lookup?.ownComputedState ?? TestResultState.Unset,
+					).forEach((i) => i.fireChange());
+				}
+			}),
+		);
 
 		// when test states change, reflect in the tree
-		this._register(results.onTestChanged(ev => {
-			if (ev.reason === TestResultItemChangeReason.NewMessage) {
-				return; // no effect in the tree
-			}
-
-			let result = ev.item;
-			// if the state is unset, or the latest run is not making the change,
-			// double check that it's valid. Retire calls might cause previous
-			// emit a state change for a test run that's already long completed.
-			if (result.ownComputedState === TestResultState.Unset || ev.result !== results.results[0]) {
-				const fallback = results.getStateById(result.item.extId);
-				if (fallback) {
-					result = fallback[1];
+		this._register(
+			results.onTestChanged((ev) => {
+				if (ev.reason === TestResultItemChangeReason.NewMessage) {
+					return; // no effect in the tree
 				}
-			}
 
-			const item = this.items.get(result.item.extId);
-			if (!item) {
-				return;
-			}
+				let result = ev.item;
+				// if the state is unset, or the latest run is not making the change,
+				// double check that it's valid. Retire calls might cause previous
+				// emit a state change for a test run that's already long completed.
+				if (
+					result.ownComputedState === TestResultState.Unset ||
+					ev.result !== results.results[0]
+				) {
+					const fallback = results.getStateById(result.item.extId);
+					if (fallback) {
+						result = fallback[1];
+					}
+				}
 
-			// Skip refreshing the duration if we can trivially tell it didn't change.
-			const refreshDuration = ev.reason === TestResultItemChangeReason.OwnStateChange && ev.previousOwnDuration !== result.ownDuration;
-			// For items without children, always use the computed state. They are
-			// either leaves (for which it's fine) or nodes where we haven't expanded
-			// children and should trust whatever the result service gives us.
-			const explicitComputed = item.children.size ? undefined : result.computedState;
+				const item = this.items.get(result.item.extId);
+				if (!item) {
+					return;
+				}
 
-			item.retired = !!result.retired;
-			item.ownState = result.ownComputedState;
-			item.ownDuration = result.ownDuration;
-			item.fireChange();
+				// Skip refreshing the duration if we can trivially tell it didn't change.
+				const refreshDuration =
+					ev.reason === TestResultItemChangeReason.OwnStateChange &&
+					ev.previousOwnDuration !== result.ownDuration;
+				// For items without children, always use the computed state. They are
+				// either leaves (for which it's fine) or nodes where we haven't expanded
+				// children and should trust whatever the result service gives us.
+				const explicitComputed = item.children.size
+					? undefined
+					: result.computedState;
 
-			refreshComputedState(computedStateAccessor, item, explicitComputed, refreshDuration).forEach(i => i.fireChange());
-		}));
+				item.retired = !!result.retired;
+				item.ownState = result.ownComputedState;
+				item.ownDuration = result.ownDuration;
+				item.fireChange();
+
+				refreshComputedState(
+					computedStateAccessor,
+					item,
+					explicitComputed,
+					refreshDuration,
+				).forEach((i) => i.fireChange());
+			}),
+		);
 
 		for (const test of testService.collection.all) {
 			this.storeItem(this.createItem(test));

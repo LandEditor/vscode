@@ -1,5 +1,6 @@
 import { matchesFuzzy } from "../../../../base/common/filters.js";
 import { DisposableStore } from "../../../../base/common/lifecycle.js";
+import { dirname } from "../../../../base/common/resources.js";
 import { ILanguageService } from "../../../../editor/common/languages/language.js";
 import { getIconClasses } from "../../../../editor/common/services/getIconClasses.js";
 import { IModelService } from "../../../../editor/common/services/model.js";
@@ -8,6 +9,8 @@ import { IModelService } from "../../../../editor/common/services/model.js";
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import * as nls from "../../../../nls.js";
+import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
+import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
 	IQuickInputService,
 	type IQuickPickItem,
@@ -16,10 +19,6 @@ import {
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IDebugService, type IDebugSession } from "./debug.js";
 import type { Source } from "./debugSource.js";
-
-import { dirname } from "../../../../base/common/resources.js";
-import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
-import { ILabelService } from "../../../../platform/label/common/label.js";
 
 export interface IPickerDebugItem extends IQuickPickItem {
 	accept(): void;

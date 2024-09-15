@@ -14,9 +14,7 @@ export class ExtHostTheming implements ExtHostThemingShape {
 	private _actual: ColorTheme;
 	private _onDidChangeActiveColorTheme: Emitter<ColorTheme>;
 
-	constructor(
-		@IExtHostRpcService _extHostRpc: IExtHostRpcService
-	) {
+	constructor(@IExtHostRpcService _extHostRpc: IExtHostRpcService) {
 		this._actual = new ColorTheme(ColorThemeKind.Dark);
 		this._onDidChangeActiveColorTheme = new Emitter<ColorTheme>();
 	}

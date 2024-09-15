@@ -3,29 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as nls from "../../../../nls.js";
-
 import type { IStringDictionary } from "../../../../base/common/collections.js";
 import type { IJSONSchemaMap } from "../../../../base/common/jsonSchema.js";
 import * as Objects from "../../../../base/common/objects.js";
-import { Platform } from "../../../../base/common/platform.js";
-import * as Types from "../../../../base/common/types.js";
-import * as UUID from "../../../../base/common/uuid.js";
-
 import type {
 	IProblemReporter as IProblemReporterBase,
 	ValidationStatus,
 } from "../../../../base/common/parsers.js";
-import {
-	type INamedProblemMatcher,
-	type ProblemMatcher,
-	type Config as ProblemMatcherConfig,
-	ProblemMatcherParser,
-	ProblemMatcherRegistry,
-	isNamedProblemMatcher,
-} from "./problemMatcher.js";
-
+import { Platform } from "../../../../base/common/platform.js";
+import * as Types from "../../../../base/common/types.js";
 import type { URI } from "../../../../base/common/uri.js";
+import * as UUID from "../../../../base/common/uuid.js";
+import * as nls from "../../../../nls.js";
 import type {
 	IContextKeyService,
 	RawContextKey,
@@ -36,14 +25,22 @@ import type {
 } from "../../../../platform/workspace/common/workspace.js";
 import type { ConfiguredInput } from "../../../services/configurationResolver/common/configurationResolver.js";
 import {
-	type ITaskDefinitionRegistry,
+	isNamedProblemMatcher,
+	ProblemMatcherParser,
+	ProblemMatcherRegistry,
+	type INamedProblemMatcher,
+	type ProblemMatcher,
+	type Config as ProblemMatcherConfig,
+} from "./problemMatcher.js";
+import {
 	TaskDefinitionRegistry,
+	type ITaskDefinitionRegistry,
 } from "./taskDefinitionRegistry.js";
+import * as Tasks from "./tasks.js";
 import {
 	ProcessExecutionSupportedContext,
 	ShellExecutionSupportedContext,
 } from "./taskService.js";
-import * as Tasks from "./tasks.js";
 
 export enum ShellQuoting {
 	/**

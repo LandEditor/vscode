@@ -23,22 +23,22 @@ import { KeybindingWeight } from "../../../../platform/keybinding/common/keybind
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
 	ILanguageDetectionService,
-	type LanguageDetectionHintConfig,
 	LanguageDetectionLanguageEventSource,
+	type LanguageDetectionHintConfig,
 } from "../../../services/languageDetection/common/languageDetectionWorkerService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { NOTEBOOK_EDITOR_EDITABLE } from "../../notebook/common/notebookContextKeys.js";
 
@@ -53,14 +53,22 @@ class LanguageDetectionStatusContribution implements IWorkbenchContribution {
 	private readonly _renderDisposables = new DisposableStore();
 
 	constructor(
-		@ILanguageDetectionService private readonly _languageDetectionService: ILanguageDetectionService,
-		@IStatusbarService private readonly _statusBarService: IStatusbarService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@ILanguageDetectionService
+		private readonly _languageDetectionService: ILanguageDetectionService,
+		@IStatusbarService
+		private readonly _statusBarService: IStatusbarService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
-		_editorService.onDidActiveEditorChange(() => this._update(true), this, this._disposables);
+		_editorService.onDidActiveEditorChange(
+			() => this._update(true),
+			this,
+			this._disposables,
+		);
 		this._update(false);
 	}
 

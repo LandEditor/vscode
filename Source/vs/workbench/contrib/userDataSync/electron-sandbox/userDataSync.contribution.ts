@@ -26,9 +26,9 @@ import {
 	SyncStatus,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
 	CONTEXT_SYNC_STATE,
@@ -44,7 +44,8 @@ class UserDataSyncServicesContribution
 	static readonly ID = "workbench.contrib.userDataSyncServices";
 
 	constructor(
-		@IUserDataSyncUtilService userDataSyncUtilService: IUserDataSyncUtilService,
+		@IUserDataSyncUtilService
+		userDataSyncUtilService: IUserDataSyncUtilService,
 		@ISharedProcessService sharedProcessService: ISharedProcessService,
 	) {
 		super();

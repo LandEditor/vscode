@@ -7,9 +7,9 @@ import type { IJSONSchema } from "../../../../base/common/jsonSchema.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import {
-	OS,
-	OperatingSystem,
 	isWeb,
+	OperatingSystem,
+	OS,
 } from "../../../../base/common/platform.js";
 import { localize, localize2 } from "../../../../nls.js";
 import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
@@ -39,11 +39,11 @@ import { Registry } from "../../../../platform/registry/common/platform.js";
 import { PersistentConnection } from "../../../../platform/remote/common/remoteAgentConnection.js";
 import { IWorkspaceContextService } from "../../../../platform/workspace/common/workspace.js";
 import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -54,7 +54,9 @@ export class LabelContribution implements IWorkbenchContribution {
 
 	constructor(
 		@ILabelService private readonly labelService: ILabelService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService) {
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+	) {
 		this.registerFormatters();
 	}
 
@@ -117,10 +119,13 @@ class RemoteInvalidWorkspaceDetector
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IRemoteAgentService remoteAgentService: IRemoteAgentService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
 	) {
 		super();
 
@@ -130,7 +135,7 @@ class RemoteInvalidWorkspaceDetector
 		// the user to a valid workspace.
 		// (see https://github.com/microsoft/vscode/issues/133872)
 		if (this.environmentService.remoteAuthority) {
-			remoteAgentService.getEnvironment().then(remoteEnv => {
+			remoteAgentService.getEnvironment().then((remoteEnv) => {
 				if (remoteEnv) {
 					// we use the presence of `remoteEnv` to figure out
 					// if we got a healthy remote connection

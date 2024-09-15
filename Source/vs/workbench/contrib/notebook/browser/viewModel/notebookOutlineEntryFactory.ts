@@ -17,8 +17,8 @@ import { createDecorator } from "../../../../../platform/instantiation/common/in
 import { CellKind } from "../../common/notebookCommon.js";
 import { INotebookExecutionStateService } from "../../common/notebookExecutionStateService.js";
 import type { ICellViewModel } from "../notebookBrowser.js";
-import { OutlineEntry } from "./OutlineEntry.js";
 import { getMarkdownHeadersInCell } from "./foldingModel.js";
+import { OutlineEntry } from "./OutlineEntry.js";
 
 export enum NotebookOutlineConstants {
 	NonHeaderOutlineLevel = 7,
@@ -72,10 +72,12 @@ export class NotebookOutlineEntryFactory
 		{ alternativeId: number; headers: { depth: number; text: string }[] }
 	>();
 	constructor(
-		@INotebookExecutionStateService private readonly executionStateService: INotebookExecutionStateService,
-		@IOutlineModelService private readonly outlineModelService: IOutlineModelService,
-		@ITextModelService private readonly textModelService: ITextModelService
-	) { }
+		@INotebookExecutionStateService
+		private readonly executionStateService: INotebookExecutionStateService,
+		@IOutlineModelService
+		private readonly outlineModelService: IOutlineModelService,
+		@ITextModelService private readonly textModelService: ITextModelService,
+	) {}
 
 	public getOutlineEntries(
 		cell: ICellViewModel,

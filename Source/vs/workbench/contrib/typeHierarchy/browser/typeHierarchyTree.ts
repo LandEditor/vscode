@@ -17,8 +17,8 @@ import type {
 } from "../../../../base/browser/ui/tree/tree.js";
 import { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
-	type FuzzyScore,
 	createMatches,
+	type FuzzyScore,
 } from "../../../../base/common/filters.js";
 import { compare } from "../../../../base/common/strings.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -27,8 +27,8 @@ import { SymbolKinds, SymbolTag } from "../../../../editor/common/languages.js";
 import { localize } from "../../../../nls.js";
 import {
 	TypeHierarchyDirection,
-	type TypeHierarchyItem,
 	TypeHierarchyModel,
+	type TypeHierarchyItem,
 } from "../common/typeHierarchy.js";
 
 export class Type {

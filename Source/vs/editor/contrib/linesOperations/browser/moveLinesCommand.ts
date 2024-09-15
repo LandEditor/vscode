@@ -14,15 +14,15 @@ import type {
 	IEditOperationBuilder,
 } from "../../../common/editorCommon.js";
 import {
-	type IIndentConverter,
-	type IVirtualModel,
 	getGoodIndentForLine,
 	getIndentMetadata,
+	type IIndentConverter,
+	type IVirtualModel,
 } from "../../../common/languages/autoIndent.js";
 import { getEnterAction } from "../../../common/languages/enterAction.js";
 import {
-	type CompleteEnterAction,
 	IndentAction,
+	type CompleteEnterAction,
 } from "../../../common/languages/languageConfiguration.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
 import { IndentConsts } from "../../../common/languages/supports/indentRules.js";
@@ -42,7 +42,8 @@ export class MoveLinesCommand implements ICommand {
 		selection: Selection,
 		isMovingDown: boolean,
 		autoIndent: EditorAutoIndentStrategy,
-		@ILanguageConfigurationService private readonly _languageConfigurationService: ILanguageConfigurationService
+		@ILanguageConfigurationService
+		private readonly _languageConfigurationService: ILanguageConfigurationService,
 	) {
 		this._selection = selection;
 		this._isMovingDown = isMovingDown;

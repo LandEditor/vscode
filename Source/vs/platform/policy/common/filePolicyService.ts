@@ -9,9 +9,9 @@ import { Iterable } from "../../../base/common/iterator.js";
 import { isObject } from "../../../base/common/types.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../files/common/files.js";
 import { ILogService } from "../../log/common/log.js";
 import {
@@ -44,13 +44,20 @@ export class FilePolicyService
 	constructor(
 		private readonly file: URI,
 		@IFileService private readonly fileService: IFileService,
-		@ILogService private readonly logService: ILogService
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
-		const onDidChangePolicyFile = Event.filter(fileService.onDidFilesChange, e => e.affects(file));
+		const onDidChangePolicyFile = Event.filter(
+			fileService.onDidFilesChange,
+			(e) => e.affects(file),
+		);
 		this._register(fileService.watch(file));
-		this._register(onDidChangePolicyFile(() => this.throttledDelayer.trigger(() => this.refresh())));
+		this._register(
+			onDidChangePolicyFile(() =>
+				this.throttledDelayer.trigger(() => this.refresh()),
+			),
+		);
 	}
 
 	protected async _updatePolicyDefinitions(): Promise<void> {

@@ -31,10 +31,10 @@ import { IStorageService } from "../../../../platform/storage/common/storage.js"
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import { IUserDataProfilesService } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
-	IWorkspaceContextService,
 	hasWorkspaceFileExtension,
 	isUntitledWorkspace,
 	isWorkspaceIdentifier,
+	IWorkspaceContextService,
 } from "../../../../platform/workspace/common/workspace.js";
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import { IWorkspacesService } from "../../../../platform/workspaces/common/workspaces.js";
@@ -60,27 +60,50 @@ export class NativeWorkspaceEditingService extends AbstractWorkspaceEditingServi
 		@IJSONEditingService jsonEditingService: IJSONEditingService,
 		@IWorkspaceContextService contextService: WorkspaceService,
 		@INativeHostService private nativeHostService: INativeHostService,
-		@IWorkbenchConfigurationService configurationService: IWorkbenchConfigurationService,
+		@IWorkbenchConfigurationService
+		configurationService: IWorkbenchConfigurationService,
 		@IStorageService private storageService: IStorageService,
 		@IExtensionService private extensionService: IExtensionService,
-		@IWorkingCopyBackupService private workingCopyBackupService: IWorkingCopyBackupService,
+		@IWorkingCopyBackupService
+		private workingCopyBackupService: IWorkingCopyBackupService,
 		@INotificationService notificationService: INotificationService,
 		@ICommandService commandService: ICommandService,
 		@IFileService fileService: IFileService,
 		@ITextFileService textFileService: ITextFileService,
 		@IWorkspacesService workspacesService: IWorkspacesService,
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IFileDialogService fileDialogService: IFileDialogService,
 		@IDialogService dialogService: IDialogService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IHostService hostService: IHostService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IUserDataProfilesService
+		userDataProfilesService: IUserDataProfilesService,
+		@IUserDataProfileService
+		userDataProfileService: IUserDataProfileService,
 	) {
-		super(jsonEditingService, contextService, configurationService, notificationService, commandService, fileService, textFileService, workspacesService, environmentService, fileDialogService, dialogService, hostService, uriIdentityService, workspaceTrustManagementService, userDataProfilesService, userDataProfileService);
+		super(
+			jsonEditingService,
+			contextService,
+			configurationService,
+			notificationService,
+			commandService,
+			fileService,
+			textFileService,
+			workspacesService,
+			environmentService,
+			fileDialogService,
+			dialogService,
+			hostService,
+			uriIdentityService,
+			workspaceTrustManagementService,
+			userDataProfilesService,
+			userDataProfileService,
+		);
 
 		this.registerListeners();
 	}

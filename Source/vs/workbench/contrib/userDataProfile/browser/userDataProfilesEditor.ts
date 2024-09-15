@@ -4,16 +4,17 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/userDataProfilesEditor.css";
+
 import {
 	$,
-	Dimension,
-	EventHelper,
-	EventType,
-	type IDomPosition,
 	addDisposableListener,
 	append,
 	clearNode,
+	Dimension,
+	EventHelper,
+	EventType,
 	trackFocus,
+	type IDomPosition,
 } from "../../../../base/browser/dom.js";
 import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
 import { renderMarkdown } from "../../../../base/browser/markdownRenderer.js";
@@ -36,8 +37,8 @@ import {
 } from "../../../../base/browser/ui/list/list.js";
 import { Radio } from "../../../../base/browser/ui/radio/radio.js";
 import {
-	type ISelectOptionItem,
 	SelectBox,
+	type ISelectOptionItem,
 } from "../../../../base/browser/ui/selectBox/selectBox.js";
 import {
 	Orientation,
@@ -53,9 +54,9 @@ import type {
 } from "../../../../base/browser/ui/tree/tree.js";
 import {
 	Action,
-	type IAction,
 	Separator,
 	SubmenuAction,
+	type IAction,
 } from "../../../../base/common/actions.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import { Codicon } from "../../../../base/common/codicons.js";
@@ -65,9 +66,9 @@ import { KeyCode } from "../../../../base/common/keyCodes.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { basename } from "../../../../base/common/resources.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
@@ -113,14 +114,14 @@ import {
 import { IThemeService } from "../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	IUserDataProfilesService,
 	ProfileResourceType,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import {
 	DEFAULT_LABELS_CONTAINER,
-	type IResourceLabel,
 	ResourceLabels,
+	type IResourceLabel,
 } from "../../../browser/labels.js";
 import { EditorPane } from "../../../browser/parts/editor/editorPane.js";
 import type {
@@ -133,10 +134,10 @@ import { PANEL_BORDER } from "../../../common/theme.js";
 import type { IEditorGroup } from "../../../services/editor/common/editorGroupsService.js";
 import { WorkbenchIconSelectBox } from "../../../services/userDataProfile/browser/iconSelectBox.js";
 import {
-	type IProfileTemplateInfo,
+	defaultUserDataProfileIcon,
 	IUserDataProfileService,
 	PROFILE_FILTER,
-	defaultUserDataProfileIcon,
+	type IProfileTemplateInfo,
 } from "../../../services/userDataProfile/common/userDataProfile.js";
 import {
 	DEFAULT_ICON,
@@ -146,14 +147,14 @@ import { settingsTextInputBorder } from "../../preferences/common/settingsEditor
 import type { IUserDataProfilesEditor } from "../common/userDataProfile.js";
 import {
 	AbstractUserDataProfileElement,
-	type IProfileChildElement,
-	type IProfileResourceTypeChildElement,
-	type IProfileResourceTypeElement,
+	isProfileResourceChildElement,
+	isProfileResourceTypeElement,
 	NewProfileElement,
 	UserDataProfileElement,
 	UserDataProfilesEditorModel,
-	isProfileResourceChildElement,
-	isProfileResourceTypeElement,
+	type IProfileChildElement,
+	type IProfileResourceTypeChildElement,
+	type IProfileResourceTypeElement,
 } from "./userDataProfilesEditorModel.js";
 
 export const profilesSashBorder = registerColor(
@@ -205,12 +206,22 @@ export class UserDataProfilesEditor
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IThemeService themeService: IThemeService,
 		@IStorageService storageService: IStorageService,
-		@IQuickInputService private readonly quickInputService: IQuickInputService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@IContextMenuService private readonly contextMenuService: IContextMenuService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IQuickInputService
+		private readonly quickInputService: IQuickInputService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@IContextMenuService
+		private readonly contextMenuService: IContextMenuService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
-		super(UserDataProfilesEditor.ID, group, telemetryService, themeService, storageService);
+		super(
+			UserDataProfilesEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
 	}
 
 	layout(dimension: Dimension, position?: IDomPosition | undefined): void {
@@ -257,7 +268,7 @@ export class UserDataProfilesEditor
 						const listHeight =
 							height -
 							40 /* new profile button */ -
-							15 /* marginTop */;
+							15; /* marginTop */
 						this.profilesList.getHTMLElement().style.height = `${listHeight}px`;
 						this.profilesList.layout(listHeight, width);
 					}
@@ -653,8 +664,9 @@ class ProfileElementRenderer
 	readonly templateId = "profileListElement";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-	) { }
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	renderTemplate(container: HTMLElement): IProfileElementTemplateData {
 		const disposables = new DisposableStore();
@@ -793,82 +805,126 @@ class ProfileWidget extends Disposable {
 
 	constructor(
 		parent: HTMLElement,
-		@IEditorProgressService private readonly editorProgressService: IEditorProgressService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IEditorProgressService
+		private readonly editorProgressService: IEditorProgressService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 
-		const header = append(parent, $('.profile-header'));
-		const title = append(header, $('.profile-title-container'));
-		this.profileTitle = append(title, $(''));
+		const header = append(parent, $(".profile-header"));
+		const title = append(header, $(".profile-title-container"));
+		this.profileTitle = append(title, $(""));
 
-		const body = append(parent, $('.profile-body'));
+		const body = append(parent, $(".profile-body"));
 
 		const delegate = new ProfileTreeDelegate();
-		const contentsRenderer = this._register(this.instantiationService.createInstance(ContentsProfileRenderer));
-		this.copyFromProfileRenderer = this._register(this.instantiationService.createInstance(CopyFromProfileRenderer));
-		this.profileTreeContainer = append(body, $('.profile-tree'));
-		this.profileTree = this._register(this.instantiationService.createInstance(WorkbenchAsyncDataTree<AbstractUserDataProfileElement, ProfileTreeElement>,
-			'ProfileEditor-Tree',
-			this.profileTreeContainer,
-			delegate,
-			[
-				this._register(this.instantiationService.createInstance(ProfileNameRenderer)),
-				this._register(this.instantiationService.createInstance(ProfileIconRenderer)),
-				this._register(this.instantiationService.createInstance(UseForCurrentWindowPropertyRenderer)),
-				this._register(this.instantiationService.createInstance(UseAsDefaultProfileRenderer)),
-				this.copyFromProfileRenderer,
-				contentsRenderer,
-			],
-			this.instantiationService.createInstance(ProfileTreeDataSource),
-			{
-				multipleSelectionSupport: false,
-				horizontalScrolling: false,
-				accessibilityProvider: {
-					getAriaLabel(element: ProfileTreeElement | null): string {
-						return element?.element ?? '';
+		const contentsRenderer = this._register(
+			this.instantiationService.createInstance(ContentsProfileRenderer),
+		);
+		this.copyFromProfileRenderer = this._register(
+			this.instantiationService.createInstance(CopyFromProfileRenderer),
+		);
+		this.profileTreeContainer = append(body, $(".profile-tree"));
+		this.profileTree = this._register(
+			this.instantiationService.createInstance(
+				WorkbenchAsyncDataTree<
+					AbstractUserDataProfileElement,
+					ProfileTreeElement
+				>,
+				"ProfileEditor-Tree",
+				this.profileTreeContainer,
+				delegate,
+				[
+					this._register(
+						this.instantiationService.createInstance(
+							ProfileNameRenderer,
+						),
+					),
+					this._register(
+						this.instantiationService.createInstance(
+							ProfileIconRenderer,
+						),
+					),
+					this._register(
+						this.instantiationService.createInstance(
+							UseForCurrentWindowPropertyRenderer,
+						),
+					),
+					this._register(
+						this.instantiationService.createInstance(
+							UseAsDefaultProfileRenderer,
+						),
+					),
+					this.copyFromProfileRenderer,
+					contentsRenderer,
+				],
+				this.instantiationService.createInstance(ProfileTreeDataSource),
+				{
+					multipleSelectionSupport: false,
+					horizontalScrolling: false,
+					accessibilityProvider: {
+						getAriaLabel(
+							element: ProfileTreeElement | null,
+						): string {
+							return element?.element ?? "";
+						},
+						getWidgetAriaLabel(): string {
+							return "";
+						},
 					},
-					getWidgetAriaLabel(): string {
-						return '';
+					identityProvider: {
+						getId(element) {
+							return element.element;
+						},
 					},
+					expandOnlyOnTwistieClick: true,
+					renderIndentGuides: RenderIndentGuides.None,
+					enableStickyScroll: false,
+					openOnSingleClick: false,
+					setRowLineHeight: false,
+					supportDynamicHeights: true,
+					alwaysConsumeMouseWheel: false,
 				},
-				identityProvider: {
-					getId(element) {
-						return element.element;
-					}
-				},
-				expandOnlyOnTwistieClick: true,
-				renderIndentGuides: RenderIndentGuides.None,
-				enableStickyScroll: false,
-				openOnSingleClick: false,
-				setRowLineHeight: false,
-				supportDynamicHeights: true,
-				alwaysConsumeMouseWheel: false,
-			}));
+			),
+		);
 
 		this.profileTree.style(listStyles);
 
-		this._register(contentsRenderer.onDidChangeContentHeight((e) => this.profileTree.updateElementHeight(e, undefined)));
-		this._register(contentsRenderer.onDidChangeSelection((e) => {
-			if (e.selected) {
-				this.profileTree.setFocus([]);
-				this.profileTree.setSelection([]);
-			}
-		}));
+		this._register(
+			contentsRenderer.onDidChangeContentHeight((e) =>
+				this.profileTree.updateElementHeight(e, undefined),
+			),
+		);
+		this._register(
+			contentsRenderer.onDidChangeSelection((e) => {
+				if (e.selected) {
+					this.profileTree.setFocus([]);
+					this.profileTree.setSelection([]);
+				}
+			}),
+		);
 
-		this._register(this.profileTree.onDidChangeContentHeight((e) => {
-			if (this.dimension) {
-				this.layout(this.dimension);
-			}
-		}));
+		this._register(
+			this.profileTree.onDidChangeContentHeight((e) => {
+				if (this.dimension) {
+					this.layout(this.dimension);
+				}
+			}),
+		);
 
-		this._register(this.profileTree.onDidChangeSelection((e) => {
-			if (e.elements.length) {
-				contentsRenderer.clearSelection();
-			}
-		}));
+		this._register(
+			this.profileTree.onDidChangeSelection((e) => {
+				if (e.elements.length) {
+					contentsRenderer.clearSelection();
+				}
+			}),
+		);
 
-		this.buttonContainer = append(body, $('.profile-row-container.profile-button-container'));
+		this.buttonContainer = append(
+			body,
+			$(".profile-row-container.profile-button-container"),
+		);
 	}
 
 	private dimension: Dimension | undefined;
@@ -1105,8 +1161,9 @@ class ProfileResourceTreeDataSource
 		>
 {
 	constructor(
-		@IEditorProgressService private readonly editorProgressService: IEditorProgressService,
-	) { }
+		@IEditorProgressService
+		private readonly editorProgressService: IEditorProgressService,
+	) {}
 
 	hasChildren(
 		element: AbstractUserDataProfileElement | ProfileContentTreeElement,
@@ -1262,8 +1319,10 @@ class ProfileNameRenderer extends ProfilePropertyRenderer {
 	readonly templateId: ProfileProperty = "name";
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 	) {
 		super();
 	}
@@ -1376,7 +1435,8 @@ class ProfileIconRenderer extends ProfilePropertyRenderer {
 	readonly templateId: ProfileProperty = "icon";
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		super();
@@ -1541,7 +1601,8 @@ class UseForCurrentWindowPropertyRenderer extends ProfilePropertyRenderer {
 	readonly templateId: ProfileProperty = "useForCurrent";
 
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 	) {
 		super();
 	}
@@ -1745,10 +1806,14 @@ class CopyFromProfileRenderer extends ProfilePropertyRenderer {
 	private templates: readonly IProfileTemplateInfo[] = [];
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IContextViewService private readonly contextViewService: IContextViewService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IContextViewService
+		private readonly contextViewService: IContextViewService,
 	) {
 		super();
 	}
@@ -1952,8 +2017,10 @@ class ContentsProfileRenderer extends ProfilePropertyRenderer {
 		| undefined;
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -2237,7 +2304,8 @@ class ExistingProfileResourceTreeRenderer
 	readonly templateId = ExistingProfileResourceTreeRenderer.TEMPLATE_ID;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -2371,8 +2439,10 @@ class NewProfileResourceTreeRenderer
 	readonly templateId = NewProfileResourceTreeRenderer.TEMPLATE_ID;
 
 	constructor(
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
 	}
@@ -2554,11 +2624,22 @@ class ProfileResourceChildTreeItemRenderer
 	private readonly hoverDelegate: IHoverDelegate;
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		this.labels = instantiationService.createInstance(ResourceLabels, DEFAULT_LABELS_CONTAINER);
-		this.hoverDelegate = this._register(instantiationService.createInstance(WorkbenchHoverDelegate, 'mouse', false, {}));
+		this.labels = instantiationService.createInstance(
+			ResourceLabels,
+			DEFAULT_LABELS_CONTAINER,
+		);
+		this.hoverDelegate = this._register(
+			instantiationService.createInstance(
+				WorkbenchHoverDelegate,
+				"mouse",
+				false,
+				{},
+			),
+		);
 	}
 
 	renderTemplate(
@@ -2672,11 +2753,21 @@ export class UserDataProfilesEditorInput extends EditorInput {
 	}
 
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		super();
-		this.model = UserDataProfilesEditorModel.getInstance(this.instantiationService);
-		this._register(this.model.onDidChange(e => this.dirty = this.model.profiles.some(profile => profile instanceof NewProfileElement)));
+		this.model = UserDataProfilesEditorModel.getInstance(
+			this.instantiationService,
+		);
+		this._register(
+			this.model.onDidChange(
+				(e) =>
+					(this.dirty = this.model.profiles.some(
+						(profile) => profile instanceof NewProfileElement,
+					)),
+			),
+		);
 	}
 
 	override get typeId(): string {

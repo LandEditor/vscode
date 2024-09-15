@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { IURITransformer } from "../../../base/common/uriIpc.js";
 import {
+	MainContext,
 	type ExtHostShareShape,
 	type IMainContext,
 	type IShareableItemDto,
-	MainContext,
 	type MainThreadShareShape,
 } from "./extHost.protocol.js";
 import { DocumentSelector, Range } from "./extHostTypeConverters.js";

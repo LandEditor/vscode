@@ -10,8 +10,8 @@ import type { IFileService } from "../../files/common/files.js";
 import type { IProductService } from "../../product/common/productService.js";
 import type { IStorageService } from "../../storage/common/storage.js";
 import {
-	type ITelemetryService,
 	TelemetryLevel,
+	type ITelemetryService,
 } from "../../telemetry/common/telemetry.js";
 import {
 	getTelemetryLevel,

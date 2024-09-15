@@ -16,13 +16,13 @@ import type { ICodeEditor } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../../editor/browser/editorExtensions.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
+	type ConfigurationChangedEvent,
 } from "../../../../editor/common/config/editorOptions.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import type { ICursorSelectionChangedEvent } from "../../../../editor/common/cursorEvents.js";
@@ -36,9 +36,9 @@ import * as nls from "../../../../nls.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import { SelectionClipboardContributionID } from "../browser/selectionClipboard.js";
 
@@ -142,23 +142,38 @@ class LinuxSelectionClipboardPastePreventer
 		"workbench.contrib.linuxSelectionClipboardPastePreventer";
 
 	constructor(
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super();
 
-		this._register(Event.runAndSubscribe(onDidRegisterWindow, ({ window, disposables }) => {
-			disposables.add(addDisposableListener(window.document, 'mouseup', e => {
-				if (e.button === 1) {
-					// middle button
-					const config = configurationService.getValue<{ selectionClipboard: boolean }>('editor');
-					if (!config.selectionClipboard) {
-						// selection clipboard is disabled
-						// try to stop the upcoming paste
-						e.preventDefault();
-					}
-				}
-			}));
-		}, { window: mainWindow, disposables: this._store }));
+		this._register(
+			Event.runAndSubscribe(
+				onDidRegisterWindow,
+				({ window, disposables }) => {
+					disposables.add(
+						addDisposableListener(
+							window.document,
+							"mouseup",
+							(e) => {
+								if (e.button === 1) {
+									// middle button
+									const config =
+										configurationService.getValue<{
+											selectionClipboard: boolean;
+										}>("editor");
+									if (!config.selectionClipboard) {
+										// selection clipboard is disabled
+										// try to stop the upcoming paste
+										e.preventDefault();
+									}
+								}
+							},
+						),
+					);
+				},
+				{ window: mainWindow, disposables: this._store },
+			),
+		);
 	}
 }
 

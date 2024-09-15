@@ -18,8 +18,8 @@ import { Range } from "../../../../editor/common/core/range.js";
 import { Selection } from "../../../../editor/common/core/selection.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import {
-	type IResolvedTextEditorModel,
 	ITextModelService,
+	type IResolvedTextEditorModel,
 } from "../../../../editor/common/services/resolverService.js";
 import * as nls from "../../../../nls.js";
 import type {
@@ -29,14 +29,14 @@ import type {
 import {
 	Extensions as ConfigurationExtensions,
 	ConfigurationScope,
-	type IConfigurationRegistry,
-	OVERRIDE_PROPERTY_REGEX,
 	keyFromOverrideIdentifiers,
+	OVERRIDE_PROPERTY_REGEX,
+	type IConfigurationRegistry,
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../../../platform/files/common/files.js";
 import {
 	INotificationService,
@@ -51,8 +51,8 @@ import {
 } from "../../../../platform/workspace/common/workspace.js";
 import { IEditorService } from "../../editor/common/editorService.js";
 import {
-	type IOpenSettingsOptions,
 	IPreferencesService,
+	type IOpenSettingsOptions,
 } from "../../preferences/common/preferences.js";
 import { ITextFileService } from "../../textfile/common/textfiles.js";
 import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
@@ -182,17 +182,25 @@ export class ConfigurationEditing {
 
 	constructor(
 		private readonly remoteSettingsResource: URI | null,
-		@IWorkbenchConfigurationService private readonly configurationService: IWorkbenchConfigurationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService private readonly userDataProfilesService: IUserDataProfilesService,
+		@IWorkbenchConfigurationService
+		private readonly configurationService: IWorkbenchConfigurationService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfilesService
+		private readonly userDataProfilesService: IUserDataProfilesService,
 		@IFileService private readonly fileService: IFileService,
-		@ITextModelService private readonly textModelResolverService: ITextModelService,
+		@ITextModelService
+		private readonly textModelResolverService: ITextModelService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IPreferencesService private readonly preferencesService: IPreferencesService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IPreferencesService
+		private readonly preferencesService: IPreferencesService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		this.queue = new Queue<void>();
 	}
@@ -418,7 +426,7 @@ export class ConfigurationEditing {
 						"Open Tasks Configuration",
 					)
 				: operation.workspaceStandAloneConfigurationKey ===
-						LAUNCH_CONFIGURATION_KEY
+					  LAUNCH_CONFIGURATION_KEY
 					? nls.localize(
 							"openLaunchConfiguration",
 							"Open Launch Configuration",
@@ -454,7 +462,7 @@ export class ConfigurationEditing {
 						"Open Tasks Configuration",
 					)
 				: operation.workspaceStandAloneConfigurationKey ===
-						LAUNCH_CONFIGURATION_KEY
+					  LAUNCH_CONFIGURATION_KEY
 					? nls.localize(
 							"openLaunchConfiguration",
 							"Open Launch Configuration",

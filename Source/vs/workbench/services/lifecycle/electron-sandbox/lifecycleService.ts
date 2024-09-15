@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	Promises,
 	disposableTimeout,
+	Promises,
 	raceCancellation,
 } from "../../../../base/common/async.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
@@ -21,9 +21,9 @@ import { INativeHostService } from "../../../../platform/native/common/native.js
 import { IStorageService } from "../../../../platform/storage/common/storage.js";
 import {
 	ILifecycleService,
+	WillShutdownJoinerOrder,
 	type IWillShutdownEventJoiner,
 	type ShutdownReason,
-	WillShutdownJoinerOrder,
 } from "../common/lifecycle.js";
 import { AbstractLifecycleService } from "../common/lifecycleService.js";
 
@@ -32,9 +32,10 @@ export class NativeLifecycleService extends AbstractLifecycleService {
 	private static readonly WILL_SHUTDOWN_WARNING_DELAY = 800;
 
 	constructor(
-		@INativeHostService private readonly nativeHostService: INativeHostService,
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
 		@IStorageService storageService: IStorageService,
-		@ILogService logService: ILogService
+		@ILogService logService: ILogService,
 	) {
 		super(logService, storageService);
 

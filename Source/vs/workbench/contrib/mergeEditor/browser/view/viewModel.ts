@@ -6,13 +6,13 @@
 import { findLast } from "../../../../../base/common/arraysFind.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
 import {
-	type IObservable,
-	type IReader,
-	type ITransaction,
 	derived,
 	derivedObservableWithWritableCache,
 	observableValue,
 	transaction,
+	type IObservable,
+	type IReader,
+	type ITransaction,
 } from "../../../../../base/common/observable.js";
 import { Range } from "../../../../../editor/common/core/range.js";
 import { ScrollType } from "../../../../../editor/common/editorCommon.js";
@@ -48,57 +48,77 @@ export class MergeEditorViewModel extends Disposable {
 		public readonly inputCodeEditorView1: InputCodeEditorView,
 		public readonly inputCodeEditorView2: InputCodeEditorView,
 		public readonly resultCodeEditorView: ResultCodeEditorView,
-		public readonly baseCodeEditorView: IObservable<BaseCodeEditorView | undefined>,
+		public readonly baseCodeEditorView: IObservable<
+			BaseCodeEditorView | undefined
+		>,
 		public readonly showNonConflictingChanges: IObservable<boolean>,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
 
-		this._register(resultCodeEditorView.editor.onDidChangeModelContent(e => {
-			if (this.model.isApplyingEditInResult || e.isRedoing || e.isUndoing) {
-				return;
-			}
+		this._register(
+			resultCodeEditorView.editor.onDidChangeModelContent((e) => {
+				if (
+					this.model.isApplyingEditInResult ||
+					e.isRedoing ||
+					e.isUndoing
+				) {
+					return;
+				}
 
-			const baseRangeStates: ModifiedBaseRange[] = [];
+				const baseRangeStates: ModifiedBaseRange[] = [];
 
-			for (const change of e.changes) {
-				const rangeInBase = this.model.translateResultRangeToBase(Range.lift(change.range));
-				const baseRanges = this.model.findModifiedBaseRangesInRange(new LineRange(rangeInBase.startLineNumber, rangeInBase.endLineNumber - rangeInBase.startLineNumber));
-				if (baseRanges.length === 1) {
-					const isHandled = this.model.isHandled(baseRanges[0]).get();
-					if (!isHandled) {
-						baseRangeStates.push(baseRanges[0]);
+				for (const change of e.changes) {
+					const rangeInBase = this.model.translateResultRangeToBase(
+						Range.lift(change.range),
+					);
+					const baseRanges = this.model.findModifiedBaseRangesInRange(
+						new LineRange(
+							rangeInBase.startLineNumber,
+							rangeInBase.endLineNumber -
+								rangeInBase.startLineNumber,
+						),
+					);
+					if (baseRanges.length === 1) {
+						const isHandled = this.model
+							.isHandled(baseRanges[0])
+							.get();
+						if (!isHandled) {
+							baseRangeStates.push(baseRanges[0]);
+						}
 					}
 				}
-			}
 
-			if (baseRangeStates.length === 0) {
-				return;
-			}
+				if (baseRangeStates.length === 0) {
+					return;
+				}
 
-			const element = {
-				model: this.model,
-				redo() {
-					transaction(tx => {
-						/** @description Mark conflicts touched by manual edits as handled */
-						for (const r of baseRangeStates) {
-							this.model.setHandled(r, true, tx);
-						}
-					});
-				},
-				undo() {
-					transaction(tx => {
-						/** @description Mark conflicts touched by manual edits as handled */
-						for (const r of baseRangeStates) {
-							this.model.setHandled(r, false, tx);
-						}
-					});
-				},
-			};
-			this.attachedHistory.pushAttachedHistoryElement(element);
-			element.redo();
-		}));
+				const element = {
+					model: this.model,
+					redo() {
+						transaction((tx) => {
+							/** @description Mark conflicts touched by manual edits as handled */
+							for (const r of baseRangeStates) {
+								this.model.setHandled(r, true, tx);
+							}
+						});
+					},
+					undo() {
+						transaction((tx) => {
+							/** @description Mark conflicts touched by manual edits as handled */
+							for (const r of baseRangeStates) {
+								this.model.setHandled(r, false, tx);
+							}
+						});
+					},
+				};
+				this.attachedHistory.pushAttachedHistoryElement(element);
+				element.redo();
+			}),
+		);
 	}
 
 	public readonly shouldUseAppendInsteadOfAccept =

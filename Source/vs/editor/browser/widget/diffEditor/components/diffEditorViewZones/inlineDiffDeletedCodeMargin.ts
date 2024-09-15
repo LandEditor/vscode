@@ -22,8 +22,8 @@ import {
 	type ITextModel,
 } from "../../../../../common/model.js";
 import {
-	type IEditorMouseEvent,
 	MouseTargetType,
+	type IEditorMouseEvent,
 } from "../../../../editorBrowser.js";
 import type { CodeEditorWidget } from "../../../codeEditor/codeEditorWidget.js";
 import type { DiffEditorWidget } from "../../diffEditorWidget.js";

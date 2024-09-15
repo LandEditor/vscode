@@ -11,9 +11,9 @@ import {
 import { ThemeIcon } from "../../../base/common/themables.js";
 import { localize } from "../../../nls.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../storage/common/storage.js";
 import type {
 	IQuickPick,

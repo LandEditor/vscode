@@ -16,9 +16,9 @@ import type {
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import type { IEnvironmentVariableInfo } from "../common/environmentVariable.js";
 import {
+	TerminalCommandId,
 	type ITerminalStatus,
 	type ITerminalStatusHoverAction,
-	TerminalCommandId,
 } from "../common/terminal.js";
 import { ITerminalService } from "./terminal.js";
 import { TerminalStatus } from "./terminalStatusList.js";
@@ -31,9 +31,9 @@ export class EnvironmentVariableInfoStale implements IEnvironmentVariableInfo {
 		private readonly _terminalId: number,
 		private readonly _collection: IMergedEnvironmentVariableCollection,
 		@ITerminalService private readonly _terminalService: ITerminalService,
-		@IExtensionService private readonly _extensionService: IExtensionService
-	) {
-	}
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+	) {}
 
 	private _getInfo(scope: EnvironmentVariableScope | undefined): string {
 		const extSet: Set<string> = new Set();
@@ -86,9 +86,9 @@ export class EnvironmentVariableInfoChangesActive
 	constructor(
 		private readonly _collection: IMergedEnvironmentVariableCollection,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IExtensionService private readonly _extensionService: IExtensionService
-	) {
-	}
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+	) {}
 
 	private _getInfo(scope: EnvironmentVariableScope | undefined): string {
 		const extSet: Set<string> = new Set();

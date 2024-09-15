@@ -11,17 +11,17 @@ import type { IAction } from "../../../../../base/common/actions.js";
 import { Emitter, type Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { LRUCache, ResourceMap } from "../../../../../base/common/map.js";
 import { MarshalledId } from "../../../../../base/common/marshallingIds.js";
 import { Schemas } from "../../../../../base/common/network.js";
 import { URI } from "../../../../../base/common/uri.js";
 import {
-	type IMenu,
 	IMenuService,
 	MenuId,
+	type IMenu,
 } from "../../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
@@ -187,26 +187,40 @@ export class NotebookKernelService
 		@INotebookService private readonly _notebookService: INotebookService,
 		@IStorageService private readonly _storageService: IStorageService,
 		@IMenuService private readonly _menuService: IMenuService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super();
 
 		// auto associate kernels to new notebook documents, also emit event when
 		// a notebook has been closed (but don't update the memento)
-		this._register(_notebookService.onDidAddNotebookDocument(this._tryAutoBindNotebook, this));
-		this._register(_notebookService.onWillRemoveNotebookDocument(notebook => {
-			const id = NotebookTextModelLikeId.str(notebook);
-			const kernelId = this._notebookBindings.get(id);
-			if (kernelId && notebook.uri.scheme === Schemas.untitled) {
-				this.selectKernelForNotebook(undefined, notebook);
-			}
-			this._kernelSourceActionsUpdates.get(id)?.dispose();
-			this._kernelSourceActionsUpdates.delete(id);
-		}));
+		this._register(
+			_notebookService.onDidAddNotebookDocument(
+				this._tryAutoBindNotebook,
+				this,
+			),
+		);
+		this._register(
+			_notebookService.onWillRemoveNotebookDocument((notebook) => {
+				const id = NotebookTextModelLikeId.str(notebook);
+				const kernelId = this._notebookBindings.get(id);
+				if (kernelId && notebook.uri.scheme === Schemas.untitled) {
+					this.selectKernelForNotebook(undefined, notebook);
+				}
+				this._kernelSourceActionsUpdates.get(id)?.dispose();
+				this._kernelSourceActionsUpdates.delete(id);
+			}),
+		);
 
 		// restore from storage
 		try {
-			const data = JSON.parse(this._storageService.get(NotebookKernelService._storageNotebookBinding, StorageScope.WORKSPACE, '[]'));
+			const data = JSON.parse(
+				this._storageService.get(
+					NotebookKernelService._storageNotebookBinding,
+					StorageScope.WORKSPACE,
+					"[]",
+				),
+			);
 			this._notebookBindings.fromJSON(data);
 		} catch {
 			// ignore

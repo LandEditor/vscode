@@ -22,10 +22,10 @@ import { refineServiceDecorator } from "../../../../platform/instantiation/commo
 import { ILayoutService } from "../../../../platform/layout/browser/layoutService.js";
 import {
 	CustomTitleBarVisibility,
-	TitleBarSetting,
 	getMenuBarVisibility,
 	hasCustomTitlebar,
 	hasNativeTitlebar,
+	TitleBarSetting,
 } from "../../../../platform/window/common/window.js";
 import type { Part } from "../../../browser/part.js";
 

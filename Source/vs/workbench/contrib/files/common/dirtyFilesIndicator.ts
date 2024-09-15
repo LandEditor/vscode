@@ -15,8 +15,8 @@ import {
 } from "../../../services/activity/common/activity.js";
 import { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
 import {
-	type IWorkingCopy,
 	WorkingCopyCapabilities,
+	type IWorkingCopy,
 } from "../../../services/workingCopy/common/workingCopy.js";
 import { IWorkingCopyService } from "../../../services/workingCopy/common/workingCopyService.js";
 import { VIEWLET_ID } from "./files.js";
@@ -33,8 +33,10 @@ export class DirtyFilesIndicator
 
 	constructor(
 		@IActivityService private readonly activityService: IActivityService,
-		@IWorkingCopyService private readonly workingCopyService: IWorkingCopyService,
-		@IFilesConfigurationService private readonly filesConfigurationService: IFilesConfigurationService
+		@IWorkingCopyService
+		private readonly workingCopyService: IWorkingCopyService,
+		@IFilesConfigurationService
+		private readonly filesConfigurationService: IFilesConfigurationService,
 	) {
 		super();
 

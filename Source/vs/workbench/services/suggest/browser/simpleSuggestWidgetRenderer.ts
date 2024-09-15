@@ -5,8 +5,8 @@
 
 import { $, append, show } from "../../../../base/browser/dom.js";
 import {
-	type IIconLabelValueOptions,
 	IconLabel,
+	type IIconLabelValueOptions,
 } from "../../../../base/browser/ui/iconLabel/iconLabel.js";
 import type { IListRenderer } from "../../../../base/browser/ui/list/list.js";
 import { Codicon } from "../../../../base/common/codicons.js";

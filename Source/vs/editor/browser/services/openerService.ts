@@ -11,15 +11,16 @@ import { LinkedList } from "../../../base/common/linkedList.js";
 import { ResourceMap } from "../../../base/common/map.js";
 import { parse } from "../../../base/common/marshalling.js";
 import {
-	Schemas,
 	matchesScheme,
 	matchesSomeScheme,
+	Schemas,
 } from "../../../base/common/network.js";
 import { normalizePath } from "../../../base/common/resources.js";
 import { URI } from "../../../base/common/uri.js";
 import { ICommandService } from "../../../platform/commands/common/commands.js";
 import { EditorOpenSource } from "../../../platform/editor/common/editor.js";
 import {
+	extractSelection,
 	type IExternalOpener,
 	type IExternalUriResolver,
 	type IOpener,
@@ -28,12 +29,13 @@ import {
 	type IValidator,
 	type OpenOptions,
 	type ResolveExternalUriOptions,
-	extractSelection,
 } from "../../../platform/opener/common/opener.js";
 import { ICodeEditorService } from "./codeEditorService.js";
 
 class CommandOpener implements IOpener {
-	constructor(@ICommandService private readonly _commandService: ICommandService) { }
+	constructor(
+		@ICommandService private readonly _commandService: ICommandService,
+	) {}
 
 	async open(target: URI | string, options?: OpenOptions): Promise<boolean> {
 		if (!matchesScheme(target, Schemas.command)) {
@@ -79,7 +81,9 @@ class CommandOpener implements IOpener {
 }
 
 class EditorOpener implements IOpener {
-	constructor(@ICodeEditorService private readonly _editorService: ICodeEditorService) { }
+	constructor(
+		@ICodeEditorService private readonly _editorService: ICodeEditorService,
+	) {}
 
 	async open(target: URI | string, options: OpenOptions) {
 		if (typeof target === "string") {

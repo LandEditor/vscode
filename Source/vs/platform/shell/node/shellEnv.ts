@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { spawn } from "child_process";
+
 import { Promises } from "../../../base/common/async.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../base/common/cancellation.js";
 import { toErrorMessage } from "../../../base/common/errorMessage.js";
 import {
@@ -17,9 +18,9 @@ import {
 import { clamp } from "../../../base/common/numbers.js";
 import { basename } from "../../../base/common/path.js";
 import {
-	type IProcessEnvironment,
-	OS,
 	isWindows,
+	OS,
+	type IProcessEnvironment,
 } from "../../../base/common/platform.js";
 import { generateUuid } from "../../../base/common/uuid.js";
 import { getSystemShell } from "../../../base/node/shell.js";

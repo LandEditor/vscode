@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { coalesce } from "../../../base/common/arrays.js";
 import { asPromise } from "../../../base/common/async.js";
 import type { CancellationToken } from "../../../base/common/cancellation.js";
@@ -31,10 +32,10 @@ import {
 	type IDebugAdapterImpl,
 	type IDebugAdapterNamedPipeServer,
 	type IDebugAdapterServer,
+	type IDebuggerContribution,
 	type IDebugVisualization,
 	type IDebugVisualizationContext,
 	type IDebugVisualizationTreeItem,
-	type IDebuggerContribution,
 	type MainThreadDebugVisualization,
 } from "../../contrib/debug/common/debug.js";
 import {
@@ -45,6 +46,7 @@ import {
 import type { ExtensionDescriptionRegistry } from "../../services/extensions/common/extensionDescriptionRegistry.js";
 import type { Dto } from "../../services/extensions/common/proxyIdentifier.js";
 import {
+	MainContext,
 	type DebugSessionUUID,
 	type ExtHostDebugServiceShape,
 	type IBreakpointsDeltaDto,
@@ -53,7 +55,6 @@ import {
 	type ISourceMultiBreakpointDto,
 	type IStackFrameFocusDto,
 	type IThreadFocusDto,
-	MainContext,
 	type MainThreadDebugServiceShape,
 } from "./extHost.protocol.js";
 import { IExtHostCommands } from "./extHostCommands.js";
@@ -64,7 +65,6 @@ import { IExtHostRpcService } from "./extHostRpcService.js";
 import { IExtHostTesting } from "./extHostTesting.js";
 import * as Convert from "./extHostTypeConverters.js";
 import {
-	type Breakpoint,
 	DataBreakpoint,
 	DebugAdapterExecutable,
 	DebugAdapterInlineImplementation,
@@ -77,9 +77,10 @@ import {
 	FunctionBreakpoint,
 	Location,
 	Position,
+	setBreakpointId,
 	SourceBreakpoint,
 	ThemeIcon,
-	setBreakpointId,
+	type Breakpoint,
 } from "./extHostTypes.js";
 import { IExtHostVariableResolverProvider } from "./extHostVariableResolverService.js";
 import { IExtHostWorkspace } from "./extHostWorkspace.js";
@@ -245,10 +246,13 @@ export abstract class ExtHostDebugServiceBase
 	constructor(
 		@IExtHostRpcService extHostRpcService: IExtHostRpcService,
 		@IExtHostWorkspace protected _workspaceService: IExtHostWorkspace,
-		@IExtHostExtensionService private _extensionService: IExtHostExtensionService,
-		@IExtHostConfiguration protected _configurationService: IExtHostConfiguration,
+		@IExtHostExtensionService
+		private _extensionService: IExtHostExtensionService,
+		@IExtHostConfiguration
+		protected _configurationService: IExtHostConfiguration,
 		@IExtHostEditorTabs protected _editorTabs: IExtHostEditorTabs,
-		@IExtHostVariableResolverProvider private _variableResolver: IExtHostVariableResolverProvider,
+		@IExtHostVariableResolverProvider
+		private _variableResolver: IExtHostVariableResolverProvider,
 		@IExtHostCommands private _commands: IExtHostCommands,
 		@IExtHostTesting private _testing: IExtHostTesting,
 	) {
@@ -266,27 +270,49 @@ export abstract class ExtHostDebugServiceBase
 		this._debugAdapters = new Map();
 		this._debugAdaptersTrackers = new Map();
 
-		this._onDidStartDebugSession = this._register(new Emitter<vscode.DebugSession>());
-		this._onDidTerminateDebugSession = this._register(new Emitter<vscode.DebugSession>());
-		this._onDidChangeActiveDebugSession = this._register(new Emitter<vscode.DebugSession | undefined>());
-		this._onDidReceiveDebugSessionCustomEvent = this._register(new Emitter<vscode.DebugSessionCustomEvent>());
+		this._onDidStartDebugSession = this._register(
+			new Emitter<vscode.DebugSession>(),
+		);
+		this._onDidTerminateDebugSession = this._register(
+			new Emitter<vscode.DebugSession>(),
+		);
+		this._onDidChangeActiveDebugSession = this._register(
+			new Emitter<vscode.DebugSession | undefined>(),
+		);
+		this._onDidReceiveDebugSessionCustomEvent = this._register(
+			new Emitter<vscode.DebugSessionCustomEvent>(),
+		);
 
-		this._debugServiceProxy = extHostRpcService.getProxy(MainContext.MainThreadDebugService);
+		this._debugServiceProxy = extHostRpcService.getProxy(
+			MainContext.MainThreadDebugService,
+		);
 
-		this._onDidChangeBreakpoints = this._register(new Emitter<vscode.BreakpointsChangeEvent>());
+		this._onDidChangeBreakpoints = this._register(
+			new Emitter<vscode.BreakpointsChangeEvent>(),
+		);
 
-		this._onDidChangeActiveStackItem = this._register(new Emitter<vscode.DebugThread | vscode.DebugStackFrame | undefined>());
+		this._onDidChangeActiveStackItem = this._register(
+			new Emitter<
+				vscode.DebugThread | vscode.DebugStackFrame | undefined
+			>(),
+		);
 
-		this._activeDebugConsole = new ExtHostDebugConsole(this._debugServiceProxy);
+		this._activeDebugConsole = new ExtHostDebugConsole(
+			this._debugServiceProxy,
+		);
 
 		this._breakpoints = new Map<string, vscode.Breakpoint>();
 
-		this._extensionService.getExtensionRegistry().then((extensionRegistry: ExtensionDescriptionRegistry) => {
-			this._register(extensionRegistry.onDidChange(_ => {
+		this._extensionService
+			.getExtensionRegistry()
+			.then((extensionRegistry: ExtensionDescriptionRegistry) => {
+				this._register(
+					extensionRegistry.onDidChange((_) => {
+						this.registerAllDebugTypes(extensionRegistry);
+					}),
+				);
 				this.registerAllDebugTypes(extensionRegistry);
-			}));
-			this.registerAllDebugTypes(extensionRegistry);
-		});
+			});
 	}
 
 	public async $getVisualizerTreeItem(
@@ -1766,7 +1792,8 @@ export class WorkerExtHostDebugService extends ExtHostDebugServiceBase {
 		@IExtHostExtensionService extensionService: IExtHostExtensionService,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
 		@IExtHostEditorTabs editorTabs: IExtHostEditorTabs,
-		@IExtHostVariableResolverProvider variableResolver: IExtHostVariableResolverProvider,
+		@IExtHostVariableResolverProvider
+		variableResolver: IExtHostVariableResolverProvider,
 		@IExtHostCommands commands: IExtHostCommands,
 		@IExtHostTesting testing: IExtHostTesting,
 	) {

@@ -41,10 +41,10 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
-import { type SaveSource, SaveSourceRegistry } from "../../../common/editor.js";
+import { SaveSourceRegistry, type SaveSource } from "../../../common/editor.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import {
 	ILifecycleService,
@@ -53,11 +53,11 @@ import {
 } from "../../lifecycle/common/lifecycle.js";
 import { IRemoteAgentService } from "../../remote/common/remoteAgentService.js";
 import {
+	MAX_PARALLEL_HISTORY_IO_OPS,
 	type IWorkingCopyHistoryEntry,
 	type IWorkingCopyHistoryEntryDescriptor,
 	type IWorkingCopyHistoryEvent,
 	type IWorkingCopyHistoryService,
-	MAX_PARALLEL_HISTORY_IO_OPS,
 } from "./workingCopyHistory.js";
 import { WorkingCopyHistoryTracker } from "./workingCopyHistoryTracker.js";
 
@@ -787,12 +787,16 @@ export abstract class WorkingCopyHistoryService
 
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
-		@IRemoteAgentService protected readonly remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
-		@IUriIdentityService protected readonly uriIdentityService: IUriIdentityService,
+		@IRemoteAgentService
+		protected readonly remoteAgentService: IRemoteAgentService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IUriIdentityService
+		protected readonly uriIdentityService: IUriIdentityService,
 		@ILabelService protected readonly labelService: ILabelService,
 		@ILogService protected readonly logService: ILogService,
-		@IConfigurationService protected readonly configurationService: IConfigurationService
+		@IConfigurationService
+		protected readonly configurationService: IConfigurationService,
 	) {
 		super();
 
@@ -1091,14 +1095,23 @@ export class NativeWorkingCopyHistoryService extends WorkingCopyHistoryService {
 	constructor(
 		@IFileService fileService: IFileService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		environmentService: IWorkbenchEnvironmentService,
 		@IUriIdentityService uriIdentityService: IUriIdentityService,
 		@ILabelService labelService: ILabelService,
 		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 		@ILogService logService: ILogService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
-		super(fileService, remoteAgentService, environmentService, uriIdentityService, labelService, logService, configurationService);
+		super(
+			fileService,
+			remoteAgentService,
+			environmentService,
+			uriIdentityService,
+			labelService,
+			logService,
+			configurationService,
+		);
 
 		this.registerListeners();
 	}

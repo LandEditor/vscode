@@ -23,8 +23,8 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type IWorkbenchContributionsRegistry,
 	Extensions as WorkbenchExtensions,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import { EnablementState } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -32,11 +32,14 @@ import { IExtensionsWorkbenchService } from "../../extensions/common/extensions.
 
 class DeprecatedExtensionMigratorContribution {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
 		@IStorageService private readonly storageService: IStorageService,
-		@INotificationService private readonly notificationService: INotificationService,
-		@IOpenerService private readonly openerService: IOpenerService
+		@INotificationService
+		private readonly notificationService: INotificationService,
+		@IOpenerService private readonly openerService: IOpenerService,
 	) {
 		this.init().catch(onUnexpectedError);
 	}

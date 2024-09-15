@@ -32,7 +32,8 @@ export class TerminalWslRecommendationContribution
 		@IInstantiationService instantiationService: IInstantiationService,
 		@IProductService productService: IProductService,
 		@INotificationService notificationService: INotificationService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
 		@ITerminalService terminalService: ITerminalService,
 	) {
 		super();

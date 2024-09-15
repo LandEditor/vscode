@@ -9,19 +9,19 @@ import { basename, dirname, joinPath } from "../../../base/common/resources.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
 	ByteSize,
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
 	whenProviderRegistered,
+	type FileOperationError,
 } from "../../files/common/files.js";
 import { BufferLogger } from "./bufferLog.js";
 import {
 	AbstractLoggerService,
 	AbstractMessageLogger,
+	LogLevel,
 	type ILogger,
 	type ILoggerOptions,
 	type ILoggerService,
-	LogLevel,
 } from "./log.js";
 
 const MAX_FILE_SIZE = 5 * ByteSize.MB;
@@ -36,11 +36,13 @@ class FileLogger extends AbstractMessageLogger implements ILogger {
 		private readonly resource: URI,
 		level: LogLevel,
 		private readonly donotUseFormatters: boolean,
-		@IFileService private readonly fileService: IFileService
+		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 		this.setLevel(level);
-		this.flushDelayer = new ThrottledDelayer<void>(100 /* buffer saves over a short time */);
+		this.flushDelayer = new ThrottledDelayer<void>(
+			100 /* buffer saves over a short time */,
+		);
 		this.initializePromise = this.initialize();
 	}
 

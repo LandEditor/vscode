@@ -13,17 +13,17 @@ import { marked } from "../../../../../base/common/marked/marked.js";
 import { TrackedRangeStickiness } from "../../../../../editor/common/model.js";
 import type { FoldingLimitReporter } from "../../../../../editor/contrib/folding/browser/folding.js";
 import {
-	type FoldingRegion,
 	FoldingRegions,
+	type FoldingRegion,
 } from "../../../../../editor/contrib/folding/browser/foldingRanges.js";
 import {
-	type IFoldingRangeData,
 	sanitizeRanges,
+	type IFoldingRangeData,
 } from "../../../../../editor/contrib/folding/browser/syntaxRangeProvider.js";
 import { CellKind } from "../../common/notebookCommon.js";
 import {
-	type ICellRange,
 	cellRangesToIndexes,
+	type ICellRange,
 } from "../../common/notebookRange.js";
 import type { INotebookViewModel } from "../notebookBrowser.js";
 

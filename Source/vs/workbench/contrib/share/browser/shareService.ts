@@ -11,9 +11,9 @@ import { score } from "../../../../editor/common/languageSelector.js";
 import { localize } from "../../../../nls.js";
 import type { ISubmenuItem } from "../../../../platform/actions/common/actions.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
@@ -22,9 +22,9 @@ import {
 } from "../../../../platform/quickinput/common/quickInput.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import type {
+	IShareableItem,
 	IShareProvider,
 	IShareService,
-	IShareableItem,
 } from "../common/share.js";
 
 export const ShareProviderCountContext = new RawContextKey<number>(
@@ -56,10 +56,13 @@ export class ShareService implements IShareService {
 		@IContextKeyService private contextKeyService: IContextKeyService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IQuickInputService private quickInputService: IQuickInputService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
-		this.providerCount = ShareProviderCountContext.bindTo(this.contextKeyService);
+		this.providerCount = ShareProviderCountContext.bindTo(
+			this.contextKeyService,
+		);
 	}
 
 	registerShareProvider(provider: IShareProvider): IDisposable {

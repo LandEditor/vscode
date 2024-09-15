@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { VSBuffer, encodeBase64 } from "../../../base/common/buffer.js";
+import { encodeBase64, VSBuffer } from "../../../base/common/buffer.js";
 import type { Event } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
 import { getMediaOrTextMime } from "../../../base/common/mime.js";
@@ -13,8 +13,8 @@ import type { IServerChannel } from "../../../base/parts/ipc/common/ipc.js";
 import {
 	FileOperationError,
 	FileOperationResult,
-	type IFileContent,
 	IFileService,
+	type IFileContent,
 } from "../../files/common/files.js";
 import { IMainProcessService } from "../../ipc/common/mainProcessService.js";
 import {
@@ -38,14 +38,18 @@ export class ElectronRemoteResourceLoader extends Disposable {
 
 			call: (_: unknown, command: string, arg?: any): Promise<any> => {
 				switch (command) {
-					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME: return this.doRequest(URI.revive(arg[0]));
+					case NODE_REMOTE_RESOURCE_IPC_METHOD_NAME:
+						return this.doRequest(URI.revive(arg[0]));
 				}
 
 				throw new Error(`Call not found: ${command}`);
-			}
+			},
 		};
 
-		mainProcessService.registerChannel(NODE_REMOTE_RESOURCE_CHANNEL_NAME, channel);
+		mainProcessService.registerChannel(
+			NODE_REMOTE_RESOURCE_CHANNEL_NAME,
+			channel,
+		);
 	}
 
 	private async doRequest(uri: URI): Promise<NodeRemoteResourceResponse> {

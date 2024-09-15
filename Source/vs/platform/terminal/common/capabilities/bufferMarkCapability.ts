@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IMarker, Terminal } from "@xterm/headless";
+
 import { Emitter } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
+	TerminalCapability,
 	type IBufferMarkCapability,
 	type IMarkProperties,
-	TerminalCapability,
 } from "./capabilities.js";
 
 /**

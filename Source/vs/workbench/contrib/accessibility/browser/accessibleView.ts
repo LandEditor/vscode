@@ -4,14 +4,14 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	EventType,
 	addDisposableListener,
+	EventType,
 	getActiveWindow,
 	isActiveElement,
 } from "../../../../base/browser/dom.js";
 import {
-	type IKeyboardEvent,
 	StandardKeyboardEvent,
+	type IKeyboardEvent,
 } from "../../../../base/browser/keyboardEvent.js";
 import { ActionsOrientation } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { alert } from "../../../../base/browser/ui/aria/aria.js";
@@ -60,12 +60,12 @@ import {
 import { ICommandService } from "../../../../platform/commands/common/commands.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
-	type IContextViewDelegate,
 	IContextViewService,
+	type IContextViewDelegate,
 } from "../../../../platform/contextview/browser/contextView.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
@@ -87,9 +87,8 @@ import type { ICodeBlockActionContext } from "../../chat/browser/codeBlockPart.j
 import { getSimpleEditorOptions } from "../../codeEditor/browser/simpleEditorOptions.js";
 import { AccessibilityCommandId } from "../common/accessibilityCommands.js";
 import {
-	type AccessibilityVerbositySettingId,
-	AccessibilityWorkbenchSettingId,
 	accessibilityHelpIsShown,
+	AccessibilityWorkbenchSettingId,
 	accessibleViewContainsCodeBlocks,
 	accessibleViewCurrentProviderId,
 	accessibleViewGoToSymbolSupported,
@@ -100,6 +99,7 @@ import {
 	accessibleViewOnLastLine,
 	accessibleViewSupportsNavigation,
 	accessibleViewVerbosityEnabled,
+	type AccessibilityVerbositySettingId,
 } from "./accessibilityConfiguration.js";
 import { resolveContentAndKeybindingItems } from "./accessibleViewKeybindingResolver.js";
 
@@ -152,53 +152,91 @@ export class AccessibleView extends Disposable {
 
 	constructor(
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 		@IModelService private readonly _modelService: IModelService,
-		@IContextViewService private readonly _contextViewService: IContextViewService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IContextViewService
+		private readonly _contextViewService: IContextViewService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 		@ILayoutService private readonly _layoutService: ILayoutService,
 		@IMenuService private readonly _menuService: IMenuService,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IChatCodeBlockContextProviderService private readonly _codeBlockContextProviderService: IChatCodeBlockContextProviderService,
+		@IChatCodeBlockContextProviderService
+		private readonly _codeBlockContextProviderService: IChatCodeBlockContextProviderService,
 		@IStorageService private readonly _storageService: IStorageService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 	) {
 		super();
 
-		this._accessiblityHelpIsShown = accessibilityHelpIsShown.bindTo(this._contextKeyService);
-		this._accessibleViewIsShown = accessibleViewIsShown.bindTo(this._contextKeyService);
-		this._accessibleViewSupportsNavigation = accessibleViewSupportsNavigation.bindTo(this._contextKeyService);
-		this._accessibleViewVerbosityEnabled = accessibleViewVerbosityEnabled.bindTo(this._contextKeyService);
-		this._accessibleViewGoToSymbolSupported = accessibleViewGoToSymbolSupported.bindTo(this._contextKeyService);
-		this._accessibleViewCurrentProviderId = accessibleViewCurrentProviderId.bindTo(this._contextKeyService);
-		this._accessibleViewInCodeBlock = accessibleViewInCodeBlock.bindTo(this._contextKeyService);
-		this._accessibleViewContainsCodeBlocks = accessibleViewContainsCodeBlocks.bindTo(this._contextKeyService);
-		this._onLastLine = accessibleViewOnLastLine.bindTo(this._contextKeyService);
-		this._hasUnassignedKeybindings = accessibleViewHasUnassignedKeybindings.bindTo(this._contextKeyService);
-		this._hasAssignedKeybindings = accessibleViewHasAssignedKeybindings.bindTo(this._contextKeyService);
+		this._accessiblityHelpIsShown = accessibilityHelpIsShown.bindTo(
+			this._contextKeyService,
+		);
+		this._accessibleViewIsShown = accessibleViewIsShown.bindTo(
+			this._contextKeyService,
+		);
+		this._accessibleViewSupportsNavigation =
+			accessibleViewSupportsNavigation.bindTo(this._contextKeyService);
+		this._accessibleViewVerbosityEnabled =
+			accessibleViewVerbosityEnabled.bindTo(this._contextKeyService);
+		this._accessibleViewGoToSymbolSupported =
+			accessibleViewGoToSymbolSupported.bindTo(this._contextKeyService);
+		this._accessibleViewCurrentProviderId =
+			accessibleViewCurrentProviderId.bindTo(this._contextKeyService);
+		this._accessibleViewInCodeBlock = accessibleViewInCodeBlock.bindTo(
+			this._contextKeyService,
+		);
+		this._accessibleViewContainsCodeBlocks =
+			accessibleViewContainsCodeBlocks.bindTo(this._contextKeyService);
+		this._onLastLine = accessibleViewOnLastLine.bindTo(
+			this._contextKeyService,
+		);
+		this._hasUnassignedKeybindings =
+			accessibleViewHasUnassignedKeybindings.bindTo(
+				this._contextKeyService,
+			);
+		this._hasAssignedKeybindings =
+			accessibleViewHasAssignedKeybindings.bindTo(
+				this._contextKeyService,
+			);
 
-		this._container = document.createElement('div');
-		this._container.classList.add('accessible-view');
-		if (this._configurationService.getValue(AccessibilityWorkbenchSettingId.HideAccessibleView)) {
-			this._container.classList.add('hide');
+		this._container = document.createElement("div");
+		this._container.classList.add("accessible-view");
+		if (
+			this._configurationService.getValue(
+				AccessibilityWorkbenchSettingId.HideAccessibleView,
+			)
+		) {
+			this._container.classList.add("hide");
 		}
 		const codeEditorWidgetOptions: ICodeEditorWidgetOptions = {
-			contributions: EditorExtensionsRegistry.getEditorContributions().filter(c => c.id !== CodeActionController.ID)
+			contributions:
+				EditorExtensionsRegistry.getEditorContributions().filter(
+					(c) => c.id !== CodeActionController.ID,
+				),
 		};
-		const titleBar = document.createElement('div');
-		titleBar.classList.add('accessible-view-title-bar');
-		this._title = document.createElement('div');
-		this._title.classList.add('accessible-view-title');
+		const titleBar = document.createElement("div");
+		titleBar.classList.add("accessible-view-title-bar");
+		this._title = document.createElement("div");
+		this._title.classList.add("accessible-view-title");
 		titleBar.appendChild(this._title);
-		const actionBar = document.createElement('div');
-		actionBar.classList.add('accessible-view-action-bar');
+		const actionBar = document.createElement("div");
+		actionBar.classList.add("accessible-view-action-bar");
 		titleBar.appendChild(actionBar);
 		this._container.appendChild(titleBar);
-		this._toolbar = this._register(_instantiationService.createInstance(WorkbenchToolBar, actionBar, { orientation: ActionsOrientation.HORIZONTAL }));
-		this._toolbar.context = { viewId: 'accessibleView' };
+		this._toolbar = this._register(
+			_instantiationService.createInstance(WorkbenchToolBar, actionBar, {
+				orientation: ActionsOrientation.HORIZONTAL,
+			}),
+		);
+		this._toolbar.context = { viewId: "accessibleView" };
 		const toolbarElt = this._toolbar.getElement();
 		toolbarElt.tabIndex = 0;
 
@@ -207,45 +245,96 @@ export class AccessibleView extends Disposable {
 			lineDecorationsWidth: 6,
 			dragAndDrop: false,
 			cursorWidth: 1,
-			wordWrap: 'off',
-			wrappingStrategy: 'advanced',
-			wrappingIndent: 'none',
+			wordWrap: "off",
+			wrappingStrategy: "advanced",
+			wrappingIndent: "none",
 			padding: { top: 2, bottom: 2 },
 			quickSuggestions: false,
-			renderWhitespace: 'none',
+			renderWhitespace: "none",
 			dropIntoEditor: { enabled: false },
 			readOnly: true,
-			fontFamily: 'var(--monaco-monospace-font)'
+			fontFamily: "var(--monaco-monospace-font)",
 		};
-		this._editorWidget = this._register(this._instantiationService.createInstance(CodeEditorWidget, this._container, editorOptions, codeEditorWidgetOptions));
-		this._register(this._accessibilityService.onDidChangeScreenReaderOptimized(() => {
-			if (this._currentProvider && this._accessiblityHelpIsShown.get()) {
-				this.show(this._currentProvider);
-			}
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration(e => {
-			if (this._currentProvider instanceof AccessibleContentProvider && e.affectsConfiguration(this._currentProvider.verbositySettingKey)) {
-				if (this._accessiblityHelpIsShown.get()) {
+		this._editorWidget = this._register(
+			this._instantiationService.createInstance(
+				CodeEditorWidget,
+				this._container,
+				editorOptions,
+				codeEditorWidgetOptions,
+			),
+		);
+		this._register(
+			this._accessibilityService.onDidChangeScreenReaderOptimized(() => {
+				if (
+					this._currentProvider &&
+					this._accessiblityHelpIsShown.get()
+				) {
 					this.show(this._currentProvider);
 				}
-				this._accessibleViewVerbosityEnabled.set(this._configurationService.getValue(this._currentProvider.verbositySettingKey));
-				this._updateToolbar(this._currentProvider.actions, this._currentProvider.options.type);
-			}
-			if (e.affectsConfiguration(AccessibilityWorkbenchSettingId.HideAccessibleView)) {
-				this._container.classList.toggle('hide', this._configurationService.getValue(AccessibilityWorkbenchSettingId.HideAccessibleView));
-			}
-		}));
-		this._register(this._editorWidget.onDidDispose(() => this._resetContextKeys()));
-		this._register(this._editorWidget.onDidChangeCursorPosition(() => {
-			this._onLastLine.set(this._editorWidget.getPosition()?.lineNumber === this._editorWidget.getModel()?.getLineCount());
-		}));
-		this._register(this._editorWidget.onDidChangeCursorPosition(() => {
-			const cursorPosition = this._editorWidget.getPosition()?.lineNumber;
-			if (this._codeBlocks && cursorPosition !== undefined) {
-				const inCodeBlock = this._codeBlocks.find(c => c.startLine <= cursorPosition && c.endLine >= cursorPosition) !== undefined;
-				this._accessibleViewInCodeBlock.set(inCodeBlock);
-			}
-		}));
+			}),
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					this._currentProvider instanceof
+						AccessibleContentProvider &&
+					e.affectsConfiguration(
+						this._currentProvider.verbositySettingKey,
+					)
+				) {
+					if (this._accessiblityHelpIsShown.get()) {
+						this.show(this._currentProvider);
+					}
+					this._accessibleViewVerbosityEnabled.set(
+						this._configurationService.getValue(
+							this._currentProvider.verbositySettingKey,
+						),
+					);
+					this._updateToolbar(
+						this._currentProvider.actions,
+						this._currentProvider.options.type,
+					);
+				}
+				if (
+					e.affectsConfiguration(
+						AccessibilityWorkbenchSettingId.HideAccessibleView,
+					)
+				) {
+					this._container.classList.toggle(
+						"hide",
+						this._configurationService.getValue(
+							AccessibilityWorkbenchSettingId.HideAccessibleView,
+						),
+					);
+				}
+			}),
+		);
+		this._register(
+			this._editorWidget.onDidDispose(() => this._resetContextKeys()),
+		);
+		this._register(
+			this._editorWidget.onDidChangeCursorPosition(() => {
+				this._onLastLine.set(
+					this._editorWidget.getPosition()?.lineNumber ===
+						this._editorWidget.getModel()?.getLineCount(),
+				);
+			}),
+		);
+		this._register(
+			this._editorWidget.onDidChangeCursorPosition(() => {
+				const cursorPosition =
+					this._editorWidget.getPosition()?.lineNumber;
+				if (this._codeBlocks && cursorPosition !== undefined) {
+					const inCodeBlock =
+						this._codeBlocks.find(
+							(c) =>
+								c.startLine <= cursorPosition &&
+								c.endLine >= cursorPosition,
+						) !== undefined;
+					this._accessibleViewInCodeBlock.set(inCodeBlock);
+				}
+			}),
+		);
 	}
 
 	private _resetContextKeys(): void {
@@ -1296,9 +1385,12 @@ export class AccessibleViewService
 	private _accessibleView: AccessibleView | undefined;
 
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 	}
@@ -1382,9 +1474,11 @@ export class AccessibleViewService
 }
 
 class AccessibleViewSymbolQuickPick {
-	constructor(private _accessibleView: AccessibleView, @IQuickInputService private readonly _quickInputService: IQuickInputService) {
-
-	}
+	constructor(
+		private _accessibleView: AccessibleView,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
+	) {}
 	show(provider: AccesibleViewContentProvider): void {
 		const disposables = new DisposableStore();
 		const quickPick = disposables.add(

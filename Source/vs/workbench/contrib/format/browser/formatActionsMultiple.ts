@@ -14,8 +14,8 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { generateUuid } from "../../../../base/common/uuid.js";
 import {
-	type ICodeEditor,
 	getCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import {
 	EditorAction,
@@ -32,11 +32,11 @@ import { ILanguageService } from "../../../../editor/common/languages/language.j
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
 import {
+	formatDocumentRangesWithProvider,
+	formatDocumentWithProvider,
 	FormattingConflicts,
 	FormattingKind,
 	FormattingMode,
-	formatDocumentRangesWithProvider,
-	formatDocumentWithProvider,
 	getRealAndSyntheticDocumentFormattersOrdered,
 } from "../../../../editor/contrib/format/browser/format.js";
 import * as nls from "../../../../nls.js";
@@ -65,9 +65,9 @@ import {
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IWorkbenchExtensionEnablementService } from "../../../services/extensionManagement/common/extensionManagement.js";
@@ -97,24 +97,59 @@ export class DefaultFormatter
 	);
 
 	constructor(
-		@IExtensionService private readonly _extensionService: IExtensionService,
-		@IWorkbenchExtensionEnablementService private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IConfigurationService private readonly _configService: IConfigurationService,
-		@INotificationService private readonly _notificationService: INotificationService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
+		@IWorkbenchExtensionEnablementService
+		private readonly _extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IConfigurationService
+		private readonly _configService: IConfigurationService,
+		@INotificationService
+		private readonly _notificationService: INotificationService,
 		@IDialogService private readonly _dialogService: IDialogService,
-		@IQuickInputService private readonly _quickInputService: IQuickInputService,
+		@IQuickInputService
+		private readonly _quickInputService: IQuickInputService,
 		@ILanguageService private readonly _languageService: ILanguageService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageStatusService
+		private readonly _languageStatusService: ILanguageStatusService,
 		@IEditorService private readonly _editorService: IEditorService,
 	) {
 		super();
-		this._store.add(this._extensionService.onDidChangeExtensions(this._updateConfigValues, this));
-		this._store.add(FormattingConflicts.setFormatterSelector((formatter, document, mode, kind) => this._selectFormatter(formatter, document, mode, kind)));
-		this._store.add(_editorService.onDidActiveEditorChange(this._updateStatus, this));
-		this._store.add(_languageFeaturesService.documentFormattingEditProvider.onDidChange(this._updateStatus, this));
-		this._store.add(_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(this._updateStatus, this));
-		this._store.add(_configService.onDidChangeConfiguration(e => e.affectsConfiguration(DefaultFormatter.configName) && this._updateStatus()));
+		this._store.add(
+			this._extensionService.onDidChangeExtensions(
+				this._updateConfigValues,
+				this,
+			),
+		);
+		this._store.add(
+			FormattingConflicts.setFormatterSelector(
+				(formatter, document, mode, kind) =>
+					this._selectFormatter(formatter, document, mode, kind),
+			),
+		);
+		this._store.add(
+			_editorService.onDidActiveEditorChange(this._updateStatus, this),
+		);
+		this._store.add(
+			_languageFeaturesService.documentFormattingEditProvider.onDidChange(
+				this._updateStatus,
+				this,
+			),
+		);
+		this._store.add(
+			_languageFeaturesService.documentRangeFormattingEditProvider.onDidChange(
+				this._updateStatus,
+				this,
+			),
+		);
+		this._store.add(
+			_configService.onDidChangeConfiguration(
+				(e) =>
+					e.affectsConfiguration(DefaultFormatter.configName) &&
+					this._updateStatus(),
+			),
+		);
 		this._updateConfigValues();
 	}
 

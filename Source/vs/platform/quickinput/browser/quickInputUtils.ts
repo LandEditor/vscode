@@ -16,7 +16,9 @@ import { IdGenerator } from "../../../base/common/idGenerator.js";
 import { KeyCode } from "../../../base/common/keyCodes.js";
 import { parseLinkedText } from "../../../base/common/linkedText.js";
 import type { URI } from "../../../base/common/uri.js";
+
 import "./media/quickInput.css";
+
 import type { IAction } from "../../../base/common/actions.js";
 import type { DisposableStore } from "../../../base/common/lifecycle.js";
 import { localize } from "../../../nls.js";

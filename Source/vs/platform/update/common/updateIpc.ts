@@ -8,7 +8,7 @@ import type {
 	IChannel,
 	IServerChannel,
 } from "../../../base/parts/ipc/common/ipc.js";
-import { type IUpdateService, State } from "./update.js";
+import { State, type IUpdateService } from "./update.js";
 
 export class UpdateChannel implements IServerChannel {
 	constructor(private service: IUpdateService) {}

@@ -3,6 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import "../colorPicker.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { Color, HSVA } from "../../../../../base/common/color.js";
 import { Disposable } from "../../../../../base/common/lifecycle.js";
@@ -84,7 +85,10 @@ export class ColorPickerBody extends Disposable {
 	private onDidSaturationValueChange({
 		s,
 		v,
-	}: { s: number; v: number }): void {
+	}: {
+		s: number;
+		v: number;
+	}): void {
 		const hsva = this.model.color.hsva;
 		this.model.color = new Color(new HSVA(hsva.h, s, v, hsva.a));
 	}

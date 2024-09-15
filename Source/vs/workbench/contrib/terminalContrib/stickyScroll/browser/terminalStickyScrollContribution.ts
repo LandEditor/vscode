@@ -4,12 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import { Event } from "../../../../../base/common/event.js";
 import {
 	Disposable,
 	MutableDisposable,
 } from "../../../../../base/common/lifecycle.js";
+
 import "./media/stickyScroll.css";
+
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import { IContextKeyService } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
@@ -61,18 +64,32 @@ export class TerminalStickyScrollContribution
 		private readonly _instance: ITerminalInstance,
 		processManager: ITerminalProcessManager | ITerminalProcessInfo,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
-		this._register(Event.runAndSubscribe(this._configurationService.onDidChangeConfiguration, e => {
-			if (!e || e.affectsConfiguration(TerminalStickyScrollSettingId.Enabled)) {
-				this._refreshState();
-			}
-		}));
+		this._register(
+			Event.runAndSubscribe(
+				this._configurationService.onDidChangeConfiguration,
+				(e) => {
+					if (
+						!e ||
+						e.affectsConfiguration(
+							TerminalStickyScrollSettingId.Enabled,
+						)
+					) {
+						this._refreshState();
+					}
+				},
+			),
+		);
 	}
 
 	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {

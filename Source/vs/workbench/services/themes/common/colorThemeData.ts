@@ -15,42 +15,49 @@ import * as nls from "../../../../nls.js";
 import type { IExtensionResourceLoaderService } from "../../../../platform/extensionResourceLoader/common/extensionResourceLoader.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IStorageService,
 	StorageScope,
 	StorageTarget,
+	type IStorageService,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type ColorIdentifier,
 	Extensions as ColorRegistryExtensions,
 	DEFAULT_COLOR_CONFIG_VALUE,
-	type IColorRegistry,
 	editorBackground,
 	editorForeground,
+	type ColorIdentifier,
+	type IColorRegistry,
 } from "../../../../platform/theme/common/colorRegistry.js";
 import { ColorScheme } from "../../../../platform/theme/common/theme.js";
 import {
-	type ITokenStyle,
 	getThemeTypeSelector,
+	type ITokenStyle,
 } from "../../../../platform/theme/common/themeService.js";
 import {
-	type ProbeScope,
-	SemanticTokenRule,
-	TokenStyle,
-	type TokenStyleData,
-	type TokenStyleValue,
 	getTokenClassificationRegistry,
 	parseClassifierString,
+	SemanticTokenRule,
+	TokenStyle,
+	type ProbeScope,
+	type TokenStyleData,
+	type TokenStyleValue,
 } from "../../../../platform/theme/common/tokenClassificationRegistry.js";
 import { parse as parsePList } from "./plistParser.js";
 import {
+	createMatchers,
 	type Matcher,
 	type MatcherWithPriority,
-	createMatchers,
 } from "./textMateScopeMatcher.js";
 import { convertSettings } from "./themeCompatibility.js";
 import type { ThemeConfiguration } from "./themeConfiguration.js";
 import {
 	ExtensionData,
+	THEME_SCOPE_CLOSE_PAREN,
+	THEME_SCOPE_OPEN_PAREN,
+	THEME_SCOPE_WILDCARD,
+	themeScopeRegex,
+	VS_HC_LIGHT_THEME,
+	VS_HC_THEME,
+	VS_LIGHT_THEME,
 	type IColorCustomizations,
 	type IColorMap,
 	type ISemanticTokenColorCustomizations,
@@ -62,13 +69,6 @@ import {
 	type IThemeScopedCustomizations,
 	type ITokenColorCustomizations,
 	type IWorkbenchColorTheme,
-	THEME_SCOPE_CLOSE_PAREN,
-	THEME_SCOPE_OPEN_PAREN,
-	THEME_SCOPE_WILDCARD,
-	VS_HC_LIGHT_THEME,
-	VS_HC_THEME,
-	VS_LIGHT_THEME,
-	themeScopeRegex,
 } from "./workbenchThemeService.js";
 
 const colorRegistry = Registry.as<IColorRegistry>(

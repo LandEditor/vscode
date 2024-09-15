@@ -5,8 +5,8 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type IMouseEvent,
 	StandardMouseEvent,
+	type IMouseEvent,
 } from "../../../../base/browser/mouseEvent.js";
 import { CancellationTokenSource } from "../../../../base/common/cancellation.js";
 import {
@@ -16,26 +16,26 @@ import {
 } from "../../../../base/common/lifecycle.js";
 import { MenuId } from "../../../../platform/actions/common/actions.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
+	MouseTargetType,
 	type IActiveCodeEditor,
 	type ICodeEditor,
-	MouseTargetType,
 } from "../../../browser/editorBrowser.js";
 import {
-	type ConfigurationChangedEvent,
 	EditorOption,
 	RenderLineNumbersType,
+	type ConfigurationChangedEvent,
 } from "../../../common/config/editorOptions.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import {
-	type IEditorContribution,
 	ScrollType,
+	type IEditorContribution,
 } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import { ILanguageConfigurationService } from "../../../common/languages/languageConfigurationRegistry.js";
@@ -44,8 +44,8 @@ import { ILanguageFeaturesService } from "../../../common/services/languageFeatu
 import type { IModelTokensChangedEvent } from "../../../common/textModelEvents.js";
 import { FoldingController } from "../../folding/browser/folding.js";
 import {
-	type FoldingModel,
 	toggleCollapseState,
+	type FoldingModel,
 } from "../../folding/browser/foldingModel.js";
 import { getDefinitionsAtPosition } from "../../gotoSymbol/browser/goToSymbol.js";
 import {
@@ -55,8 +55,8 @@ import {
 import { goToDefinitionWithLocation } from "../../inlayHints/browser/inlayHintsLocations.js";
 import { StickyRange } from "./stickyScrollElement.js";
 import {
-	type IStickyLineCandidateProvider,
 	StickyLineCandidateProvider,
+	type IStickyLineCandidateProvider,
 } from "./stickyScrollProvider.js";
 import {
 	StickyScrollWidget,
@@ -107,16 +107,26 @@ export class StickyScrollController
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@ILanguageConfigurationService _languageConfigurationService: ILanguageConfigurationService,
-		@ILanguageFeatureDebounceService _languageFeatureDebounceService: ILanguageFeatureDebounceService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService
+		@IContextMenuService
+		private readonly _contextMenuService: IContextMenuService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@ILanguageConfigurationService
+		_languageConfigurationService: ILanguageConfigurationService,
+		@ILanguageFeatureDebounceService
+		_languageFeatureDebounceService: ILanguageFeatureDebounceService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super();
 		this._stickyScrollWidget = new StickyScrollWidget(this._editor);
-		this._stickyLineCandidateProvider = new StickyLineCandidateProvider(this._editor, _languageFeaturesService, _languageConfigurationService);
+		this._stickyLineCandidateProvider = new StickyLineCandidateProvider(
+			this._editor,
+			_languageFeaturesService,
+			_languageConfigurationService,
+		);
 		this._register(this._stickyScrollWidget);
 		this._register(this._stickyLineCandidateProvider);
 
@@ -124,36 +134,67 @@ export class StickyScrollController
 		this._onDidResize();
 		this._readConfiguration();
 		const stickyScrollDomNode = this._stickyScrollWidget.getDomNode();
-		this._register(this._editor.onDidChangeConfiguration(e => {
-			this._readConfigurationChange(e);
-		}));
-		this._register(dom.addDisposableListener(stickyScrollDomNode, dom.EventType.CONTEXT_MENU, async (event: MouseEvent) => {
-			this._onContextMenu(dom.getWindow(stickyScrollDomNode), event);
-		}));
-		this._stickyScrollFocusedContextKey = EditorContextKeys.stickyScrollFocused.bindTo(this._contextKeyService);
-		this._stickyScrollVisibleContextKey = EditorContextKeys.stickyScrollVisible.bindTo(this._contextKeyService);
-		const focusTracker = this._register(dom.trackFocus(stickyScrollDomNode));
-		this._register(focusTracker.onDidBlur(_ => {
-			// Suppose that the blurring is caused by scrolling, then keep the focus on the sticky scroll
-			// This is determined by the fact that the height of the widget has become zero and there has been no position revealing
-			if (this._positionRevealed === false && stickyScrollDomNode.clientHeight === 0) {
-				this._focusedStickyElementIndex = -1;
+		this._register(
+			this._editor.onDidChangeConfiguration((e) => {
+				this._readConfigurationChange(e);
+			}),
+		);
+		this._register(
+			dom.addDisposableListener(
+				stickyScrollDomNode,
+				dom.EventType.CONTEXT_MENU,
+				async (event: MouseEvent) => {
+					this._onContextMenu(
+						dom.getWindow(stickyScrollDomNode),
+						event,
+					);
+				},
+			),
+		);
+		this._stickyScrollFocusedContextKey =
+			EditorContextKeys.stickyScrollFocused.bindTo(
+				this._contextKeyService,
+			);
+		this._stickyScrollVisibleContextKey =
+			EditorContextKeys.stickyScrollVisible.bindTo(
+				this._contextKeyService,
+			);
+		const focusTracker = this._register(
+			dom.trackFocus(stickyScrollDomNode),
+		);
+		this._register(
+			focusTracker.onDidBlur((_) => {
+				// Suppose that the blurring is caused by scrolling, then keep the focus on the sticky scroll
+				// This is determined by the fact that the height of the widget has become zero and there has been no position revealing
+				if (
+					this._positionRevealed === false &&
+					stickyScrollDomNode.clientHeight === 0
+				) {
+					this._focusedStickyElementIndex = -1;
+					this.focus();
+				}
+				// In all other casees, dispose the focus on the sticky scroll
+				else {
+					this._disposeFocusStickyScrollStore();
+				}
+			}),
+		);
+		this._register(
+			focusTracker.onDidFocus((_) => {
 				this.focus();
-
-			}
-			// In all other casees, dispose the focus on the sticky scroll
-			else {
-				this._disposeFocusStickyScrollStore();
-			}
-		}));
-		this._register(focusTracker.onDidFocus(_ => {
-			this.focus();
-		}));
+			}),
+		);
 		this._registerMouseListeners();
 		// Suppose that mouse down on the sticky scroll, then do not focus on the sticky scroll because this will be followed by the revealing of a position
-		this._register(dom.addDisposableListener(stickyScrollDomNode, dom.EventType.MOUSE_DOWN, (e) => {
-			this._onMouseDown = true;
-		}));
+		this._register(
+			dom.addDisposableListener(
+				stickyScrollDomNode,
+				dom.EventType.MOUSE_DOWN,
+				(e) => {
+					this._onMouseDown = true;
+				},
+			),
+		);
 	}
 
 	get stickyScrollCandidateProvider(): IStickyLineCandidateProvider {

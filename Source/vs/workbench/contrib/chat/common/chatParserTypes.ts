@@ -5,16 +5,16 @@
 
 import { revive } from "../../../../base/common/marshalling.js";
 import {
-	type IOffsetRange,
 	OffsetRange,
+	type IOffsetRange,
 } from "../../../../editor/common/core/offsetRange.js";
 import type { IRange } from "../../../../editor/common/core/range.js";
 import {
+	reviveSerializedAgent,
 	type ChatAgentLocation,
 	type IChatAgentCommand,
 	type IChatAgentData,
 	type IChatAgentService,
-	reviveSerializedAgent,
 } from "./chatAgents.js";
 import type { IChatSlashData } from "./chatSlashCommands.js";
 import type { IChatRequestVariableValue } from "./chatVariables.js";

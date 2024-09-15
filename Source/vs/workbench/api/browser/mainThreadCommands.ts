@@ -11,22 +11,22 @@ import { revive } from "../../../base/common/marshalling.js";
 import { isString } from "../../../base/common/types.js";
 import {
 	CommandsRegistry,
-	type ICommandMetadata,
 	ICommandService,
+	type ICommandMetadata,
 } from "../../../platform/commands/common/commands.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
 import {
-	type Dto,
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
 	SerializableObjectWithBuffers,
+	type Dto,
 } from "../../services/extensions/common/proxyIdentifier.js";
 import {
-	type ExtHostCommandsShape,
 	ExtHostContext,
 	MainContext,
+	type ExtHostCommandsShape,
 	type MainThreadCommandsShape,
 } from "../common/extHost.protocol.js";
 
@@ -39,11 +39,16 @@ export class MainThreadCommands implements MainThreadCommandsShape {
 	constructor(
 		extHostContext: IExtHostContext,
 		@ICommandService private readonly _commandService: ICommandService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 	) {
 		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostCommands);
 
-		this._generateCommandsDocumentationRegistration = CommandsRegistry.registerCommand('_generateCommandsDocumentation', () => this._generateCommandsDocumentation());
+		this._generateCommandsDocumentationRegistration =
+			CommandsRegistry.registerCommand(
+				"_generateCommandsDocumentation",
+				() => this._generateCommandsDocumentation(),
+			);
 	}
 
 	dispose() {

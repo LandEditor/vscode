@@ -11,27 +11,29 @@ import {
 	DisposableStore,
 } from "../../../../base/common/lifecycle.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
+
 import "./stickyScroll.css";
+
 import {
+	OverlayWidgetPositionPreference,
 	type ICodeEditor,
 	type IOverlayWidget,
 	type IOverlayWidgetPosition,
-	OverlayWidgetPositionPreference,
 } from "../../../browser/editorBrowser.js";
 import { getColumnOfNodeOffset } from "../../../browser/viewParts/lines/viewLine.js";
 import { EmbeddedCodeEditorWidget } from "../../../browser/widget/codeEditor/embeddedCodeEditorWidget.js";
 import {
-	type EditorLayoutInfo,
 	EditorOption,
 	RenderLineNumbersType,
+	type EditorLayoutInfo,
 } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
 import { StringBuilder } from "../../../common/core/stringBuilder.js";
 import { LineDecoration } from "../../../common/viewLayout/lineDecorations.js";
 import {
-	type CharacterMapping,
 	RenderLineInput,
 	renderViewLine,
+	type CharacterMapping,
 } from "../../../common/viewLayout/viewLineRenderer.js";
 import {
 	foldingCollapsedIcon,

@@ -13,12 +13,12 @@ import { ContextKeyExpr } from "../../../../platform/contextkey/common/contextke
 import type { ServicesAccessor } from "../../../../platform/instantiation/common/instantiation.js";
 import { ViewAction } from "../../../browser/parts/views/viewPane.js";
 import {
-	IOutlinePane,
-	OutlineSortOrder,
 	ctxAllCollapsed,
 	ctxFilterOnType,
 	ctxFollowsCursor,
 	ctxSortMode,
+	IOutlinePane,
+	OutlineSortOrder,
 } from "./outline.js";
 
 // --- commands

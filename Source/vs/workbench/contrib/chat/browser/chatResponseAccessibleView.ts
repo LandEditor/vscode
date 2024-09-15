@@ -5,8 +5,8 @@
 
 import { renderMarkdownAsPlaintext } from "../../../../base/browser/markdownRenderer.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import {
@@ -21,9 +21,9 @@ import { CONTEXT_IN_CHAT_SESSION } from "../common/chatContextKeys.js";
 import { ChatWelcomeMessageModel } from "../common/chatModel.js";
 import { isResponseVM } from "../common/chatViewModel.js";
 import {
+	IChatWidgetService,
 	type ChatTreeItem,
 	type IChatWidget,
-	IChatWidgetService,
 } from "./chat.js";
 
 export class ChatResponseAccessibleView implements IAccessibleViewImplentation {

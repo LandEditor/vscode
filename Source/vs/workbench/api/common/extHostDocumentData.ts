@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { equals } from "../../../base/common/arrays.js";
 import { ok } from "../../../base/common/assert.js";
 import { Schemas } from "../../../base/common/network.js";

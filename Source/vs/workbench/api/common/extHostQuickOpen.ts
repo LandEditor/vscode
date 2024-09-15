@@ -16,20 +16,21 @@ import type {
 	WorkspaceFolder,
 	WorkspaceFolderPickOptions,
 } from "vscode";
+
 import { coalesce } from "../../../base/common/arrays.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import { isCancellationError } from "../../../base/common/errors.js";
 import { Emitter } from "../../../base/common/event.js";
-import { type IDisposable, dispose } from "../../../base/common/lifecycle.js";
+import { dispose, type IDisposable } from "../../../base/common/lifecycle.js";
 import Severity from "../../../base/common/severity.js";
 import { ThemeIcon as ThemeIconUtils } from "../../../base/common/themables.js";
 import { URI } from "../../../base/common/uri.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import { isProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
+	MainContext,
 	type ExtHostQuickOpenShape,
 	type IMainContext,
-	MainContext,
 	type TransferQuickInput,
 	type TransferQuickInputButton,
 	type TransferQuickPickItemOrSeparator,
@@ -946,9 +947,9 @@ export function createExtHostQuickOpen(
 			return this._valueSelection;
 		}
 
-		set valueSelection(valueSelection:
-			| readonly [number, number]
-			| undefined) {
+		set valueSelection(
+			valueSelection: readonly [number, number] | undefined,
+		) {
 			this._valueSelection = valueSelection;
 			this.update({ valueSelection });
 		}
@@ -957,10 +958,9 @@ export function createExtHostQuickOpen(
 			return this._validationMessage;
 		}
 
-		set validationMessage(validationMessage:
-			| string
-			| InputBoxValidationMessage
-			| undefined) {
+		set validationMessage(
+			validationMessage: string | InputBoxValidationMessage | undefined,
+		) {
 			this._validationMessage = validationMessage;
 			if (!validationMessage) {
 				this.update({

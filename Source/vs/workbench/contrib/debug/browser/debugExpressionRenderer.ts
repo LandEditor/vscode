@@ -31,9 +31,9 @@ import { handleANSIOutput } from "./debugANSIHandling.js";
 import { COPY_EVALUATE_PATH_ID, COPY_VALUE_ID } from "./debugCommands.js";
 import {
 	DebugLinkHoverBehavior,
+	LinkDetector,
 	type DebugLinkHoverBehaviorTypeData,
 	type ILinkDetector,
-	LinkDetector,
 } from "./linkDetector.js";
 
 export interface IValueHoverOptions {
@@ -74,7 +74,11 @@ export class DebugExpressionRenderer {
 		@IHoverService private readonly hoverService: IHoverService,
 	) {
 		this.linkDetector = instantiationService.createInstance(LinkDetector);
-		this.displayType = observableConfigValue('debug.showVariableTypes', false, configurationService);
+		this.displayType = observableConfigValue(
+			"debug.showVariableTypes",
+			false,
+			configurationService,
+		);
 	}
 
 	renderVariable(

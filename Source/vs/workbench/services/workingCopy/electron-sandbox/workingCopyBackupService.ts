@@ -12,8 +12,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { ILogService } from "../../../../platform/log/common/log.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import { INativeWorkbenchEnvironmentService } from "../../environment/electron-sandbox/environmentService.js";
 import { ILifecycleService } from "../../lifecycle/common/lifecycle.js";
@@ -23,12 +23,21 @@ import { NativeWorkingCopyBackupTracker } from "./workingCopyBackupTracker.js";
 
 export class NativeWorkingCopyBackupService extends WorkingCopyBackupService {
 	constructor(
-		@INativeWorkbenchEnvironmentService environmentService: INativeWorkbenchEnvironmentService,
+		@INativeWorkbenchEnvironmentService
+		environmentService: INativeWorkbenchEnvironmentService,
 		@IFileService fileService: IFileService,
 		@ILogService logService: ILogService,
-		@ILifecycleService private readonly lifecycleService: ILifecycleService
+		@ILifecycleService private readonly lifecycleService: ILifecycleService,
 	) {
-		super(environmentService.backupPath ? URI.file(environmentService.backupPath).with({ scheme: environmentService.userRoamingDataHome.scheme }) : undefined, fileService, logService);
+		super(
+			environmentService.backupPath
+				? URI.file(environmentService.backupPath).with({
+						scheme: environmentService.userRoamingDataHome.scheme,
+					})
+				: undefined,
+			fileService,
+			logService,
+		);
 
 		this.registerListeners();
 	}

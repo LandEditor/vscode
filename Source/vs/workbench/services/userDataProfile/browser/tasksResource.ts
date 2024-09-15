@@ -14,20 +14,20 @@ import { IInstantiationService } from "../../../../platform/instantiation/common
 import { ILogService } from "../../../../platform/log/common/log.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
-	type IUserDataProfile,
 	ProfileResourceType,
+	type IUserDataProfile,
 } from "../../../../platform/userDataProfile/common/userDataProfile.js";
 import { API_OPEN_EDITOR_COMMAND_ID } from "../../../browser/parts/editor/editorCommands.js";
 import {
-	type ITreeItemCheckboxState,
 	TreeItemCollapsibleState,
+	type ITreeItemCheckboxState,
 } from "../../../common/views.js";
 import {
+	IUserDataProfileService,
 	type IProfileResource,
 	type IProfileResourceChildTreeItem,
 	type IProfileResourceInitializer,
 	type IProfileResourceTreeItem,
-	IUserDataProfileService,
 } from "../common/userDataProfile.js";
 
 interface ITasksResourceContent {
@@ -36,11 +36,11 @@ interface ITasksResourceContent {
 
 export class TasksResourceInitializer implements IProfileResourceInitializer {
 	constructor(
-		@IUserDataProfileService private readonly userDataProfileService: IUserDataProfileService,
+		@IUserDataProfileService
+		private readonly userDataProfileService: IUserDataProfileService,
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async initialize(content: string): Promise<void> {
 		const tasksContent: ITasksResourceContent = JSON.parse(content);
@@ -59,8 +59,7 @@ export class TasksResource implements IProfileResource {
 	constructor(
 		@IFileService private readonly fileService: IFileService,
 		@ILogService private readonly logService: ILogService,
-	) {
-	}
+	) {}
 
 	async getContent(profile: IUserDataProfile): Promise<string> {
 		const tasksContent = await this.getTasksResourceContent(profile);
@@ -119,9 +118,11 @@ export class TasksResourceTreeItem implements IProfileResourceTreeItem {
 
 	constructor(
 		private readonly profile: IUserDataProfile,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) { }
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+	) {}
 
 	async getChildren(): Promise<IProfileResourceChildTreeItem[]> {
 		return [

@@ -12,17 +12,17 @@ import {
 import { revive } from "../../../base/common/marshalling.js";
 import type { URI } from "../../../base/common/uri.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type ISaveProfileResult,
 	IUserDataProfileImportExportService,
+	type ISaveProfileResult,
 } from "../../services/userDataProfile/common/userDataProfile.js";
 import {
 	ExtHostContext,
-	type ExtHostProfileContentHandlersShape,
 	MainContext,
+	type ExtHostProfileContentHandlersShape,
 	type MainThreadProfileContentHandlersShape,
 } from "../common/extHost.protocol.js";
 
@@ -39,10 +39,13 @@ export class MainThreadProfileContentHandlers
 
 	constructor(
 		context: IExtHostContext,
-		@IUserDataProfileImportExportService private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
+		@IUserDataProfileImportExportService
+		private readonly userDataProfileImportExportService: IUserDataProfileImportExportService,
 	) {
 		super();
-		this.proxy = context.getProxy(ExtHostContext.ExtHostProfileContentHandlers);
+		this.proxy = context.getProxy(
+			ExtHostContext.ExtHostProfileContentHandlers,
+		);
 	}
 
 	async $registerProfileContentHandler(

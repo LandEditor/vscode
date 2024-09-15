@@ -14,6 +14,8 @@ import type { URI } from "../../../../base/common/uri.js";
 import type { IProgress } from "../../../../platform/progress/common/progress.js";
 import { DEFAULT_TEXT_SEARCH_PREVIEW_OPTIONS } from "./search.js";
 import {
+	TextSearchContextNew,
+	TextSearchMatchNew,
 	type AITextSearchProviderNew,
 	type FileSearchProviderNew,
 	type FileSearchProviderOptions,
@@ -21,8 +23,6 @@ import {
 	type Range,
 	type TextSearchCompleteMessage,
 	type TextSearchCompleteNew,
-	TextSearchContextNew,
-	TextSearchMatchNew,
 	type TextSearchProviderNew,
 	type TextSearchProviderOptions,
 	type TextSearchQueryNew,

@@ -71,8 +71,8 @@ export class DragAndDropCommand implements ICommand {
 					this.targetPosition.lineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column +
-							this.selection.endColumn -
-							this.selection.startColumn
+						this.selection.endColumn -
+						this.selection.startColumn
 					: this.selection.endColumn,
 			);
 			return;
@@ -88,8 +88,8 @@ export class DragAndDropCommand implements ICommand {
 				this.targetPosition.lineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column +
-							this.selection.endColumn -
-							this.selection.startColumn
+						this.selection.endColumn -
+						this.selection.startColumn
 					: this.selection.endColumn,
 			);
 			return;
@@ -105,8 +105,8 @@ export class DragAndDropCommand implements ICommand {
 					this.selection.startLineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column +
-							this.selection.endColumn -
-							this.selection.startColumn
+						this.selection.endColumn -
+						this.selection.startColumn
 					: this.selection.endColumn,
 			);
 			return;
@@ -121,11 +121,11 @@ export class DragAndDropCommand implements ICommand {
 					this.selection.startLineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column -
-							this.selection.endColumn +
-							this.selection.startColumn
+						this.selection.endColumn +
+						this.selection.startColumn
 					: this.targetPosition.column -
-							this.selection.endColumn +
-							this.selection.startColumn,
+						this.selection.endColumn +
+						this.selection.startColumn,
 				this.targetPosition.lineNumber,
 				this.selection.startLineNumber === this.selection.endLineNumber
 					? this.targetPosition.column

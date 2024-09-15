@@ -5,11 +5,11 @@
 
 import { DataTransfers } from "../../base/browser/dnd.js";
 import {
-	type IDataTransferItem,
-	UriList,
-	VSDataTransfer,
 	createFileDataTransferItem,
 	createStringDataTransferItem,
+	UriList,
+	VSDataTransfer,
+	type IDataTransferItem,
 } from "../../base/common/dataTransfer.js";
 import { Mimes } from "../../base/common/mime.js";
 import { URI } from "../../base/common/uri.js";

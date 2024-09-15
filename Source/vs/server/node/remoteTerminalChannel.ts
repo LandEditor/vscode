@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as os from "os";
+
 import { promiseWithResolvers } from "../../base/common/async.js";
 import { Emitter, Event } from "../../base/common/event.js";
 import { Disposable } from "../../base/common/lifecycle.js";
@@ -42,11 +43,11 @@ import {
 } from "../../workbench/api/node/extHostCLIServer.js";
 import { createURITransformer } from "../../workbench/api/node/uriTransformer.js";
 import {
+	RemoteTerminalChannelEvent,
+	RemoteTerminalChannelRequest,
 	type ICreateTerminalProcessArguments,
 	type ICreateTerminalProcessResult,
 	type IWorkspaceFolderData,
-	RemoteTerminalChannelEvent,
-	RemoteTerminalChannelRequest,
 } from "../../workbench/contrib/terminal/common/remote/terminal.js";
 import * as terminalEnvironment from "../../workbench/contrib/terminal/common/terminalEnvironment.js";
 import { AbstractVariableResolverService } from "../../workbench/services/configurationResolver/common/variableResolver.js";

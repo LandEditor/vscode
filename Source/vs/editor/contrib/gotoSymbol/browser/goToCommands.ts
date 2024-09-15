@@ -15,12 +15,12 @@ import { assertType } from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
 import * as nls from "../../../../nls.js";
 import {
-	type IAction2F1RequiredOptions,
-	type IAction2Options,
-	type ISubmenuItem,
 	MenuId,
 	MenuRegistry,
 	registerAction2,
+	type IAction2F1RequiredOptions,
+	type IAction2Options,
+	type ISubmenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import {
 	CommandsRegistry,
@@ -37,9 +37,9 @@ import { KeybindingWeight } from "../../../../platform/keybinding/common/keybind
 import { INotificationService } from "../../../../platform/notification/common/notification.js";
 import { IEditorProgressService } from "../../../../platform/progress/common/progress.js";
 import {
+	isCodeEditor,
 	type IActiveCodeEditor,
 	type ICodeEditor,
-	isCodeEditor,
 } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction2,
@@ -52,14 +52,14 @@ import {
 	type GoToLocationValues,
 } from "../../../common/config/editorOptions.js";
 import * as corePosition from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { IWordAtPosition } from "../../../common/core/wordHelper.js";
 import { ScrollType } from "../../../common/editorCommon.js";
 import { EditorContextKeys } from "../../../common/editorContextKeys.js";
 import {
+	isLocationLink,
 	type Location,
 	type LocationLink,
-	isLocationLink,
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";

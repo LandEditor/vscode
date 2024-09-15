@@ -22,19 +22,19 @@ import {
 import { IWorkspaceTrustManagementService } from "../../../../platform/workspace/common/workspaceTrust.js";
 import type { IWorkbenchContribution } from "../../../common/contributions.js";
 import {
+	RunOnOptions,
+	TaskRunSource,
+	TASKS_CATEGORY,
+	TaskSourceKind,
+	type IWorkspaceTaskSource,
+	type Task,
+	type TaskSource,
+	type WorkspaceFileTaskSource,
+} from "../common/tasks.js";
+import {
 	ITaskService,
 	type IWorkspaceFolderTaskResult,
 } from "../common/taskService.js";
-import {
-	type IWorkspaceTaskSource,
-	RunOnOptions,
-	TASKS_CATEGORY,
-	type Task,
-	TaskRunSource,
-	type TaskSource,
-	TaskSourceKind,
-	type WorkspaceFileTaskSource,
-} from "../common/tasks.js";
 
 const ALLOW_AUTOMATIC_TASKS = "task.allowAutomaticTasks";
 
@@ -45,16 +45,27 @@ export class RunAutomaticTasks
 	private _hasRunTasks = false;
 	constructor(
 		@ITaskService private readonly _taskService: ITaskService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IWorkspaceTrustManagementService private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@ILogService private readonly _logService: ILogService) {
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IWorkspaceTrustManagementService
+		private readonly _workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@ILogService private readonly _logService: ILogService,
+	) {
 		super();
 		if (this._taskService.isReconnected) {
 			this._tryRunTasks();
 		} else {
-			this._register(Event.once(this._taskService.onDidReconnectToTasks)(async () => await this._tryRunTasks()));
+			this._register(
+				Event.once(this._taskService.onDidReconnectToTasks)(
+					async () => await this._tryRunTasks(),
+				),
+			);
 		}
-		this._register(this._workspaceTrustManagementService.onDidChangeTrust(async () => await this._tryRunTasks()));
+		this._register(
+			this._workspaceTrustManagementService.onDidChangeTrust(
+				async () => await this._tryRunTasks(),
+			),
+		);
 	}
 
 	private async _tryRunTasks() {

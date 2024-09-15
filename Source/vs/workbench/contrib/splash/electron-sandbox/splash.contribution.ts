@@ -10,8 +10,8 @@ import {
 import { INativeHostService } from "../../../../platform/native/common/native.js";
 import type { IPartsSplash } from "../../../../platform/theme/common/themeService.js";
 import {
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
 } from "../../../common/contributions.js";
 import { PartsSplash } from "../browser/partsSplash.js";
 import { ISplashStorageService } from "../browser/splash.js";
@@ -21,7 +21,8 @@ class SplashStorageService implements ISplashStorageService {
 	readonly saveWindowSplash: (splash: IPartsSplash) => Promise<void>;
 
 	constructor(@INativeHostService nativeHostService: INativeHostService) {
-		this.saveWindowSplash = nativeHostService.saveWindowSplash.bind(nativeHostService);
+		this.saveWindowSplash =
+			nativeHostService.saveWindowSplash.bind(nativeHostService);
 	}
 }
 

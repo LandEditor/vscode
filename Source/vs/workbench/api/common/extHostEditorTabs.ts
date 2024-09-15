@@ -4,19 +4,20 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { diffSets } from "../../../base/common/collections.js";
 import { Emitter } from "../../../base/common/event.js";
 import { assertIsDefined } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
+	MainContext,
+	TabInputKind,
+	TabModelOperationKind,
 	type IEditorTabDto,
 	type IEditorTabGroupDto,
 	type IExtHostEditorTabsShape,
-	MainContext,
 	type MainThreadEditorTabsShape,
-	TabInputKind,
-	TabModelOperationKind,
 	type TabOperation,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";

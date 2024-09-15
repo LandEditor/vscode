@@ -5,11 +5,11 @@
 
 import { isEqual } from "../../../../base/common/resources.js";
 import {
-	type ICodeEditor,
 	getCodeEditor,
 	isCodeEditor,
 	isCompositeEditor,
 	isDiffEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import { AbstractCodeEditorService } from "../../../../editor/browser/services/abstractCodeEditorService.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
@@ -33,12 +33,21 @@ export class CodeEditorService extends AbstractCodeEditorService {
 	constructor(
 		@IEditorService private readonly editorService: IEditorService,
 		@IThemeService themeService: IThemeService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super(themeService);
 
-		this._register(this.registerCodeEditorOpenHandler(this.doOpenCodeEditor.bind(this)));
-		this._register(this.registerCodeEditorOpenHandler(this.doOpenCodeEditorFromDiff.bind(this)));
+		this._register(
+			this.registerCodeEditorOpenHandler(
+				this.doOpenCodeEditor.bind(this),
+			),
+		);
+		this._register(
+			this.registerCodeEditorOpenHandler(
+				this.doOpenCodeEditorFromDiff.bind(this),
+			),
+		);
 	}
 
 	getActiveCodeEditor(): ICodeEditor | null {

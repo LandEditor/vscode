@@ -14,9 +14,9 @@ import { ResourceMap } from "../../../base/common/map.js";
 import { isWindows } from "../../../base/common/platform.js";
 import { joinPath } from "../../../base/common/resources.js";
 import {
-	type Mutable,
 	isNumber,
 	isString,
+	type Mutable,
 } from "../../../base/common/types.js";
 import { URI } from "../../../base/common/uri.js";
 import * as nls from "../../../nls.js";

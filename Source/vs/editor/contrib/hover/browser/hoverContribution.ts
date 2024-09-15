@@ -29,7 +29,9 @@ import {
 import { HoverParticipantRegistry } from "./hoverTypes.js";
 import { MarkdownHoverParticipant } from "./markdownHoverParticipant.js";
 import { MarkerHoverParticipant } from "./markerHoverParticipant.js";
+
 import "./hover.css";
+
 import { AccessibleViewRegistry } from "../../../../platform/accessibility/browser/accessibleViewRegistry.js";
 import {
 	ExtHoverAccessibleView,

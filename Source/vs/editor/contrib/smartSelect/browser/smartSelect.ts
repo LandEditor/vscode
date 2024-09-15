@@ -18,10 +18,10 @@ import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type IActionOptions,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type IActionOptions,
+	type ServicesAccessor,
 } from "../../../browser/editorExtensions.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import { Position } from "../../../common/core/position.js";
@@ -72,8 +72,9 @@ export class SmartSelectController implements IEditorContribution {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-	) { }
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+	) {}
 
 	dispose(): void {
 		this._selectionListener?.dispose();

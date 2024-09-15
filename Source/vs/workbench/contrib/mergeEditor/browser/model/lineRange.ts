@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type Comparator,
 	compareBy,
 	numberComparator,
+	type Comparator,
 } from "../../../../../base/common/arrays.js";
 import { BugIndicatingError } from "../../../../../base/common/errors.js";
 import { Constants } from "../../../../../base/common/uint.js";

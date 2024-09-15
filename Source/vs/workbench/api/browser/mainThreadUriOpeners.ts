@@ -19,19 +19,19 @@ import { IStorageService } from "../../../platform/storage/common/storage.js";
 import { defaultExternalUriOpenerId } from "../../contrib/externalUriOpener/common/configuration.js";
 import { ContributedExternalUriOpenersStore } from "../../contrib/externalUriOpener/common/contributedOpeners.js";
 import {
+	IExternalUriOpenerService,
 	type IExternalOpenerProvider,
 	type IExternalUriOpener,
-	IExternalUriOpenerService,
 } from "../../contrib/externalUriOpener/common/externalUriOpenerService.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
 import {
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
 	ExtHostContext,
-	type ExtHostUriOpenersShape,
 	MainContext,
+	type ExtHostUriOpenersShape,
 	type MainThreadUriOpenersShape,
 } from "../common/extHost.protocol.js";
 
@@ -56,17 +56,26 @@ export class MainThreadUriOpeners
 	constructor(
 		context: IExtHostContext,
 		@IStorageService storageService: IStorageService,
-		@IExternalUriOpenerService externalUriOpenerService: IExternalUriOpenerService,
+		@IExternalUriOpenerService
+		externalUriOpenerService: IExternalUriOpenerService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@IOpenerService private readonly openerService: IOpenerService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 	) {
 		super();
 		this.proxy = context.getProxy(ExtHostContext.ExtHostUriOpeners);
 
-		this._register(externalUriOpenerService.registerExternalOpenerProvider(this));
+		this._register(
+			externalUriOpenerService.registerExternalOpenerProvider(this),
+		);
 
-		this._contributedExternalUriOpenersStore = this._register(new ContributedExternalUriOpenersStore(storageService, extensionService));
+		this._contributedExternalUriOpenersStore = this._register(
+			new ContributedExternalUriOpenersStore(
+				storageService,
+				extensionService,
+			),
+		);
 	}
 
 	public async *getOpeners(

@@ -6,17 +6,17 @@
 import { Promises, ThrottledDelayer } from "../../../../base/common/async.js";
 import { VSBuffer } from "../../../../base/common/buffer.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { isCancellationError } from "../../../../base/common/errors.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import {
 	Disposable,
-	type IDisposable,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import * as resources from "../../../../base/common/resources.js";
 import { isNumber } from "../../../../base/common/types.js";
@@ -34,9 +34,9 @@ import { IModelService } from "../../../../editor/common/services/model.js";
 import { IFileService } from "../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
+	ILoggerService,
 	ILogService,
 	type ILogger,
-	ILoggerService,
 } from "../../../../platform/log/common/log.js";
 import { OutputChannelUpdateMode } from "../../../services/output/common/output.js";
 
@@ -142,12 +142,19 @@ export class FileOutputChannelModel
 		@IFileService private readonly fileService: IFileService,
 		@IModelService private readonly modelService: IModelService,
 		@ILogService logService: ILogService,
-		@IEditorWorkerService private readonly editorWorkerService: IEditorWorkerService,
+		@IEditorWorkerService
+		private readonly editorWorkerService: IEditorWorkerService,
 	) {
 		super();
 
-		this.fileHandler = this._register(new OutputFileListener(this.file, this.fileService, logService));
-		this._register(this.fileHandler.onDidContentChange(size => this.onDidContentChange(size)));
+		this.fileHandler = this._register(
+			new OutputFileListener(this.file, this.fileService, logService),
+		);
+		this._register(
+			this.fileHandler.onDidContentChange((size) =>
+				this.onDidContentChange(size),
+			),
+		);
 		this._register(toDisposable(() => this.fileHandler.unwatch()));
 	}
 
@@ -503,11 +510,17 @@ export class DelegatedOutputChannelModel
 		modelUri: URI,
 		language: ILanguageSelection,
 		outputDir: Promise<URI>,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
-		this.outputChannelModel = this.createOutputChannelModel(id, modelUri, language, outputDir);
+		this.outputChannelModel = this.createOutputChannelModel(
+			id,
+			modelUri,
+			language,
+			outputDir,
+		);
 	}
 
 	private async createOutputChannelModel(

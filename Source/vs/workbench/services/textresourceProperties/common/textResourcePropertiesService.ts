@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Schemas } from "../../../../base/common/network.js";
-import { OS, OperatingSystem } from "../../../../base/common/platform.js";
+import { OperatingSystem, OS } from "../../../../base/common/platform.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { ITextResourcePropertiesService } from "../../../../editor/common/services/textResourceConfiguration.js";
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
@@ -29,12 +29,16 @@ export class TextResourcePropertiesService
 	private remoteEnvironment: IRemoteAgentEnvironment | null = null;
 
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IRemoteAgentService remoteAgentService: IRemoteAgentService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IStorageService private readonly storageService: IStorageService
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IStorageService private readonly storageService: IStorageService,
 	) {
-		remoteAgentService.getEnvironment().then(remoteEnv => this.remoteEnvironment = remoteEnv);
+		remoteAgentService
+			.getEnvironment()
+			.then((remoteEnv) => (this.remoteEnvironment = remoteEnv));
 	}
 
 	getEOL(resource?: URI, language?: string): string {

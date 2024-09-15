@@ -5,15 +5,15 @@
 
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import {
+	toDisposable,
 	type IDisposable,
 	type IReference,
-	toDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { isDefined } from "../../../../base/common/types.js";
 import {
 	ContextKeyExpr,
-	type ContextKeyExpression,
 	IContextKeyService,
+	type ContextKeyExpression,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import {
 	ExtensionIdentifier,
@@ -169,14 +169,24 @@ export class DebugVisualizerService implements IDebugVisualizerService {
 	}[] = [];
 
 	constructor(
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 		@IExtensionService private readonly extensionService: IExtensionService,
 		@ILogService private readonly logService: ILogService,
 	) {
 		visualizersExtensionPoint.setHandler((_, { added, removed }) => {
-			this.registrations = this.registrations.filter(r =>
-				!removed.some(e => ExtensionIdentifier.equals(e.description.identifier, r.extensionId)));
-			added.forEach(e => this.processExtensionRegistration(e.description));
+			this.registrations = this.registrations.filter(
+				(r) =>
+					!removed.some((e) =>
+						ExtensionIdentifier.equals(
+							e.description.identifier,
+							r.extensionId,
+						),
+					),
+			);
+			added.forEach((e) =>
+				this.processExtensionRegistration(e.description),
+			);
 		});
 	}
 

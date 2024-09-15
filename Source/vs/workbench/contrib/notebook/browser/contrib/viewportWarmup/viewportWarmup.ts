@@ -11,16 +11,16 @@ import { cellRangesToIndexes } from "../../../common/notebookRange.js";
 import { INotebookService } from "../../../common/notebookService.js";
 import {
 	CellEditState,
+	RenderOutputType,
 	type IInsetRenderOutput,
 	type INotebookEditor,
 	type INotebookEditorContribution,
 	type INotebookEditorDelegate,
-	RenderOutputType,
 } from "../../notebookBrowser.js";
 import { registerNotebookContribution } from "../../notebookEditorExtensions.js";
 import {
-	type CodeCellViewModel,
 	outputDisplayLimit,
+	type CodeCellViewModel,
 } from "../../viewModel/codeCellViewModel.js";
 
 class NotebookViewportContribution
@@ -38,19 +38,29 @@ class NotebookViewportContribution
 	) {
 		super();
 
-		this._warmupViewport = new RunOnceScheduler(() => this._warmupViewportNow(), 200);
+		this._warmupViewport = new RunOnceScheduler(
+			() => this._warmupViewportNow(),
+			200,
+		);
 		this._register(this._warmupViewport);
-		this._register(this._notebookEditor.onDidScroll(() => {
-			this._warmupViewport.schedule();
-		}));
+		this._register(
+			this._notebookEditor.onDidScroll(() => {
+				this._warmupViewport.schedule();
+			}),
+		);
 
-		this._warmupDocument = new RunOnceScheduler(() => this._warmupDocumentNow(), 200);
+		this._warmupDocument = new RunOnceScheduler(
+			() => this._warmupDocumentNow(),
+			200,
+		);
 		this._register(this._warmupDocument);
-		this._register(this._notebookEditor.onDidAttachViewModel(() => {
-			if (this._notebookEditor.hasModel()) {
-				this._warmupDocument?.schedule();
-			}
-		}));
+		this._register(
+			this._notebookEditor.onDidAttachViewModel(() => {
+				if (this._notebookEditor.hasModel()) {
+					this._warmupDocument?.schedule();
+				}
+			}),
+		);
 
 		if (this._notebookEditor.hasModel()) {
 			this._warmupDocument?.schedule();

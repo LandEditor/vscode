@@ -19,9 +19,9 @@ import { IInstantiationService } from "../../../../../platform/instantiation/com
 import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
 import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
 import {
+	MouseTargetType,
 	type ICodeEditor,
 	type IEditorMouseEvent,
-	MouseTargetType,
 } from "../../../../browser/editorBrowser.js";
 import { MarkdownRenderer } from "../../../../browser/widget/markdownRenderer/browser/markdownRenderer.js";
 import { EditorOption } from "../../../../common/config/editorOptions.js";
@@ -29,15 +29,15 @@ import { Range } from "../../../../common/core/range.js";
 import { ILanguageService } from "../../../../common/languages/language.js";
 import type { IModelDecoration } from "../../../../common/model.js";
 import {
-	type HoverAnchor,
 	HoverAnchorType,
 	HoverForeignElementAnchor,
+	RenderedHoverParts,
+	type HoverAnchor,
 	type IEditorHoverParticipant,
 	type IEditorHoverRenderContext,
 	type IHoverPart,
 	type IRenderedHoverPart,
 	type IRenderedHoverParts,
-	RenderedHoverParts,
 } from "../../../hover/browser/hoverTypes.js";
 import { InlineCompletionsController } from "../controller/inlineCompletionsController.js";
 import { InlineSuggestionHintsContentWidget } from "./inlineCompletionsHintsWidget.js";
@@ -67,11 +67,13 @@ export class InlineCompletionsHoverParticipant
 		private readonly _editor: ICodeEditor,
 		@ILanguageService private readonly _languageService: ILanguageService,
 		@IOpenerService private readonly _openerService: IOpenerService,
-		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService,
-	) {
-	}
+		@IAccessibilityService
+		private readonly accessibilityService: IAccessibilityService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
+	) {}
 
 	suggestHoverAnchor(mouseEvent: IEditorMouseEvent): HoverAnchor | null {
 		const controller = InlineCompletionsController.get(this._editor);

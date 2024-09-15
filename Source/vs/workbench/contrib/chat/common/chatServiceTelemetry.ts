@@ -208,7 +208,7 @@ type ChatFollowupsRetrievedClassification = {
 export class ChatServiceTelemetry {
 	constructor(
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-	) { }
+	) {}
 
 	notifyUserAction(action: IChatUserActionEvent): void {
 		if (action.action.kind === "vote") {

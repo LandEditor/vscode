@@ -5,13 +5,13 @@
 
 import { localize } from "../../../../nls.js";
 import {
-	type IExecutableBasedExtensionTip,
 	IExtensionTipsService,
+	type IExecutableBasedExtensionTip,
 } from "../../../../platform/extensionManagement/common/extensionManagement.js";
 import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type ExtensionRecommendation,
 	ExtensionRecommendations,
+	type ExtensionRecommendation,
 } from "./extensionRecommendations.js";
 
 export class ExeBasedRecommendations extends ExtensionRecommendations {
@@ -34,7 +34,8 @@ export class ExeBasedRecommendations extends ExtensionRecommendations {
 	}
 
 	constructor(
-		@IExtensionTipsService private readonly extensionTipsService: IExtensionTipsService,
+		@IExtensionTipsService
+		private readonly extensionTipsService: IExtensionTipsService,
 	) {
 		super();
 	}

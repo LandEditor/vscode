@@ -5,6 +5,7 @@
 
 import { asArray } from "../../../../base/common/arrays.js";
 import * as Async from "../../../../base/common/async.js";
+import { Codicon } from "../../../../base/common/codicons.js";
 import type { IStringDictionary } from "../../../../base/common/collections.js";
 import { Emitter, type Event } from "../../../../base/common/event.js";
 import { isUNC } from "../../../../base/common/extpath.js";
@@ -14,37 +15,24 @@ import {
 	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { LinkedMap, Touch } from "../../../../base/common/map.js";
+import { Schemas } from "../../../../base/common/network.js";
 import * as Objects from "../../../../base/common/objects.js";
 import * as path from "../../../../base/common/path.js";
 import * as Platform from "../../../../base/common/platform.js";
 import * as resources from "../../../../base/common/resources.js";
 import Severity from "../../../../base/common/severity.js";
-import * as Types from "../../../../base/common/types.js";
-import * as nls from "../../../../nls.js";
-
-import type { IModelService } from "../../../../editor/common/services/model.js";
-import type { IFileService } from "../../../../platform/files/common/files.js";
-import {
-	type IMarkerService,
-	MarkerSeverity,
-} from "../../../../platform/markers/common/markers.js";
-import {
-	type IWorkspaceContextService,
-	type IWorkspaceFolder,
-	WorkbenchState,
-} from "../../../../platform/workspace/common/workspace.js";
-import { Markers } from "../../markers/common/markers.js";
-import {
-	type ProblemMatcher,
-	ProblemMatcherRegistry /*, ProblemPattern, getResource */,
-} from "../common/problemMatcher.js";
-
-import { Codicon } from "../../../../base/common/codicons.js";
-import { Schemas } from "../../../../base/common/network.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
+import * as Types from "../../../../base/common/types.js";
 import { URI } from "../../../../base/common/uri.js";
+import type { IModelService } from "../../../../editor/common/services/model.js";
+import * as nls from "../../../../nls.js";
+import type { IFileService } from "../../../../platform/files/common/files.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import type { ILogService } from "../../../../platform/log/common/log.js";
+import {
+	MarkerSeverity,
+	type IMarkerService,
+} from "../../../../platform/markers/common/markers.js";
 import type { INotificationService } from "../../../../platform/notification/common/notification.js";
 import type {
 	IShellLaunchConfig,
@@ -52,8 +40,13 @@ import type {
 } from "../../../../platform/terminal/common/terminal.js";
 import { formatMessageForTerminal } from "../../../../platform/terminal/common/terminalStrings.js";
 import {
-	type IViewDescriptorService,
+	WorkbenchState,
+	type IWorkspaceContextService,
+	type IWorkspaceFolder,
+} from "../../../../platform/workspace/common/workspace.js";
+import {
 	ViewContainerLocation,
+	type IViewDescriptorService,
 } from "../../../common/views.js";
 import type { IConfigurationResolverService } from "../../../services/configurationResolver/common/configurationResolver.js";
 import type { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
@@ -61,6 +54,7 @@ import type { IOutputService } from "../../../services/output/common/output.js";
 import type { IPaneCompositePartService } from "../../../services/panecomposite/browser/panecomposite.js";
 import type { IPathService } from "../../../services/path/common/pathService.js";
 import type { IViewsService } from "../../../services/views/common/viewsService.js";
+import { Markers } from "../../markers/common/markers.js";
 import type {
 	ITerminalGroupService,
 	ITerminalInstance,
@@ -73,8 +67,8 @@ import {
 } from "../../terminal/browser/terminalEscapeSequences.js";
 import { TerminalProcessExtHostProxy } from "../../terminal/browser/terminalProcessExtHostProxy.js";
 import {
-	type ITerminalProfileResolverService,
 	TERMINAL_VIEW_ID,
+	type ITerminalProfileResolverService,
 } from "../../terminal/common/terminal.js";
 import {
 	ProblemCollectorEventKind,
@@ -82,28 +76,27 @@ import {
 	StartStopProblemCollector,
 	WatchingProblemCollector,
 } from "../common/problemCollectors.js";
+import {
+	ProblemMatcherRegistry /*, ProblemPattern, getResource */,
+	type ProblemMatcher,
+} from "../common/problemMatcher.js";
 import { GroupKind } from "../common/taskConfiguration.js";
 import {
-	type IResolveSet,
-	type IResolvedVariables,
-	type ITaskExecuteResult,
-	type ITaskResolver,
-	type ITaskSummary,
-	type ITaskSystem,
-	type ITaskSystemInfo,
-	type ITaskSystemInfoResolver,
-	type ITaskTerminateResponse,
-	TaskError,
-	TaskErrors,
-	TaskExecuteKind,
-	Triggers,
-} from "../common/taskSystem.js";
-import {
-	type CommandOptions,
 	CommandString,
 	ContributedTask,
 	CustomTask,
 	DependsOrder,
+	InMemoryTask,
+	PanelKind,
+	RevealKind,
+	RevealProblemKind,
+	RuntimeType,
+	ShellQuoting,
+	TaskEvent,
+	TaskEventKind,
+	TaskScope,
+	TaskSourceKind,
+	type CommandOptions,
 	type ICommandConfiguration,
 	type IConfigurationProperties,
 	type IExtensionTaskSource,
@@ -111,18 +104,23 @@ import {
 	type IShellConfiguration,
 	type IShellQuotingOptions,
 	type ITaskEvent,
-	InMemoryTask,
-	PanelKind,
-	RevealKind,
-	RevealProblemKind,
-	RuntimeType,
-	ShellQuoting,
 	type Task,
-	TaskEvent,
-	TaskEventKind,
-	TaskScope,
-	TaskSourceKind,
 } from "../common/tasks.js";
+import {
+	TaskError,
+	TaskErrors,
+	TaskExecuteKind,
+	Triggers,
+	type IResolvedVariables,
+	type IResolveSet,
+	type ITaskExecuteResult,
+	type ITaskResolver,
+	type ITaskSummary,
+	type ITaskSystem,
+	type ITaskSystemInfo,
+	type ITaskSystemInfoResolver,
+	type ITaskTerminateResponse,
+} from "../common/taskSystem.js";
 import { TaskTerminalStatus } from "./taskTerminalStatus.js";
 
 interface ITerminalData {
@@ -2468,8 +2466,8 @@ export class TerminalTaskSystem extends Disposable implements ITaskSystem {
 		this._terminalCreationQueue = this._terminalCreationQueue.then(() =>
 			this._doCreateTerminal(task, group, launchConfigs),
 		);
-		const terminal: ITerminalInstance = (await this
-			._terminalCreationQueue)!;
+		const terminal: ITerminalInstance =
+			(await this._terminalCreationQueue)!;
 		if (task.configurationProperties.isBackground) {
 			terminal.shellLaunchConfig.reconnectionProperties = {
 				ownerId: ReconnectionType,

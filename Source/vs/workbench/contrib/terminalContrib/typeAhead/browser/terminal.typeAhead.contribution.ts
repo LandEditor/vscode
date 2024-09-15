@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import {
 	DisposableStore,
 	toDisposable,
@@ -18,12 +19,12 @@ import type {
 import { registerTerminalContribution } from "../../../terminal/browser/terminalExtensions.js";
 import type { TerminalWidgetManager } from "../../../terminal/browser/widgets/widgetManager.js";
 import {
-	type ITerminalProcessManager,
 	TERMINAL_CONFIG_SECTION,
+	type ITerminalProcessManager,
 } from "../../../terminal/common/terminal.js";
 import {
-	type ITerminalTypeAheadConfiguration,
 	TerminalTypeAheadSettingId,
+	type ITerminalTypeAheadConfiguration,
 } from "../common/terminalTypeAheadConfiguration.js";
 import { TypeAheadAddon } from "./terminalTypeAheadAddon.js";
 
@@ -47,8 +48,10 @@ class TerminalTypeAheadContribution
 		instance: ITerminalInstance,
 		private readonly _processManager: ITerminalProcessManager,
 		widgetManager: TerminalWidgetManager,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 	) {
 		super();
 		this.add(toDisposable(() => this._addon?.dispose()));

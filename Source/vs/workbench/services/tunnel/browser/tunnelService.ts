@@ -13,18 +13,19 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import type { IAddressProvider } from "../../../../platform/remote/common/remoteAgentConnection.js";
 import {
 	AbstractTunnelService,
-	type ITunnelProvider,
-	ITunnelService,
-	type RemoteTunnel,
 	isTunnelProvider,
+	ITunnelService,
+	type ITunnelProvider,
+	type RemoteTunnel,
 } from "../../../../platform/tunnel/common/tunnel.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 
 export class TunnelService extends AbstractTunnelService {
 	constructor(
 		@ILogService logService: ILogService,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService,
-		@IConfigurationService configurationService: IConfigurationService
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService,
+		@IConfigurationService configurationService: IConfigurationService,
 	) {
 		super(logService, configurationService);
 	}

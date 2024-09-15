@@ -36,8 +36,8 @@ import {
 import { IEditorService } from "../../../../services/editor/common/editorService.js";
 import { AnythingQuickAccessProvider } from "../../../search/browser/anythingQuickAccess.js";
 import {
-	type ISymbolQuickPickItem,
 	SymbolsQuickAccessProvider,
+	type ISymbolQuickPickItem,
 } from "../../../search/browser/symbolsQuickAccess.js";
 import {
 	ChatAgentLocation,
@@ -52,9 +52,9 @@ import { ChatRequestAgentPart } from "../../common/chatParserTypes.js";
 import { IChatVariablesService } from "../../common/chatVariables.js";
 import { ILanguageModelToolsService } from "../../common/languageModelToolsService.js";
 import {
-	type IChatWidget,
 	IChatWidgetService,
 	IQuickChatService,
+	type IChatWidget,
 } from "../chat.js";
 import { isQuickChat } from "../chatWidget.js";
 import { ChatContextAttachments } from "../contrib/chatContextAttachments.js";

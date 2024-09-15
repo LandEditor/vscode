@@ -4,12 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { URI } from "../../../base/common/uri.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import { checkProposedApiEnabled } from "../../services/extensions/common/extensions.js";
 import {
-	type IMainContext,
 	MainContext,
+	type IMainContext,
 	type MainThreadDiaglogsShape,
 } from "./extHost.protocol.js";
 

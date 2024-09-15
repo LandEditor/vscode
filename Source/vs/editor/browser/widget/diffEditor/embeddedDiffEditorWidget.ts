@@ -22,6 +22,7 @@ import {
 	DiffEditorWidget,
 	type IDiffCodeEditorWidgetOptions,
 } from "./diffEditorWidget.js";
+
 export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 	private readonly _parentEditor: ICodeEditor;
 	private readonly _overwriteOptions: IDiffEditorOptions;
@@ -34,7 +35,8 @@ export class EmbeddedDiffEditorWidget extends DiffEditorWidget {
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IInstantiationService instantiationService: IInstantiationService,
 		@ICodeEditorService codeEditorService: ICodeEditorService,
-		@IAccessibilitySignalService accessibilitySignalService: IAccessibilitySignalService,
+		@IAccessibilitySignalService
+		accessibilitySignalService: IAccessibilitySignalService,
 		@IEditorProgressService editorProgressService: IEditorProgressService,
 	) {
 		super(

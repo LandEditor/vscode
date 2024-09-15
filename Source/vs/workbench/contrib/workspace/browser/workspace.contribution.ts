@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/workspaceTrustEditor.css";
+
 import { Codicon } from "../../../../base/common/codicons.js";
 import {
-	type IMarkdownString,
 	MarkdownString,
+	type IMarkdownString,
 } from "../../../../base/common/htmlContent.js";
 import {
 	Disposable,
@@ -34,8 +35,8 @@ import {
 } from "../../../../platform/configuration/common/configurationRegistry.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
 import { IEnvironmentService } from "../../../../platform/environment/common/environment.js";
@@ -60,13 +61,13 @@ import {
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import { isVirtualWorkspace } from "../../../../platform/workspace/common/virtualWorkspace.js";
 import {
-	type ISingleFolderWorkspaceIdentifier,
-	IWorkspaceContextService,
-	type IWorkspaceFoldersWillChangeEvent,
-	WorkbenchState,
 	isEmptyWorkspaceIdentifier,
 	isSingleFolderWorkspaceIdentifier,
+	IWorkspaceContextService,
 	toWorkspaceIdentifier,
+	WorkbenchState,
+	type ISingleFolderWorkspaceIdentifier,
+	type IWorkspaceFoldersWillChangeEvent,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
 	IWorkspaceTrustEnablementService,
@@ -80,11 +81,11 @@ import {
 } from "../../../browser/editor.js";
 import { securityConfigurationNodeBase } from "../../../common/configuration.js";
 import {
-	type IWorkbenchContribution,
-	type IWorkbenchContributionsRegistry,
+	registerWorkbenchContribution2,
 	Extensions as WorkbenchExtensions,
 	WorkbenchPhase,
-	registerWorkbenchContribution2,
+	type IWorkbenchContribution,
+	type IWorkbenchContributionsRegistry,
 } from "../../../common/contributions.js";
 import {
 	EditorExtensions,
@@ -93,8 +94,8 @@ import {
 } from "../../../common/editor.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
 import {
-	type IBannerItem,
 	IBannerService,
+	type IBannerItem,
 } from "../../../services/banner/browser/bannerService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IWorkbenchEnvironmentService } from "../../../services/environment/common/environmentService.js";
@@ -103,10 +104,10 @@ import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js"
 import { IPreferencesService } from "../../../services/preferences/common/preferences.js";
 import { IRemoteAgentService } from "../../../services/remote/common/remoteAgentService.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 } from "../../../services/statusbar/browser/statusbar.js";
 import { WorkspaceTrustEditorInput } from "../../../services/workspaces/browser/workspaceTrustEditorInput.js";
 import {
@@ -122,7 +123,7 @@ import {
 	MANAGE_TRUST_COMMAND_ID,
 	WorkspaceTrustContext,
 } from "../common/workspace.js";
-import { WorkspaceTrustEditor, shieldIcon } from "./workspaceTrustEditor.js";
+import { shieldIcon, WorkspaceTrustEditor } from "./workspaceTrustEditor.js";
 
 const BANNER_RESTRICTED_MODE = "workbench.banner.restrictedMode";
 const STARTUP_PROMPT_SHOWN_KEY = "workspace.trust.startupPrompt.shown";
@@ -138,8 +139,10 @@ export class WorkspaceTrustContextKeys
 
 	constructor(
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IWorkspaceTrustEnablementService workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IWorkspaceTrustManagementService workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustEnablementService
+		workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IWorkspaceTrustManagementService
+		workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
 
@@ -183,9 +186,13 @@ export class WorkspaceTrustRequestHandler
 	constructor(
 		@IDialogService private readonly dialogService: IDialogService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService) {
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+	) {
 		super();
 
 		this.registerListeners();
@@ -441,43 +448,58 @@ export class WorkspaceTrustUXHandler
 
 	constructor(
 		@IDialogService private readonly dialogService: IDialogService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWorkspaceTrustEnablementService private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceTrustEnablementService
+		private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@IStatusbarService private readonly statusbarService: IStatusbarService,
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkspaceTrustRequestService private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
+		@IWorkspaceTrustRequestService
+		private readonly workspaceTrustRequestService: IWorkspaceTrustRequestService,
 		@IBannerService private readonly bannerService: IBannerService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IHostService private readonly hostService: IHostService,
 		@IProductService private readonly productService: IProductService,
-		@IRemoteAgentService private readonly remoteAgentService: IRemoteAgentService,
-		@IEnvironmentService private readonly environmentService: IEnvironmentService,
+		@IRemoteAgentService
+		private readonly remoteAgentService: IRemoteAgentService,
+		@IEnvironmentService
+		private readonly environmentService: IEnvironmentService,
 		@IFileService private readonly fileService: IFileService,
 	) {
 		super();
 
-		this.statusbarEntryAccessor = this._register(new MutableDisposable<IStatusbarEntryAccessor>());
+		this.statusbarEntryAccessor = this._register(
+			new MutableDisposable<IStatusbarEntryAccessor>(),
+		);
 
 		(async () => {
+			await this.workspaceTrustManagementService
+				.workspaceTrustInitialized;
 
-			await this.workspaceTrustManagementService.workspaceTrustInitialized;
-
-			if (this.workspaceTrustEnablementService.isWorkspaceTrustEnabled()) {
+			if (
+				this.workspaceTrustEnablementService.isWorkspaceTrustEnabled()
+			) {
 				this.registerListeners();
-				this.updateStatusbarEntry(this.workspaceTrustManagementService.isWorkspaceTrusted());
+				this.updateStatusbarEntry(
+					this.workspaceTrustManagementService.isWorkspaceTrusted(),
+				);
 
 				// Show modal dialog
 				if (this.hostService.hasFocus) {
 					this.showModalOnStart();
 				} else {
-					const focusDisposable = this.hostService.onDidChangeFocus(focused => {
-						if (focused) {
-							focusDisposable.dispose();
-							this.showModalOnStart();
-						}
-					});
+					const focusDisposable = this.hostService.onDidChangeFocus(
+						(focused) => {
+							if (focused) {
+								focusDisposable.dispose();
+								this.showModalOnStart();
+							}
+						},
+					);
 				}
 			}
 		})();
@@ -1153,12 +1175,10 @@ registerAction2(
 		}
 
 		run(accessor: ServicesAccessor) {
-			accessor
-				.get(IPreferencesService)
-				.openUserSettings({
-					jsonEditor: false,
-					query: `@tag:${WORKSPACE_TRUST_SETTING_TAG}`,
-				});
+			accessor.get(IPreferencesService).openUserSettings({
+				jsonEditor: false,
+				query: `@tag:${WORKSPACE_TRUST_SETTING_TAG}`,
+			});
 		}
 	},
 );
@@ -1313,21 +1333,32 @@ class WorkspaceTrustTelemetryContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IWorkspaceTrustEnablementService private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
-		@IWorkspaceTrustManagementService private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceTrustEnablementService
+		private readonly workspaceTrustEnablementService: IWorkspaceTrustEnablementService,
+		@IWorkspaceTrustManagementService
+		private readonly workspaceTrustManagementService: IWorkspaceTrustManagementService,
 	) {
 		super();
 
-		this.workspaceTrustManagementService.workspaceTrustInitialized
-			.then(() => {
+		this.workspaceTrustManagementService.workspaceTrustInitialized.then(
+			() => {
 				this.logInitialWorkspaceTrustInfo();
-				this.logWorkspaceTrust(this.workspaceTrustManagementService.isWorkspaceTrusted());
+				this.logWorkspaceTrust(
+					this.workspaceTrustManagementService.isWorkspaceTrusted(),
+				);
 
-				this._register(this.workspaceTrustManagementService.onDidChangeTrust(isTrusted => this.logWorkspaceTrust(isTrusted)));
-			});
+				this._register(
+					this.workspaceTrustManagementService.onDidChangeTrust(
+						(isTrusted) => this.logWorkspaceTrust(isTrusted),
+					),
+				);
+			},
+		);
 	}
 
 	private logInitialWorkspaceTrustInfo(): void {

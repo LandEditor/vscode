@@ -31,7 +31,13 @@ class ExtensionResourceLoaderService extends AbstractExtensionResourceLoaderServ
 		@IConfigurationService configurationService: IConfigurationService,
 		@ILogService private readonly _logService: ILogService,
 	) {
-		super(fileService, storageService, productService, environmentService, configurationService);
+		super(
+			fileService,
+			storageService,
+			productService,
+			environmentService,
+			configurationService,
+		);
 	}
 
 	async readExtensionResource(uri: URI): Promise<string> {

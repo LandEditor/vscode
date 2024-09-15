@@ -11,16 +11,16 @@ import { SyncDescriptor } from "../../../../platform/instantiation/common/descri
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
 	Extensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,
 } from "../../../services/extensionManagement/common/extensionFeatures.js";
 import { ExtensionsRegistry } from "../../../services/extensions/common/extensionsRegistry.js";
 import {
-	type ContributedNotebookRendererEntrypoint,
 	NotebookEditorPriority,
+	type ContributedNotebookRendererEntrypoint,
 	type RendererMessagingSpec,
 } from "../common/notebookCommon.js";
 

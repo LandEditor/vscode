@@ -58,11 +58,17 @@ class DiagnosticCellStatusBarItem extends Disposable {
 	constructor(
 		private readonly _notebookViewModel: INotebookViewModel,
 		private readonly cell: CodeCellViewModel,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
 		super();
-		this._register(autorun((reader) => this.updateSparkleItem(reader.readObservable(cell.excecutionError))));
-
+		this._register(
+			autorun((reader) =>
+				this.updateSparkleItem(
+					reader.readObservable(cell.excecutionError),
+				),
+			),
+		);
 	}
 
 	private async updateSparkleItem(error: ICellExecutionError | undefined) {

@@ -20,9 +20,9 @@ import type { Position } from "../../../editor/common/core/position.js";
 import { Range } from "../../../editor/common/core/range.js";
 import { getWordAtText } from "../../../editor/common/core/wordHelper.js";
 import {
+	CompletionItemKind,
 	type CompletionContext,
 	type CompletionItem,
-	CompletionItemKind,
 	type CompletionList,
 } from "../../../editor/common/languages.js";
 import type { ITextModel } from "../../../editor/common/model.js";
@@ -38,34 +38,34 @@ import {
 } from "../../contrib/chat/browser/contrib/chatDynamicVariables.js";
 import {
 	ChatAgentLocation,
+	IChatAgentService,
 	type IChatAgentHistoryEntry,
 	type IChatAgentImplementation,
 	type IChatAgentRequest,
-	IChatAgentService,
 } from "../../contrib/chat/common/chatAgents.js";
 import { ChatRequestAgentPart } from "../../contrib/chat/common/chatParserTypes.js";
 import { ChatRequestParser } from "../../contrib/chat/common/chatRequestParser.js";
 import {
+	IChatService,
 	type IChatContentReference,
 	type IChatFollowup,
 	type IChatProgress,
-	IChatService,
 	type IChatTask,
 	type IChatWarningMessage,
 } from "../../contrib/chat/common/chatService.js";
-import {
-	type IExtHostContext,
-	extHostNamedCustomer,
-} from "../../services/extensions/common/extHostCustomers.js";
 import { IExtensionService } from "../../services/extensions/common/extensions.js";
 import {
-	type ExtHostChatAgentsShape2,
+	extHostNamedCustomer,
+	type IExtHostContext,
+} from "../../services/extensions/common/extHostCustomers.js";
+import {
 	ExtHostContext,
+	MainContext,
+	type ExtHostChatAgentsShape2,
 	type IChatParticipantMetadata,
 	type IChatProgressDto,
 	type IDynamicChatAgentProps,
 	type IExtensionChatAgentMetadata,
-	MainContext,
 	type MainThreadChatAgentsShape2,
 } from "../common/extHost.protocol.js";
 
@@ -143,34 +143,53 @@ export class MainThreadChatAgents2
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IChatAgentService private readonly _chatAgentService: IChatAgentService,
+		@IChatAgentService
+		private readonly _chatAgentService: IChatAgentService,
 		@IChatService private readonly _chatService: IChatService,
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@IChatWidgetService private readonly _chatWidgetService: IChatWidgetService,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@IChatWidgetService
+		private readonly _chatWidgetService: IChatWidgetService,
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
 		@ILogService private readonly _logService: ILogService,
-		@IExtensionService private readonly _extensionService: IExtensionService,
+		@IExtensionService
+		private readonly _extensionService: IExtensionService,
 	) {
 		super();
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostChatAgents2);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostChatAgents2,
+		);
 
-		this._register(this._chatService.onDidDisposeSession(e => {
-			this._proxy.$releaseSession(e.sessionId);
-		}));
-		this._register(this._chatService.onDidPerformUserAction(e => {
-			if (typeof e.agentId === 'string') {
-				for (const [handle, agent] of this._agents) {
-					if (agent.id === e.agentId) {
-						if (e.action.kind === 'vote') {
-							this._proxy.$acceptFeedback(handle, e.result ?? {}, e.action);
-						} else {
-							this._proxy.$acceptAction(handle, e.result || {}, e);
+		this._register(
+			this._chatService.onDidDisposeSession((e) => {
+				this._proxy.$releaseSession(e.sessionId);
+			}),
+		);
+		this._register(
+			this._chatService.onDidPerformUserAction((e) => {
+				if (typeof e.agentId === "string") {
+					for (const [handle, agent] of this._agents) {
+						if (agent.id === e.agentId) {
+							if (e.action.kind === "vote") {
+								this._proxy.$acceptFeedback(
+									handle,
+									e.result ?? {},
+									e.action,
+								);
+							} else {
+								this._proxy.$acceptAction(
+									handle,
+									e.result || {},
+									e,
+								);
+							}
+							break;
 						}
-						break;
 					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	$unregisterAgent(handle: number): void {

@@ -16,13 +16,13 @@ import { IProductService } from "../../../../platform/product/common/productServ
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
 	IUserDataAutoSyncService,
-	type UserDataSyncError,
 	UserDataSyncErrorCode,
+	type UserDataSyncError,
 } from "../../../../platform/userDataSync/common/userDataSync.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { IHostService } from "../../../services/host/browser/host.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
@@ -35,14 +35,20 @@ class UserDataSyncReportIssueContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IUserDataAutoSyncService userDataAutoSyncService: IUserDataAutoSyncService,
-		@INotificationService private readonly notificationService: INotificationService,
+		@IUserDataAutoSyncService
+		userDataAutoSyncService: IUserDataAutoSyncService,
+		@INotificationService
+		private readonly notificationService: INotificationService,
 		@IProductService private readonly productService: IProductService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IHostService private readonly hostService: IHostService,
 	) {
 		super();
-		this._register(userDataAutoSyncService.onError(error => this.onAutoSyncError(error)));
+		this._register(
+			userDataAutoSyncService.onError((error) =>
+				this.onAutoSyncError(error),
+			),
+		);
 	}
 
 	private onAutoSyncError(error: UserDataSyncError): void {

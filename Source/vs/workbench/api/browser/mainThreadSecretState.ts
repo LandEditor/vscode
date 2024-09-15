@@ -9,13 +9,13 @@ import { ILogService } from "../../../platform/log/common/log.js";
 import { ISecretStorageService } from "../../../platform/secrets/common/secrets.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../services/environment/browser/environmentService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostSecretStateShape,
 	MainContext,
+	type ExtHostSecretStateShape,
 	type MainThreadSecretStateShape,
 } from "../common/extHost.protocol.js";
 
@@ -30,24 +30,30 @@ export class MainThreadSecretState
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@ISecretStorageService private readonly secretStorageService: ISecretStorageService,
+		@ISecretStorageService
+		private readonly secretStorageService: ISecretStorageService,
 		@ILogService private readonly logService: ILogService,
-		@IBrowserWorkbenchEnvironmentService environmentService: IBrowserWorkbenchEnvironmentService
+		@IBrowserWorkbenchEnvironmentService
+		environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 
-		this._proxy = extHostContext.getProxy(ExtHostContext.ExtHostSecretState);
+		this._proxy = extHostContext.getProxy(
+			ExtHostContext.ExtHostSecretState,
+		);
 
-		this._register(this.secretStorageService.onDidChangeSecret((e: string) => {
-			try {
-				const { extensionId, key } = this.parseKey(e);
-				if (extensionId && key) {
-					this._proxy.$onDidChangePassword({ extensionId, key });
+		this._register(
+			this.secretStorageService.onDidChangeSecret((e: string) => {
+				try {
+					const { extensionId, key } = this.parseKey(e);
+					if (extensionId && key) {
+						this._proxy.$onDidChangePassword({ extensionId, key });
+					}
+				} catch (e) {
+					// Core can use non-JSON values as keys, so we may not be able to parse them.
 				}
-			} catch (e) {
-				// Core can use non-JSON values as keys, so we may not be able to parse them.
-			}
-		}));
+			}),
+		);
 	}
 
 	$getPassword(

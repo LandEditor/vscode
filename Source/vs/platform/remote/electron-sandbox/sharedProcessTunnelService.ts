@@ -5,8 +5,8 @@
 
 import { registerSharedProcessRemoteService } from "../../ipc/electron-sandbox/services.js";
 import {
-	ISharedProcessTunnelService,
 	ipcSharedProcessTunnelChannelName,
+	ISharedProcessTunnelService,
 } from "../common/sharedProcessTunnelService.js";
 
 registerSharedProcessRemoteService(

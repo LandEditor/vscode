@@ -15,24 +15,24 @@ import {
 } from "../../../base/common/event.js";
 import {
 	Disposable,
-	type DisposableStore,
-	MutableDisposable,
 	dispose,
+	MutableDisposable,
+	type DisposableStore,
 } from "../../../base/common/lifecycle.js";
 import { mark } from "../../../base/common/performance.js";
 import { isUndefinedOrNull } from "../../../base/common/types.js";
 import {
-	type IStorage,
-	type IStorageChangeEvent,
 	InMemoryStorageDatabase,
 	Storage,
 	StorageHint,
+	type IStorage,
+	type IStorageChangeEvent,
 	type StorageValue,
 } from "../../../base/parts/storage/common/storage.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 import {
-	type IUserDataProfile,
 	isUserDataProfile,
+	type IUserDataProfile,
 } from "../../userDataProfile/common/userDataProfile.js";
 import type { IAnyWorkspaceIdentifier } from "../../workspace/common/workspace.js";
 

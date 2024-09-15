@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IBufferLine, IBufferRange, Terminal } from "@xterm/xterm";
+
 import type { IHoverAction } from "../../../../../base/browser/ui/hover/hover.js";
 import type { Event } from "../../../../../base/common/event.js";
 import type { IDisposable } from "../../../../../base/common/lifecycle.js";

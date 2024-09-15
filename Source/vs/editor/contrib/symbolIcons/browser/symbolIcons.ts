@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./symbolIcons.css";
+
 import { localize } from "../../../../nls.js";
 import {
 	foreground,

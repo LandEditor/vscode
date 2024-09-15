@@ -8,9 +8,9 @@ import type { Event } from "../../base/common/event.js";
 import type { DisposableStore } from "../../base/common/lifecycle.js";
 import { isEmptyObject } from "../../base/common/types.js";
 import {
+	StorageScope,
 	type IStorageService,
 	type IStorageValueChangeEvent,
-	StorageScope,
 	type StorageTarget,
 } from "../../platform/storage/common/storage.js";
 

@@ -16,13 +16,13 @@ import {
 } from "../../../platform/instantiation/common/extensions.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
-	type ExtHostEmbeddingsShape,
 	MainContext,
+	type ExtHostEmbeddingsShape,
 	type MainThreadEmbeddingsShape,
 } from "../common/extHost.protocol.js";
 
@@ -109,13 +109,18 @@ export class MainThreadEmbeddings implements MainThreadEmbeddingsShape {
 
 	constructor(
 		context: IExtHostContext,
-		@IEmbeddingsService private readonly embeddingsService: IEmbeddingsService
+		@IEmbeddingsService
+		private readonly embeddingsService: IEmbeddingsService,
 	) {
 		this._proxy = context.getProxy(ExtHostContext.ExtHostEmbeddings);
 
-		this._store.add(embeddingsService.onDidChange((() => {
-			this._proxy.$acceptEmbeddingModels(Array.from(embeddingsService.allProviders));
-		})));
+		this._store.add(
+			embeddingsService.onDidChange(() => {
+				this._proxy.$acceptEmbeddingModels(
+					Array.from(embeddingsService.allProviders),
+				);
+			}),
+		);
 	}
 
 	dispose(): void {

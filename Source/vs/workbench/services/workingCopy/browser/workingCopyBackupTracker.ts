@@ -24,12 +24,15 @@ export class BrowserWorkingCopyBackupTracker
 	static readonly ID = "workbench.contrib.browserWorkingCopyBackupTracker";
 
 	constructor(
-		@IWorkingCopyBackupService workingCopyBackupService: IWorkingCopyBackupService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IWorkingCopyBackupService
+		workingCopyBackupService: IWorkingCopyBackupService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@IWorkingCopyService workingCopyService: IWorkingCopyService,
 		@ILifecycleService lifecycleService: ILifecycleService,
 		@ILogService logService: ILogService,
-		@IWorkingCopyEditorService workingCopyEditorService: IWorkingCopyEditorService,
+		@IWorkingCopyEditorService
+		workingCopyEditorService: IWorkingCopyEditorService,
 		@IEditorService editorService: IEditorService,
 		@IEditorGroupsService editorGroupService: IEditorGroupsService,
 	) {

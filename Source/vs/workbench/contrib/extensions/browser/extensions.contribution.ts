@@ -13,8 +13,8 @@ import { mnemonicButtonLabel } from "../../../../base/common/labels.js";
 import {
 	Disposable,
 	DisposableStore,
-	type IDisposable,
 	isDisposable,
+	type IDisposable,
 } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { isLinux, isNative, isWeb } from "../../../../base/common/platform.js";
@@ -29,11 +29,11 @@ import { localize, localize2 } from "../../../../nls.js";
 import { Categories } from "../../../../platform/action/common/actionCommonCategories.js";
 import {
 	Action2,
-	type IAction2Options,
-	type IMenuItem,
 	MenuId,
 	MenuRegistry,
 	registerAction2,
+	type IAction2Options,
+	type IMenuItem,
 } from "../../../../platform/actions/common/actions.js";
 import { IClipboardService } from "../../../../platform/clipboard/common/clipboardService.js";
 import {
@@ -105,23 +105,23 @@ import {
 	WorkbenchStateContext,
 } from "../../../common/contextkeys.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import { EditorExtensions } from "../../../common/editor.js";
 import {
-	type IViewContainersRegistry,
 	Extensions as ViewContainerExtensions,
 	ViewContainerLocation,
+	type IViewContainersRegistry,
 } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
 	EnablementState,
+	extensionsConfigurationNodeBase,
 	IExtensionManagementServerService,
 	IWorkbenchExtensionEnablementService,
 	IWorkbenchExtensionManagementService,
-	extensionsConfigurationNodeBase,
 } from "../../../services/extensionManagement/common/extensionManagement.js";
 import {
 	IExtensionIgnoredRecommendationsService,
@@ -140,15 +140,12 @@ import { Query } from "../common/extensionQuery.js";
 import {
 	AutoUpdateConfigurationKey,
 	CONTEXT_HAS_GALLERY,
-	type ExtensionEditorTab,
 	ExtensionRuntimeActionType,
+	extensionsSearchActionsMenu,
 	HasOutdatedExtensionsContext,
-	type IExtensionArg,
-	type IExtensionsViewPaneContainer,
 	IExtensionsWorkbenchService,
 	INSTALL_ACTIONS_GROUP,
 	INSTALL_EXTENSION_FROM_VSIX_COMMAND_ID,
-	type IWorkspaceRecommendedExtensionsView,
 	LIST_WORKSPACE_UNSUPPORTED_EXTENSIONS_COMMAND_ID,
 	OUTDATED_EXTENSIONS_VIEW_ID,
 	SELECT_INSTALL_VSIX_EXTENSION_COMMAND_ID,
@@ -157,7 +154,10 @@ import {
 	UPDATE_ACTIONS_GROUP,
 	VIEWLET_ID,
 	WORKSPACE_RECOMMENDATIONS_VIEW_ID,
-	extensionsSearchActionsMenu,
+	type ExtensionEditorTab,
+	type IExtensionArg,
+	type IExtensionsViewPaneContainer,
+	type IWorkspaceRecommendedExtensionsView,
 } from "../common/extensions.js";
 import {
 	ExtensionsConfigurationSchema,
@@ -205,8 +205,8 @@ import {
 	BuiltInExtensionsContext,
 	DefaultViewsContext,
 	ExtensionsSortByContext,
-	ExtensionsViewPaneContainer,
 	ExtensionsViewletViewsContribution,
+	ExtensionsViewPaneContainer,
 	MaliciousExtensionChecker,
 	RecommendedExtensionsContext,
 	SearchHasTextContext,
@@ -894,13 +894,18 @@ class ExtensionsContributions
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionGalleryService
+		extensionGalleryService: IExtensionGalleryService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IViewsService private readonly viewsService: IViewsService,
-		@IExtensionsWorkbenchService private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
-		@IWorkbenchExtensionEnablementService private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IExtensionsWorkbenchService
+		private readonly extensionsWorkbenchService: IExtensionsWorkbenchService,
+		@IWorkbenchExtensionEnablementService
+		private readonly extensionEnablementService: IWorkbenchExtensionEnablementService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IDialogService private readonly dialogService: IDialogService,
 		@ICommandService private readonly commandService: ICommandService,
 	) {
@@ -910,18 +915,28 @@ class ExtensionsContributions
 			hasGalleryContext.set(true);
 		}
 
-		const hasLocalServerContext = CONTEXT_HAS_LOCAL_SERVER.bindTo(contextKeyService);
-		if (this.extensionManagementServerService.localExtensionManagementServer) {
+		const hasLocalServerContext =
+			CONTEXT_HAS_LOCAL_SERVER.bindTo(contextKeyService);
+		if (
+			this.extensionManagementServerService.localExtensionManagementServer
+		) {
 			hasLocalServerContext.set(true);
 		}
 
-		const hasRemoteServerContext = CONTEXT_HAS_REMOTE_SERVER.bindTo(contextKeyService);
-		if (this.extensionManagementServerService.remoteExtensionManagementServer) {
+		const hasRemoteServerContext =
+			CONTEXT_HAS_REMOTE_SERVER.bindTo(contextKeyService);
+		if (
+			this.extensionManagementServerService
+				.remoteExtensionManagementServer
+		) {
 			hasRemoteServerContext.set(true);
 		}
 
-		const hasWebServerContext = CONTEXT_HAS_WEB_SERVER.bindTo(contextKeyService);
-		if (this.extensionManagementServerService.webExtensionManagementServer) {
+		const hasWebServerContext =
+			CONTEXT_HAS_WEB_SERVER.bindTo(contextKeyService);
+		if (
+			this.extensionManagementServerService.webExtensionManagementServer
+		) {
 			hasWebServerContext.set(true);
 		}
 
@@ -3132,7 +3147,8 @@ class ExtensionsContributions
 
 class ExtensionStorageCleaner implements IWorkbenchContribution {
 	constructor(
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
 		@IStorageService storageService: IStorageService,
 	) {
 		ExtensionStorageService.removeOutdatedExtensionVersions(

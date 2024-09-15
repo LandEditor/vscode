@@ -20,8 +20,8 @@ import type {
 	IColorInformation,
 } from "../../../common/languages.js";
 import {
-	type ITextModel,
 	TrackedRangeStickiness,
+	type ITextModel,
 } from "../../../common/model.js";
 import type { IEditorHoverRenderContext } from "../../hover/browser/hoverTypes.js";
 import { getColorPresentations } from "./color.js";

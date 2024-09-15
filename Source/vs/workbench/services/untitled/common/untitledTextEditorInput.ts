@@ -5,8 +5,8 @@
 
 import {
 	DisposableStore,
-	type IReference,
 	dispose,
+	type IReference,
 } from "../../../../base/common/lifecycle.js";
 import { isEqual, toLocalResource } from "../../../../base/common/resources.js";
 import type { URI } from "../../../../base/common/uri.js";
@@ -17,11 +17,11 @@ import { IFileService } from "../../../../platform/files/common/files.js";
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
-	type IUntitledTextResourceEditorInput,
-	type IUntypedEditorInput,
-	Verbosity,
 	findViewStateForEditor,
 	isUntitledResourceEditorInput,
+	Verbosity,
+	type IUntitledTextResourceEditorInput,
+	type IUntypedEditorInput,
 } from "../../../common/editor.js";
 import type {
 	EditorInput,
@@ -34,10 +34,10 @@ import { IWorkbenchEnvironmentService } from "../../environment/common/environme
 import { IFilesConfigurationService } from "../../filesConfiguration/common/filesConfigurationService.js";
 import { IPathService } from "../../path/common/pathService.js";
 import {
+	ITextFileService,
 	type EncodingMode,
 	type IEncodingSupport,
 	type ILanguageSupport,
-	ITextFileService,
 } from "../../textfile/common/textfiles.js";
 import type { IUntitledTextEditorModel } from "./untitledTextEditorModel.js";
 
@@ -70,18 +70,36 @@ export class UntitledTextEditorInput
 		@ILabelService labelService: ILabelService,
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
 		@IPathService private readonly pathService: IPathService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
 		@ITextModelService private readonly textModelService: ITextModelService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super(model.resource, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			model.resource,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
 
 		this.registerModelListeners(model);
 
-		this._register(this.textFileService.untitled.onDidCreate(model => this.onDidCreateUntitledModel(model)));
+		this._register(
+			this.textFileService.untitled.onDidCreate((model) =>
+				this.onDidCreateUntitledModel(model),
+			),
+		);
 	}
 
 	private registerModelListeners(model: IUntitledTextEditorModel): void {

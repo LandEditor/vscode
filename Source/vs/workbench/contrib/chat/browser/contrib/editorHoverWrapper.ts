@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/editorHoverWrapper.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import type { IHoverAction } from "../../../../../base/browser/ui/hover/hover.js";
 import { HoverAction } from "../../../../../base/browser/ui/hover/hoverWidget.js";
@@ -22,28 +23,37 @@ export class ChatEditorHoverWrapper {
 	constructor(
 		hoverContentElement: HTMLElement,
 		actions: IHoverAction[] | undefined,
-		@IKeybindingService private readonly keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly keybindingService: IKeybindingService,
 	) {
-		const hoverElement = h(
-			'.chat-editor-hover-wrapper@root',
-			[h('.chat-editor-hover-wrapper-content@content')]);
+		const hoverElement = h(".chat-editor-hover-wrapper@root", [
+			h(".chat-editor-hover-wrapper-content@content"),
+		]);
 		this.domNode = hoverElement.root;
 		hoverElement.content.appendChild(hoverContentElement);
 
 		if (actions && actions.length > 0) {
-			const statusBarElement = $('.hover-row.status-bar');
-			const actionsElement = $('.actions');
-			actions.forEach(action => {
-				const keybinding = this.keybindingService.lookupKeybinding(action.commandId);
-				const keybindingLabel = keybinding ? keybinding.getLabel() : null;
-				HoverAction.render(actionsElement, {
-					label: action.label,
-					commandId: action.commandId,
-					run: e => {
-						action.run(e);
+			const statusBarElement = $(".hover-row.status-bar");
+			const actionsElement = $(".actions");
+			actions.forEach((action) => {
+				const keybinding = this.keybindingService.lookupKeybinding(
+					action.commandId,
+				);
+				const keybindingLabel = keybinding
+					? keybinding.getLabel()
+					: null;
+				HoverAction.render(
+					actionsElement,
+					{
+						label: action.label,
+						commandId: action.commandId,
+						run: (e) => {
+							action.run(e);
+						},
+						iconClass: action.iconClass,
 					},
-					iconClass: action.iconClass
-				}, keybindingLabel);
+					keybindingLabel,
+				);
 			});
 			statusBarElement.appendChild(actionsElement);
 			this.domNode.appendChild(statusBarElement);

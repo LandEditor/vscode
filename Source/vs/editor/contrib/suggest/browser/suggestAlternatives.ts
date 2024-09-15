@@ -5,9 +5,9 @@
 
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
 import {
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import type { ICodeEditor } from "../../../browser/editorBrowser.js";
 import type { CompletionModel } from "./completionModel.js";

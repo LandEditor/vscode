@@ -6,10 +6,10 @@
 import type { URI } from "../../../../base/common/uri.js";
 import type { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
+	isResourceDiffEditorInput,
 	type IResourceDiffEditorInput,
 	type IResourceSideBySideEditorInput,
 	type IUntypedEditorInput,
-	isResourceDiffEditorInput,
 } from "../../../common/editor.js";
 import { DiffEditorInput } from "../../../common/editor/diffEditorInput.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";

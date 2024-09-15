@@ -24,6 +24,7 @@ import {
 	serializeEnvironmentVariableCollection,
 } from "../../../../../platform/terminal/common/environmentVariableShared.js";
 import {
+	ITerminalLogService,
 	type IProcessDataEvent,
 	type IProcessProperty,
 	type IProcessPropertyMap,
@@ -34,7 +35,6 @@ import {
 	type ISerializedTerminalState,
 	type IShellLaunchConfigDto,
 	type ITerminalLaunchError,
-	ITerminalLogService,
 	type ITerminalProcessOptions,
 	type ITerminalProfile,
 	type ITerminalsLayoutInfo,
@@ -196,15 +196,20 @@ export class RemoteTerminalChannelClient implements IPtyHostController {
 	constructor(
 		private readonly _remoteAuthority: string,
 		private readonly _channel: IChannel,
-		@IWorkbenchConfigurationService private readonly _configurationService: IWorkbenchConfigurationService,
-		@IWorkspaceContextService private readonly _workspaceContextService: IWorkspaceContextService,
-		@IConfigurationResolverService private readonly _resolverService: IConfigurationResolverService,
-		@IEnvironmentVariableService private readonly _environmentVariableService: IEnvironmentVariableService,
-		@IRemoteAuthorityResolverService private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
+		@IWorkbenchConfigurationService
+		private readonly _configurationService: IWorkbenchConfigurationService,
+		@IWorkspaceContextService
+		private readonly _workspaceContextService: IWorkspaceContextService,
+		@IConfigurationResolverService
+		private readonly _resolverService: IConfigurationResolverService,
+		@IEnvironmentVariableService
+		private readonly _environmentVariableService: IEnvironmentVariableService,
+		@IRemoteAuthorityResolverService
+		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@ILabelService private readonly _labelService: ILabelService,
-	) { }
+	) {}
 
 	restartPtyHost(): Promise<void> {
 		return this._channel.call(

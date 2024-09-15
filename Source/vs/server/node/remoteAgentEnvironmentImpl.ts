@@ -30,8 +30,8 @@ import type {
 } from "../../workbench/services/remote/common/remoteAgentEnvironmentChannel.js";
 import type { IExtensionHostStatusService } from "./extensionHostStatusService.js";
 import {
-	type ServerConnectionToken,
 	ServerConnectionTokenType,
+	type ServerConnectionToken,
 } from "./serverConnectionToken.js";
 import type { IServerEnvironmentService } from "./serverEnvironmentService.js";
 

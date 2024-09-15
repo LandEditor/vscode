@@ -21,19 +21,19 @@ import type { IExtensionManifest } from "../../../../platform/extensions/common/
 import { SyncDescriptor } from "../../../../platform/instantiation/common/descriptors.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import {
-	type IWorkbenchContribution,
-	WorkbenchPhase,
 	registerWorkbenchContribution2,
+	WorkbenchPhase,
+	type IWorkbenchContribution,
 } from "../../../common/contributions.js";
 import {
-	type AuthenticationProviderInformation,
 	IAuthenticationService,
+	type AuthenticationProviderInformation,
 } from "../../../services/authentication/common/authentication.js";
 import { IBrowserWorkbenchEnvironmentService } from "../../../services/environment/browser/environmentService.js";
 import {
 	Extensions,
-	type IExtensionFeatureTableRenderer,
 	type IExtensionFeaturesRegistry,
+	type IExtensionFeatureTableRenderer,
 	type IRenderedData,
 	type IRowData,
 	type ITableData,
@@ -166,8 +166,10 @@ export class AuthenticationContribution
 		});
 
 	constructor(
-		@IAuthenticationService private readonly _authenticationService: IAuthenticationService,
-		@IBrowserWorkbenchEnvironmentService private readonly _environmentService: IBrowserWorkbenchEnvironmentService
+		@IAuthenticationService
+		private readonly _authenticationService: IAuthenticationService,
+		@IBrowserWorkbenchEnvironmentService
+		private readonly _environmentService: IBrowserWorkbenchEnvironmentService,
 	) {
 		super();
 		this._register(codeExchangeProxyCommand);

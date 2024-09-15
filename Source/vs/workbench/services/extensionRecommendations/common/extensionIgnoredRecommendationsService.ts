@@ -61,12 +61,20 @@ export class ExtensionIgnoredRecommendationsService
 	}
 
 	constructor(
-		@IWorkspaceExtensionsConfigService private readonly workspaceExtensionsConfigService: IWorkspaceExtensionsConfigService,
+		@IWorkspaceExtensionsConfigService
+		private readonly workspaceExtensionsConfigService: IWorkspaceExtensionsConfigService,
 		@IStorageService private readonly storageService: IStorageService,
 	) {
 		super();
-		this._globalIgnoredRecommendations = this.getCachedIgnoredRecommendations();
-		this._register(this.storageService.onDidChangeValue(StorageScope.PROFILE, ignoredRecommendationsStorageKey, this._register(new DisposableStore()))(e => this.onDidStorageChange()));
+		this._globalIgnoredRecommendations =
+			this.getCachedIgnoredRecommendations();
+		this._register(
+			this.storageService.onDidChangeValue(
+				StorageScope.PROFILE,
+				ignoredRecommendationsStorageKey,
+				this._register(new DisposableStore()),
+			)((e) => this.onDidStorageChange()),
+		);
 
 		this.initIgnoredWorkspaceRecommendations();
 	}
@@ -149,7 +157,9 @@ export class ExtensionIgnoredRecommendationsService
 		return this._ignoredRecommendationsValue;
 	}
 
-	private set ignoredRecommendationsValue(ignoredRecommendationsValue: string) {
+	private set ignoredRecommendationsValue(
+		ignoredRecommendationsValue: string,
+	) {
 		if (this.ignoredRecommendationsValue !== ignoredRecommendationsValue) {
 			this._ignoredRecommendationsValue = ignoredRecommendationsValue;
 			this.setStoredIgnoredRecommendationsValue(

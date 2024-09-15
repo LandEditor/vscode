@@ -25,8 +25,8 @@ import { IHoverService } from "../../../../platform/hover/browser/hover.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	IListService,
-	type IWorkbenchObjectTreeOptions,
 	WorkbenchObjectTree,
+	type IWorkbenchObjectTreeOptions,
 } from "../../../../platform/list/browser/listService.js";
 import { getListStyles } from "../../../../platform/theme/browser/defaultStyles.js";
 import {
@@ -40,11 +40,11 @@ import {
 } from "../common/settingsEditorColorRegistry.js";
 import { SettingsTreeFilter } from "./settingsTree.js";
 import {
+	SettingsTreeGroupElement,
+	SettingsTreeSettingElement,
 	type ISettingsEditorViewState,
 	type SearchResultModel,
 	type SettingsTreeElement,
-	SettingsTreeGroupElement,
-	SettingsTreeSettingElement,
 } from "./settingsTreeModels.js";
 
 const $ = DOM.$;
@@ -55,9 +55,9 @@ export class TOCTreeModel {
 
 	constructor(
 		private _viewState: ISettingsEditorViewState,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService
-	) {
-	}
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService,
+	) {}
 
 	get settingsTreeRoot(): SettingsTreeGroupElement {
 		return this._settingsTreeRoot;
@@ -141,7 +141,8 @@ interface ITOCEntryTemplate {
 }
 
 export class TOCRenderer
-	implements ITreeRenderer<SettingsTreeGroupElement, never, ITOCEntryTemplate>
+	implements
+		ITreeRenderer<SettingsTreeGroupElement, never, ITOCEntryTemplate>
 {
 	templateId = TOC_ENTRY_TEMPLATE_ID;
 

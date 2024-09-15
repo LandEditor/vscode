@@ -32,22 +32,38 @@ export class ExtensionAccessibilityHelpDialogContribution extends Disposable {
 	);
 	constructor(@IKeybindingService keybindingService: IKeybindingService) {
 		super();
-		this._register(Registry.as<IViewsRegistry>(Extensions.ViewsRegistry).onViewsRegistered(e => {
-			for (const view of e) {
-				for (const viewDescriptor of view.views) {
-					if (viewDescriptor.accessibilityHelpContent) {
-						this._viewHelpDialogMap.set(viewDescriptor.id, registerAccessibilityHelpAction(keybindingService, viewDescriptor));
+		this._register(
+			Registry.as<IViewsRegistry>(
+				Extensions.ViewsRegistry,
+			).onViewsRegistered((e) => {
+				for (const view of e) {
+					for (const viewDescriptor of view.views) {
+						if (viewDescriptor.accessibilityHelpContent) {
+							this._viewHelpDialogMap.set(
+								viewDescriptor.id,
+								registerAccessibilityHelpAction(
+									keybindingService,
+									viewDescriptor,
+								),
+							);
+						}
 					}
 				}
-			}
-		}));
-		this._register(Registry.as<IViewsRegistry>(Extensions.ViewsRegistry).onViewsDeregistered(e => {
-			for (const viewDescriptor of e.views) {
-				if (viewDescriptor.accessibilityHelpContent) {
-					this._viewHelpDialogMap.get(viewDescriptor.id)?.dispose();
+			}),
+		);
+		this._register(
+			Registry.as<IViewsRegistry>(
+				Extensions.ViewsRegistry,
+			).onViewsDeregistered((e) => {
+				for (const viewDescriptor of e.views) {
+					if (viewDescriptor.accessibilityHelpContent) {
+						this._viewHelpDialogMap
+							.get(viewDescriptor.id)
+							?.dispose();
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 }
 

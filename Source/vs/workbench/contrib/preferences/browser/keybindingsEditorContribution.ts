@@ -5,7 +5,7 @@
 
 import { RunOnceScheduler } from "../../../../base/common/async.js";
 import { MarkdownString } from "../../../../base/common/htmlContent.js";
-import { type Node, parseTree } from "../../../../base/common/json.js";
+import { parseTree, type Node } from "../../../../base/common/json.js";
 import { KeybindingParser } from "../../../../base/common/keybindingParser.js";
 import {
 	Disposable,
@@ -25,10 +25,10 @@ import {
 } from "../../../../editor/common/core/editorColorRegistry.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import {
-	type IModelDeltaDecoration,
-	type ITextModel,
 	OverviewRulerLane,
 	TrackedRangeStickiness,
+	type IModelDeltaDecoration,
+	type ITextModel,
 } from "../../../../editor/common/model.js";
 import { SnippetController2 } from "../../../../editor/contrib/snippet/browser/snippetController2.js";
 import * as nls from "../../../../nls.js";
@@ -61,13 +61,20 @@ class DefineKeybindingEditorContribution
 
 	constructor(
 		private _editor: ICodeEditor,
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IUserDataProfileService private readonly _userDataProfileService: IUserDataProfileService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IUserDataProfileService
+		private readonly _userDataProfileService: IUserDataProfileService,
 	) {
 		super();
 
-		this._defineWidget = this._register(this._instantiationService.createInstance(DefineKeybindingOverlayWidget, this._editor));
-		this._register(this._editor.onDidChangeModel(e => this._update()));
+		this._defineWidget = this._register(
+			this._instantiationService.createInstance(
+				DefineKeybindingOverlayWidget,
+				this._editor,
+			),
+		);
+		this._register(this._editor.onDidChangeModel((e) => this._update()));
 		this._update();
 	}
 
@@ -132,20 +139,29 @@ export class KeybindingEditorDecorationsRenderer extends Disposable {
 
 	constructor(
 		private _editor: ICodeEditor,
-		@IKeybindingService private readonly _keybindingService: IKeybindingService,
+		@IKeybindingService
+		private readonly _keybindingService: IKeybindingService,
 	) {
 		super();
 
-		this._updateDecorations = this._register(new RunOnceScheduler(() => this._updateDecorationsNow(), 500));
+		this._updateDecorations = this._register(
+			new RunOnceScheduler(() => this._updateDecorationsNow(), 500),
+		);
 
 		const model = assertIsDefined(this._editor.getModel());
-		this._register(model.onDidChangeContent(() => this._updateDecorations.schedule()));
-		this._register(this._keybindingService.onDidUpdateKeybindings(() => this._updateDecorations.schedule()));
+		this._register(
+			model.onDidChangeContent(() => this._updateDecorations.schedule()),
+		);
+		this._register(
+			this._keybindingService.onDidUpdateKeybindings(() =>
+				this._updateDecorations.schedule(),
+			),
+		);
 		this._register({
 			dispose: () => {
 				this._dec.clear();
 				this._updateDecorations.cancel();
-			}
+			},
 		});
 		this._updateDecorations.schedule();
 	}

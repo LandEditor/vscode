@@ -9,8 +9,8 @@ import {
 	registerSingleton,
 } from "../../../platform/instantiation/common/extensions.js";
 import {
-	ILogService,
 	ILoggerService,
+	ILogService,
 } from "../../../platform/log/common/log.js";
 import { ISignService } from "../../../platform/sign/common/sign.js";
 import { SignService } from "../../../platform/sign/node/signService.js";

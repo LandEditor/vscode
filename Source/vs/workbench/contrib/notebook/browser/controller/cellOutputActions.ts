@@ -22,16 +22,16 @@ import {
 } from "../../common/notebookContextKeys.js";
 import { copyCellOutput } from "../contrib/clipboard/cellOutputClipboard.js";
 import {
+	getNotebookEditorFromEditorPane,
 	type ICellOutputViewModel,
 	type ICellViewModel,
 	type INotebookEditor,
-	getNotebookEditorFromEditorPane,
 } from "../notebookBrowser.js";
 import * as icons from "../notebookIcons.js";
 import type { CodeCellViewModel } from "../viewModel/codeCellViewModel.js";
 import {
-	type INotebookOutputActionContext,
 	NOTEBOOK_ACTIONS_CATEGORY,
+	type INotebookOutputActionContext,
 } from "./coreActions.js";
 
 export const COPY_OUTPUT_COMMAND_ID = "notebook.cellOutput.copy";

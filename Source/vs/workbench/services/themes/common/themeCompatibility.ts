@@ -4,13 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Color } from "../../../../base/common/color.js";
+import * as editorColorRegistry from "../../../../editor/common/core/editorColorRegistry.js";
 import * as colorRegistry from "../../../../platform/theme/common/colorRegistry.js";
 import type {
 	IColorMap,
 	ITextMateThemingRule,
 } from "./workbenchThemeService.js";
-
-import * as editorColorRegistry from "../../../../editor/common/core/editorColorRegistry.js";
 
 const settingToColorIdMapping: { [settingId: string]: string[] } = {};
 function addSettingMapping(settingId: string, colorId: string) {

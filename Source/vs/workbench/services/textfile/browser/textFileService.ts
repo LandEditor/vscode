@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
+	bufferToStream,
 	type VSBuffer,
 	type VSBufferReadable,
 	type VSBufferReadableStream,
-	bufferToStream,
 } from "../../../../base/common/buffer.js";
 import {
 	CancellationToken,
@@ -27,8 +27,8 @@ import {
 	toLocalResource,
 } from "../../../../base/common/resources.js";
 import {
-	type ReadableStream,
 	consumeStream,
+	type ReadableStream,
 } from "../../../../base/common/stream.js";
 import type { URI } from "../../../../base/common/uri.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
@@ -51,10 +51,10 @@ import {
 	IFileDialogService,
 } from "../../../../platform/dialogs/common/dialogs.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
-	type ICreateFileOptions,
 	IFileService,
+	type FileOperationError,
+	type ICreateFileOptions,
 	type IFileStatWithMetadata,
 	type IFileStreamContent,
 } from "../../../../platform/files/common/files.js";
@@ -67,14 +67,14 @@ import {
 	WORKSPACE_EXTENSION,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
-	type IRevertOptions,
 	SaveSourceRegistry,
+	type IRevertOptions,
 } from "../../../common/editor.js";
 import { BaseTextEditorModel } from "../../../common/editor/textEditorModel.js";
 import {
+	IDecorationsService,
 	type IDecorationData,
 	type IDecorationsProvider,
-	IDecorationsService,
 } from "../../decorations/common/decorations.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { IElevatedFileService } from "../../files/common/elevatedFileService.js";
@@ -83,28 +83,33 @@ import { ILifecycleService } from "../../lifecycle/common/lifecycle.js";
 import { IPathService } from "../../path/common/pathService.js";
 import { UntitledTextEditorModel } from "../../untitled/common/untitledTextEditorModel.js";
 import {
-	type IUntitledTextEditorModelManager,
 	IUntitledTextEditorService,
+	type IUntitledTextEditorModelManager,
 } from "../../untitled/common/untitledTextEditorService.js";
 import {
+	IWorkingCopyFileService,
 	type ICreateFileOperation,
 	type IFileOperationUndoRedoInfo,
-	IWorkingCopyFileService,
 } from "../../workingCopy/common/workingCopyFileService.js";
 import {
-	type DecodeStreamError,
 	DecodeStreamErrorKind,
-	type IDecodeStreamResult,
+	encodingExists,
+	toDecodeStream,
+	toEncodeReadable,
 	UTF8,
 	UTF8_with_bom,
 	UTF16be,
 	UTF16le,
-	encodingExists,
-	toDecodeStream,
-	toEncodeReadable,
+	type DecodeStreamError,
+	type IDecodeStreamResult,
 } from "../common/encoding.js";
 import { TextFileEditorModelManager } from "../common/textFileEditorModelManager.js";
 import {
+	stringToSnapshot,
+	TextFileEditorModelState,
+	TextFileOperationError,
+	TextFileOperationResult,
+	toBufferOrReadable,
 	type IEncodingSupport,
 	type IReadTextFileEncodingOptions,
 	type IReadTextFileOptions,
@@ -117,11 +122,6 @@ import {
 	type ITextFileService,
 	type ITextFileStreamContent,
 	type IWriteTextFileOptions,
-	TextFileEditorModelState,
-	TextFileOperationError,
-	TextFileOperationResult,
-	stringToSnapshot,
-	toBufferOrReadable,
 } from "../common/textfiles.js";
 
 export abstract class AbstractTextFileService
@@ -150,23 +150,35 @@ export abstract class AbstractTextFileService
 
 	constructor(
 		@IFileService protected readonly fileService: IFileService,
-		@IUntitledTextEditorService private untitledTextEditorService: IUntitledTextEditorService,
-		@ILifecycleService protected readonly lifecycleService: ILifecycleService,
-		@IInstantiationService protected readonly instantiationService: IInstantiationService,
+		@IUntitledTextEditorService
+		private untitledTextEditorService: IUntitledTextEditorService,
+		@ILifecycleService
+		protected readonly lifecycleService: ILifecycleService,
+		@IInstantiationService
+		protected readonly instantiationService: IInstantiationService,
 		@IModelService private readonly modelService: IModelService,
-		@IWorkbenchEnvironmentService protected readonly environmentService: IWorkbenchEnvironmentService,
+		@IWorkbenchEnvironmentService
+		protected readonly environmentService: IWorkbenchEnvironmentService,
 		@IDialogService private readonly dialogService: IDialogService,
-		@IFileDialogService private readonly fileDialogService: IFileDialogService,
-		@ITextResourceConfigurationService protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
-		@IFilesConfigurationService protected readonly filesConfigurationService: IFilesConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
+		@IFileDialogService
+		private readonly fileDialogService: IFileDialogService,
+		@ITextResourceConfigurationService
+		protected readonly textResourceConfigurationService: ITextResourceConfigurationService,
+		@IFilesConfigurationService
+		protected readonly filesConfigurationService: IFilesConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 		@IPathService private readonly pathService: IPathService,
-		@IWorkingCopyFileService private readonly workingCopyFileService: IWorkingCopyFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IWorkingCopyFileService
+		private readonly workingCopyFileService: IWorkingCopyFileService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ILanguageService private readonly languageService: ILanguageService,
 		@ILogService protected readonly logService: ILogService,
-		@IElevatedFileService private readonly elevatedFileService: IElevatedFileService,
-		@IDecorationsService private readonly decorationsService: IDecorationsService
+		@IElevatedFileService
+		private readonly elevatedFileService: IElevatedFileService,
+		@IDecorationsService
+		private readonly decorationsService: IDecorationsService,
 	) {
 		super();
 
@@ -1074,10 +1086,14 @@ export class EncodingOracle extends Disposable implements IResourceEncodings {
 	}
 
 	constructor(
-		@ITextResourceConfigurationService private textResourceConfigurationService: ITextResourceConfigurationService,
-		@IWorkbenchEnvironmentService private environmentService: IWorkbenchEnvironmentService,
-		@IWorkspaceContextService private contextService: IWorkspaceContextService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService
+		@ITextResourceConfigurationService
+		private textResourceConfigurationService: ITextResourceConfigurationService,
+		@IWorkbenchEnvironmentService
+		private environmentService: IWorkbenchEnvironmentService,
+		@IWorkspaceContextService
+		private contextService: IWorkspaceContextService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 

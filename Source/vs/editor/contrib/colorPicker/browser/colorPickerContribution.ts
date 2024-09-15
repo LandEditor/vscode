@@ -18,11 +18,11 @@ import { registerEditorFeature } from "../../../common/editorFeatures.js";
 import type { IColorPresentation } from "../../../common/languages.js";
 import { HoverParticipantRegistry } from "../../hover/browser/hoverTypes.js";
 import {
+	_findColorData,
+	_setupColorCommand,
 	ColorPresentationsCollector,
 	ExtColorDataCollector,
 	type IExtColorData,
-	_findColorData,
-	_setupColorCommand,
 } from "./color.js";
 import { ColorDetector } from "./colorDetector.js";
 import { DefaultDocumentColorProviderFeature } from "./defaultDocumentColorProvider.js";

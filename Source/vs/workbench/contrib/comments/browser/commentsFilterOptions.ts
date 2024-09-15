@@ -4,9 +4,9 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type IFilter,
 	matchesFuzzy,
 	matchesFuzzy2,
+	type IFilter,
 } from "../../../../base/common/filters.js";
 import * as strings from "../../../../base/common/strings.js";
 

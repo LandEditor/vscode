@@ -15,13 +15,13 @@ import {
 	WillSaveStateReason,
 } from "../../../../platform/storage/common/storage.js";
 import {
-	type BeforeShutdownErrorEvent,
-	type ILifecycleService,
-	type InternalBeforeShutdownEvent,
 	LifecyclePhase,
 	LifecyclePhaseToString,
 	ShutdownReason,
 	StartupKind,
+	type BeforeShutdownErrorEvent,
+	type ILifecycleService,
+	type InternalBeforeShutdownEvent,
 	type WillShutdownEvent,
 } from "./lifecycle.js";
 
@@ -71,7 +71,7 @@ export abstract class AbstractLifecycleService
 
 	constructor(
 		@ILogService protected readonly logService: ILogService,
-		@IStorageService protected readonly storageService: IStorageService
+		@IStorageService protected readonly storageService: IStorageService,
 	) {
 		super();
 
@@ -79,11 +79,18 @@ export abstract class AbstractLifecycleService
 		this._startupKind = this.resolveStartupKind();
 
 		// Save shutdown reason to retrieve on next startup
-		this._register(this.storageService.onWillSaveState(e => {
-			if (e.reason === WillSaveStateReason.SHUTDOWN) {
-				this.storageService.store(AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY, this.shutdownReason, StorageScope.WORKSPACE, StorageTarget.MACHINE);
-			}
-		}));
+		this._register(
+			this.storageService.onWillSaveState((e) => {
+				if (e.reason === WillSaveStateReason.SHUTDOWN) {
+					this.storageService.store(
+						AbstractLifecycleService.LAST_SHUTDOWN_REASON_KEY,
+						this.shutdownReason,
+						StorageScope.WORKSPACE,
+						StorageTarget.MACHINE,
+					);
+				}
+			}),
+		);
 	}
 
 	private resolveStartupKind(): StartupKind {

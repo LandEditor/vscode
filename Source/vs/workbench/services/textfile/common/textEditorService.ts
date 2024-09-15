@@ -15,22 +15,22 @@ import {
 	registerSingleton,
 } from "../../../../platform/instantiation/common/extensions.js";
 import {
-	IInstantiationService,
 	createDecorator,
+	IInstantiationService,
 } from "../../../../platform/instantiation/common/instantiation.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
 	EditorExtensions,
+	isResourceDiffEditorInput,
+	isResourceMergeEditorInput,
+	isResourceSideBySideEditorInput,
 	type IEditorFactoryRegistry,
 	type IFileEditorInput,
 	type IUntitledTextResourceEditorInput,
 	type IUntypedEditorInput,
 	type IUntypedFileEditorInput,
-	isResourceDiffEditorInput,
-	isResourceMergeEditorInput,
-	isResourceSideBySideEditorInput,
 } from "../../../common/editor.js";
 import { DiffEditorInput } from "../../../common/editor/diffEditorInput.js";
 import type { EditorInput } from "../../../common/editor/editorInput.js";
@@ -43,8 +43,8 @@ import {
 import { UntitledTextEditorInput } from "../../untitled/common/untitledTextEditorInput.js";
 import type { IUntitledTextEditorModel } from "../../untitled/common/untitledTextEditorModel.js";
 import {
-	type INewUntitledTextEditorOptions,
 	IUntitledTextEditorService,
+	type INewUntitledTextEditorOptions,
 } from "../../untitled/common/untitledTextEditorService.js";
 
 export const ITextEditorService =
@@ -95,11 +95,15 @@ export class TextEditorService
 	).getFileEditorFactory();
 
 	constructor(
-		@IUntitledTextEditorService private readonly untitledTextEditorService: IUntitledTextEditorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUntitledTextEditorService
+		private readonly untitledTextEditorService: IUntitledTextEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@IFileService private readonly fileService: IFileService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
 	) {
 		super();
 

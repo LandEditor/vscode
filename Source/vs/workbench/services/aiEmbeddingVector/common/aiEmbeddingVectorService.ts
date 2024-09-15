@@ -4,10 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancelablePromise,
 	createCancelablePromise,
 	raceCancellablePromises,
 	timeout,
+	type CancelablePromise,
 } from "../../../../base/common/async.js";
 import type { CancellationToken } from "../../../../base/common/cancellation.js";
 import type { IDisposable } from "../../../../base/common/lifecycle.js";
@@ -54,7 +54,7 @@ export class AiEmbeddingVectorService implements IAiEmbeddingVectorService {
 
 	private readonly _providers: IAiEmbeddingVectorProvider[] = [];
 
-	constructor(@ILogService private readonly logService: ILogService) { }
+	constructor(@ILogService private readonly logService: ILogService) {}
 
 	isEnabled(): boolean {
 		return this._providers.length > 0;

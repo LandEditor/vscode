@@ -839,7 +839,10 @@
 	.monaco-list.selection-multiple
 	.code-cell-row.selected
 	.cell-focus-indicator-bottom {
-	background-color: var(--vscode-notebook-selectedCellBackground, inherit) !important;
+	background-color: var(
+		--vscode-notebook-selectedCellBackground,
+		inherit
+	) !important;
 }
 
 .notebookOverlay
@@ -860,7 +863,10 @@
 	.monaco-list-row.selected
 	.cell-inner-container:not(.cell-editor-focus)
 	.cell-focus-indicator-right:before {
-	border-color: var(--vscode-notebook-inactiveSelectedCellBorder, transparent) !important;
+	border-color: var(
+		--vscode-notebook-inactiveSelectedCellBorder,
+		transparent
+	) !important;
 }
 
 /** Cell hover background */
@@ -889,7 +895,9 @@
 	.notebookOverlay
 	.monaco-list
 	.monaco-list-row.markdown-cell-row.nb-symbolHighlight {
-	background-color: var(--vscode-notebook-symbolHighlightBackground) !important;
+	background-color: var(
+		--vscode-notebook-symbolHighlightBackground
+	) !important;
 }
 
 /** Cell Multi-Selection highlight */
@@ -908,7 +916,9 @@
 	.notebookOverlay
 	.monaco-list
 	.monaco-list-row.markdown-cell-row.nb-multiCellHighlight {
-	background-color: var(--vscode-notebook-symbolHighlightBackground) !important;
+	background-color: var(
+		--vscode-notebook-symbolHighlightBackground
+	) !important;
 }
 
 /** Cell focused editor border */
@@ -1022,14 +1032,18 @@
 	.monaco-list
 	.monaco-list-row.code-cell-row.nb-cell-added
 	.cell-focus-indicator {
-	background-color: var(--vscode-diffEditor-insertedTextBackground) !important;
+	background-color: var(
+		--vscode-diffEditor-insertedTextBackground
+	) !important;
 }
 
 .monaco-workbench
 	.notebookOverlay
 	.monaco-list
 	.monaco-list-row.markdown-cell-row.nb-cell-added {
-	background-color: var(--vscode-diffEditor-insertedTextBackground) !important;
+	background-color: var(
+		--vscode-diffEditor-insertedTextBackground
+	) !important;
 }
 
 .monaco-workbench

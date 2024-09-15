@@ -17,9 +17,9 @@ import type {
 	IWorkspaceBackupInfo,
 } from "../../../../platform/backup/common/backup.js";
 import {
-	type FileOperationError,
 	FileOperationResult,
 	IFileService,
+	type FileOperationError,
 } from "../../../../platform/files/common/files.js";
 import {
 	InstantiationType,
@@ -33,27 +33,27 @@ import {
 } from "../../../../platform/storage/common/storage.js";
 import { IUriIdentityService } from "../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
+	isTemporaryWorkspace,
 	IWorkspaceContextService,
+	WorkbenchState,
+	WORKSPACE_EXTENSION,
 	type IWorkspaceFoldersChangeEvent,
 	type IWorkspaceIdentifier,
-	WORKSPACE_EXTENSION,
-	WorkbenchState,
-	isTemporaryWorkspace,
 } from "../../../../platform/workspace/common/workspace.js";
 import {
+	getStoredWorkspaceFolder,
+	isRecentFile,
+	isRecentFolder,
+	isRecentWorkspace,
+	IWorkspacesService,
+	restoreRecentlyOpened,
+	toStoreData,
 	type IEnterWorkspaceResult,
 	type IRecent,
 	type IRecentlyOpened,
 	type IStoredWorkspace,
 	type IStoredWorkspaceFolder,
 	type IWorkspaceFolderCreationData,
-	IWorkspacesService,
-	getStoredWorkspaceFolder,
-	isRecentFile,
-	isRecentFolder,
-	isRecentWorkspace,
-	restoreRecentlyOpened,
-	toStoreData,
 } from "../../../../platform/workspaces/common/workspaces.js";
 import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
 import { getWorkspaceIdentifier } from "./workspaces.js";
@@ -73,11 +73,14 @@ export class BrowserWorkspacesService
 
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@ILogService private readonly logService: ILogService,
 		@IFileService private readonly fileService: IFileService,
-		@IWorkbenchEnvironmentService private readonly environmentService: IWorkbenchEnvironmentService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IWorkbenchEnvironmentService
+		private readonly environmentService: IWorkbenchEnvironmentService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 	) {
 		super();
 

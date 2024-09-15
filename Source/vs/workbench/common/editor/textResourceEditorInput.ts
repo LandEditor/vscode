@@ -9,8 +9,8 @@ import { isEqual } from "../../../base/common/resources.js";
 import type { URI } from "../../../base/common/uri.js";
 import { createTextBufferFactory } from "../../../editor/common/model/textModel.js";
 import {
-	type ITextEditorModel,
 	ITextModelService,
+	type ITextEditorModel,
 } from "../../../editor/common/services/resolverService.js";
 import { ITextResourceConfigurationService } from "../../../editor/common/services/textResourceConfiguration.js";
 import { IFileService } from "../../../platform/files/common/files.js";
@@ -19,16 +19,16 @@ import { ICustomEditorLabelService } from "../../services/editor/common/customEd
 import { IEditorService } from "../../services/editor/common/editorService.js";
 import { IFilesConfigurationService } from "../../services/filesConfiguration/common/filesConfigurationService.js";
 import {
+	ITextFileService,
 	type ILanguageSupport,
 	type ITextFileSaveOptions,
-	ITextFileService,
 } from "../../services/textfile/common/textfiles.js";
 import {
 	DEFAULT_EDITOR_ASSOCIATION,
+	isResourceEditorInput,
 	type GroupIdentifier,
 	type IRevertOptions,
 	type IUntypedEditorInput,
-	isResourceEditorInput,
 } from "../editor.js";
 import type { EditorInput } from "./editorInput.js";
 import { AbstractResourceEditorInput } from "./resourceEditorInput.js";
@@ -45,11 +45,22 @@ export abstract class AbstractTextResourceEditorInput extends AbstractResourceEd
 		@ITextFileService protected readonly textFileService: ITextFileService,
 		@ILabelService labelService: ILabelService,
 		@IFileService fileService: IFileService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super(resource, preferredResource, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			resource,
+			preferredResource,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
 	}
 
 	override save(
@@ -141,11 +152,24 @@ export class TextResourceEditorInput
 		@IEditorService editorService: IEditorService,
 		@IFileService fileService: IFileService,
 		@ILabelService labelService: ILabelService,
-		@IFilesConfigurationService filesConfigurationService: IFilesConfigurationService,
-		@ITextResourceConfigurationService textResourceConfigurationService: ITextResourceConfigurationService,
-		@ICustomEditorLabelService customEditorLabelService: ICustomEditorLabelService
+		@IFilesConfigurationService
+		filesConfigurationService: IFilesConfigurationService,
+		@ITextResourceConfigurationService
+		textResourceConfigurationService: ITextResourceConfigurationService,
+		@ICustomEditorLabelService
+		customEditorLabelService: ICustomEditorLabelService,
 	) {
-		super(resource, undefined, editorService, textFileService, labelService, fileService, filesConfigurationService, textResourceConfigurationService, customEditorLabelService);
+		super(
+			resource,
+			undefined,
+			editorService,
+			textFileService,
+			labelService,
+			fileService,
+			filesConfigurationService,
+			textResourceConfigurationService,
+			customEditorLabelService,
+		);
 	}
 
 	override getName(): string {

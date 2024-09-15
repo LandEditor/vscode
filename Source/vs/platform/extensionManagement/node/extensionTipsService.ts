@@ -15,12 +15,15 @@ import { AbstractNativeExtensionTipsService } from "../common/extensionTipsServi
 
 export class ExtensionTipsService extends AbstractNativeExtensionTipsService {
 	constructor(
-		@INativeEnvironmentService environmentService: INativeEnvironmentService,
+		@INativeEnvironmentService
+		environmentService: INativeEnvironmentService,
 		@ITelemetryService telemetryService: ITelemetryService,
-		@IExtensionManagementService extensionManagementService: IExtensionManagementService,
+		@IExtensionManagementService
+		extensionManagementService: IExtensionManagementService,
 		@IStorageService storageService: IStorageService,
 		@INativeHostService nativeHostService: INativeHostService,
-		@IExtensionRecommendationNotificationService extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
+		@IExtensionRecommendationNotificationService
+		extensionRecommendationNotificationService: IExtensionRecommendationNotificationService,
 		@IFileService fileService: IFileService,
 		@IProductService productService: IProductService,
 	) {

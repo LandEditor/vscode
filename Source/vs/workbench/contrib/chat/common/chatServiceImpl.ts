@@ -38,13 +38,13 @@ import { IWorkbenchAssignmentService } from "../../../services/assignment/common
 import { IExtensionService } from "../../../services/extensions/common/extensions.js";
 import {
 	ChatAgentLocation,
+	IChatAgentService,
 	type IChatAgent,
 	type IChatAgentCommand,
 	type IChatAgentData,
 	type IChatAgentHistoryEntry,
 	type IChatAgentRequest,
 	type IChatAgentResult,
-	IChatAgentService,
 } from "./chatAgents.js";
 import { CONTEXT_VOTE_UP_ENABLED } from "./chatContextKeys.js";
 import {
@@ -52,6 +52,8 @@ import {
 	ChatRequestModel,
 	ChatRequestRemovalReason,
 	ChatWelcomeMessageModel,
+	normalizeSerializableChatData,
+	updateRanges,
 	type IChatModel,
 	type IChatRequestModel,
 	type IChatRequestVariableData,
@@ -60,17 +62,15 @@ import {
 	type ISerializableChatData,
 	type ISerializableChatDataIn,
 	type ISerializableChatsData,
-	normalizeSerializableChatData,
-	updateRanges,
 } from "./chatModel.js";
 import {
+	chatAgentLeader,
 	ChatRequestAgentPart,
 	ChatRequestAgentSubcommandPart,
 	ChatRequestSlashCommandPart,
-	type IParsedChatRequest,
-	chatAgentLeader,
 	chatSubcommandLeader,
 	getPromptText,
+	type IParsedChatRequest,
 } from "./chatParserTypes.js";
 import { ChatRequestParser } from "./chatRequestParser.js";
 import type {
@@ -242,26 +242,41 @@ export class ChatService extends Disposable implements IChatService {
 		@IStorageService private readonly storageService: IStorageService,
 		@ILogService private readonly logService: ILogService,
 		@IExtensionService private readonly extensionService: IExtensionService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@ITelemetryService private readonly telemetryService: ITelemetryService,
-		@IWorkspaceContextService private readonly workspaceContextService: IWorkspaceContextService,
-		@IChatSlashCommandService private readonly chatSlashCommandService: IChatSlashCommandService,
-		@IChatVariablesService private readonly chatVariablesService: IChatVariablesService,
+		@IWorkspaceContextService
+		private readonly workspaceContextService: IWorkspaceContextService,
+		@IChatSlashCommandService
+		private readonly chatSlashCommandService: IChatSlashCommandService,
+		@IChatVariablesService
+		private readonly chatVariablesService: IChatVariablesService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
-		@IWorkbenchAssignmentService workbenchAssignmentService: IWorkbenchAssignmentService,
+		@IWorkbenchAssignmentService
+		workbenchAssignmentService: IWorkbenchAssignmentService,
 		@IContextKeyService contextKeyService: IContextKeyService,
-		@IConfigurationService private readonly configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 	) {
 		super();
 
-		this._chatServiceTelemetry = this.instantiationService.createInstance(ChatServiceTelemetry);
-		const isEmptyWindow = !workspaceContextService.getWorkspace().folders.length;
-		const sessionData = storageService.get(serializedChatKey, isEmptyWindow ? StorageScope.APPLICATION : StorageScope.WORKSPACE, '');
+		this._chatServiceTelemetry =
+			this.instantiationService.createInstance(ChatServiceTelemetry);
+		const isEmptyWindow =
+			!workspaceContextService.getWorkspace().folders.length;
+		const sessionData = storageService.get(
+			serializedChatKey,
+			isEmptyWindow ? StorageScope.APPLICATION : StorageScope.WORKSPACE,
+			"",
+		);
 		if (sessionData) {
 			this._persistedSessions = this.deserializeChats(sessionData);
 			const countsForLog = Object.keys(this._persistedSessions).length;
 			if (countsForLog > 0) {
-				this.trace('constructor', `Restored ${countsForLog} persisted sessions`);
+				this.trace(
+					"constructor",
+					`Restored ${countsForLog} persisted sessions`,
+				);
 			}
 		} else {
 			this._persistedSessions = {};
@@ -270,16 +285,24 @@ export class ChatService extends Disposable implements IChatService {
 		const transferredData = this.getTransferredSessionData();
 		const transferredChat = transferredData?.chat;
 		if (transferredChat) {
-			this.trace('constructor', `Transferred session ${transferredChat.sessionId}`);
-			this._persistedSessions[transferredChat.sessionId] = transferredChat;
-			this._transferredSessionData = { sessionId: transferredChat.sessionId, inputValue: transferredData.inputValue };
+			this.trace(
+				"constructor",
+				`Transferred session ${transferredChat.sessionId}`,
+			);
+			this._persistedSessions[transferredChat.sessionId] =
+				transferredChat;
+			this._transferredSessionData = {
+				sessionId: transferredChat.sessionId,
+				inputValue: transferredData.inputValue,
+			};
 		}
 
 		this._register(storageService.onWillSaveState(() => this.saveState()));
 
 		const voteUpEnabled = CONTEXT_VOTE_UP_ENABLED.bindTo(contextKeyService);
-		workbenchAssignmentService.getTreatment('chatVoteUpEnabled')
-			.then(value => voteUpEnabled.set(!!value));
+		workbenchAssignmentService
+			.getTreatment("chatVoteUpEnabled")
+			.then((value) => voteUpEnabled.set(!!value));
 	}
 
 	isEnabled(location: ChatAgentLocation): boolean {

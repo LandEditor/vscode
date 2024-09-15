@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import {
 	createCancelablePromise,
 	firstParallel,
@@ -33,8 +34,8 @@ import {
 import type { ExtensionDescriptionRegistry } from "../../services/extensions/common/extensionDescriptionRegistry.js";
 import { IExtHostCommands } from "../common/extHostCommands.js";
 import {
-	type ExtHostConfigProvider,
 	IExtHostConfiguration,
+	type ExtHostConfigProvider,
 } from "../common/extHostConfiguration.js";
 import {
 	ExtHostDebugServiceBase,
@@ -65,13 +66,24 @@ export class ExtHostDebugService extends ExtHostDebugServiceBase {
 		@IExtHostWorkspace workspaceService: IExtHostWorkspace,
 		@IExtHostExtensionService extensionService: IExtHostExtensionService,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
-		@IExtHostTerminalService private _terminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		private _terminalService: IExtHostTerminalService,
 		@IExtHostEditorTabs editorTabs: IExtHostEditorTabs,
-		@IExtHostVariableResolverProvider variableResolver: IExtHostVariableResolverProvider,
+		@IExtHostVariableResolverProvider
+		variableResolver: IExtHostVariableResolverProvider,
 		@IExtHostCommands commands: IExtHostCommands,
 		@IExtHostTesting testing: IExtHostTesting,
 	) {
-		super(extHostRpcService, workspaceService, extensionService, configurationService, editorTabs, variableResolver, commands, testing);
+		super(
+			extHostRpcService,
+			workspaceService,
+			extensionService,
+			configurationService,
+			editorTabs,
+			variableResolver,
+			commands,
+			testing,
+		);
 	}
 
 	protected override createDebugAdapter(

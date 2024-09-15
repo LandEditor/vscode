@@ -7,22 +7,22 @@ import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { DisposableStore } from "../../../base/common/lifecycle.js";
 import { URI } from "../../../base/common/uri.js";
 import {
+	IQuickInputService,
 	type IInputOptions,
 	type IPickOptions,
 	type IQuickInput,
-	IQuickInputService,
 	type IQuickPick,
 	type IQuickPickItem,
 } from "../../../platform/quickinput/common/quickInput.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostQuickOpenShape,
 	type IInputBoxOptions,
-	MainContext,
 	type MainThreadQuickOpenShape,
 	type TransferQuickInput,
 	type TransferQuickInputButton,

@@ -9,11 +9,11 @@ import {
 	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import {
-	type IObservable,
 	observableFromEvent,
+	type IObservable,
 } from "../../../base/common/observable.js";
 import type { URI } from "../../../base/common/uri.js";
-import { type ILanguageIdCodec, TokenizationRegistry } from "../languages.js";
+import { TokenizationRegistry, type ILanguageIdCodec } from "../languages.js";
 import type {
 	ILanguageExtensionPoint,
 	ILanguageIcon,

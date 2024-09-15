@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import { generateUuid } from "../../../base/common/uuid.js";
 import { IExtHostCommands } from "../common/extHostCommands.js";
 import { IExtHostRpcService } from "../common/extHostRpcService.js";

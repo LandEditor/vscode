@@ -18,8 +18,8 @@ import {
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import {
 	ISpeechService,
-	type ISpeechToTextEvent,
 	SpeechToTextStatus,
+	type ISpeechToTextEvent,
 } from "../../speech/common/speechService.js";
 import { IChatAgentService } from "./chatAgents.js";
 import type { IChatModel } from "./chatModel.js";
@@ -112,7 +112,8 @@ export class VoiceChatService extends Disposable implements IVoiceChatService {
 	constructor(
 		@ISpeechService private readonly speechService: ISpeechService,
 		@IChatAgentService private readonly chatAgentService: IChatAgentService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService
+		@IContextKeyService
+		private readonly contextKeyService: IContextKeyService,
 	) {
 		super();
 	}

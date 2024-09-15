@@ -4,10 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import {
-	type IDisposable,
 	toDisposable,
+	type IDisposable,
 } from "../../../base/common/lifecycle.js";
 import { revive } from "../../../base/common/marshalling.js";
 import { URI, type UriComponents } from "../../../base/common/uri.js";
@@ -32,8 +33,8 @@ import {
 } from "../../services/search/common/searchExtConversionTypes.js";
 import { TextSearchManager } from "../../services/search/common/textSearchManager.js";
 import {
-	type ExtHostSearchShape,
 	MainContext,
+	type ExtHostSearchShape,
 	type MainThreadSearchShape,
 } from "./extHost.protocol.js";
 import { IExtHostRpcService } from "./extHostRpcService.js";
@@ -101,9 +102,10 @@ export class ExtHostSearch implements IExtHostSearch {
 
 	constructor(
 		@IExtHostRpcService private extHostRpc: IExtHostRpcService,
-		@IURITransformerService protected _uriTransformer: IURITransformerService,
+		@IURITransformerService
+		protected _uriTransformer: IURITransformerService,
 		@ILogService protected _logService: ILogService,
-	) { }
+	) {}
 
 	protected _transformScheme(scheme: string): string {
 		return this._uriTransformer.transformOutgoingScheme(scheme);

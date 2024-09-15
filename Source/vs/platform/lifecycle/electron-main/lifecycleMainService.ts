@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import electron from "electron";
+
 import { Barrier, Promises, timeout } from "../../../base/common/async.js";
 import { Emitter, Event } from "../../../base/common/event.js";
 import { Disposable, DisposableStore } from "../../../base/common/lifecycle.js";
@@ -18,9 +19,9 @@ import { createDecorator } from "../../instantiation/common/instantiation.js";
 import { ILogService } from "../../log/common/log.js";
 import { IStateService } from "../../state/node/state.js";
 import {
+	UnloadReason,
 	type ICodeWindow,
 	type LoadReason,
-	UnloadReason,
 } from "../../window/electron-main/window.js";
 import type {
 	ISingleFolderWorkspaceIdentifier,
@@ -281,12 +282,15 @@ export class LifecycleMainService
 	constructor(
 		@ILogService private readonly logService: ILogService,
 		@IStateService private readonly stateService: IStateService,
-		@IEnvironmentMainService private readonly environmentMainService: IEnvironmentMainService
+		@IEnvironmentMainService
+		private readonly environmentMainService: IEnvironmentMainService,
 	) {
 		super();
 
 		this.resolveRestarted();
-		this.when(LifecycleMainPhase.Ready).then(() => this.registerListeners());
+		this.when(LifecycleMainPhase.Ready).then(() =>
+			this.registerListeners(),
+		);
 	}
 
 	private resolveRestarted(): void {

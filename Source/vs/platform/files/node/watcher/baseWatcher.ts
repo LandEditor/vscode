@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { type Stats, unwatchFile, watchFile } from "fs";
+import { unwatchFile, watchFile, type Stats } from "fs";
+
 import {
 	DeferredPromise,
 	ThrottledDelayer,
@@ -18,14 +19,14 @@ import {
 import { URI } from "../../../../base/common/uri.js";
 import { FileChangeType, type IFileChange } from "../../common/files.js";
 import {
+	isWatchRequestWithCorrelation,
+	requestFilterToString,
 	type ILogMessage,
 	type IRecursiveWatcherWithSubscribe,
 	type IUniversalWatchRequest,
-	type IWatchRequestWithCorrelation,
 	type IWatcher,
 	type IWatcherErrorEvent,
-	isWatchRequestWithCorrelation,
-	requestFilterToString,
+	type IWatchRequestWithCorrelation,
 } from "../../common/watcher.js";
 
 export abstract class BaseWatcher extends Disposable implements IWatcher {

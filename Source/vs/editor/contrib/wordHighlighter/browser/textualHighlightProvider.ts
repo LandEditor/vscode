@@ -8,14 +8,14 @@ import { Disposable } from "../../../../base/common/lifecycle.js";
 import { ResourceMap } from "../../../../base/common/map.js";
 import type { Position } from "../../../common/core/position.js";
 import { USUAL_WORD_SEPARATORS } from "../../../common/core/wordHelper.js";
-import type { LanguageFilter } from "../../../common/languageSelector.js";
 import {
-	type DocumentHighlight,
 	DocumentHighlightKind,
+	type DocumentHighlight,
 	type DocumentHighlightProvider,
 	type MultiDocumentHighlightProvider,
 	type ProviderResult,
 } from "../../../common/languages.js";
+import type { LanguageFilter } from "../../../common/languageSelector.js";
 import type { ITextModel } from "../../../common/model.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 
@@ -103,10 +103,21 @@ class TextualDocumentHighlightProvider
 
 export class TextualMultiDocumentHighlightFeature extends Disposable {
 	constructor(
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
-		this._register(languageFeaturesService.documentHighlightProvider.register('*', new TextualDocumentHighlightProvider()));
-		this._register(languageFeaturesService.multiDocumentHighlightProvider.register('*', new TextualDocumentHighlightProvider()));
+		this._register(
+			languageFeaturesService.documentHighlightProvider.register(
+				"*",
+				new TextualDocumentHighlightProvider(),
+			),
+		);
+		this._register(
+			languageFeaturesService.multiDocumentHighlightProvider.register(
+				"*",
+				new TextualDocumentHighlightProvider(),
+			),
+		);
 	}
 }

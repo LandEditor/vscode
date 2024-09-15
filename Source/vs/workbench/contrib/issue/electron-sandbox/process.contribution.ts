@@ -22,6 +22,7 @@ import {
 	ProgressLocation,
 } from "../../../../platform/progress/common/progress.js";
 import { IWorkbenchProcessService } from "../common/issue.js";
+
 import "./processService.js";
 import "./issueMainService.js";
 

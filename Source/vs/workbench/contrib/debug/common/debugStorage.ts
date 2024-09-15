@@ -53,27 +53,49 @@ export class DebugStorage extends Disposable {
 	constructor(
 		@IStorageService private readonly storageService: IStorageService,
 		@ITextFileService private readonly textFileService: ITextFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
-		@ILogService private readonly logService: ILogService
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
+		@ILogService private readonly logService: ILogService,
 	) {
 		super();
 
-		this._register(storageService.onDidChangeValue(StorageScope.WORKSPACE, undefined, this._store)(e => {
-			if (e.external) {
-				switch (e.key) {
-					case DEBUG_BREAKPOINTS_KEY:
-						return this.breakpoints.set(this.loadBreakpoints(), undefined);
-					case DEBUG_FUNCTION_BREAKPOINTS_KEY:
-						return this.functionBreakpoints.set(this.loadFunctionBreakpoints(), undefined);
-					case DEBUG_EXCEPTION_BREAKPOINTS_KEY:
-						return this.exceptionBreakpoints.set(this.loadExceptionBreakpoints(), undefined);
-					case DEBUG_DATA_BREAKPOINTS_KEY:
-						return this.dataBreakpoints.set(this.loadDataBreakpoints(), undefined);
-					case DEBUG_WATCH_EXPRESSIONS_KEY:
-						return this.watchExpressions.set(this.loadWatchExpressions(), undefined);
+		this._register(
+			storageService.onDidChangeValue(
+				StorageScope.WORKSPACE,
+				undefined,
+				this._store,
+			)((e) => {
+				if (e.external) {
+					switch (e.key) {
+						case DEBUG_BREAKPOINTS_KEY:
+							return this.breakpoints.set(
+								this.loadBreakpoints(),
+								undefined,
+							);
+						case DEBUG_FUNCTION_BREAKPOINTS_KEY:
+							return this.functionBreakpoints.set(
+								this.loadFunctionBreakpoints(),
+								undefined,
+							);
+						case DEBUG_EXCEPTION_BREAKPOINTS_KEY:
+							return this.exceptionBreakpoints.set(
+								this.loadExceptionBreakpoints(),
+								undefined,
+							);
+						case DEBUG_DATA_BREAKPOINTS_KEY:
+							return this.dataBreakpoints.set(
+								this.loadDataBreakpoints(),
+								undefined,
+							);
+						case DEBUG_WATCH_EXPRESSIONS_KEY:
+							return this.watchExpressions.set(
+								this.loadWatchExpressions(),
+								undefined,
+							);
+					}
 				}
-			}
-		}));
+			}),
+		);
 	}
 
 	loadDebugUxState(): "simple" | "default" {

@@ -8,8 +8,8 @@ import { Emitter, Event } from "../../../../base/common/event.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import type {
 	ILogMessage,
-	IUniversalWatchRequest,
 	IUniversalWatcher,
+	IUniversalWatchRequest,
 } from "../../common/watcher.js";
 import { NodeJSWatcher } from "./nodejs/nodejsWatcher.js";
 import { ParcelWatcher } from "./parcel/parcelWatcher.js";

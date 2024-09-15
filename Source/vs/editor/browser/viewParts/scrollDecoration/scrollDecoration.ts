@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./scrollDecoration.css";
+
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type * as viewEvents from "../../../common/viewEvents.js";

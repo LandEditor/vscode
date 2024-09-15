@@ -25,9 +25,9 @@ import type { IValidEditOperation } from "../../../../editor/common/model.js";
 import { localize, localize2 } from "../../../../nls.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IChatAgentService } from "../../chat/common/chatAgents.js";
 import {

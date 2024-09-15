@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/newIssueReporter.css";
+
 import { IMenuService } from "../../../../platform/actions/common/actions.js";
 import { IContextKeyService } from "../../../../platform/contextkey/common/contextkey.js";
 import { IDialogService } from "../../../../platform/dialogs/common/dialogs.js";
@@ -24,15 +25,27 @@ export class NativeIssueFormService
 {
 	constructor(
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IAuxiliaryWindowService auxiliaryWindowService: IAuxiliaryWindowService,
+		@IAuxiliaryWindowService
+		auxiliaryWindowService: IAuxiliaryWindowService,
 		@ILogService logService: ILogService,
 		@IDialogService dialogService: IDialogService,
 		@IMenuService menuService: IMenuService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IHostService hostService: IHostService,
-		@INativeHostService private readonly nativeHostService: INativeHostService,
-		@INativeEnvironmentService private readonly environmentService: INativeEnvironmentService,) {
-		super(instantiationService, auxiliaryWindowService, menuService, contextKeyService, logService, dialogService, hostService);
+		@INativeHostService
+		private readonly nativeHostService: INativeHostService,
+		@INativeEnvironmentService
+		private readonly environmentService: INativeEnvironmentService,
+	) {
+		super(
+			instantiationService,
+			auxiliaryWindowService,
+			menuService,
+			contextKeyService,
+			logService,
+			dialogService,
+			hostService,
+		);
 	}
 
 	// override to grab platform info

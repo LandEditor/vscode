@@ -6,8 +6,8 @@
 import type * as DOM from "../../../../../base/browser/dom.js";
 import { PixelRatio } from "../../../../../base/browser/pixelRatio.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../../base/common/cancellation.js";
 import { DisposableStore } from "../../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../../base/common/network.js";
@@ -44,8 +44,8 @@ import type { IEditorGroup } from "../../../../services/editor/common/editorGrou
 import { INotebookDocumentService } from "../../../../services/notebook/common/notebookDocumentService.js";
 import {
 	CellUri,
-	type INotebookDiffEditorModel,
 	NOTEBOOK_MULTI_DIFF_EDITOR_ID,
+	type INotebookDiffEditorModel,
 } from "../../common/notebookCommon.js";
 import { INotebookService } from "../../common/notebookService.js";
 import { INotebookEditorWorkerService } from "../../common/services/notebookWorkerService.js";
@@ -59,8 +59,8 @@ import {
 } from "./notebookDiffEditorBrowser.js";
 import { NotebookDiffViewModel } from "./notebookDiffViewModel.js";
 import {
-	type NotebookMultiDiffEditorInput,
 	NotebookMultiDiffEditorWidgetInput,
+	type NotebookMultiDiffEditorInput,
 } from "./notebookMultiDiffEditorInput.js";
 import { UnchangedEditorRegionsService } from "./unchangedEditorRegions.js";
 
@@ -100,17 +100,32 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 
 	constructor(
 		group: IEditorGroup,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 		@IThemeService themeService: IThemeService,
-		@IContextKeyService private readonly _parentContextKeyService: IContextKeyService,
-		@INotebookEditorWorkerService private readonly notebookEditorWorkerService: INotebookEditorWorkerService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
+		@IContextKeyService
+		private readonly _parentContextKeyService: IContextKeyService,
+		@INotebookEditorWorkerService
+		private readonly notebookEditorWorkerService: INotebookEditorWorkerService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IStorageService storageService: IStorageService,
 		@INotebookService private readonly notebookService: INotebookService,
 	) {
-		super(NotebookMultiTextDiffEditor.ID, group, telemetryService, themeService, storageService);
-		this._notebookOptions = instantiationService.createInstance(NotebookOptions, this.window, false, undefined);
+		super(
+			NotebookMultiTextDiffEditor.ID,
+			group,
+			telemetryService,
+			themeService,
+			storageService,
+		);
+		this._notebookOptions = instantiationService.createInstance(
+			NotebookOptions,
+			this.window,
+			false,
+			undefined,
+		);
 		this._register(this._notebookOptions);
 	}
 
@@ -342,10 +357,12 @@ export class NotebookMultiTextDiffEditor extends EditorPane {
 
 class WorkbenchUIElementFactory implements IWorkbenchUIElementFactory {
 	constructor(
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@INotebookDocumentService private readonly notebookDocumentService: INotebookDocumentService,
-		@INotebookService private readonly notebookService: INotebookService
-	) { }
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@INotebookDocumentService
+		private readonly notebookDocumentService: INotebookDocumentService,
+		@INotebookService private readonly notebookService: INotebookService,
+	) {}
 
 	createResourceLabel(element: HTMLElement): IResourceLabel {
 		const label = this._instantiationService.createInstance(

@@ -11,8 +11,8 @@ import type { IFileService } from "../../files/common/files.js";
 import {
 	AdapterLogger,
 	DEFAULT_LOG_LEVEL,
-	type ILogger,
 	LogLevel,
+	type ILogger,
 } from "../common/log.js";
 
 export interface IAutomatedWindow {

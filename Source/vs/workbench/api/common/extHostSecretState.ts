@@ -6,8 +6,8 @@
 import { Emitter } from "../../../base/common/event.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import {
-	type ExtHostSecretStateShape,
 	MainContext,
+	type ExtHostSecretStateShape,
 	type MainThreadSecretStateShape,
 } from "./extHost.protocol.js";
 import type { IExtHostRpcService } from "./extHostRpcService.js";

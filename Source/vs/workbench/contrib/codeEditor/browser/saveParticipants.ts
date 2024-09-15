@@ -4,16 +4,16 @@
  *--------------------------------------------------------------------------------------------*/
 
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { HierarchicalKind } from "../../../../base/common/hierarchicalKind.js";
 import { Disposable } from "../../../../base/common/lifecycle.js";
 import { StopWatch } from "../../../../base/common/stopwatch.js";
 import * as strings from "../../../../base/common/strings.js";
 import {
-	type IActiveCodeEditor,
 	isCodeEditor,
+	type IActiveCodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import { ICodeEditorService } from "../../../../editor/browser/services/codeEditorService.js";
 import { trimTrailingWhitespace } from "../../../../editor/common/commands/trimTrailingWhitespaceCommand.js";
@@ -22,14 +22,14 @@ import { Position } from "../../../../editor/common/core/position.js";
 import { Range } from "../../../../editor/common/core/range.js";
 import type { Selection } from "../../../../editor/common/core/selection.js";
 import {
-	type CodeActionProvider,
 	CodeActionTriggerType,
+	type CodeActionProvider,
 } from "../../../../editor/common/languages.js";
 import type { ITextModel } from "../../../../editor/common/model.js";
 import { ILanguageFeaturesService } from "../../../../editor/common/services/languageFeatures.js";
 import {
-	ApplyCodeActionReason,
 	applyCodeAction,
+	ApplyCodeActionReason,
 	getCodeActions,
 } from "../../../../editor/contrib/codeAction/browser/codeAction.js";
 import {
@@ -37,9 +37,9 @@ import {
 	CodeActionTriggerSource,
 } from "../../../../editor/contrib/codeAction/common/types.js";
 import {
-	FormattingMode,
 	formatDocumentRangesWithSelectedProvider,
 	formatDocumentWithSelectedProvider,
+	FormattingMode,
 } from "../../../../editor/contrib/format/browser/format.js";
 import { SnippetController2 } from "../../../../editor/contrib/snippet/browser/snippetController2.js";
 import { localize } from "../../../../nls.js";
@@ -47,33 +47,35 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import type { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
 import {
+	Progress,
 	type IProgress,
 	type IProgressStep,
-	Progress,
 } from "../../../../platform/progress/common/progress.js";
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { ITelemetryService } from "../../../../platform/telemetry/common/telemetry.js";
 import {
+	Extensions as WorkbenchContributionsExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchContributionsExtensions,
 } from "../../../common/contributions.js";
 import { SaveReason } from "../../../common/editor.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { IHostService } from "../../../services/host/browser/host.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
+	ITextFileService,
 	type ITextFileEditorModel,
 	type ITextFileSaveParticipant,
 	type ITextFileSaveParticipantContext,
-	ITextFileService,
 } from "../../../services/textfile/common/textfiles.js";
 import { getModifiedRanges } from "../../format/browser/formatModified.js";
 
 export class TrimWhitespaceParticipant implements ITextFileSaveParticipant {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 	) {
 		// Nothing
 	}
@@ -181,8 +183,10 @@ function findEditor(
 
 export class FinalNewLineParticipant implements ITextFileSaveParticipant {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 	) {
 		// Nothing
 	}
@@ -236,8 +240,10 @@ export class FinalNewLineParticipant implements ITextFileSaveParticipant {
 
 export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 	) {
 		// Nothing
 	}
@@ -336,9 +342,12 @@ export class TrimFinalNewLinesParticipant implements ITextFileSaveParticipant {
 
 class FormatOnSaveParticipant implements ITextFileSaveParticipant {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
 	) {
 		// Nothing
 	}
@@ -443,18 +452,30 @@ class CodeActionOnSaveParticipant
 	implements ITextFileSaveParticipant
 {
 	constructor(
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ILanguageFeaturesService private readonly languageFeaturesService: ILanguageFeaturesService,
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ILanguageFeaturesService
+		private readonly languageFeaturesService: ILanguageFeaturesService,
 		@IHostService private readonly hostService: IHostService,
 		@IEditorService private readonly editorService: IEditorService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService,
-		@ITelemetryService private readonly telemetryService: ITelemetryService
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
+		@ITelemetryService private readonly telemetryService: ITelemetryService,
 	) {
 		super();
 
-		this._register(this.hostService.onDidChangeFocus(() => { this.triggerCodeActionsCommand(); }));
-		this._register(this.editorService.onDidActiveEditorChange(() => { this.triggerCodeActionsCommand(); }));
+		this._register(
+			this.hostService.onDidChangeFocus(() => {
+				this.triggerCodeActionsCommand();
+			}),
+		);
+		this._register(
+			this.editorService.onDidActiveEditorChange(() => {
+				this.triggerCodeActionsCommand();
+			}),
+		);
 	}
 
 	private async triggerCodeActionsCommand() {
@@ -752,8 +773,9 @@ export class SaveParticipantsContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@ITextFileService private readonly textFileService: ITextFileService
+		@IInstantiationService
+		private readonly instantiationService: IInstantiationService,
+		@ITextFileService private readonly textFileService: ITextFileService,
 	) {
 		super();
 

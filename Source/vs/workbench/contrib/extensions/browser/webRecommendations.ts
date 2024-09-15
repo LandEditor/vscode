@@ -8,8 +8,8 @@ import { IProductService } from "../../../../platform/product/common/productServ
 import { IExtensionManagementServerService } from "../../../services/extensionManagement/common/extensionManagement.js";
 import { ExtensionRecommendationReason } from "../../../services/extensionRecommendations/common/extensionRecommendations.js";
 import {
-	type ExtensionRecommendation,
 	ExtensionRecommendations,
+	type ExtensionRecommendation,
 } from "./extensionRecommendations.js";
 
 export class WebRecommendations extends ExtensionRecommendations {
@@ -20,7 +20,8 @@ export class WebRecommendations extends ExtensionRecommendations {
 
 	constructor(
 		@IProductService private readonly productService: IProductService,
-		@IExtensionManagementServerService private readonly extensionManagementServerService: IExtensionManagementServerService,
+		@IExtensionManagementServerService
+		private readonly extensionManagementServerService: IExtensionManagementServerService,
 	) {
 		super();
 	}

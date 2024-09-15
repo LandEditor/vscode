@@ -8,10 +8,10 @@ import type { CancellationToken } from "../../../../base/common/cancellation.js"
 import { Codicon } from "../../../../base/common/codicons.js";
 import type { IMatch } from "../../../../base/common/filters.js";
 import {
-	type IPreparedQuery,
 	pieceToQuery,
 	prepareQuery,
 	scoreFuzzy2,
+	type IPreparedQuery,
 } from "../../../../base/common/fuzzyScorer.js";
 import type { DisposableStore } from "../../../../base/common/lifecycle.js";
 import { Schemas } from "../../../../base/common/network.js";
@@ -29,9 +29,9 @@ import { IConfigurationService } from "../../../../platform/configuration/common
 import { ILabelService } from "../../../../platform/label/common/label.js";
 import { IOpenerService } from "../../../../platform/opener/common/opener.js";
 import {
-	type IPickerQuickAccessItem,
 	PickerQuickAccessProvider,
 	TriggerAction,
+	type IPickerQuickAccessItem,
 } from "../../../../platform/quickinput/browser/pickerQuickAccess.js";
 import type {
 	IKeyMods,
@@ -44,9 +44,9 @@ import {
 	SIDE_GROUP,
 } from "../../../services/editor/common/editorService.js";
 import {
+	getWorkspaceSymbols,
 	type IWorkspaceSymbol,
 	type IWorkspaceSymbolProvider,
-	getWorkspaceSymbols,
 } from "../common/search.js";
 
 export interface ISymbolQuickPickItem
@@ -91,14 +91,19 @@ export class SymbolsQuickAccessProvider extends PickerQuickAccessProvider<ISymbo
 		@ILabelService private readonly labelService: ILabelService,
 		@IOpenerService private readonly openerService: IOpenerService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IConfigurationService private readonly configurationService: IConfigurationService,
-		@ICodeEditorService private readonly codeEditorService: ICodeEditorService
+		@IConfigurationService
+		private readonly configurationService: IConfigurationService,
+		@ICodeEditorService
+		private readonly codeEditorService: ICodeEditorService,
 	) {
 		super(SymbolsQuickAccessProvider.PREFIX, {
 			canAcceptInBackground: true,
 			noResultsPick: {
-				label: localize('noSymbolResults', "No matching workspace symbols")
-			}
+				label: localize(
+					"noSymbolResults",
+					"No matching workspace symbols",
+				),
+			},
 		});
 	}
 

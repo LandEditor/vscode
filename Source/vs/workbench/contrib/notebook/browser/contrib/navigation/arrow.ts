@@ -40,12 +40,12 @@ import {
 } from "../../../common/notebookContextKeys.js";
 import { CTX_NOTEBOOK_CHAT_OUTER_FOCUS_POSITION } from "../../controller/chat/notebookChatContext.js";
 import {
-	type INotebookActionContext,
-	type INotebookCellActionContext,
+	findTargetCellEditor,
 	NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT,
 	NotebookAction,
 	NotebookCellAction,
-	findTargetCellEditor,
+	type INotebookActionContext,
+	type INotebookCellActionContext,
 } from "../../controller/coreActions.js";
 import { CellEditState } from "../../notebookBrowser.js";
 

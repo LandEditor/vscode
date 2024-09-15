@@ -14,14 +14,13 @@ import { SyncDescriptor } from "../../../../platform/instantiation/common/descri
 import { Registry } from "../../../../platform/registry/common/platform.js";
 import { registerIcon } from "../../../../platform/theme/common/iconRegistry.js";
 import {
-	type IViewsRegistry,
 	Extensions as ViewExtensions,
+	type IViewsRegistry,
 } from "../../../common/views.js";
 import { OutlineConfigKeys } from "../../../services/outline/browser/outline.js";
 import { VIEW_CONTAINER } from "../../files/browser/explorerViewlet.js";
 import { IOutlinePane } from "./outline.js";
 import { OutlinePane } from "./outlinePane.js";
-
 // --- actions
 
 import "./outlineActions.js";

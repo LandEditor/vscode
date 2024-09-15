@@ -4,22 +4,22 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { CancellationToken } from "../../../base/common/cancellation.js";
-import { type IDisposable, dispose } from "../../../base/common/lifecycle.js";
+import { dispose, type IDisposable } from "../../../base/common/lifecycle.js";
 import { URI } from "../../../base/common/uri.js";
 import {
-	type IShareProvider,
 	IShareService,
 	type IShareableItem,
+	type IShareProvider,
 } from "../../contrib/share/common/share.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
 	ExtHostContext,
+	MainContext,
 	type ExtHostShareShape,
 	type IDocumentFilterDto,
-	MainContext,
 	type MainThreadShareShape,
 } from "../common/extHost.protocol.js";
 
@@ -31,7 +31,7 @@ export class MainThreadShare implements MainThreadShareShape {
 
 	constructor(
 		extHostContext: IExtHostContext,
-		@IShareService private readonly shareService: IShareService
+		@IShareService private readonly shareService: IShareService,
 	) {
 		this.proxy = extHostContext.getProxy(ExtHostContext.ExtHostShare);
 	}

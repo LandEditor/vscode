@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "../colorPicker.css";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { PixelRatio } from "../../../../../base/browser/pixelRatio.js";
 import { Widget } from "../../../../../base/browser/ui/widget.js";

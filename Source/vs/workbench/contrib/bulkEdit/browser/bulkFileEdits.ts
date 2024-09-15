@@ -13,8 +13,8 @@ import type { WorkspaceFileEditOptions } from "../../../../editor/common/languag
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	FileSystemProviderCapabilities,
-	type IFileContent,
 	IFileService,
+	type IFileContent,
 	type IFileStatWithMetadata,
 } from "../../../../platform/files/common/files.js";
 import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
@@ -22,20 +22,20 @@ import { ILogService } from "../../../../platform/log/common/log.js";
 import type { IProgress } from "../../../../platform/progress/common/progress.js";
 import {
 	IUndoRedoService,
-	type IWorkspaceUndoRedoElement,
 	UndoRedoElementType,
+	type IWorkspaceUndoRedoElement,
 	type UndoRedoGroup,
 	type UndoRedoSource,
 } from "../../../../platform/undoRedo/common/undoRedo.js";
 import { ITextFileService } from "../../../services/textfile/common/textfiles.js";
 import {
+	IWorkingCopyFileService,
 	type ICopyOperation,
 	type ICreateFileOperation,
 	type ICreateOperation,
 	type IDeleteOperation,
 	type IFileOperationUndoRedoInfo,
 	type IMoveOperation,
-	IWorkingCopyFileService,
 } from "../../../services/workingCopy/common/workingCopyFileService.js";
 
 interface IFileOperation {
@@ -66,9 +66,10 @@ class RenameOperation implements IFileOperation {
 	constructor(
 		private readonly _edits: RenameEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
 		@IFileService private readonly _fileService: IFileService,
-	) { }
+	) {}
 
 	get uris() {
 		return this._edits.flatMap((edit) => [edit.newUri, edit.oldUri]);
@@ -131,10 +132,12 @@ class CopyOperation implements IFileOperation {
 	constructor(
 		private readonly _edits: CopyEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
 		@IFileService private readonly _fileService: IFileService,
-		@IInstantiationService private readonly _instaService: IInstantiationService
-	) { }
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+	) {}
 
 	get uris() {
 		return this._edits.flatMap((edit) => [edit.newUri, edit.oldUri]);
@@ -210,10 +213,12 @@ class CreateOperation implements IFileOperation {
 		private readonly _edits: CreateEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
 		@IFileService private readonly _fileService: IFileService,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@ITextFileService private readonly _textFileService: ITextFileService
-	) { }
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@ITextFileService private readonly _textFileService: ITextFileService,
+	) {}
 
 	get uris() {
 		return this._edits.map((edit) => edit.newUri);
@@ -298,12 +303,15 @@ class DeleteOperation implements IFileOperation {
 	constructor(
 		private _edits: DeleteEdit[],
 		private readonly _undoRedoInfo: IFileOperationUndoRedoInfo,
-		@IWorkingCopyFileService private readonly _workingCopyFileService: IWorkingCopyFileService,
+		@IWorkingCopyFileService
+		private readonly _workingCopyFileService: IWorkingCopyFileService,
 		@IFileService private readonly _fileService: IFileService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService,
-		@IInstantiationService private readonly _instaService: IInstantiationService,
-		@ILogService private readonly _logService: ILogService
-	) { }
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
+		@ILogService private readonly _logService: ILogService,
+	) {}
 
 	get uris() {
 		return this._edits.map((edit) => edit.oldUri);
@@ -439,9 +447,10 @@ export class BulkFileEdits {
 		private readonly _progress: IProgress<void>,
 		private readonly _token: CancellationToken,
 		private readonly _edits: ResourceFileEdit[],
-		@IInstantiationService private readonly _instaService: IInstantiationService,
+		@IInstantiationService
+		private readonly _instaService: IInstantiationService,
 		@IUndoRedoService private readonly _undoRedoService: IUndoRedoService,
-	) { }
+	) {}
 
 	async apply(): Promise<readonly URI[]> {
 		const undoOperations: IFileOperation[] = [];

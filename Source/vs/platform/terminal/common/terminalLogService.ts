@@ -9,9 +9,9 @@ import { joinPath } from "../../../base/common/resources.js";
 import { localize } from "../../../nls.js";
 import { IEnvironmentService } from "../../environment/common/environment.js";
 import {
-	type ILogger,
 	ILoggerService,
 	LogLevel,
+	type ILogger,
 } from "../../log/common/log.js";
 import { IWorkspaceContextService } from "../../workspace/common/workspace.js";
 import type { ITerminalLogService } from "./terminal.js";
@@ -33,14 +33,28 @@ export class TerminalLogService
 
 	constructor(
 		@ILoggerService private readonly _loggerService: ILoggerService,
-		@IWorkspaceContextService workspaceContextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		workspaceContextService: IWorkspaceContextService,
 		@IEnvironmentService environmentService: IEnvironmentService,
 	) {
 		super();
-		this._logger = this._loggerService.createLogger(joinPath(environmentService.logsHome, 'terminal.log'), { id: 'terminal', name: localize('terminalLoggerName', 'Terminal') });
-		this._register(Event.runAndSubscribe(workspaceContextService.onDidChangeWorkspaceFolders, () => {
-			this._workspaceId = workspaceContextService.getWorkspace().id.substring(0, 7);
-		}));
+		this._logger = this._loggerService.createLogger(
+			joinPath(environmentService.logsHome, "terminal.log"),
+			{
+				id: "terminal",
+				name: localize("terminalLoggerName", "Terminal"),
+			},
+		);
+		this._register(
+			Event.runAndSubscribe(
+				workspaceContextService.onDidChangeWorkspaceFolders,
+				() => {
+					this._workspaceId = workspaceContextService
+						.getWorkspace()
+						.id.substring(0, 7);
+				},
+			),
+		);
 	}
 
 	getLevel(): LogLevel {

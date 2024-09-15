@@ -4,10 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import * as nls from "../../../../nls.js";
-
 // Import the effects we need
 import { registerColor, transparent } from "../colorUtils.js";
-
 // Import the colors we need
 import { foreground } from "./baseColors.js";
 import {

@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type * as vscode from "vscode";
+
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { Emitter } from "../../../base/common/event.js";
 import { Disposable } from "../../../base/common/lifecycle.js";
@@ -12,10 +13,10 @@ import * as extHostProtocol from "./extHost.protocol.js";
 import { ViewBadge } from "./extHostTypeConverters.js";
 import * as extHostTypes from "./extHostTypes.js";
 import {
-	type ExtHostWebview,
-	type ExtHostWebviews,
 	shouldSerializeBuffersForPostMessage,
 	toExtensionData,
+	type ExtHostWebview,
+	type ExtHostWebviews,
 } from "./extHostWebview.js";
 
 /* eslint-disable local/code-no-native-private */

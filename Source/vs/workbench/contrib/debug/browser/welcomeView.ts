@@ -14,9 +14,9 @@ import type { ILocalizedString } from "../../../../platform/action/common/action
 import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
 	RawContextKey,
+	type IContextKey,
 } from "../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
 import { IHoverService } from "../../../../platform/hover/browser/hover.js";
@@ -42,13 +42,13 @@ import { WorkbenchStateContext } from "../../../common/contextkeys.js";
 import {
 	Extensions,
 	IViewDescriptorService,
-	type IViewsRegistry,
 	ViewContentGroups,
+	type IViewsRegistry,
 } from "../../../common/views.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	CONTEXT_DEBUGGERS_AVAILABLE,
 	CONTEXT_DEBUG_EXTENSION_AVAILABLE,
+	CONTEXT_DEBUGGERS_AVAILABLE,
 	IDebugService,
 } from "../common/debug.js";
 import {
@@ -90,11 +90,30 @@ export class WelcomeView extends ViewPane {
 		@ITelemetryService telemetryService: ITelemetryService,
 		@IHoverService hoverService: IHoverService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
-		this.debugStartLanguageContext = CONTEXT_DEBUG_START_LANGUAGE.bindTo(contextKeyService);
-		this.debuggerInterestedContext = CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR.bindTo(contextKeyService);
-		const lastSetLanguage = storageSevice.get(debugStartLanguageKey, StorageScope.WORKSPACE);
+		this.debugStartLanguageContext =
+			CONTEXT_DEBUG_START_LANGUAGE.bindTo(contextKeyService);
+		this.debuggerInterestedContext =
+			CONTEXT_DEBUGGER_INTERESTED_IN_ACTIVE_EDITOR.bindTo(
+				contextKeyService,
+			);
+		const lastSetLanguage = storageSevice.get(
+			debugStartLanguageKey,
+			StorageScope.WORKSPACE,
+		);
 		this.debugStartLanguageContext.set(lastSetLanguage);
 
 		const setContextKey = () => {
@@ -106,10 +125,20 @@ export class WelcomeView extends ViewPane {
 			if (isCodeEditor(editorControl)) {
 				const model = editorControl.getModel();
 				const language = model ? model.getLanguageId() : undefined;
-				if (language && this.debugService.getAdapterManager().someDebuggerInterestedInLanguage(language)) {
+				if (
+					language &&
+					this.debugService
+						.getAdapterManager()
+						.someDebuggerInterestedInLanguage(language)
+				) {
 					this.debugStartLanguageContext.set(language);
 					this.debuggerInterestedContext.set(true);
-					storageSevice.store(debugStartLanguageKey, language, StorageScope.WORKSPACE, StorageTarget.MACHINE);
+					storageSevice.store(
+						debugStartLanguageKey,
+						language,
+						StorageScope.WORKSPACE,
+						StorageTarget.MACHINE,
+					);
 					return;
 				}
 			}
@@ -119,30 +148,44 @@ export class WelcomeView extends ViewPane {
 		const disposables = new DisposableStore();
 		this._register(disposables);
 
-		this._register(editorService.onDidActiveEditorChange(() => {
-			disposables.clear();
+		this._register(
+			editorService.onDidActiveEditorChange(() => {
+				disposables.clear();
 
-			let editorControl = this.editorService.activeTextEditorControl;
-			if (isDiffEditor(editorControl)) {
-				editorControl = editorControl.getModifiedEditor();
-			}
+				let editorControl = this.editorService.activeTextEditorControl;
+				if (isDiffEditor(editorControl)) {
+					editorControl = editorControl.getModifiedEditor();
+				}
 
-			if (isCodeEditor(editorControl)) {
-				disposables.add(editorControl.onDidChangeModelLanguage(setContextKey));
-			}
+				if (isCodeEditor(editorControl)) {
+					disposables.add(
+						editorControl.onDidChangeModelLanguage(setContextKey),
+					);
+				}
 
-			setContextKey();
-		}));
-		this._register(this.debugService.getAdapterManager().onDidRegisterDebugger(setContextKey));
-		this._register(this.onDidChangeBodyVisibility(visible => {
-			if (visible) {
 				setContextKey();
-			}
-		}));
+			}),
+		);
+		this._register(
+			this.debugService
+				.getAdapterManager()
+				.onDidRegisterDebugger(setContextKey),
+		);
+		this._register(
+			this.onDidChangeBodyVisibility((visible) => {
+				if (visible) {
+					setContextKey();
+				}
+			}),
+		);
 		setContextKey();
 
-		const debugKeybinding = this.keybindingService.lookupKeybinding(DEBUG_START_COMMAND_ID);
-		debugKeybindingLabel = debugKeybinding ? ` (${debugKeybinding.getLabel()})` : '';
+		const debugKeybinding = this.keybindingService.lookupKeybinding(
+			DEBUG_START_COMMAND_ID,
+		);
+		debugKeybindingLabel = debugKeybinding
+			? ` (${debugKeybinding.getLabel()})`
+			: "";
 	}
 
 	override shouldShowWelcome(): boolean {

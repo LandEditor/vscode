@@ -5,26 +5,26 @@
 
 /* eslint-disable local/code-no-native-private */
 
-import { asPromise } from "../../../base/common/async.js";
-import { Emitter, type Event } from "../../../base/common/event.js";
-import { URI, type UriComponents } from "../../../base/common/uri.js";
-
 import type * as vscode from "vscode";
+
 import { asArray } from "../../../base/common/arrays.js";
+import { asPromise } from "../../../base/common/async.js";
 import { CancellationToken } from "../../../base/common/cancellation.js";
 import {
 	ErrorNoTelemetry,
 	NotSupportedError,
 } from "../../../base/common/errors.js";
+import { Emitter, type Event } from "../../../base/common/event.js";
 import { Schemas } from "../../../base/common/network.js";
 import * as Platform from "../../../base/common/platform.js";
+import { URI, type UriComponents } from "../../../base/common/uri.js";
 import type { IExtensionDescription } from "../../../platform/extensions/common/extensions.js";
 import { createDecorator } from "../../../platform/instantiation/common/instantiation.js";
 import { ILogService } from "../../../platform/log/common/log.js";
 import { USER_TASKS_GROUP_KEY } from "../../contrib/tasks/common/tasks.js";
 import {
-	type ExtHostTaskShape,
 	MainContext,
+	type ExtHostTaskShape,
 	type MainThreadTaskShape,
 } from "./extHost.protocol.js";
 import { IExtHostApiDeprecationService } from "./extHostApiDeprecationService.js";
@@ -561,9 +561,11 @@ export abstract class ExtHostTaskBase
 		@IExtHostWorkspace workspaceService: IExtHostWorkspace,
 		@IExtHostDocumentsAndEditors editorService: IExtHostDocumentsAndEditors,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
-		@IExtHostTerminalService extHostTerminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		extHostTerminalService: IExtHostTerminalService,
 		@ILogService logService: ILogService,
-		@IExtHostApiDeprecationService deprecationService: IExtHostApiDeprecationService,
+		@IExtHostApiDeprecationService
+		deprecationService: IExtHostApiDeprecationService,
 	) {
 		this._proxy = extHostRpc.getProxy(MainContext.MainThreadTask);
 		this._workspaceProvider = workspaceService;
@@ -968,9 +970,11 @@ export class WorkerExtHostTask extends ExtHostTaskBase {
 		@IExtHostWorkspace workspaceService: IExtHostWorkspace,
 		@IExtHostDocumentsAndEditors editorService: IExtHostDocumentsAndEditors,
 		@IExtHostConfiguration configurationService: IExtHostConfiguration,
-		@IExtHostTerminalService extHostTerminalService: IExtHostTerminalService,
+		@IExtHostTerminalService
+		extHostTerminalService: IExtHostTerminalService,
 		@ILogService logService: ILogService,
-		@IExtHostApiDeprecationService deprecationService: IExtHostApiDeprecationService,
+		@IExtHostApiDeprecationService
+		deprecationService: IExtHostApiDeprecationService,
 	) {
 		super(
 			extHostRpc,

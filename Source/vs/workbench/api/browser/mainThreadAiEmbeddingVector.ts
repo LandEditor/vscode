@@ -6,17 +6,17 @@
 import type { CancellationToken } from "../../../base/common/cancellation.js";
 import { Disposable, DisposableMap } from "../../../base/common/lifecycle.js";
 import {
-	type IAiEmbeddingVectorProvider,
 	IAiEmbeddingVectorService,
+	type IAiEmbeddingVectorProvider,
 } from "../../services/aiEmbeddingVector/common/aiEmbeddingVectorService.js";
 import {
-	type IExtHostContext,
 	extHostNamedCustomer,
+	type IExtHostContext,
 } from "../../services/extensions/common/extHostCustomers.js";
 import {
-	type ExtHostAiEmbeddingVectorShape,
 	ExtHostContext,
 	MainContext,
+	type ExtHostAiEmbeddingVectorShape,
 	type MainThreadAiEmbeddingVectorShape,
 } from "../common/extHost.protocol.js";
 
@@ -32,7 +32,8 @@ export class MainThreadAiEmbeddingVector
 
 	constructor(
 		context: IExtHostContext,
-		@IAiEmbeddingVectorService private readonly _AiEmbeddingVectorService: IAiEmbeddingVectorService,
+		@IAiEmbeddingVectorService
+		private readonly _AiEmbeddingVectorService: IAiEmbeddingVectorService,
 	) {
 		super();
 		this._proxy = context.getProxy(ExtHostContext.ExtHostAiEmbeddingVector);

@@ -9,8 +9,8 @@ import {
 	equals,
 } from "../../../../base/common/arrays.js";
 import {
-	type CancellationToken,
 	CancellationTokenSource,
+	type CancellationToken,
 } from "../../../../base/common/cancellation.js";
 import { onUnexpectedExternalError } from "../../../../base/common/errors.js";
 import { Iterable } from "../../../../base/common/iterator.js";
@@ -24,8 +24,8 @@ import {
 } from "../../../../platform/instantiation/common/extensions.js";
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 import type { MarkerSeverity } from "../../../../platform/markers/common/markers.js";
-import { type IPosition, Position } from "../../../common/core/position.js";
-import { type IRange, Range } from "../../../common/core/range.js";
+import { Position, type IPosition } from "../../../common/core/position.js";
+import { Range, type IRange } from "../../../common/core/range.js";
 import type { LanguageFeatureRegistry } from "../../../common/languageFeatureRegistry.js";
 import type {
 	DocumentSymbol,
@@ -33,8 +33,8 @@ import type {
 } from "../../../common/languages.js";
 import type { ITextModel } from "../../../common/model.js";
 import {
-	type IFeatureDebounceInformation,
 	ILanguageFeatureDebounceService,
+	type IFeatureDebounceInformation,
 } from "../../../common/services/languageFeatureDebounce.js";
 import { ILanguageFeaturesService } from "../../../common/services/languageFeatures.js";
 import { IModelService } from "../../../common/services/model.js";
@@ -509,16 +509,24 @@ export class OutlineModelService implements IOutlineModelService {
 	private readonly _cache = new LRUCache<string, CacheEntry>(10, 0.7);
 
 	constructor(
-		@ILanguageFeaturesService private readonly _languageFeaturesService: ILanguageFeaturesService,
-		@ILanguageFeatureDebounceService debounces: ILanguageFeatureDebounceService,
-		@IModelService modelService: IModelService
+		@ILanguageFeaturesService
+		private readonly _languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeatureDebounceService
+		debounces: ILanguageFeatureDebounceService,
+		@IModelService modelService: IModelService,
 	) {
-		this._debounceInformation = debounces.for(_languageFeaturesService.documentSymbolProvider, 'DocumentSymbols', { min: 350 });
+		this._debounceInformation = debounces.for(
+			_languageFeaturesService.documentSymbolProvider,
+			"DocumentSymbols",
+			{ min: 350 },
+		);
 
 		// don't cache outline models longer than their text model
-		this._disposables.add(modelService.onModelRemoved(textModel => {
-			this._cache.delete(textModel.id);
-		}));
+		this._disposables.add(
+			modelService.onModelRemoved((textModel) => {
+				this._cache.delete(textModel.id);
+			}),
+		);
 	}
 
 	dispose(): void {

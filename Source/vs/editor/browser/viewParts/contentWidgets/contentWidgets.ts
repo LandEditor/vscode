@@ -5,8 +5,8 @@
 
 import * as dom from "../../../../base/browser/dom.js";
 import {
-	type FastDomNode,
 	createFastDomNode,
+	type FastDomNode,
 } from "../../../../base/browser/fastDomNode.js";
 import { EditorOption } from "../../../common/config/editorOptions.js";
 import type { IDimension } from "../../../common/core/dimension.js";

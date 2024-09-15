@@ -8,8 +8,8 @@ import * as DOM from "../../../../../base/browser/dom.js";
 import { AbstractTreePart } from "../../../../../base/browser/ui/tree/abstractTree.js";
 import type { IAsyncDataTreeViewState } from "../../../../../base/browser/ui/tree/asyncDataTree.js";
 import {
-	type ITreeContextMenuEvent,
 	TreeVisibility,
+	type ITreeContextMenuEvent,
 } from "../../../../../base/browser/ui/tree/tree.js";
 import type {
 	WorkbenchActionExecutedClassification,
@@ -32,13 +32,13 @@ import {
 import { IClipboardService } from "../../../../../platform/clipboard/common/clipboardService.js";
 import { ICommandService } from "../../../../../platform/commands/common/commands.js";
 import {
-	type IConfigurationChangeEvent,
 	IConfigurationService,
+	type IConfigurationChangeEvent,
 } from "../../../../../platform/configuration/common/configuration.js";
 import {
 	ContextKeyExpr,
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
 import { EditorOpenSource } from "../../../../../platform/editor/common/editor.js";
@@ -66,8 +66,8 @@ import {
 } from "../../../../../platform/storage/common/storage.js";
 import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
 import {
-	type IFileIconTheme,
 	IThemeService,
+	type IFileIconTheme,
 } from "../../../../../platform/theme/common/themeService.js";
 import { IUriIdentityService } from "../../../../../platform/uriIdentity/common/uriIdentity.js";
 import {
@@ -76,8 +76,8 @@ import {
 } from "../../../../../platform/workspace/common/workspace.js";
 import { ResourceLabels } from "../../../../browser/labels.js";
 import {
-	type IViewPaneOptions,
 	ViewPane,
+	type IViewPaneOptions,
 } from "../../../../browser/parts/views/viewPane.js";
 import { ResourceContextKey } from "../../../../common/contextkeys.js";
 import {
@@ -110,9 +110,9 @@ import {
 	ExplorerRootContext,
 	FilesExplorerFocusedContext,
 	FoldersViewVisibleContext,
-	type IFilesConfiguration,
 	VIEW_ID,
 	ViewHasSomeCollapsibleRootItemContext,
+	type IFilesConfiguration,
 } from "../../common/files.js";
 import {
 	FileCopiedContext,
@@ -126,11 +126,11 @@ import {
 	ExplorerDataSource,
 	ExplorerDelegate,
 	FileDragAndDrop,
-	FileSorter,
 	FilesFilter,
+	FileSorter,
 	FilesRenderer,
-	type ICompressedNavigationController,
 	isCompressedFolderName,
+	type ICompressedNavigationController,
 } from "./explorerViewer.js";
 
 function hasExpandedRootChild(
@@ -312,15 +312,19 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 		@IContextMenuService contextMenuService: IContextMenuService,
 		@IViewDescriptorService viewDescriptorService: IViewDescriptorService,
 		@IInstantiationService instantiationService: IInstantiationService,
-		@IWorkspaceContextService private readonly contextService: IWorkspaceContextService,
+		@IWorkspaceContextService
+		private readonly contextService: IWorkspaceContextService,
 		@IProgressService private readonly progressService: IProgressService,
 		@IEditorService private readonly editorService: IEditorService,
-		@IEditorResolverService private readonly editorResolverService: IEditorResolverService,
-		@IWorkbenchLayoutService private readonly layoutService: IWorkbenchLayoutService,
+		@IEditorResolverService
+		private readonly editorResolverService: IEditorResolverService,
+		@IWorkbenchLayoutService
+		private readonly layoutService: IWorkbenchLayoutService,
 		@IKeybindingService keybindingService: IKeybindingService,
 		@IContextKeyService contextKeyService: IContextKeyService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@IDecorationsService private readonly decorationService: IDecorationsService,
+		@IDecorationsService
+		private readonly decorationService: IDecorationsService,
 		@ILabelService private readonly labelService: ILabelService,
 		@IThemeService themeService: IWorkbenchThemeService,
 		@ITelemetryService telemetryService: ITelemetryService,
@@ -329,27 +333,48 @@ export class ExplorerView extends ViewPane implements IExplorerView {
 		@IStorageService private readonly storageService: IStorageService,
 		@IClipboardService private clipboardService: IClipboardService,
 		@IFileService private readonly fileService: IFileService,
-		@IUriIdentityService private readonly uriIdentityService: IUriIdentityService,
+		@IUriIdentityService
+		private readonly uriIdentityService: IUriIdentityService,
 		@ICommandService private readonly commandService: ICommandService,
-		@IOpenerService openerService: IOpenerService
+		@IOpenerService openerService: IOpenerService,
 	) {
-		super(options, keybindingService, contextMenuService, configurationService, contextKeyService, viewDescriptorService, instantiationService, openerService, themeService, telemetryService, hoverService);
+		super(
+			options,
+			keybindingService,
+			contextMenuService,
+			configurationService,
+			contextKeyService,
+			viewDescriptorService,
+			instantiationService,
+			openerService,
+			themeService,
+			telemetryService,
+			hoverService,
+		);
 
 		this.delegate = options.delegate;
-		this.resourceContext = instantiationService.createInstance(ResourceContextKey);
+		this.resourceContext =
+			instantiationService.createInstance(ResourceContextKey);
 		this._register(this.resourceContext);
 
 		this.folderContext = ExplorerFolderContext.bindTo(contextKeyService);
-		this.readonlyContext = ExplorerResourceReadonlyContext.bindTo(contextKeyService);
-		this.availableEditorIdsContext = ExplorerResourceAvailableEditorIdsContext.bindTo(contextKeyService);
+		this.readonlyContext =
+			ExplorerResourceReadonlyContext.bindTo(contextKeyService);
+		this.availableEditorIdsContext =
+			ExplorerResourceAvailableEditorIdsContext.bindTo(contextKeyService);
 		this.rootContext = ExplorerRootContext.bindTo(contextKeyService);
-		this.resourceMoveableToTrash = ExplorerResourceMoveableToTrash.bindTo(contextKeyService);
-		this.compressedFocusContext = ExplorerCompressedFocusContext.bindTo(contextKeyService);
-		this.compressedFocusFirstContext = ExplorerCompressedFirstFocusContext.bindTo(contextKeyService);
-		this.compressedFocusLastContext = ExplorerCompressedLastFocusContext.bindTo(contextKeyService);
-		this.viewHasSomeCollapsibleRootItem = ViewHasSomeCollapsibleRootItemContext.bindTo(contextKeyService);
-		this.viewVisibleContextKey = FoldersViewVisibleContext.bindTo(contextKeyService);
-
+		this.resourceMoveableToTrash =
+			ExplorerResourceMoveableToTrash.bindTo(contextKeyService);
+		this.compressedFocusContext =
+			ExplorerCompressedFocusContext.bindTo(contextKeyService);
+		this.compressedFocusFirstContext =
+			ExplorerCompressedFirstFocusContext.bindTo(contextKeyService);
+		this.compressedFocusLastContext =
+			ExplorerCompressedLastFocusContext.bindTo(contextKeyService);
+		this.viewHasSomeCollapsibleRootItem =
+			ViewHasSomeCollapsibleRootItemContext.bindTo(contextKeyService);
+		this.viewVisibleContextKey =
+			FoldersViewVisibleContext.bindTo(contextKeyService);
 
 		this.explorerService.registerView(this);
 	}

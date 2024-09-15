@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IGrammar } from "vscode-textmate";
+
 import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
 
 export const ITextMateTokenizationService =

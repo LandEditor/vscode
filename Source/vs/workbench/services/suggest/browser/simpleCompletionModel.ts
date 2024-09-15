@@ -7,10 +7,10 @@ import { quickSelect } from "../../../../base/common/arrays.js";
 import { CharCode } from "../../../../base/common/charCode.js";
 import {
 	FuzzyScore,
-	FuzzyScoreOptions,
-	type FuzzyScorer,
 	fuzzyScore,
 	fuzzyScoreGracefulAggressive,
+	FuzzyScoreOptions,
+	type FuzzyScorer,
 } from "../../../../base/common/filters.js";
 import { isWindows } from "../../../../base/common/platform.js";
 import type { SimpleCompletionItem } from "./simpleCompletionItem.js";

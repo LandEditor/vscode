@@ -4,14 +4,15 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { ISearchOptions } from "@xterm/addon-search";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { Event } from "../../../../../base/common/event.js";
 import type { IDisposable } from "../../../../../base/common/lifecycle.js";
 import { IClipboardService } from "../../../../../platform/clipboard/common/clipboardService.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import {
 	IContextMenuService,
@@ -22,10 +23,10 @@ import { IKeybindingService } from "../../../../../platform/keybinding/common/ke
 import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
 import { SimpleFindWidget } from "../../../codeEditor/browser/find/simpleFindWidget.js";
 import {
+	XtermTerminalConstants,
 	type IDetachedTerminalInstance,
 	type ITerminalInstance,
 	type IXtermTerminal,
-	XtermTerminalConstants,
 } from "../../../terminal/browser/terminal.js";
 import { TerminalContextKeys } from "../../../terminal/common/terminalContextKey.js";
 import { TerminalFindCommandId } from "../common/terminal.find.js";
@@ -44,59 +45,99 @@ export class TerminalFindWidget extends SimpleFindWidget {
 		private _instance: ITerminalInstance | IDetachedTerminalInstance,
 		@IContextViewService _contextViewService: IContextViewService,
 		@IKeybindingService keybindingService: IKeybindingService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 		@IContextMenuService _contextMenuService: IContextMenuService,
 		@IClipboardService _clipboardService: IClipboardService,
 		@IHoverService hoverService: IHoverService,
 		@IThemeService private readonly _themeService: IThemeService,
-		@IConfigurationService private readonly _configurationService: IConfigurationService
+		@IConfigurationService
+		private readonly _configurationService: IConfigurationService,
 	) {
-		super({
-			showCommonFindToggles: true,
-			checkImeCompletionState: true,
-			showResultCount: true,
-			initialWidth: TERMINAL_FIND_WIDGET_INITIAL_WIDTH,
-			enableSash: true,
-			appendCaseSensitiveActionId: TerminalFindCommandId.ToggleFindCaseSensitive,
-			appendRegexActionId: TerminalFindCommandId.ToggleFindRegex,
-			appendWholeWordsActionId: TerminalFindCommandId.ToggleFindWholeWord,
-			previousMatchActionId: TerminalFindCommandId.FindPrevious,
-			nextMatchActionId: TerminalFindCommandId.FindNext,
-			closeWidgetActionId: TerminalFindCommandId.FindHide,
-			type: 'Terminal',
-			matchesLimit: XtermTerminalConstants.SearchHighlightLimit
-		}, _contextViewService, _contextKeyService, hoverService, keybindingService);
+		super(
+			{
+				showCommonFindToggles: true,
+				checkImeCompletionState: true,
+				showResultCount: true,
+				initialWidth: TERMINAL_FIND_WIDGET_INITIAL_WIDTH,
+				enableSash: true,
+				appendCaseSensitiveActionId:
+					TerminalFindCommandId.ToggleFindCaseSensitive,
+				appendRegexActionId: TerminalFindCommandId.ToggleFindRegex,
+				appendWholeWordsActionId:
+					TerminalFindCommandId.ToggleFindWholeWord,
+				previousMatchActionId: TerminalFindCommandId.FindPrevious,
+				nextMatchActionId: TerminalFindCommandId.FindNext,
+				closeWidgetActionId: TerminalFindCommandId.FindHide,
+				type: "Terminal",
+				matchesLimit: XtermTerminalConstants.SearchHighlightLimit,
+			},
+			_contextViewService,
+			_contextKeyService,
+			hoverService,
+			keybindingService,
+		);
 
-		this._register(this.state.onFindReplaceStateChange(() => {
-			this.show();
-		}));
-		this._findInputFocused = TerminalContextKeys.findInputFocus.bindTo(this._contextKeyService);
-		this._findWidgetFocused = TerminalContextKeys.findFocus.bindTo(this._contextKeyService);
-		this._findWidgetVisible = TerminalContextKeys.findVisible.bindTo(this._contextKeyService);
+		this._register(
+			this.state.onFindReplaceStateChange(() => {
+				this.show();
+			}),
+		);
+		this._findInputFocused = TerminalContextKeys.findInputFocus.bindTo(
+			this._contextKeyService,
+		);
+		this._findWidgetFocused = TerminalContextKeys.findFocus.bindTo(
+			this._contextKeyService,
+		);
+		this._findWidgetVisible = TerminalContextKeys.findVisible.bindTo(
+			this._contextKeyService,
+		);
 		const innerDom = this.getDomNode().firstChild;
 		if (innerDom) {
-			this._register(dom.addDisposableListener(innerDom, 'mousedown', (event) => {
-				event.stopPropagation();
-			}));
-			this._register(dom.addDisposableListener(innerDom, 'contextmenu', (event) => {
-				event.stopPropagation();
-			}));
+			this._register(
+				dom.addDisposableListener(innerDom, "mousedown", (event) => {
+					event.stopPropagation();
+				}),
+			);
+			this._register(
+				dom.addDisposableListener(innerDom, "contextmenu", (event) => {
+					event.stopPropagation();
+				}),
+			);
 		}
 		const findInputDomNode = this.getFindInputDomNode();
-		this._register(dom.addDisposableListener(findInputDomNode, 'contextmenu', (event) => {
-			openContextMenu(dom.getWindow(findInputDomNode), event, _clipboardService, _contextMenuService);
-			event.stopPropagation();
-		}));
-		this._register(this._themeService.onDidColorThemeChange(() => {
-			if (this.isVisible()) {
-				this.find(true, true);
-			}
-		}));
-		this._register(this._configurationService.onDidChangeConfiguration((e) => {
-			if (e.affectsConfiguration('workbench.colorCustomizations') && this.isVisible()) {
-				this.find(true, true);
-			}
-		}));
+		this._register(
+			dom.addDisposableListener(
+				findInputDomNode,
+				"contextmenu",
+				(event) => {
+					openContextMenu(
+						dom.getWindow(findInputDomNode),
+						event,
+						_clipboardService,
+						_contextMenuService,
+					);
+					event.stopPropagation();
+				},
+			),
+		);
+		this._register(
+			this._themeService.onDidColorThemeChange(() => {
+				if (this.isVisible()) {
+					this.find(true, true);
+				}
+			}),
+		);
+		this._register(
+			this._configurationService.onDidChangeConfiguration((e) => {
+				if (
+					e.affectsConfiguration("workbench.colorCustomizations") &&
+					this.isVisible()
+				) {
+					this.find(true, true);
+				}
+			}),
+		);
 
 		this.updateResultCount();
 	}

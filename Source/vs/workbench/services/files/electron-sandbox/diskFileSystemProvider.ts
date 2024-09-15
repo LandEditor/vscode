@@ -38,8 +38,8 @@ import type {
 } from "../../../../platform/files/common/watcher.js";
 import type { IMainProcessService } from "../../../../platform/ipc/common/mainProcessService.js";
 import type {
-	ILogService,
 	ILoggerService,
+	ILogService,
 } from "../../../../platform/log/common/log.js";
 import { LogService } from "../../../../platform/log/common/logService.js";
 import type { IUtilityProcessWorkerWorkbenchService } from "../../utilityProcess/electron-sandbox/utilityProcessWorkerWorkbenchService.js";
@@ -75,7 +75,8 @@ export class DiskFileSystemProvider
 	) {
 		super(logService, {
 			watcher: {
-				forceUniversal: true /* send all requests to universal watcher process */,
+				forceUniversal:
+					true /* send all requests to universal watcher process */,
 			},
 		});
 

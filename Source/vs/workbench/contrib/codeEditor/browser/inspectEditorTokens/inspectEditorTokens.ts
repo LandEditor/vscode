@@ -4,9 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./inspectEditorTokens.css";
+
 // eslint-disable-next-line local/code-import-patterns
 import type { Parser } from "@vscode/tree-sitter-wasm";
 import type { IGrammar, IToken, StateStack } from "vscode-textmate";
+
 import * as dom from "../../../../../base/browser/dom.js";
 import { CancellationTokenSource } from "../../../../../base/common/cancellation.js";
 import { CharCode } from "../../../../../base/common/charCode.js";
@@ -24,9 +26,9 @@ import {
 import {
 	EditorAction,
 	EditorContributionInstantiation,
-	type ServicesAccessor,
 	registerEditorAction,
 	registerEditorContribution,
+	type ServicesAccessor,
 } from "../../../../../editor/browser/editorExtensions.js";
 import type { Position } from "../../../../../editor/common/core/position.js";
 import { Range } from "../../../../../editor/common/core/range.js";
@@ -38,17 +40,17 @@ import {
 	TokenMetadata,
 } from "../../../../../editor/common/encodedTokenAttributes.js";
 import {
+	TreeSitterTokenizationRegistry,
 	type SemanticTokens,
 	type SemanticTokensLegend,
-	TreeSitterTokenizationRegistry,
 } from "../../../../../editor/common/languages.js";
 import { ILanguageService } from "../../../../../editor/common/languages/language.js";
 import type { ITextModel } from "../../../../../editor/common/model.js";
 import { ILanguageFeaturesService } from "../../../../../editor/common/services/languageFeatures.js";
 import { ITreeSitterParserService } from "../../../../../editor/common/services/treeSitterParserService.js";
 import {
-	type IEditorSemanticHighlightingOptions,
 	SEMANTIC_HIGHLIGHTING_SETTING_ID,
+	type IEditorSemanticHighlightingOptions,
 } from "../../../../../editor/contrib/semanticTokens/common/semanticTokensConfig.js";
 import * as nls from "../../../../../nls.js";
 import { IConfigurationService } from "../../../../../platform/configuration/common/configuration.js";
@@ -96,13 +98,15 @@ export class InspectEditorTokensController
 
 	constructor(
 		editor: ICodeEditor,
-		@ITextMateTokenizationService textMateService: ITextMateTokenizationService,
+		@ITextMateTokenizationService
+		textMateService: ITextMateTokenizationService,
 		@ITreeSitterParserService treeSitterService: ITreeSitterParserService,
 		@ILanguageService languageService: ILanguageService,
 		@IWorkbenchThemeService themeService: IWorkbenchThemeService,
 		@INotificationService notificationService: INotificationService,
 		@IConfigurationService configurationService: IConfigurationService,
-		@ILanguageFeaturesService languageFeaturesService: ILanguageFeaturesService,
+		@ILanguageFeaturesService
+		languageFeaturesService: ILanguageFeaturesService,
 	) {
 		super();
 		this._editor = editor;

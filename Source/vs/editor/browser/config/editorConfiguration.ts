@@ -21,11 +21,11 @@ import {
 	ComputeOptionsMemory,
 	ConfigurationChangedEvent,
 	EditorOption,
+	editorOptionsRegistry,
 	type FindComputedEditorOptionValueById,
 	type IComputedEditorOptions,
 	type IEditorOptions,
 	type IEnvironmentalOptions,
-	editorOptionsRegistry,
 } from "../../common/config/editorOptions.js";
 import { EditorZoom } from "../../common/config/editorZoom.js";
 import {
@@ -98,28 +98,49 @@ export class EditorConfiguration
 		contextMenuId: MenuId,
 		options: Readonly<IEditorConstructionOptions>,
 		container: HTMLElement | null,
-		@IAccessibilityService private readonly _accessibilityService: IAccessibilityService
+		@IAccessibilityService
+		private readonly _accessibilityService: IAccessibilityService,
 	) {
 		super();
 		this.isSimpleWidget = isSimpleWidget;
 		this.contextMenuId = contextMenuId;
-		this._containerObserver = this._register(new ElementSizeObserver(container, options.dimension));
+		this._containerObserver = this._register(
+			new ElementSizeObserver(container, options.dimension),
+		);
 		this._targetWindowId = getWindow(container).vscodeWindowId;
 
 		this._rawOptions = deepCloneAndMigrateOptions(options);
-		this._validatedOptions = EditorOptionsUtil.validateOptions(this._rawOptions);
+		this._validatedOptions = EditorOptionsUtil.validateOptions(
+			this._rawOptions,
+		);
 		this.options = this._computeOptions();
 
 		if (this.options.get(EditorOption.automaticLayout)) {
 			this._containerObserver.startObserving();
 		}
 
-		this._register(EditorZoom.onDidChangeZoomLevel(() => this._recomputeOptions()));
-		this._register(TabFocus.onDidChangeTabFocus(() => this._recomputeOptions()));
-		this._register(this._containerObserver.onDidChange(() => this._recomputeOptions()));
-		this._register(FontMeasurements.onDidChange(() => this._recomputeOptions()));
-		this._register(PixelRatio.getInstance(getWindow(container)).onDidChange(() => this._recomputeOptions()));
-		this._register(this._accessibilityService.onDidChangeScreenReaderOptimized(() => this._recomputeOptions()));
+		this._register(
+			EditorZoom.onDidChangeZoomLevel(() => this._recomputeOptions()),
+		);
+		this._register(
+			TabFocus.onDidChangeTabFocus(() => this._recomputeOptions()),
+		);
+		this._register(
+			this._containerObserver.onDidChange(() => this._recomputeOptions()),
+		);
+		this._register(
+			FontMeasurements.onDidChange(() => this._recomputeOptions()),
+		);
+		this._register(
+			PixelRatio.getInstance(getWindow(container)).onDidChange(() =>
+				this._recomputeOptions(),
+			),
+		);
+		this._register(
+			this._accessibilityService.onDidChangeScreenReaderOptimized(() =>
+				this._recomputeOptions(),
+			),
+		);
 	}
 
 	private _recomputeOptions(): void {

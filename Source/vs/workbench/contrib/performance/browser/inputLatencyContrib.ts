@@ -23,7 +23,8 @@ export class InputLatencyContrib
 
 	constructor(
 		@IEditorService private readonly _editorService: IEditorService,
-		@ITelemetryService private readonly _telemetryService: ITelemetryService
+		@ITelemetryService
+		private readonly _telemetryService: ITelemetryService,
 	) {
 		super();
 
@@ -31,17 +32,17 @@ export class InputLatencyContrib
 		// report the results after 60 seconds. It's done this way as we don't want to sample
 		// everything, just somewhat randomly, and using an interval would utilize CPU when the
 		// application is inactive.
-		this._scheduler = this._register(new RunOnceScheduler(() => {
-			this._logSamples();
-			this._setupListener();
-		}, 60000));
-
+		this._scheduler = this._register(
+			new RunOnceScheduler(() => {
+				this._logSamples();
+				this._setupListener();
+			}, 60000),
+		);
 
 		// Only log 1% of users selected randomly to reduce the volume of data
 		if (Math.random() <= 0.01) {
 			this._setupListener();
 		}
-
 	}
 
 	private _setupListener(): void {

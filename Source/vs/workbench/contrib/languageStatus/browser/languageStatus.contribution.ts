@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import "./media/languageStatus.css";
+
 import * as dom from "../../../../base/browser/dom.js";
 import { ActionBar } from "../../../../base/browser/ui/actionbar/actionbar.js";
 import { renderLabelWithIcons } from "../../../../base/browser/ui/iconLabel/iconLabels.js";
@@ -23,8 +24,8 @@ import Severity from "../../../../base/common/severity.js";
 import { ThemeIcon } from "../../../../base/common/themables.js";
 import { URI } from "../../../../base/common/uri.js";
 import {
-	type ICodeEditor,
 	getCodeEditor,
+	type ICodeEditor,
 } from "../../../../editor/browser/editorBrowser.js";
 import { localize, localize2 } from "../../../../nls.js";
 import type { IAccessibilityInformation } from "../../../../platform/accessibility/common/accessibility.js";
@@ -47,9 +48,9 @@ import {
 	StorageTarget,
 } from "../../../../platform/storage/common/storage.js";
 import {
+	Extensions as WorkbenchExtensions,
 	type IWorkbenchContribution,
 	type IWorkbenchContributionsRegistry,
-	Extensions as WorkbenchExtensions,
 } from "../../../common/contributions.js";
 import {
 	IEditorGroupsService,
@@ -57,16 +58,16 @@ import {
 } from "../../../services/editor/common/editorGroupsService.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import {
-	type ILanguageStatus,
 	ILanguageStatusService,
+	type ILanguageStatus,
 } from "../../../services/languageStatus/common/languageStatusService.js";
 import { LifecyclePhase } from "../../../services/lifecycle/common/lifecycle.js";
 import {
-	type IStatusbarEntry,
-	type IStatusbarEntryAccessor,
 	IStatusbarService,
 	ShowTooltipCommand,
 	StatusbarAlignment,
+	type IStatusbarEntry,
+	type IStatusbarEntryAccessor,
 	type StatusbarEntryKind,
 } from "../../../services/statusbar/browser/statusbar.js";
 
@@ -85,7 +86,10 @@ class LanguageStatusViewModel {
 }
 
 class StoredCounter {
-	constructor(@IStorageService private readonly _storageService: IStorageService, private readonly _key: string) { }
+	constructor(
+		@IStorageService private readonly _storageService: IStorageService,
+		private readonly _key: string,
+	) {}
 
 	get value() {
 		return this._storageService.getNumber(
@@ -112,7 +116,8 @@ class LanguageStatusContribution
 	implements IWorkbenchContribution
 {
 	constructor(
-		@IEditorGroupsService private readonly editorGroupService: IEditorGroupsService,
+		@IEditorGroupsService
+		private readonly editorGroupService: IEditorGroupsService,
 	) {
 		super();
 
@@ -120,7 +125,11 @@ class LanguageStatusContribution
 			this.createLanguageStatus(part);
 		}
 
-		this._register(editorGroupService.onDidCreateAuxiliaryEditorPart(part => this.createLanguageStatus(part)));
+		this._register(
+			editorGroupService.onDidCreateAuxiliaryEditorPart((part) =>
+				this.createLanguageStatus(part),
+			),
+		);
 	}
 
 	private createLanguageStatus(part: IEditorPart): void {
@@ -151,29 +160,49 @@ class LanguageStatus {
 	private readonly _renderDisposables = new DisposableStore();
 
 	constructor(
-		@ILanguageStatusService private readonly _languageStatusService: ILanguageStatusService,
-		@IStatusbarService private readonly _statusBarService: IStatusbarService,
+		@ILanguageStatusService
+		private readonly _languageStatusService: ILanguageStatusService,
+		@IStatusbarService
+		private readonly _statusBarService: IStatusbarService,
 		@IEditorService private readonly _editorService: IEditorService,
 		@IHoverService private readonly _hoverService: IHoverService,
 		@IOpenerService private readonly _openerService: IOpenerService,
 		@IStorageService private readonly _storageService: IStorageService,
 	) {
-		_storageService.onDidChangeValue(StorageScope.PROFILE, LanguageStatus._keyDedicatedItems, this._disposables)(this._handleStorageChange, this, this._disposables);
+		_storageService.onDidChangeValue(
+			StorageScope.PROFILE,
+			LanguageStatus._keyDedicatedItems,
+			this._disposables,
+		)(this._handleStorageChange, this, this._disposables);
 		this._restoreState();
-		this._interactionCounter = new StoredCounter(_storageService, 'languageStatus.interactCount');
+		this._interactionCounter = new StoredCounter(
+			_storageService,
+			"languageStatus.interactCount",
+		);
 
-		_languageStatusService.onDidChange(this._update, this, this._disposables);
-		_editorService.onDidActiveEditorChange(this._update, this, this._disposables);
+		_languageStatusService.onDidChange(
+			this._update,
+			this,
+			this._disposables,
+		);
+		_editorService.onDidActiveEditorChange(
+			this._update,
+			this,
+			this._disposables,
+		);
 		this._update();
 
-		_statusBarService.onDidChangeEntryVisibility(e => {
-			if (!e.visible && this._dedicated.has(e.id)) {
-				this._dedicated.delete(e.id);
-				this._update();
-				this._storeState();
-			}
-		}, undefined, this._disposables);
-
+		_statusBarService.onDidChangeEntryVisibility(
+			(e) => {
+				if (!e.visible && this._dedicated.has(e.id)) {
+					this._dedicated.delete(e.id);
+					this._update();
+					this._storeState();
+				}
+			},
+			undefined,
+			this._disposables,
+		);
 	}
 
 	dispose(): void {

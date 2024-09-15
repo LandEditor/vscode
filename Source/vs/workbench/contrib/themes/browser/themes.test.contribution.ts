@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { IGrammar, StateStack } from "vscode-textmate";
+
 import { Color } from "../../../../base/common/color.js";
 import { Schemas } from "../../../../base/common/network.js";
 import { basename } from "../../../../base/common/resources.js";
@@ -22,12 +23,12 @@ import { EditorResourceAccessor } from "../../../common/editor.js";
 import { IEditorService } from "../../../services/editor/common/editorService.js";
 import { ITextMateTokenizationService } from "../../../services/textMate/browser/textMateTokenizationFeature.js";
 import {
-	type ThemeRule,
 	findMatchingThemeRule,
+	type ThemeRule,
 } from "../../../services/textMate/common/TMHelper.js";
 import {
-	type IWorkbenchColorTheme,
 	IWorkbenchThemeService,
+	type IWorkbenchColorTheme,
 } from "../../../services/themes/common/workbenchThemeService.js";
 
 interface IToken {
@@ -105,10 +106,11 @@ class ThemeDocument {
 class Snapper {
 	constructor(
 		@ILanguageService private readonly languageService: ILanguageService,
-		@IWorkbenchThemeService private readonly themeService: IWorkbenchThemeService,
-		@ITextMateTokenizationService private readonly textMateService: ITextMateTokenizationService
-	) {
-	}
+		@IWorkbenchThemeService
+		private readonly themeService: IWorkbenchThemeService,
+		@ITextMateTokenizationService
+		private readonly textMateService: ITextMateTokenizationService,
+	) {}
 
 	private _themedTokenize(
 		grammar: IGrammar,

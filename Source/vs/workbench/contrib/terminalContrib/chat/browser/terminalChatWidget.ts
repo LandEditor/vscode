@@ -4,11 +4,12 @@
  *--------------------------------------------------------------------------------------------*/
 
 import type { Terminal as RawXtermTerminal } from "@xterm/xterm";
+
 import {
 	Dimension,
-	type IFocusTracker,
 	getActiveWindow,
 	trackFocus,
+	type IFocusTracker,
 } from "../../../../../base/browser/dom.js";
 import { Emitter, Event } from "../../../../../base/common/event.js";
 import {
@@ -16,11 +17,13 @@ import {
 	toDisposable,
 } from "../../../../../base/common/lifecycle.js";
 import { MicrotaskDelay } from "../../../../../base/common/symbols.js";
+
 import "./media/terminalChatWidget.css";
+
 import { localize } from "../../../../../nls.js";
 import {
-	type IContextKey,
 	IContextKeyService,
+	type IContextKey,
 } from "../../../../../platform/contextkey/common/contextkey.js";
 import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
 import { ChatAgentLocation } from "../../../chat/common/chatAgents.js";
@@ -63,16 +66,22 @@ export class TerminalChatWidget extends Disposable {
 		private readonly _terminalElement: HTMLElement,
 		private readonly _instance: ITerminalInstance,
 		private readonly _xterm: IXtermTerminal & { raw: RawXtermTerminal },
-		@IInstantiationService private readonly _instantiationService: IInstantiationService,
-		@IContextKeyService private readonly _contextKeyService: IContextKeyService
+		@IInstantiationService
+		private readonly _instantiationService: IInstantiationService,
+		@IContextKeyService
+		private readonly _contextKeyService: IContextKeyService,
 	) {
 		super();
 
-		this._focusedContextKey = TerminalChatContextKeys.focused.bindTo(this._contextKeyService);
-		this._visibleContextKey = TerminalChatContextKeys.visible.bindTo(this._contextKeyService);
+		this._focusedContextKey = TerminalChatContextKeys.focused.bindTo(
+			this._contextKeyService,
+		);
+		this._visibleContextKey = TerminalChatContextKeys.visible.bindTo(
+			this._contextKeyService,
+		);
 
-		this._container = document.createElement('div');
-		this._container.classList.add('terminal-inline-chat');
+		this._container = document.createElement("div");
+		this._container.classList.add("terminal-inline-chat");
 		_terminalElement.appendChild(this._container);
 
 		this._inlineChatWidget = this._instantiationService.createInstance(
@@ -82,37 +91,50 @@ export class TerminalChatWidget extends Disposable {
 				resolveData: () => {
 					// TODO@meganrogge return something that identifies this terminal
 					return undefined;
-				}
+				},
 			},
 			{
 				statusMenuId: {
 					menu: MENU_TERMINAL_CHAT_WIDGET_STATUS,
 					options: {
-						buttonConfigProvider: action => {
-							if (action.id === TerminalChatCommandId.ViewInChat || action.id === TerminalChatCommandId.RunCommand || action.id === TerminalChatCommandId.RunFirstCommand) {
+						buttonConfigProvider: (action) => {
+							if (
+								action.id ===
+									TerminalChatCommandId.ViewInChat ||
+								action.id ===
+									TerminalChatCommandId.RunCommand ||
+								action.id ===
+									TerminalChatCommandId.RunFirstCommand
+							) {
 								return { isSecondary: false };
 							} else {
 								return { isSecondary: true };
 							}
-						}
-					}
+						},
+					},
 				},
 				chatWidgetViewOptions: {
 					rendererOptions: { editableCodeBlock: true },
 					menus: {
-						telemetrySource: 'terminal-inline-chat',
+						telemetrySource: "terminal-inline-chat",
 						executeToolbar: MENU_TERMINAL_CHAT_INPUT,
 						inputSideToolbar: MENU_TERMINAL_CHAT_WIDGET,
-					}
-				}
-			}
+					},
+				},
+			},
 		);
-		this._register(Event.any(
-			this._inlineChatWidget.onDidChangeHeight,
-			this._instance.onDimensionsChanged,
-			this._inlineChatWidget.chatWidget.onDidChangeContentHeight,
-			Event.debounce(this._xterm.raw.onCursorMove, () => void 0, MicrotaskDelay),
-		)(() => this._relayout()));
+		this._register(
+			Event.any(
+				this._inlineChatWidget.onDidChangeHeight,
+				this._instance.onDimensionsChanged,
+				this._inlineChatWidget.chatWidget.onDidChangeContentHeight,
+				Event.debounce(
+					this._xterm.raw.onCursorMove,
+					() => void 0,
+					MicrotaskDelay,
+				),
+			)(() => this._relayout()),
+		);
 
 		const observer = new ResizeObserver(() => this._relayout());
 		observer.observe(this._terminalElement);
@@ -122,13 +144,19 @@ export class TerminalChatWidget extends Disposable {
 		this._container.appendChild(this._inlineChatWidget.domNode);
 
 		this._focusTracker = this._register(trackFocus(this._container));
-		this._register(this._focusTracker.onDidFocus(() => this._focusedContextKey.set(true)));
-		this._register(this._focusTracker.onDidBlur(() => {
-			this._focusedContextKey.set(false);
-			if (!this.inlineChatWidget.responseContent) {
-				this.hide();
-			}
-		}));
+		this._register(
+			this._focusTracker.onDidFocus(() =>
+				this._focusedContextKey.set(true),
+			),
+		);
+		this._register(
+			this._focusTracker.onDidBlur(() => {
+				this._focusedContextKey.set(false);
+				if (!this.inlineChatWidget.responseContent) {
+					this.hide();
+				}
+			}),
+		);
 
 		this.hide();
 	}

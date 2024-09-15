@@ -8,6 +8,7 @@ import type {
 	HandlerDetails,
 	WebContents,
 } from "electron";
+
 import type { Event } from "../../../base/common/event.js";
 import { createDecorator } from "../../instantiation/common/instantiation.js";
 import type { IAuxiliaryWindow } from "./auxiliaryWindow.js";
