@@ -3,35 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IMarkdownString } from "../../../base/common/htmlContent.js";
-import {
-	DisposableStore,
-	toDisposable,
-} from "../../../base/common/lifecycle.js";
-import type { ThemeColor } from "../../../base/common/themables.js";
-import type { Command } from "../../../editor/common/languages.js";
-import type { IAccessibilityInformation } from "../../../platform/accessibility/common/accessibility.js";
-import {
-	extHostNamedCustomer,
-	type IExtHostContext,
-} from "../../services/extensions/common/extHostCustomers.js";
-import {
-	StatusbarAlignment,
-	type IStatusbarEntry,
-} from "../../services/statusbar/browser/statusbar.js";
-import {
-	ExtHostContext,
-	MainContext,
-	type MainThreadStatusBarShape,
-	type StatusBarItemDto,
-} from "../common/extHost.protocol.js";
-import {
-	IExtensionStatusBarItemService,
-	StatusBarUpdateKind,
-} from "./statusBarExtensionPoint.js";
+import { MainThreadStatusBarShape, MainContext, ExtHostContext, StatusBarItemDto } from '../common/extHost.protocol.js';
+import { ThemeColor } from '../../../base/common/themables.js';
+import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import { DisposableStore, toDisposable } from '../../../base/common/lifecycle.js';
+import { Command } from '../../../editor/common/languages.js';
+import { IAccessibilityInformation } from '../../../platform/accessibility/common/accessibility.js';
+import { IMarkdownString } from '../../../base/common/htmlContent.js';
+import { IExtensionStatusBarItemService, StatusBarUpdateKind } from './statusBarExtensionPoint.js';
+import { IStatusbarEntry, StatusbarAlignment } from '../../services/statusbar/browser/statusbar.js';
 
 @extHostNamedCustomer(MainContext.MainThreadStatusBar)
 export class MainThreadStatusBar implements MainThreadStatusBarShape {
+
 	private readonly _store = new DisposableStore();
 
 	constructor(
@@ -89,38 +73,10 @@ export class MainThreadStatusBar implements MainThreadStatusBarShape {
 		this._store.dispose();
 	}
 
-	$setEntry(
-		entryId: string,
-		id: string,
-		extensionId: string | undefined,
-		name: string,
-		text: string,
-		tooltip: IMarkdownString | string | undefined,
-		command: Command | undefined,
-		color: string | ThemeColor | undefined,
-		backgroundColor: ThemeColor | undefined,
-		alignLeft: boolean,
-		priority: number | undefined,
-		accessibilityInformation: IAccessibilityInformation | undefined,
-	): void {
-		const kind = this.statusbarService.setOrUpdateEntry(
-			entryId,
-			id,
-			extensionId,
-			name,
-			text,
-			tooltip,
-			command,
-			color,
-			backgroundColor,
-			alignLeft,
-			priority,
-			accessibilityInformation,
-		);
+	$setEntry(entryId: string, id: string, extensionId: string | undefined, name: string, text: string, tooltip: IMarkdownString | string | undefined, command: Command | undefined, color: string | ThemeColor | undefined, backgroundColor: ThemeColor | undefined, alignLeft: boolean, priority: number | undefined, accessibilityInformation: IAccessibilityInformation | undefined): void {
+		const kind = this.statusbarService.setOrUpdateEntry(entryId, id, extensionId, name, text, tooltip, command, color, backgroundColor, alignLeft, priority, accessibilityInformation);
 		if (kind === StatusBarUpdateKind.DidDefine) {
-			this._store.add(
-				toDisposable(() => this.statusbarService.unsetEntry(entryId)),
-			);
+			this._store.add(toDisposable(() => this.statusbarService.unsetEntry(entryId)));
 		}
 	}
 

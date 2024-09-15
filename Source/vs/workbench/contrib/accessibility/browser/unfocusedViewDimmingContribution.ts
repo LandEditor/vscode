@@ -3,25 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { createStyleSheet } from "../../../../base/browser/dom.js";
-import { Event } from "../../../../base/common/event.js";
-import {
-	Disposable,
-	DisposableStore,
-	toDisposable,
-} from "../../../../base/common/lifecycle.js";
-import { clamp } from "../../../../base/common/numbers.js";
-import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
-import type { IWorkbenchContribution } from "../../../common/contributions.js";
-import {
-	AccessibilityWorkbenchSettingId,
-	ViewDimUnfocusedOpacityProperties,
-} from "./accessibilityConfiguration.js";
+import { createStyleSheet } from '../../../../base/browser/dom.js';
+import { Event } from '../../../../base/common/event.js';
+import { Disposable, DisposableStore, toDisposable } from '../../../../base/common/lifecycle.js';
+import { clamp } from '../../../../base/common/numbers.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import { IWorkbenchContribution } from '../../../common/contributions.js';
+import { AccessibilityWorkbenchSettingId, ViewDimUnfocusedOpacityProperties } from './accessibilityConfiguration.js';
 
-export class UnfocusedViewDimmingContribution
-	extends Disposable
-	implements IWorkbenchContribution
-{
+export class UnfocusedViewDimmingContribution extends Disposable implements IWorkbenchContribution {
 	private _styleElement?: HTMLStyleElement;
 	private _styleElementDisposables: DisposableStore | undefined = undefined;
 
@@ -126,12 +116,8 @@ export class UnfocusedViewDimmingContribution
 	private _getStyleElement(): HTMLStyleElement {
 		if (!this._styleElement) {
 			this._styleElementDisposables = new DisposableStore();
-			this._styleElement = createStyleSheet(
-				undefined,
-				undefined,
-				this._styleElementDisposables,
-			);
-			this._styleElement.className = "accessibilityUnfocusedViewOpacity";
+			this._styleElement = createStyleSheet(undefined, undefined, this._styleElementDisposables);
+			this._styleElement.className = 'accessibilityUnfocusedViewOpacity';
 		}
 		return this._styleElement;
 	}
@@ -143,10 +129,11 @@ export class UnfocusedViewDimmingContribution
 	}
 }
 
+
 function ensureBoolean(value: unknown, defaultValue: boolean): boolean {
-	return typeof value === "boolean" ? value : defaultValue;
+	return typeof value === 'boolean' ? value : defaultValue;
 }
 
 function ensureNumber(value: unknown, defaultValue: number): number {
-	return typeof value === "number" ? value : defaultValue;
+	return typeof value === 'number' ? value : defaultValue;
 }

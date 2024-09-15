@@ -26,7 +26,7 @@
 	align-items: center;
 	justify-content: center;
 	cursor: pointer;
-	position: relative; /* DO NOT REMOVE - this is the key to preventing the ghosting icon bug in Chrome 42 */
+	position: relative;  /* DO NOT REMOVE - this is the key to preventing the ghosting icon bug in Chrome 42 */
 }
 
 .monaco-action-bar .action-item.disabled {
@@ -106,17 +106,12 @@
 	display: flex;
 }
 
-.monaco-action-bar
-	.action-item.action-dropdown-item
-	> .action-dropdown-item-separator {
+.monaco-action-bar .action-item.action-dropdown-item > .action-dropdown-item-separator {
 	display: flex;
 	align-items: center;
 	cursor: default;
 }
 
-.monaco-action-bar
-	.action-item.action-dropdown-item
-	> .action-dropdown-item-separator
-	> div {
+.monaco-action-bar .action-item.action-dropdown-item > .action-dropdown-item-separator > div {
 	width: 1px;
 }

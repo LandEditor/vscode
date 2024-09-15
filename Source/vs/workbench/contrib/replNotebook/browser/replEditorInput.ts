@@ -3,41 +3,34 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IReference } from "../../../../base/common/lifecycle.js";
-import type { URI } from "../../../../base/common/uri.js";
-import {
-	ITextModelService,
-	type IResolvedTextEditorModel,
-} from "../../../../editor/common/services/resolverService.js";
-import { ITextResourceConfigurationService } from "../../../../editor/common/services/textResourceConfiguration.js";
-import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
-import { IFileDialogService } from "../../../../platform/dialogs/common/dialogs.js";
-import { IFileService } from "../../../../platform/files/common/files.js";
-import { ILabelService } from "../../../../platform/label/common/label.js";
-import { EditorInputCapabilities } from "../../../common/editor.js";
-import { ICustomEditorLabelService } from "../../../services/editor/common/customEditorLabelService.js";
-import { IEditorService } from "../../../services/editor/common/editorService.js";
-import { IExtensionService } from "../../../services/extensions/common/extensions.js";
-import { IFilesConfigurationService } from "../../../services/filesConfiguration/common/filesConfigurationService.js";
-import { IInteractiveHistoryService } from "../../interactive/browser/interactiveHistoryService.js";
-import type { NotebookTextModel } from "../../notebook/common/model/notebookTextModel.js";
-import {
-	CellEditType,
-	CellKind,
-	NotebookSetting,
-} from "../../notebook/common/notebookCommon.js";
-import {
-	NotebookEditorInput,
-	type ICompositeNotebookEditorInput,
-} from "../../notebook/common/notebookEditorInput.js";
-import { INotebookEditorModelResolverService } from "../../notebook/common/notebookEditorModelResolverService.js";
-import { INotebookService } from "../../notebook/common/notebookService.js";
+import { IReference } from '../../../../base/common/lifecycle.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IResolvedTextEditorModel, ITextModelService } from '../../../../editor/common/services/resolverService.js';
+import { ITextResourceConfigurationService } from '../../../../editor/common/services/textResourceConfiguration.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import { IFileDialogService } from '../../../../platform/dialogs/common/dialogs.js';
+import { IFileService } from '../../../../platform/files/common/files.js';
+import { ILabelService } from '../../../../platform/label/common/label.js';
+import { EditorInputCapabilities } from '../../../common/editor.js';
+import { IInteractiveHistoryService } from '../../interactive/browser/interactiveHistoryService.js';
+import { NotebookTextModel } from '../../notebook/common/model/notebookTextModel.js';
+import { CellEditType, CellKind, NotebookSetting } from '../../notebook/common/notebookCommon.js';
+import { ICompositeNotebookEditorInput, NotebookEditorInput } from '../../notebook/common/notebookEditorInput.js';
+import { INotebookEditorModelResolverService } from '../../notebook/common/notebookEditorModelResolverService.js';
+import { INotebookService } from '../../notebook/common/notebookService.js';
+import { ICustomEditorLabelService } from '../../../services/editor/common/customEditorLabelService.js';
+import { IEditorService } from '../../../services/editor/common/editorService.js';
+import { IExtensionService } from '../../../services/extensions/common/extensions.js';
+import { IFilesConfigurationService } from '../../../services/filesConfiguration/common/filesConfigurationService.js';
+import { ThemeIcon } from '../../../../base/common/themables.js';
+import { Codicon } from '../../../../base/common/codicons.js';
+import { localize } from '../../../../nls.js';
+import { registerIcon } from '../../../../platform/theme/common/iconRegistry.js';
 
-export class ReplEditorInput
-	extends NotebookEditorInput
-	implements ICompositeNotebookEditorInput
-{
-	static override ID = "workbench.editorinputs.replEditorInput";
+const replTabIcon = registerIcon('repl-editor-label-icon', Codicon.debugLineByLine, localize('replEditorLabelIcon', 'Icon of the REPL editor label.'));
+
+export class ReplEditorInput extends NotebookEditorInput implements ICompositeNotebookEditorInput {
+	static override ID: string = 'workbench.editorinputs.replEditorInput';
 
 	private inputModelRef: IReference<IResolvedTextEditorModel> | undefined;
 	private isScratchpad: boolean;
@@ -91,20 +84,24 @@ export class ReplEditorInput
 		this.label = label ?? this.createEditorLabel(resource);
 	}
 
+	override getIcon(): ThemeIcon | undefined {
+		return replTabIcon;
+	}
+
 	private createEditorLabel(resource: URI | undefined): string {
 		if (!resource) {
-			return "REPL";
+			return 'REPL';
 		}
 
-		if (resource.scheme === "untitled") {
-			const match = /Untitled-(\d+)\./.exec(resource.path);
+		if (resource.scheme === 'untitled') {
+			const match = new RegExp('Untitled-(\\d+)\.').exec(resource.path);
 			if (match?.length === 2) {
 				return `REPL - ${match[1]}`;
 			}
 		}
 
-		const filename = resource.path.split("/").pop();
-		return filename ? `REPL - ${filename}` : "REPL";
+		const filename = resource.path.split('/').pop();
+		return filename ? `REPL - ${filename}` : 'REPL';
 	}
 
 	override get typeId(): string {
@@ -112,7 +109,7 @@ export class ReplEditorInput
 	}
 
 	override get editorId(): string | undefined {
-		return "repl";
+		return 'repl';
 	}
 
 	override getName() {
@@ -125,11 +122,11 @@ export class ReplEditorInput
 
 	override get capabilities() {
 		const capabilities = super.capabilities;
-		const scratchPad = this.isScratchpad
-			? EditorInputCapabilities.Scratchpad
-			: 0;
+		const scratchPad = this.isScratchpad ? EditorInputCapabilities.Scratchpad : 0;
 
-		return capabilities | EditorInputCapabilities.Readonly | scratchPad;
+		return capabilities
+			| EditorInputCapabilities.Readonly
+			| scratchPad;
 	}
 
 	override async resolve() {
@@ -144,35 +141,23 @@ export class ReplEditorInput
 	private async ensureInputBoxCell(notebook: NotebookTextModel) {
 		const lastCell = notebook.cells[notebook.cells.length - 1];
 
-		if (
-			!lastCell ||
-			lastCell.cellKind === CellKind.Markup ||
-			lastCell.outputs.length > 0 ||
-			lastCell.internalMetadata.executionOrder !== undefined
-		) {
-			notebook.applyEdits(
-				[
-					{
-						editType: CellEditType.Replace,
-						index: notebook.cells.length,
-						count: 0,
-						cells: [
-							{
-								cellKind: CellKind.Code,
-								language: "python",
-								mime: undefined,
-								outputs: [],
-								source: "",
-							},
-						],
-					},
-				],
-				true,
-				undefined,
-				() => undefined,
-				undefined,
-				false,
-			);
+		if (!lastCell || lastCell.cellKind === CellKind.Markup || lastCell.outputs.length > 0 || lastCell.internalMetadata.executionOrder !== undefined) {
+			notebook.applyEdits([
+				{
+					editType: CellEditType.Replace,
+					index: notebook.cells.length,
+					count: 0,
+					cells: [
+						{
+							cellKind: CellKind.Code,
+							language: 'python',
+							mime: undefined,
+							outputs: [],
+							source: ''
+						}
+					]
+				}
+			], true, undefined, () => undefined, undefined, false);
 		}
 	}
 
@@ -182,14 +167,10 @@ export class ReplEditorInput
 		}
 		const lastCell = notebook.cells[notebook.cells.length - 1];
 		if (!lastCell) {
-			throw new Error(
-				"The REPL editor requires at least one cell for the input box.",
-			);
+			throw new Error('The REPL editor requires at least one cell for the input box.');
 		}
 
-		this.inputModelRef = await this._textModelService.createModelReference(
-			lastCell.uri,
-		);
+		this.inputModelRef = await this._textModelService.createModelReference(lastCell.uri);
 		return this.inputModelRef.object.textEditorModel;
 	}
 

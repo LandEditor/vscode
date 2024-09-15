@@ -3,34 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { IListAccessibilityProvider } from "../../../../base/browser/ui/list/listWidget.js";
-import { Emitter, Event } from "../../../../base/common/event.js";
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import { observableFromEvent } from "../../../../base/common/observable.js";
-import * as nls from "../../../../nls.js";
-import type { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
-import type { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
-import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
-import { AccessibilityCommandId } from "../../accessibility/common/accessibilityCommands.js";
-import {
-	CellKind,
-	NotebookCellExecutionState,
-} from "../common/notebookCommon.js";
-import {
-	NotebookExecutionType,
-	type ICellExecutionStateChangedEvent,
-	type IExecutionStateChangedEvent,
-	type INotebookExecutionStateService,
-} from "../common/notebookExecutionStateService.js";
-import type {
-	CellViewModel,
-	NotebookViewModel,
-} from "./viewModel/notebookViewModelImpl.js";
+import { IListAccessibilityProvider } from '../../../../base/browser/ui/list/listWidget.js';
+import { Event, Emitter } from '../../../../base/common/event.js';
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { observableFromEvent } from '../../../../base/common/observable.js';
+import * as nls from '../../../../nls.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+import { AccessibilityVerbositySettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
+import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
+import { CellViewModel, NotebookViewModel } from './viewModel/notebookViewModelImpl.js';
+import { CellKind, NotebookCellExecutionState } from '../common/notebookCommon.js';
+import { ICellExecutionStateChangedEvent, IExecutionStateChangedEvent, INotebookExecutionStateService, NotebookExecutionType } from '../common/notebookExecutionStateService.js';
 
-export class NotebookAccessibilityProvider
-	extends Disposable
-	implements IListAccessibilityProvider<CellViewModel>
-{
+export class NotebookAccessibilityProvider extends Disposable implements IListAccessibilityProvider<CellViewModel> {
 	private readonly _onDidAriaLabelChange = new Emitter<CellViewModel>();
 	private readonly onDidAriaLabelChange = this._onDidAriaLabelChange.event;
 
@@ -38,47 +24,32 @@ export class NotebookAccessibilityProvider
 		private readonly notebookExecutionStateService: INotebookExecutionStateService,
 		private readonly viewModel: () => NotebookViewModel | undefined,
 		private readonly keybindingService: IKeybindingService,
-		private readonly configurationService: IConfigurationService,
+		private readonly configurationService: IConfigurationService
 	) {
 		super();
-		this._register(
-			Event.debounce<
-				ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
-				number[]
-			>(
-				this.notebookExecutionStateService.onDidChangeExecution,
-				(
-					last: number[] | undefined,
-					e:
-						| ICellExecutionStateChangedEvent
-						| IExecutionStateChangedEvent,
-				) => this.mergeEvents(last, e),
-				100,
-			)((cellHandles: number[]) => {
-				const viewModel = this.viewModel();
-				if (viewModel) {
-					for (const handle of cellHandles) {
-						const cellModel = viewModel.getCellByHandle(handle);
-						if (cellModel) {
-							this._onDidAriaLabelChange.fire(
-								cellModel as CellViewModel,
-							);
-						}
+		this._register(Event.debounce<ICellExecutionStateChangedEvent | IExecutionStateChangedEvent, number[]>(
+			this.notebookExecutionStateService.onDidChangeExecution,
+			(last: number[] | undefined, e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent) => this.mergeEvents(last, e),
+			100
+		)((cellHandles: number[]) => {
+			const viewModel = this.viewModel();
+			if (viewModel) {
+				for (const handle of cellHandles) {
+					const cellModel = viewModel.getCellByHandle(handle);
+					if (cellModel) {
+						this._onDidAriaLabelChange.fire(cellModel as CellViewModel);
 					}
 				}
-			}, this),
-		);
+			}
+		}, this));
 	}
 
 	getAriaLabel(element: CellViewModel) {
-		const event = Event.filter(
-			this.onDidAriaLabelChange,
-			(e) => e === element,
-		);
+		const event = Event.filter(this.onDidAriaLabelChange, e => e === element);
 		return observableFromEvent(this, event, () => {
 			const viewModel = this.viewModel();
 			if (!viewModel) {
-				return "";
+				return '';
 			}
 			const index = viewModel.getCellIndex(element);
 
@@ -86,60 +57,36 @@ export class NotebookAccessibilityProvider
 				return this.getLabel(index, element);
 			}
 
-			return "";
+			return '';
 		});
 	}
 
 	private getLabel(index: number, element: CellViewModel) {
-		const executionState =
-			this.notebookExecutionStateService.getCellExecution(
-				element.uri,
-			)?.state;
+		const executionState = this.notebookExecutionStateService.getCellExecution(element.uri)?.state;
 		const executionLabel =
 			executionState === NotebookCellExecutionState.Executing
-				? ", executing"
+				? ', executing'
 				: executionState === NotebookCellExecutionState.Pending
-					? ", pending"
-					: "";
-		return `Cell ${index}, ${element.cellKind === CellKind.Markup ? "markdown" : "code"} cell${executionLabel}`;
+					? ', pending'
+					: '';
+		return `Cell ${index}, ${element.cellKind === CellKind.Markup ? 'markdown' : 'code'} cell${executionLabel}`;
 	}
 
 	getWidgetAriaLabel() {
-		const keybinding = this.keybindingService
-			.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)
-			?.getLabel();
+		const keybinding = this.keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)?.getLabel();
 
-		if (
-			this.configurationService.getValue(
-				AccessibilityVerbositySettingId.Notebook,
-			)
-		) {
+		if (this.configurationService.getValue(AccessibilityVerbositySettingId.Notebook)) {
 			return keybinding
-				? nls.localize(
-						"notebookTreeAriaLabelHelp",
-						"Notebook\nUse {0} for accessibility help",
-						keybinding,
-					)
-				: nls.localize(
-						"notebookTreeAriaLabelHelpNoKb",
-						"Notebook\nRun the Open Accessibility Help command for more information",
-						keybinding,
-					);
+				? nls.localize('notebookTreeAriaLabelHelp', "Notebook\nUse {0} for accessibility help", keybinding)
+				: nls.localize('notebookTreeAriaLabelHelpNoKb', "Notebook\nRun the Open Accessibility Help command for more information", keybinding);
 		}
-		return nls.localize("notebookTreeAriaLabel", "Notebook");
+		return nls.localize('notebookTreeAriaLabel', "Notebook");
 	}
 
-	private mergeEvents(
-		last: number[] | undefined,
-		e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent,
-	): number[] {
+	private mergeEvents(last: number[] | undefined, e: ICellExecutionStateChangedEvent | IExecutionStateChangedEvent): number[] {
 		const viewModel = this.viewModel();
 		const result = last || [];
-		if (
-			viewModel &&
-			e.type === NotebookExecutionType.cell &&
-			e.affectsNotebook(viewModel.uri)
-		) {
+		if (viewModel && e.type === NotebookExecutionType.cell && e.affectsNotebook(viewModel.uri)) {
 			if (result.indexOf(e.cellHandle) < 0) {
 				result.push(e.cellHandle);
 			}

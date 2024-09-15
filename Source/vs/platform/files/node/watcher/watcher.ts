@@ -3,41 +3,24 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Promises } from "../../../../base/common/async.js";
-import { Emitter, Event } from "../../../../base/common/event.js";
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import type {
-	ILogMessage,
-	IUniversalWatcher,
-	IUniversalWatchRequest,
-} from "../../common/watcher.js";
-import { NodeJSWatcher } from "./nodejs/nodejsWatcher.js";
-import { ParcelWatcher } from "./parcel/parcelWatcher.js";
-import { computeStats } from "./watcherStats.js";
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { ILogMessage, isRecursiveWatchRequest, IUniversalWatcher, IUniversalWatchRequest } from '../../common/watcher.js';
+import { Emitter, Event } from '../../../../base/common/event.js';
+import { ParcelWatcher } from './parcel/parcelWatcher.js';
+import { NodeJSWatcher } from './nodejs/nodejsWatcher.js';
+import { Promises } from '../../../../base/common/async.js';
+import { computeStats } from './watcherStats.js';
 
 export class UniversalWatcher extends Disposable implements IUniversalWatcher {
+
 	private readonly recursiveWatcher = this._register(new ParcelWatcher());
-	private readonly nonRecursiveWatcher = this._register(
-		new NodeJSWatcher(this.recursiveWatcher),
-	);
+	private readonly nonRecursiveWatcher = this._register(new NodeJSWatcher(this.recursiveWatcher));
 
-	readonly onDidChangeFile = Event.any(
-		this.recursiveWatcher.onDidChangeFile,
-		this.nonRecursiveWatcher.onDidChangeFile,
-	);
-	readonly onDidError = Event.any(
-		this.recursiveWatcher.onDidError,
-		this.nonRecursiveWatcher.onDidError,
-	);
+	readonly onDidChangeFile = Event.any(this.recursiveWatcher.onDidChangeFile, this.nonRecursiveWatcher.onDidChangeFile);
+	readonly onDidError = Event.any(this.recursiveWatcher.onDidError, this.nonRecursiveWatcher.onDidError);
 
-	private readonly _onDidLogMessage = this._register(
-		new Emitter<ILogMessage>(),
-	);
-	readonly onDidLogMessage = Event.any(
-		this._onDidLogMessage.event,
-		this.recursiveWatcher.onDidLogMessage,
-		this.nonRecursiveWatcher.onDidLogMessage,
-	);
+	private readonly _onDidLogMessage = this._register(new Emitter<ILogMessage>());
+	readonly onDidLogMessage = Event.any(this._onDidLogMessage.event, this.recursiveWatcher.onDidLogMessage, this.nonRecursiveWatcher.onDidLogMessage);
 
 	private requests: IUniversalWatchRequest[] = [];
 
@@ -50,17 +33,13 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 
 		let error: Error | undefined;
 		try {
-			await this.recursiveWatcher.watch(
-				requests.filter((request) => request.recursive),
-			);
+			await this.recursiveWatcher.watch(requests.filter(request => isRecursiveWatchRequest(request)));
 		} catch (e) {
 			error = e;
 		}
 
 		try {
-			await this.nonRecursiveWatcher.watch(
-				requests.filter((request) => !request.recursive),
-			);
+			await this.nonRecursiveWatcher.watch(requests.filter(request => !isRecursiveWatchRequest(request)));
 		} catch (e) {
 			if (!error) {
 				error = e;
@@ -73,29 +52,23 @@ export class UniversalWatcher extends Disposable implements IUniversalWatcher {
 	}
 
 	async setVerboseLogging(enabled: boolean): Promise<void> {
+
 		// Log stats
 		if (enabled && this.requests.length > 0) {
-			this._onDidLogMessage.fire({
-				type: "trace",
-				message: computeStats(
-					this.requests,
-					this.recursiveWatcher,
-					this.nonRecursiveWatcher,
-				),
-			});
+			this._onDidLogMessage.fire({ type: 'trace', message: computeStats(this.requests, this.recursiveWatcher, this.nonRecursiveWatcher) });
 		}
 
 		// Forward to watchers
 		await Promises.settled([
 			this.recursiveWatcher.setVerboseLogging(enabled),
-			this.nonRecursiveWatcher.setVerboseLogging(enabled),
+			this.nonRecursiveWatcher.setVerboseLogging(enabled)
 		]);
 	}
 
 	async stop(): Promise<void> {
 		await Promises.settled([
 			this.recursiveWatcher.stop(),
-			this.nonRecursiveWatcher.stop(),
+			this.nonRecursiveWatcher.stop()
 		]);
 	}
 }

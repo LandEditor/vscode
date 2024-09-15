@@ -3,33 +3,22 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { AsyncIterableObject } from "../../../../../base/common/async.js";
-import type { CancellationToken } from "../../../../../base/common/cancellation.js";
-import * as nls from "../../../../../nls.js";
-import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
-import type { ICodeEditor } from "../../../../browser/editorBrowser.js";
-import type { Range } from "../../../../common/core/range.js";
-import type { DocumentColorProvider } from "../../../../common/languages.js";
-import type { IModelDecoration } from "../../../../common/model.js";
-import {
-	HoverAnchorType,
-	RenderedHoverParts,
-	type HoverAnchor,
-	type IEditorHoverParticipant,
-	type IEditorHoverRenderContext,
-	type IHoverPart,
-	type IRenderedHoverPart,
-	type IRenderedHoverParts,
-} from "../../../hover/browser/hoverTypes.js";
-import { ColorDetector } from "../colorDetector.js";
-import type { ColorPickerModel } from "../colorPickerModel.js";
-import {
-	createColorHover,
-	renderHoverParts,
-} from "../colorPickerParticipantUtils.js";
-import type { ColorPickerWidget } from "./hoverColorPickerWidget.js";
+import { AsyncIterableObject } from '../../../../../base/common/async.js';
+import { CancellationToken } from '../../../../../base/common/cancellation.js';
+import { ICodeEditor } from '../../../../browser/editorBrowser.js';
+import { Range } from '../../../../common/core/range.js';
+import { IModelDecoration } from '../../../../common/model.js';
+import { DocumentColorProvider } from '../../../../common/languages.js';
+import { ColorDetector } from '../colorDetector.js';
+import { ColorPickerModel } from '../colorPickerModel.js';
+import { ColorPickerWidget } from './hoverColorPickerWidget.js';
+import { HoverAnchor, HoverAnchorType, IEditorHoverParticipant, IEditorHoverRenderContext, IHoverPart, IRenderedHoverPart, IRenderedHoverParts, RenderedHoverParts } from '../../../hover/browser/hoverTypes.js';
+import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
+import * as nls from '../../../../../nls.js';
+import { createColorHover, renderHoverParts } from '../colorPickerParticipantUtils.js';
 
 export class ColorHover implements IHoverPart {
+
 	/**
 	 * Force the hover to always be rendered at this specific range,
 	 * even in the case of multiple hover parts.
@@ -40,21 +29,20 @@ export class ColorHover implements IHoverPart {
 		public readonly owner: IEditorHoverParticipant<ColorHover>,
 		public readonly range: Range,
 		public readonly model: ColorPickerModel,
-		public readonly provider: DocumentColorProvider,
-	) {}
+		public readonly provider: DocumentColorProvider
+	) { }
 
 	public isValidForHoverAnchor(anchor: HoverAnchor): boolean {
 		return (
-			anchor.type === HoverAnchorType.Range &&
-			this.range.startColumn <= anchor.range.startColumn &&
-			this.range.endColumn >= anchor.range.endColumn
+			anchor.type === HoverAnchorType.Range
+			&& this.range.startColumn <= anchor.range.startColumn
+			&& this.range.endColumn >= anchor.range.endColumn
 		);
 	}
 }
 
-export class HoverColorPickerParticipant
-	implements IEditorHoverParticipant<ColorHover>
-{
+export class HoverColorPickerParticipant implements IEditorHoverParticipant<ColorHover> {
+
 	public readonly hoverOrdinal: number = 2;
 
 	private _colorPicker: ColorPickerWidget | undefined;
@@ -64,28 +52,15 @@ export class HoverColorPickerParticipant
 		@IThemeService private readonly _themeService: IThemeService,
 	) {}
 
-	public computeSync(
-		_anchor: HoverAnchor,
-		_lineDecorations: IModelDecoration[],
-	): ColorHover[] {
+	public computeSync(_anchor: HoverAnchor, _lineDecorations: IModelDecoration[]): ColorHover[] {
 		return [];
 	}
 
-	public computeAsync(
-		anchor: HoverAnchor,
-		lineDecorations: IModelDecoration[],
-		token: CancellationToken,
-	): AsyncIterableObject<ColorHover> {
-		return AsyncIterableObject.fromPromise(
-			this._computeAsync(anchor, lineDecorations, token),
-		);
+	public computeAsync(anchor: HoverAnchor, lineDecorations: IModelDecoration[], token: CancellationToken): AsyncIterableObject<ColorHover> {
+		return AsyncIterableObject.fromPromise(this._computeAsync(anchor, lineDecorations, token));
 	}
 
-	private async _computeAsync(
-		_anchor: HoverAnchor,
-		lineDecorations: IModelDecoration[],
-		_token: CancellationToken,
-	): Promise<ColorHover[]> {
+	private async _computeAsync(_anchor: HoverAnchor, lineDecorations: IModelDecoration[], _token: CancellationToken): Promise<ColorHover[]> {
 		if (!this._editor.hasModel()) {
 			return [];
 		}
@@ -98,33 +73,18 @@ export class HoverColorPickerParticipant
 				continue;
 			}
 
-			const colorData = colorDetector.getColorData(
-				d.range.getStartPosition(),
-			);
+			const colorData = colorDetector.getColorData(d.range.getStartPosition());
 			if (colorData) {
-				const colorHover = await createColorHover(
-					this,
-					this._editor.getModel(),
-					colorData.colorInfo,
-					colorData.provider,
-				);
+				const colorHover = await createColorHover(this, this._editor.getModel(), colorData.colorInfo, colorData.provider);
 				return [colorHover];
 			}
+
 		}
 		return [];
 	}
 
-	public renderHoverParts(
-		context: IEditorHoverRenderContext,
-		hoverParts: ColorHover[],
-	): IRenderedHoverParts<ColorHover> {
-		const renderedPart = renderHoverParts(
-			this,
-			this._editor,
-			this._themeService,
-			hoverParts,
-			context,
-		);
+	public renderHoverParts(context: IEditorHoverRenderContext, hoverParts: ColorHover[]): IRenderedHoverParts<ColorHover> {
+		const renderedPart = renderHoverParts(this, this._editor, this._themeService, hoverParts, context);
 		if (!renderedPart) {
 			return new RenderedHoverParts([]);
 		}
@@ -132,18 +92,13 @@ export class HoverColorPickerParticipant
 		const renderedHoverPart: IRenderedHoverPart<ColorHover> = {
 			hoverPart: renderedPart.hoverPart,
 			hoverElement: this._colorPicker.domNode,
-			dispose() {
-				renderedPart.disposables.dispose();
-			},
+			dispose() { renderedPart.disposables.dispose(); }
 		};
 		return new RenderedHoverParts([renderedHoverPart]);
 	}
 
 	public getAccessibleContent(hoverPart: ColorHover): string {
-		return nls.localize(
-			"hoverAccessibilityColorParticipant",
-			"There is a color picker here.",
-		);
+		return nls.localize('hoverAccessibilityColorParticipant', 'There is a color picker here.');
 	}
 
 	public handleResize(): void {

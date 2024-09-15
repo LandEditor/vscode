@@ -3,76 +3,50 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type {
-	WorkbenchActionExecutedClassification,
-	WorkbenchActionExecutedEvent,
-} from "../../../../../base/common/actions.js";
-import type { IJSONSchema } from "../../../../../base/common/jsonSchema.js";
-import { MarshalledId } from "../../../../../base/common/marshallingIds.js";
-import { isEqual } from "../../../../../base/common/resources.js";
-import type { TypeConstraint } from "../../../../../base/common/types.js";
-import { URI, type UriComponents } from "../../../../../base/common/uri.js";
-import type { ICodeEditor } from "../../../../../editor/browser/editorBrowser.js";
-import { localize, localize2 } from "../../../../../nls.js";
-import {
-	Action2,
-	MenuId,
-	MenuRegistry,
-	type IAction2Options,
-} from "../../../../../platform/actions/common/actions.js";
-import { ContextKeyExpr } from "../../../../../platform/contextkey/common/contextkey.js";
-import type { ServicesAccessor } from "../../../../../platform/instantiation/common/instantiation.js";
-import { KeybindingWeight } from "../../../../../platform/keybinding/common/keybindingsRegistry.js";
-import { ITelemetryService } from "../../../../../platform/telemetry/common/telemetry.js";
-import { isEditorCommandsContext } from "../../../../common/editor.js";
-import { IEditorService } from "../../../../services/editor/common/editorService.js";
-import {
-	INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR,
-	NOTEBOOK_EDITOR_EDITABLE,
-	NOTEBOOK_EDITOR_FOCUSED,
-	NOTEBOOK_IS_ACTIVE_EDITOR,
-	NOTEBOOK_KERNEL_COUNT,
-	NOTEBOOK_KERNEL_SOURCE_COUNT,
-} from "../../common/notebookContextKeys.js";
-import { isICellRange, type ICellRange } from "../../common/notebookRange.js";
-import {
-	cellRangeToViewCells,
-	getNotebookEditorFromEditorPane,
-	type IActiveNotebookEditor,
-	type ICellOutputViewModel,
-	type ICellViewModel,
-} from "../notebookBrowser.js";
-import { INotebookEditorService } from "../services/notebookEditorService.js";
+import { URI, UriComponents } from '../../../../../base/common/uri.js';
+import { localize, localize2 } from '../../../../../nls.js';
+import { Action2, IAction2Options, MenuId, MenuRegistry } from '../../../../../platform/actions/common/actions.js';
+import { ContextKeyExpr } from '../../../../../platform/contextkey/common/contextkey.js';
+import { ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
+import { KeybindingWeight } from '../../../../../platform/keybinding/common/keybindingsRegistry.js';
+import { getNotebookEditorFromEditorPane, IActiveNotebookEditor, ICellViewModel, cellRangeToViewCells, ICellOutputViewModel } from '../notebookBrowser.js';
+import { INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR, NOTEBOOK_EDITOR_EDITABLE, NOTEBOOK_EDITOR_FOCUSED, NOTEBOOK_IS_ACTIVE_EDITOR, NOTEBOOK_KERNEL_COUNT, NOTEBOOK_KERNEL_SOURCE_COUNT } from '../../common/notebookContextKeys.js';
+import { ICellRange, isICellRange } from '../../common/notebookRange.js';
+import { IEditorService } from '../../../../services/editor/common/editorService.js';
+import { isEditorCommandsContext } from '../../../../common/editor.js';
+import { INotebookEditorService } from '../services/notebookEditorService.js';
+import { ITelemetryService } from '../../../../../platform/telemetry/common/telemetry.js';
+import { WorkbenchActionExecutedClassification, WorkbenchActionExecutedEvent } from '../../../../../base/common/actions.js';
+import { TypeConstraint } from '../../../../../base/common/types.js';
+import { IJSONSchema } from '../../../../../base/common/jsonSchema.js';
+import { MarshalledId } from '../../../../../base/common/marshallingIds.js';
+import { ICodeEditor } from '../../../../../editor/browser/editorBrowser.js';
+import { isEqual } from '../../../../../base/common/resources.js';
 
 // Kernel Command
-export const SELECT_KERNEL_ID = "_notebook.selectKernel";
-export const NOTEBOOK_ACTIONS_CATEGORY = localize2(
-	"notebookActions.category",
-	"Notebook",
-);
+export const SELECT_KERNEL_ID = '_notebook.selectKernel';
+export const NOTEBOOK_ACTIONS_CATEGORY = localize2('notebookActions.category', 'Notebook');
 
-export const CELL_TITLE_CELL_GROUP_ID = "inline/cell";
-export const CELL_TITLE_OUTPUT_GROUP_ID = "inline/output";
+export const CELL_TITLE_CELL_GROUP_ID = 'inline/cell';
+export const CELL_TITLE_OUTPUT_GROUP_ID = 'inline/output';
 
-export const NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT =
-	KeybindingWeight.EditorContrib; // smaller than Suggest Widget, etc
-export const NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT =
-	KeybindingWeight.WorkbenchContrib + 1; // higher than Workbench contribution (such as Notebook List View), etc
+export const NOTEBOOK_EDITOR_WIDGET_ACTION_WEIGHT = KeybindingWeight.EditorContrib; // smaller than Suggest Widget, etc
+export const NOTEBOOK_OUTPUT_WEBVIEW_ACTION_WEIGHT = KeybindingWeight.WorkbenchContrib + 1; // higher than Workbench contribution (such as Notebook List View), etc
 
-export enum CellToolbarOrder {
-	EditCell = 0,
-	ExecuteAboveCells = 1,
-	ExecuteCellAndBelow = 2,
-	SaveCell = 3,
-	SplitCell = 4,
-	ClearCellOutput = 5,
+export const enum CellToolbarOrder {
+	EditCell,
+	ExecuteAboveCells,
+	ExecuteCellAndBelow,
+	SaveCell,
+	SplitCell,
+	ClearCellOutput
 }
 
-export enum CellOverflowToolbarGroups {
-	Copy = "1_copy",
-	Insert = "2_insert",
-	Edit = "3_edit",
-	Share = "4_share",
+export const enum CellOverflowToolbarGroups {
+	Copy = '1_copy',
+	Insert = '2_insert',
+	Edit = '3_edit',
+	Share = '4_share'
 }
 
 export interface INotebookActionContext {
@@ -83,8 +57,7 @@ export interface INotebookActionContext {
 	readonly autoReveal?: boolean;
 }
 
-export interface INotebookCellToolbarActionContext
-	extends INotebookActionContext {
+export interface INotebookCellToolbarActionContext extends INotebookActionContext {
 	readonly ui: true;
 	readonly cell: ICellViewModel;
 }
@@ -98,17 +71,12 @@ export interface INotebookCellActionContext extends INotebookActionContext {
 	cell: ICellViewModel;
 }
 
-export interface INotebookOutputActionContext
-	extends INotebookCellActionContext {
+export interface INotebookOutputActionContext extends INotebookCellActionContext {
 	outputViewModel: ICellOutputViewModel;
 }
 
-export function getContextFromActiveEditor(
-	editorService: IEditorService,
-): INotebookActionContext | undefined {
-	const editor = getNotebookEditorFromEditorPane(
-		editorService.activeEditorPane,
-	);
+export function getContextFromActiveEditor(editorService: IEditorService): INotebookActionContext | undefined {
+	const editor = getNotebookEditorFromEditorPane(editorService.activeEditorPane);
 	if (!editor || !editor.hasModel()) {
 		return;
 	}
@@ -118,19 +86,13 @@ export function getContextFromActiveEditor(
 	return {
 		cell: activeCell,
 		selectedCells,
-		notebookEditor: editor,
+		notebookEditor: editor
 	};
 }
 
 function getWidgetFromUri(accessor: ServicesAccessor, uri: URI) {
 	const notebookEditorService = accessor.get(INotebookEditorService);
-	const widget = notebookEditorService
-		.listNotebookEditors()
-		.find(
-			(widget) =>
-				widget.hasModel() &&
-				widget.textModel.uri.toString() === uri.toString(),
-		);
+	const widget = notebookEditorService.listNotebookEditors().find(widget => widget.hasModel() && widget.textModel.uri.toString() === uri.toString());
 
 	if (widget && widget.hasModel()) {
 		return widget;
@@ -155,11 +117,8 @@ export function getContextFromUri(accessor: ServicesAccessor, context?: any) {
 	return undefined;
 }
 
-export function findTargetCellEditor(
-	context: INotebookCellActionContext,
-	targetCell: ICellViewModel,
-) {
-	let foundEditor: ICodeEditor | undefined;
+export function findTargetCellEditor(context: INotebookCellActionContext, targetCell: ICellViewModel) {
+	let foundEditor: ICodeEditor | undefined = undefined;
 	for (const [, codeEditor] of context.notebookEditor.codeEditors) {
 		if (isEqual(codeEditor.getModel()?.uri, targetCell.uri)) {
 			foundEditor = codeEditor;
@@ -176,10 +135,7 @@ export abstract class NotebookAction extends Action2 {
 			desc.f1 = false;
 			const f1Menu = {
 				id: MenuId.CommandPalette,
-				when: ContextKeyExpr.or(
-					NOTEBOOK_IS_ACTIVE_EDITOR,
-					INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR,
-				),
+				when: ContextKeyExpr.or(NOTEBOOK_IS_ACTIVE_EDITOR, INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR)
 			};
 
 			if (!desc.menu) {
@@ -188,7 +144,10 @@ export abstract class NotebookAction extends Action2 {
 				desc.menu = [desc.menu];
 			}
 
-			desc.menu = [...desc.menu, f1Menu];
+			desc.menu = [
+				...desc.menu,
+				f1Menu
+			];
 		}
 
 		desc.category = NOTEBOOK_ACTIONS_CATEGORY;
@@ -196,23 +155,11 @@ export abstract class NotebookAction extends Action2 {
 		super(desc);
 	}
 
-	async run(
-		accessor: ServicesAccessor,
-		context?: any,
-		...additionalArgs: any[]
-	): Promise<void> {
+	async run(accessor: ServicesAccessor, context?: any, ...additionalArgs: any[]): Promise<void> {
 		const isFromUI = !!context;
-		const from = isFromUI
-			? this.isNotebookActionContext(context)
-				? "notebookToolbar"
-				: "editorToolbar"
-			: undefined;
+		const from = isFromUI ? (this.isNotebookActionContext(context) ? 'notebookToolbar' : 'editorToolbar') : undefined;
 		if (!this.isNotebookActionContext(context)) {
-			context = this.getEditorContextFromArgsOrActive(
-				accessor,
-				context,
-				...additionalArgs,
-			);
+			context = this.getEditorContextFromArgsOrActive(accessor, context, ...additionalArgs);
 			if (!context) {
 				return;
 			}
@@ -220,33 +167,19 @@ export abstract class NotebookAction extends Action2 {
 
 		if (from !== undefined) {
 			const telemetryService = accessor.get(ITelemetryService);
-			telemetryService.publicLog2<
-				WorkbenchActionExecutedEvent,
-				WorkbenchActionExecutedClassification
-			>("workbenchActionExecuted", { id: this.desc.id, from: from });
+			telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: this.desc.id, from: from });
 		}
 
 		return this.runWithContext(accessor, context);
 	}
 
-	abstract runWithContext(
-		accessor: ServicesAccessor,
-		context: INotebookActionContext,
-	): Promise<void>;
+	abstract runWithContext(accessor: ServicesAccessor, context: INotebookActionContext): Promise<void>;
 
-	private isNotebookActionContext(
-		context?: unknown,
-	): context is INotebookActionContext {
-		return (
-			!!context && !!(context as INotebookActionContext).notebookEditor
-		);
+	private isNotebookActionContext(context?: unknown): context is INotebookActionContext {
+		return !!context && !!(context as INotebookActionContext).notebookEditor;
 	}
 
-	getEditorContextFromArgsOrActive(
-		accessor: ServicesAccessor,
-		context?: any,
-		...additionalArgs: any[]
-	): INotebookActionContext | undefined {
+	getEditorContextFromArgsOrActive(accessor: ServicesAccessor, context?: any, ...additionalArgs: any[]): INotebookActionContext | undefined {
 		return getContextFromActiveEditor(accessor.get(IEditorService));
 	}
 }
@@ -258,7 +191,7 @@ export abstract class NotebookMultiCellAction extends Action2 {
 			desc.f1 = false;
 			const f1Menu = {
 				id: MenuId.CommandPalette,
-				when: NOTEBOOK_IS_ACTIVE_EDITOR,
+				when: NOTEBOOK_IS_ACTIVE_EDITOR
 			};
 
 			if (!desc.menu) {
@@ -267,7 +200,10 @@ export abstract class NotebookMultiCellAction extends Action2 {
 				desc.menu = [desc.menu];
 			}
 
-			desc.menu = [...desc.menu, f1Menu];
+			desc.menu = [
+				...desc.menu,
+				f1Menu
+			];
 		}
 
 		desc.category = NOTEBOOK_ACTIONS_CATEGORY;
@@ -275,26 +211,14 @@ export abstract class NotebookMultiCellAction extends Action2 {
 		super(desc);
 	}
 
-	parseArgs(
-		accessor: ServicesAccessor,
-		...args: any[]
-	): INotebookCommandContext | undefined {
+	parseArgs(accessor: ServicesAccessor, ...args: any[]): INotebookCommandContext | undefined {
 		return undefined;
 	}
 
-	abstract runWithContext(
-		accessor: ServicesAccessor,
-		context: INotebookCommandContext | INotebookCellToolbarActionContext,
-	): Promise<void>;
+	abstract runWithContext(accessor: ServicesAccessor, context: INotebookCommandContext | INotebookCellToolbarActionContext): Promise<void>;
 
-	private isCellToolbarContext(
-		context?: unknown,
-	): context is INotebookCellToolbarActionContext {
-		return (
-			!!context &&
-			!!(context as INotebookActionContext).notebookEditor &&
-			(context as any).$mid === MarshalledId.NotebookCellActionContext
-		);
+	private isCellToolbarContext(context?: unknown): context is INotebookCellToolbarActionContext {
+		return !!context && !!(context as INotebookActionContext).notebookEditor && (context as any).$mid === MarshalledId.NotebookCellActionContext;
 	}
 
 	/**
@@ -303,25 +227,15 @@ export abstract class NotebookMultiCellAction extends Action2 {
 	 * `run(accessor, ...args)` from command service with arguments
 	 * `run(accessor, undefined)` from keyboard shortcuts, command palatte, etc
 	 */
-	async run(
-		accessor: ServicesAccessor,
-		...additionalArgs: any[]
-	): Promise<void> {
+	async run(accessor: ServicesAccessor, ...additionalArgs: any[]): Promise<void> {
 		const context = additionalArgs[0];
 		const isFromCellToolbar = this.isCellToolbarContext(context);
 		const isFromEditorToolbar = isEditorCommandsContext(context);
-		const from = isFromCellToolbar
-			? "cellToolbar"
-			: isFromEditorToolbar
-				? "editorToolbar"
-				: "other";
+		const from = isFromCellToolbar ? 'cellToolbar' : (isFromEditorToolbar ? 'editorToolbar' : 'other');
 		const telemetryService = accessor.get(ITelemetryService);
 
 		if (isFromCellToolbar) {
-			telemetryService.publicLog2<
-				WorkbenchActionExecutedEvent,
-				WorkbenchActionExecutedClassification
-			>("workbenchActionExecuted", { id: this.desc.id, from: from });
+			telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: this.desc.id, from: from });
 			return this.runWithContext(accessor, context);
 		}
 
@@ -329,101 +243,59 @@ export abstract class NotebookMultiCellAction extends Action2 {
 
 		const parsedArgs = this.parseArgs(accessor, ...additionalArgs);
 		if (parsedArgs) {
-			telemetryService.publicLog2<
-				WorkbenchActionExecutedEvent,
-				WorkbenchActionExecutedClassification
-			>("workbenchActionExecuted", { id: this.desc.id, from: from });
+			telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: this.desc.id, from: from });
 			return this.runWithContext(accessor, parsedArgs);
 		}
 
 		// no parsed args, try handle active editor
 		const editor = getEditorFromArgsOrActivePane(accessor);
 		if (editor) {
-			const selectedCellRange: ICellRange[] =
-				editor.getSelections().length === 0
-					? [editor.getFocus()]
-					: editor.getSelections();
+			const selectedCellRange: ICellRange[] = editor.getSelections().length === 0 ? [editor.getFocus()] : editor.getSelections();
 
-			telemetryService.publicLog2<
-				WorkbenchActionExecutedEvent,
-				WorkbenchActionExecutedClassification
-			>("workbenchActionExecuted", { id: this.desc.id, from: from });
+			telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: this.desc.id, from: from });
 
 			return this.runWithContext(accessor, {
 				ui: false,
 				notebookEditor: editor,
-				selectedCells: cellRangeToViewCells(editor, selectedCellRange),
+				selectedCells: cellRangeToViewCells(editor, selectedCellRange)
 			});
 		}
 	}
 }
 
-export abstract class NotebookCellAction<
-	T = INotebookCellActionContext,
-> extends NotebookAction {
-	protected isCellActionContext(
-		context?: unknown,
-	): context is INotebookCellActionContext {
-		return (
-			!!context &&
-			!!(context as INotebookCellActionContext).notebookEditor &&
-			!!(context as INotebookCellActionContext).cell
-		);
+export abstract class NotebookCellAction<T = INotebookCellActionContext> extends NotebookAction {
+	protected isCellActionContext(context?: unknown): context is INotebookCellActionContext {
+		return !!context && !!(context as INotebookCellActionContext).notebookEditor && !!(context as INotebookCellActionContext).cell;
 	}
 
-	protected getCellContextFromArgs(
-		accessor: ServicesAccessor,
-		context?: T,
-		...additionalArgs: any[]
-	): INotebookCellActionContext | undefined {
+	protected getCellContextFromArgs(accessor: ServicesAccessor, context?: T, ...additionalArgs: any[]): INotebookCellActionContext | undefined {
 		return undefined;
 	}
 
-	override async run(
-		accessor: ServicesAccessor,
-		context?: INotebookCellActionContext,
-		...additionalArgs: any[]
-	): Promise<void> {
+	override async run(accessor: ServicesAccessor, context?: INotebookCellActionContext, ...additionalArgs: any[]): Promise<void> {
 		if (this.isCellActionContext(context)) {
 			const telemetryService = accessor.get(ITelemetryService);
-			telemetryService.publicLog2<
-				WorkbenchActionExecutedEvent,
-				WorkbenchActionExecutedClassification
-			>("workbenchActionExecuted", {
-				id: this.desc.id,
-				from: "cellToolbar",
-			});
+			telemetryService.publicLog2<WorkbenchActionExecutedEvent, WorkbenchActionExecutedClassification>('workbenchActionExecuted', { id: this.desc.id, from: 'cellToolbar' });
 
 			return this.runWithContext(accessor, context);
 		}
 
-		const contextFromArgs = this.getCellContextFromArgs(
-			accessor,
-			context,
-			...additionalArgs,
-		);
+		const contextFromArgs = this.getCellContextFromArgs(accessor, context, ...additionalArgs);
 
 		if (contextFromArgs) {
 			return this.runWithContext(accessor, contextFromArgs);
 		}
 
-		const activeEditorContext =
-			this.getEditorContextFromArgsOrActive(accessor);
+		const activeEditorContext = this.getEditorContextFromArgsOrActive(accessor);
 		if (this.isCellActionContext(activeEditorContext)) {
 			return this.runWithContext(accessor, activeEditorContext);
 		}
 	}
 
-	abstract override runWithContext(
-		accessor: ServicesAccessor,
-		context: INotebookCellActionContext,
-	): Promise<void>;
+	abstract override runWithContext(accessor: ServicesAccessor, context: INotebookCellActionContext): Promise<void>;
 }
 
-export const executeNotebookCondition = ContextKeyExpr.or(
-	ContextKeyExpr.greater(NOTEBOOK_KERNEL_COUNT.key, 0),
-	ContextKeyExpr.greater(NOTEBOOK_KERNEL_SOURCE_COUNT.key, 0),
-);
+export const executeNotebookCondition = ContextKeyExpr.or(ContextKeyExpr.greater(NOTEBOOK_KERNEL_COUNT.key, 0), ContextKeyExpr.greater(NOTEBOOK_KERNEL_SOURCE_COUNT.key, 0));
 
 interface IMultiCellArgs {
 	ranges: ICellRange[];
@@ -440,10 +312,7 @@ function isMultiCellArgs(arg: unknown): arg is IMultiCellArgs {
 		return false;
 	}
 
-	if (
-		!Array.isArray(ranges) ||
-		ranges.some((range) => !isICellRange(range))
-	) {
+	if (!Array.isArray(ranges) || ranges.some(range => !isICellRange(range))) {
 		return false;
 	}
 
@@ -458,19 +327,14 @@ function isMultiCellArgs(arg: unknown): arg is IMultiCellArgs {
 	return true;
 }
 
-export function getEditorFromArgsOrActivePane(
-	accessor: ServicesAccessor,
-	context?: UriComponents,
-): IActiveNotebookEditor | undefined {
+export function getEditorFromArgsOrActivePane(accessor: ServicesAccessor, context?: UriComponents): IActiveNotebookEditor | undefined {
 	const editorFromUri = getContextFromUri(accessor, context)?.notebookEditor;
 
 	if (editorFromUri) {
 		return editorFromUri;
 	}
 
-	const editor = getNotebookEditorFromEditorPane(
-		accessor.get(IEditorService).activeEditorPane,
-	);
+	const editor = getNotebookEditorFromEditorPane(accessor.get(IEditorService).activeEditorPane);
 	if (!editor || !editor.hasModel()) {
 		return;
 	}
@@ -478,31 +342,23 @@ export function getEditorFromArgsOrActivePane(
 	return editor;
 }
 
-export function parseMultiCellExecutionArgs(
-	accessor: ServicesAccessor,
-	...args: any[]
-): INotebookCommandContext | undefined {
+export function parseMultiCellExecutionArgs(accessor: ServicesAccessor, ...args: any[]): INotebookCommandContext | undefined {
 	const firstArg = args[0];
 
 	if (isMultiCellArgs(firstArg)) {
-		const editor = getEditorFromArgsOrActivePane(
-			accessor,
-			firstArg.document,
-		);
+		const editor = getEditorFromArgsOrActivePane(accessor, firstArg.document);
 		if (!editor) {
 			return;
 		}
 
 		const ranges = firstArg.ranges;
-		const selectedCells = ranges.flatMap((range) =>
-			editor.getCellsInRange(range).slice(0),
-		);
+		const selectedCells = ranges.map(range => editor.getCellsInRange(range).slice(0)).flat();
 		const autoReveal = firstArg.autoReveal;
 		return {
 			ui: false,
 			notebookEditor: editor,
 			selectedCells,
-			autoReveal,
+			autoReveal
 		};
 	}
 
@@ -518,20 +374,18 @@ export function parseMultiCellExecutionArgs(
 		return {
 			ui: false,
 			notebookEditor: editor,
-			selectedCells: editor.getCellsInRange(firstArg),
+			selectedCells: editor.getCellsInRange(firstArg)
 		};
 	}
 
 	// let's just execute the active cell
 	const context = getContextFromActiveEditor(accessor.get(IEditorService));
-	return context
-		? {
-				ui: false,
-				notebookEditor: context.notebookEditor,
-				selectedCells: context.selectedCells ?? [],
-				cell: context.cell,
-			}
-		: undefined;
+	return context ? {
+		ui: false,
+		notebookEditor: context.notebookEditor,
+		selectedCells: context.selectedCells ?? [],
+		cell: context.cell
+	} : undefined;
 }
 
 export const cellExecutionArgs: ReadonlyArray<{
@@ -541,61 +395,61 @@ export const cellExecutionArgs: ReadonlyArray<{
 	readonly constraint?: TypeConstraint;
 	readonly schema?: IJSONSchema;
 }> = [
-	{
-		isOptional: true,
-		name: "options",
-		description: "The cell range options",
-		schema: {
-			type: "object",
-			required: ["ranges"],
-			properties: {
-				ranges: {
-					type: "array",
-					items: [
-						{
-							type: "object",
-							required: ["start", "end"],
-							properties: {
-								start: {
-									type: "number",
-								},
-								end: {
-									type: "number",
-								},
-							},
-						},
-					],
-				},
-				document: {
-					type: "object",
-					description: "The document uri",
-				},
-				autoReveal: {
-					type: "boolean",
-					description:
-						"Whether the cell should be revealed into view automatically",
-				},
-			},
-		},
-	},
-];
+		{
+			isOptional: true,
+			name: 'options',
+			description: 'The cell range options',
+			schema: {
+				'type': 'object',
+				'required': ['ranges'],
+				'properties': {
+					'ranges': {
+						'type': 'array',
+						items: [
+							{
+								'type': 'object',
+								'required': ['start', 'end'],
+								'properties': {
+									'start': {
+										'type': 'number'
+									},
+									'end': {
+										'type': 'number'
+									}
+								}
+							}
+						]
+					},
+					'document': {
+						'type': 'object',
+						'description': 'The document uri',
+					},
+					'autoReveal': {
+						'type': 'boolean',
+						'description': 'Whether the cell should be revealed into view automatically'
+					}
+				}
+			}
+		}
+	];
+
 
 MenuRegistry.appendMenuItem(MenuId.NotebookCellTitle, {
 	submenu: MenuId.NotebookCellInsert,
-	title: localize("notebookMenu.insertCell", "Insert Cell"),
+	title: localize('notebookMenu.insertCell', "Insert Cell"),
 	group: CellOverflowToolbarGroups.Insert,
-	when: NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true),
+	when: NOTEBOOK_EDITOR_EDITABLE.isEqualTo(true)
 });
 
 MenuRegistry.appendMenuItem(MenuId.EditorContext, {
 	submenu: MenuId.NotebookCellTitle,
-	title: localize("notebookMenu.cellTitle", "Notebook Cell"),
+	title: localize('notebookMenu.cellTitle', "Notebook Cell"),
 	group: CellOverflowToolbarGroups.Insert,
-	when: NOTEBOOK_EDITOR_FOCUSED,
+	when: NOTEBOOK_EDITOR_FOCUSED
 });
 
 MenuRegistry.appendMenuItem(MenuId.NotebookCellTitle, {
-	title: localize("miShare", "Share"),
+	title: localize('miShare', "Share"),
 	submenu: MenuId.EditorContextShare,
-	group: CellOverflowToolbarGroups.Share,
+	group: CellOverflowToolbarGroups.Share
 });

@@ -3,24 +3,18 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "../../../../../base/common/event.js";
-import { Disposable } from "../../../../../base/common/lifecycle.js";
-import { generateUuid } from "../../../../../base/common/uuid.js";
-import { PrefixSumComputer } from "../../../../../editor/common/model/prefixSumComputer.js";
-import type { NotebookCellTextModel } from "../../common/model/notebookCellTextModel.js";
-import { INotebookService } from "../../common/notebookService.js";
-import type {
-	ICellOutputViewModel,
-	IGenericCellViewModel,
-} from "../notebookBrowser.js";
-import type { CellViewModelStateChangeEvent } from "../notebookViewEvents.js";
-import { CellOutputViewModel } from "../viewModel/cellOutputViewModel.js";
-import type { IDiffNestedCellViewModel } from "./notebookDiffEditorBrowser.js";
+import { Emitter } from '../../../../../base/common/event.js';
+import { Disposable } from '../../../../../base/common/lifecycle.js';
+import { generateUuid } from '../../../../../base/common/uuid.js';
+import { PrefixSumComputer } from '../../../../../editor/common/model/prefixSumComputer.js';
+import { IDiffNestedCellViewModel } from './notebookDiffEditorBrowser.js';
+import { ICellOutputViewModel, IGenericCellViewModel } from '../notebookBrowser.js';
+import { CellViewModelStateChangeEvent } from '../notebookViewEvents.js';
+import { CellOutputViewModel } from '../viewModel/cellOutputViewModel.js';
+import { NotebookCellTextModel } from '../../common/model/notebookCellTextModel.js';
+import { INotebookService } from '../../common/notebookService.js';
 
-export class DiffNestedCellViewModel
-	extends Disposable
-	implements IDiffNestedCellViewModel, IGenericCellViewModel
-{
+export class DiffNestedCellViewModel extends Disposable implements IDiffNestedCellViewModel, IGenericCellViewModel {
 	private _id: string;
 	get id() {
 		return this._id;
@@ -46,10 +40,9 @@ export class DiffNestedCellViewModel
 		return this.textModel.handle;
 	}
 
-	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> =
-		this._register(new Emitter<CellViewModelStateChangeEvent>());
+	protected readonly _onDidChangeState: Emitter<CellViewModelStateChangeEvent> = this._register(new Emitter<CellViewModelStateChangeEvent>());
 
-	private _hoveringOutput = false;
+	private _hoveringOutput: boolean = false;
 	public get outputIsHovered(): boolean {
 		return this._hoveringOutput;
 	}
@@ -59,7 +52,7 @@ export class DiffNestedCellViewModel
 		this._onDidChangeState.fire({ outputIsHoveredChanged: true });
 	}
 
-	private _focusOnOutput = false;
+	private _focusOnOutput: boolean = false;
 	public get outputIsFocused(): boolean {
 		return this._focusOnOutput;
 	}
@@ -69,7 +62,7 @@ export class DiffNestedCellViewModel
 		this._onDidChangeState.fire({ outputIsFocusedChanged: true });
 	}
 
-	private _focusInputInOutput = false;
+	private _focusInputInOutput: boolean = false;
 	public get inputInOutputIsFocused(): boolean {
 		return this._focusInputInOutput;
 	}
@@ -87,9 +80,7 @@ export class DiffNestedCellViewModel
 	protected _outputCollection: number[] = [];
 	protected _outputsTop: PrefixSumComputer | null = null;
 
-	protected readonly _onDidChangeOutputLayout = this._register(
-		new Emitter<void>(),
-	);
+	protected readonly _onDidChangeOutputLayout = this._register(new Emitter<void>());
 	readonly onDidChangeOutputLayout = this._onDidChangeOutputLayout.event;
 
 	constructor(
@@ -146,7 +137,7 @@ export class DiffNestedCellViewModel
 		this._ensureOutputsTop();
 
 		if (index >= this._outputCollection.length) {
-			throw new Error("Output index out of range!");
+			throw new Error('Output index out of range!');
 		}
 
 		return this._outputsTop!.getPrefixSum(index - 1);
@@ -154,7 +145,7 @@ export class DiffNestedCellViewModel
 
 	updateOutputHeight(index: number, height: number): void {
 		if (index >= this._outputCollection.length) {
-			throw new Error("Output index out of range!");
+			throw new Error('Output index out of range!');
 		}
 
 		this._ensureOutputsTop();
@@ -173,7 +164,7 @@ export class DiffNestedCellViewModel
 	public override dispose(): void {
 		super.dispose();
 
-		this._outputViewModels.forEach((output) => {
+		this._outputViewModels.forEach(output => {
 			output.dispose();
 		});
 	}

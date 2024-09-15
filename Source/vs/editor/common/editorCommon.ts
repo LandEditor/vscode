@@ -3,27 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Event } from "../../base/common/event.js";
-import type { IMarkdownString } from "../../base/common/htmlContent.js";
-import type { IDisposable } from "../../base/common/lifecycle.js";
-import type { ThemeColor } from "../../base/common/themables.js";
-import type { URI, UriComponents } from "../../base/common/uri.js";
-import type { ICommandMetadata } from "../../platform/commands/common/commands.js";
-import type { IEditorOptions } from "./config/editorOptions.js";
-import type { IDimension } from "./core/dimension.js";
-import type { IPosition, Position } from "./core/position.js";
-import type { IRange, Range } from "./core/range.js";
-import type { ISelection, Selection } from "./core/selection.js";
-import type {
-	IModelDecoration,
-	IModelDecorationsChangeAccessor,
-	IModelDeltaDecoration,
-	ITextModel,
-	IValidEditOperation,
-	OverviewRulerLane,
-	TrackedRangeStickiness,
-} from "./model.js";
-import type { IModelDecorationsChangedEvent } from "./textModelEvents.js";
+import { Event } from '../../base/common/event.js';
+import { IMarkdownString } from '../../base/common/htmlContent.js';
+import { IDisposable } from '../../base/common/lifecycle.js';
+import { ThemeColor } from '../../base/common/themables.js';
+import { URI, UriComponents } from '../../base/common/uri.js';
+import { IEditorOptions } from './config/editorOptions.js';
+import { IDimension } from './core/dimension.js';
+import { IPosition, Position } from './core/position.js';
+import { IRange, Range } from './core/range.js';
+import { ISelection, Selection } from './core/selection.js';
+import { IModelDecoration, IModelDecorationsChangeAccessor, IModelDeltaDecoration, ITextModel, IValidEditOperation, OverviewRulerLane, TrackedRangeStickiness } from './model.js';
+import { IModelDecorationsChangedEvent } from './textModelEvents.js';
+import { ICommandMetadata } from '../../platform/commands/common/commands.js';
 
 /**
  * A builder and helper for edit operations for a command.
@@ -34,11 +26,7 @@ export interface IEditOperationBuilder {
 	 * @param range The range to replace (delete). May be empty to represent a simple insert.
 	 * @param text The text to replace with. May be null to represent a simple delete.
 	 */
-	addEditOperation(
-		range: IRange,
-		text: string | null,
-		forceMoveMarkers?: boolean,
-	): void;
+	addEditOperation(range: IRange, text: string | null, forceMoveMarkers?: boolean): void;
 
 	/**
 	 * Add a new edit operation (a replace operation).
@@ -46,11 +34,7 @@ export interface IEditOperationBuilder {
 	 * @param range The range to replace (delete). May be empty to represent a simple insert.
 	 * @param text The text to replace with. May be null to represent a simple delete.
 	 */
-	addTrackedEditOperation(
-		range: IRange,
-		text: string | null,
-		forceMoveMarkers?: boolean,
-	): void;
+	addTrackedEditOperation(range: IRange, text: string | null, forceMoveMarkers?: boolean): void;
 
 	/**
 	 * Track `selection` when applying edit operations.
@@ -61,10 +45,7 @@ export interface IEditOperationBuilder {
 	 *           should clamp to the previous or the next character.
 	 * @return A unique identifier.
 	 */
-	trackSelection(
-		selection: Selection,
-		trackPreviousOnEmpty?: boolean,
-	): string;
+	trackSelection(selection: Selection, trackPreviousOnEmpty?: boolean): string;
 }
 
 /**
@@ -87,6 +68,7 @@ export interface ICursorStateComputerData {
  * A command that modifies text / cursor state on a model.
  */
 export interface ICommand {
+
 	/**
 	 * Signal that this command is inserting automatic whitespace that should be trimmed if possible.
 	 * @internal
@@ -106,10 +88,7 @@ export interface ICommand {
 	 * @param helper A helper to get inverse edit operations and to get previously tracked selections.
 	 * @return The cursor state after the command executed.
 	 */
-	computeCursorState(
-		model: ITextModel,
-		helper: ICursorStateComputerData,
-	): Selection;
+	computeCursorState(model: ITextModel, helper: ICursorStateComputerData): Selection;
 }
 
 /**
@@ -166,6 +145,15 @@ export interface IContentSizeChangedEvent {
 
 	readonly contentWidthChanged: boolean;
 	readonly contentHeightChanged: boolean;
+}
+
+/**
+ * @internal
+ */
+export interface ITriggerEditorOperationEvent {
+	source: string | null | undefined;
+	handlerId: string;
+	payload: any;
 }
 
 export interface INewScrollPosition {
@@ -225,7 +213,7 @@ export interface IDiffEditorViewState {
  */
 export type IEditorViewState = ICodeEditorViewState | IDiffEditorViewState;
 
-export enum ScrollType {
+export const enum ScrollType {
 	Smooth = 0,
 	Immediate = 1,
 }
@@ -345,10 +333,7 @@ export interface IEditor {
 	/**
 	 * Scroll vertically as necessary and reveal a line centered vertically only if it lies outside the viewport.
 	 */
-	revealLineInCenterIfOutsideViewport(
-		lineNumber: number,
-		scrollType?: ScrollType,
-	): void;
+	revealLineInCenterIfOutsideViewport(lineNumber: number, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically as necessary and reveal a line close to the top of the viewport,
@@ -369,10 +354,7 @@ export interface IEditor {
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a position centered vertically only if it lies outside the viewport.
 	 */
-	revealPositionInCenterIfOutsideViewport(
-		position: IPosition,
-		scrollType?: ScrollType,
-	): void;
+	revealPositionInCenterIfOutsideViewport(position: IPosition, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a position close to the top of the viewport,
@@ -426,39 +408,23 @@ export interface IEditor {
 	/**
 	 * Scroll vertically as necessary and reveal lines.
 	 */
-	revealLines(
-		startLineNumber: number,
-		endLineNumber: number,
-		scrollType?: ScrollType,
-	): void;
+	revealLines(startLineNumber: number, endLineNumber: number, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically as necessary and reveal lines centered vertically.
 	 */
-	revealLinesInCenter(
-		lineNumber: number,
-		endLineNumber: number,
-		scrollType?: ScrollType,
-	): void;
+	revealLinesInCenter(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically as necessary and reveal lines centered vertically only if it lies outside the viewport.
 	 */
-	revealLinesInCenterIfOutsideViewport(
-		lineNumber: number,
-		endLineNumber: number,
-		scrollType?: ScrollType,
-	): void;
+	revealLinesInCenterIfOutsideViewport(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically as necessary and reveal lines close to the top of the viewport,
 	 * optimized for viewing a code definition.
 	 */
-	revealLinesNearTop(
-		lineNumber: number,
-		endLineNumber: number,
-		scrollType?: ScrollType,
-	): void;
+	revealLinesNearTop(lineNumber: number, endLineNumber: number, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a range.
@@ -478,10 +444,7 @@ export interface IEditor {
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a range centered vertically only if it lies outside the viewport.
 	 */
-	revealRangeInCenterIfOutsideViewport(
-		range: IRange,
-		scrollType?: ScrollType,
-	): void;
+	revealRangeInCenterIfOutsideViewport(range: IRange, scrollType?: ScrollType): void;
 
 	/**
 	 * Scroll vertically or horizontally as necessary and reveal a range close to the top of the viewport,
@@ -493,10 +456,7 @@ export interface IEditor {
 	 * Scroll vertically or horizontally as necessary and reveal a range close to the top of the viewport,
 	 * optimized for viewing a code definition. Only if it lies outside the viewport.
 	 */
-	revealRangeNearTopIfOutsideViewport(
-		range: IRange,
-		scrollType?: ScrollType,
-	): void;
+	revealRangeNearTopIfOutsideViewport(range: IRange, scrollType?: ScrollType): void;
 
 	/**
 	 * Directly trigger a handler or an editor action.
@@ -504,11 +464,7 @@ export interface IEditor {
 	 * @param handlerId The id of the handler or the id of a contribution.
 	 * @param payload Extra data to be sent to the handler.
 	 */
-	trigger(
-		source: string | null | undefined,
-		handlerId: string,
-		payload: any,
-	): void;
+	trigger(source: string | null | undefined, handlerId: string, payload: any): void;
 
 	/**
 	 * Gets the current model attached to this editor.
@@ -530,9 +486,7 @@ export interface IEditor {
 	 * will get the ownerId of the editor (meaning they will not show up in other editors).
 	 * These decorations will be automatically cleared when the editor's model changes.
 	 */
-	createDecorationsCollection(
-		decorations?: IModelDeltaDecoration[],
-	): IEditorDecorationsCollection;
+	createDecorationsCollection(decorations?: IModelDeltaDecoration[]): IEditorDecorationsCollection;
 
 	/**
 	 * Change the decorations. All decorations added through this changeAccessor
@@ -541,9 +495,7 @@ export interface IEditor {
 	 * @see {@link ITextModel.changeDecorations}
 	 * @internal
 	 */
-	changeDecorations(
-		callback: (changeAccessor: IModelDecorationsChangeAccessor) => any,
-	): any;
+	changeDecorations(callback: (changeAccessor: IModelDecorationsChangeAccessor) => any): any;
 }
 
 /**
@@ -552,6 +504,7 @@ export interface IEditor {
  * @internal
  */
 export interface IDiffEditor extends IEditor {
+
 	/**
 	 * Type the getModel() of IEditor.
 	 */
@@ -572,6 +525,7 @@ export interface IDiffEditor extends IEditor {
  * @internal
  */
 export interface ICompositeCodeEditor {
+
 	/**
 	 * An event that signals that the active editor has changed
 	 */
@@ -656,7 +610,7 @@ export interface IDiffEditorContribution {
  * @internal
  */
 export function isThemeColor(o: any): o is ThemeColor {
-	return o && typeof o.id === "string";
+	return o && typeof o.id === 'string';
 }
 
 /**
@@ -703,15 +657,11 @@ export interface IThemeDecorationRenderOptions {
 	/**
 	 * @deprecated
 	 */
-	beforeInjectedText?: IContentDecorationRenderOptions & {
-		affectsLetterSpacing?: boolean;
-	};
+	beforeInjectedText?: IContentDecorationRenderOptions & { affectsLetterSpacing?: boolean };
 	/**
 	 * @deprecated
 	 */
-	afterInjectedText?: IContentDecorationRenderOptions & {
-		affectsLetterSpacing?: boolean;
-	};
+	afterInjectedText?: IContentDecorationRenderOptions & { affectsLetterSpacing?: boolean };
 }
 
 /**
@@ -743,8 +693,7 @@ export interface IContentDecorationRenderOptions {
 /**
  * @internal
  */
-export interface IDecorationRenderOptions
-	extends IThemeDecorationRenderOptions {
+export interface IDecorationRenderOptions extends IThemeDecorationRenderOptions {
 	isWholeLine?: boolean;
 	rangeBehavior?: TrackedRangeStickiness;
 	overviewRulerLane?: OverviewRulerLane;
@@ -770,8 +719,7 @@ export interface IThemeDecorationInstanceRenderOptions {
 /**
  * @internal
  */
-export interface IDecorationInstanceRenderOptions
-	extends IThemeDecorationInstanceRenderOptions {
+export interface IDecorationInstanceRenderOptions extends IThemeDecorationInstanceRenderOptions {
 	light?: IThemeDecorationInstanceRenderOptions;
 	dark?: IThemeDecorationInstanceRenderOptions;
 }
@@ -789,22 +737,22 @@ export interface IDecorationOptions {
  * The type of the `IEditor`.
  */
 export const EditorType = {
-	ICodeEditor: "vs.editor.ICodeEditor",
-	IDiffEditor: "vs.editor.IDiffEditor",
+	ICodeEditor: 'vs.editor.ICodeEditor',
+	IDiffEditor: 'vs.editor.IDiffEditor'
 };
 
 /**
  * Built-in commands.
  * @internal
  */
-export enum Handler {
-	CompositionStart = "compositionStart",
-	CompositionEnd = "compositionEnd",
-	Type = "type",
-	ReplacePreviousChar = "replacePreviousChar",
-	CompositionType = "compositionType",
-	Paste = "paste",
-	Cut = "cut",
+export const enum Handler {
+	CompositionStart = 'compositionStart',
+	CompositionEnd = 'compositionEnd',
+	Type = 'type',
+	ReplacePreviousChar = 'replacePreviousChar',
+	CompositionType = 'compositionType',
+	Paste = 'paste',
+	Cut = 'cut',
 }
 
 /**

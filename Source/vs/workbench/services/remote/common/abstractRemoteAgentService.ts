@@ -3,51 +3,26 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "../../../../base/common/event.js";
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import {
-	getDelayedChannel,
-	IPCLogger,
-	type IChannel,
-	type IServerChannel,
-} from "../../../../base/parts/ipc/common/ipc.js";
-import type { Client } from "../../../../base/parts/ipc/common/ipc.net.js";
-import type {
-	IDiagnosticInfo,
-	IDiagnosticInfoOptions,
-} from "../../../../platform/diagnostics/common/diagnostics.js";
-import { ILogService } from "../../../../platform/log/common/log.js";
-import { IProductService } from "../../../../platform/product/common/productService.js";
-import {
-	connectRemoteAgentManagement,
-	type IConnectionOptions,
-	type ManagementPersistentConnection,
-	type PersistentConnectionEvent,
-} from "../../../../platform/remote/common/remoteAgentConnection.js";
-import type {
-	IRemoteAgentEnvironment,
-	RemoteAgentConnectionContext,
-} from "../../../../platform/remote/common/remoteAgentEnvironment.js";
-import { IRemoteAuthorityResolverService } from "../../../../platform/remote/common/remoteAuthorityResolver.js";
-import { IRemoteSocketFactoryService } from "../../../../platform/remote/common/remoteSocketFactoryService.js";
-import { ISignService } from "../../../../platform/sign/common/sign.js";
-import type {
-	ITelemetryData,
-	TelemetryLevel,
-} from "../../../../platform/telemetry/common/telemetry.js";
-import { IWorkbenchEnvironmentService } from "../../environment/common/environmentService.js";
-import { IUserDataProfileService } from "../../userDataProfile/common/userDataProfile.js";
-import { RemoteExtensionEnvironmentChannelClient } from "./remoteAgentEnvironmentChannel.js";
-import type {
-	IExtensionHostExitInfo,
-	IRemoteAgentConnection,
-	IRemoteAgentService,
-} from "./remoteAgentService.js";
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { IChannel, IServerChannel, getDelayedChannel, IPCLogger } from '../../../../base/parts/ipc/common/ipc.js';
+import { Client } from '../../../../base/parts/ipc/common/ipc.net.js';
+import { IWorkbenchEnvironmentService } from '../../environment/common/environmentService.js';
+import { connectRemoteAgentManagement, IConnectionOptions, ManagementPersistentConnection, PersistentConnectionEvent } from '../../../../platform/remote/common/remoteAgentConnection.js';
+import { IExtensionHostExitInfo, IRemoteAgentConnection, IRemoteAgentService } from './remoteAgentService.js';
+import { IRemoteAuthorityResolverService } from '../../../../platform/remote/common/remoteAuthorityResolver.js';
+import { RemoteAgentConnectionContext, IRemoteAgentEnvironment } from '../../../../platform/remote/common/remoteAgentEnvironment.js';
+import { RemoteExtensionEnvironmentChannelClient } from './remoteAgentEnvironmentChannel.js';
+import { IDiagnosticInfoOptions, IDiagnosticInfo } from '../../../../platform/diagnostics/common/diagnostics.js';
+import { Emitter } from '../../../../base/common/event.js';
+import { ISignService } from '../../../../platform/sign/common/sign.js';
+import { ILogService } from '../../../../platform/log/common/log.js';
+import { ITelemetryData, TelemetryLevel } from '../../../../platform/telemetry/common/telemetry.js';
+import { IProductService } from '../../../../platform/product/common/productService.js';
+import { IUserDataProfileService } from '../../userDataProfile/common/userDataProfile.js';
+import { IRemoteSocketFactoryService } from '../../../../platform/remote/common/remoteSocketFactoryService.js';
 
-export abstract class AbstractRemoteAgentService
-	extends Disposable
-	implements IRemoteAgentService
-{
+export abstract class AbstractRemoteAgentService extends Disposable implements IRemoteAgentService {
+
 	declare readonly _serviceBrand: undefined;
 
 	private readonly _connection: IRemoteAgentConnection | null;
@@ -97,90 +72,60 @@ export abstract class AbstractRemoteAgentService
 		if (!this._environment) {
 			this._environment = this._withChannel(
 				async (channel, connection) => {
-					const env =
-						await RemoteExtensionEnvironmentChannelClient.getEnvironmentData(
-							channel,
-							connection.remoteAuthority,
-							this.userDataProfileService.currentProfile.isDefault
-								? undefined
-								: this.userDataProfileService.currentProfile.id,
-						);
-					this._remoteAuthorityResolverService._setAuthorityConnectionToken(
-						connection.remoteAuthority,
-						env.connectionToken,
-					);
+					const env = await RemoteExtensionEnvironmentChannelClient.getEnvironmentData(channel, connection.remoteAuthority, this.userDataProfileService.currentProfile.isDefault ? undefined : this.userDataProfileService.currentProfile.id);
+					this._remoteAuthorityResolverService._setAuthorityConnectionToken(connection.remoteAuthority, env.connectionToken);
 					return env;
 				},
-				null,
+				null
 			);
 		}
 		return this._environment;
 	}
 
-	getExtensionHostExitInfo(
-		reconnectionToken: string,
-	): Promise<IExtensionHostExitInfo | null> {
+	getExtensionHostExitInfo(reconnectionToken: string): Promise<IExtensionHostExitInfo | null> {
 		return this._withChannel(
-			(channel, connection) =>
-				RemoteExtensionEnvironmentChannelClient.getExtensionHostExitInfo(
-					channel,
-					connection.remoteAuthority,
-					reconnectionToken,
-				),
-			null,
+			(channel, connection) => RemoteExtensionEnvironmentChannelClient.getExtensionHostExitInfo(channel, connection.remoteAuthority, reconnectionToken),
+			null
 		);
 	}
 
-	getDiagnosticInfo(
-		options: IDiagnosticInfoOptions,
-	): Promise<IDiagnosticInfo | undefined> {
+	getDiagnosticInfo(options: IDiagnosticInfoOptions): Promise<IDiagnosticInfo | undefined> {
 		return this._withChannel(
-			(channel) =>
-				RemoteExtensionEnvironmentChannelClient.getDiagnosticInfo(
-					channel,
-					options,
-				),
-			undefined,
+			channel => RemoteExtensionEnvironmentChannelClient.getDiagnosticInfo(channel, options),
+			undefined
 		);
 	}
 
 	updateTelemetryLevel(telemetryLevel: TelemetryLevel): Promise<void> {
 		return this._withTelemetryChannel(
-			(channel) =>
-				RemoteExtensionEnvironmentChannelClient.updateTelemetryLevel(
-					channel,
-					telemetryLevel,
-				),
-			undefined,
+			channel => RemoteExtensionEnvironmentChannelClient.updateTelemetryLevel(channel, telemetryLevel),
+			undefined
 		);
 	}
 
 	logTelemetry(eventName: string, data: ITelemetryData): Promise<void> {
 		return this._withTelemetryChannel(
-			(channel) =>
-				RemoteExtensionEnvironmentChannelClient.logTelemetry(
-					channel,
-					eventName,
-					data,
-				),
-			undefined,
+			channel => RemoteExtensionEnvironmentChannelClient.logTelemetry(channel, eventName, data),
+			undefined
 		);
 	}
 
 	flushTelemetry(): Promise<void> {
 		return this._withTelemetryChannel(
-			(channel) =>
-				RemoteExtensionEnvironmentChannelClient.flushTelemetry(channel),
-			undefined,
+			channel => RemoteExtensionEnvironmentChannelClient.flushTelemetry(channel),
+			undefined
 		);
 	}
 
 	getRoundTripTime(): Promise<number | undefined> {
-		return this._withTelemetryChannel(async (channel) => {
-			const start = Date.now();
-			await RemoteExtensionEnvironmentChannelClient.ping(channel);
-			return Date.now() - start;
-		}, undefined);
+		return this._withTelemetryChannel(
+			async channel => {
+				const start = Date.now();
+				await RemoteExtensionEnvironmentChannelClient.ping(channel);
+				return Date.now() - start;
+			},
+			undefined
+		);
 	}
 
 	async endConnection(): Promise<void> {
@@ -190,50 +135,30 @@ export abstract class AbstractRemoteAgentService
 		}
 	}
 
-	private _withChannel<R>(
-		callback: (
-			channel: IChannel,
-			connection: IRemoteAgentConnection,
-		) => Promise<R>,
-		fallback: R,
-	): Promise<R> {
+	private _withChannel<R>(callback: (channel: IChannel, connection: IRemoteAgentConnection) => Promise<R>, fallback: R): Promise<R> {
 		const connection = this.getConnection();
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
-		return connection.withChannel(
-			"remoteextensionsenvironment",
-			(channel) => callback(channel, connection),
-		);
+		return connection.withChannel('remoteextensionsenvironment', (channel) => callback(channel, connection));
 	}
 
-	private _withTelemetryChannel<R>(
-		callback: (
-			channel: IChannel,
-			connection: IRemoteAgentConnection,
-		) => Promise<R>,
-		fallback: R,
-	): Promise<R> {
+	private _withTelemetryChannel<R>(callback: (channel: IChannel, connection: IRemoteAgentConnection) => Promise<R>, fallback: R): Promise<R> {
 		const connection = this.getConnection();
 		if (!connection) {
 			return Promise.resolve(fallback);
 		}
-		return connection.withChannel("telemetry", (channel) =>
-			callback(channel, connection),
-		);
+		return connection.withChannel('telemetry', (channel) => callback(channel, connection));
 	}
+
 }
 
-class RemoteAgentConnection
-	extends Disposable
-	implements IRemoteAgentConnection
-{
+class RemoteAgentConnection extends Disposable implements IRemoteAgentConnection {
+
 	private readonly _onReconnecting = this._register(new Emitter<void>());
 	public readonly onReconnecting = this._onReconnecting.event;
 
-	private readonly _onDidStateChange = this._register(
-		new Emitter<PersistentConnectionEvent>(),
-	);
+	private readonly _onDidStateChange = this._register(new Emitter<PersistentConnectionEvent>());
 	public readonly onDidStateChange = this._onDidStateChange.event;
 
 	readonly remoteAuthority: string;
@@ -248,7 +173,7 @@ class RemoteAgentConnection
 		private readonly _remoteSocketFactoryService: IRemoteSocketFactoryService,
 		private readonly _remoteAuthorityResolverService: IRemoteAuthorityResolverService,
 		private readonly _signService: ISignService,
-		private readonly _logService: ILogService,
+		private readonly _logService: ILogService
 	) {
 		super();
 		this.remoteAuthority = remoteAuthority;
@@ -258,31 +183,17 @@ class RemoteAgentConnection
 	end: () => Promise<void> = () => Promise.resolve();
 
 	getChannel<T extends IChannel>(channelName: string): T {
-		return <T>(
-			getDelayedChannel(
-				this._getOrCreateConnection().then((c) =>
-					c.getChannel(channelName),
-				),
-			)
-		);
+		return <T>getDelayedChannel(this._getOrCreateConnection().then(c => c.getChannel(channelName)));
 	}
 
-	withChannel<T extends IChannel, R>(
-		channelName: string,
-		callback: (channel: T) => Promise<R>,
-	): Promise<R> {
+	withChannel<T extends IChannel, R>(channelName: string, callback: (channel: T) => Promise<R>): Promise<R> {
 		const channel = this.getChannel<T>(channelName);
 		const result = callback(channel);
 		return result;
 	}
 
-	registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(
-		channelName: string,
-		channel: T,
-	): void {
-		this._getOrCreateConnection().then((client) =>
-			client.registerChannel(channelName, channel),
-		);
+	registerChannel<T extends IServerChannel<RemoteAgentConnectionContext>>(channelName: string, channel: T): void {
+		this._getOrCreateConnection().then(client => client.registerChannel(channelName, channel));
 	}
 
 	async getInitialConnectionTimeMs() {
@@ -295,18 +206,14 @@ class RemoteAgentConnection
 		return this._initialConnectionMs!;
 	}
 
-	private _getOrCreateConnection(): Promise<
-		Client<RemoteAgentConnectionContext>
-	> {
+	private _getOrCreateConnection(): Promise<Client<RemoteAgentConnectionContext>> {
 		if (!this._connection) {
 			this._connection = this._createConnection();
 		}
 		return this._connection;
 	}
 
-	private async _createConnection(): Promise<
-		Client<RemoteAgentConnectionContext>
-	> {
+	private async _createConnection(): Promise<Client<RemoteAgentConnectionContext>> {
 		let firstCall = true;
 		const options: IConnectionOptions = {
 			commit: this._commit,
@@ -318,33 +225,19 @@ class RemoteAgentConnection
 					} else {
 						this._onReconnecting.fire(undefined);
 					}
-					const { authority } =
-						await this._remoteAuthorityResolverService.resolveAuthority(
-							this.remoteAuthority,
-						);
-					return {
-						connectTo: authority.connectTo,
-						connectionToken: authority.connectionToken,
-					};
-				},
+					const { authority } = await this._remoteAuthorityResolverService.resolveAuthority(this.remoteAuthority);
+					return { connectTo: authority.connectTo, connectionToken: authority.connectionToken };
+				}
 			},
 			remoteSocketFactoryService: this._remoteSocketFactoryService,
 			signService: this._signService,
 			logService: this._logService,
-			ipcLogger: false
-				? new IPCLogger(`Local \u2192 Remote`, `Remote \u2192 Local`)
-				: null,
+			ipcLogger: false ? new IPCLogger(`Local \u2192 Remote`, `Remote \u2192 Local`) : null
 		};
 		let connection: ManagementPersistentConnection;
 		const start = Date.now();
 		try {
-			connection = this._register(
-				await connectRemoteAgentManagement(
-					options,
-					this.remoteAuthority,
-					`renderer`,
-				),
-			);
+			connection = this._register(await connectRemoteAgentManagement(options, this.remoteAuthority, `renderer`));
 		} finally {
 			this._initialConnectionMs = Date.now() - start;
 		}
@@ -356,9 +249,7 @@ class RemoteAgentConnection
 			connection.protocol.sendDisconnect();
 			return connection.protocol.drain();
 		};
-		this._register(
-			connection.onDidStateChange((e) => this._onDidStateChange.fire(e)),
-		);
+		this._register(connection.onDidStateChange(e => this._onDidStateChange.fire(e)));
 		return connection.client;
 	}
 }

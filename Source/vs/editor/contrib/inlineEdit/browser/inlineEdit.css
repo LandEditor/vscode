@@ -13,8 +13,7 @@
 	font-size: 0;
 }
 
-.monaco-editor .inline-edit-decoration,
-.monaco-editor .suggest-preview-text .inline-edit {
+.monaco-editor .inline-edit-decoration, .monaco-editor .suggest-preview-text .inline-edit {
 	font-style: italic;
 }
 
@@ -30,3 +29,5 @@
 	background-color: var(--vscode-editorGhostText-background);
 	border: 1px solid var(--vscode-editorGhostText-border);
 }
+
+

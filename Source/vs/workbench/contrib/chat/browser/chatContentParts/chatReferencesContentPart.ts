@@ -3,62 +3,39 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "../../../../../base/browser/dom.js";
-import { Button } from "../../../../../base/browser/ui/button/button.js";
-import type {
-	IListRenderer,
-	IListVirtualDelegate,
-} from "../../../../../base/browser/ui/list/list.js";
-import { coalesce } from "../../../../../base/common/arrays.js";
-import { Codicon } from "../../../../../base/common/codicons.js";
-import { Emitter, type Event } from "../../../../../base/common/event.js";
-import {
-	Disposable,
-	DisposableStore,
-	type IDisposable,
-} from "../../../../../base/common/lifecycle.js";
-import {
-	matchesSomeScheme,
-	Schemas,
-} from "../../../../../base/common/network.js";
-import { basename } from "../../../../../base/common/path.js";
-import {
-	basenameOrAuthority,
-	isEqualAuthority,
-} from "../../../../../base/common/resources.js";
-import { ThemeIcon } from "../../../../../base/common/themables.js";
-import { URI } from "../../../../../base/common/uri.js";
-import { localize } from "../../../../../nls.js";
-import { IClipboardService } from "../../../../../platform/clipboard/common/clipboardService.js";
-import { IContextMenuService } from "../../../../../platform/contextview/browser/contextView.js";
-import { FileKind } from "../../../../../platform/files/common/files.js";
-import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
-import { ILabelService } from "../../../../../platform/label/common/label.js";
-import { WorkbenchList } from "../../../../../platform/list/browser/listService.js";
-import { IOpenerService } from "../../../../../platform/opener/common/opener.js";
-import { IProductService } from "../../../../../platform/product/common/productService.js";
-import { IThemeService } from "../../../../../platform/theme/common/themeService.js";
-import { fillEditorsDragData } from "../../../../browser/dnd.js";
-import {
-	ResourceLabels,
-	type IResourceLabel,
-} from "../../../../browser/labels.js";
-import { ColorScheme } from "../../../../browser/web.api.js";
-import { SETTINGS_AUTHORITY } from "../../../../services/preferences/common/preferences.js";
-import { createFileIconThemableTreeContainerScope } from "../../../files/browser/views/explorerView.js";
-import {
-	ChatResponseReferencePartStatusKind,
-	type IChatContentReference,
-	type IChatWarningMessage,
-} from "../../common/chatService.js";
-import { IChatVariablesService } from "../../common/chatVariables.js";
-import type {
-	IChatRendererContent,
-	IChatResponseViewModel,
-} from "../../common/chatViewModel.js";
-import type { ChatTreeItem } from "../chat.js";
-import { ResourcePool, type IDisposableReference } from "./chatCollections.js";
-import type { IChatContentPart } from "./chatContentParts.js";
+import * as dom from '../../../../../base/browser/dom.js';
+import { Button } from '../../../../../base/browser/ui/button/button.js';
+import { IListRenderer, IListVirtualDelegate } from '../../../../../base/browser/ui/list/list.js';
+import { coalesce } from '../../../../../base/common/arrays.js';
+import { Codicon } from '../../../../../base/common/codicons.js';
+import { Emitter, Event } from '../../../../../base/common/event.js';
+import { Disposable, DisposableStore, IDisposable } from '../../../../../base/common/lifecycle.js';
+import { matchesSomeScheme, Schemas } from '../../../../../base/common/network.js';
+import { basename } from '../../../../../base/common/path.js';
+import { basenameOrAuthority, isEqualAuthority } from '../../../../../base/common/resources.js';
+import { ThemeIcon } from '../../../../../base/common/themables.js';
+import { URI } from '../../../../../base/common/uri.js';
+import { localize } from '../../../../../nls.js';
+import { IClipboardService } from '../../../../../platform/clipboard/common/clipboardService.js';
+import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
+import { FileKind } from '../../../../../platform/files/common/files.js';
+import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+import { ILabelService } from '../../../../../platform/label/common/label.js';
+import { WorkbenchList } from '../../../../../platform/list/browser/listService.js';
+import { IOpenerService } from '../../../../../platform/opener/common/opener.js';
+import { IProductService } from '../../../../../platform/product/common/productService.js';
+import { IThemeService } from '../../../../../platform/theme/common/themeService.js';
+import { fillEditorsDragData } from '../../../../browser/dnd.js';
+import { IResourceLabel, ResourceLabels } from '../../../../browser/labels.js';
+import { ColorScheme } from '../../../../browser/web.api.js';
+import { SETTINGS_AUTHORITY } from '../../../../services/preferences/common/preferences.js';
+import { createFileIconThemableTreeContainerScope } from '../../../files/browser/views/explorerView.js';
+import { ChatResponseReferencePartStatusKind, IChatContentReference, IChatWarningMessage } from '../../common/chatService.js';
+import { IChatVariablesService } from '../../common/chatVariables.js';
+import { IChatRendererContent, IChatResponseViewModel } from '../../common/chatViewModel.js';
+import { ChatTreeItem } from '../chat.js';
+import { IDisposableReference, ResourcePool } from './chatCollections.js';
+import { IChatContentPart } from './chatContentParts.js';
 
 const $ = dom.$;
 
@@ -66,14 +43,9 @@ export interface IChatReferenceListItem extends IChatContentReference {
 	title?: string;
 }
 
-export type IChatCollapsibleListItem =
-	| IChatReferenceListItem
-	| IChatWarningMessage;
+export type IChatCollapsibleListItem = IChatReferenceListItem | IChatWarningMessage;
 
-export class ChatCollapsibleListContentPart
-	extends Disposable
-	implements IChatContentPart
-{
+export class ChatCollapsibleListContentPart extends Disposable implements IChatContentPart {
 	public readonly domNode: HTMLElement;
 
 	private readonly _onDidChangeHeight = this._register(new Emitter<void>());
@@ -252,27 +224,13 @@ export class ChatCollapsibleListContentPart
 		list.splice(0, list.length, data);
 	}
 
-	hasSameContent(
-		other: IChatRendererContent,
-		followingContent: IChatRendererContent[],
-		element: ChatTreeItem,
-	): boolean {
-		return (
-			(other.kind === "references" &&
-				other.references.length === this.data.length) ||
-			(other.kind === "codeCitations" &&
-				other.citations.length === this.data.length)
-		);
+	hasSameContent(other: IChatRendererContent, followingContent: IChatRendererContent[], element: ChatTreeItem): boolean {
+		return other.kind === 'references' && other.references.length === this.data.length ||
+			other.kind === 'codeCitations' && other.citations.length === this.data.length;
 	}
 
-	private updateAriaLabel(
-		element: HTMLElement,
-		label: string,
-		expanded?: boolean,
-	): void {
-		element.ariaLabel = expanded
-			? localize("usedReferencesExpanded", "{0}, expanded", label)
-			: localize("usedReferencesCollapsed", "{0}, collapsed", label);
+	private updateAriaLabel(element: HTMLElement, label: string, expanded?: boolean): void {
+		element.ariaLabel = expanded ? localize('usedReferencesExpanded', "{0}, expanded", label) : localize('usedReferencesCollapsed', "{0}, collapsed", label);
 	}
 
 	addDisposable(disposable: IDisposable): void {
@@ -299,26 +257,17 @@ export class CollapsibleListPool extends Disposable {
 	}
 
 	private listFactory(): WorkbenchList<IChatCollapsibleListItem> {
-		const resourceLabels = this._register(
-			this.instantiationService.createInstance(ResourceLabels, {
-				onDidChangeVisibility: this._onDidChangeVisibility,
-			}),
-		);
+		const resourceLabels = this._register(this.instantiationService.createInstance(ResourceLabels, { onDidChangeVisibility: this._onDidChangeVisibility }));
 
-		const container = $(".chat-used-context-list");
-		this._register(
-			createFileIconThemableTreeContainerScope(
-				container,
-				this.themeService,
-			),
-		);
+		const container = $('.chat-used-context-list');
+		this._register(createFileIconThemableTreeContainerScope(container, this.themeService));
 
 		const getDragURI = (element: IChatCollapsibleListItem): URI | null => {
-			if (element.kind === "warning") {
+			if (element.kind === 'warning') {
 				return null;
 			}
 			const { reference } = element;
-			if (typeof reference === "string" || "variableName" in reference) {
+			if (typeof reference === 'string' || 'variableName' in reference) {
 				return null;
 			} else if (URI.isUri(reference)) {
 				return reference;
@@ -329,26 +278,21 @@ export class CollapsibleListPool extends Disposable {
 
 		const list = this.instantiationService.createInstance(
 			WorkbenchList<IChatCollapsibleListItem>,
-			"ChatListRenderer",
+			'ChatListRenderer',
 			container,
 			new CollapsibleListDelegate(),
-			[
-				this.instantiationService.createInstance(
-					CollapsibleListRenderer,
-					resourceLabels,
-				),
-			],
+			[this.instantiationService.createInstance(CollapsibleListRenderer, resourceLabels)],
 			{
 				alwaysConsumeMouseWheel: false,
 				accessibilityProvider: {
 					getAriaLabel: (element: IChatCollapsibleListItem) => {
-						if (element.kind === "warning") {
+						if (element.kind === 'warning') {
 							return element.content.value;
 						}
 						const reference = element.reference;
-						if (typeof reference === "string") {
+						if (typeof reference === 'string') {
 							return reference;
-						} else if ("variableName" in reference) {
+						} else if ('variableName' in reference) {
 							return reference.variableName;
 						} else if (URI.isUri(reference)) {
 							return basename(reference.path);
@@ -357,52 +301,34 @@ export class CollapsibleListPool extends Disposable {
 						}
 					},
 
-					getWidgetAriaLabel: () =>
-						localize(
-							"chatCollapsibleList",
-							"Collapsible Chat List",
-						),
+					getWidgetAriaLabel: () => localize('chatCollapsibleList', "Collapsible Chat List")
 				},
 				dnd: {
-					getDragURI: (element: IChatCollapsibleListItem) =>
-						getDragURI(element)?.toString() ?? null,
+					getDragURI: (element: IChatCollapsibleListItem) => getDragURI(element)?.toString() ?? null,
 					getDragLabel: (elements, originalEvent) => {
 						const uris: URI[] = coalesce(elements.map(getDragURI));
 						if (!uris.length) {
 							return undefined;
 						} else if (uris.length === 1) {
-							return this.labelService.getUriLabel(uris[0], {
-								relative: true,
-							});
+							return this.labelService.getUriLabel(uris[0], { relative: true });
 						} else {
 							return `${uris.length}`;
 						}
 					},
-					dispose: () => {},
+					dispose: () => { },
 					onDragOver: () => false,
-					drop: () => {},
+					drop: () => { },
 					onDragStart: (data, originalEvent) => {
 						try {
-							const elements =
-								data.getData() as IChatCollapsibleListItem[];
-							const uris: URI[] = coalesce(
-								elements.map(getDragURI),
-							);
-							this.instantiationService.invokeFunction(
-								(accessor) =>
-									fillEditorsDragData(
-										accessor,
-										uris,
-										originalEvent,
-									),
-							);
+							const elements = data.getData() as IChatCollapsibleListItem[];
+							const uris: URI[] = coalesce(elements.map(getDragURI));
+							this.instantiationService.invokeFunction(accessor => fillEditorsDragData(accessor, uris, originalEvent));
 						} catch {
 							// noop
 						}
 					},
 				},
-			},
-		);
+			});
 
 		return list;
 	}
@@ -416,14 +342,12 @@ export class CollapsibleListPool extends Disposable {
 			dispose: () => {
 				stale = true;
 				this._pool.release(object);
-			},
+			}
 		};
 	}
 }
 
-class CollapsibleListDelegate
-	implements IListVirtualDelegate<IChatCollapsibleListItem>
-{
+class CollapsibleListDelegate implements IListVirtualDelegate<IChatCollapsibleListItem> {
 	getHeight(element: IChatCollapsibleListItem): number {
 		return 22;
 	}
@@ -438,11 +362,8 @@ interface ICollapsibleListTemplate {
 	templateDisposables: IDisposable;
 }
 
-class CollapsibleListRenderer
-	implements
-		IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate>
-{
-	static TEMPLATE_ID = "chatCollapsibleListRenderer";
+class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate> {
+	static TEMPLATE_ID = 'chatCollapsibleListRenderer';
 	readonly templateId: string = CollapsibleListRenderer.TEMPLATE_ID;
 
 	constructor(
@@ -455,161 +376,82 @@ class CollapsibleListRenderer
 
 	renderTemplate(container: HTMLElement): ICollapsibleListTemplate {
 		const templateDisposables = new DisposableStore();
-		const label = templateDisposables.add(
-			this.labels.create(container, {
-				supportHighlights: true,
-				supportIcons: true,
-			}),
-		);
+		const label = templateDisposables.add(this.labels.create(container, { supportHighlights: true, supportIcons: true }));
 		return { templateDisposables, label };
 	}
 
-	private getReferenceIcon(
-		data: IChatContentReference,
-	): URI | ThemeIcon | undefined {
+
+	private getReferenceIcon(data: IChatContentReference): URI | ThemeIcon | undefined {
 		if (ThemeIcon.isThemeIcon(data.iconPath)) {
 			return data.iconPath;
 		} else {
-			return this.themeService.getColorTheme().type ===
-				ColorScheme.DARK && data.iconPath?.dark
+			return this.themeService.getColorTheme().type === ColorScheme.DARK && data.iconPath?.dark
 				? data.iconPath?.dark
 				: data.iconPath?.light;
 		}
 	}
 
-	renderElement(
-		data: IChatCollapsibleListItem,
-		index: number,
-		templateData: ICollapsibleListTemplate,
-		height: number | undefined,
-	): void {
-		if (data.kind === "warning") {
-			templateData.label.setResource(
-				{ name: data.content.value },
-				{ icon: Codicon.warning },
-			);
+	renderElement(data: IChatCollapsibleListItem, index: number, templateData: ICollapsibleListTemplate, height: number | undefined): void {
+		if (data.kind === 'warning') {
+			templateData.label.setResource({ name: data.content.value }, { icon: Codicon.warning });
 			return;
 		}
 
 		const reference = data.reference;
 		const icon = this.getReferenceIcon(data);
-		templateData.label.element.style.display = "flex";
-		if (typeof reference === "object" && "variableName" in reference) {
+		templateData.label.element.style.display = 'flex';
+		if (typeof reference === 'object' && 'variableName' in reference) {
 			if (reference.value) {
-				const uri = URI.isUri(reference.value)
-					? reference.value
-					: reference.value.uri;
+				const uri = URI.isUri(reference.value) ? reference.value : reference.value.uri;
 				templateData.label.setResource(
 					{
 						resource: uri,
 						name: basenameOrAuthority(uri),
 						description: `#${reference.variableName}`,
-						range:
-							"range" in reference.value
-								? reference.value.range
-								: undefined,
-					},
-					{
-						icon,
-						title: data.options?.status?.description ?? data.title,
-					},
-				);
+						range: 'range' in reference.value ? reference.value.range : undefined,
+					}, { icon, title: data.options?.status?.description ?? data.title });
 			} else {
-				const variable = this.chatVariablesService.getVariable(
-					reference.variableName,
-				);
+				const variable = this.chatVariablesService.getVariable(reference.variableName);
 				// This is a hack to get chat attachment ThemeIcons to render for resource labels
-				const asThemeIcon = variable?.icon
-					? `$(${variable.icon.id}) `
-					: "";
+				const asThemeIcon = variable?.icon ? `$(${variable.icon.id}) ` : '';
 				const asVariableName = `#${reference.variableName}`; // Fallback, shouldn't really happen
 				const label = `${asThemeIcon}${variable?.fullName ?? asVariableName}`;
-				templateData.label.setLabel(label, asVariableName, {
-					title:
-						data.options?.status?.description ??
-						variable?.description,
-				});
+				templateData.label.setLabel(label, asVariableName, { title: data.options?.status?.description ?? variable?.description });
 			}
-		} else if (typeof reference === "string") {
-			templateData.label.setLabel(reference, undefined, {
-				iconPath: URI.isUri(icon) ? icon : undefined,
-				title: data.options?.status?.description ?? data.title,
-			});
+		} else if (typeof reference === 'string') {
+			templateData.label.setLabel(reference, undefined, { iconPath: URI.isUri(icon) ? icon : undefined, title: data.options?.status?.description ?? data.title });
+
 		} else {
-			const uri = "uri" in reference ? reference.uri : reference;
-			if (
-				uri.scheme === "https" &&
-				isEqualAuthority(uri.authority, "github.com") &&
-				uri.path.includes("/tree/")
-			) {
+			const uri = 'uri' in reference ? reference.uri : reference;
+			if (uri.scheme === 'https' && isEqualAuthority(uri.authority, 'github.com') && uri.path.includes('/tree/')) {
 				// Parse a nicer label for GitHub URIs that point at a particular commit + file
-				const label = uri.path.split("/").slice(1, 3).join("/");
-				const description = uri.path.split("/").slice(5).join("/");
-				templateData.label.setResource(
-					{ resource: uri, name: label, description },
-					{ icon: Codicon.github, title: data.title },
-				);
-			} else if (
-				uri.scheme === this.productService.urlProtocol &&
-				isEqualAuthority(uri.authority, SETTINGS_AUTHORITY)
-			) {
+				const label = uri.path.split('/').slice(1, 3).join('/');
+				const description = uri.path.split('/').slice(5).join('/');
+				templateData.label.setResource({ resource: uri, name: label, description }, { icon: Codicon.github, title: data.title });
+			} else if (uri.scheme === this.productService.urlProtocol && isEqualAuthority(uri.authority, SETTINGS_AUTHORITY)) {
 				// a nicer label for settings URIs
 				const settingId = uri.path.substring(1);
-				templateData.label.setResource(
-					{ resource: uri, name: settingId },
-					{
-						icon: Codicon.settingsGear,
-						title: localize(
-							"setting.hover",
-							"Open setting '{0}'",
-							settingId,
-						),
-					},
-				);
-			} else if (
-				matchesSomeScheme(
-					uri,
-					Schemas.mailto,
-					Schemas.http,
-					Schemas.https,
-				)
-			) {
-				templateData.label.setResource(
-					{ resource: uri, name: uri.toString() },
-					{
-						icon: icon ?? Codicon.globe,
-						title:
-							data.options?.status?.description ??
-							data.title ??
-							uri.toString(),
-					},
-				);
+				templateData.label.setResource({ resource: uri, name: settingId }, { icon: Codicon.settingsGear, title: localize('setting.hover', "Open setting '{0}'", settingId) });
+			} else if (matchesSomeScheme(uri, Schemas.mailto, Schemas.http, Schemas.https)) {
+				templateData.label.setResource({ resource: uri, name: uri.toString() }, { icon: icon ?? Codicon.globe, title: data.options?.status?.description ?? data.title ?? uri.toString() });
 			} else {
 				templateData.label.setFile(uri, {
 					fileKind: FileKind.FILE,
 					// Should not have this live-updating data on a historical reference
 					fileDecorations: { badges: false, colors: false },
-					range: "range" in reference ? reference.range : undefined,
-					title: data.options?.status?.description ?? data.title,
+					range: 'range' in reference ? reference.range : undefined,
+					title: data.options?.status?.description ?? data.title
 				});
 			}
 		}
 
-		for (const selector of [
-			".monaco-icon-suffix-container",
-			".monaco-icon-name-container",
-		]) {
+		for (const selector of ['.monaco-icon-suffix-container', '.monaco-icon-name-container']) {
 			const element = templateData.label.element.querySelector(selector);
 			if (element) {
-				if (
-					data.options?.status?.kind ===
-						ChatResponseReferencePartStatusKind.Omitted ||
-					data.options?.status?.kind ===
-						ChatResponseReferencePartStatusKind.Partial
-				) {
-					element.classList.add("warning");
+				if (data.options?.status?.kind === ChatResponseReferencePartStatusKind.Omitted || data.options?.status?.kind === ChatResponseReferencePartStatusKind.Partial) {
+					element.classList.add('warning');
 				} else {
-					element.classList.remove("warning");
+					element.classList.remove('warning');
 				}
 			}
 		}

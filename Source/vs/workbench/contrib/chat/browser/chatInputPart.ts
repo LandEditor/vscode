@@ -3,91 +3,61 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as dom from "../../../../base/browser/dom.js";
-import { DEFAULT_FONT_FAMILY } from "../../../../base/browser/fonts.js";
-import type { IHistoryNavigationWidget } from "../../../../base/browser/history.js";
-import { StandardKeyboardEvent } from "../../../../base/browser/keyboardEvent.js";
-import * as aria from "../../../../base/browser/ui/aria/aria.js";
-import { Button } from "../../../../base/browser/ui/button/button.js";
-import type { IAction } from "../../../../base/common/actions.js";
-import { Codicon } from "../../../../base/common/codicons.js";
-import { Emitter } from "../../../../base/common/event.js";
-import { HistoryNavigator2 } from "../../../../base/common/history.js";
-import { KeyCode } from "../../../../base/common/keyCodes.js";
-import {
-	Disposable,
-	DisposableStore,
-} from "../../../../base/common/lifecycle.js";
-import { basename, dirname } from "../../../../base/common/path.js";
-import { isMacintosh } from "../../../../base/common/platform.js";
-import { URI } from "../../../../base/common/uri.js";
-import type { IEditorConstructionOptions } from "../../../../editor/browser/config/editorConfiguration.js";
-import { EditorExtensionsRegistry } from "../../../../editor/browser/editorExtensions.js";
-import { CodeEditorWidget } from "../../../../editor/browser/widget/codeEditor/codeEditorWidget.js";
-import type { IDimension } from "../../../../editor/common/core/dimension.js";
-import type { IPosition } from "../../../../editor/common/core/position.js";
-import { Range } from "../../../../editor/common/core/range.js";
-import type { ITextModel } from "../../../../editor/common/model.js";
-import { IModelService } from "../../../../editor/common/services/model.js";
-import { ContentHoverController } from "../../../../editor/contrib/hover/browser/contentHoverController.js";
-import { GlyphHoverController } from "../../../../editor/contrib/hover/browser/glyphHoverController.js";
-import { localize } from "../../../../nls.js";
-import { IAccessibilityService } from "../../../../platform/accessibility/common/accessibility.js";
-import { DropdownWithPrimaryActionViewItem } from "../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js";
-import { createAndFillInActionBarActions } from "../../../../platform/actions/browser/menuEntryActionViewItem.js";
-import {
-	HiddenItemStrategy,
-	MenuWorkbenchToolBar,
-} from "../../../../platform/actions/browser/toolbar.js";
-import {
-	IMenuService,
-	MenuId,
-	MenuItemAction,
-} from "../../../../platform/actions/common/actions.js";
-import { IConfigurationService } from "../../../../platform/configuration/common/configuration.js";
-import {
-	IContextKeyService,
-	type IContextKey,
-} from "../../../../platform/contextkey/common/contextkey.js";
-import { IContextMenuService } from "../../../../platform/contextview/browser/contextView.js";
-import { FileKind } from "../../../../platform/files/common/files.js";
-import { registerAndCreateHistoryNavigationContext } from "../../../../platform/history/browser/contextScopedHistoryWidget.js";
-import { IInstantiationService } from "../../../../platform/instantiation/common/instantiation.js";
-import { ServiceCollection } from "../../../../platform/instantiation/common/serviceCollection.js";
-import { IKeybindingService } from "../../../../platform/keybinding/common/keybinding.js";
-import { ILogService } from "../../../../platform/log/common/log.js";
-import { INotificationService } from "../../../../platform/notification/common/notification.js";
-import { IThemeService } from "../../../../platform/theme/common/themeService.js";
-import { ResourceLabels } from "../../../browser/labels.js";
-import { AccessibilityVerbositySettingId } from "../../accessibility/browser/accessibilityConfiguration.js";
-import { AccessibilityCommandId } from "../../accessibility/common/accessibilityCommands.js";
-import {
-	getSimpleCodeEditorWidgetOptions,
-	getSimpleEditorOptions,
-	setupSimpleEditorSelectionStyling,
-} from "../../codeEditor/browser/simpleEditorOptions.js";
-import { ChatAgentLocation, IChatAgentService } from "../common/chatAgents.js";
-import {
-	CONTEXT_CHAT_INPUT_CURSOR_AT_TOP,
-	CONTEXT_CHAT_INPUT_HAS_FOCUS,
-	CONTEXT_CHAT_INPUT_HAS_TEXT,
-	CONTEXT_IN_CHAT_INPUT,
-} from "../common/chatContextKeys.js";
-import type { IChatRequestVariableEntry } from "../common/chatModel.js";
-import type { IChatFollowup } from "../common/chatService.js";
-import type { IChatResponseViewModel } from "../common/chatViewModel.js";
-import {
-	IChatWidgetHistoryService,
-	type IChatHistoryEntry,
-} from "../common/chatWidgetHistoryService.js";
-import {
-	CancelAction,
-	ChatSubmitSecondaryAgentAction,
-	SubmitAction,
-	type IChatExecuteActionContext,
-} from "./actions/chatExecuteActions.js";
-import type { IChatWidget } from "./chat.js";
-import { ChatFollowups } from "./chatFollowups.js";
+import * as dom from '../../../../base/browser/dom.js';
+import { DEFAULT_FONT_FAMILY } from '../../../../base/browser/fonts.js';
+import { IHistoryNavigationWidget } from '../../../../base/browser/history.js';
+import { StandardKeyboardEvent } from '../../../../base/browser/keyboardEvent.js';
+import * as aria from '../../../../base/browser/ui/aria/aria.js';
+import { Button } from '../../../../base/browser/ui/button/button.js';
+import { IAction } from '../../../../base/common/actions.js';
+import { Codicon } from '../../../../base/common/codicons.js';
+import { Emitter } from '../../../../base/common/event.js';
+import { HistoryNavigator2 } from '../../../../base/common/history.js';
+import { KeyCode } from '../../../../base/common/keyCodes.js';
+import { Disposable, DisposableStore } from '../../../../base/common/lifecycle.js';
+import { basename, dirname } from '../../../../base/common/path.js';
+import { isMacintosh } from '../../../../base/common/platform.js';
+import { URI } from '../../../../base/common/uri.js';
+import { IEditorConstructionOptions } from '../../../../editor/browser/config/editorConfiguration.js';
+import { EditorExtensionsRegistry } from '../../../../editor/browser/editorExtensions.js';
+import { CodeEditorWidget } from '../../../../editor/browser/widget/codeEditor/codeEditorWidget.js';
+import { IDimension } from '../../../../editor/common/core/dimension.js';
+import { IPosition } from '../../../../editor/common/core/position.js';
+import { Range } from '../../../../editor/common/core/range.js';
+import { ITextModel } from '../../../../editor/common/model.js';
+import { IModelService } from '../../../../editor/common/services/model.js';
+import { ContentHoverController } from '../../../../editor/contrib/hover/browser/contentHoverController.js';
+import { GlyphHoverController } from '../../../../editor/contrib/hover/browser/glyphHoverController.js';
+import { localize } from '../../../../nls.js';
+import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
+import { DropdownWithPrimaryActionViewItem } from '../../../../platform/actions/browser/dropdownWithPrimaryActionViewItem.js';
+import { createAndFillInActionBarActions } from '../../../../platform/actions/browser/menuEntryActionViewItem.js';
+import { HiddenItemStrategy, MenuWorkbenchToolBar } from '../../../../platform/actions/browser/toolbar.js';
+import { IMenuService, MenuId, MenuItemAction } from '../../../../platform/actions/common/actions.js';
+import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
+import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
+import { FileKind } from '../../../../platform/files/common/files.js';
+import { registerAndCreateHistoryNavigationContext } from '../../../../platform/history/browser/contextScopedHistoryWidget.js';
+import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
+import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
+import { IKeybindingService } from '../../../../platform/keybinding/common/keybinding.js';
+import { ILogService } from '../../../../platform/log/common/log.js';
+import { INotificationService } from '../../../../platform/notification/common/notification.js';
+import { IThemeService } from '../../../../platform/theme/common/themeService.js';
+import { ResourceLabels } from '../../../browser/labels.js';
+import { AccessibilityVerbositySettingId } from '../../accessibility/browser/accessibilityConfiguration.js';
+import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
+import { getSimpleCodeEditorWidgetOptions, getSimpleEditorOptions, setupSimpleEditorSelectionStyling } from '../../codeEditor/browser/simpleEditorOptions.js';
+import { ChatAgentLocation, IChatAgentService } from '../common/chatAgents.js';
+import { CONTEXT_CHAT_INPUT_CURSOR_AT_TOP, CONTEXT_CHAT_INPUT_HAS_FOCUS, CONTEXT_CHAT_INPUT_HAS_TEXT, CONTEXT_IN_CHAT_INPUT } from '../common/chatContextKeys.js';
+import { IChatRequestVariableEntry } from '../common/chatModel.js';
+import { IChatFollowup } from '../common/chatService.js';
+import { IChatResponseViewModel } from '../common/chatViewModel.js';
+import { IChatHistoryEntry, IChatWidgetHistoryService } from '../common/chatWidgetHistoryService.js';
+import { CancelAction, ChatSubmitSecondaryAgentAction, IChatExecuteActionContext, SubmitAction } from './actions/chatExecuteActions.js';
+import { IChatWidget } from './chat.js';
+import { ChatFollowups } from './chatFollowups.js';
 
 const $ = dom.$;
 
@@ -95,7 +65,7 @@ const INPUT_EDITOR_MAX_HEIGHT = 250;
 
 interface IChatInputPartOptions {
 	renderFollowups: boolean;
-	renderStyle?: "default" | "compact";
+	renderStyle?: 'default' | 'compact';
 	menus: {
 		executeToolbar: MenuId;
 		inputSideToolbar?: MenuId;
@@ -104,11 +74,8 @@ interface IChatInputPartOptions {
 	editorOverflowWidgetsDomNode?: HTMLElement;
 }
 
-export class ChatInputPart
-	extends Disposable
-	implements IHistoryNavigationWidget
-{
-	static readonly INPUT_SCHEME = "chatSessionInput";
+export class ChatInputPart extends Disposable implements IHistoryNavigationWidget {
+	static readonly INPUT_SCHEME = 'chatSessionInput';
 	private static _counter = 0;
 
 	private _onDidLoadInputState = this._register(new Emitter<any>());
@@ -123,36 +90,21 @@ export class ChatInputPart
 	private _onDidBlur = this._register(new Emitter<void>());
 	readonly onDidBlur = this._onDidBlur.event;
 
-	private _onDidChangeContext = this._register(
-		new Emitter<{
-			removed?: IChatRequestVariableEntry[];
-			added?: IChatRequestVariableEntry[];
-		}>(),
-	);
+	private _onDidChangeContext = this._register(new Emitter<{ removed?: IChatRequestVariableEntry[]; added?: IChatRequestVariableEntry[] }>());
 	readonly onDidChangeContext = this._onDidChangeContext.event;
 
-	private _onDidAcceptFollowup = this._register(
-		new Emitter<{
-			followup: IChatFollowup;
-			response: IChatResponseViewModel | undefined;
-		}>(),
-	);
+	private _onDidAcceptFollowup = this._register(new Emitter<{ followup: IChatFollowup; response: IChatResponseViewModel | undefined }>());
 	readonly onDidAcceptFollowup = this._onDidAcceptFollowup.event;
 
 	public get attachedContext(): ReadonlySet<IChatRequestVariableEntry> {
 		return this._attachedContext;
 	}
 
-	private _indexOfLastAttachedContextDeletedWithKeyboard = -1;
+	private _indexOfLastAttachedContextDeletedWithKeyboard: number = -1;
 	private readonly _attachedContext = new Set<IChatRequestVariableEntry>();
 
-	private readonly _onDidChangeVisibility = this._register(
-		new Emitter<boolean>(),
-	);
-	private readonly _contextResourceLabels =
-		this.instantiationService.createInstance(ResourceLabels, {
-			onDidChangeVisibility: this._onDidChangeVisibility.event,
-		});
+	private readonly _onDidChangeVisibility = this._register(new Emitter<boolean>());
+	private readonly _contextResourceLabels = this.instantiationService.createInstance(ResourceLabels, { onDidChangeVisibility: this._onDidChangeVisibility.event });
 
 	private readonly inputEditorMaxHeight: number;
 	private inputEditorHeight = 0;
@@ -161,16 +113,12 @@ export class ChatInputPart
 	private inputSideToolbarContainer?: HTMLElement;
 
 	private followupsContainer!: HTMLElement;
-	private readonly followupsDisposables = this._register(
-		new DisposableStore(),
-	);
+	private readonly followupsDisposables = this._register(new DisposableStore());
 
 	private attachedContextContainer!: HTMLElement;
-	private readonly attachedContextDisposables = this._register(
-		new DisposableStore(),
-	);
+	private readonly attachedContextDisposables = this._register(new DisposableStore());
 
-	private _inputPartHeight = 0;
+	private _inputPartHeight: number = 0;
 	get inputPartHeight() {
 		return this._inputPartHeight;
 	}
@@ -196,9 +144,7 @@ export class ChatInputPart
 	private cachedDimensions: dom.Dimension | undefined;
 	private cachedToolbarWidth: number | undefined;
 
-	readonly inputUri = URI.parse(
-		`${ChatInputPart.INPUT_SCHEME}:input-${ChatInputPart._counter++}`,
-	);
+	readonly inputUri = URI.parse(`${ChatInputPart.INPUT_SCHEME}:input-${ChatInputPart._counter++}`);
 
 	constructor(
 		// private readonly editorOptions: ChatEditorOptions, // TODO this should be used
@@ -262,32 +208,19 @@ export class ChatInputPart
 	private loadHistory(): HistoryNavigator2<IChatHistoryEntry> {
 		const history = this.historyService.getHistory(this.location);
 		if (history.length === 0) {
-			history.push({ text: "" });
+			history.push({ text: '' });
 		}
 
 		return new HistoryNavigator2(history, 50, historyKeyFn);
 	}
 
 	private _getAriaLabel(): string {
-		const verbose = this.configurationService.getValue<boolean>(
-			AccessibilityVerbositySettingId.Chat,
-		);
+		const verbose = this.configurationService.getValue<boolean>(AccessibilityVerbositySettingId.Chat);
 		if (verbose) {
-			const kbLabel = this.keybindingService
-				.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)
-				?.getLabel();
-			return kbLabel
-				? localize(
-						"actions.chat.accessibiltyHelp",
-						"Chat Input,  Type to ask questions or type / for topics, press enter to send out the request. Use {0} for Chat Accessibility Help.",
-						kbLabel,
-					)
-				: localize(
-						"chatInput.accessibilityHelpNoKb",
-						"Chat Input,  Type code here and press Enter to run. Use the Chat Accessibility Help command for more information.",
-					);
+			const kbLabel = this.keybindingService.lookupKeybinding(AccessibilityCommandId.OpenAccessibilityHelp)?.getLabel();
+			return kbLabel ? localize('actions.chat.accessibiltyHelp', "Chat Input,  Type to ask questions or type / for topics, press enter to send out the request. Use {0} for Chat Accessibility Help.", kbLabel) : localize('chatInput.accessibilityHelpNoKb', "Chat Input,  Type code here and press Enter to run. Use the Chat Accessibility Help command for more information.");
 		}
-		return localize("chatInput", "Chat Input");
+		return localize('chatInput', "Chat Input");
 	}
 
 	updateState(inputState: Object): void {
@@ -295,10 +228,7 @@ export class ChatInputPart
 			return;
 		}
 
-		const newEntry = {
-			text: this._inputEditor.getValue(),
-			state: inputState,
-		};
+		const newEntry = { text: this._inputEditor.getValue(), state: inputState };
 
 		if (this.history.isAtEnd()) {
 			// The last history entry should always be the current input value
@@ -310,15 +240,9 @@ export class ChatInputPart
 		}
 	}
 
-	initForNewChatModel(
-		inputValue: string | undefined,
-		inputState: Object,
-	): void {
+	initForNewChatModel(inputValue: string | undefined, inputState: Object): void {
 		this.history = this.loadHistory();
-		this.history.add({
-			text: inputValue ?? this.history.current().text,
-			state: inputState,
-		});
+		this.history.add({ text: inputValue ?? this.history.current().text, state: inputState });
 
 		if (inputValue) {
 			this.setValue(inputValue, false);
@@ -326,13 +250,8 @@ export class ChatInputPart
 	}
 
 	logInputHistory(): void {
-		const historyStr = [...this.history]
-			.map((entry) => JSON.stringify(entry))
-			.join("\n");
-		this.logService.info(
-			`[${this.location}] Chat input history:`,
-			historyStr,
-		);
+		const historyStr = [...this.history].map(entry => JSON.stringify(entry)).join('\n');
+		this.logService.info(`[${this.location}] Chat input history:`, historyStr);
 	}
 
 	setVisible(visible: boolean): void {
@@ -347,14 +266,11 @@ export class ChatInputPart
 		const inputState = this.getInputState();
 		if (this.history.isAtEnd()) {
 			this.saveCurrentValue(inputState);
-		} else if (
-			!this.history.has({
-				text: this._inputEditor.getValue(),
-				state: inputState,
-			})
-		) {
-			this.saveCurrentValue(inputState);
-			this.history.resetCursor();
+		} else {
+			if (!this.history.has({ text: this._inputEditor.getValue(), state: inputState })) {
+				this.saveCurrentValue(inputState);
+				this.history.resetCursor();
+			}
 		}
 
 		this.navigateHistory(true);
@@ -364,23 +280,19 @@ export class ChatInputPart
 		const inputState = this.getInputState();
 		if (this.history.isAtEnd()) {
 			return;
-		} else if (
-			!this.history.has({
-				text: this._inputEditor.getValue(),
-				state: inputState,
-			})
-		) {
-			this.saveCurrentValue(inputState);
-			this.history.resetCursor();
+		} else {
+			if (!this.history.has({ text: this._inputEditor.getValue(), state: inputState })) {
+				this.saveCurrentValue(inputState);
+				this.history.resetCursor();
+			}
 		}
 
 		this.navigateHistory(false);
 	}
 
 	private navigateHistory(previous: boolean): void {
-		const historyEntry = previous
-			? this.history.previous()
-			: this.history.next();
+		const historyEntry = previous ?
+			this.history.previous() : this.history.next();
 
 		aria.status(historyEntry.text);
 
@@ -404,10 +316,7 @@ export class ChatInputPart
 	setValue(value: string, transient: boolean): void {
 		this.inputEditor.setValue(value);
 		// always leave cursor at the end
-		this.inputEditor.setPosition({
-			lineNumber: 1,
-			column: value.length + 1,
-		});
+		this.inputEditor.setPosition({ lineNumber: 1, column: value.length + 1 });
 
 		if (!transient) {
 			this.saveCurrentValue(this.getInputState());
@@ -415,10 +324,7 @@ export class ChatInputPart
 	}
 
 	private saveCurrentValue(inputState: any): void {
-		const newEntry = {
-			text: this._inputEditor.getValue(),
-			state: inputState,
-		};
+		const newEntry = { text: this._inputEditor.getValue(), state: inputState };
 		this.history.replaceLast(newEntry);
 	}
 
@@ -437,25 +343,19 @@ export class ChatInputPart
 	async acceptInput(isUserQuery?: boolean): Promise<void> {
 		if (isUserQuery) {
 			const userQuery = this._inputEditor.getValue();
-			const entry: IChatHistoryEntry = {
-				text: userQuery,
-				state: this.getInputState(),
-			};
+			const entry: IChatHistoryEntry = { text: userQuery, state: this.getInputState() };
 			this.history.replaceLast(entry);
-			this.history.add({ text: "" });
+			this.history.add({ text: '' });
 		}
 
 		// Clear attached context, fire event to clear input state, and clear the input editor
 		this._attachedContext.clear();
 		this._onDidLoadInputState.fire({});
-		if (
-			this.accessibilityService.isScreenReaderOptimized() &&
-			isMacintosh
-		) {
+		if (this.accessibilityService.isScreenReaderOptimized() && isMacintosh) {
 			this._acceptInputForVoiceover();
 		} else {
 			this._inputEditor.focus();
-			this._inputEditor.setValue("");
+			this._inputEditor.setValue('');
 		}
 	}
 
@@ -467,15 +367,12 @@ export class ChatInputPart
 		// Remove the input editor from the DOM temporarily to prevent VoiceOver
 		// from reading the cleared text (the request) to the user.
 		domNode.remove();
-		this._inputEditor.setValue("");
+		this._inputEditor.setValue('');
 		this._inputEditorElement.appendChild(domNode);
 		this._inputEditor.focus();
 	}
 
-	attachContext(
-		overwrite: boolean,
-		...contentReferences: IChatRequestVariableEntry[]
-	): void {
+	attachContext(overwrite: boolean, ...contentReferences: IChatRequestVariableEntry[]): void {
 		const removed = [];
 		if (overwrite) {
 			removed.push(...Array.from(this._attachedContext));
@@ -492,281 +389,137 @@ export class ChatInputPart
 			this.initAttachedContext(this.attachedContextContainer);
 
 			if (!overwrite) {
-				this._onDidChangeContext.fire({
-					removed,
-					added: contentReferences,
-				});
+				this._onDidChangeContext.fire({ removed, added: contentReferences });
 			}
 		}
 	}
 
 	render(container: HTMLElement, initialValue: string, widget: IChatWidget) {
-		this.container = dom.append(container, $(".interactive-input-part"));
-		this.container.classList.toggle(
-			"compact",
-			this.options.renderStyle === "compact",
-		);
+		this.container = dom.append(container, $('.interactive-input-part'));
+		this.container.classList.toggle('compact', this.options.renderStyle === 'compact');
 
 		let inputContainer: HTMLElement;
 		let inputAndSideToolbar: HTMLElement;
-		if (this.options.renderStyle === "compact") {
-			inputAndSideToolbar = dom.append(
-				this.container,
-				$(".interactive-input-and-side-toolbar"),
-			);
-			this.followupsContainer = dom.append(
-				this.container,
-				$(".interactive-input-followups"),
-			);
-			inputContainer = dom.append(
-				inputAndSideToolbar,
-				$(".interactive-input-and-execute-toolbar"),
-			);
-			this.attachedContextContainer = dom.append(
-				this.container,
-				$(".chat-attached-context"),
-			);
+		if (this.options.renderStyle === 'compact') {
+			inputAndSideToolbar = dom.append(this.container, $('.interactive-input-and-side-toolbar'));
+			this.followupsContainer = dom.append(this.container, $('.interactive-input-followups'));
+			inputContainer = dom.append(inputAndSideToolbar, $('.interactive-input-and-execute-toolbar'));
+			this.attachedContextContainer = dom.append(this.container, $('.chat-attached-context'));
 		} else {
-			this.followupsContainer = dom.append(
-				this.container,
-				$(".interactive-input-followups"),
-			);
-			this.attachedContextContainer = dom.append(
-				this.container,
-				$(".chat-attached-context"),
-			);
-			inputAndSideToolbar = dom.append(
-				this.container,
-				$(".interactive-input-and-side-toolbar"),
-			);
-			inputContainer = dom.append(
-				inputAndSideToolbar,
-				$(".interactive-input-and-execute-toolbar"),
-			);
+			this.followupsContainer = dom.append(this.container, $('.interactive-input-followups'));
+			this.attachedContextContainer = dom.append(this.container, $('.chat-attached-context'));
+			inputAndSideToolbar = dom.append(this.container, $('.interactive-input-and-side-toolbar'));
+			inputContainer = dom.append(inputAndSideToolbar, $('.interactive-input-and-execute-toolbar'));
 		}
 		this.initAttachedContext(this.attachedContextContainer);
 
-		const inputScopedContextKeyService = this._register(
-			this.contextKeyService.createScoped(inputContainer),
-		);
+		const inputScopedContextKeyService = this._register(this.contextKeyService.createScoped(inputContainer));
 		CONTEXT_IN_CHAT_INPUT.bindTo(inputScopedContextKeyService).set(true);
-		const scopedInstantiationService = this._register(
-			this.instantiationService.createChild(
-				new ServiceCollection([
-					IContextKeyService,
-					inputScopedContextKeyService,
-				]),
-			),
-		);
+		const scopedInstantiationService = this._register(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, inputScopedContextKeyService])));
 
-		const {
-			historyNavigationBackwardsEnablement,
-			historyNavigationForwardsEnablement,
-		} = this._register(
-			registerAndCreateHistoryNavigationContext(
-				inputScopedContextKeyService,
-				this,
-			),
-		);
-		this.historyNavigationBackwardsEnablement =
-			historyNavigationBackwardsEnablement;
-		this.historyNavigationForewardsEnablement =
-			historyNavigationForwardsEnablement;
+		const { historyNavigationBackwardsEnablement, historyNavigationForwardsEnablement } = this._register(registerAndCreateHistoryNavigationContext(inputScopedContextKeyService, this));
+		this.historyNavigationBackwardsEnablement = historyNavigationBackwardsEnablement;
+		this.historyNavigationForewardsEnablement = historyNavigationForwardsEnablement;
 
-		const options: IEditorConstructionOptions = getSimpleEditorOptions(
-			this.configurationService,
-		);
-		options.overflowWidgetsDomNode =
-			this.options.editorOverflowWidgetsDomNode;
+		const options: IEditorConstructionOptions = getSimpleEditorOptions(this.configurationService);
+		options.overflowWidgetsDomNode = this.options.editorOverflowWidgetsDomNode;
 		options.readOnly = false;
 		options.ariaLabel = this._getAriaLabel();
 		options.fontFamily = DEFAULT_FONT_FAMILY;
 		options.fontSize = 13;
 		options.lineHeight = 20;
-		options.padding =
-			this.options.renderStyle === "compact"
-				? { top: 2, bottom: 2 }
-				: { top: 8, bottom: 8 };
+		options.padding = this.options.renderStyle === 'compact' ? { top: 2, bottom: 2 } : { top: 8, bottom: 8 };
 		options.cursorWidth = 1;
-		options.wrappingStrategy = "advanced";
+		options.wrappingStrategy = 'advanced';
 		options.bracketPairColorization = { enabled: false };
 		options.suggest = {
 			showIcons: false,
 			showSnippets: false,
 			showWords: true,
 			showStatusBar: false,
-			insertMode: "replace",
+			insertMode: 'replace',
 		};
-		options.scrollbar = {
-			...(options.scrollbar ?? {}),
-			vertical: "hidden",
-		};
+		options.scrollbar = { ...(options.scrollbar ?? {}), vertical: 'hidden' };
 		options.stickyScroll = { enabled: false };
 
-		this._inputEditorElement = dom.append(
-			inputContainer,
-			$(chatInputEditorContainerSelector),
-		);
+		this._inputEditorElement = dom.append(inputContainer, $(chatInputEditorContainerSelector));
 		const editorOptions = getSimpleCodeEditorWidgetOptions();
-		editorOptions.contributions?.push(
-			...EditorExtensionsRegistry.getSomeEditorContributions([
-				ContentHoverController.ID,
-				GlyphHoverController.ID,
-			]),
-		);
-		this._inputEditor = this._register(
-			scopedInstantiationService.createInstance(
-				CodeEditorWidget,
-				this._inputEditorElement,
-				options,
-				editorOptions,
-			),
-		);
+		editorOptions.contributions?.push(...EditorExtensionsRegistry.getSomeEditorContributions([ContentHoverController.ID, GlyphHoverController.ID]));
+		this._inputEditor = this._register(scopedInstantiationService.createInstance(CodeEditorWidget, this._inputEditorElement, options, editorOptions));
 
-		this._register(
-			this._inputEditor.onDidChangeModelContent(() => {
-				const currentHeight = Math.min(
-					this._inputEditor.getContentHeight(),
-					this.inputEditorMaxHeight,
-				);
-				if (currentHeight !== this.inputEditorHeight) {
-					this.inputEditorHeight = currentHeight;
-					this._onDidChangeHeight.fire();
+		this._register(this._inputEditor.onDidChangeModelContent(() => {
+			const currentHeight = Math.min(this._inputEditor.getContentHeight(), this.inputEditorMaxHeight);
+			if (currentHeight !== this.inputEditorHeight) {
+				this.inputEditorHeight = currentHeight;
+				this._onDidChangeHeight.fire();
+			}
+
+			const model = this._inputEditor.getModel();
+			const inputHasText = !!model && model.getValue().trim().length > 0;
+			this.inputEditorHasText.set(inputHasText);
+		}));
+		this._register(this._inputEditor.onDidFocusEditorText(() => {
+			this.inputEditorHasFocus.set(true);
+			this._onDidFocus.fire();
+			inputContainer.classList.toggle('focused', true);
+		}));
+		this._register(this._inputEditor.onDidBlurEditorText(() => {
+			this.inputEditorHasFocus.set(false);
+			inputContainer.classList.toggle('focused', false);
+
+			this._onDidBlur.fire();
+		}));
+
+		this.toolbar = this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, inputContainer, this.options.menus.executeToolbar, {
+			telemetrySource: this.options.menus.telemetrySource,
+			menuOptions: {
+				shouldForwardArgs: true
+			},
+			hiddenItemStrategy: HiddenItemStrategy.Ignore, // keep it lean when hiding items and avoid a "..." overflow menu
+			actionViewItemProvider: (action, options) => {
+				if (this.location === ChatAgentLocation.Panel) {
+					if ((action.id === SubmitAction.ID || action.id === CancelAction.ID) && action instanceof MenuItemAction) {
+						const dropdownAction = this.instantiationService.createInstance(MenuItemAction, { id: 'chat.moreExecuteActions', title: localize('notebook.moreExecuteActionsLabel', "More..."), icon: Codicon.chevronDown }, undefined, undefined, undefined, undefined);
+						return this.instantiationService.createInstance(ChatSubmitDropdownActionItem, action, dropdownAction);
+					}
 				}
 
-				const model = this._inputEditor.getModel();
-				const inputHasText =
-					!!model && model.getValue().trim().length > 0;
-				this.inputEditorHasText.set(inputHasText);
-			}),
-		);
-		this._register(
-			this._inputEditor.onDidFocusEditorText(() => {
-				this.inputEditorHasFocus.set(true);
-				this._onDidFocus.fire();
-				inputContainer.classList.toggle("focused", true);
-			}),
-		);
-		this._register(
-			this._inputEditor.onDidBlurEditorText(() => {
-				this.inputEditorHasFocus.set(false);
-				inputContainer.classList.toggle("focused", false);
-
-				this._onDidBlur.fire();
-			}),
-		);
-
-		this.toolbar = this._register(
-			this.instantiationService.createInstance(
-				MenuWorkbenchToolBar,
-				inputContainer,
-				this.options.menus.executeToolbar,
-				{
-					telemetrySource: this.options.menus.telemetrySource,
-					menuOptions: {
-						shouldForwardArgs: true,
-					},
-					hiddenItemStrategy: HiddenItemStrategy.Ignore, // keep it lean when hiding items and avoid a "..." overflow menu
-					actionViewItemProvider: (action, options) => {
-						if (this.location === ChatAgentLocation.Panel) {
-							if (
-								(action.id === SubmitAction.ID ||
-									action.id === CancelAction.ID) &&
-								action instanceof MenuItemAction
-							) {
-								const dropdownAction =
-									this.instantiationService.createInstance(
-										MenuItemAction,
-										{
-											id: "chat.moreExecuteActions",
-											title: localize(
-												"notebook.moreExecuteActionsLabel",
-												"More...",
-											),
-											icon: Codicon.chevronDown,
-										},
-										undefined,
-										undefined,
-										undefined,
-										undefined,
-									);
-								return this.instantiationService.createInstance(
-									ChatSubmitDropdownActionItem,
-									action,
-									dropdownAction,
-								);
-							}
-						}
-
-						return undefined;
-					},
-				},
-			),
-		);
-		this.toolbar.getElement().classList.add("interactive-execute-toolbar");
+				return undefined;
+			}
+		}));
+		this.toolbar.getElement().classList.add('interactive-execute-toolbar');
 		this.toolbar.context = { widget } satisfies IChatExecuteActionContext;
-		this._register(
-			this.toolbar.onDidChangeMenuItems(() => {
-				if (
-					this.cachedDimensions &&
-					typeof this.cachedToolbarWidth === "number" &&
-					this.cachedToolbarWidth !== this.toolbar.getItemsWidth()
-				) {
-					this.layout(
-						this.cachedDimensions.height,
-						this.cachedDimensions.width,
-					);
-				}
-			}),
-		);
+		this._register(this.toolbar.onDidChangeMenuItems(() => {
+			if (this.cachedDimensions && typeof this.cachedToolbarWidth === 'number' && this.cachedToolbarWidth !== this.toolbar.getItemsWidth()) {
+				this.layout(this.cachedDimensions.height, this.cachedDimensions.width);
+			}
+		}));
 
 		if (this.options.menus.inputSideToolbar) {
-			const toolbarSide = this._register(
-				this.instantiationService.createInstance(
-					MenuWorkbenchToolBar,
-					inputAndSideToolbar,
-					this.options.menus.inputSideToolbar,
-					{
-						telemetrySource: this.options.menus.telemetrySource,
-						menuOptions: {
-							shouldForwardArgs: true,
-						},
-					},
-				),
-			);
+			const toolbarSide = this._register(this.instantiationService.createInstance(MenuWorkbenchToolBar, inputAndSideToolbar, this.options.menus.inputSideToolbar, {
+				telemetrySource: this.options.menus.telemetrySource,
+				menuOptions: {
+					shouldForwardArgs: true
+				}
+			}));
 			this.inputSideToolbarContainer = toolbarSide.getElement();
-			toolbarSide.getElement().classList.add("chat-side-toolbar");
-			toolbarSide.context = {
-				widget,
-			} satisfies IChatExecuteActionContext;
+			toolbarSide.getElement().classList.add('chat-side-toolbar');
+			toolbarSide.context = { widget } satisfies IChatExecuteActionContext;
 		}
 
 		let inputModel = this.modelService.getModel(this.inputUri);
 		if (!inputModel) {
-			inputModel = this.modelService.createModel(
-				"",
-				null,
-				this.inputUri,
-				true,
-			);
+			inputModel = this.modelService.createModel('', null, this.inputUri, true);
 			this._register(inputModel);
 		}
 
 		this.inputModel = inputModel;
-		this.inputModel.updateOptions({
-			bracketColorizationOptions: {
-				enabled: false,
-				independentColorPoolPerBracketType: false,
-			},
-		});
+		this.inputModel.updateOptions({ bracketColorizationOptions: { enabled: false, independentColorPoolPerBracketType: false } });
 		this._inputEditor.setModel(this.inputModel);
 		if (initialValue) {
 			this.inputModel.setValue(initialValue);
 			const lineNumber = this.inputModel.getLineCount();
-			this._inputEditor.setPosition({
-				lineNumber,
-				column: this.inputModel.getLineMaxColumn(lineNumber),
-			});
+			this._inputEditor.setPosition({ lineNumber, column: this.inputModel.getLineMaxColumn(lineNumber) });
 		}
 
 		const onDidChangeCursorPosition = () => {
@@ -784,15 +537,9 @@ export class ChatInputPart
 			this.chatCursorAtTop.set(atTop);
 
 			this.historyNavigationBackwardsEnablement.set(atTop);
-			this.historyNavigationForewardsEnablement.set(
-				position.equals(getLastPosition(model)),
-			);
+			this.historyNavigationForewardsEnablement.set(position.equals(getLastPosition(model)));
 		};
-		this._register(
-			this._inputEditor.onDidChangeCursorPosition((e) =>
-				onDidChangeCursorPosition(),
-			),
-		);
+		this._register(this._inputEditor.onDidChangeCursorPosition(e => onDidChangeCursorPosition()));
 		onDidChangeCursorPosition();
 	}
 
@@ -800,53 +547,20 @@ export class ChatInputPart
 		const oldHeight = container.offsetHeight;
 		dom.clearNode(container);
 		this.attachedContextDisposables.clear();
-		dom.setVisibility(
-			Boolean(this.attachedContext.size),
-			this.attachedContextContainer,
-		);
+		dom.setVisibility(Boolean(this.attachedContext.size), this.attachedContextContainer);
 		if (!this.attachedContext.size) {
 			this._indexOfLastAttachedContextDeletedWithKeyboard = -1;
 		}
 		[...this.attachedContext.values()].forEach((attachment, index) => {
-			const widget = dom.append(
-				container,
-				$(".chat-attached-context-attachment.show-file-icons"),
-			);
-			const label = this._contextResourceLabels.create(widget, {
-				supportIcons: true,
-			});
-			const file = URI.isUri(attachment.value)
-				? attachment.value
-				: attachment.value &&
-					  typeof attachment.value === "object" &&
-					  "uri" in attachment.value &&
-					  URI.isUri(attachment.value.uri)
-					? attachment.value.uri
-					: undefined;
-			const range =
-				attachment.value &&
-				typeof attachment.value === "object" &&
-				"range" in attachment.value &&
-				Range.isIRange(attachment.value.range)
-					? attachment.value.range
-					: undefined;
+			const widget = dom.append(container, $('.chat-attached-context-attachment.show-file-icons'));
+			const label = this._contextResourceLabels.create(widget, { supportIcons: true });
+			const file = URI.isUri(attachment.value) ? attachment.value : attachment.value && typeof attachment.value === 'object' && 'uri' in attachment.value && URI.isUri(attachment.value.uri) ? attachment.value.uri : undefined;
+			const range = attachment.value && typeof attachment.value === 'object' && 'range' in attachment.value && Range.isIRange(attachment.value.range) ? attachment.value.range : undefined;
 			if (file && attachment.isFile) {
 				const fileBasename = basename(file.path);
 				const fileDirname = dirname(file.path);
 				const friendlyName = `${fileBasename} ${fileDirname}`;
-				const ariaLabel = range
-					? localize(
-							"chat.fileAttachmentWithRange",
-							"Attached file, {0}, line {1} to line {2}",
-							friendlyName,
-							range.startLineNumber,
-							range.endLineNumber,
-						)
-					: localize(
-							"chat.fileAttachment",
-							"Attached file, {0}",
-							friendlyName,
-						);
+				const ariaLabel = range ? localize('chat.fileAttachmentWithRange', "Attached file, {0}, line {1} to line {2}", friendlyName, range.startLineNumber, range.endLineNumber) : localize('chat.fileAttachment', "Attached file, {0}", friendlyName);
 
 				label.setFile(file, {
 					fileKind: FileKind.FILE,
@@ -857,29 +571,17 @@ export class ChatInputPart
 				widget.tabIndex = 0;
 			} else {
 				const attachmentLabel = attachment.fullName ?? attachment.name;
-				const withIcon = attachment.icon?.id
-					? `$(${attachment.icon.id}) ${attachmentLabel}`
-					: attachmentLabel;
+				const withIcon = attachment.icon?.id ? `$(${attachment.icon.id}) ${attachmentLabel}` : attachmentLabel;
 				label.setLabel(withIcon, undefined);
 
-				widget.ariaLabel = localize(
-					"chat.attachment",
-					"Attached context, {0}",
-					attachment.name,
-				);
+				widget.ariaLabel = localize('chat.attachment', "Attached context, {0}", attachment.name);
 				widget.tabIndex = 0;
 			}
 
 			const clearButton = new Button(widget, { supportIcons: true });
 
 			// If this item is rendering in place of the last attached context item, focus the clear button so the user can continue deleting attached context items with the keyboard
-			if (
-				index ===
-				Math.min(
-					this._indexOfLastAttachedContextDeletedWithKeyboard,
-					this.attachedContext.size - 1,
-				)
-			) {
+			if (index === Math.min(this._indexOfLastAttachedContextDeletedWithKeyboard, this.attachedContext.size - 1)) {
 				clearButton.focus();
 			}
 
@@ -892,12 +594,8 @@ export class ChatInputPart
 				// Set focus to the next attached context item if deletion was triggered by a keystroke (vs a mouse click)
 				if (dom.isKeyboardEvent(e)) {
 					const event = new StandardKeyboardEvent(e);
-					if (
-						event.equals(KeyCode.Enter) ||
-						event.equals(KeyCode.Space)
-					) {
-						this._indexOfLastAttachedContextDeletedWithKeyboard =
-							index;
+					if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
+						this._indexOfLastAttachedContextDeletedWithKeyboard = index;
 					}
 				}
 
@@ -912,10 +610,7 @@ export class ChatInputPart
 		}
 	}
 
-	async renderFollowups(
-		items: IChatFollowup[] | undefined,
-		response: IChatResponseViewModel | undefined,
-	): Promise<void> {
+	async renderFollowups(items: IChatFollowup[] | undefined, response: IChatResponseViewModel | undefined): Promise<void> {
 		if (!this.options.renderFollowups) {
 			return;
 		}
@@ -923,34 +618,14 @@ export class ChatInputPart
 		dom.clearNode(this.followupsContainer);
 
 		if (items && items.length > 0) {
-			this.followupsDisposables.add(
-				this.instantiationService.createInstance<
-					typeof ChatFollowups<IChatFollowup>,
-					ChatFollowups<IChatFollowup>
-				>(
-					ChatFollowups,
-					this.followupsContainer,
-					items,
-					this.location,
-					undefined,
-					(followup) =>
-						this._onDidAcceptFollowup.fire({ followup, response }),
-				),
-			);
+			this.followupsDisposables.add(this.instantiationService.createInstance<typeof ChatFollowups<IChatFollowup>, ChatFollowups<IChatFollowup>>(ChatFollowups, this.followupsContainer, items, this.location, undefined, followup => this._onDidAcceptFollowup.fire({ followup, response })));
 		}
 		this._onDidChangeHeight.fire();
 	}
 
 	get contentHeight(): number {
 		const data = this.getLayoutData();
-		return (
-			data.followupsHeight +
-			data.inputPartEditorHeight +
-			data.inputPartVerticalPadding +
-			data.inputEditorBorder +
-			data.implicitContextHeight +
-			data.executeToolbarHeight
-		);
+		return data.followupsHeight + data.inputPartEditorHeight + data.inputPartVerticalPadding + data.inputEditorBorder + data.implicitContextHeight + data.executeToolbarHeight;
 	}
 
 	layout(height: number, width: number) {
@@ -965,39 +640,17 @@ export class ChatInputPart
 
 		const data = this.getLayoutData();
 
-		const inputEditorHeight = Math.min(
-			data.inputPartEditorHeight,
-			height - data.followupsHeight - data.inputPartVerticalPadding,
-		);
+		const inputEditorHeight = Math.min(data.inputPartEditorHeight, height - data.followupsHeight - data.inputPartVerticalPadding);
 
 		const followupsWidth = width - data.inputPartHorizontalPadding;
 		this.followupsContainer.style.width = `${followupsWidth}px`;
 
-		this._inputPartHeight =
-			data.followupsHeight +
-			inputEditorHeight +
-			data.inputPartVerticalPadding +
-			data.inputEditorBorder +
-			data.implicitContextHeight +
-			data.executeToolbarHeight;
+		this._inputPartHeight = data.followupsHeight + inputEditorHeight + data.inputPartVerticalPadding + data.inputEditorBorder + data.implicitContextHeight + data.executeToolbarHeight;
 
 		const initialEditorScrollWidth = this._inputEditor.getScrollWidth();
-		const newEditorWidth =
-			width -
-			data.inputPartHorizontalPadding -
-			data.editorBorder -
-			data.editorPadding -
-			data.executeToolbarWidth -
-			data.sideToolbarWidth;
-		const newDimension = {
-			width: newEditorWidth,
-			height: inputEditorHeight,
-		};
-		if (
-			!this.previousInputEditorDimension ||
-			this.previousInputEditorDimension.width !== newDimension.width ||
-			this.previousInputEditorDimension.height !== newDimension.height
-		) {
+		const newEditorWidth = width - data.inputPartHorizontalPadding - data.editorBorder - data.editorPadding - data.executeToolbarWidth - data.sideToolbarWidth;
+		const newDimension = { width: newEditorWidth, height: inputEditorHeight };
+		if (!this.previousInputEditorDimension || (this.previousInputEditorDimension.width !== newDimension.width || this.previousInputEditorDimension.height !== newDimension.height)) {
 			// This layout call has side-effects that are hard to understand. eg if we are calling this inside a onDidChangeContent handler, this can trigger the next onDidChangeContent handler
 			// to be invoked, and we have a lot of these on this editor. Only doing a layout this when the editor size has actually changed makes it much easier to follow.
 			this._inputEditor.layout(newDimension);
@@ -1011,32 +664,20 @@ export class ChatInputPart
 	}
 
 	private getLayoutData() {
-		const executeToolbarWidth = (this.cachedToolbarWidth =
-			this.toolbar.getItemsWidth());
+		const executeToolbarWidth = this.cachedToolbarWidth = this.toolbar.getItemsWidth();
 		const executeToolbarPadding = (this.toolbar.getItemsLength() - 1) * 4;
 		return {
 			inputEditorBorder: 2,
 			followupsHeight: this.followupsContainer.offsetHeight,
-			inputPartEditorHeight: Math.min(
-				this._inputEditor.getContentHeight(),
-				this.inputEditorMaxHeight,
-			),
-			inputPartHorizontalPadding:
-				this.options.renderStyle === "compact" ? 12 : 40,
-			inputPartVerticalPadding:
-				this.options.renderStyle === "compact" ? 12 : 24,
+			inputPartEditorHeight: Math.min(this._inputEditor.getContentHeight(), this.inputEditorMaxHeight),
+			inputPartHorizontalPadding: this.options.renderStyle === 'compact' ? 12 : 32,
+			inputPartVerticalPadding: this.options.renderStyle === 'compact' ? 12 : 24,
 			implicitContextHeight: this.attachedContextContainer.offsetHeight,
 			editorBorder: 2,
 			editorPadding: 12,
-			executeToolbarWidth:
-				this.options.renderStyle === "compact"
-					? executeToolbarWidth + executeToolbarPadding
-					: 0,
-			executeToolbarHeight:
-				this.options.renderStyle === "compact" ? 0 : 22,
-			sideToolbarWidth: this.inputSideToolbarContainer
-				? dom.getTotalWidth(this.inputSideToolbarContainer) + 4 /*gap*/
-				: 0,
+			executeToolbarWidth: this.options.renderStyle === 'compact' ? executeToolbarWidth + executeToolbarPadding : 0,
+			executeToolbarHeight: this.options.renderStyle === 'compact' ? 0 : 22,
+			sideToolbarWidth: this.inputSideToolbarContainer ? dom.getTotalWidth(this.inputSideToolbarContainer) + 4 /*gap*/ : 0,
 		};
 	}
 
@@ -1050,10 +691,7 @@ export class ChatInputPart
 const historyKeyFn = (entry: IChatHistoryEntry) => JSON.stringify(entry);
 
 function getLastPosition(model: ITextModel): IPosition {
-	return {
-		lineNumber: model.getLineCount(),
-		column: model.getLineLength(model.getLineCount()) + 1,
-	};
+	return { lineNumber: model.getLineCount(), column: model.getLineLength(model.getLineCount()) + 1 };
 }
 
 // This does seems like a lot just to customize an item with dropdown. This whole class exists just because we need an
@@ -1069,47 +707,31 @@ class ChatSubmitDropdownActionItem extends DropdownWithPrimaryActionViewItem {
 		@IKeybindingService keybindingService: IKeybindingService,
 		@INotificationService notificationService: INotificationService,
 		@IThemeService themeService: IThemeService,
-		@IAccessibilityService accessibilityService: IAccessibilityService,
+		@IAccessibilityService accessibilityService: IAccessibilityService
 	) {
 		super(
 			action,
 			dropdownAction,
 			[],
-			"",
+			'',
 			contextMenuService,
 			{
-				getKeyBinding: (action: IAction) =>
-					keybindingService.lookupKeybinding(
-						action.id,
-						contextKeyService,
-					),
+				getKeyBinding: (action: IAction) => keybindingService.lookupKeybinding(action.id, contextKeyService)
 			},
 			keybindingService,
 			notificationService,
 			contextKeyService,
 			themeService,
-			accessibilityService,
-		);
-		const menu = menuService.createMenu(
-			MenuId.ChatExecuteSecondary,
-			contextKeyService,
-		);
+			accessibilityService);
+		const menu = menuService.createMenu(MenuId.ChatExecuteSecondary, contextKeyService);
 		const setActions = () => {
 			const secondary: IAction[] = [];
-			createAndFillInActionBarActions(
-				menu,
-				{ shouldForwardArgs: true },
-				secondary,
-			);
+			createAndFillInActionBarActions(menu, { shouldForwardArgs: true }, secondary);
 			const secondaryAgent = chatAgentService.getSecondaryAgent();
 			if (secondaryAgent) {
-				secondary.forEach((a) => {
+				secondary.forEach(a => {
 					if (a.id === ChatSubmitSecondaryAgentAction.ID) {
-						a.label = localize(
-							"chat.submitToSecondaryAgent",
-							"Send to @{0}",
-							secondaryAgent.name,
-						);
+						a.label = localize('chat.submitToSecondaryAgent', "Send to @{0}", secondaryAgent.name);
 					}
 
 					return a;
@@ -1123,5 +745,5 @@ class ChatSubmitDropdownActionItem extends DropdownWithPrimaryActionViewItem {
 	}
 }
 
-const chatInputEditorContainerSelector = ".interactive-input-editor";
+const chatInputEditorContainerSelector = '.interactive-input-editor';
 setupSimpleEditorSelectionStyling(chatInputEditorContainerSelector);

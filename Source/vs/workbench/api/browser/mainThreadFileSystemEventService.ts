@@ -3,70 +3,35 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { raceCancellation } from "../../../base/common/async.js";
-import {
-	CancellationTokenSource,
-	type CancellationToken,
-} from "../../../base/common/cancellation.js";
-import { GLOBSTAR } from "../../../base/common/glob.js";
-import {
-	DisposableMap,
-	DisposableStore,
-} from "../../../base/common/lifecycle.js";
-import Severity from "../../../base/common/severity.js";
-import { rtrim } from "../../../base/common/strings.js";
-import { URI, type UriComponents } from "../../../base/common/uri.js";
-import { IBulkEditService } from "../../../editor/browser/services/bulkEditService.js";
-import { localize } from "../../../nls.js";
-import {
-	Action2,
-	registerAction2,
-} from "../../../platform/actions/common/actions.js";
-import { IConfigurationService } from "../../../platform/configuration/common/configuration.js";
-import { IDialogService } from "../../../platform/dialogs/common/dialogs.js";
-import { IEnvironmentService } from "../../../platform/environment/common/environment.js";
-import {
-	FileOperation,
-	IFileService,
-	type IFilesConfiguration,
-	type IWatchOptions,
-} from "../../../platform/files/common/files.js";
-import { normalizeWatcherPattern } from "../../../platform/files/common/watcher.js";
-import type { ServicesAccessor } from "../../../platform/instantiation/common/instantiation.js";
-import { ILogService } from "../../../platform/log/common/log.js";
-import {
-	IProgressService,
-	ProgressLocation,
-} from "../../../platform/progress/common/progress.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../platform/storage/common/storage.js";
-import { IUriIdentityService } from "../../../platform/uriIdentity/common/uriIdentity.js";
-import { IWorkspaceContextService } from "../../../platform/workspace/common/workspace.js";
-import {
-	extHostNamedCustomer,
-	type IExtHostContext,
-} from "../../services/extensions/common/extHostCustomers.js";
-import {
-	IWorkingCopyFileService,
-	type IFileOperationUndoRedoInfo,
-	type IWorkingCopyFileOperationParticipant,
-	type SourceTargetPair,
-} from "../../services/workingCopy/common/workingCopyFileService.js";
-import {
-	ExtHostContext,
-	MainContext,
-	type ExtHostFileSystemEventServiceShape,
-	type MainThreadFileSystemEventServiceShape,
-} from "../common/extHost.protocol.js";
-import { reviveWorkspaceEditDto } from "./mainThreadBulkEdits.js";
+import { DisposableMap, DisposableStore } from '../../../base/common/lifecycle.js';
+import { FileOperation, IFileService, IFilesConfiguration, IWatchOptions } from '../../../platform/files/common/files.js';
+import { extHostNamedCustomer, IExtHostContext } from '../../services/extensions/common/extHostCustomers.js';
+import { ExtHostContext, ExtHostFileSystemEventServiceShape, MainContext, MainThreadFileSystemEventServiceShape } from '../common/extHost.protocol.js';
+import { localize } from '../../../nls.js';
+import { IWorkingCopyFileOperationParticipant, IWorkingCopyFileService, SourceTargetPair, IFileOperationUndoRedoInfo } from '../../services/workingCopy/common/workingCopyFileService.js';
+import { IBulkEditService } from '../../../editor/browser/services/bulkEditService.js';
+import { IProgressService, ProgressLocation } from '../../../platform/progress/common/progress.js';
+import { raceCancellation } from '../../../base/common/async.js';
+import { CancellationToken, CancellationTokenSource } from '../../../base/common/cancellation.js';
+import { IDialogService } from '../../../platform/dialogs/common/dialogs.js';
+import Severity from '../../../base/common/severity.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../../platform/storage/common/storage.js';
+import { Action2, registerAction2 } from '../../../platform/actions/common/actions.js';
+import { ServicesAccessor } from '../../../platform/instantiation/common/instantiation.js';
+import { ILogService } from '../../../platform/log/common/log.js';
+import { IEnvironmentService } from '../../../platform/environment/common/environment.js';
+import { IUriIdentityService } from '../../../platform/uriIdentity/common/uriIdentity.js';
+import { reviveWorkspaceEditDto } from './mainThreadBulkEdits.js';
+import { GLOBSTAR } from '../../../base/common/glob.js';
+import { rtrim } from '../../../base/common/strings.js';
+import { UriComponents, URI } from '../../../base/common/uri.js';
+import { IConfigurationService } from '../../../platform/configuration/common/configuration.js';
+import { normalizeWatcherPattern } from '../../../platform/files/common/watcher.js';
+import { IWorkspaceContextService } from '../../../platform/workspace/common/workspace.js';
 
 @extHostNamedCustomer(MainContext.MainThreadFileSystemEventService)
-export class MainThreadFileSystemEventService
-	implements MainThreadFileSystemEventServiceShape
-{
+export class MainThreadFileSystemEventService implements MainThreadFileSystemEventServiceShape {
+
 	static readonly MementoKeyAdditionalEdits = `file.particpants.additionalEdits`;
 
 	private readonly _proxy: ExtHostFileSystemEventServiceShape;
@@ -201,50 +166,16 @@ export class MainThreadFileSystemEventService
 								data.extensionNames[0],
 							);
 						}
-					} else if (operation === FileOperation.CREATE) {
-						message = localize(
-							{
-								key: "ask.N.create",
-								comment: [
-									'{0} is a number, e.g "3 extensions want..."',
-								],
-							},
-							"{0} extensions want to make refactoring changes with this file creation",
-							data.extensionNames.length,
-						);
-					} else if (operation === FileOperation.COPY) {
-						message = localize(
-							{
-								key: "ask.N.copy",
-								comment: [
-									'{0} is a number, e.g "3 extensions want..."',
-								],
-							},
-							"{0} extensions want to make refactoring changes with this file copy",
-							data.extensionNames.length,
-						);
-					} else if (operation === FileOperation.MOVE) {
-						message = localize(
-							{
-								key: "ask.N.move",
-								comment: [
-									'{0} is a number, e.g "3 extensions want..."',
-								],
-							},
-							"{0} extensions want to make refactoring changes with this file move",
-							data.extensionNames.length,
-						);
-					} /* if (operation === FileOperation.DELETE) */ else {
-						message = localize(
-							{
-								key: "ask.N.delete",
-								comment: [
-									'{0} is a number, e.g "3 extensions want..."',
-								],
-							},
-							"{0} extensions want to make refactoring changes with this file deletion",
-							data.extensionNames.length,
-						);
+					} else {
+						if (operation === FileOperation.CREATE) {
+							message = localize({ key: 'ask.N.create', comment: ['{0} is a number, e.g "3 extensions want..."'] }, "{0} extensions want to make refactoring changes with this file creation", data.extensionNames.length);
+						} else if (operation === FileOperation.COPY) {
+							message = localize({ key: 'ask.N.copy', comment: ['{0} is a number, e.g "3 extensions want..."'] }, "{0} extensions want to make refactoring changes with this file copy", data.extensionNames.length);
+						} else if (operation === FileOperation.MOVE) {
+							message = localize({ key: 'ask.N.move', comment: ['{0} is a number, e.g "3 extensions want..."'] }, "{0} extensions want to make refactoring changes with this file move", data.extensionNames.length);
+						} else /* if (operation === FileOperation.DELETE) */ {
+							message = localize({ key: 'ask.N.delete', comment: ['{0} is a number, e.g "3 extensions want..."'] }, "{0} extensions want to make refactoring changes with this file deletion", data.extensionNames.length);
+						}
 					}
 
 					if (needsConfirmation) {
@@ -384,17 +315,11 @@ export class MainThreadFileSystemEventService
 		);
 	}
 
-	async $watch(
-		extensionId: string,
-		session: number,
-		resource: UriComponents,
-		unvalidatedOpts: IWatchOptions,
-		correlate: boolean,
-	): Promise<void> {
+	async $watch(extensionId: string, session: number, resource: UriComponents, unvalidatedOpts: IWatchOptions, correlate: boolean): Promise<void> {
 		const uri = URI.revive(resource);
 
 		const opts: IWatchOptions = {
-			...unvalidatedOpts,
+			...unvalidatedOpts
 		};
 
 		// Convert a recursive watcher to a flat watcher if the path
@@ -414,43 +339,33 @@ export class MainThreadFileSystemEventService
 
 		// Correlated file watching is taken as is
 		if (correlate) {
-			this._logService.trace(
-				`MainThreadFileSystemEventService#$watch(): request to start watching correlated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`,
-			);
+			this._logService.trace(`MainThreadFileSystemEventService#$watch(): request to start watching correlated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 
 			const watcherDisposables = new DisposableStore();
-			const subscription = watcherDisposables.add(
-				this._fileService.createWatcher(uri, opts),
-			);
-			watcherDisposables.add(
-				subscription.onDidChange((event) => {
-					this._proxy.$onFileEvent({
-						session,
-						created: event.rawAdded,
-						changed: event.rawUpdated,
-						deleted: event.rawDeleted,
-					});
-				}),
-			);
+			const subscription = watcherDisposables.add(this._fileService.createWatcher(uri, opts));
+			watcherDisposables.add(subscription.onDidChange(event => {
+				this._proxy.$onFileEvent({
+					session,
+					created: event.rawAdded,
+					changed: event.rawUpdated,
+					deleted: event.rawDeleted
+				});
+			}));
 
 			this._watches.set(session, watcherDisposables);
 		}
 
 		// Uncorrelated file watching gets special treatment
 		else {
-			this._logService.trace(
-				`MainThreadFileSystemEventService#$watch(): request to start watching uncorrelated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`,
-			);
+			this._logService.trace(`MainThreadFileSystemEventService#$watch(): request to start watching uncorrelated (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 
-			const workspaceFolder =
-				this._contextService.getWorkspaceFolder(uri);
+			const workspaceFolder = this._contextService.getWorkspaceFolder(uri);
 
 			// Automatically add `files.watcherExclude` patterns when watching
 			// recursively to give users a chance to configure exclude rules
 			// for reducing the overhead of watching recursively
 			if (opts.recursive && opts.excludes.length === 0) {
-				const config =
-					this._configurationService.getValue<IFilesConfiguration>();
+				const config = this._configurationService.getValue<IFilesConfiguration>();
 				if (config.files?.watcherExclude) {
 					for (const key in config.files.watcherExclude) {
 						if (key && config.files.watcherExclude[key] === true) {
@@ -472,8 +387,7 @@ export class MainThreadFileSystemEventService
 			// `bar` unless a suffix of `/**` if added.
 			// (https://github.com/microsoft/vscode/issues/148245)
 			else if (!opts.recursive && workspaceFolder) {
-				const config =
-					this._configurationService.getValue<IFilesConfiguration>();
+				const config = this._configurationService.getValue<IFilesConfiguration>();
 				if (config.files?.watcherExclude) {
 					for (const key in config.files.watcherExclude) {
 						if (key && config.files.watcherExclude[key] === true) {
@@ -481,13 +395,8 @@ export class MainThreadFileSystemEventService
 								opts.includes = [];
 							}
 
-							const includePattern = `${rtrim(key, "/")}/${GLOBSTAR}`;
-							opts.includes.push(
-								normalizeWatcherPattern(
-									workspaceFolder.uri.fsPath,
-									includePattern,
-								),
-							);
+							const includePattern = `${rtrim(key, '/')}/${GLOBSTAR}`;
+							opts.includes.push(normalizeWatcherPattern(workspaceFolder.uri.fsPath, includePattern));
 						}
 					}
 				}
@@ -496,9 +405,7 @@ export class MainThreadFileSystemEventService
 				// exclude rules, because in that case our default recursive watcher
 				// should be able to take care of all events.
 				if (!opts.includes || opts.includes.length === 0) {
-					this._logService.trace(
-						`MainThreadFileSystemEventService#$watch(): ignoring request to start watching because path is inside workspace and no excludes are configured (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`,
-					);
+					this._logService.trace(`MainThreadFileSystemEventService#$watch(): ignoring request to start watching because path is inside workspace and no excludes are configured (extension: ${extensionId}, path: ${uri.toString(true)}, recursive: ${opts.recursive}, session: ${session})`);
 					return;
 				}
 			}
@@ -510,9 +417,7 @@ export class MainThreadFileSystemEventService
 
 	$unwatch(session: number): void {
 		if (this._watches.has(session)) {
-			this._logService.trace(
-				`MainThreadFileSystemEventService#$unwatch(): request to stop watching (session: ${session})`,
-			);
+			this._logService.trace(`MainThreadFileSystemEventService#$unwatch(): request to stop watching (session: ${session})`);
 			this._watches.deleteAndDispose(session);
 		}
 	}
@@ -523,28 +428,18 @@ export class MainThreadFileSystemEventService
 	}
 }
 
-registerAction2(
-	class ResetMemento extends Action2 {
-		constructor() {
-			super({
-				id: "files.participants.resetChoice",
-				title: {
-					value: localize(
-						"label",
-						"Reset choice for 'File operation needs preview'",
-					),
-					original: `Reset choice for 'File operation needs preview'`,
-				},
-				f1: true,
-			});
-		}
-		run(accessor: ServicesAccessor) {
-			accessor
-				.get(IStorageService)
-				.remove(
-					MainThreadFileSystemEventService.MementoKeyAdditionalEdits,
-					StorageScope.PROFILE,
-				);
-		}
-	},
-);
+registerAction2(class ResetMemento extends Action2 {
+	constructor() {
+		super({
+			id: 'files.participants.resetChoice',
+			title: {
+				value: localize('label', "Reset choice for 'File operation needs preview'"),
+				original: `Reset choice for 'File operation needs preview'`
+			},
+			f1: true
+		});
+	}
+	run(accessor: ServicesAccessor) {
+		accessor.get(IStorageService).remove(MainThreadFileSystemEventService.MementoKeyAdditionalEdits, StorageScope.PROFILE);
+	}
+});

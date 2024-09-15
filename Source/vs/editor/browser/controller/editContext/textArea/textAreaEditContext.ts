@@ -3,77 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import "./textAreaEditContext.css";
-
-import * as browser from "../../../../../base/browser/browser.js";
-import {
-	createFastDomNode,
-	type FastDomNode,
-} from "../../../../../base/browser/fastDomNode.js";
-import type { IKeyboardEvent } from "../../../../../base/browser/keyboardEvent.js";
-import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from "../../../../../base/browser/ui/mouseCursor/mouseCursor.js";
-import { Color } from "../../../../../base/common/color.js";
-import { IME } from "../../../../../base/common/ime.js";
-import * as platform from "../../../../../base/common/platform.js";
-import * as strings from "../../../../../base/common/strings.js";
-import * as nls from "../../../../../nls.js";
-import { AccessibilitySupport } from "../../../../../platform/accessibility/common/accessibility.js";
-import { IInstantiationService } from "../../../../../platform/instantiation/common/instantiation.js";
-import { IKeybindingService } from "../../../../../platform/keybinding/common/keybinding.js";
-import {
-	EditorOption,
-	EditorOptions,
-	RenderLineNumbersType,
-	type IComputedEditorOptions,
-} from "../../../../common/config/editorOptions.js";
-import type { FontInfo } from "../../../../common/config/fontInfo.js";
-import { Position } from "../../../../common/core/position.js";
-import { Range } from "../../../../common/core/range.js";
-import { Selection } from "../../../../common/core/selection.js";
-import {
-	getMapForWordSeparators,
-	WordCharacterClass,
-} from "../../../../common/core/wordCharacterClassifier.js";
-import { ScrollType } from "../../../../common/editorCommon.js";
-import {
-	ColorId,
-	type ITokenPresentation,
-} from "../../../../common/encodedTokenAttributes.js";
-import { TokenizationRegistry } from "../../../../common/languages.js";
-import { EndOfLinePreference } from "../../../../common/model.js";
-import * as viewEvents from "../../../../common/viewEvents.js";
-import type { ViewContext } from "../../../../common/viewModel/viewContext.js";
-import { applyFontInfo } from "../../../config/domFontInfo.js";
-import type { IEditorAriaOptions } from "../../../editorBrowser.js";
-import type {
-	HorizontalPosition,
-	RenderingContext,
-	RestrictedRenderingContext,
-} from "../../../view/renderingContext.js";
-import type { ViewController } from "../../../view/viewController.js";
-import { PartFingerprint, PartFingerprints } from "../../../view/viewPart.js";
-import { LineNumbersOverlay } from "../../../viewParts/lineNumbers/lineNumbers.js";
-import { Margin } from "../../../viewParts/margin/margin.js";
-import { getDataToCopy, type ClipboardDataToCopy } from "../clipboardUtils.js";
-import { AbstractEditContext } from "../editContextUtils.js";
-import {
-	ariaLabelForScreenReaderContent,
-	newlinecount,
-	PagedScreenReaderStrategy,
-	type ISimpleModel,
-} from "../screenReaderUtils.js";
-import {
-	TextAreaInput,
-	TextAreaWrapper,
-	type ICompositionData,
-	type IPasteData,
-	type ITextAreaInputHost,
-} from "./textAreaEditContextInput.js";
-import {
-	_debugComposition,
-	TextAreaState,
-	type ITypeData,
-} from "./textAreaEditContextState.js";
+import './textAreaEditContext.css';
+import * as nls from '../../../../../nls.js';
+import * as browser from '../../../../../base/browser/browser.js';
+import { FastDomNode, createFastDomNode } from '../../../../../base/browser/fastDomNode.js';
+import { IKeyboardEvent } from '../../../../../base/browser/keyboardEvent.js';
+import * as platform from '../../../../../base/common/platform.js';
+import * as strings from '../../../../../base/common/strings.js';
+import { applyFontInfo } from '../../../config/domFontInfo.js';
+import { ViewController } from '../../../view/viewController.js';
+import { PartFingerprint, PartFingerprints } from '../../../view/viewPart.js';
+import { LineNumbersOverlay } from '../../../viewParts/lineNumbers/lineNumbers.js';
+import { Margin } from '../../../viewParts/margin/margin.js';
+import { RenderLineNumbersType, EditorOption, IComputedEditorOptions, EditorOptions } from '../../../../common/config/editorOptions.js';
+import { FontInfo } from '../../../../common/config/fontInfo.js';
+import { Position } from '../../../../common/core/position.js';
+import { Range } from '../../../../common/core/range.js';
+import { Selection } from '../../../../common/core/selection.js';
+import { ScrollType } from '../../../../common/editorCommon.js';
+import { EndOfLinePreference } from '../../../../common/model.js';
+import { RenderingContext, RestrictedRenderingContext, HorizontalPosition } from '../../../view/renderingContext.js';
+import { ViewContext } from '../../../../common/viewModel/viewContext.js';
+import * as viewEvents from '../../../../common/viewEvents.js';
+import { AccessibilitySupport } from '../../../../../platform/accessibility/common/accessibility.js';
+import { IEditorAriaOptions } from '../../../editorBrowser.js';
+import { MOUSE_CURSOR_TEXT_CSS_CLASS_NAME } from '../../../../../base/browser/ui/mouseCursor/mouseCursor.js';
+import { TokenizationRegistry } from '../../../../common/languages.js';
+import { ColorId, ITokenPresentation } from '../../../../common/encodedTokenAttributes.js';
+import { Color } from '../../../../../base/common/color.js';
+import { IME } from '../../../../../base/common/ime.js';
+import { IKeybindingService } from '../../../../../platform/keybinding/common/keybinding.js';
+import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
+import { AbstractEditContext } from '../editContextUtils.js';
+import { ICompositionData, IPasteData, ITextAreaInputHost, TextAreaInput, TextAreaWrapper } from './textAreaEditContextInput.js';
+import { ariaLabelForScreenReaderContent, ISimpleModel, newlinecount, PagedScreenReaderStrategy } from '../screenReaderUtils.js';
+import { ClipboardDataToCopy, getDataToCopy } from '../clipboardUtils.js';
+import { _debugComposition, ITypeData, TextAreaState } from './textAreaEditContextState.js';
+import { getMapForWordSeparators, WordCharacterClass } from '../../../../common/core/wordCharacterClassifier.js';
 
 export interface IVisibleRangeProvider {
 	visibleRangeForPosition(position: Position): HorizontalPosition | null;
@@ -102,36 +68,19 @@ class VisibleTextAreaData {
 		public readonly distanceToModelLineStart: number,
 		public readonly widthOfHiddenLineTextBefore: number,
 		public readonly distanceToModelLineEnd: number,
-	) {}
+	) {
+	}
 
 	prepareRender(visibleRangeProvider: IVisibleRangeProvider): void {
-		const startModelPosition = new Position(
-			this.modelLineNumber,
-			this.distanceToModelLineStart + 1,
-		);
-		const endModelPosition = new Position(
-			this.modelLineNumber,
-			this._context.viewModel.model.getLineMaxColumn(
-				this.modelLineNumber,
-			) - this.distanceToModelLineEnd,
-		);
+		const startModelPosition = new Position(this.modelLineNumber, this.distanceToModelLineStart + 1);
+		const endModelPosition = new Position(this.modelLineNumber, this._context.viewModel.model.getLineMaxColumn(this.modelLineNumber) - this.distanceToModelLineEnd);
 
-		this.startPosition =
-			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-				startModelPosition,
-			);
-		this.endPosition =
-			this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(
-				endModelPosition,
-			);
+		this.startPosition = this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(startModelPosition);
+		this.endPosition = this._context.viewModel.coordinatesConverter.convertModelPositionToViewPosition(endModelPosition);
 
 		if (this.startPosition.lineNumber === this.endPosition.lineNumber) {
-			this.visibleTextareaStart =
-				visibleRangeProvider.visibleRangeForPosition(
-					this.startPosition,
-				);
-			this.visibleTextareaEnd =
-				visibleRangeProvider.visibleRangeForPosition(this.endPosition);
+			this.visibleTextareaStart = visibleRangeProvider.visibleRangeForPosition(this.startPosition);
+			this.visibleTextareaEnd = visibleRangeProvider.visibleRangeForPosition(this.endPosition);
 		} else {
 			// TODO: what if the view positions are not on the same line?
 			this.visibleTextareaStart = null;
@@ -139,9 +88,7 @@ class VisibleTextAreaData {
 		}
 	}
 
-	definePresentation(
-		tokenPresentation: ITokenPresentation | null,
-	): ITokenPresentation {
+	definePresentation(tokenPresentation: ITokenPresentation | null): ITokenPresentation {
 		if (!this._previousPresentation) {
 			// To avoid flickering, once set, always reuse a presentation throughout the entire IME session
 			if (tokenPresentation) {
@@ -160,9 +107,10 @@ class VisibleTextAreaData {
 	}
 }
 
-const canUseZeroSizeTextarea = browser.isFirefox;
+const canUseZeroSizeTextarea = (browser.isFirefox);
 
 export class TextAreaEditContext extends AbstractEditContext {
+
 	private readonly _viewController: ViewController;
 	private readonly _visibleRangeProvider: IVisibleRangeProvider;
 	private _scrollLeft: number;
@@ -745,13 +693,8 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	private _getAndroidWordAtPosition(position: Position): [string, number] {
 		const ANDROID_WORD_SEPARATORS = '`~!@#$%^&*()-=+[{]}\\|;:",.<>/?';
-		const lineContent = this._context.viewModel.getLineContent(
-			position.lineNumber,
-		);
-		const wordSeparators = getMapForWordSeparators(
-			ANDROID_WORD_SEPARATORS,
-			[],
-		);
+		const lineContent = this._context.viewModel.getLineContent(position.lineNumber);
+		const wordSeparators = getMapForWordSeparators(ANDROID_WORD_SEPARATORS, []);
 
 		let goingLeft = true;
 		let startColumn = position.column;
@@ -786,22 +729,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 			distance++;
 		}
 
-		return [
-			lineContent.substring(startColumn - 1, endColumn - 1),
-			position.column - startColumn,
-		];
+		return [lineContent.substring(startColumn - 1, endColumn - 1), position.column - startColumn];
 	}
 
 	private _getWordBeforePosition(position: Position): string {
-		const lineContent = this._context.viewModel.getLineContent(
-			position.lineNumber,
-		);
-		const wordSeparators = getMapForWordSeparators(
-			this._context.configuration.options.get(
-				EditorOption.wordSeparators,
-			),
-			[],
-		);
+		const lineContent = this._context.viewModel.getLineContent(position.lineNumber);
+		const wordSeparators = getMapForWordSeparators(this._context.configuration.options.get(EditorOption.wordSeparators), []);
 
 		let column = position.column;
 		let distance = 0;
@@ -819,29 +752,19 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	private _getCharacterBeforePosition(position: Position): string {
 		if (position.column > 1) {
-			const lineContent = this._context.viewModel.getLineContent(
-				position.lineNumber,
-			);
+			const lineContent = this._context.viewModel.getLineContent(position.lineNumber);
 			const charBefore = lineContent.charAt(position.column - 2);
 			if (!strings.isHighSurrogate(charBefore.charCodeAt(0))) {
 				return charBefore;
 			}
 		}
-		return "";
+		return '';
 	}
 
 	private _setAccessibilityOptions(options: IComputedEditorOptions): void {
-		this._accessibilitySupport = options.get(
-			EditorOption.accessibilitySupport,
-		);
-		const accessibilityPageSize = options.get(
-			EditorOption.accessibilityPageSize,
-		);
-		if (
-			this._accessibilitySupport === AccessibilitySupport.Enabled &&
-			accessibilityPageSize ===
-				EditorOptions.accessibilityPageSize.defaultValue
-		) {
+		this._accessibilitySupport = options.get(EditorOption.accessibilitySupport);
+		const accessibilityPageSize = options.get(EditorOption.accessibilityPageSize);
+		if (this._accessibilitySupport === AccessibilitySupport.Enabled && accessibilityPageSize === EditorOptions.accessibilityPageSize.defaultValue) {
 			// If a screen reader is attached and the default value is not set we should automatically increase the page size to 500 for a better experience
 			this._accessibilityPageSize = 500;
 		} else {
@@ -854,26 +777,19 @@ export class TextAreaEditContext extends AbstractEditContext {
 		// wrapping points in the textarea match the wrapping points in the editor.
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 		const wrappingColumn = layoutInfo.wrappingColumn;
-		if (
-			wrappingColumn !== -1 &&
-			this._accessibilitySupport !== AccessibilitySupport.Disabled
-		) {
+		if (wrappingColumn !== -1 && this._accessibilitySupport !== AccessibilitySupport.Disabled) {
 			const fontInfo = options.get(EditorOption.fontInfo);
 			this._textAreaWrapping = true;
-			this._textAreaWidth = Math.round(
-				wrappingColumn * fontInfo.typicalHalfwidthCharacterWidth,
-			);
+			this._textAreaWidth = Math.round(wrappingColumn * fontInfo.typicalHalfwidthCharacterWidth);
 		} else {
 			this._textAreaWrapping = false;
-			this._textAreaWidth = canUseZeroSizeTextarea ? 0 : 1;
+			this._textAreaWidth = (canUseZeroSizeTextarea ? 0 : 1);
 		}
 	}
 
 	// --- begin event handlers
 
-	public override onConfigurationChanged(
-		e: viewEvents.ViewConfigurationChangedEvent,
-	): boolean {
+	public override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
 		const options = this._context.configuration.options;
 		const layoutInfo = options.get(EditorOption.layoutInfo);
 
@@ -883,88 +799,55 @@ export class TextAreaEditContext extends AbstractEditContext {
 		this._contentHeight = layoutInfo.height;
 		this._fontInfo = options.get(EditorOption.fontInfo);
 		this._lineHeight = options.get(EditorOption.lineHeight);
-		this._emptySelectionClipboard = options.get(
-			EditorOption.emptySelectionClipboard,
-		);
-		this._copyWithSyntaxHighlighting = options.get(
-			EditorOption.copyWithSyntaxHighlighting,
-		);
-		this.textArea.setAttribute(
-			"wrap",
-			this._textAreaWrapping && !this._visibleTextArea ? "on" : "off",
-		);
+		this._emptySelectionClipboard = options.get(EditorOption.emptySelectionClipboard);
+		this._copyWithSyntaxHighlighting = options.get(EditorOption.copyWithSyntaxHighlighting);
+		this.textArea.setAttribute('wrap', this._textAreaWrapping && !this._visibleTextArea ? 'on' : 'off');
 		const { tabSize } = this._context.viewModel.model.getOptions();
 		this.textArea.domNode.style.tabSize = `${tabSize * this._fontInfo.spaceWidth}px`;
-		this.textArea.setAttribute(
-			"aria-label",
-			ariaLabelForScreenReaderContent(options, this._keybindingService),
-		);
-		this.textArea.setAttribute(
-			"aria-required",
-			options.get(EditorOption.ariaRequired) ? "true" : "false",
-		);
-		this.textArea.setAttribute(
-			"tabindex",
-			String(options.get(EditorOption.tabIndex)),
-		);
+		this.textArea.setAttribute('aria-label', ariaLabelForScreenReaderContent(options, this._keybindingService));
+		this.textArea.setAttribute('aria-required', options.get(EditorOption.ariaRequired) ? 'true' : 'false');
+		this.textArea.setAttribute('tabindex', String(options.get(EditorOption.tabIndex)));
 
-		if (
-			e.hasChanged(EditorOption.domReadOnly) ||
-			e.hasChanged(EditorOption.readOnly)
-		) {
+		if (e.hasChanged(EditorOption.domReadOnly) || e.hasChanged(EditorOption.readOnly)) {
 			this._ensureReadOnlyAttribute();
 		}
 
 		if (e.hasChanged(EditorOption.accessibilitySupport)) {
-			this._textAreaInput.writeNativeTextAreaContent("strategy changed");
+			this._textAreaInput.writeNativeTextAreaContent('strategy changed');
 		}
 
 		return true;
 	}
-	public override onCursorStateChanged(
-		e: viewEvents.ViewCursorStateChangedEvent,
-	): boolean {
+	public override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean {
 		this._selections = e.selections.slice(0);
 		this._modelSelections = e.modelSelections.slice(0);
 		// We must update the <textarea> synchronously, otherwise long press IME on macos breaks.
 		// See https://github.com/microsoft/vscode/issues/165821
-		this._textAreaInput.writeNativeTextAreaContent("selection changed");
+		this._textAreaInput.writeNativeTextAreaContent('selection changed');
 		return true;
 	}
-	public override onDecorationsChanged(
-		e: viewEvents.ViewDecorationsChangedEvent,
-	): boolean {
+	public override onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean {
 		// true for inline decorations that can end up relayouting text
 		return true;
 	}
 	public override onFlushed(e: viewEvents.ViewFlushedEvent): boolean {
 		return true;
 	}
-	public override onLinesChanged(
-		e: viewEvents.ViewLinesChangedEvent,
-	): boolean {
+	public override onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean {
 		return true;
 	}
-	public override onLinesDeleted(
-		e: viewEvents.ViewLinesDeletedEvent,
-	): boolean {
+	public override onLinesDeleted(e: viewEvents.ViewLinesDeletedEvent): boolean {
 		return true;
 	}
-	public override onLinesInserted(
-		e: viewEvents.ViewLinesInsertedEvent,
-	): boolean {
+	public override onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean {
 		return true;
 	}
-	public override onScrollChanged(
-		e: viewEvents.ViewScrollChangedEvent,
-	): boolean {
+	public override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean {
 		this._scrollLeft = e.scrollLeft;
 		this._scrollTop = e.scrollTop;
 		return true;
 	}
-	public override onZonesChanged(
-		e: viewEvents.ViewZonesChangedEvent,
-	): boolean {
+	public override onZonesChanged(e: viewEvents.ViewZonesChangedEvent): boolean {
 		return true;
 	}
 
@@ -990,19 +873,16 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 	public setAriaOptions(options: IEditorAriaOptions): void {
 		if (options.activeDescendant) {
-			this.textArea.setAttribute("aria-haspopup", "true");
-			this.textArea.setAttribute("aria-autocomplete", "list");
-			this.textArea.setAttribute(
-				"aria-activedescendant",
-				options.activeDescendant,
-			);
+			this.textArea.setAttribute('aria-haspopup', 'true');
+			this.textArea.setAttribute('aria-autocomplete', 'list');
+			this.textArea.setAttribute('aria-activedescendant', options.activeDescendant);
 		} else {
-			this.textArea.setAttribute("aria-haspopup", "false");
-			this.textArea.setAttribute("aria-autocomplete", "both");
-			this.textArea.removeAttribute("aria-activedescendant");
+			this.textArea.setAttribute('aria-haspopup', 'false');
+			this.textArea.setAttribute('aria-autocomplete', 'both');
+			this.textArea.removeAttribute('aria-activedescendant');
 		}
 		if (options.role) {
-			this.textArea.setAttribute("role", options.role);
+			this.textArea.setAttribute('role', options.role);
 		}
 	}
 
@@ -1012,14 +892,11 @@ export class TextAreaEditContext extends AbstractEditContext {
 		const options = this._context.configuration.options;
 		// When someone requests to disable IME, we set the "readonly" attribute on the <textarea>.
 		// This will prevent composition.
-		const useReadOnly =
-			!IME.enabled ||
-			(options.get(EditorOption.domReadOnly) &&
-				options.get(EditorOption.readOnly));
+		const useReadOnly = !IME.enabled || (options.get(EditorOption.domReadOnly) && options.get(EditorOption.readOnly));
 		if (useReadOnly) {
-			this.textArea.setAttribute("readonly", "true");
+			this.textArea.setAttribute('readonly', 'true');
 		} else {
-			this.textArea.removeAttribute("readonly");
+			this.textArea.removeAttribute('readonly');
 		}
 	}
 
@@ -1027,18 +904,13 @@ export class TextAreaEditContext extends AbstractEditContext {
 	private _primaryCursorVisibleRange: HorizontalPosition | null = null;
 
 	public prepareRender(ctx: RenderingContext): void {
-		this._primaryCursorPosition = new Position(
-			this._selections[0].positionLineNumber,
-			this._selections[0].positionColumn,
-		);
-		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(
-			this._primaryCursorPosition,
-		);
+		this._primaryCursorPosition = new Position(this._selections[0].positionLineNumber, this._selections[0].positionColumn);
+		this._primaryCursorVisibleRange = ctx.visibleRangeForPosition(this._primaryCursorPosition);
 		this._visibleTextArea?.prepareRender(ctx);
 	}
 
 	public render(ctx: RestrictedRenderingContext): void {
-		this._textAreaInput.writeNativeTextAreaContent("render");
+		this._textAreaInput.writeNativeTextAreaContent('render');
 		this._render();
 	}
 
@@ -1050,29 +922,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 			const visibleEnd = this._visibleTextArea.visibleTextareaEnd;
 			const startPosition = this._visibleTextArea.startPosition;
 			const endPosition = this._visibleTextArea.endPosition;
-			if (
-				startPosition &&
-				endPosition &&
-				visibleStart &&
-				visibleEnd &&
-				visibleEnd.left >= this._scrollLeft &&
-				visibleStart.left <= this._scrollLeft + this._contentWidth
-			) {
-				const top =
-					this._context.viewLayout.getVerticalOffsetForLineNumber(
-						this._primaryCursorPosition.lineNumber,
-					) - this._scrollTop;
-				const lineCount = newlinecount(
-					this.textArea.domNode.value.substr(
-						0,
-						this.textArea.domNode.selectionStart,
-					),
-				);
+			if (startPosition && endPosition && visibleStart && visibleEnd && visibleEnd.left >= this._scrollLeft && visibleStart.left <= this._scrollLeft + this._contentWidth) {
+				const top = (this._context.viewLayout.getVerticalOffsetForLineNumber(this._primaryCursorPosition.lineNumber) - this._scrollTop);
+				const lineCount = newlinecount(this.textArea.domNode.value.substr(0, this.textArea.domNode.selectionStart));
 
-				let scrollLeft =
-					this._visibleTextArea.widthOfHiddenLineTextBefore;
-				let left =
-					this._contentLeft + visibleStart.left - this._scrollLeft;
+				let scrollLeft = this._visibleTextArea.widthOfHiddenLineTextBefore;
+				let left = (this._contentLeft + visibleStart.left - this._scrollLeft);
 				// See https://github.com/microsoft/vscode/issues/141725#issuecomment-1050670841
 				// Here we are adding +1 to avoid flickering that might be caused by having a width that is too small.
 				// This could be caused by rounding errors that might only show up with certain font families.
@@ -1085,7 +940,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 					// the textarea would be rendered on top of the margin,
 					// so reduce its width. We use the same technique as
 					// for hiding text before
-					const delta = this._contentLeft - left;
+					const delta = (this._contentLeft - left);
 					left += delta;
 					scrollLeft += delta;
 					width -= delta;
@@ -1097,23 +952,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 				}
 
 				// Try to render the textarea with the color/font style to match the text under it
-				const viewLineData = this._context.viewModel.getViewLineData(
-					startPosition.lineNumber,
-				);
-				const startTokenIndex =
-					viewLineData.tokens.findTokenIndexAtOffset(
-						startPosition.column - 1,
-					);
-				const endTokenIndex =
-					viewLineData.tokens.findTokenIndexAtOffset(
-						endPosition.column - 1,
-					);
-				const textareaSpansSingleToken =
-					startTokenIndex === endTokenIndex;
+				const viewLineData = this._context.viewModel.getViewLineData(startPosition.lineNumber);
+				const startTokenIndex = viewLineData.tokens.findTokenIndexAtOffset(startPosition.column - 1);
+				const endTokenIndex = viewLineData.tokens.findTokenIndexAtOffset(endPosition.column - 1);
+				const textareaSpansSingleToken = (startTokenIndex === endTokenIndex);
 				const presentation = this._visibleTextArea.definePresentation(
-					textareaSpansSingleToken
-						? viewLineData.tokens.getPresentation(startTokenIndex)
-						: null,
+					(textareaSpansSingleToken ? viewLineData.tokens.getPresentation(startTokenIndex) : null)
 				);
 
 				this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
@@ -1126,13 +970,11 @@ export class TextAreaEditContext extends AbstractEditContext {
 					width: width,
 					height: this._lineHeight,
 					useCover: false,
-					color: (TokenizationRegistry.getColorMap() || [])[
-						presentation.foreground
-					],
+					color: (TokenizationRegistry.getColorMap() || [])[presentation.foreground],
 					italic: presentation.italic,
 					bold: presentation.bold,
 					underline: presentation.underline,
-					strikethrough: presentation.strikethrough,
+					strikethrough: presentation.strikethrough
 				});
 			}
 			return;
@@ -1144,23 +986,14 @@ export class TextAreaEditContext extends AbstractEditContext {
 			return;
 		}
 
-		const left =
-			this._contentLeft +
-			this._primaryCursorVisibleRange.left -
-			this._scrollLeft;
-		if (
-			left < this._contentLeft ||
-			left > this._contentLeft + this._contentWidth
-		) {
+		const left = this._contentLeft + this._primaryCursorVisibleRange.left - this._scrollLeft;
+		if (left < this._contentLeft || left > this._contentLeft + this._contentWidth) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
 			return;
 		}
 
-		const top =
-			this._context.viewLayout.getVerticalOffsetForLineNumber(
-				this._selections[0].positionLineNumber,
-			) - this._scrollTop;
+		const top = this._context.viewLayout.getVerticalOffsetForLineNumber(this._selections[0].positionLineNumber) - this._scrollTop;
 		if (top < 0 || top > this._contentHeight) {
 			// cursor is outside the viewport
 			this._renderAtTopLeft();
@@ -1169,10 +1002,7 @@ export class TextAreaEditContext extends AbstractEditContext {
 
 		// The primary cursor is in the viewport (at least vertically) => place textarea on the cursor
 
-		if (
-			platform.isMacintosh ||
-			this._accessibilitySupport === AccessibilitySupport.Enabled
-		) {
+		if (platform.isMacintosh || this._accessibilitySupport === AccessibilitySupport.Enabled) {
 			// For the popup emoji input, we will make the text area as high as the line height
 			// We will also make the fontSize and lineHeight the correct dimensions to help with the placement of these pickers
 			this._doRender({
@@ -1181,20 +1011,12 @@ export class TextAreaEditContext extends AbstractEditContext {
 				left: this._textAreaWrapping ? this._contentLeft : left,
 				width: this._textAreaWidth,
 				height: this._lineHeight,
-				useCover: false,
+				useCover: false
 			});
 			// In case the textarea contains a word, we're going to try to align the textarea's cursor
 			// with our cursor by scrolling the textarea as much as possible
-			this.textArea.domNode.scrollLeft =
-				this._primaryCursorVisibleRange.left;
-			const lineCount =
-				this._textAreaInput.textAreaState.newlineCountBeforeSelection ??
-				newlinecount(
-					this.textArea.domNode.value.substring(
-						0,
-						this.textArea.domNode.selectionStart,
-					),
-				);
+			this.textArea.domNode.scrollLeft = this._primaryCursorVisibleRange.left;
+			const lineCount = this._textAreaInput.textAreaState.newlineCountBeforeSelection ?? newlinecount(this.textArea.domNode.value.substring(0, this.textArea.domNode.selectionStart));
 			this.textArea.domNode.scrollTop = lineCount * this._lineHeight;
 			return;
 		}
@@ -1204,8 +1026,8 @@ export class TextAreaEditContext extends AbstractEditContext {
 			top: top,
 			left: this._textAreaWrapping ? this._contentLeft : left,
 			width: this._textAreaWidth,
-			height: canUseZeroSizeTextarea ? 0 : 1,
-			useCover: false,
+			height: (canUseZeroSizeTextarea ? 0 : 1),
+			useCover: false
 		});
 	}
 
@@ -1217,8 +1039,8 @@ export class TextAreaEditContext extends AbstractEditContext {
 			top: 0,
 			left: 0,
 			width: this._textAreaWidth,
-			height: canUseZeroSizeTextarea ? 0 : 1,
-			useCover: true,
+			height: (canUseZeroSizeTextarea ? 0 : 1),
+			useCover: true
 		});
 	}
 
@@ -1234,19 +1056,13 @@ export class TextAreaEditContext extends AbstractEditContext {
 		ta.setWidth(renderData.width);
 		ta.setHeight(renderData.height);
 
-		ta.setColor(
-			renderData.color
-				? Color.Format.CSS.formatHex(renderData.color)
-				: "",
-		);
-		ta.setFontStyle(renderData.italic ? "italic" : "");
+		ta.setColor(renderData.color ? Color.Format.CSS.formatHex(renderData.color) : '');
+		ta.setFontStyle(renderData.italic ? 'italic' : '');
 		if (renderData.bold) {
 			// fontWeight is also set by `applyFontInfo`, so only overwrite it if necessary
-			ta.setFontWeight("bold");
+			ta.setFontWeight('bold');
 		}
-		ta.setTextDecoration(
-			`${renderData.underline ? " underline" : ""}${renderData.strikethrough ? " line-through" : ""}`,
-		);
+		ta.setTextDecoration(`${renderData.underline ? ' underline' : ''}${renderData.strikethrough ? ' line-through' : ''}`);
 
 		tac.setTop(renderData.useCover ? renderData.top : 0);
 		tac.setLeft(renderData.useCover ? renderData.left : 0);
@@ -1256,20 +1072,13 @@ export class TextAreaEditContext extends AbstractEditContext {
 		const options = this._context.configuration.options;
 
 		if (options.get(EditorOption.glyphMargin)) {
-			tac.setClassName(
-				"monaco-editor-background textAreaCover " +
-					Margin.OUTER_CLASS_NAME,
-			);
-		} else if (
-			options.get(EditorOption.lineNumbers).renderType !==
-			RenderLineNumbersType.Off
-		) {
-			tac.setClassName(
-				"monaco-editor-background textAreaCover " +
-					LineNumbersOverlay.CLASS_NAME,
-			);
+			tac.setClassName('monaco-editor-background textAreaCover ' + Margin.OUTER_CLASS_NAME);
 		} else {
-			tac.setClassName("monaco-editor-background textAreaCover");
+			if (options.get(EditorOption.lineNumbers).renderType !== RenderLineNumbersType.Off) {
+				tac.setClassName('monaco-editor-background textAreaCover ' + LineNumbersOverlay.CLASS_NAME);
+			} else {
+				tac.setClassName('monaco-editor-background textAreaCover');
+			}
 		}
 	}
 }
@@ -1289,24 +1098,19 @@ interface IRenderData {
 	strikethrough?: boolean;
 }
 
-function measureText(
-	targetDocument: Document,
-	text: string,
-	fontInfo: FontInfo,
-	tabSize: number,
-): number {
+function measureText(targetDocument: Document, text: string, fontInfo: FontInfo, tabSize: number): number {
 	if (text.length === 0) {
 		return 0;
 	}
 
-	const container = targetDocument.createElement("div");
-	container.style.position = "absolute";
-	container.style.top = "-50000px";
-	container.style.width = "50000px";
+	const container = targetDocument.createElement('div');
+	container.style.position = 'absolute';
+	container.style.top = '-50000px';
+	container.style.width = '50000px';
 
-	const regularDomNode = targetDocument.createElement("span");
+	const regularDomNode = targetDocument.createElement('span');
 	applyFontInfo(regularDomNode, fontInfo);
-	regularDomNode.style.whiteSpace = "pre"; // just like the textarea
+	regularDomNode.style.whiteSpace = 'pre'; // just like the textarea
 	regularDomNode.style.tabSize = `${tabSize * fontInfo.spaceWidth}px`; // just like the textarea
 	regularDomNode.append(text);
 	container.appendChild(regularDomNode);

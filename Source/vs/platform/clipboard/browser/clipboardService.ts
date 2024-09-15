@@ -3,36 +3,27 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { isSafari, isWebkitWebView } from "../../../base/browser/browser.js";
-import {
-	$,
-	addDisposableListener,
-	getActiveDocument,
-	getActiveWindow,
-	isHTMLElement,
-	onDidRegisterWindow,
-} from "../../../base/browser/dom.js";
-import { mainWindow } from "../../../base/browser/window.js";
-import { DeferredPromise } from "../../../base/common/async.js";
-import { Event } from "../../../base/common/event.js";
-import { hash } from "../../../base/common/hash.js";
-import { Disposable } from "../../../base/common/lifecycle.js";
-import { URI } from "../../../base/common/uri.js";
-import { ILayoutService } from "../../layout/browser/layoutService.js";
-import { ILogService } from "../../log/common/log.js";
-import type { IClipboardService } from "../common/clipboardService.js";
+import { isSafari, isWebkitWebView } from '../../../base/browser/browser.js';
+import { $, addDisposableListener, getActiveDocument, getActiveWindow, isHTMLElement, onDidRegisterWindow } from '../../../base/browser/dom.js';
+import { mainWindow } from '../../../base/browser/window.js';
+import { DeferredPromise } from '../../../base/common/async.js';
+import { Event } from '../../../base/common/event.js';
+import { hash } from '../../../base/common/hash.js';
+import { Disposable } from '../../../base/common/lifecycle.js';
+import { URI } from '../../../base/common/uri.js';
+import { IClipboardService } from '../common/clipboardService.js';
+import { ILayoutService } from '../../layout/browser/layoutService.js';
+import { ILogService } from '../../log/common/log.js';
 
 /**
  * Custom mime type used for storing a list of uris in the clipboard.
  *
  * Requires support for custom web clipboards https://github.com/w3c/clipboard-apis/pull/175
  */
-const vscodeResourcesMime = "application/vnd.code.resources";
+const vscodeResourcesMime = 'application/vnd.code.resources';
 
-export class BrowserClipboardService
-	extends Disposable
-	implements IClipboardService
-{
+export class BrowserClipboardService extends Disposable implements IClipboardService {
+
 	declare readonly _serviceBrand: undefined;
 
 	constructor(
@@ -64,9 +55,7 @@ export class BrowserClipboardService
 		);
 	}
 
-	private webKitPendingClipboardWritePromise:
-		| DeferredPromise<string>
-		| undefined;
+	private webKitPendingClipboardWritePromise: DeferredPromise<string> | undefined;
 
 	// In Safari, it has the following note:
 	//
@@ -85,10 +74,7 @@ export class BrowserClipboardService
 			const currentWritePromise = new DeferredPromise<string>();
 
 			// Cancel the previous promise since we just created a new one in response to this new event
-			if (
-				this.webKitPendingClipboardWritePromise &&
-				!this.webKitPendingClipboardWritePromise.isSettled
-			) {
+			if (this.webKitPendingClipboardWritePromise && !this.webKitPendingClipboardWritePromise.isSettled) {
 				this.webKitPendingClipboardWritePromise.cancel();
 			}
 			this.webKitPendingClipboardWritePromise = currentWritePromise;
@@ -97,45 +83,25 @@ export class BrowserClipboardService
 			// This allows us to pass in a Promise that will either be cancelled by another event or
 			// resolved with the contents of the first call to this.writeText.
 			// see https://developer.mozilla.org/en-US/docs/Web/API/ClipboardItem/ClipboardItem#parameters
-			getActiveWindow()
-				.navigator.clipboard.write([
-					new ClipboardItem({
-						"text/plain": currentWritePromise.p,
-					}),
-				])
-				.catch(async (err) => {
-					if (
-						!(err instanceof Error) ||
-						err.name !== "NotAllowedError" ||
-						!currentWritePromise.isRejected
-					) {
-						this.logService.error(err);
-					}
-				});
+			getActiveWindow().navigator.clipboard.write([new ClipboardItem({
+				'text/plain': currentWritePromise.p,
+			})]).catch(async err => {
+				if (!(err instanceof Error) || err.name !== 'NotAllowedError' || !currentWritePromise.isRejected) {
+					this.logService.error(err);
+				}
+			});
 		};
 
-		this._register(
-			Event.runAndSubscribe(
-				this.layoutService.onDidAddContainer,
-				({ container, disposables }) => {
-					disposables.add(
-						addDisposableListener(container, "click", handler),
-					);
-					disposables.add(
-						addDisposableListener(container, "keydown", handler),
-					);
-				},
-				{
-					container: this.layoutService.mainContainer,
-					disposables: this._store,
-				},
-			),
-		);
+		this._register(Event.runAndSubscribe(this.layoutService.onDidAddContainer, ({ container, disposables }) => {
+			disposables.add(addDisposableListener(container, 'click', handler));
+			disposables.add(addDisposableListener(container, 'keydown', handler));
+		}, { container: this.layoutService.mainContainer, disposables: this._store }));
 	}
 
 	private readonly mapTextToType = new Map<string, string>(); // unsupported in web (only in-memory)
 
 	async writeText(text: string, type?: string): Promise<void> {
+
 		// Clear resources given we are writing text
 		this.clearResourcesState();
 
@@ -170,18 +136,16 @@ export class BrowserClipboardService
 		const activeDocument = getActiveDocument();
 		const activeElement = activeDocument.activeElement;
 
-		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild(
-			$("textarea", { "aria-hidden": true }),
-		);
-		textArea.style.height = "1px";
-		textArea.style.width = "1px";
-		textArea.style.position = "absolute";
+		const textArea: HTMLTextAreaElement = activeDocument.body.appendChild($('textarea', { 'aria-hidden': true }));
+		textArea.style.height = '1px';
+		textArea.style.width = '1px';
+		textArea.style.position = 'absolute';
 
 		textArea.value = text;
 		textArea.focus();
 		textArea.select();
 
-		activeDocument.execCommand("copy");
+		activeDocument.execCommand('copy');
 
 		if (isHTMLElement(activeElement)) {
 			activeElement.focus();
@@ -191,9 +155,10 @@ export class BrowserClipboardService
 	}
 
 	async readText(type?: string): Promise<string> {
+
 		// With type: only in-memory is supported
 		if (type) {
-			return this.mapTextToType.get(type) || "";
+			return this.mapTextToType.get(type) || '';
 		}
 
 		// Guard access to navigator.clipboard with try/catch
@@ -205,10 +170,10 @@ export class BrowserClipboardService
 			console.error(error);
 		}
 
-		return "";
+		return '';
 	}
 
-	private findText = ""; // unsupported in web (only in-memory)
+	private findText = ''; // unsupported in web (only in-memory)
 
 	async readFindText(): Promise<string> {
 		return this.findText;
@@ -230,13 +195,12 @@ export class BrowserClipboardService
 		try {
 			await getActiveWindow().navigator.clipboard.write([
 				new ClipboardItem({
-					[`web ${vscodeResourcesMime}`]: new Blob(
-						[JSON.stringify(resources.map((x) => x.toJSON()))],
-						{
-							type: vscodeResourcesMime,
-						},
-					),
-				}),
+					[`web ${vscodeResourcesMime}`]: new Blob([
+						JSON.stringify(resources.map(x => x.toJSON()))
+					], {
+						type: vscodeResourcesMime
+					})
+				})
 			]);
 
 			// Continue to write to the in-memory clipboard as well.
@@ -261,12 +225,8 @@ export class BrowserClipboardService
 			const items = await getActiveWindow().navigator.clipboard.read();
 			for (const item of items) {
 				if (item.types.includes(`web ${vscodeResourcesMime}`)) {
-					const blob = await item.getType(
-						`web ${vscodeResourcesMime}`,
-					);
-					const resources = (
-						JSON.parse(await blob.text()) as URI[]
-					).map((x) => URI.from(x));
+					const blob = await item.getType(`web ${vscodeResourcesMime}`);
+					const resources = (JSON.parse(await blob.text()) as URI[]).map(x => URI.from(x));
 					return resources;
 				}
 			}
@@ -293,12 +253,7 @@ export class BrowserClipboardService
 		// and use that to later validate the resources clipboard.
 
 		const clipboardText = await this.readText();
-		return hash(
-			clipboardText.substring(
-				0,
-				BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH,
-			),
-		);
+		return hash(clipboardText.substring(0, BrowserClipboardService.MAX_RESOURCE_STATE_SOURCE_LENGTH));
 	}
 
 	async hasResources(): Promise<boolean> {

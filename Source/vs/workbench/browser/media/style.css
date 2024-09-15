@@ -5,85 +5,32 @@
 
 /* Animations */
 
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
-}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
 /* Font Families (with CJK support) */
 
-.mac {
-	font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-}
-.mac:lang(zh-Hans) {
-	font-family: -apple-system, BlinkMacSystemFont, "PingFang SC",
-		"Hiragino Sans GB", sans-serif;
-}
-.mac:lang(zh-Hant) {
-	font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif;
-}
-.mac:lang(ja) {
-	font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro",
-		sans-serif;
-}
-.mac:lang(ko) {
-	font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic",
-		"Apple SD Gothic Neo", "AppleGothic", sans-serif;
-}
+.mac { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+.mac:lang(zh-Hans) { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", sans-serif; }
+.mac:lang(zh-Hant) { font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", sans-serif; }
+.mac:lang(ja) { font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic Pro", sans-serif; }
+.mac:lang(ko) { font-family: -apple-system, BlinkMacSystemFont, "Nanum Gothic", "Apple SD Gothic Neo", "AppleGothic", sans-serif; }
 
-.windows {
-	font-family: "Segoe WPC", "Segoe UI", sans-serif;
-}
-.windows:lang(zh-Hans) {
-	font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif;
-}
-.windows:lang(zh-Hant) {
-	font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif;
-}
-.windows:lang(ja) {
-	font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI",
-		sans-serif;
-}
-.windows:lang(ko) {
-	font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif;
-}
+.windows { font-family: "Segoe WPC", "Segoe UI", sans-serif; }
+.windows:lang(zh-Hans) { font-family: "Segoe WPC", "Segoe UI", "Microsoft YaHei", sans-serif; }
+.windows:lang(zh-Hant) { font-family: "Segoe WPC", "Segoe UI", "Microsoft Jhenghei", sans-serif; }
+.windows:lang(ja) { font-family: "Segoe WPC", "Segoe UI", "Yu Gothic UI", "Meiryo UI", sans-serif; }
+.windows:lang(ko) { font-family: "Segoe WPC", "Segoe UI", "Malgun Gothic", "Dotom", sans-serif; }
 
 /* Linux: add `system-ui` as first font and not `Ubuntu` to allow other distribution pick their standard OS font */
-.linux {
-	font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif;
-}
-.linux:lang(zh-Hans) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC",
-		"Source Han Sans CN", "Source Han Sans", sans-serif;
-}
-.linux:lang(zh-Hant) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC",
-		"Source Han Sans TW", "Source Han Sans", sans-serif;
-}
-.linux:lang(ja) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J",
-		"Source Han Sans JP", "Source Han Sans", sans-serif;
-}
-.linux:lang(ko) {
-	font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K",
-		"Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim",
-		sans-serif;
-}
+.linux { font-family: system-ui, "Ubuntu", "Droid Sans", sans-serif; }
+.linux:lang(zh-Hans) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans SC", "Source Han Sans CN", "Source Han Sans", sans-serif; }
+.linux:lang(zh-Hant) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans TC", "Source Han Sans TW", "Source Han Sans", sans-serif; }
+.linux:lang(ja) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans J", "Source Han Sans JP", "Source Han Sans", sans-serif; }
+.linux:lang(ko) { font-family: system-ui, "Ubuntu", "Droid Sans", "Source Han Sans K", "Source Han Sans JR", "Source Han Sans", "UnDotum", "FBaekmuk Gulim", sans-serif; }
 
-.mac {
-	--monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace;
-}
-.windows {
-	--monaco-monospace-font: Consolas, "Courier New", monospace;
-}
-.linux {
-	--monaco-monospace-font: "Ubuntu Mono", "Liberation Mono",
-		"DejaVu Sans Mono", "Courier New", monospace;
-}
+.mac { --monaco-monospace-font: "SF Mono", Monaco, Menlo, Courier, monospace; }
+.windows { --monaco-monospace-font: Consolas, "Courier New", monospace; }
+.linux { --monaco-monospace-font: "Ubuntu Mono", "Liberation Mono", "DejaVu Sans Mono", "Courier New", monospace; }
 
 /* Global Styles */
 
@@ -140,6 +87,7 @@ body.web {
 	text-decoration: none;
 }
 
+
 .monaco-workbench p > a {
 	text-decoration: var(--text-link-decoration);
 }
@@ -185,25 +133,13 @@ body.web {
 	font-size: inherit;
 }
 
-.monaco-workbench input::placeholder {
-	color: var(--vscode-input-placeholderForeground);
-}
-.monaco-workbench input::-webkit-input-placeholder {
-	color: var(--vscode-input-placeholderForeground);
-}
-.monaco-workbench input::-moz-placeholder {
-	color: var(--vscode-input-placeholderForeground);
-}
+.monaco-workbench input::placeholder { color: var(--vscode-input-placeholderForeground); }
+.monaco-workbench input::-webkit-input-placeholder  { color: var(--vscode-input-placeholderForeground); }
+.monaco-workbench input::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
 
-.monaco-workbench textarea::placeholder {
-	color: var(--vscode-input-placeholderForeground);
-}
-.monaco-workbench textarea::-webkit-input-placeholder {
-	color: var(--vscode-input-placeholderForeground);
-}
-.monaco-workbench textarea::-moz-placeholder {
-	color: var(--vscode-input-placeholderForeground);
-}
+.monaco-workbench textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
+.monaco-workbench textarea::-webkit-input-placeholder { color: var(--vscode-input-placeholderForeground); }
+.monaco-workbench textarea::-moz-placeholder { color: var(--vscode-input-placeholderForeground); }
 
 .monaco-workbench .pointer {
 	cursor: pointer;
@@ -234,29 +170,25 @@ body.web {
 	color: var(--vscode-icon-foreground);
 }
 
-.monaco-workbench .codicon[class*="codicon-"] {
+.monaco-workbench .codicon[class*='codicon-'] {
 	font-size: 16px; /* sets font-size for codicons in workbench (https://github.com/microsoft/vscode/issues/98495) */
 }
 
-.monaco-workbench .predefined-file-icon[class*="codicon-"]::before {
+.monaco-workbench .predefined-file-icon[class*='codicon-']::before {
 	width: 16px;
 	padding-left: 3px; /* width (16px) - font-size (13px) = padding-left (3px) */
 	padding-right: 3px;
 }
 
-.predefined-file-icon::before {
-	/* do add additional specificity to this selector, so it can be overridden by product themes */
-	font-family: "codicon";
+.predefined-file-icon::before { /* do add additional specificity to this selector, so it can be overridden by product themes */
+	font-family: 'codicon';
 }
 
-.monaco-workbench:not(.file-icons-enabled)
-	.predefined-file-icon[class*="codicon-"]::before {
+.monaco-workbench:not(.file-icons-enabled) .predefined-file-icon[class*='codicon-']::before {
 	content: unset !important;
 }
 
-.monaco-workbench.modal-dialog-visible
-	.monaco-progress-container.infinite
-	.progress-bit {
+.monaco-workbench.modal-dialog-visible .monaco-progress-container.infinite .progress-bit {
 	display: none; /* stop progress animations when dialogs are visible (https://github.com/microsoft/vscode/issues/138396) */
 }
 
@@ -346,19 +278,11 @@ body.web {
 	outline-color: var(--vscode-focusBorder);
 }
 
-.monaco-workbench
-	.monaco-list
-	.monaco-list-row
-	.monaco-highlighted-label
-	.highlight {
+.monaco-workbench .monaco-list .monaco-list-row .monaco-highlighted-label .highlight {
 	color: var(--vscode-list-highlightForeground);
 }
 
-.monaco-workbench
-	.monaco-list
-	.monaco-list-row.focused
-	.monaco-highlighted-label
-	.highlight {
+.monaco-workbench .monaco-list .monaco-list-row.focused .monaco-highlighted-label .highlight {
 	color: var(--vscode-list-focusHighlightForeground);
 }
 
@@ -383,30 +307,17 @@ body.web {
 	text-decoration: underline; /* render underline on hover for accessibility requirements */
 }
 
-.monaco-workbench
-	.monaco-action-bar:not(.vertical)
-	.action-label:not(.disabled):hover,
-.monaco-workbench
-	.monaco-action-bar:not(.vertical)
-	.monaco-dropdown-with-primary:not(.disabled):hover {
+.monaco-workbench .monaco-action-bar:not(.vertical) .action-label:not(.disabled):hover,
+.monaco-workbench .monaco-action-bar:not(.vertical) .monaco-dropdown-with-primary:not(.disabled):hover {
 	background-color: var(--vscode-toolbar-hoverBackground);
 }
 
-.monaco-workbench
-	.monaco-action-bar:not(.vertical)
-	.action-item.active
-	.action-label:not(.disabled),
-.monaco-workbench
-	.monaco-action-bar:not(.vertical)
-	.monaco-dropdown.active
-	.action-label:not(.disabled) {
+.monaco-workbench .monaco-action-bar:not(.vertical) .action-item.active .action-label:not(.disabled),
+.monaco-workbench .monaco-action-bar:not(.vertical) .monaco-dropdown.active .action-label:not(.disabled) {
 	background-color: var(--vscode-toolbar-activeBackground);
 }
 
-.monaco-workbench
-	.monaco-action-bar:not(.vertical)
-	.action-item
-	.action-label:hover:not(.disabled) {
+.monaco-workbench .monaco-action-bar:not(.vertical) .action-item .action-label:hover:not(.disabled) {
 	outline: 1px dashed var(--vscode-toolbar-hoverOutline);
 	outline-offset: -1px;
 }

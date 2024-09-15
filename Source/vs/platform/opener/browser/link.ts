@@ -3,30 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import {
-	$,
-	append,
-	clearNode,
-	EventHelper,
-	type EventLike,
-} from "../../../base/browser/dom.js";
-import { DomEmitter } from "../../../base/browser/event.js";
-import { StandardKeyboardEvent } from "../../../base/browser/keyboardEvent.js";
-import {
-	Gesture,
-	EventType as TouchEventType,
-} from "../../../base/browser/touch.js";
-import { Event } from "../../../base/common/event.js";
-import { KeyCode } from "../../../base/common/keyCodes.js";
-import { Disposable } from "../../../base/common/lifecycle.js";
-import { IOpenerService } from "../common/opener.js";
-
-import "./link.css";
-
-import type { IManagedHover } from "../../../base/browser/ui/hover/hover.js";
-import type { IHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegate.js";
-import { getDefaultHoverDelegate } from "../../../base/browser/ui/hover/hoverDelegateFactory.js";
-import { IHoverService } from "../../hover/browser/hover.js";
+import { $, append, EventHelper, EventLike, clearNode } from '../../../base/browser/dom.js';
+import { DomEmitter } from '../../../base/browser/event.js';
+import { StandardKeyboardEvent } from '../../../base/browser/keyboardEvent.js';
+import { EventType as TouchEventType, Gesture } from '../../../base/browser/touch.js';
+import { Event } from '../../../base/common/event.js';
+import { KeyCode } from '../../../base/common/keyCodes.js';
+import { Disposable } from '../../../base/common/lifecycle.js';
+import { IOpenerService } from '../common/opener.js';
+import './link.css';
+import { getDefaultHoverDelegate } from '../../../base/browser/ui/hover/hoverDelegateFactory.js';
+import { IHoverDelegate } from '../../../base/browser/ui/hover/hoverDelegate.js';
+import type { IManagedHover } from '../../../base/browser/ui/hover/hover.js';
+import { IHoverService } from '../../hover/browser/hover.js';
 
 export interface ILinkDescriptor {
 	readonly label: string | HTMLElement;
@@ -42,11 +31,12 @@ export interface ILinkOptions {
 }
 
 export class Link extends Disposable {
+
 	private el: HTMLAnchorElement;
 	private hover?: IManagedHover;
 	private hoverDelegate: IHoverDelegate;
 
-	private _enabled = true;
+	private _enabled: boolean = true;
 
 	get enabled(): boolean {
 		return this._enabled;
@@ -54,18 +44,18 @@ export class Link extends Disposable {
 
 	set enabled(enabled: boolean) {
 		if (enabled) {
-			this.el.setAttribute("aria-disabled", "false");
+			this.el.setAttribute('aria-disabled', 'false');
 			this.el.tabIndex = 0;
-			this.el.style.pointerEvents = "auto";
-			this.el.style.opacity = "1";
-			this.el.style.cursor = "pointer";
+			this.el.style.pointerEvents = 'auto';
+			this.el.style.opacity = '1';
+			this.el.style.cursor = 'pointer';
 			this._enabled = false;
 		} else {
-			this.el.setAttribute("aria-disabled", "true");
+			this.el.setAttribute('aria-disabled', 'true');
 			this.el.tabIndex = -1;
-			this.el.style.pointerEvents = "none";
-			this.el.style.opacity = "0.4";
-			this.el.style.cursor = "default";
+			this.el.style.pointerEvents = 'none';
+			this.el.style.opacity = '0.4';
+			this.el.style.cursor = 'default';
 			this._enabled = true;
 		}
 
@@ -73,7 +63,7 @@ export class Link extends Disposable {
 	}
 
 	set link(link: ILinkDescriptor) {
-		if (typeof link.label === "string") {
+		if (typeof link.label === 'string') {
 			this.el.textContent = link.label;
 		} else {
 			clearNode(this.el);
@@ -82,7 +72,7 @@ export class Link extends Disposable {
 
 		this.el.href = link.href;
 
-		if (typeof link.tabIndex !== "undefined") {
+		if (typeof link.tabIndex !== 'undefined') {
 			this.el.tabIndex = link.tabIndex;
 		}
 
@@ -158,15 +148,9 @@ export class Link extends Disposable {
 
 	private setTooltip(title: string | undefined): void {
 		if (this.hoverDelegate.showNativeHover) {
-			this.el.title = title ?? "";
+			this.el.title = title ?? '';
 		} else if (!this.hover && title) {
-			this.hover = this._register(
-				this._hoverService.setupManagedHover(
-					this.hoverDelegate,
-					this.el,
-					title,
-				),
-			);
+			this.hover = this._register(this._hoverService.setupManagedHover(this.hoverDelegate, this.el, title));
 		} else if (this.hover) {
 			this.hover.update(title);
 		}

@@ -6,9 +6,7 @@
 /**
  * Helper to get the hostname of a possible UNC path.
  */
-export function getUNCHost(
-	maybeUNCPath: string | undefined | null,
-): string | undefined;
+export function getUNCHost(maybeUNCPath: string | undefined | null): string | undefined;
 
 /**
  * Returns the current list of allowed UNC hosts as defined by node.js.

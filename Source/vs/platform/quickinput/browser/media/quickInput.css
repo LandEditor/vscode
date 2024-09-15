@@ -189,9 +189,7 @@
 	border-radius: 3px;
 }
 
-.quick-input-list
-	.monaco-list-row[data-index="0"]
-	.quick-input-list-entry.quick-input-list-separator-border {
+.quick-input-list .monaco-list-row[data-index="0"] .quick-input-list-entry.quick-input-list-separator-border {
 	border-top-style: none;
 }
 
@@ -236,9 +234,7 @@
 .quick-input-widget .quick-input-list .quick-input-list-checkbox {
 	display: none;
 }
-.quick-input-widget.show-checkboxes
-	.quick-input-list
-	.quick-input-list-checkbox {
+.quick-input-widget.show-checkboxes .quick-input-list .quick-input-list-checkbox {
 	display: inline;
 }
 
@@ -247,23 +243,12 @@
 	align-items: center;
 }
 
-.quick-input-list
-	.quick-input-list-rows
-	> .quick-input-list-row
-	.monaco-icon-label,
-.quick-input-list
-	.quick-input-list-rows
-	> .quick-input-list-row
-	.monaco-icon-label
-	.monaco-icon-label-container
-	> .monaco-icon-name-container {
+.quick-input-list .quick-input-list-rows > .quick-input-list-row .monaco-icon-label,
+.quick-input-list .quick-input-list-rows > .quick-input-list-row .monaco-icon-label .monaco-icon-label-container > .monaco-icon-name-container {
 	flex: 1; /* make sure the icon label grows within the row */
 }
 
-.quick-input-list
-	.quick-input-list-rows
-	> .quick-input-list-row
-	.codicon[class*="codicon-"] {
+.quick-input-list .quick-input-list-rows > .quick-input-list-row .codicon[class*='codicon-'] {
 	vertical-align: text-bottom;
 }
 
@@ -283,22 +268,14 @@
 }
 
 /* preserve list-like styling instead of tree-like styling */
-.quick-input-list
-	.monaco-list
-	.monaco-list-row
-	.monaco-highlighted-label
-	.highlight {
+.quick-input-list .monaco-list .monaco-list-row .monaco-highlighted-label .highlight {
 	font-weight: bold;
 	background-color: unset;
 	color: var(--vscode-list-highlightForeground) !important;
 }
 
 /* preserve list-like styling instead of tree-like styling */
-.quick-input-list
-	.monaco-list
-	.monaco-list-row.focused
-	.monaco-highlighted-label
-	.highlight {
+.quick-input-list .monaco-list .monaco-list-row.focused .monaco-highlighted-label .highlight {
 	color: var(--vscode-list-focusHighlightForeground) !important;
 }
 
@@ -333,36 +310,18 @@
 	margin-right: 4px; /* separate from scrollbar */
 }
 
-.quick-input-list
-	.quick-input-list-entry
-	.quick-input-list-entry-action-bar
-	.action-label.always-visible,
-.quick-input-list
-	.quick-input-list-entry:hover
-	.quick-input-list-entry-action-bar
-	.action-label,
-.quick-input-list
-	.quick-input-list-entry.focus-inside
-	.quick-input-list-entry-action-bar
-	.action-label,
-.quick-input-list
-	.monaco-list-row.focused
-	.quick-input-list-entry-action-bar
-	.action-label,
-.quick-input-list
-	.monaco-list-row.passive-focused
-	.quick-input-list-entry-action-bar
-	.action-label {
+.quick-input-list .quick-input-list-entry .quick-input-list-entry-action-bar .action-label.always-visible,
+.quick-input-list .quick-input-list-entry:hover .quick-input-list-entry-action-bar .action-label,
+.quick-input-list .quick-input-list-entry.focus-inside .quick-input-list-entry-action-bar .action-label,
+.quick-input-list .monaco-list-row.focused .quick-input-list-entry-action-bar .action-label,
+.quick-input-list .monaco-list-row.passive-focused .quick-input-list-entry-action-bar .action-label {
 	display: flex;
 }
 
 /* focused items in quick pick */
 .quick-input-list .monaco-list-row.focused .monaco-keybinding-key,
-.quick-input-list
-	.monaco-list-row.focused
-	.quick-input-list-entry
-	.quick-input-list-separator {
-	color: inherit;
+.quick-input-list .monaco-list-row.focused .quick-input-list-entry .quick-input-list-separator {
+	color: inherit
 }
 .quick-input-list .monaco-list-row.focused .monaco-keybinding-key {
 	background: none;
@@ -384,9 +343,7 @@
 }
 
 /* Hide border when the item becomes the sticky one */
-.quick-input-list
-	.monaco-tree-sticky-row
-	.quick-input-list-entry.quick-input-list-separator-as-item.quick-input-list-separator-border {
+.quick-input-list .monaco-tree-sticky-row .quick-input-list-entry.quick-input-list-separator-as-item.quick-input-list-separator-border {
 	border-top-style: none;
 }
 

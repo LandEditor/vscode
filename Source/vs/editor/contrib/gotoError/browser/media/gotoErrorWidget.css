@@ -53,24 +53,15 @@
 	color: inherit;
 }
 
-.monaco-editor
-	.marker-widget
-	.descriptioncontainer
-	.message
-	a.code-link:before {
-	content: "(";
+.monaco-editor .marker-widget .descriptioncontainer .message a.code-link:before {
+	content: '(';
 }
 
 .monaco-editor .marker-widget .descriptioncontainer .message a.code-link:after {
-	content: ")";
+	content: ')';
 }
 
-.monaco-editor
-	.marker-widget
-	.descriptioncontainer
-	.message
-	a.code-link
-	> span {
+.monaco-editor .marker-widget .descriptioncontainer .message a.code-link > span {
 	text-decoration: underline;
 	/** Hack to force underline to show **/
 	border-bottom: 1px solid transparent;

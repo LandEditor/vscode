@@ -1,38 +1,20 @@
-import type { VSBuffer } from "../../../../../base/common/buffer.js";
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import {
-	LcsDiff,
-	type ISequence,
-} from "../../../../../base/common/diff/diff.js";
-import { doHash, hash, numberHash } from "../../../../../base/common/hash.js";
-import type { IDisposable } from "../../../../../base/common/lifecycle.js";
-import { URI } from "../../../../../base/common/uri.js";
-import type {
-	IRequestHandler,
-	IWorkerServer,
-} from "../../../../../base/common/worker/simpleWorker.js";
-import { Range } from "../../../../../editor/common/core/range.js";
-import { DefaultEndOfLine } from "../../../../../editor/common/model.js";
-import type { IModelChangedEvent } from "../../../../../editor/common/model/mirrorTextModel.js";
-import { PieceTreeTextBufferBuilder } from "../../../../../editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder.js";
-import { SearchParams } from "../../../../../editor/common/model/textModelSearch.js";
-import { MirrorModel } from "../../../../../editor/common/services/textModelSync/textModelSync.impl.js";
-import {
-	CellKind,
-	NotebookCellsChangeType,
-	type ICellDto2,
-	type IMainCellDto,
-	type INotebookDiffResult,
-	type IOutputDto,
-	type NotebookCellInternalMetadata,
-	type NotebookCellMetadata,
-	type NotebookCellsChangedEventDto,
-	type NotebookCellTextModelSplice,
-	type NotebookDocumentMetadata,
-} from "../notebookCommon.js";
+import { ISequence, LcsDiff } from '../../../../../base/common/diff/diff.js';
+import { doHash, hash, numberHash } from '../../../../../base/common/hash.js';
+import { IDisposable } from '../../../../../base/common/lifecycle.js';
+import { URI } from '../../../../../base/common/uri.js';
+import { IRequestHandler, IWorkerServer } from '../../../../../base/common/worker/simpleWorker.js';
+import { PieceTreeTextBufferBuilder } from '../../../../../editor/common/model/pieceTreeTextBuffer/pieceTreeTextBufferBuilder.js';
+import { CellKind, ICellDto2, IMainCellDto, INotebookDiffResult, IOutputDto, NotebookCellInternalMetadata, NotebookCellMetadata, NotebookCellsChangedEventDto, NotebookCellsChangeType, NotebookCellTextModelSplice, NotebookDocumentMetadata } from '../notebookCommon.js';
+import { Range } from '../../../../../editor/common/core/range.js';
+import { VSBuffer } from '../../../../../base/common/buffer.js';
+import { SearchParams } from '../../../../../editor/common/model/textModelSearch.js';
+import { MirrorModel } from '../../../../../editor/common/services/textModelSync/textModelSync.impl.js';
+import { DefaultEndOfLine } from '../../../../../editor/common/model.js';
+import { IModelChangedEvent } from '../../../../../editor/common/model/mirrorTextModel.js';
 
 function bufferHash(buffer: VSBuffer): number {
 	let initialHashVal = numberHash(104579, 0);
@@ -47,9 +29,7 @@ class MirrorCell {
 	private readonly textModel: MirrorModel;
 	private _hash: number | null = null;
 	public get eol() {
-		return this._eol === "\r\n"
-			? DefaultEndOfLine.CRLF
-			: DefaultEndOfLine.LF;
+		return this._eol === '\r\n' ? DefaultEndOfLine.CRLF : DefaultEndOfLine.LF;
 	}
 	constructor(
 		public readonly handle: number,
@@ -62,6 +42,7 @@ class MirrorCell {
 		public outputs: IOutputDto[],
 		public metadata?: NotebookCellMetadata,
 		public internalMetadata?: NotebookCellInternalMetadata,
+
 	) {
 		this.textModel = new MirrorModel(uri, source, _eol, versionId);
 	}
@@ -75,19 +56,13 @@ class MirrorCell {
 	}
 
 	getComparisonValue(): number {
-		this._hash = hash([
-			hash(this.language),
-			hash(this.getValue()),
-			this.metadata,
-			this.internalMetadata,
-			this.outputs.map((op) => ({
-				outputs: op.outputs.map((output) => ({
-					mime: output.mime,
-					data: bufferHash(output.data),
-				})),
-				metadata: op.metadata,
+		this._hash = hash([hash(this.language), hash(this.getValue()), this.metadata, this.internalMetadata, this.outputs.map(op => ({
+			outputs: op.outputs.map(output => ({
+				mime: output.mime,
+				data: bufferHash(output.data)
 			})),
-		]);
+			metadata: op.metadata
+		}))]);
 		return this._hash;
 	}
 }
@@ -97,13 +72,14 @@ class MirrorNotebookDocument {
 		readonly uri: URI,
 		public cells: MirrorCell[],
 		public metadata: NotebookDocumentMetadata,
-	) {}
+	) {
+	}
 
 	acceptModelChanged(event: NotebookCellsChangedEventDto) {
 		// note that the cell content change is not applied to the MirrorCell
 		// but it's fine as if a cell content is modified after the first diff, its position will not change any more
 		// TODO@rebornix, but it might lead to interesting bugs in the future.
-		event.rawEvents.forEach((e) => {
+		event.rawEvents.forEach(e => {
 			if (e.kind === NotebookCellsChangeType.ModelChange) {
 				this._spliceNotebookCells(e.changes);
 			} else if (e.kind === NotebookCellsChangeType.Move) {
@@ -120,9 +96,7 @@ class MirrorNotebookDocument {
 				this._assertIndex(e.index);
 				const cell = this.cells[e.index];
 				cell.metadata = e.metadata;
-			} else if (
-				e.kind === NotebookCellsChangeType.ChangeCellInternalMetadata
-			) {
+			} else if (e.kind === NotebookCellsChangeType.ChangeCellInternalMetadata) {
 				this._assertIndex(e.index);
 				const cell = this.cells[e.index];
 				cell.internalMetadata = e.internalMetadata;
@@ -132,16 +106,14 @@ class MirrorNotebookDocument {
 
 	private _assertIndex(index: number): void {
 		if (index < 0 || index >= this.cells.length) {
-			throw new Error(
-				`Illegal index ${index}. Cells length: ${this.cells.length}`,
-			);
+			throw new Error(`Illegal index ${index}. Cells length: ${this.cells.length}`);
 		}
 	}
 
 	_spliceNotebookCells(splices: NotebookCellTextModelSplice<IMainCellDto>[]) {
-		splices.reverse().forEach((splice) => {
+		splices.reverse().forEach(splice => {
 			const cellDtos = splice[2];
-			const newCells = cellDtos.map((cell) => {
+			const newCells = cellDtos.map(cell => {
 				return new MirrorCell(
 					cell.handle,
 					URI.parse(cell.url),
@@ -161,7 +133,9 @@ class MirrorNotebookDocument {
 }
 
 class CellSequence implements ISequence {
-	constructor(readonly textModel: MirrorNotebookDocument) {}
+
+	constructor(readonly textModel: MirrorNotebookDocument) {
+	}
 
 	getElements(): string[] | number[] | Int32Array {
 		const hashValue = new Int32Array(this.textModel.cells.length);
@@ -173,17 +147,13 @@ class CellSequence implements ISequence {
 	}
 
 	getCellHash(cell: ICellDto2) {
-		const source = Array.isArray(cell.source)
-			? cell.source.join("\n")
-			: cell.source;
+		const source = Array.isArray(cell.source) ? cell.source.join('\n') : cell.source;
 		const hashVal = hash([hash(source), cell.metadata]);
 		return hashVal;
 	}
 }
 
-export class NotebookEditorSimpleWorker
-	implements IRequestHandler, IDisposable
-{
+export class NotebookEditorSimpleWorker implements IRequestHandler, IDisposable {
 	_requestHandlerBrand: any;
 
 	private _models: { [uri: string]: MirrorNotebookDocument };
@@ -191,48 +161,31 @@ export class NotebookEditorSimpleWorker
 	constructor() {
 		this._models = Object.create(null);
 	}
-	dispose(): void {}
-
-	public $acceptNewModel(
-		uri: string,
-		metadata: NotebookDocumentMetadata,
-		cells: IMainCellDto[],
-	): void {
-		this._models[uri] = new MirrorNotebookDocument(
-			URI.parse(uri),
-			cells.map(
-				(dto) =>
-					new MirrorCell(
-						dto.handle,
-						URI.parse(dto.url),
-						dto.source,
-						dto.eol,
-						dto.versionId,
-						dto.language,
-						dto.cellKind,
-						dto.outputs,
-						dto.metadata,
-					),
-			),
-			metadata,
-		);
+	dispose(): void {
 	}
 
-	public $acceptModelChanged(
-		strURL: string,
-		event: NotebookCellsChangedEventDto,
-	) {
+	public $acceptNewModel(uri: string, metadata: NotebookDocumentMetadata, cells: IMainCellDto[]): void {
+		this._models[uri] = new MirrorNotebookDocument(URI.parse(uri), cells.map(dto => new MirrorCell(
+			dto.handle,
+			URI.parse(dto.url),
+			dto.source,
+			dto.eol,
+			dto.versionId,
+			dto.language,
+			dto.cellKind,
+			dto.outputs,
+			dto.metadata
+		)), metadata);
+	}
+
+	public $acceptModelChanged(strURL: string, event: NotebookCellsChangedEventDto) {
 		const model = this._models[strURL];
 		model?.acceptModelChanged(event);
 	}
 
-	public $acceptCellModelChanged(
-		strURL: string,
-		handle: number,
-		event: IModelChangedEvent,
-	) {
+	public $acceptCellModelChanged(strURL: string, handle: number, event: IModelChangedEvent) {
 		const model = this._models[strURL];
-		model.cells.find((cell) => cell.handle === handle)?.onEvents(event);
+		model.cells.find(cell => cell.handle === handle)?.onEvents(event);
 	}
 
 	public $acceptRemovedModel(strURL: string): void {
@@ -242,17 +195,11 @@ export class NotebookEditorSimpleWorker
 		delete this._models[strURL];
 	}
 
-	$computeDiff(
-		originalUrl: string,
-		modifiedUrl: string,
-	): INotebookDiffResult {
+	$computeDiff(originalUrl: string, modifiedUrl: string): INotebookDiffResult {
 		const original = this._getModel(originalUrl);
 		const modified = this._getModel(modifiedUrl);
 
-		const diff = new LcsDiff(
-			new CellSequence(original),
-			new CellSequence(modified),
-		);
+		const diff = new LcsDiff(new CellSequence(original), new CellSequence(modified));
 		const diffResult = diff.ComputeDiff(false);
 
 		/* let cellLineChanges: { originalCellhandle: number, modifiedCellhandle: number, lineChanges: ILineChange[] }[] = [];
@@ -305,9 +252,7 @@ export class NotebookEditorSimpleWorker
 		});
  */
 		return {
-			metadataChanged:
-				JSON.stringify(original.metadata) !==
-				JSON.stringify(modified.metadata),
+			metadataChanged: JSON.stringify(original.metadata) !== JSON.stringify(modified.metadata),
 			cellsDiff: diffResult,
 			// linesDiff: cellLineChanges
 		};
@@ -323,16 +268,11 @@ export class NotebookEditorSimpleWorker
 				continue;
 			}
 
-			if (cell.language !== "python") {
+			if (cell.language !== 'python') {
 				continue;
 			}
 
-			const searchParams = new SearchParams(
-				"import\\s*pandas|from\\s*pandas",
-				true,
-				false,
-				null,
-			);
+			const searchParams = new SearchParams('import\\s*pandas|from\\s*pandas', true, false, null);
 			const searchData = searchParams.parseSearchRequest();
 
 			if (!searchData) {
@@ -346,18 +286,8 @@ export class NotebookEditorSimpleWorker
 
 			const lineCount = textBuffer.getLineCount();
 			const maxLineCount = Math.min(lineCount, 20);
-			const range = new Range(
-				1,
-				1,
-				maxLineCount,
-				textBuffer.getLineLength(maxLineCount) + 1,
-			);
-			const cellMatches = textBuffer.findMatchesLineByLine(
-				range,
-				searchData,
-				true,
-				1,
-			);
+			const range = new Range(1, 1, maxLineCount, textBuffer.getLineLength(maxLineCount) + 1);
+			const cellMatches = textBuffer.findMatchesLineByLine(range, searchData, true, 1);
 			if (cellMatches.length > 0) {
 				return true;
 			}

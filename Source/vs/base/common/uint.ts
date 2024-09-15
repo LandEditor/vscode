@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-export enum Constants {
+export const enum Constants {
 	/**
 	 * MAX SMI (SMall Integer) as defined in v8.
 	 * one bit is lost for boxing/unboxing flag.
@@ -35,7 +35,7 @@ export enum Constants {
 	 */
 	MAX_UINT_32 = 4294967295, // 2^32 - 1
 
-	UNICODE_SUPPLEMENTARY_PLANE_BEGIN = 0x010000,
+	UNICODE_SUPPLEMENTARY_PLANE_BEGIN = 0x010000
 }
 
 export function toUint8(v: number): number {

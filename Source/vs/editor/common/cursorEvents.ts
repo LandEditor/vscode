@@ -3,13 +3,13 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import type { Position } from "./core/position.js";
-import type { Selection } from "./core/selection.js";
+import { Position } from './core/position.js';
+import { Selection } from './core/selection.js';
 
 /**
  * Describes the reason the cursor has changed its position.
  */
-export enum CursorChangeReason {
+export const enum CursorChangeReason {
 	/**
 	 * Unknown or not set.
 	 */

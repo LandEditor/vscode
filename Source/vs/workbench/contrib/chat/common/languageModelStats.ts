@@ -3,35 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Emitter } from "../../../../base/common/event.js";
-import { Disposable } from "../../../../base/common/lifecycle.js";
-import { localize } from "../../../../nls.js";
-import { ExtensionIdentifier } from "../../../../platform/extensions/common/extensions.js";
-import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
-import { Registry } from "../../../../platform/registry/common/platform.js";
-import {
-	IStorageService,
-	StorageScope,
-	StorageTarget,
-} from "../../../../platform/storage/common/storage.js";
-import {
-	Extensions,
-	IExtensionFeaturesManagementService,
-	type IExtensionFeaturesRegistry,
-} from "../../../services/extensionManagement/common/extensionFeatures.js";
+import { Emitter } from '../../../../base/common/event.js';
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
+import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
+import { ExtensionIdentifier } from '../../../../platform/extensions/common/extensions.js';
+import { Extensions, IExtensionFeaturesManagementService, IExtensionFeaturesRegistry } from '../../../services/extensionManagement/common/extensionFeatures.js';
+import { Registry } from '../../../../platform/registry/common/platform.js';
+import { localize } from '../../../../nls.js';
 
-export const ILanguageModelStatsService =
-	createDecorator<ILanguageModelStatsService>("ILanguageModelStatsService");
+export const ILanguageModelStatsService = createDecorator<ILanguageModelStatsService>('ILanguageModelStatsService');
 
 export interface ILanguageModelStatsService {
 	readonly _serviceBrand: undefined;
 
-	update(
-		model: string,
-		extensionId: ExtensionIdentifier,
-		agent: string | undefined,
-		tokenCount: number | undefined,
-	): Promise<void>;
+	update(model: string, extensionId: ExtensionIdentifier, agent: string | undefined, tokenCount: number | undefined): Promise<void>;
 }
 
 interface LanguageModelStats {
@@ -47,14 +33,10 @@ interface LanguageModelStats {
 	}[];
 }
 
-export class LanguageModelStatsService
-	extends Disposable
-	implements ILanguageModelStatsService
-{
-	private static readonly MODEL_STATS_STORAGE_KEY_PREFIX =
-		"languageModelStats.";
-	private static readonly MODEL_ACCESS_STORAGE_KEY_PREFIX =
-		"languageModelAccess.";
+export class LanguageModelStatsService extends Disposable implements ILanguageModelStatsService {
+
+	private static readonly MODEL_STATS_STORAGE_KEY_PREFIX = 'languageModelStats.';
+	private static readonly MODEL_ACCESS_STORAGE_KEY_PREFIX = 'languageModelAccess.';
 
 	declare _serviceBrand: undefined;
 
@@ -84,21 +66,11 @@ export class LanguageModelStatsService
 	}
 
 	hasAccessedModel(extensionId: string, model: string): boolean {
-		return this.getAccessExtensions(model).includes(
-			extensionId.toLowerCase(),
-		);
+		return this.getAccessExtensions(model).includes(extensionId.toLowerCase());
 	}
 
-	async update(
-		model: string,
-		extensionId: ExtensionIdentifier,
-		agent: string | undefined,
-		tokenCount: number | undefined,
-	): Promise<void> {
-		await this.extensionFeaturesManagementService.getAccess(
-			extensionId,
-			"languageModels",
-		);
+	async update(model: string, extensionId: ExtensionIdentifier, agent: string | undefined, tokenCount: number | undefined): Promise<void> {
+		await this.extensionFeaturesManagementService.getAccess(extensionId, 'languageModels');
 
 		// update model access
 		this.addAccess(model, extensionId.value);
@@ -120,12 +92,7 @@ export class LanguageModelStatsService
 		const extensions = this.getAccessExtensions(model);
 		if (!extensions.includes(extensionId)) {
 			extensions.push(extensionId);
-			this._storageService.store(
-				this.getAccessKey(model),
-				JSON.stringify(extensions),
-				StorageScope.APPLICATION,
-				StorageTarget.USER,
-			);
+			this._storageService.store(this.getAccessKey(model), JSON.stringify(extensions), StorageScope.APPLICATION, StorageTarget.USER);
 		}
 	}
 
@@ -143,52 +110,25 @@ export class LanguageModelStatsService
 			// ignore
 		}
 		return [];
+
 	}
 
-	private async write(
-		model: string,
-		extensionId: string,
-		participant: string | undefined,
-		tokenCount: number | undefined,
-	): Promise<void> {
+	private async write(model: string, extensionId: string, participant: string | undefined, tokenCount: number | undefined): Promise<void> {
 		const modelStats = await this.read(model);
 		this.add(modelStats, extensionId, participant, tokenCount);
-		this._storageService.store(
-			this.getKey(model),
-			JSON.stringify(modelStats),
-			StorageScope.APPLICATION,
-			StorageTarget.USER,
-		);
+		this._storageService.store(this.getKey(model), JSON.stringify(modelStats), StorageScope.APPLICATION, StorageTarget.USER);
 	}
 
-	private add(
-		modelStats: LanguageModelStats,
-		extensionId: string,
-		participant: string | undefined,
-		tokenCount: number | undefined,
-	): void {
-		let extensionStats = modelStats.extensions.find((e) =>
-			ExtensionIdentifier.equals(e.extensionId, extensionId),
-		);
+	private add(modelStats: LanguageModelStats, extensionId: string, participant: string | undefined, tokenCount: number | undefined): void {
+		let extensionStats = modelStats.extensions.find(e => ExtensionIdentifier.equals(e.extensionId, extensionId));
 		if (!extensionStats) {
-			extensionStats = {
-				extensionId,
-				requestCount: 0,
-				tokenCount: 0,
-				participants: [],
-			};
+			extensionStats = { extensionId, requestCount: 0, tokenCount: 0, participants: [] };
 			modelStats.extensions.push(extensionStats);
 		}
 		if (participant) {
-			let participantStats = extensionStats.participants.find(
-				(p) => p.id === participant,
-			);
+			let participantStats = extensionStats.participants.find(p => p.id === participant);
 			if (!participantStats) {
-				participantStats = {
-					id: participant,
-					requestCount: 0,
-					tokenCount: 0,
-				};
+				participantStats = { id: participant, requestCount: 0, tokenCount: 0 };
 				extensionStats.participants.push(participantStats);
 			}
 			participantStats.requestCount++;
@@ -201,10 +141,7 @@ export class LanguageModelStatsService
 
 	private async read(model: string): Promise<LanguageModelStats> {
 		try {
-			const value = this._storageService.get(
-				this.getKey(model),
-				StorageScope.APPLICATION,
-			);
+			const value = this._storageService.get(this.getKey(model), StorageScope.APPLICATION);
 			if (value) {
 				return JSON.parse(value);
 			}
@@ -215,14 +152,8 @@ export class LanguageModelStatsService
 	}
 
 	private getModel(key: string): string | undefined {
-		if (
-			key.startsWith(
-				LanguageModelStatsService.MODEL_STATS_STORAGE_KEY_PREFIX,
-			)
-		) {
-			return key.substring(
-				LanguageModelStatsService.MODEL_STATS_STORAGE_KEY_PREFIX.length,
-			);
+		if (key.startsWith(LanguageModelStatsService.MODEL_STATS_STORAGE_KEY_PREFIX)) {
+			return key.substring(LanguageModelStatsService.MODEL_STATS_STORAGE_KEY_PREFIX.length);
 		}
 		return undefined;
 	}
@@ -236,16 +167,11 @@ export class LanguageModelStatsService
 	}
 }
 
-Registry.as<IExtensionFeaturesRegistry>(
-	Extensions.ExtensionFeaturesRegistry,
-).registerExtensionFeature({
-	id: "languageModels",
-	label: localize("Language Models", "Language Models"),
-	description: localize(
-		"languageModels",
-		"Language models usage statistics of this extension.",
-	),
+Registry.as<IExtensionFeaturesRegistry>(Extensions.ExtensionFeaturesRegistry).registerExtensionFeature({
+	id: 'languageModels',
+	label: localize('Language Models', "Language Models"),
+	description: localize('languageModels', "Language models usage statistics of this extension."),
 	access: {
-		canToggle: false,
+		canToggle: false
 	},
 });
