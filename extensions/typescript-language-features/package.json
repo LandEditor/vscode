@@ -704,7 +704,7 @@
 					"type": "boolean"
 				},
 				"js/ts.implicitProjectConfig.target": {
-					"default": "ES2020",
+					"default": "ES2022",
 					"enum": [
 						"ES3",
 						"ES5",
@@ -717,6 +717,8 @@
 						"ES2020",
 						"ES2021",
 						"ES2022",
+						"ES2023",
+						"ES2024",
 						"ESNext"
 					],
 					"markdownDescription": "%configuration.implicitProjectConfig.target%",
@@ -1790,7 +1792,6 @@
 	"displayName": "%displayName%",
 	"enabledApiProposals": [
 		"workspaceTrust",
-		"createFileSystemWatcher",
 		"multiDocumentHighlightProvider",
 		"mappedEditsProvider",
 		"codeActionAI",
