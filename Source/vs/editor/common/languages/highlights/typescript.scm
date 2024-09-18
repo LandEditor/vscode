@@ -19,12 +19,13 @@
 
 (binary_expression "instanceof" @keyword.operator.expression.instanceof)
 
+("of") @keyword.operator.expression.of
+
 [
   "delete"
   "in"
   "infer"
   "keyof"
-  "of"
 ] @keyword.operator.expression
 
 [
@@ -120,14 +121,14 @@
   "??"
 ] @keyword.operator.logical
 
-[
+(binary_expression ([
   "-"
   "+"
   "*"
   "/"
   "%"
   "^"
-] @keyword.operator.arithmetic
+]) @keyword.operator.arithmetic)
 
 (binary_expression ([
   "<"
