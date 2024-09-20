@@ -460,10 +460,15 @@ export class UserDataProfileElement extends AbstractUserDataProfileElement {
 				this._onDidChange.fire({ profile: true });
 			}
 		}));
+		// Current window does not emit extensions change events, so we need to watch the extensios resource explicitly
+		this._register(fileService.watch(this.profile.extensionsResource));
 		this._register(fileService.watch(this.profile.snippetsHome));
 		this._register(fileService.onDidFilesChange(e => {
 			if (e.affects(this.profile.snippetsHome)) {
 				this._onDidChange.fire({ snippets: true });
+			}
+			if (e.affects(this.profile.extensionsResource)) {
+				this._onDidChange.fire({ extensions: true });
 			}
 		}));
 	}
@@ -605,6 +610,11 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 		this._copyFlags = this.getCopyFlagsFrom(copyFrom);
 		this.initialize();
 		this._register(this.fileService.registerProvider(USER_DATA_PROFILE_TEMPLATE_PREVIEW_SCHEME, this._register(new InMemoryFileSystemProvider())));
+		this._register(toDisposable(() => {
+			if (this.previewProfile) {
+				this.userDataProfilesService.removeProfile(this.previewProfile);
+			}
+		}));
 	}
 
 	private _copyFrom: IUserDataProfile | URI | undefined;
@@ -641,10 +651,18 @@ export class NewProfileElement extends AbstractUserDataProfileElement {
 			this._onDidChange.fire({ preview: true });
 			this.previewProfileWatchDisposables.clear();
 			if (this._previewProfile) {
+				// Current window does not emit extensions change events, so we need to watch the extensios resource explicitly
+				this.previewProfileWatchDisposables.add(this.fileService.watch(this._previewProfile.extensionsResource));
 				this.previewProfileWatchDisposables.add(this.fileService.watch(this._previewProfile.snippetsHome));
 				this.previewProfileWatchDisposables.add(this.fileService.onDidFilesChange(e => {
-					if (this._previewProfile && e.affects(this._previewProfile.snippetsHome)) {
+					if (!this._previewProfile) {
+						return;
+					}
+					if (e.affects(this._previewProfile.snippetsHome)) {
 						this._onDidChange.fire({ snippets: true });
+					}
+					if (e.affects(this._previewProfile.extensionsResource)) {
+						this._onDidChange.fire({ extensions: true });
 					}
 				}));
 			}
@@ -1067,9 +1085,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 				true,
 				() => this.previewNewProfile(cancellationTokenSource.token)
 			));
-			if (!isWeb) {
-				secondaryActions.push(previewProfileAction);
-			}
+			secondaryActions.push(previewProfileAction);
 			const exportAction = disposables.add(new Action(
 				'userDataProfile.export',
 				localize('export', "Export..."),
@@ -1138,7 +1154,11 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		const profile = await this.saveNewProfile(true, token);
 		if (profile) {
 			this.newProfileElement.previewProfile = profile;
-			await this.openWindow(profile);
+			if (isWeb) {
+				await this.userDataProfileManagementService.switchProfile(profile);
+			} else {
+				await this.openWindow(profile);
+			}
 		}
 	}
 
@@ -1268,6 +1288,7 @@ export class UserDataProfilesEditorModel extends EditorModel {
 		}
 		if (this.newProfileElement.previewProfile) {
 			await this.userDataProfileManagementService.removeProfile(this.newProfileElement.previewProfile);
+			return;
 		}
 		this.removeNewProfile();
 		this._onDidChange.fire(undefined);
