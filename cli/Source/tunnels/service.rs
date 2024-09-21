@@ -7,10 +7,14 @@ use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
 
-use crate::log;
-use crate::state::LauncherPaths;
-use crate::util::errors::{wrap, AnyError};
-use crate::util::io::{tailf, TailEvent};
+use crate::{
+	log,
+	state::LauncherPaths,
+	util::{
+		errors::{wrap, AnyError},
+		io::{tailf, TailEvent},
+	},
+};
 
 pub const SERVICE_LOG_FILE_NAME: &str = "tunnel-service.log";
 

@@ -17,11 +17,7 @@ pub struct Column {
 
 impl Column {
 	pub fn new(heading: &'static str) -> Self {
-		Column {
-			max_width: heading.len(),
-			heading,
-			data: vec![],
-		}
+		Column { max_width: heading.len(), heading, data: vec![] }
 	}
 
 	pub fn add_row(&mut self, row: String) {
@@ -102,11 +98,7 @@ impl TablePrinter for TextTablePrinter {
 		// print headers
 		write_columns(&mut bw, table.cols.iter().map(|c| c.heading), &sizes)?;
 		// print --- separators
-		write_columns(
-			&mut bw,
-			table.cols.iter().map(|c| "-".repeat(c.max_width)),
-			&sizes,
-		)?;
+		write_columns(&mut bw, table.cols.iter().map(|c| "-".repeat(c.max_width)), &sizes)?;
 		// print each column
 		if !table.cols.is_empty() {
 			let data_len = table.cols[0].data.len();

@@ -55,27 +55,19 @@ impl ServerPaths {
 	/// Delete the server directory
 	pub fn delete(&self) -> Result<(), WrappedError> {
 		remove_dir_all(&self.server_dir).map_err(|e| {
-			wrap(
-				e,
-				format!("error deleting server dir {}", self.server_dir.display()),
-			)
+			wrap(e, format!("error deleting server dir {}", self.server_dir.display()))
 		})
 	}
 
 	// VS Code Server pid
 	pub fn write_pid(&self, pid: u32) -> Result<(), WrappedError> {
 		write(&self.pidfile, format!("{}", pid)).map_err(|e| {
-			wrap(
-				e,
-				format!("error writing process id into {}", self.pidfile.display()),
-			)
+			wrap(e, format!("error writing process id into {}", self.pidfile.display()))
 		})
 	}
 
 	fn read_pid(&self) -> Option<u32> {
-		read_to_string(&self.pidfile)
-			.ok()
-			.and_then(|s| s.parse::<u32>().ok())
+		read_to_string(&self.pidfile).ok().and_then(|s| s.parse::<u32>().ok())
 	}
 }
 
@@ -143,11 +135,7 @@ pub fn get_all_servers(lp: &LauncherPaths) -> Vec<InstalledServer> {
 				Err(_) => continue,
 			};
 
-			servers.push(InstalledServer {
-				quality,
-				commit: commit.to_string(),
-				headless: true,
-			});
+			servers.push(InstalledServer { quality, commit: commit.to_string(), headless: true });
 		}
 	}
 

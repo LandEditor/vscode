@@ -3,40 +3,43 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-use std::collections::HashMap;
-use std::convert::Infallible;
-use std::fs;
-use std::io::{Read, Write};
-use std::net::{IpAddr, Ipv4Addr, SocketAddr};
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
-
-use hyper::service::{make_service_fn, service_fn};
-use hyper::{Body, Request, Response, Server};
-use tokio::io::{AsyncBufReadExt, BufReader};
-use tokio::{pin, time};
-
-use crate::async_pipe::{
-	get_socket_name, get_socket_rw_stream, listen_socket_rw_stream, AsyncPipe,
+use std::{
+	collections::HashMap,
+	convert::Infallible,
+	fs,
+	io::{Read, Write},
+	net::{IpAddr, Ipv4Addr, SocketAddr},
+	path::{Path, PathBuf},
+	sync::{Arc, Mutex},
+	time::{Duration, Instant},
 };
-use crate::constants::VSCODE_CLI_QUALITY;
-use crate::download_cache::DownloadCache;
-use crate::log;
-use crate::options::Quality;
-use crate::state::{LauncherPaths, PersistedState};
-use crate::tunnels::shutdown_signal::ShutdownRequest;
-use crate::update_service::{
-	unzip_downloaded_release, Platform, Release, TargetKind, UpdateService,
+
+use hyper::{
+	service::{make_service_fn, service_fn},
+	Body, Request, Response, Server,
 };
-use crate::util::command::new_script_command;
-use crate::util::errors::AnyError;
-use crate::util::http::{self, ReqwestSimpleHttp};
-use crate::util::io::SilentCopyProgress;
-use crate::util::sync::{new_barrier, Barrier, BarrierOpener};
+use tokio::{
+	io::{AsyncBufReadExt, BufReader},
+	pin, time,
+};
+
 use crate::{
-	tunnels::legal,
-	util::{errors::CodeError, prereqs::PreReqChecker},
+	async_pipe::{get_socket_name, get_socket_rw_stream, listen_socket_rw_stream, AsyncPipe},
+	constants::VSCODE_CLI_QUALITY,
+	download_cache::DownloadCache,
+	log,
+	options::Quality,
+	state::{LauncherPaths, PersistedState},
+	tunnels::{legal, shutdown_signal::ShutdownRequest},
+	update_service::{unzip_downloaded_release, Platform, Release, TargetKind, UpdateService},
+	util::{
+		command::new_script_command,
+		errors::{AnyError, CodeError},
+		http::{self, ReqwestSimpleHttp},
+		io::SilentCopyProgress,
+		prereqs::PreReqChecker,
+		sync::{new_barrier, Barrier, BarrierOpener},
+	},
 };
 
 use super::{args::ServeWebArgs, CommandContext};
@@ -88,16 +91,12 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 
 	let cm: Arc<ConnectionManager> = ConnectionManager::new(&ctx, platform, args.clone());
 	let update_check_interval = 3600;
-	cm.clone()
-		.start_update_checker(Duration::from_secs(update_check_interval));
+	cm.clone().start_update_checker(Duration::from_secs(update_check_interval));
 
 	let key = get_server_key_half(&ctx.paths);
 	let make_svc = move || {
-		let ctx = HandleContext {
-			cm: cm.clone(),
-			log: cm.log.clone(),
-			server_secret_key: key.clone(),
-		};
+		let ctx =
+			HandleContext { cm: cm.clone(), log: cm.log.clone(), server_secret_key: key.clone() };
 		let service = service_fn(move |req| handle(ctx.clone(), req));
 		async move { Ok::<_, Infallible>(service) }
 	};
@@ -106,8 +105,7 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 	let r = if let Some(s) = args.socket_path {
 		let s = PathBuf::from(&s);
 		let socket = listen_socket_rw_stream(&s).await?;
-		ctx.log
-			.result(format!("Web UI available on {}", s.display()));
+		ctx.log.result(format!("Web UI available on {}", s.display()));
 		let r = Server::builder(socket.into_pollable())
 			.serve(make_service_fn(|_| make_svc()))
 			.with_graceful_shutdown(async {
@@ -286,10 +284,7 @@ async fn forward_http_req_to_server(
 
 	tokio::spawn(connection);
 
-	let res = request_sender
-		.send_request(req)
-		.await
-		.unwrap_or_else(response::connection_err);
+	let res = request_sender.send_request(req).await.unwrap_or_else(response::connection_err);
 
 	// technically, we should buffer the body into memory since it may not be
 	// read at this point, but because the keepalive time is very large
@@ -338,10 +333,9 @@ async fn forward_ws_req_to_server(
 				tokio::join!(hyper::upgrade::on(&mut req), hyper::upgrade::on(&mut res));
 
 			match (s_req, s_res) {
-				(Err(e1), Err(e2)) => debug!(
-					log,
-					"client ({}) and server ({}) websocket upgrade failed", e1, e2
-				),
+				(Err(e1), Err(e2)) => {
+					debug!(log, "client ({}) and server ({}) websocket upgrade failed", e1, e2)
+				}
 				(Err(e1), _) => debug!(log, "client ({}) websocket upgrade failed", e1),
 				(_, Err(e2)) => debug!(log, "server ({}) websocket upgrade failed", e2),
 				(Ok(mut s_req), Ok(mut s_res)) => {
@@ -680,20 +674,12 @@ impl ConnectionManager {
 
 		let (socket_path, opener) = new_barrier();
 		let state_map_dup = self.state.clone();
-		let args = StartArgs {
-			args: self.args.clone(),
-			log: self.log.clone(),
-			opener,
-			release,
-		};
+		let args = StartArgs { args: self.args.clone(), log: self.log.clone(), opener, release };
 
 		if let Some(p) = self.cache.exists(&args.release.commit) {
 			state.insert(
 				key.clone(),
-				VersionState {
-					socket_path: socket_path.clone(),
-					downloaded: true,
-				},
+				VersionState { socket_path: socket_path.clone(), downloaded: true },
 			);
 
 			tokio::spawn(async move {
@@ -702,13 +688,7 @@ impl ConnectionManager {
 			});
 			Ok(socket_path)
 		} else {
-			state.insert(
-				key.clone(),
-				VersionState {
-					socket_path,
-					downloaded: false,
-				},
-			);
+			state.insert(key.clone(), VersionState { socket_path, downloaded: false });
 			let update_service = self.update_service.clone();
 			let cache = self.cache.clone();
 			tokio::spawn(async move {
@@ -754,9 +734,7 @@ impl ConnectionManager {
 	async fn start_version(args: StartArgs, path: PathBuf) {
 		info!(args.log, "Starting server {}", args.release.commit);
 
-		let executable = path
-			.join("bin")
-			.join(args.release.quality.server_entrypoint());
+		let executable = path.join("bin").join(args.release.quality.server_entrypoint());
 
 		let socket_path = get_socket_name();
 

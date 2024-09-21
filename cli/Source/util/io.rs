@@ -231,12 +231,8 @@ mod tests {
 		let dir = tempfile::tempdir().unwrap();
 		let file_path = dir.path().join("tmp");
 
-		let read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		let mut rx = tailf(read_file, 32);
 		assert!(rx.try_recv().is_err());
@@ -267,12 +263,8 @@ mod tests {
 		let dir = tempfile::tempdir().unwrap();
 		let file_path = dir.path().join("tmp");
 
-		let mut read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let mut read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		writeln!(&mut read_file, "some existing content").unwrap();
 		let mut rx = tailf(read_file, 0);
@@ -301,12 +293,8 @@ mod tests {
 		let dir = tempfile::tempdir().unwrap();
 		let file_path = dir.path().join("tmp");
 
-		let mut read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let mut read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 		let mut rng = rand::thread_rng();
 
 		let mut written = vec![];

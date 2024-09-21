@@ -5,18 +5,19 @@
 
 use async_trait::async_trait;
 use shell_escape::windows::escape as shell_escape;
-use std::os::windows::process::CommandExt;
-use std::{path::PathBuf, process::Stdio};
+use std::{os::windows::process::CommandExt, path::PathBuf, process::Stdio};
 use winapi::um::winbase::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
 use winreg::{enums::HKEY_CURRENT_USER, RegKey};
 
-use crate::util::command::new_std_command;
 use crate::{
 	constants::TUNNEL_ACTIVITY_NAME,
 	log,
 	state::LauncherPaths,
 	tunnels::{protocol, singleton_client::do_single_rpc_call},
-	util::errors::{wrap, wrapdbg, AnyError},
+	util::{
+		command::new_std_command,
+		errors::{wrap, wrapdbg, AnyError},
+	},
 };
 
 use super::service::{tail_log_file, ServiceContainer, ServiceManager as CliServiceManager};
@@ -31,11 +32,7 @@ pub struct WindowsService {
 
 impl WindowsService {
 	pub fn new(log: log::Logger, paths: &LauncherPaths) -> Self {
-		Self {
-			log,
-			tunnel_lock: paths.tunnel_lockfile(),
-			log_file: paths.service_log_file(),
-		}
+		Self { log, tunnel_lock: paths.tunnel_lockfile(), log_file: paths.service_log_file() }
 	}
 
 	fn open_key() -> Result<RegKey, AnyError> {
@@ -77,8 +74,7 @@ impl CliServiceManager for WindowsService {
 		cmd.stdout(Stdio::null());
 		cmd.stdin(Stdio::null());
 		cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS);
-		cmd.spawn()
-			.map_err(|e| wrapdbg(e, "error starting service"))?;
+		cmd.spawn().map_err(|e| wrapdbg(e, "error starting service"))?;
 
 		info!(self.log, "Tunnel service successfully started");
 		Ok(())

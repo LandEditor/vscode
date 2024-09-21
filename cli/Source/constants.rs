@@ -91,10 +91,7 @@ pub const DEFAULT_DATA_PARENT_DIR: &str = match option_env!("VSCODE_CLI_DATA_FOL
 };
 
 pub fn get_default_user_agent() -> String {
-	format!(
-		"vscode-server-launcher/{}",
-		VSCODE_CLI_VERSION.unwrap_or("dev")
-	)
+	format!("vscode-server-launcher/{}", VSCODE_CLI_VERSION.unwrap_or("dev"))
 }
 
 const NO_COLOR_ENV: &str = "NO_COLOR";

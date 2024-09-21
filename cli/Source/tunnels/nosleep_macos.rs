@@ -5,13 +5,15 @@
 
 use std::io;
 
-use core_foundation::base::TCFType;
-use core_foundation::string::{CFString, CFStringRef};
+use core_foundation::{
+	base::TCFType,
+	string::{CFString, CFStringRef},
+};
 use libc::c_int;
 
 use crate::constants::TUNNEL_ACTIVITY_NAME;
 
-extern "C" {
+extern {
 	pub fn IOPMAssertionCreateWithName(
 		assertion_type: CFStringRef,
 		assertion_level: u32,
@@ -65,14 +67,9 @@ impl SleepInhibitor {
 		let mut assertions = Vec::with_capacity(NUM_ASSERTIONS);
 		let assertion_name = CFString::from_static_string(TUNNEL_ACTIVITY_NAME);
 		for typ in ASSERTIONS {
-			assertions.push(Assertion::make(
-				&CFString::from_static_string(typ),
-				&assertion_name,
-			)?);
+			assertions.push(Assertion::make(&CFString::from_static_string(typ), &assertion_name)?);
 		}
 
-		Ok(Self {
-			_assertions: assertions,
-		})
+		Ok(Self { _assertions: assertions })
 	}
 }

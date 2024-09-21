@@ -5,13 +5,14 @@
 use crate::util::errors::{wrap, WrappedError};
 
 use flate2::read::GzDecoder;
-use std::fs::{self, File};
-use std::io::{Read, Seek};
-use std::path::{Path, PathBuf};
+use std::{
+	fs::{self, File},
+	io::{Read, Seek},
+	path::{Path, PathBuf},
+};
 use tar::Archive;
 
-use super::errors::wrapdbg;
-use super::io::ReportCopyProgress;
+use super::{errors::wrapdbg, io::ReportCopyProgress};
 
 fn should_skip_first_segment(file: &fs::File) -> Result<(bool, u64), WrappedError> {
 	// unfortunately, we need to re-read the archive here since you cannot reuse
@@ -21,9 +22,7 @@ fn should_skip_first_segment(file: &fs::File) -> Result<(bool, u64), WrappedErro
 
 	let tar = GzDecoder::new(file);
 	let mut archive = Archive::new(tar);
-	let mut entries = archive
-		.entries()
-		.map_err(|e| wrap(e, "error opening archive"))?;
+	let mut entries = archive.entries().map_err(|e| wrap(e, "error opening archive"))?;
 
 	let first_name = {
 		let file = entries
@@ -33,10 +32,7 @@ fn should_skip_first_segment(file: &fs::File) -> Result<(bool, u64), WrappedErro
 
 		let path = file.path().expect("expected to have path");
 
-		path.iter()
-			.next()
-			.expect("expected to have non-empty name")
-			.to_owned()
+		path.iter().next().expect("expected to have non-empty name").to_owned()
 	};
 
 	let mut num_entries = 1;
@@ -70,9 +66,7 @@ where
 	let mut last_reported_at = 0;
 
 	// reset since skip logic read the tar already:
-	tar_gz
-		.rewind()
-		.map_err(|e| wrap(e, "error resetting seek position"))?;
+	tar_gz.rewind().map_err(|e| wrap(e, "error resetting seek position"))?;
 
 	let tar = GzDecoder::new(tar_gz);
 	let mut archive = Archive::new(tar);
@@ -81,35 +75,33 @@ where
 		.map_err(|e| wrap(e, "error opening archive"))?
 		.filter_map(|e| e.ok())
 		.try_for_each::<_, Result<_, WrappedError>>(|mut entry| {
-			// approximate progress based on where we are in the archive:
+		// approximate progress based on where we are in the archive:
+		entries_so_far += 1;
+		if entries_so_far - last_reported_at > report_progress_every {
+			reporter.report_progress(entries_so_far, num_entries);
 			entries_so_far += 1;
-			if entries_so_far - last_reported_at > report_progress_every {
-				reporter.report_progress(entries_so_far, num_entries);
-				entries_so_far += 1;
-				last_reported_at = entries_so_far;
-			}
+			last_reported_at = entries_so_far;
+		}
 
-			let entry_path = entry
-				.path()
-				.map_err(|e| wrap(e, "error reading entry path"))?;
+		let entry_path = entry.path().map_err(|e| wrap(e, "error reading entry path"))?;
 
-			let path = parent_path.join(if skip_first {
-				entry_path.iter().skip(1).collect::<PathBuf>()
-			} else {
-				entry_path.into_owned()
-			});
+		let path = parent_path.join(if skip_first {
+			entry_path.iter().skip(1).collect::<PathBuf>()
+		} else {
+			entry_path.into_owned()
+		});
 
-			if let Some(p) = path.parent() {
-				fs::create_dir_all(p)
-					.map_err(|e| wrap(e, format!("could not create dir for {}", p.display())))?;
-			}
+		if let Some(p) = path.parent() {
+			fs::create_dir_all(p)
+				.map_err(|e| wrap(e, format!("could not create dir for {}", p.display())))?;
+		}
 
-			entry
-				.unpack(&path)
-				.map_err(|e| wrapdbg(e, format!("error unpacking {}", path.display())))?;
+		entry
+			.unpack(&path)
+			.map_err(|e| wrapdbg(e, format!("error unpacking {}", path.display())))?;
 
-			Ok(())
-		})?;
+		Ok(())
+	})?;
 
 	reporter.report_progress(num_entries, num_entries);
 
