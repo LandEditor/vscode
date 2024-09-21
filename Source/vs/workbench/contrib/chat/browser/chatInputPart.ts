@@ -39,7 +39,7 @@ import { ICommandService } from '../../../../platform/commands/common/commands.j
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
 import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
-import { FileKind } from '../../../../platform/files/common/files.js';
+import { FileKind, IFileService } from '../../../../platform/files/common/files.js';
 import { registerAndCreateHistoryNavigationContext } from '../../../../platform/history/browser/contextScopedHistoryWidget.js';
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { ServiceCollection } from '../../../../platform/instantiation/common/serviceCollection.js';
@@ -65,6 +65,10 @@ import { IChatWidget } from './chat.js';
 import { CollapsibleListPool, IChatCollapsibleListItem } from './chatContentParts/chatReferencesContentPart.js';
 import { ChatEditingAcceptAllAction, ChatEditingDiscardAllAction } from './chatEditingService.js';
 import { ChatFollowups } from './chatFollowups.js';
+import { CopyPasteController } from '../../../../editor/contrib/dropOrPasteInto/browser/copyPasteController.js';
+import { EditorOptions } from '../../../../editor/common/config/editorOptions.js';
+import { IHoverService } from '../../../../platform/hover/browser/hover.js';
+import { createInstantHoverDelegate } from '../../../../base/browser/ui/hover/hoverDelegateFactory.js';
 import { IChatViewState } from './chatWidget.js';
 
 const $ = dom.$;
@@ -73,7 +77,7 @@ const INPUT_EDITOR_MAX_HEIGHT = 250;
 
 interface IChatInputPartOptions {
 	renderFollowups: boolean;
-	renderStyle?: 'default' | 'compact';
+	renderStyle?: 'compact';
 	menus: {
 		executeToolbar: MenuId;
 		inputSideToolbar?: MenuId;
@@ -133,6 +137,11 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		return this._inputPartHeight;
 	}
 
+	private _followupsHeight: number = 0;
+	get followupsHeight() {
+		return this._followupsHeight;
+	}
+
 	private _inputEditor!: CodeEditorWidget;
 	private _inputEditorElement!: HTMLElement;
 
@@ -182,6 +191,8 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		@IAccessibilityService private readonly accessibilityService: IAccessibilityService,
 		@ILanguageModelsService private readonly languageModelsService: ILanguageModelsService,
 		@ILogService private readonly logService: ILogService,
+		@IHoverService private readonly hoverService: IHoverService,
+		@IFileService private readonly fileService: IFileService,
 		@ICommandService private readonly commandService: ICommandService,
 		@IEditorService private readonly editorService: IEditorService,
 	) {
@@ -342,7 +353,9 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 		this._onDidLoadInputState.fire(historyEntry.state);
 		if (previous) {
-			this._inputEditor.setPosition({ lineNumber: 1, column: 1 });
+			// Set cursor to the end of the first view line, so if wrapped, it's the point where the line wraps
+			const endOfFirstLine = this._inputEditor._getViewModel()?.getLineLength(1) ?? 1;
+			this._inputEditor.setPosition({ lineNumber: 1, column: endOfFirstLine });
 		} else {
 			const model = this._inputEditor.getModel();
 			if (!model) {
@@ -438,21 +451,23 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		let elements;
 		if (this.options.renderStyle === 'compact') {
 			elements = dom.h('.interactive-input-part', [
-				dom.h('.interactive-input-and-side-toolbar@inputAndSideToolbar', [
+				dom.h('.interactive-input-and-edit-session', [
 					dom.h('.chat-editing-session@chatEditingSessionWidgetContainer'),
-					dom.h('.chat-input-container@inputContainer', [
-						dom.h('.chat-editor-container@editorContainer'),
-						dom.h('.chat-input-toolbars@inputToolbars'),
+					dom.h('.interactive-input-and-side-toolbar@inputAndSideToolbar', [
+						dom.h('.chat-input-container@inputContainer', [
+							dom.h('.chat-editor-container@editorContainer'),
+							dom.h('.chat-input-toolbars@inputToolbars'),
+						]),
 					]),
-				]),
-				dom.h('.chat-attached-context@attachedContextContainer'),
-				dom.h('.interactive-input-followups@followupsContainer'),
+					dom.h('.chat-attached-context@attachedContextContainer'),
+					dom.h('.interactive-input-followups@followupsContainer'),
+				])
 			]);
 		} else {
 			elements = dom.h('.interactive-input-part', [
 				dom.h('.interactive-input-followups@followupsContainer'),
+				dom.h('.chat-editing-session@chatEditingSessionWidgetContainer'),
 				dom.h('.interactive-input-and-side-toolbar@inputAndSideToolbar', [
-					dom.h('.chat-editing-session@chatEditingSessionWidgetContainer'),
 					dom.h('.chat-input-container@inputContainer', [
 						dom.h('.chat-editor-container@editorContainer'),
 						dom.h('.chat-attached-context@attachedContextContainer'),
@@ -472,6 +487,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		const toolbarsContainer = elements.inputToolbars;
 		this.chatEditingSessionWidgetContainer = elements.chatEditingSessionWidgetContainer;
 		this.initAttachedContext(this.attachedContextContainer);
+		this.renderChatEditingSessionState(null);
 
 		const inputScopedContextKeyService = this._register(this.contextKeyService.createScoped(inputContainer));
 		CONTEXT_IN_CHAT_INPUT.bindTo(inputScopedContextKeyService).set(true);
@@ -483,6 +499,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 		const options: IEditorConstructionOptions = getSimpleEditorOptions(this.configurationService);
 		options.overflowWidgetsDomNode = this.options.editorOverflowWidgetsDomNode;
+		options.pasteAs = EditorOptions.pasteAs.defaultValue;
 		options.readOnly = false;
 		options.ariaLabel = this._getAriaLabel();
 		options.fontFamily = DEFAULT_FONT_FAMILY;
@@ -504,7 +521,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 		this._inputEditorElement = dom.append(editorContainer!, $(chatInputEditorContainerSelector));
 		const editorOptions = getSimpleCodeEditorWidgetOptions();
-		editorOptions.contributions?.push(...EditorExtensionsRegistry.getSomeEditorContributions([ContentHoverController.ID, GlyphHoverController.ID]));
+		editorOptions.contributions?.push(...EditorExtensionsRegistry.getSomeEditorContributions([ContentHoverController.ID, GlyphHoverController.ID, CopyPasteController.ID]));
 		this._inputEditor = this._register(scopedInstantiationService.createInstance(CodeEditorWidget, this._inputEditorElement, options, editorOptions));
 
 		this._register(this._inputEditor.onDidChangeModelContent(() => {
@@ -595,7 +612,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 		let inputModel = this.modelService.getModel(this.inputUri);
 		if (!inputModel) {
-			inputModel = this.modelService.createModel('', null, this.inputUri, true);
+			inputModel = this.modelService.createModel('', null, this.inputUri, false);
 			this._register(inputModel);
 		}
 
@@ -619,7 +636,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 				return;
 			}
 
-			const atTop = position.column === 1 && position.lineNumber === 1;
+			const atTop = position.lineNumber === 1 && position.column - 1 <= (this._inputEditor._getViewModel()?.getLineLength(1) ?? 0);
 			this.chatCursorAtTop.set(atTop);
 
 			this.historyNavigationBackwardsEnablement.set(atTop);
@@ -633,11 +650,12 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		const oldHeight = container.offsetHeight;
 		dom.clearNode(container);
 		this.attachedContextDisposables.clear();
+		const hoverDelegate = this.attachedContextDisposables.add(createInstantHoverDelegate());
 		dom.setVisibility(Boolean(this.attachedContext.size), this.attachedContextContainer);
 		if (!this.attachedContext.size) {
 			this._indexOfLastAttachedContextDeletedWithKeyboard = -1;
 		}
-		[...this.attachedContext.values()].forEach((attachment, index) => {
+		[...this.attachedContext.values()].forEach(async (attachment, index) => {
 			const widget = dom.append(container, $('.chat-attached-context-attachment.show-file-icons'));
 			const label = this._contextResourceLabels.create(widget, { supportIcons: true });
 			const file = URI.isUri(attachment.value) ? attachment.value : attachment.value && typeof attachment.value === 'object' && 'uri' in attachment.value && URI.isUri(attachment.value.uri) ? attachment.value.uri : undefined;
@@ -655,6 +673,51 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 				});
 				widget.ariaLabel = ariaLabel;
 				widget.tabIndex = 0;
+				this.attachButtonAndDisposables(widget, index, attachment);
+			} else if (attachment.isImage) {
+				let buffer: Uint8Array;
+				const ariaLabel = localize('chat.imageAttachment', "Attached image, {0}", attachment.name);
+				const pillIcon = dom.$('div.chat-attached-context-pill', {}, dom.$('span.codicon.codicon-file-media'));
+
+				const hoverElement = dom.$('div.chat-attached-context-hover');
+				hoverElement.setAttribute('aria-label', ariaLabel);
+
+				// Custom label
+				const textLabel = dom.$('span.chat-attached-context-custom-text', {}, attachment.name);
+				widget.appendChild(pillIcon);
+				widget.appendChild(textLabel);
+
+				try {
+					if (attachment.value instanceof URI) {
+						this.attachButtonAndDisposables(widget, index, attachment);
+						const readFile = await this.fileService.readFile(attachment.value);
+						buffer = readFile.value.buffer;
+
+					} else {
+						buffer = attachment.value as Uint8Array;
+						this.attachButtonAndDisposables(widget, index, attachment);
+					}
+					await this.createImageElements(buffer, widget, hoverElement);
+				} catch (error) {
+					console.error('Error processing attachment:', error);
+				}
+
+				widget.style.position = 'relative';
+				widget.ariaLabel = ariaLabel;
+				widget.tabIndex = 0;
+
+				if (!this.attachedContextDisposables.isDisposed) {
+					this.attachedContextDisposables.add(this.hoverService.setupManagedHover(hoverDelegate, widget, hoverElement));
+
+					// No delay for keyboard
+					this.attachedContextDisposables.add(dom.addDisposableListener(widget, 'keydown', (event) => {
+						const keyboardEvent = new StandardKeyboardEvent(event);
+						if (keyboardEvent.keyCode === KeyCode.Enter || keyboardEvent.keyCode === KeyCode.Space) {
+							this.hoverService.showManagedHover(widget);
+						}
+					}));
+				}
+
 			} else {
 				const attachmentLabel = attachment.fullName ?? attachment.name;
 				const withIcon = attachment.icon?.id ? `$(${attachment.icon.id}) ${attachmentLabel}` : attachmentLabel;
@@ -662,38 +725,59 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 				widget.ariaLabel = localize('chat.attachment', "Attached context, {0}", attachment.name);
 				widget.tabIndex = 0;
+				this.attachButtonAndDisposables(widget, index, attachment);
 			}
-
-			const clearButton = new Button(widget, { supportIcons: true });
-
-			// If this item is rendering in place of the last attached context item, focus the clear button so the user can continue deleting attached context items with the keyboard
-			if (index === Math.min(this._indexOfLastAttachedContextDeletedWithKeyboard, this.attachedContext.size - 1)) {
-				clearButton.focus();
-			}
-
-			this.attachedContextDisposables.add(clearButton);
-			clearButton.icon = Codicon.close;
-			const disp = clearButton.onDidClick((e) => {
-				this._attachedContext.delete(attachment);
-				disp.dispose();
-
-				// Set focus to the next attached context item if deletion was triggered by a keystroke (vs a mouse click)
-				if (dom.isKeyboardEvent(e)) {
-					const event = new StandardKeyboardEvent(e);
-					if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
-						this._indexOfLastAttachedContextDeletedWithKeyboard = index;
-					}
-				}
-
-				this._onDidChangeHeight.fire();
-				this._onDidChangeContext.fire({ removed: [attachment] });
-			});
-			this.attachedContextDisposables.add(disp);
 		});
 
 		if (oldHeight !== container.offsetHeight && !isLayout) {
 			this._onDidChangeHeight.fire();
 		}
+	}
+
+	private attachButtonAndDisposables(widget: HTMLElement, index: number, attachment: IChatRequestVariableEntry) {
+
+		const clearButton = new Button(widget, { supportIcons: true });
+
+		// If this item is rendering in place of the last attached context item, focus the clear button so the user can continue deleting attached context items with the keyboard
+		if (index === Math.min(this._indexOfLastAttachedContextDeletedWithKeyboard, this.attachedContext.size - 1)) {
+			clearButton.focus();
+		}
+
+		this.attachedContextDisposables.add(clearButton);
+		clearButton.icon = Codicon.close;
+		const disp = clearButton.onDidClick((e) => {
+			this._attachedContext.delete(attachment);
+			disp.dispose();
+
+			// Set focus to the next attached context item if deletion was triggered by a keystroke (vs a mouse click)
+			if (dom.isKeyboardEvent(e)) {
+				const event = new StandardKeyboardEvent(e);
+				if (event.equals(KeyCode.Enter) || event.equals(KeyCode.Space)) {
+					this._indexOfLastAttachedContextDeletedWithKeyboard = index;
+				}
+			}
+
+			this._onDidChangeHeight.fire();
+			this._onDidChangeContext.fire({ removed: [attachment] });
+		});
+		this.attachedContextDisposables.add(disp);
+	}
+
+	// Helper function to create and replace image
+	private async createImageElements(buffer: ArrayBuffer | Uint8Array, widget: HTMLElement, hoverElement: HTMLElement) {
+		const blob = new Blob([buffer], { type: 'image/png' });
+		const url = URL.createObjectURL(blob);
+		const img = dom.$('img.chat-attached-context-image', { src: url, alt: '' });
+		const pillImg = dom.$('img.chat-attached-context-pill-image', { src: url, alt: '' });
+		const pill = dom.$('div.chat-attached-context-pill', {}, pillImg);
+
+		const existingPill = widget.querySelector('.chat-attached-context-pill');
+		if (existingPill) {
+			existingPill.replaceWith(pill);
+		}
+
+		// Update hover image
+		hoverElement.appendChild(img);
 	}
 
 	async renderChatEditingSessionState(chatEditingSession: IChatEditingSession | null) {
@@ -804,6 +888,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 		this.followupsContainer.style.width = `${followupsWidth}px`;
 
 		this._inputPartHeight = data.inputPartVerticalPadding + data.followupsHeight + inputEditorHeight + data.inputEditorBorder + data.attachmentsHeight + data.toolbarsHeight + data.chatEditingStateHeight;
+		this._followupsHeight = data.followupsHeight;
 
 		const initialEditorScrollWidth = this._inputEditor.getScrollWidth();
 		const newEditorWidth = width - data.inputPartHorizontalPadding - data.editorBorder - data.inputPartHorizontalPaddingInside - data.toolbarsWidth - data.sideToolbarWidth;
