@@ -16,8 +16,7 @@ test-results.xml
 vscode.lsif
 vscode.db
 /.profile-oss
-/cli/target
-/cli/openssl
+/cli/cli/openssl
 product.overrides.json
 *.snap.actual
 .vscode-test
