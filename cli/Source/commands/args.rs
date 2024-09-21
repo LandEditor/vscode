@@ -686,8 +686,7 @@ pub struct BaseServerArgs {
 
 impl BaseServerArgs {
 	pub fn apply_to(&self, csa: &mut CodeServerArgs) {
-		csa.install_extensions
-			.extend_from_slice(&self.install_extension);
+		csa.install_extensions.extend_from_slice(&self.install_extension);
 
 		if let Some(d) = &self.server_data_dir {
 			csa.server_data_dir = Some(d.clone());

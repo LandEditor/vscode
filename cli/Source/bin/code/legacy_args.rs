@@ -46,9 +46,7 @@ pub fn try_parse_legacy(
 				return None;
 			}
 			if let Some(last_arg) = &last_arg {
-				args.get_mut(last_arg)
-					.expect("expected to have last arg")
-					.push(value.to_string());
+				args.get_mut(last_arg).expect("expected to have last arg").push(value.to_string());
 			}
 		}
 	}
@@ -108,10 +106,7 @@ pub fn try_parse_legacy(
 			..Default::default()
 		})
 	} else if args.contains_key("status") {
-		Some(CliCore {
-			subcommand: Some(Commands::Status),
-			..Default::default()
-		})
+		Some(CliCore { subcommand: Some(Commands::Status), ..Default::default() })
 	} else {
 		None
 	}
@@ -123,13 +118,7 @@ mod tests {
 
 	#[test]
 	fn test_parses_list_extensions() {
-		let args = vec![
-			"code",
-			"--list-extensions",
-			"--category",
-			"themes",
-			"--show-versions",
-		];
+		let args = vec!["code", "--list-extensions", "--category", "themes", "--show-versions"];
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
@@ -137,10 +126,7 @@ mod tests {
 				assert_eq!(list_args.category, Some("themes".to_string()));
 				assert!(list_args.show_versions);
 			} else {
-				panic!(
-					"Expected list subcommand, got {:?}",
-					extension_args.subcommand
-				);
+				panic!("Expected list subcommand, got {:?}", extension_args.subcommand);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
@@ -168,10 +154,7 @@ mod tests {
 				assert!(install_args.pre_release);
 				assert!(install_args.force);
 			} else {
-				panic!(
-					"Expected install subcommand, got {:?}",
-					extension_args.subcommand
-				);
+				panic!("Expected install subcommand, got {:?}", extension_args.subcommand);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
@@ -187,10 +170,7 @@ mod tests {
 			if let ExtensionSubcommand::Uninstall(uninstall_args) = extension_args.subcommand {
 				assert_eq!(uninstall_args.id, vec!["connor4312.codesong"]);
 			} else {
-				panic!(
-					"Expected uninstall subcommand, got {:?}",
-					extension_args.subcommand
-				);
+				panic!("Expected uninstall subcommand, got {:?}", extension_args.subcommand);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
@@ -211,21 +191,12 @@ mod tests {
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
-			assert_eq!(
-				extension_args.desktop_code_options.user_data_dir,
-				Some("foo".to_string())
-			);
-			assert_eq!(
-				extension_args.desktop_code_options.extensions_dir,
-				Some("bar".to_string())
-			);
+			assert_eq!(extension_args.desktop_code_options.user_data_dir, Some("foo".to_string()));
+			assert_eq!(extension_args.desktop_code_options.extensions_dir, Some("bar".to_string()));
 			if let ExtensionSubcommand::Uninstall(uninstall_args) = extension_args.subcommand {
 				assert_eq!(uninstall_args.id, vec!["connor4312.codesong"]);
 			} else {
-				panic!(
-					"Expected uninstall subcommand, got {:?}",
-					extension_args.subcommand
-				);
+				panic!("Expected uninstall subcommand, got {:?}", extension_args.subcommand);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
