@@ -3,12 +3,12 @@
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
 	},
 	"dependencies": {
-		"jsonc-parser": "^3.3.1",
-		"request-light": "^0.8.0"
+		"jsonc-parser": "3.3.1",
+		"request-light": "0.8.0"
 	},
 	"description": "JSON language server",
 	"devDependencies": {
-		"@types/node": "20.x"
+		"@types/node": "22.x"
 	},
 	"main": "./out/node/jsonServerMain",
 	"name": "vscode-json-languageserver",

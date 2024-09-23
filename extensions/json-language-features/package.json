@@ -139,11 +139,11 @@
 		]
 	},
 	"dependencies": {
-		"request-light": "^0.8.0"
+		"request-light": "0.8.0"
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "20.x"
+		"@types/node": "22.x"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [
