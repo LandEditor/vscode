@@ -106,7 +106,13 @@ impl Drop for FileLock {
 		use winapi::um::fileapi::UnlockFileEx;
 
 		unsafe {
-			UnlockFileEx(self.file.as_raw_handle(), 0, u32::MAX, u32::MAX, &mut self.overlapped)
+			UnlockFileEx(
+				self.file.as_raw_handle(),
+				0,
+				u32::MAX,
+				u32::MAX,
+				&mut self.overlapped,
+			)
 		};
 	}
 

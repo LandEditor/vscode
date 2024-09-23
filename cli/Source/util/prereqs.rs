@@ -4,9 +4,11 @@
  *--------------------------------------------------------------------------------------------*/
 use std::cmp::Ordering;
 
-use crate::{constants::QUALITYLESS_SERVER_NAME, update_service::Platform};
+use crate::constants::QUALITYLESS_SERVER_NAME;
+use crate::update_service::Platform;
 use lazy_static::lazy_static;
-use regex::{bytes::Regex as BinRegex, Regex};
+use regex::bytes::Regex as BinRegex;
+use regex::Regex;
 use tokio::fs;
 
 use super::errors::CodeError;
@@ -61,8 +63,11 @@ impl PreReqChecker {
 
 	#[cfg(target_os = "linux")]
 	pub async fn verify(&self) -> Result<Platform, CodeError> {
-		let (is_nixos, skip_glibc_checks, or_musl) =
-			tokio::join!(check_is_nixos(), skip_requirements_check(), check_musl_interpreter());
+		let (is_nixos, skip_glibc_checks, or_musl) = tokio::join!(
+			check_is_nixos(),
+			skip_requirements_check(),
+			check_musl_interpreter()
+		);
 
 		let (gnu_a, gnu_b) = if !skip_glibc_checks {
 			tokio::join!(check_glibc_version(), check_glibcxx_version())
@@ -114,10 +119,16 @@ impl PreReqChecker {
 			errors.push(e);
 		}
 
-		let bullets =
-			errors.iter().map(|e| format!("  - {}", e)).collect::<Vec<String>>().join("\n");
+		let bullets = errors
+			.iter()
+			.map(|e| format!("  - {}", e))
+			.collect::<Vec<String>>()
+			.join("\n");
 
-		Err(CodeError::PrerequisitesFailed { bullets, name: QUALITYLESS_SERVER_NAME })
+		Err(CodeError::PrerequisitesFailed {
+			bullets,
+			name: QUALITYLESS_SERVER_NAME,
+		})
 	}
 }
 
@@ -186,7 +197,9 @@ async fn check_is_nixos() -> bool {
 /// file before the server is downloaded and installed.
 #[cfg(not(windows))]
 pub async fn skip_requirements_check() -> bool {
-	fs::metadata("/tmp/vscode-skip-server-requirements-check").await.is_ok()
+	fs::metadata("/tmp/vscode-skip-server-requirements-check")
+		.await
+		.is_ok()
 }
 
 #[cfg(windows)]
@@ -217,9 +230,10 @@ async fn check_glibcxx_version() -> Result<bool, String> {
 	match libstdc_path {
 		Some(path) => match fs::read(&path).await {
 			Ok(contents) => check_for_sufficient_glibcxx_versions(contents),
-			Err(e) => {
-				Err(format!("validate GLIBCXX version for GNU environments, but could not: {}", e))
-			}
+			Err(e) => Err(format!(
+				"validate GLIBCXX version for GNU environments, but could not: {}",
+				e
+			)),
 		},
 		None => Err("find libstdc++.so or ldconfig for GNU environments".to_owned()),
 	}
@@ -249,7 +263,10 @@ fn check_for_sufficient_glibcxx_versions(contents: Vec<u8>) -> Result<bool, Stri
 	Err(format!(
 		"find GLIBCXX >= {} (but found {} instead) for GNU environments",
 		*MIN_CXX_VERSION,
-		max_version.as_ref().map(String::from).unwrap_or("none".to_string())
+		max_version
+			.as_ref()
+			.map(String::from)
+			.unwrap_or("none".to_string())
 	))
 }
 
@@ -328,7 +345,11 @@ impl std::fmt::Display for SimpleSemver {
 #[allow(dead_code)]
 impl SimpleSemver {
 	fn new(major: u32, minor: u32, patch: u32) -> SimpleSemver {
-		SimpleSemver { major, minor, patch }
+		SimpleSemver {
+			major,
+			minor,
+			patch,
+		}
 	}
 }
 
@@ -351,7 +372,10 @@ mod tests {
 			Some("/lib/x86_64-linux-gnu/libstdc++.so.6".to_owned()),
 		);
 
-		assert_eq!(extract_libstd_from_ldconfig(&"nothing here!".to_owned().into_bytes()), None,);
+		assert_eq!(
+			extract_libstd_from_ldconfig(&"nothing here!".to_owned().into_bytes()),
+			None,
+		);
 	}
 
 	#[test]
@@ -375,6 +399,9 @@ mod tests {
 			.to_owned()
 			.into_bytes();
 
-		assert_eq!(extract_ldd_version(&actual), Some(SimpleSemver::new(2, 31, 0)),);
+		assert_eq!(
+			extract_ldd_version(&actual),
+			Some(SimpleSemver::new(2, 31, 0)),
+		);
 	}
 }

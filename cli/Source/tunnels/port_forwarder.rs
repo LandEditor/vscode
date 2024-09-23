@@ -34,12 +34,18 @@ pub struct PortForwardingProcessor {
 impl PortForwardingProcessor {
 	pub fn new() -> Self {
 		let (tx, rx) = mpsc::channel(8);
-		Self { tx, rx, forwarded: HashSet::new() }
+		Self {
+			tx,
+			rx,
+			forwarded: HashSet::new(),
+		}
 	}
 
 	/// Gets a handle that can be passed off to consumers of port forwarding.
 	pub fn handle(&self) -> PortForwarding {
-		PortForwarding { tx: self.tx.clone() }
+		PortForwarding {
+			tx: self.tx.clone(),
+		}
 	}
 
 	/// Receives port forwarding requests. Consumers MUST call `process()`
@@ -52,7 +58,8 @@ impl PortForwardingProcessor {
 	pub async fn process(&mut self, req: PortForwardingRec, tunnel: &mut ActiveTunnel) {
 		match req {
 			PortForwardingRec::Forward(port, privacy, tx) => {
-				tx.send(self.process_forward(port, privacy, tunnel).await).ok();
+				tx.send(self.process_forward(port, privacy, tunnel).await)
+					.ok();
 			}
 			PortForwardingRec::Unforward(port, tx) => {
 				tx.send(self.process_unforward(port, tunnel).await).ok();
@@ -85,7 +92,9 @@ impl PortForwardingProcessor {
 		}
 
 		if !self.forwarded.contains(&port) {
-			tunnel.add_port_tcp(port, privacy, PortProtocol::Auto).await?;
+			tunnel
+				.add_port_tcp(port, privacy, PortProtocol::Auto)
+				.await?;
 			self.forwarded.insert(port);
 		}
 

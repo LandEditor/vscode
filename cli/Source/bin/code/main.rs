@@ -19,7 +19,8 @@ use cli::{
 	},
 };
 use legacy_args::try_parse_legacy;
-use opentelemetry::{sdk::trace::TracerProvider as SdkTracerProvider, trace::TracerProvider};
+use opentelemetry::sdk::trace::TracerProvider as SdkTracerProvider;
+use opentelemetry::trace::TracerProvider;
 
 #[tokio::main]
 async fn main() -> Result<(), std::convert::Infallible> {
@@ -40,7 +41,10 @@ async fn main() -> Result<(), std::convert::Infallible> {
 
 	// gets a command context without installing the global logger
 	let context_no_logger = || CommandContext {
-		http: reqwest::ClientBuilder::new().user_agent(get_default_user_agent()).build().unwrap(),
+		http: reqwest::ClientBuilder::new()
+			.user_agent(get_default_user_agent())
+			.build()
+			.unwrap(),
 		paths: context_paths,
 		log: make_logger(&context_args),
 		args: context_args,
@@ -56,7 +60,10 @@ async fn main() -> Result<(), std::convert::Infallible> {
 	}
 
 	let result = match parsed {
-		args::AnyCli::Standalone(args::StandaloneCli { subcommand: Some(cmd), .. }) => match cmd {
+		args::AnyCli::Standalone(args::StandaloneCli {
+			subcommand: Some(cmd),
+			..
+		}) => match cmd {
 			args::StandaloneCommands::Update(args) => update::update(context!(), args).await,
 		},
 		args::AnyCli::Standalone(args::StandaloneCli { core: c, .. })

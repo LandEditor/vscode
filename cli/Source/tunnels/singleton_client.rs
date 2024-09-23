@@ -63,7 +63,10 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
 	let exit_entirely = Arc::new(AtomicBool::new(false));
 
-	debug!(args.log, "An existing tunnel is running on this machine, connecting to it...");
+	debug!(
+		args.log,
+		"An existing tunnel is running on this machine, connecting to it..."
+	);
 
 	if *IS_INTERACTIVE_CLI {
 		let stdin_handle = rpc.get_caller(msg_tx.clone());
@@ -111,10 +114,12 @@ pub async fn start_singleton_client(args: SingletonClientArgs) -> bool {
 				CONTROL_INSTRUCTIONS_COMMON
 			});
 
-			let res = c.caller.call::<_, _, protocol::singleton::StatusWithTunnelName>(
-				protocol::singleton::METHOD_STATUS,
-				protocol::EmptyObject {},
-			);
+			let res = c
+				.caller
+				.call::<_, _, protocol::singleton::StatusWithTunnelName>(
+					protocol::singleton::METHOD_STATUS,
+					protocol::EmptyObject {},
+				);
 
 			// we want to ensure the "listening" string always gets printed for
 			// consumers (i.e. VS Code). Ask for it. If the tunnel is not currently

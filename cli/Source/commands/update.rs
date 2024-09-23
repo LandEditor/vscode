@@ -35,14 +35,18 @@ pub async fn update(ctx: CommandContext, args: StandaloneUpdateArgs) -> Result<i
 	}
 
 	if args.check {
-		ctx.log.result(format!("Update to {} is available", current_version));
+		ctx.log
+			.result(format!("Update to {} is available", current_version));
 		return Ok(0);
 	}
 
 	let pb = ProgressBar::new(1);
 	pb.set_message("Downloading...");
-	update_service.do_update(&current_version, ProgressBarReporter::from(pb)).await?;
-	ctx.log.result(format!("Successfully updated to {}", current_version));
+	update_service
+		.do_update(&current_version, ProgressBarReporter::from(pb))
+		.await?;
+	ctx.log
+		.result(format!("Successfully updated to {}", current_version));
 
 	Ok(0)
 }

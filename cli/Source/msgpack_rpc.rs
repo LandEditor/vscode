@@ -121,7 +121,9 @@ pub struct MsgPackCodec<T> {
 
 impl<T> MsgPackCodec<T> {
 	pub fn new() -> Self {
-		Self { _marker: std::marker::PhantomData }
+		Self {
+			_marker: std::marker::PhantomData,
+		}
 	}
 }
 
@@ -146,7 +148,10 @@ impl<T: DeserializeOwned> tokio_util::codec::Decoder for MsgPackCodec<T> {
 				src.reserve(1024);
 				Ok(None)
 			}
-			Err(e) => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, e.to_string())),
+			Err(e) => Err(std::io::Error::new(
+				std::io::ErrorKind::InvalidData,
+				e.to_string(),
+			)),
 			Ok(obj) => {
 				let len = cursor.position() as usize;
 				let vec = src[..len].to_vec();
@@ -178,7 +183,13 @@ mod tests {
 		buf.extend_from_slice(rmp_serde::to_vec_named(&Msg { x: 1 }).unwrap().as_slice());
 		buf.extend_from_slice(rmp_serde::to_vec_named(&Msg { x: 2 }).unwrap().as_slice());
 
-		assert_eq!(c.decode(&mut buf).unwrap().expect("expected msg1").obj, Msg { x: 1 });
-		assert_eq!(c.decode(&mut buf).unwrap().expect("expected msg1").obj, Msg { x: 2 });
+		assert_eq!(
+			c.decode(&mut buf).unwrap().expect("expected msg1").obj,
+			Msg { x: 1 }
+		);
+		assert_eq!(
+			c.decode(&mut buf).unwrap().expect("expected msg1").obj,
+			Msg { x: 2 }
+		);
 	}
 }
