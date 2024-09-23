@@ -3,52 +3,42 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 use super::paths::{InstalledServer, ServerPaths};
-use crate::{
-	async_pipe::get_socket_name,
-	constants::{
-		APPLICATION_NAME, EDITOR_WEB_URL, QUALITYLESS_PRODUCT_NAME, QUALITYLESS_SERVER_NAME,
-	},
-	debug,
-	download_cache::DownloadCache,
-	info, log,
-	options::{Quality, TelemetryLevel},
-	spanf,
-	state::LauncherPaths,
-	trace,
-	tunnels::paths::{get_server_folder_name, SERVER_FOLDER_NAME},
-	update_service::{unzip_downloaded_release, Platform, Release, TargetKind, UpdateService},
-	util::{
-		command::{
-			capture_command, capture_command_and_check_status, check_output_status, kill_tree,
-			new_script_command,
-		},
-		errors::{wrap, AnyError, CodeError, ExtensionInstallFailed, WrappedError},
-		http::{self, BoxedHttp},
-		io::SilentCopyProgress,
-		machine::process_exists,
-		prereqs::skip_requirements_check,
-	},
-	warning,
+use crate::async_pipe::get_socket_name;
+use crate::constants::{
+	APPLICATION_NAME, EDITOR_WEB_URL, QUALITYLESS_PRODUCT_NAME, QUALITYLESS_SERVER_NAME,
 };
+use crate::download_cache::DownloadCache;
+use crate::options::{Quality, TelemetryLevel};
+use crate::state::LauncherPaths;
+use crate::tunnels::paths::{get_server_folder_name, SERVER_FOLDER_NAME};
+use crate::update_service::{
+	unzip_downloaded_release, Platform, Release, TargetKind, UpdateService,
+};
+use crate::util::command::{
+	capture_command, capture_command_and_check_status, check_output_status, kill_tree,
+	new_script_command,
+};
+use crate::util::errors::{wrap, AnyError, CodeError, ExtensionInstallFailed, WrappedError};
+use crate::util::http::{self, BoxedHttp};
+use crate::util::io::SilentCopyProgress;
+use crate::util::machine::process_exists;
+use crate::util::prereqs::skip_requirements_check;
+use crate::{debug, info, log, spanf, trace, warning};
 use lazy_static::lazy_static;
 use opentelemetry::KeyValue;
 use regex::Regex;
 use serde::Deserialize;
-use std::{
-	fs,
-	fs::File,
-	io::Write,
-	path::{Path, PathBuf},
-	sync::Arc,
-	time::Duration,
-};
-use tokio::{
-	fs::remove_file,
-	io::{AsyncBufReadExt, BufReader},
-	process::{Child, Command},
-	sync::oneshot::Receiver,
-	time::{interval, timeout},
-};
+use std::fs;
+use std::fs::File;
+use std::io::Write;
+use std::path::{Path, PathBuf};
+use std::sync::Arc;
+use std::time::Duration;
+use tokio::fs::remove_file;
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::{Child, Command};
+use tokio::sync::oneshot::Receiver;
+use tokio::time::{interval, timeout};
 
 lazy_static! {
 	static ref LISTENING_PORT_RE: Regex =
@@ -314,7 +304,11 @@ async fn do_extension_install_on_running_server(
 	let command = format!(
 		"{} {}",
 		start_script_path.display(),
-		extensions.iter().map(|s| get_extensions_flag(s)).collect::<Vec<String>>().join(" ")
+		extensions
+			.iter()
+			.map(|s| get_extensions_flag(s))
+			.collect::<Vec<String>>()
+			.join(" ")
 	);
 
 	let result = capture_command("bash", &["-c", &command]).await?;
@@ -346,7 +340,9 @@ impl<'a> ServerBuilder<'a> {
 			logger,
 			server_params,
 			launcher_paths,
-			server_paths: server_params.as_installed_server().server_paths(launcher_paths),
+			server_paths: server_params
+				.as_installed_server()
+				.server_paths(launcher_paths),
 			http,
 		}
 	}
@@ -410,7 +406,10 @@ impl<'a> ServerBuilder<'a> {
 
 	/// Ensures the server is set up in the configured directory.
 	pub async fn setup(&self) -> Result<(), AnyError> {
-		debug!(self.logger, "Installing and setting up {}...", QUALITYLESS_SERVER_NAME);
+		debug!(
+			self.logger,
+			"Installing and setting up {}...", QUALITYLESS_SERVER_NAME
+		);
 
 		let update_service = UpdateService::new(self.logger.clone(), self.http.clone());
 		let name = get_server_folder_name(
@@ -425,8 +424,9 @@ impl<'a> ServerBuilder<'a> {
 				let tmpdir =
 					tempfile::tempdir().map_err(|e| wrap(e, "error creating temp download dir"))?;
 
-				let response =
-					update_service.get_download_stream(&self.server_params.release).await?;
+				let response = update_service
+					.get_download_stream(&self.server_params.release)
+					.await?;
 				let archive_path = tmpdir.path().join(response.url_path_basename().unwrap());
 
 				info!(
@@ -521,7 +521,12 @@ impl<'a> ServerBuilder<'a> {
 	pub async fn install_extensions(&self) -> Result<(), AnyError> {
 		// cmd already has --install-extensions from base
 		let mut cmd = self.get_base_command();
-		let cmd_str = || self.server_params.code_server_args.command_arguments().join(" ");
+		let cmd_str = || {
+			self.server_params
+				.code_server_args
+				.command_arguments()
+				.join(" ")
+		};
 
 		let r = cmd.output().await.map_err(|e| CodeError::CommandFailed {
 			command: cmd_str(),
@@ -613,14 +618,21 @@ impl<'a> ServerBuilder<'a> {
 			.spawn()
 			.map_err(|e| CodeError::ServerUnexpectedExit(format!("{}", e)))?;
 
-		self.server_paths.write_pid(child.id().expect("expected server to have pid"))?;
+		self.server_paths
+			.write_pid(child.id().expect("expected server to have pid"))?;
 
 		Ok(child)
 	}
 
 	fn get_logfile(&self) -> Result<File, WrappedError> {
 		File::create(&self.server_paths.logfile).map_err(|e| {
-			wrap(e, format!("error creating log file {}", self.server_paths.logfile.display()))
+			wrap(
+				e,
+				format!(
+					"error creating log file {}",
+					self.server_paths.logfile.display()
+				),
+			)
 		})
 	}
 
@@ -642,9 +654,15 @@ where
 	M: ServerOutputMatcher<R>,
 	R: 'static + Send + std::fmt::Debug,
 {
-	let stdout = child.stdout.take().expect("child did not have a handle to stdout");
+	let stdout = child
+		.stdout
+		.take()
+		.expect("child did not have a handle to stdout");
 
-	let stderr = child.stderr.take().expect("child did not have a handle to stdout");
+	let stderr = child
+		.stderr
+		.take()
+		.expect("child did not have a handle to stdout");
 
 	let (listen_tx, listen_rx) = tokio::sync::oneshot::channel();
 
@@ -749,9 +767,10 @@ pub struct WebUiMatcher();
 
 impl ServerOutputMatcher<reqwest::Url> for WebUiMatcher {
 	fn match_line(line: &str) -> Option<reqwest::Url> {
-		WEB_UI_RE
-			.captures(line)
-			.and_then(|cap| cap.get(1).and_then(|uri| reqwest::Url::parse(uri.as_str()).ok()))
+		WEB_UI_RE.captures(line).and_then(|cap| {
+			cap.get(1)
+				.and_then(|uri| reqwest::Url::parse(uri.as_str()).ok())
+		})
 	}
 }
 
@@ -771,18 +790,26 @@ fn parse_socket_from(text: &str) -> Option<PathBuf> {
 }
 
 fn parse_port_from(text: &str) -> Option<u16> {
-	LISTENING_PORT_RE
-		.captures(text)
-		.and_then(|cap| cap.get(1).and_then(|path| path.as_str().parse::<u16>().ok()))
+	LISTENING_PORT_RE.captures(text).and_then(|cap| {
+		cap.get(1)
+			.and_then(|path| path.as_str().parse::<u16>().ok())
+	})
 }
 
 pub fn print_listening(log: &log::Logger, tunnel_name: &str) {
-	debug!(log, "{} is listening for incoming connections", QUALITYLESS_SERVER_NAME);
+	debug!(
+		log,
+		"{} is listening for incoming connections", QUALITYLESS_SERVER_NAME
+	);
 
 	let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from(""));
 	let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from(""));
 
-	let dir = if home_dir == current_dir { PathBuf::from("") } else { current_dir };
+	let dir = if home_dir == current_dir {
+		PathBuf::from("")
+	} else {
+		current_dir
+	};
 
 	let base_web_url = match EDITOR_WEB_URL {
 		Some(u) => u,
@@ -811,7 +838,10 @@ pub async fn download_cli_into_cache(
 	release: &Release,
 	update_service: &UpdateService,
 ) -> Result<PathBuf, AnyError> {
-	let cache_name = format!("{}-{}-{}", release.quality, release.commit, release.platform);
+	let cache_name = format!(
+		"{}-{}-{}",
+		release.quality, release.commit, release.platform
+	);
 	let cli_dir = cache
 		.create(&cache_name, |target_dir| async move {
 			let tmpdir =

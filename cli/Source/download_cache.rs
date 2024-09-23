@@ -30,7 +30,10 @@ pub struct DownloadCache {
 
 impl DownloadCache {
 	pub fn new(path: PathBuf) -> DownloadCache {
-		DownloadCache { state: PersistedState::new(path.join(PERSISTED_STATE_FILE_NAME)), path }
+		DownloadCache {
+			state: PersistedState::new(path.join(PERSISTED_STATE_FILE_NAME)),
+			path,
+		}
 	}
 
 	/// Gets the value stored on the state

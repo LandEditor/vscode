@@ -121,7 +121,13 @@ impl PortForwardingSender {
 						None => {
 							let mut count = PortCount::default();
 							count[p.privacy] += 1;
-							v.insert(p.number, PortMapRec { count, protocol: p.protocol });
+							v.insert(
+								p.number,
+								PortMapRec {
+									count,
+									protocol: p.protocol,
+								},
+							);
 						}
 					};
 				}
@@ -134,7 +140,10 @@ impl PortForwardingSender {
 
 impl Clone for PortForwardingSender {
 	fn clone(&self) -> Self {
-		Self { current: Mutex::new(vec![]), sender: self.sender.clone() }
+		Self {
+			current: Mutex::new(vec![]),
+			sender: self.sender.clone(),
+		}
 	}
 }
 
@@ -187,12 +196,14 @@ impl PortForwardingReceiver {
 				let privacy = rec.count.primary_privacy();
 				if !matches!(current.get(port), Some(n) if n.count.primary_privacy() == privacy) {
 					match tunnel.add_port_tcp(*port, privacy, rec.protocol).await {
-						Ok(_) => {
-							info!(log, "forwarding {} port {} at {:?}", rec.protocol, port, privacy)
-						}
-						Err(e) => {
-							error!(log, "failed to forward {} port {}: {}", rec.protocol, port, e)
-						}
+						Ok(_) => info!(
+							log,
+							"forwarding {} port {} at {:?}", rec.protocol, port, privacy
+						),
+						Err(e) => error!(
+							log,
+							"failed to forward {} port {}: {}", rec.protocol, port, e
+						),
 					}
 				}
 			}
@@ -220,7 +231,12 @@ struct SingletonServerContext {
 pub async fn client(args: SingletonClientArgs) -> Result<(), std::io::Error> {
 	let mut rpc = new_json_rpc();
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
-	let SingletonClientArgs { log, shutdown, stream, mut port_requests } = args;
+	let SingletonClientArgs {
+		log,
+		shutdown,
+		stream,
+		mut port_requests,
+	} = args;
 
 	debug!(
 		log,
@@ -312,14 +328,20 @@ async fn serve_singleton_rpc(
 			// we make an rpc for the connection instead of re-using a dispatcher
 			// so that we can have the "handle" drop when the connection drops.
 			let rpc = new_json_rpc();
-			let mut rpc = rpc.methods(SingletonServerContext { log: log.clone(), handle, tunnel });
+			let mut rpc = rpc.methods(SingletonServerContext {
+				log: log.clone(),
+				handle,
+				tunnel,
+			});
 
 			rpc.register_sync(
 				protocol::forward_singleton::METHOD_SET_PORTS,
 				|p: protocol::forward_singleton::SetPortsParams, ctx| {
 					info!(ctx.log, "client setting ports to {:?}", p.ports);
 					ctx.handle.set_ports(p.ports);
-					Ok(SetPortsResponse { port_format: ctx.tunnel.get_port_format().ok() })
+					Ok(SetPortsResponse {
+						port_format: ctx.tunnel.get_port_format().ok(),
+					})
 				},
 			);
 

@@ -9,15 +9,12 @@ use opentelemetry::{
 	trace::{SpanBuilder, Tracer as TraitTracer, TracerProvider as TracerProviderTrait},
 };
 use serde::{Deserialize, Serialize};
+use std::fmt;
 use std::{
-	fmt,
 	io::Write,
-	path::Path,
-	sync::{
-		atomic::{AtomicU32, Ordering},
-		Arc,
-	},
+	sync::atomic::{AtomicU32, Ordering},
 };
+use std::{path::Path, sync::Arc};
 
 use crate::constants::COLORS_ENABLED;
 
@@ -172,9 +169,15 @@ impl FileLogSink {
 			let _ = std::fs::remove_file(path);
 		}
 
-		let file = std::fs::OpenOptions::new().append(true).create(true).open(path)?;
+		let file = std::fs::OpenOptions::new()
+			.append(true)
+			.create(true)
+			.open(path)?;
 
-		Ok(Self { level, file: Arc::new(std::sync::Mutex::new(file)) })
+		Ok(Self {
+			level,
+			file: Arc::new(std::sync::Mutex::new(file)),
+		})
 	}
 }
 
@@ -249,7 +252,10 @@ impl Logger {
 		let mut new_sinks = self.sink.clone();
 		new_sinks.push(Box::new(sink));
 
-		Logger { sink: new_sinks, ..self.clone() }
+		Logger {
+			sink: new_sinks,
+			..self.clone()
+		}
 	}
 
 	/// Creates a new logger with the sink replace with the given sink.
@@ -257,11 +263,17 @@ impl Logger {
 	where
 		T: LogSink + 'static,
 	{
-		Logger { sink: vec![Box::new(sink)], ..self.clone() }
+		Logger {
+			sink: vec![Box::new(sink)],
+			..self.clone()
+		}
 	}
 
 	pub fn get_download_logger<'a>(&'a self, prefix: &'static str) -> DownloadLogger<'a> {
-		DownloadLogger { prefix, logger: self }
+		DownloadLogger {
+			prefix,
+			logger: self,
+		}
 	}
 }
 
@@ -284,8 +296,10 @@ impl<'a> crate::util::io::ReportCopyProgress for DownloadLogger<'a> {
 				),
 			);
 		} else {
-			self.logger
-				.emit(Level::Trace, &format!("{} {}/{}", self.prefix, bytes_so_far, total_bytes,));
+			self.logger.emit(
+				Level::Trace,
+				&format!("{} {}/{}", self.prefix, bytes_so_far, total_bytes,),
+			);
 		}
 	}
 }

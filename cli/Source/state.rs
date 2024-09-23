@@ -62,7 +62,10 @@ where
 		let s = serde_json::to_string(&state).unwrap();
 		self.state = Some(state);
 		self.write_state(s).map_err(|e| {
-			wrap(e, format!("error saving launcher state into {}", self.path.display()))
+			wrap(
+				e,
+				format!("error saving launcher state into {}", self.path.display()),
+			)
 		})
 	}
 
@@ -103,7 +106,11 @@ where
 	/// Creates a new state container that persists to the given path.
 	pub fn new_with_mode(path: PathBuf, mode: u32) -> PersistedState<T> {
 		PersistedState {
-			container: Arc::new(Mutex::new(PersistedStateContainer { path, state: None, mode })),
+			container: Arc::new(Mutex::new(PersistedStateContainer {
+				path,
+				state: None,
+				mode,
+			})),
 		}
 	}
 
@@ -148,7 +155,10 @@ impl LauncherPaths {
 
 		if let Err(e) = std::fs::rename(&old_dir, &new_dir) {
 			// no logger exists at this point in the lifecycle, so just log to stderr
-			eprintln!("Failed to migrate old CLI data directory, will create a new one ({})", e);
+			eprintln!(
+				"Failed to migrate old CLI data directory, will create a new one ({})",
+				e
+			);
 		}
 
 		Self::new_for_path(new_dir)
@@ -198,12 +208,18 @@ impl LauncherPaths {
 
 	/// Lockfile for the running tunnel
 	pub fn tunnel_lockfile(&self) -> PathBuf {
-		self.root.join(format!("tunnel-{}.lock", VSCODE_CLI_QUALITY.unwrap_or("oss")))
+		self.root.join(format!(
+			"tunnel-{}.lock",
+			VSCODE_CLI_QUALITY.unwrap_or("oss")
+		))
 	}
 
 	/// Lockfile for port forwarding
 	pub fn forwarding_lockfile(&self) -> PathBuf {
-		self.root.join(format!("forwarding-{}.lock", VSCODE_CLI_QUALITY.unwrap_or("oss")))
+		self.root.join(format!(
+			"forwarding-{}.lock",
+			VSCODE_CLI_QUALITY.unwrap_or("oss")
+		))
 	}
 
 	/// Suggested path for tunnel service logs, when using file logs
@@ -214,7 +230,13 @@ impl LauncherPaths {
 	/// Removes the launcher data directory.
 	pub fn remove(&self) -> Result<(), WrappedError> {
 		remove_dir_all(&self.root).map_err(|e| {
-			wrap(e, format!("error removing launcher data directory {}", self.root.display()))
+			wrap(
+				e,
+				format!(
+					"error removing launcher data directory {}",
+					self.root.display()
+				),
+			)
 		})
 	}
 

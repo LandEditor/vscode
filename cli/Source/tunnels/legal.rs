@@ -2,14 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-use crate::{
-	constants::IS_INTERACTIVE_CLI,
-	state::{LauncherPaths, PersistedState},
-	util::{
-		errors::{AnyError, CodeError},
-		input::prompt_yn,
-	},
-};
+use crate::constants::IS_INTERACTIVE_CLI;
+use crate::state::{LauncherPaths, PersistedState};
+use crate::util::errors::{AnyError, CodeError};
+use crate::util::input::prompt_yn;
 use lazy_static::lazy_static;
 use serde::{Deserialize, Serialize};
 
