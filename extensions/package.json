@@ -1,12 +1,12 @@
 {
-	"dependencies": {},
-	"description": "Dependencies shared by all extensions",
-	"devDependencies": {
-		"esbuild": "0.24.0"
-	},
 	"name": "vscode-extensions",
+	"description": "Dependencies shared by all extensions",
+	"scripts": {},
 	"resolutions": {
 		"node-gyp-build": "4.8.1"
 	},
-	"scripts": {}
+	"dependencies": {},
+	"devDependencies": {
+		"esbuild": "0.24.0"
+	}
 }
