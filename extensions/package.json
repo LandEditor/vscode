@@ -7,6 +7,10 @@
 	},
 	"dependencies": {},
 	"devDependencies": {
+<<<<<<< HEAD
 		"esbuild": "0.23.0"
+=======
+		"esbuild": "0.24.0"
+>>>>>>> 570eaf65b25dbe99a04cd4f60f1b3da670338378
 	}
 }

@@ -43,7 +43,7 @@
 		"jsonc-parser": "3.2.0"
 	},
 	"devDependencies": {
-		"@types/node": "20.x"
+		"@types/node": "22.7.1"
 	},
 	"icon": "media/icon.png"
 }
