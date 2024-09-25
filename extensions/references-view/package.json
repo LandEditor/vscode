@@ -378,7 +378,7 @@
 		"onCommand:editor.action.showReferences"
 	],
 	"devDependencies": {
-		"@types/node": "22.x"
+		"@types/node": "20.x"
 	},
 	"icon": "media/icon.png",
 	"capabilities": {

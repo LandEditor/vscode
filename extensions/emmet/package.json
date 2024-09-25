@@ -464,10 +464,10 @@
 		"onLanguage"
 	],
 	"dependencies": {
-		"image-size": "1.1.1"
+		"image-size": "~1.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "22.x"
+		"@types/node": "20.x"
 	},
 	"icon": "images/icon.png",
 	"capabilities": {

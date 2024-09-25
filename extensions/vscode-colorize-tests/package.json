@@ -2,7 +2,9 @@
 	"name": "vscode-colorize-tests",
 	"description": "Colorize tests for VS Code",
 	"main": "./out/colorizerTestMain",
-	"scripts": {},
+	"scripts": {
+		"compile": "gulp compile-extension:vscode-colorize-tests"
+	},
 	"contributes": {
 		"productIconThemes": [
 			{
@@ -38,10 +40,10 @@
 		"onLanguage:json"
 	],
 	"dependencies": {
-		"jsonc-parser": "3.3.1"
+		"jsonc-parser": "^3.2.0"
 	},
 	"devDependencies": {
-		"@types/node": "22.x"
+		"@types/node": "22.7.1"
 	},
 	"icon": "media/icon.png"
 }

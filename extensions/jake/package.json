@@ -49,7 +49,7 @@
 	],
 	"dependencies": {},
 	"devDependencies": {
-		"@types/node": "22.x"
+		"@types/node": "20.x"
 	},
 	"icon": "images/cowboy_hat.png",
 	"capabilities": {
