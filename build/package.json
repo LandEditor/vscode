@@ -41,7 +41,6 @@
 		"tree-sitter": "0.20.5",
 		"tree-sitter-typescript": "0.20.5"
 	},
-=======
 >>>>>>> 8acde129290a5ff2cec8a5f4dfb8a00f77b59a22
 	"scripts": {
 		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
