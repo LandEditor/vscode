@@ -2,16 +2,26 @@
 	"name": "builtin-notebook-renderers",
 	"displayName": "%displayName%",
 	"description": "%description%",
-	"scripts": {
-		"build-notebook": "node ./esbuild",
-		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook"
+	"publisher": "vscode",
+	"version": "1.0.0",
+	"license": "MIT",
+  "icon": "media/icon.png",
+	"engines": {
+		"vscode": "^1.57.0"
+	},
+	"capabilities": {
+		"virtualWorkspaces": true,
+		"untrustedWorkspaces": {
+			"supported": true
+		}
 	},
 	"contributes": {
 		"notebookRenderer": [
 			{
-				"displayName": "VS Code Builtin Notebook Output Renderer",
-				"entrypoint": "./renderer-out/index.js",
 				"id": "vscode.builtin-renderer",
+				"entrypoint": "./renderer-out/index.js",
+				"displayName": "VS Code Builtin Notebook Output Renderer",
+				"requiresMessaging": "never",
 				"mimeTypes": [
 					"image/gif",
 					"image/png",
@@ -27,21 +37,23 @@
 					"application/vnd.code.notebook.stderr",
 					"application/x.notebook.stderr",
 					"text/plain"
-				],
-				"requiresMessaging": "never"
+				]
 			}
 		]
 	},
+	"scripts": {
+		"compile": "npx gulp compile-extension:notebook-renderers && npm run build-notebook",
+		"watch": "npx gulp compile-watch:notebook-renderers",
+		"build-notebook": "node ./esbuild"
+	},
 	"dependencies": {},
 	"devDependencies": {
-		"@types/jsdom": "21.1.0",
-		"jsdom": "21.1.1"
+		"@types/jsdom": "^21.1.0",
+		"@types/vscode-notebook-renderer": "^1.60.0",
+		"jsdom": "^21.1.1"
 	},
-	"icon": "media/icon.png",
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": true
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/microsoft/vscode.git"
 	}
 }
