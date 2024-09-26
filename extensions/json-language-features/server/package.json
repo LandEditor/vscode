@@ -5,19 +5,6 @@
 	"bin": {
 		"vscode-json-languageserver": "./bin/vscode-json-languageserver"
 	},
-<<<<<<< HEAD
-	"dependencies": {
-		"jsonc-parser": "3.3.1",
-		"request-light": "0.8.0"
-	},
-	"description": "JSON language server",
-	"devDependencies": {
-		"@types/node": "20.x"
-	},
-	"main": "./out/node/jsonServerMain",
-	"name": "vscode-json-languageserver",
-=======
->>>>>>> 8acde129290a5ff2cec8a5f4dfb8a00f77b59a22
 	"scripts": {
 		"clean": "../../../node_modules/.bin/rimraf out",
 		"compile": "npx gulp compile-extension:json-language-features-server",

@@ -1,7 +1,5 @@
 {
 	"name": "code-oss-dev-build",
-<<<<<<< HEAD
-=======
 	"devDependencies": {
 		"@types/ansi-colors": "3.2.0",
 		"@types/byline": "4.2.32",
@@ -43,7 +41,6 @@
 		"tree-sitter": "0.20.5",
 		"tree-sitter-typescript": "0.20.5"
 	},
->>>>>>> fa5eac3dde0a52b56c07f43e86ba33a0f50e5345
 =======
 >>>>>>> 8acde129290a5ff2cec8a5f4dfb8a00f77b59a22
 	"scripts": {

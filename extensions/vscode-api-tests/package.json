@@ -1,5 +1,10 @@
 {
-	"activationEvents": [],
+	"name": "vscode-api-tests",
+	"description": "API tests for VS Code",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
+	},
 	"contributes": {
 		"breakpoints": [
 			{
@@ -186,13 +191,14 @@
 			]
 		}
 	},
-	"description": "API tests for VS Code",
+	"activationEvents": [],
 	"devDependencies": {
 		"@types/node": "20.x",
 		"@types/node-forge": "1.3.11",
 		"node-forge": "1.3.1",
 		"straightforward": "4.2.2"
 	},
+	"icon": "media/icon.png",
 	"enabledApiProposals": [
 		"activeComment",
 		"authSession",
@@ -244,11 +250,5 @@
 		"treeViewReveal",
 		"tunnels",
 		"workspaceTrust"
-	],
-	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "vscode-api-tests",
-	"scripts": {
-		"compile": "node ./node_modules/vscode/bin/compile -watch -p ./"
-	}
+	]
 }
