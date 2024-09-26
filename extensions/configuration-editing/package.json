@@ -142,12 +142,12 @@
 		"onLanguage:jsonc"
 	],
 	"dependencies": {
-		"@octokit/rest": "19.0.4",
-		"jsonc-parser": "3.2.0",
+		"@octokit/rest": "21.0.2",
+		"jsonc-parser": "3.3.1",
 		"tunnel": "0.0.6"
 	},
 	"devDependencies": {
-		"@types/node": "20.x"
+		"@types/node": "22.x"
 	},
 	"icon": "images/icon.png",
 	"capabilities": {

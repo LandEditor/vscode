@@ -53,11 +53,11 @@
 		"onLanguage:php"
 	],
 	"dependencies": {
-		"which": "2.0.2"
+		"which": "4.0.0"
 	},
 	"devDependencies": {
-		"@types/node": "20.x",
-		"@types/which": "2.0.0"
+		"@types/node": "22.x",
+		"@types/which": "3.0.4"
 	},
 	"icon": "icons/logo.png",
 	"capabilities": {
