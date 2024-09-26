@@ -20,10 +20,6 @@
 		"request-light": "0.8.0"
 	},
 	"devDependencies": {
-<<<<<<< HEAD
-		"@types/node": "20.x"
-=======
-		"@types/node": "22.x"
->>>>>>> 570eaf65b25dbe99a04cd4f60f1b3da670338378
+		"@types/node": "22.7.2"
 	}
 }
