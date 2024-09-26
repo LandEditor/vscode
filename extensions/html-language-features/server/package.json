@@ -1,16 +1,23 @@
 {
-	"name": "vscode-html-languageserver",
+	"dependencies": {},
 	"description": "HTML language server",
+	"devDependencies": {
+		"@types/node": "20.x"
+	},
 	"main": "./out/node/htmlServerMain",
+	"name": "vscode-html-languageserver",
 	"scripts": {
 		"compile": "npx gulp compile-extension:html-language-features-server",
 		"install-server-local": "npm install vscode-languageserver",
 		"install-server-next": "npm install vscode-languageserver@next",
 		"install-service-local": "npm install vscode-css-languageservice && npm install vscode-html-languageservice",
 		"install-service-next": "npm install vscode-css-languageservice@next && npm install vscode-html-languageservice@next"
+<<<<<<< HEAD
 	},
 	"dependencies": {},
 	"devDependencies": {
 		"@types/node": "22.7.1"
+=======
+>>>>>>> fa5eac3dde0a52b56c07f43e86ba33a0f50e5345
 	}
 }
