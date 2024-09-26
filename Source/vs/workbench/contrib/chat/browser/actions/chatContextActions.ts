@@ -23,7 +23,7 @@ import { KeybindingWeight } from '../../../../../platform/keybinding/common/keyb
 import { AnythingQuickAccessProviderRunOptions } from '../../../../../platform/quickinput/common/quickAccess.js';
 import { IQuickInputService, IQuickPickItem, QuickPickItem } from '../../../../../platform/quickinput/common/quickInput.js';
 import { CHAT_CATEGORY } from './chatActions.js';
-import { IChatWidget, IChatWidgetService, IQuickChatService } from '../chat.js';
+import { IChatWidget, IChatWidgetService, IQuickChatService, showChatView } from '../chat.js';
 import { isQuickChat } from '../chatWidget.js';
 import { ChatContextAttachments } from '../contrib/chatContextAttachments.js';
 import { ChatAgentLocation, IChatAgentService } from '../../common/chatAgents.js';
@@ -36,10 +36,10 @@ import { AnythingQuickAccessProvider } from '../../../search/browser/anythingQui
 import { ISymbolQuickPickItem, SymbolsQuickAccessProvider } from '../../../search/browser/symbolsQuickAccess.js';
 import { IEditorService } from '../../../../services/editor/common/editorService.js';
 import { IClipboardService } from '../../../../../platform/clipboard/common/clipboardService.js';
-import { isImage } from '../chatImagePaste.js';
-import { hash } from '../../../../../base/common/hash.js';
+import { imageToHash, isImage } from '../chatImagePaste.js';
 import { IConfigurationService } from '../../../../../platform/configuration/common/configuration.js';
 import { ActiveEditorContext } from '../../../../common/contextkeys.js';
+import { IViewsService } from '../../../../services/views/common/viewsService.js';
 
 export function registerChatContextActions() {
 	registerAction2(AttachContextAction);
@@ -117,8 +117,8 @@ class AttachFileAction extends Action2 {
 			precondition: ActiveEditorContext.isEqualTo('workbench.editors.files.textFileEditor'),
 			menu: {
 				id: MenuId.ChatCommandCenter,
-				group: 'attach',
-				order: 1,
+				group: 'a_chat',
+				order: 10,
 			}
 		});
 	}
@@ -129,6 +129,7 @@ class AttachFileAction extends Action2 {
 
 		const activeUri = textEditorService.activeEditor?.resource;
 		if (textEditorService.activeTextEditorControl?.getEditorType() === EditorType.ICodeEditor && activeUri && [Schemas.file, Schemas.vscodeRemote, Schemas.untitled].includes(activeUri.scheme)) {
+			(await showChatView(accessor.get(IViewsService)))?.focusInput();
 			variablesService.attachContext('file', activeUri, ChatAgentLocation.Panel);
 		}
 	}
@@ -147,8 +148,8 @@ class AttachSelectionAction extends Action2 {
 			precondition: ActiveEditorContext.isEqualTo('workbench.editors.files.textFileEditor'),
 			menu: {
 				id: MenuId.ChatCommandCenter,
-				group: 'attach',
-				order: 2,
+				group: 'a_chat',
+				order: 11,
 			}
 		});
 	}
@@ -162,6 +163,7 @@ class AttachSelectionAction extends Action2 {
 		if (textEditorService.activeTextEditorControl?.getEditorType() === EditorType.ICodeEditor && activeUri && [Schemas.file, Schemas.vscodeRemote, Schemas.untitled].includes(activeUri.scheme)) {
 			const selection = activeEditor?.getSelection();
 			if (selection) {
+				(await showChatView(accessor.get(IViewsService)))?.focusInput();
 				variablesService.attachContext('file', { uri: activeUri, range: selection }, ChatAgentLocation.Panel);
 			}
 		}
@@ -194,10 +196,16 @@ class AttachContextAction extends Action2 {
 			},
 			menu: [
 				{
-					when: AttachContextAction._cdt,
+					when: ContextKeyExpr.and(CONTEXT_CHAT_LOCATION.isEqualTo(ChatAgentLocation.Panel), AttachContextAction._cdt),
 					id: MenuId.ChatInput,
 					group: 'navigation',
 					order: 2
+				},
+				{
+					when: ContextKeyExpr.and(CONTEXT_CHAT_LOCATION.isEqualTo(ChatAgentLocation.Panel).negate(), AttachContextAction._cdt),
+					id: MenuId.ChatExecute,
+					group: 'navigation',
+					order: 1
 				},
 			]
 		});
@@ -286,7 +294,7 @@ class AttachContextAction extends Action2 {
 			} else if ('kind' in pick && pick.kind === 'image') {
 				const fileBuffer = await clipboardService.readImage();
 				toAttach.push({
-					id: hash(fileBuffer).toString(),
+					id: await imageToHash(fileBuffer),
 					name: localize('pastedImage', 'Pasted Image'),
 					fullName: localize('pastedImage', 'Pasted Image'),
 					value: fileBuffer,
@@ -345,7 +353,7 @@ class AttachContextAction extends Action2 {
 
 		if (isImage(imageData) && configurationService.getValue<boolean>('chat.experimental.imageAttachments')) {
 			quickPickItems.push({
-				id: hash(imageData).toString(),
+				id: await imageToHash(imageData),
 				kind: 'image',
 				label: localize('imageFromClipboard', 'Image from Clipboard'),
 				iconClass: ThemeIcon.asClassName(Codicon.fileMedia),
