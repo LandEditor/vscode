@@ -13,5 +13,12 @@
 		"install-server-next": "npm install vscode-languageserver@next",
 		"install-service-local": "npm link vscode-css-languageservice",
 		"install-service-next": "npm install vscode-css-languageservice@next"
+<<<<<<< HEAD
+	},
+	"dependencies": {},
+	"devDependencies": {
+		"@types/node": "22.7.2"
+=======
+>>>>>>> fa5eac3dde0a52b56c07f43e86ba33a0f50e5345
 	}
 }

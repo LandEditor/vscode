@@ -8,5 +8,12 @@
 	"resolutions": {
 		"node-gyp-build": "4.8.1"
 	},
+<<<<<<< HEAD
+	"dependencies": {},
+	"devDependencies": {
+		"esbuild": "0.24.0"
+	}
+=======
 	"scripts": {}
+>>>>>>> fa5eac3dde0a52b56c07f43e86ba33a0f50e5345
 }

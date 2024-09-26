@@ -332,7 +332,21 @@
 		"@types/node": "20.x",
 		"@types/which": "3.0.0"
 	},
+<<<<<<< HEAD
+	"icon": "images/npm_icon.png",
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"description": "%workspaceTrust%",
+			"supported": "limited"
+		},
+		"virtualWorkspaces": {
+			"description": "%virtualWorkspaces%",
+			"supported": "limited"
+		}
+	},
+=======
 	"displayName": "%displayName%",
+>>>>>>> fa5eac3dde0a52b56c07f43e86ba33a0f50e5345
 	"enabledApiProposals": [
 		"terminalQuickFixProvider"
 	],

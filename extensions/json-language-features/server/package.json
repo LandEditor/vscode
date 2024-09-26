@@ -21,5 +21,15 @@
 		"install-service-next": "npm install vscode-json-languageservice@next",
 		"prepublishOnly": "npm run clean && npm run compile",
 		"version": "git commit -m \"JSON Language Server $npm_package_version\" package.json"
+<<<<<<< HEAD
+	},
+	"dependencies": {
+		"jsonc-parser": "3.3.1",
+		"request-light": "0.8.0"
+	},
+	"devDependencies": {
+		"@types/node": "22.7.2"
+=======
+>>>>>>> fa5eac3dde0a52b56c07f43e86ba33a0f50e5345
 	}
 }
