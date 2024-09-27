@@ -252,6 +252,7 @@ pub trait AsyncRWAccepter {
 impl AsyncRWAccepter for AsyncPipeListener {
 	async fn accept_rw(&mut self) -> Result<AcceptedRW, CodeError> {
 		let pipe = self.accept().await?;
+
 		let (read, write) = socket_stream_split(pipe);
 		Ok((Box::new(read), Box::new(write)))
 	}
@@ -264,6 +265,7 @@ impl AsyncRWAccepter for TcpListener {
 			.accept()
 			.await
 			.map_err(CodeError::AsyncPipeListenerFailed)?;
+
 		let (read, write) = tokio::io::split(stream);
 		Ok((Box::new(read), Box::new(write)))
 	}

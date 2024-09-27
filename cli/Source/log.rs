@@ -431,8 +431,11 @@ macro_rules! span {
 		use opentelemetry::trace::TraceContextExt;
 
 		let span = $span.start($logger.tracer());
+
 		let cx = opentelemetry::Context::current_with_span(span);
+
 		let guard = cx.clone().attach();
+
 		let t = $func;
 
 		if let Err(e) = &t {
@@ -451,7 +454,9 @@ macro_rules! spanf {
 		use opentelemetry::trace::{FutureExt, TraceContextExt};
 
 		let span = $span.start($logger.tracer());
+
 		let cx = opentelemetry::Context::current_with_span(span);
+
 		let t = $func.with_context(cx.clone()).await;
 
 		if let Err(e) = &t {

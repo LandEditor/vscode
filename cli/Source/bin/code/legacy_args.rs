@@ -130,6 +130,7 @@ mod tests {
 			"themes",
 			"--show-versions",
 		];
+
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
@@ -157,6 +158,7 @@ mod tests {
 			"--pre-release",
 			"--force",
 		];
+
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
@@ -181,6 +183,7 @@ mod tests {
 	#[test]
 	fn test_parses_uninstall_extension() {
 		let args = vec!["code", "--uninstall-extension", "connor4312.codesong"];
+
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
@@ -208,6 +211,7 @@ mod tests {
 			"--extensions-dir",
 			"bar",
 		];
+
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
@@ -235,6 +239,7 @@ mod tests {
 	#[test]
 	fn test_status() {
 		let args = vec!["code", "--status"];
+
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Status) = cli.subcommand {

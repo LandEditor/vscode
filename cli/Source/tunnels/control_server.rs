@@ -191,8 +191,11 @@ pub async fn serve(
 			log,
 			"Preloading extensions using stable server: {:?}", code_server_args.install_extensions
 		);
+
 		let log = log.clone();
+
 		let code_server_args = code_server_args.clone();
+
 		let launcher_paths = launcher_paths.clone();
 		// This is run async to the primary tunnel setup to be speedy.
 		tokio::spawn(async move {
@@ -553,8 +556,11 @@ async fn process_socket(
 
 	{
 		let log = log.clone();
+
 		let rx_counter = rx_counter.clone();
+
 		let socket_tx = socket_tx.clone();
+
 		let exit_barrier = exit_barrier.clone();
 		tokio::spawn(async move {
 			if already_authed {
@@ -1309,6 +1315,7 @@ async fn handle_spawn_cli(
 	// want to read anything other than our handshake messages.
 	if let Err(e) = spawn_do_child_authentication(log, &mut stdin, &mut stderr).await {
 		warning!(log, "failed to authenticate with child process {}", e);
+
 		let _ = p.kill().await;
 		return Err(e.into());
 	}

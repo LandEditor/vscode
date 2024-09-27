@@ -127,7 +127,9 @@ where
 	/// Mutates persisted state.
 	pub fn update<R>(&self, mutator: impl FnOnce(&mut T) -> R) -> Result<R, WrappedError> {
 		let mut container = self.container.lock().unwrap();
+
 		let mut state = container.load_or_get();
+
 		let r = mutator(&mut state);
 		container.save(state).map(|_| r)
 	}
@@ -146,6 +148,7 @@ impl LauncherPaths {
 		};
 
 		let old_dir = home_dir.join(".vscode-cli");
+
 		let mut new_dir = home_dir;
 		new_dir.push(DEFAULT_DATA_PARENT_DIR);
 		new_dir.push("cli");
@@ -166,6 +169,7 @@ impl LauncherPaths {
 
 	pub fn new(root: Option<String>) -> Result<LauncherPaths, AnyError> {
 		let root = root.unwrap_or_else(|| format!("~/{}/cli", DEFAULT_DATA_PARENT_DIR));
+
 		let mut replaced = root.to_owned();
 		for token in HOME_DIR_ALTS {
 			if root.contains(token) {
@@ -192,6 +196,7 @@ impl LauncherPaths {
 	pub fn new_without_replacements(root: PathBuf) -> LauncherPaths {
 		// cleanup folders that existed before the new LRU strategy:
 		let _ = std::fs::remove_dir_all(root.join("server-insiders"));
+
 		let _ = std::fs::remove_dir_all(root.join("server-stable"));
 
 		LauncherPaths {

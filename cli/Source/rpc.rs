@@ -109,6 +109,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		}
 
 		let serial = self.serializer.clone();
+
 		let context = self.context.clone();
 		self.methods.insert(
 			method_name,
@@ -153,6 +154,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		F: (Fn(P, Arc<C>) -> Fut) + Clone + Send + Sync + 'static,
 	{
 		let serial = self.serializer.clone();
+
 		let context = self.context.clone();
 		self.methods.insert(
 			method_name,
@@ -212,6 +214,7 @@ impl<S: Serialization, C: Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		F: (Fn(Vec<DuplexStream>, P, Arc<C>) -> Fut) + Clone + Send + Sync + 'static,
 	{
 		let serial = self.serializer.clone();
+
 		let context = self.context.clone();
 		self.methods.insert(
 			method_name,
@@ -346,7 +349,9 @@ impl<S: Serialization> RpcCaller<S> {
 		R: DeserializeOwned + Send + 'static,
 	{
 		let (tx, rx) = oneshot::channel();
+
 		let id = next_message_id();
+
 		let body = self.serializer.serialize(&FullRequest {
 			id: Some(id),
 			method,
@@ -718,11 +723,13 @@ mod tests {
 	#[tokio::test]
 	async fn test_remove() {
 		let streams = Streams::default();
+
 		let (writer, mut reader) = tokio::io::duplex(1024);
 		streams.insert(1, tokio::io::split(writer).1);
 		streams.remove(1).await;
 
 		assert!(streams.map.lock().unwrap().get(&1).is_none());
+
 		let mut buffer = Vec::new();
 		assert_eq!(reader.read_to_end(&mut buffer).await.unwrap(), 0);
 	}
@@ -730,6 +737,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_write() {
 		let streams = Streams::default();
+
 		let (writer, mut reader) = tokio::io::duplex(1024);
 		streams.insert(1, tokio::io::split(writer).1);
 		streams.write(1, vec![1, 2, 3]);
@@ -742,6 +750,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_write_with_immediate_end() {
 		let streams = Streams::default();
+
 		let (writer, mut reader) = tokio::io::duplex(1);
 		streams.insert(1, tokio::io::split(writer).1);
 		streams.write(1, vec![1, 2, 3]); // spawn write loop

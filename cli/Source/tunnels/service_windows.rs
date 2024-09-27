@@ -52,6 +52,7 @@ impl CliServiceManager for WindowsService {
 		let key = WindowsService::open_key()?;
 
 		let mut reg_str = String::new();
+
 		let mut cmd = new_std_command(&exe);
 		reg_str.push_str(shell_escape(exe.to_string_lossy()).as_ref());
 

@@ -97,6 +97,7 @@ impl ServerMessageSink {
 		body_or_end: Option<&[u8]>,
 	) -> Result<(), mpsc::error::SendError<SocketSignal>> {
 		let i = self.id;
+
 		let mut tx = self.tx.take().unwrap();
 
 		if let Some(b) = body_or_end {
@@ -284,6 +285,7 @@ where
 
 	pub fn process(&mut self, contents: &[u8], finish: bool) -> std::io::Result<&[u8]> {
 		let mut out_offset = 0;
+
 		let mut in_offset = 0;
 		loop {
 			let in_before = self.flate.total_in();
@@ -317,6 +319,7 @@ where
 						"unexpected stream end",
 					))
 				}
+
 				Err(e) => return Err(e),
 			}
 		}
@@ -331,11 +334,13 @@ mod tests {
 	#[test]
 	fn test_round_trips_compression() {
 		let (tx, _) = mpsc::channel(1);
+
 		let mut sink = ServerMessageSink::new_compressed(
 			ServerMultiplexer::new(),
 			0,
 			ServerMessageDestination::Channel(tx),
 		);
+
 		let mut decompress = ClientMessageDecoder::new_compressed();
 
 		// 3000 and 30000 test resizing the buffer
@@ -359,6 +364,7 @@ mod tests {
 	#[test]
 	fn test_flatestream_decodes_191501() {
 		let mut dec = ClientMessageDecoder::new_compressed();
+
 		let mut len = 0;
 		for b in TEST_191501_BUFS {
 			let b = general_purpose::STANDARD

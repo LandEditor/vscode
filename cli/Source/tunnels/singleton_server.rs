@@ -152,6 +152,7 @@ pub async fn start_singleton_server<'a>(
 
 	{
 		print_listening(&args.log, &args.tunnel.name);
+
 		let mut status = args.server.current_status.lock().unwrap();
 		*status = Some(StatusInfo {
 			name: args.tunnel.name.clone(),
@@ -199,8 +200,11 @@ async fn serve_singleton_rpc<C: Clone + Send + Sync + 'static>(
 		};
 
 		let (read, write) = socket_stream_split(cnx);
+
 		let dispatcher = dispatcher.clone();
+
 		let msg_rx = log_broadcast.replay_and_subscribe();
+
 		let shutdown_rx = shutdown_rx.clone();
 		tokio::spawn(async move {
 			let _ = start_json_rpc(dispatcher.clone(), read, write, msg_rx, shutdown_rx).await;
@@ -259,6 +263,7 @@ impl BroadcastLogSink {
 impl log::LogSink for BroadcastLogSink {
 	fn write_log(&self, level: log::Level, prefix: &str, message: &str) {
 		let s = JsonRpcSerializer {};
+
 		let serialized = RpcCaller::serialize_notify(
 			&s,
 			protocol::singleton::METHOD_LOG,

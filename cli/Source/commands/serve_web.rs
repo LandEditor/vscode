@@ -98,6 +98,7 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 			log: cm.log.clone(),
 			server_secret_key: key.clone(),
 		};
+
 		let service = service_fn(move |req| handle(ctx.clone(), req));
 		async move { Ok::<_, Infallible>(service) }
 	};
@@ -105,15 +106,18 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 	let mut shutdown = ShutdownRequest::create_rx([ShutdownRequest::CtrlC]);
 	let r = if let Some(s) = args.socket_path {
 		let s = PathBuf::from(&s);
+
 		let socket = listen_socket_rw_stream(&s).await?;
 		ctx.log
 			.result(format!("Web UI available on {}", s.display()));
+
 		let r = Server::builder(socket.into_pollable())
 			.serve(make_service_fn(|_| make_svc()))
 			.with_graceful_shutdown(async {
 				let _ = shutdown.wait().await;
 			})
 			.await;
+
 		let _ = std::fs::remove_file(&s); // cleanup
 		r
 	} else {
@@ -123,6 +127,7 @@ pub async fn serve_web(ctx: CommandContext, mut args: ServeWebArgs) -> Result<i3
 			}
 			None => SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), args.port),
 		};
+
 		let builder = Server::try_bind(&addr).map_err(CodeError::CouldNotListenOnInterface)?;
 
 		let mut listening = format!("Web UI available at http://{}", addr);
@@ -394,7 +399,9 @@ impl SecretKeyPart {
 
 	pub fn decode(s: &str) -> Result<Self, base64::DecodeSliceError> {
 		use base64::{engine::general_purpose, Engine as _};
+
 		let mut key: [u8; SECRET_KEY_BYTES] = [0; SECRET_KEY_BYTES];
+
 		let v = general_purpose::URL_SAFE.decode(s)?;
 		if v.len() != SECRET_KEY_BYTES {
 			return Err(base64::DecodeSliceError::OutputSliceTooSmall);
@@ -543,6 +550,7 @@ impl ConnectionManager {
 		let base_path = normalize_base_path(args.server_base_path.as_deref().unwrap_or_default());
 
 		let cache = DownloadCache::new(ctx.paths.web_server_storage());
+
 		let target_kind = TargetKind::Web;
 
 		let quality = VSCODE_CLI_QUALITY.map_or(Quality::Stable, |q| match Quality::try_from(q) {
@@ -611,7 +619,9 @@ impl ConnectionManager {
 		// todo@connor4312: there is likely some performance benefit to
 		// implementing a 'keepalive' for these connections.
 		let (path, counter) = self.get_version_data(release).await?;
+
 		let handle = ConnectionHandle::new(counter);
+
 		let rw = get_socket_rw_stream(&path).await?;
 		Ok((rw, handle))
 	}
@@ -620,7 +630,9 @@ impl ConnectionManager {
 	/// time to allow for fast loads.
 	pub async fn get_latest_release(&self) -> Result<Release, CodeError> {
 		let mut latest = self.latest_version.lock().await;
+
 		let now = Instant::now();
+
 		let target_kind = TargetKind::Web;
 
 		let quality = VSCODE_CLI_QUALITY
@@ -665,6 +677,7 @@ impl ConnectionManager {
 		release: Release,
 	) -> Result<Barrier<Result<StartData, String>>, CodeError> {
 		let mut state = self.state.lock().unwrap();
+
 		let key = key_for_release(&release);
 		if let Some(s) = state.get_mut(&key) {
 			if !s.downloaded {
@@ -679,7 +692,9 @@ impl ConnectionManager {
 		}
 
 		let (socket_path, opener) = new_barrier();
+
 		let state_map_dup = self.state.clone();
+
 		let args = StartArgs {
 			args: self.args.clone(),
 			log: self.log.clone(),
@@ -726,7 +741,9 @@ impl ConnectionManager {
 		cache: DownloadCache,
 	) {
 		let release_for_fut = args.release.clone();
+
 		let log_for_fut = args.log.clone();
+
 		let dir_fut = cache.create(&args.release.commit, |target_dir| async move {
 			info!(log_for_fut, "Downloading server {}", release_for_fut.commit);
 			let tmpdir = tempfile::tempdir().unwrap();
@@ -814,8 +831,11 @@ impl ConnectionManager {
 
 		// wrapped option to prove that we only use this once in the loop
 		let (counter_tx, mut counter_rx) = tokio::sync::watch::channel(0);
+
 		let mut opener = Some((args.opener, socket_path, Arc::new(counter_tx)));
+
 		let commit_prefix = &args.release.commit[..7];
+
 		let kill_timer = tokio::time::sleep(Duration::from_secs(SERVER_IDLE_TIMEOUT_SECS));
 		pin!(kill_timer);
 
@@ -882,6 +902,7 @@ fn mint_connection_token(path: &Path, prefer_token: Option<String>) -> std::io::
 	if prefer_token.is_none() {
 		let mut t = String::new();
 		f.read_to_string(&mut t)?;
+
 		let t = t.trim();
 		if !t.is_empty() {
 			return Ok(t.to_string());

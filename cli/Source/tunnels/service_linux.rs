@@ -74,6 +74,7 @@ impl ServiceManager for SystemdService {
 		args: &[&str],
 	) -> Result<(), crate::util::errors::AnyError> {
 		let connection = SystemdService::connect().await?;
+
 		let proxy = SystemdService::proxy(&connection).await?;
 
 		write_systemd_service_file(&self.service_file, exe, args)
@@ -123,7 +124,9 @@ impl ServiceManager for SystemdService {
 
 	async fn is_installed(&self) -> Result<bool, AnyError> {
 		let connection = SystemdService::connect().await?;
+
 		let proxy = SystemdService::proxy(&connection).await?;
+
 		let state = proxy
 			.get_unit_file_state(SystemdService::service_name_string())
 			.await;
@@ -168,6 +171,7 @@ impl ServiceManager for SystemdService {
 
 	async fn unregister(&self) -> Result<(), crate::util::errors::AnyError> {
 		let connection = SystemdService::connect().await?;
+
 		let proxy = SystemdService::proxy(&connection).await?;
 
 		proxy

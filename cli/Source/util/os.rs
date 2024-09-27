@@ -33,6 +33,7 @@ pub fn os_release() -> Result<String, std::io::Error> {
 		}
 
 		let ret = ret.assume_init();
+
 		let c_str: &CStr = CStr::from_ptr(ret.release.as_ptr());
 		Ok(c_str.to_string_lossy().into_owned())
 	}

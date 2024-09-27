@@ -156,7 +156,9 @@ async fn check_glibc_version() -> Result<bool, String> {
 	#[cfg(target_env = "gnu")]
 	let version = {
 		let v = unsafe { libc::gnu_get_libc_version() };
+
 		let v = unsafe { std::ffi::CStr::from_ptr(v) };
+
 		let v = v.to_str().unwrap();
 		extract_generic_version(v)
 	};

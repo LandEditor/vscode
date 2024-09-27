@@ -23,6 +23,7 @@ pub fn is_wsl_installed(log: &log::Logger) -> bool {
 		};
 
 		let is_32_on_64 = std::env::var("PROCESSOR_ARCHITEW6432").is_ok();
+
 		let mut system32 = PathBuf::from(sys_root);
 		system32.push(if is_32_on_64 { "Sysnative" } else { "System32" });
 		system32

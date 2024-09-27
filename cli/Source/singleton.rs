@@ -115,6 +115,7 @@ async fn connect_as_client_with_file(mut file: &mut File) -> Result<AsyncPipe, C
 	let mut attempt = 0;
 	loop {
 		let _ = file.seek(SeekFrom::Start(PREFIX_LOCKED_BYTES as u64));
+
 		let r = match rmp_serde::from_read::<_, LockFileMatter>(&mut file) {
 			Ok(prev) => {
 				let socket_path = PathBuf::from(prev.socket_path);
@@ -159,6 +160,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_acquires_singleton() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
+
 		let s = acquire_singleton(&dir.path().join("lock"))
 			.await
 			.expect("expected to acquire");
@@ -172,7 +174,9 @@ mod tests {
 	#[tokio::test]
 	async fn test_acquires_client() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
+
 		let lockfile = dir.path().join("lock");
+
 		let s1 = acquire_singleton(&lockfile)
 			.await
 			.expect("expected to acquire1");

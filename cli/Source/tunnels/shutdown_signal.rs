@@ -74,6 +74,7 @@ impl ShutdownRequest {
 		signals: impl IntoIterator<Item = ShutdownRequest>,
 	) -> Barrier<ShutdownSignal> {
 		let (barrier, opener) = new_barrier();
+
 		let futures = signals
 			.into_iter()
 			.map(|s| s.wait())

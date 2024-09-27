@@ -374,6 +374,7 @@ impl<'a> ServerBuilder<'a> {
 		.await?;
 
 		let origin = Arc::new(CodeServerOrigin::Existing(pid));
+
 		let contents = fs::read_to_string(&self.server_paths.logfile)
 			.expect("Something went wrong reading log file");
 
@@ -412,6 +413,7 @@ impl<'a> ServerBuilder<'a> {
 		);
 
 		let update_service = UpdateService::new(self.logger.clone(), self.http.clone());
+
 		let name = get_server_folder_name(
 			self.server_params.release.quality,
 			&self.server_params.release.commit,
@@ -490,7 +492,9 @@ impl<'a> ServerBuilder<'a> {
 			.arg(format!("--port={}", port));
 
 		let child = self.spawn_server_process(cmd).await?;
+
 		let log_file = self.get_logfile()?;
+
 		let plog = self.logger.prefixed(&log::new_code_server_prefix());
 
 		let (mut origin, listen_rx) =
@@ -521,6 +525,7 @@ impl<'a> ServerBuilder<'a> {
 	pub async fn install_extensions(&self) -> Result<(), AnyError> {
 		// cmd already has --install-extensions from base
 		let mut cmd = self.get_base_command();
+
 		let cmd_str = || {
 			self.server_params
 				.code_server_args
@@ -564,7 +569,9 @@ impl<'a> ServerBuilder<'a> {
 			.arg(format!("--socket-path={}", socket.display()));
 
 		let child = self.spawn_server_process(cmd).await?;
+
 		let log_file = self.get_logfile()?;
+
 		let plog = self.logger.prefixed(&log::new_code_server_prefix());
 
 		let (mut origin, listen_rx) =
@@ -670,7 +677,9 @@ where
 	// for the listening port. Afterwards, just scan and write out to the file.
 	tokio::spawn(async move {
 		let mut stdout_reader = BufReader::new(stdout).lines();
+
 		let mut stderr_reader = BufReader::new(stderr).lines();
+
 		let write_line = |line: &str| -> std::io::Result<()> {
 			if let Some(mut f) = log_file.as_ref() {
 				f.write_all(line.as_bytes())?;

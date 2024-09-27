@@ -24,6 +24,7 @@ impl ServerBridge {
 		decoder: ClientMessageDecoder,
 	) -> Result<Self, AnyError> {
 		let stream = get_socket_rw_stream(path).await?;
+
 		let (mut read, write) = socket_stream_split(stream);
 
 		tokio::spawn(async move {
