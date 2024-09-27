@@ -79,6 +79,7 @@ impl<T: Default> Iterator for OwnedRingBufferIter<T> {
 		}
 
 		let ii = (self.index + self.buffer.i) % self.buffer.len();
+
 		let item = std::mem::take(&mut self.buffer.data[ii]);
 		self.index += 1;
 		Some(item)
@@ -99,6 +100,7 @@ impl<'a, T> Iterator for RingBufferIter<'a, T> {
 		}
 
 		let ii = (self.index + self.buffer.i) % self.buffer.len();
+
 		let item = &self.buffer.data[ii];
 		self.index += 1;
 		Some(item)

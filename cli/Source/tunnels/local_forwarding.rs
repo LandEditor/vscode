@@ -160,6 +160,7 @@ struct PortForwardingReceiver {
 impl PortForwardingReceiver {
 	pub fn new() -> (PortForwardingSender, Self) {
 		let (sender, receiver) = watch::channel(HashMap::new());
+
 		let handle = PortForwardingSender {
 			current: Mutex::new(vec![]),
 			sender: Arc::new(Mutex::new(sender)),
@@ -319,10 +320,13 @@ async fn serve_singleton_rpc(
 		};
 
 		let (read, write) = socket_stream_split(cnx);
+
 		let shutdown_rx = shutdown_rx.clone();
 
 		let handle = forward_tx.clone();
+
 		let log = log.clone();
+
 		let tunnel = tunnel.clone();
 		tokio::spawn(async move {
 			// we make an rpc for the connection instead of re-using a dispatcher

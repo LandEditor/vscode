@@ -85,12 +85,14 @@ impl DownloadCache {
 		T: Future<Output = Result<(), AnyError>> + Send,
 	{
 		let name = name.as_ref();
+
 		let target_dir = self.path.join(name);
 		if target_dir.exists() {
 			return Ok(target_dir);
 		}
 
 		let temp_dir = self.path.join(format!("{}{}", name, STAGING_SUFFIX));
+
 		let _ = remove_dir_all(&temp_dir).await; // cleanup any existing
 
 		create_dir_all(&temp_dir).map_err(|e| wrap(e, "error creating server directory"))?;
@@ -104,9 +106,11 @@ impl DownloadCache {
 				Ok(_) => {
 					break;
 				}
+
 				Err(e) if attempt_no == RENAME_ATTEMPTS => {
 					return Err(wrap(e, "error renaming downloaded server").into())
 				}
+
 				Err(_) => {
 					tokio::time::sleep(RENAME_DELAY).await;
 				}

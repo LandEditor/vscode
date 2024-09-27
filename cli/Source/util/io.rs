@@ -137,6 +137,7 @@ pub fn tailf(file: File, n: usize) -> mpsc::UnboundedReceiver<TailEvent> {
 	let mut initial_lines = RingBuffer::new(n);
 	loop {
 		let mut line = String::new();
+
 		let bytes_read = match reader.read_line(&mut line) {
 			Ok(0) => break,
 			Ok(n) => n,
@@ -229,6 +230,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_tailf_empty() {
 		let dir = tempfile::tempdir().unwrap();
+
 		let file_path = dir.path().join("tmp");
 
 		let read_file = OpenOptions::new()
@@ -265,6 +267,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_tailf_resets() {
 		let dir = tempfile::tempdir().unwrap();
+
 		let file_path = dir.path().join("tmp");
 
 		let mut read_file = OpenOptions::new()
@@ -275,6 +278,7 @@ mod tests {
 			.unwrap();
 
 		writeln!(&mut read_file, "some existing content").unwrap();
+
 		let mut rx = tailf(read_file, 0);
 		assert!(rx.try_recv().is_err());
 
@@ -299,6 +303,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_tailf_with_data() {
 		let dir = tempfile::tempdir().unwrap();
+
 		let file_path = dir.path().join("tmp");
 
 		let mut read_file = OpenOptions::new()
@@ -307,9 +312,11 @@ mod tests {
 			.create(true)
 			.open(&file_path)
 			.unwrap();
+
 		let mut rng = rand::thread_rng();
 
 		let mut written = vec![];
+
 		let base_line = "Elit ipsum cillum ex cillum. Adipisicing consequat cupidatat do proident ut in sunt Lorem ipsum tempor. Eiusmod ipsum Lorem labore exercitation sunt pariatur excepteur fugiat cillum velit cillum enim. Nisi Lorem cupidatat ad enim velit officia eiusmod esse tempor aliquip. Deserunt pariatur tempor in duis culpa esse sit nulla irure ullamco ipsum voluptate non laboris. Occaecat officia nulla officia mollit do aliquip reprehenderit ad incididunt.";
 		for i in 0..100 {
 			let line = format!("{}: {}", i, &base_line[..rng.gen_range(0..base_line.len())]);
@@ -320,6 +327,7 @@ mod tests {
 		read_file.seek(io::SeekFrom::Start(0)).unwrap();
 
 		let last_n = 32;
+
 		let mut rx = tailf(read_file, last_n);
 		for i in 0..last_n {
 			let recv = rx.try_recv().unwrap();

@@ -66,6 +66,7 @@ impl<'a> SelfUpdate<'a> {
 	/// May fail if old versions are still running.
 	pub fn cleanup_old_update(&self) -> Result<(), std::io::Error> {
 		let current_path = std::env::current_exe()?;
+
 		let old_path = current_path.with_extension(OLD_UPDATE_EXTENSION);
 		if old_path.exists() {
 			fs::remove_file(old_path)?;
@@ -82,14 +83,18 @@ impl<'a> SelfUpdate<'a> {
 	) -> Result<(), AnyError> {
 		// 1. Download the archive into a temporary directory
 		let tempdir = tempdir().map_err(|e| wrap(e, "Failed to create temp dir"))?;
+
 		let stream = self.update_service.get_download_stream(release).await?;
+
 		let archive_path = tempdir.path().join(stream.url_path_basename().unwrap());
 		http::download_into_file(&archive_path, progress, stream).await?;
 
 		// 2. Unzip the archive and get the binary
 		let target_path =
 			std::env::current_exe().map_err(|e| wrap(e, "could not get current exe"))?;
+
 		let staging_path = target_path.with_extension(".update");
+
 		let archive_contents_path = tempdir.path().join("content");
 		// unzipping the single binary is pretty small and fast--don't bother with passing progress
 		unzip_downloaded_release(&archive_path, &archive_contents_path, SilentCopyProgress())?;

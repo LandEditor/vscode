@@ -33,6 +33,7 @@ impl AppMutex {
 		use std::ffi::CString;
 
 		let cname = CString::new(name).unwrap();
+
 		let handle = unsafe { CreateMutexA(ptr::null_mut(), 0, cname.as_ptr() as _) };
 
 		if !handle.is_null() {
@@ -40,6 +41,7 @@ impl AppMutex {
 		}
 
 		let err = io::Error::last_os_error();
+
 		let raw = err.raw_os_error();
 		// docs report it should return ERROR_IO_PENDING, but in my testing it actually
 		// returns ERROR_LOCK_VIOLATION. Or maybe winapi is wrong?

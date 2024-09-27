@@ -89,7 +89,9 @@ impl std::fmt::Display for StatusError {
 impl StatusError {
 	pub async fn from_res(res: reqwest::Response) -> Result<StatusError, AnyError> {
 		let status_code = res.status().as_u16();
+
 		let url = res.url().to_string();
+
 		let body = res.text().await.map_err(|e| {
 			wrap(
 				e,

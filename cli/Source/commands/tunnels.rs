@@ -475,6 +475,7 @@ pub async fn forward(
 				Ok(p) => {
 					let _ = own_ports_tx.send(p);
 				}
+
 				Err(e) => warning!(ports_process_log, "error parsing ports: {}", e),
 			}
 		}

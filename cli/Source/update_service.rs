@@ -73,9 +73,11 @@ impl UpdateService {
 		version: &str,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
+
 		let download_segment = target
 			.download_segment(platform)
 			.ok_or_else(|| CodeError::UnsupportedPlatform(platform.to_string()))?;
+
 		let download_url = format!(
 			"{}/api/versions/{}/{}/{}",
 			update_endpoint,
@@ -114,9 +116,11 @@ impl UpdateService {
 		quality: options::Quality,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
+
 		let download_segment = target
 			.download_segment(platform)
 			.ok_or_else(|| CodeError::UnsupportedPlatform(platform.to_string()))?;
+
 		let download_url = format!(
 			"{}/api/latest/{}/{}",
 			update_endpoint,
@@ -149,6 +153,7 @@ impl UpdateService {
 	/// Gets the download stream for the release.
 	pub async fn get_download_stream(&self, release: &Release) -> Result<SimpleResponse, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
+
 		let download_segment = release
 			.target
 			.download_segment(release.platform)

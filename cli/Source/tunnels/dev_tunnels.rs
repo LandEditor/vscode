@@ -509,6 +509,7 @@ impl DevTunnels {
 			.await?;
 
 		let locator = TunnelLocator::try_from(&tunnel).unwrap();
+
 		let host_token = get_host_token_from_tunnel(&tunnel);
 
 		for port_to_delete in tunnel
@@ -764,6 +765,7 @@ impl DevTunnels {
 		mut use_random_name: bool,
 	) -> Result<String, AnyError> {
 		let existing_tunnels = self.list_tunnels_with_tag(&[self.tag]).await?;
+
 		let is_name_free = |n: &str| {
 			!existing_tunnels
 				.iter()
@@ -937,9 +939,11 @@ impl ActiveTunnelManager {
 		access_token: impl AccessTokenProvider + 'static,
 	) -> ActiveTunnelManager {
 		let (endpoint_tx, endpoint_rx) = watch::channel(None);
+
 		let (close_tx, close_rx) = mpsc::channel(1);
 
 		let relay = Arc::new(tokio::sync::Mutex::new(RelayTunnelHost::new(locator, mgmt)));
+
 		let relay_spawned = relay.clone();
 
 		let status = StatusLock::default();
@@ -1061,6 +1065,7 @@ impl ActiveTunnelManager {
 		status: StatusLock,
 	) {
 		let mut token_ka = access_token_provider.keep_alive();
+
 		let mut backoff = Backoff::new(Duration::from_secs(5), Duration::from_secs(120));
 
 		macro_rules! fail {
@@ -1152,6 +1157,7 @@ impl Backoff {
 
 	pub fn next(&mut self) -> Duration {
 		self.failures += 1;
+
 		let duration = self
 			.base_duration
 			.checked_mul(self.failures)

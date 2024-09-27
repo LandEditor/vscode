@@ -425,6 +425,7 @@ mod tests {
 			.expect("expected exe path");
 
 		let binary_file_path = path.join(bin);
+
 		let parent_dir_path = binary_file_path.parent().expect("expected parent path");
 
 		create_dir_all(parent_dir_path).expect("expected to create parent dir");
@@ -454,7 +455,9 @@ mod tests {
 	#[tokio::test]
 	async fn test_set_preferred_version() {
 		let dir = make_multiple_vscode_install();
+
 		let lp = LauncherPaths::new_without_replacements(dir.path().to_owned());
+
 		let vm1 = CodeVersionManager::new(log::Logger::test(), &lp, Platform::LinuxARM64);
 
 		assert_eq!(vm1.get_preferred_version(), RequestedVersion::Default);

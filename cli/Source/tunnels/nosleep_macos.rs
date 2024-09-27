@@ -31,6 +31,7 @@ struct Assertion(u32);
 impl Assertion {
 	pub fn make(typ: &CFString, name: &CFString) -> io::Result<Self> {
 		let mut assertion_id = 0;
+
 		let result = unsafe {
 			IOPMAssertionCreateWithName(
 				typ.as_concrete_TypeRef(),
@@ -63,6 +64,7 @@ pub struct SleepInhibitor {
 impl SleepInhibitor {
 	pub async fn new() -> io::Result<Self> {
 		let mut assertions = Vec::with_capacity(NUM_ASSERTIONS);
+
 		let assertion_name = CFString::from_static_string(TUNNEL_ACTIVITY_NAME);
 		for typ in ASSERTIONS {
 			assertions.push(Assertion::make(

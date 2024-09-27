@@ -245,6 +245,7 @@ impl ThreadKeyringStorage {
 		// It seems like on Linux communication to the keyring can block indefinitely.
 		// Fall back after a 5 second timeout.
 		let (sender, receiver) = std::sync::mpsc::channel();
+
 		let tsender = sender.clone();
 
 		thread::spawn(move || sender.send(Some((f(&mut s), s))));
@@ -330,6 +331,7 @@ impl StorageImplementation for KeyringStorage {
 
 	fn store(&mut self, value: StoredCredential) -> Result<(), AnyError> {
 		let sealed = seal(&value);
+
 		let step_size = KEYCHAIN_ENTRY_LIMIT - CONTINUE_MARKER.len();
 
 		for i in (0..sealed.len()).step_by(step_size) {
@@ -404,6 +406,7 @@ impl Auth {
 		let mut keyring_storage = KeyringStorage::default();
 		#[cfg(target_os = "linux")]
 		let mut keyring_storage = ThreadKeyringStorage::default();
+
 		let mut file_storage = FileStorage(PersistedState::new_with_mode(
 			self.file_storage_path.clone(),
 			0o600,
@@ -445,6 +448,7 @@ impl Auth {
 	/// Gets a tunnel Authentication for use in the tunnel management API.
 	pub async fn get_tunnel_authentication(&self) -> Result<Authorization, AnyError> {
 		let cred = self.get_credential().await?;
+
 		let auth = match cred.provider {
 			AuthProvider::Microsoft => Authorization::Bearer(cred.access_token),
 			AuthProvider::Github => Authorization::Github(format!(
@@ -627,6 +631,7 @@ impl Auth {
 			.await?;
 
 		let status_code = response.status().as_u16();
+
 		let body = response.bytes().await?;
 		if let Ok(body) = serde_json::from_slice::<AuthenticationResponse>(&body) {
 			return Ok(StoredCredential::from_response(body, provider));
@@ -649,6 +654,7 @@ impl Auth {
 		}
 
 		let status_code = response.status().as_u16();
+
 		let body = response.bytes().await?;
 		Err(Auth::handle_grant_error(
 			GH_USER_ENDPOINT,
@@ -763,10 +769,13 @@ impl Auth {
 	/// only errors if a refresh fails in a consistent way.
 	pub async fn keep_token_alive(self) -> Result<(), AnyError> {
 		let this = self.clone();
+
 		let default_refresh = std::time::Duration::from_secs(60 * 60);
+
 		let min_refresh = std::time::Duration::from_secs(10);
 
 		let mut credential = this.get_credential().await?;
+
 		let mut last_did_error = false;
 		loop {
 			let sleep_time = if last_did_error {
@@ -787,9 +796,11 @@ impl Auth {
 					error!(this.log, "failed to keep token alive: {:?}", e);
 					return Err(e.into());
 				}
+
 				Err(AnyError::RefreshTokenNotAvailableError(_)) => {
 					return Ok(());
 				}
+
 				Err(e) => {
 					warning!(this.log, "error refreshing token: {:?}", e);
 					last_did_error = true;

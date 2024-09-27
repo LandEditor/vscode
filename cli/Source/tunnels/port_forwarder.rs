@@ -110,6 +110,7 @@ pub struct PortForwarding {
 impl PortForwarding {
 	pub async fn forward(&self, port: u16, privacy: PortPrivacy) -> Result<String, AnyError> {
 		let (tx, rx) = oneshot::channel();
+
 		let req = PortForwardingRec::Forward(port, privacy, tx);
 
 		if self.tx.send(req).await.is_err() {
@@ -124,6 +125,7 @@ impl PortForwarding {
 
 	pub async fn unforward(&self, port: u16) -> Result<(), AnyError> {
 		let (tx, rx) = oneshot::channel();
+
 		let req = PortForwardingRec::Unforward(port, tx);
 
 		if self.tx.send(req).await.is_err() {

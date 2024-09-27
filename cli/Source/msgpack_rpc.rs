@@ -138,6 +138,7 @@ impl<T: DeserializeOwned> tokio_util::codec::Decoder for MsgPackCodec<T> {
 
 	fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
 		let bytes_ref = src.as_ref();
+
 		let mut cursor = Cursor::new(bytes_ref);
 
 		match rmp_serde::decode::from_read::<_, T>(&mut cursor) {
@@ -176,6 +177,7 @@ mod tests {
 	#[test]
 	fn test_protocol() {
 		let mut c = MsgPackCodec::<Msg>::new();
+
 		let mut buf = bytes::BytesMut::new();
 
 		assert!(c.decode(&mut buf).unwrap().is_none());

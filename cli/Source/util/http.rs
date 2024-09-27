@@ -251,7 +251,9 @@ impl SimpleHttp for DelegatedSimpleHttp {
 		url: String,
 	) -> Result<SimpleResponse, AnyError> {
 		trace!(self.log, "making delegated request to {}", url);
+
 		let (tx, mut rx) = mpsc::unbounded_channel();
+
 		let sent = self
 			.start_request
 			.send(DelegatedHttpRequest {
