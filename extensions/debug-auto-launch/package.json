@@ -1,12 +1,10 @@
 {
-	"activationEvents": [
-		"onStartupFinished"
-	],
-	"capabilities": {
-		"untrustedWorkspaces": {
-			"supported": true
-		},
-		"virtualWorkspaces": false
+	"name": "debug-auto-launch",
+	"displayName": "%displayName%",
+	"description": "%description%",
+	"main": "./out/extension",
+	"scripts": {
+		"compile": "gulp compile-extension:debug-auto-launch"
 	},
 	"contributes": {
 		"commands": [
@@ -17,15 +15,17 @@
 			}
 		]
 	},
-	"description": "%description%",
+	"activationEvents": [
+		"onStartupFinished"
+	],
 	"devDependencies": {
 		"@types/node": "22.x"
 	},
-	"displayName": "%displayName%",
 	"icon": "media/icon.png",
-	"main": "./out/extension",
-	"name": "debug-auto-launch",
-	"scripts": {
-		"compile": "gulp compile-extension:debug-auto-launch"
+	"capabilities": {
+		"untrustedWorkspaces": {
+			"supported": true
+		},
+		"virtualWorkspaces": false
 	}
 }
