@@ -1,7 +1,0 @@
-{
-	"name": "code-oss-dev-build",
-	"scripts": {},
-	"devDependencies": {
-		"node-gyp": "10.2.0"
-	}
-}

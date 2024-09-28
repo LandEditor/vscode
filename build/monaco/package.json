@@ -1,6 +1,0 @@
-{
-	"name": "monaco-editor-core",
-	"description": "A browser based code editor",
-	"module": "./esm/vs/editor/editor.main.js",
-	"typings": "./esm/vs/editor/editor.api.d.ts"
-}
