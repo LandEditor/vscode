@@ -69,6 +69,7 @@ import { IChatFollowup } from '../common/chatService.js';
 import { IChatResponseViewModel } from '../common/chatViewModel.js';
 import { IChatHistoryEntry, IChatWidgetHistoryService } from '../common/chatWidgetHistoryService.js';
 import { ILanguageModelChatMetadata, ILanguageModelsService } from '../common/languageModels.js';
+import { ACTION_ID_NEW_EDIT_SESSION } from './actions/chatClearActions.js';
 import { CancelAction, ChatModelPickerActionId, ChatSubmitSecondaryAgentAction, IChatExecuteActionContext, SubmitAction } from './actions/chatExecuteActions.js';
 import { IChatWidget } from './chat.js';
 import { IDisposableReference } from './chatContentParts/chatCollections.js';
@@ -790,7 +791,11 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 
 	private attachButtonAndDisposables(widget: HTMLElement, index: number, attachment: IChatRequestVariableEntry, hoverDelegate: IHoverDelegate) {
 
-		const clearButton = new Button(widget, { supportIcons: true, hoverDelegate, title: localize('remove', 'Remove') });
+		const clearButton = new Button(widget, {
+			supportIcons: true,
+			hoverDelegate,
+			title: localize('chat.attachment.clearButton', "Remove from context"),
+		});
 
 		// If this item is rendering in place of the last attached context item, focus the clear button so the user can continue deleting attached context items with the keyboard
 		if (index === Math.min(this._indexOfLastAttachedContextDeletedWithKeyboard, this.attachedContext.size - 1)) {
@@ -915,7 +920,7 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 			const clearButton = this._chatEditsActionsDisposables.add(new Button(actionsContainer, { supportIcons: true }));
 			clearButton.icon = Codicon.close;
 			this._chatEditsActionsDisposables.add(clearButton.onDidClick((e) => {
-				void chatEditingSession.stop();
+				this.commandService.executeCommand(ACTION_ID_NEW_EDIT_SESSION);
 			}));
 			dom.append(actionsContainer, clearButton.element);
 		}
@@ -935,11 +940,13 @@ export class ChatInputPart extends Disposable implements IHistoryNavigationWidge
 				if (e.element?.kind === 'reference' && URI.isUri(e.element.reference)) {
 					const modifiedFileUri = e.element.reference;
 					const editedFile = chatEditingSession.entries.get().find((e) => e.modifiedURI.toString() === modifiedFileUri.toString());
-					if (editedFile) {
+					if (editedFile?.state.get() === ModifiedFileEntryState.Undecided) {
 						void this.editorService.openEditor({
 							original: { resource: URI.from(editedFile.originalURI, true) },
 							modified: { resource: URI.from(editedFile.modifiedURI, true) },
 						});
+					} else if (editedFile) {
+						void this.editorService.openEditor({ resource: modifiedFileUri });
 					}
 				}
 			}));
