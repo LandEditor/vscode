@@ -323,7 +323,7 @@
 		"jsonc-parser": "^3.3.1",
 		"minimatch": "^10.0.1",
 		"request-light": "^0.8.0",
-		"which": "^4.0.0",
+		"which": "^5.0.0",
 		"which-pm": "^3.0.0"
 	},
 	"description": "%description%",
