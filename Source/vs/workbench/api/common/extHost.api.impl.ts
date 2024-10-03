@@ -1491,11 +1491,11 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 					return extHostEmbeddings.computeEmbeddings(embeddingsModel, input, token);
 				}
 			},
-			registerTool<T>(toolId: string, tool: vscode.LanguageModelTool<T>) {
+			registerTool(toolId: string, tool: vscode.LanguageModelTool) {
 				checkProposedApiEnabled(extension, 'lmTools');
 				return extHostLanguageModelTools.registerTool(extension, toolId, tool);
 			},
-			invokeTool<T>(toolId: string, parameters: vscode.LanguageModelToolInvocationOptions<T>, token: vscode.CancellationToken) {
+			invokeTool(toolId: string, parameters: vscode.LanguageModelToolInvocationOptions, token: vscode.CancellationToken) {
 				checkProposedApiEnabled(extension, 'lmTools');
 				return extHostLanguageModelTools.invokeTool(toolId, parameters, token);
 			},
@@ -1772,7 +1772,6 @@ export function createApiFactoryAndRegisterActors(accessor: ServicesAccessor): I
 			ChatLocation: extHostTypes.ChatLocation,
 			ChatRequestEditorData: extHostTypes.ChatRequestEditorData,
 			ChatRequestNotebookData: extHostTypes.ChatRequestNotebookData,
-			ChatReferenceBinaryData: extHostTypes.ChatReferenceBinaryData,
 			LanguageModelChatMessageRole: extHostTypes.LanguageModelChatMessageRole,
 			LanguageModelChatMessage: extHostTypes.LanguageModelChatMessage,
 			LanguageModelChatMessageToolResultPart: extHostTypes.LanguageModelToolResultPart,

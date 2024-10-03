@@ -59,7 +59,8 @@ export class MainThreadLanguageModelTools extends Disposable implements MainThre
 						this._countTokenCallbacks.delete(dto.callId);
 					}
 				},
-				prepareToolInvocation: (participantName, parameters, token) => this._proxy.$prepareToolInvocation(id, participantName, parameters, token),
+				provideToolConfirmationMessages: (participantName, parameters, token) => this._proxy.$provideToolConfirmationMessages(id, participantName, parameters, token),
+				provideToolInvocationMessage: (parameters, token) => this._proxy.$provideToolInvocationMessage(id, parameters, token),
 			});
 		this._tools.set(id, disposable);
 	}

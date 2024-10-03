@@ -134,6 +134,7 @@ declare module 'vscode' {
 		constructor(uri: Uri, range: Range);
 	}
 
+	// Extended to add `SymbolInformation`. Would also be added to `constructor`.
 	export interface ChatResponseAnchorPart {
 		/**
 		 * The target of this anchor.
@@ -141,18 +142,8 @@ declare module 'vscode' {
 		 * If this is a {@linkcode Uri} or {@linkcode Location}, this is rendered as a normal link.
 		 *
 		 * If this is a {@linkcode SymbolInformation}, this is rendered as a symbol link.
-		 *
-		 * TODO mjbvz: Should this be a full `SymbolInformation`? Or just the parts we need?
-		 * TODO mjbvz: Should we allow a `SymbolInformation` without a location? For example, until `resolve` completes?
 		 */
 		value2: Uri | Location | SymbolInformation;
-
-		/**
-		 * Optional method which fills in the details of the anchor.
-		 *
-		 * THis is currently only implemented for symbol links.
-		 */
-		resolve?(token: CancellationToken): Thenable<void>;
 	}
 
 	export interface ChatResponseStream {

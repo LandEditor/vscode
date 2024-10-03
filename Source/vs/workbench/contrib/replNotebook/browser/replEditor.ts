@@ -710,17 +710,14 @@ export class ReplEditor extends EditorPane implements IEditorPaneWithScrolling {
 		};
 	}
 
-	private getActiveCodeEditor() {
-		if (!this._codeEditorWidget) {
-			return undefined;
-		}
+	private getActiveCodeEditor(): ICodeEditor {
 		return this._codeEditorWidget.hasWidgetFocus() || !this._notebookWidget.value?.activeCodeEditor ?
 			this._codeEditorWidget :
-			this._notebookWidget.value.activeCodeEditor;
+			this._notebookWidget.value?.activeCodeEditor;
 	}
 }
 
-export type ReplEditorControl = { activeCodeEditor: ICodeEditor | undefined; notebookEditor: NotebookEditorWidget | undefined };
+export type ReplEditorControl = { activeCodeEditor: ICodeEditor; notebookEditor: NotebookEditorWidget | undefined };
 
 export function isReplEditorControl(control: unknown): control is ReplEditorControl {
 	const candidate = control as ReplEditorControl;

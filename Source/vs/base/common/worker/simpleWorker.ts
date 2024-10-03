@@ -566,7 +566,7 @@ export class SimpleWorkerServer implements IWorkerServer {
 
 			// Since this is in a web worker, enable catching errors
 			loaderConfig.catchError = true;
-			(globalThis as any).require.config(loaderConfig);
+			globalThis.require.config(loaderConfig);
 		}
 
 		const url = FileAccess.asBrowserUri(`${moduleId}.js` as AppResourcePath).toString(true);

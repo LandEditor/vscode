@@ -115,7 +115,10 @@ export function extractEditor(options: tss.ITreeShakingOptions & { destRoot: str
 	writeOutputFile('tsconfig.json', JSON.stringify(tsConfig, null, '\t'));
 
 	[
-		'vs/loader.js'
+		'vs/css.build.ts',
+		'vs/css.ts',
+		'vs/loader.js',
+		'vs/loader.d.ts'
 	].forEach(copyFile);
 }
 

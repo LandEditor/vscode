@@ -121,10 +121,6 @@ export class ScreenReaderSupport {
 		this._setSelectionOfScreenReaderContent(this._screenReaderContentState.selectionStart, this._screenReaderContentState.selectionEnd);
 	}
 
-	public startPositionOfScreenReaderContentWithinEditor(): Position | undefined {
-		return this._screenReaderContentState?.startPositionWithinEditor;
-	}
-
 	private _getScreenReaderContentState(): ScreenReaderContentState | undefined {
 		if (this._accessibilitySupport === AccessibilitySupport.Disabled) {
 			return;
@@ -146,7 +142,7 @@ export class ScreenReaderSupport {
 				return this._context.viewModel.modifyPosition(position, offset);
 			}
 		};
-		return PagedScreenReaderStrategy.fromEditorSelection(simpleModel, this._primarySelection, this._accessibilityPageSize, this._accessibilitySupport === AccessibilitySupport.Unknown, false);
+		return PagedScreenReaderStrategy.fromEditorSelection(simpleModel, this._primarySelection, this._accessibilityPageSize, this._accessibilitySupport === AccessibilitySupport.Unknown);
 	}
 
 	private _setSelectionOfScreenReaderContent(selectionOffsetStart: number, selectionOffsetEnd: number): void {

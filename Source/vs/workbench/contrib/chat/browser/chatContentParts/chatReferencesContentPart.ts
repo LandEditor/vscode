@@ -20,11 +20,9 @@ import { localize, localize2 } from '../../../../../nls.js';
 import { createAndFillInContextMenuActions } from '../../../../../platform/actions/browser/menuEntryActionViewItem.js';
 import { MenuWorkbenchToolBar } from '../../../../../platform/actions/browser/toolbar.js';
 import { Action2, IMenuService, MenuId, registerAction2 } from '../../../../../platform/actions/common/actions.js';
-import { IContextKeyService } from '../../../../../platform/contextkey/common/contextkey.js';
 import { IContextMenuService } from '../../../../../platform/contextview/browser/contextView.js';
 import { FileKind } from '../../../../../platform/files/common/files.js';
 import { IInstantiationService, ServicesAccessor } from '../../../../../platform/instantiation/common/instantiation.js';
-import { ServiceCollection } from '../../../../../platform/instantiation/common/serviceCollection.js';
 import { ILabelService } from '../../../../../platform/label/common/label.js';
 import { WorkbenchList } from '../../../../../platform/list/browser/listService.js';
 import { IOpenerService } from '../../../../../platform/opener/common/opener.js';
@@ -37,7 +35,6 @@ import { ResourceContextKey } from '../../../../common/contextkeys.js';
 import { SETTINGS_AUTHORITY } from '../../../../services/preferences/common/preferences.js';
 import { createFileIconThemableTreeContainerScope } from '../../../files/browser/views/explorerView.js';
 import { ExplorerFolderContext } from '../../../files/common/files.js';
-import { chatEditingWidgetFileStateContextKey, WorkingSetEntryState } from '../../common/chatEditingService.js';
 import { ChatResponseReferencePartStatusKind, IChatContentReference, IChatWarningMessage } from '../../common/chatService.js';
 import { IChatVariablesService } from '../../common/chatVariables.js';
 import { IChatRendererContent, IChatResponseViewModel } from '../../common/chatViewModel.js';
@@ -49,7 +46,6 @@ const $ = dom.$;
 
 export interface IChatReferenceListItem extends IChatContentReference {
 	title?: string;
-	state?: WorkingSetEntryState;
 }
 
 export type IChatCollapsibleListItem = IChatReferenceListItem | IChatWarningMessage;
@@ -188,6 +184,7 @@ export class CollapsibleListPool extends Disposable {
 	constructor(
 		private _onDidChangeVisibility: Event<boolean>,
 		private readonly menuId: MenuId | undefined,
+		private readonly options: { enableFileDecorations?: boolean } | undefined,
 		@IInstantiationService private readonly instantiationService: IInstantiationService,
 		@IThemeService private readonly themeService: IThemeService,
 		@ILabelService private readonly labelService: ILabelService,
@@ -207,7 +204,7 @@ export class CollapsibleListPool extends Disposable {
 			'ChatListRenderer',
 			container,
 			new CollapsibleListDelegate(),
-			[this.instantiationService.createInstance(CollapsibleListRenderer, resourceLabels, this.menuId)],
+			[this.instantiationService.createInstance(CollapsibleListRenderer, resourceLabels, this.menuId, this.options)],
 			{
 				alwaysConsumeMouseWheel: false,
 				accessibilityProvider: {
@@ -284,11 +281,9 @@ class CollapsibleListDelegate implements IListVirtualDelegate<IChatCollapsibleLi
 }
 
 interface ICollapsibleListTemplate {
-	readonly contextKeyService?: IContextKeyService;
+	toolbar: MenuWorkbenchToolBar | undefined;
 	readonly label: IResourceLabel;
 	readonly templateDisposables: DisposableStore;
-	toolbar: MenuWorkbenchToolBar | undefined;
-	actionBarContainer?: HTMLElement;
 }
 
 class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem, ICollapsibleListTemplate> {
@@ -298,29 +293,17 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 	constructor(
 		private labels: ResourceLabels,
 		private menuId: MenuId | undefined,
+		private options: { enableFileDecorations?: boolean } | undefined,
 		@IThemeService private readonly themeService: IThemeService,
 		@IChatVariablesService private readonly chatVariablesService: IChatVariablesService,
 		@IProductService private readonly productService: IProductService,
-		@IInstantiationService private readonly instantiationService: IInstantiationService,
-		@IContextKeyService private readonly contextKeyService: IContextKeyService,
+		@IInstantiationService private readonly instantiationService: IInstantiationService
 	) { }
 
 	renderTemplate(container: HTMLElement): ICollapsibleListTemplate {
 		const templateDisposables = new DisposableStore();
 		const label = templateDisposables.add(this.labels.create(container, { supportHighlights: true, supportIcons: true }));
-
-		let toolbar;
-		let actionBarContainer;
-		let contextKeyService;
-		if (this.menuId) {
-			actionBarContainer = $('.chat-collapsible-list-action-bar');
-			contextKeyService = templateDisposables.add(this.contextKeyService.createScoped(actionBarContainer));
-			const scopedInstantiationService = templateDisposables.add(this.instantiationService.createChild(new ServiceCollection([IContextKeyService, contextKeyService])));
-			toolbar = templateDisposables.add(scopedInstantiationService.createInstance(MenuWorkbenchToolBar, actionBarContainer, this.menuId, { menuOptions: { shouldForwardArgs: true, arg: undefined } }));
-			label.element.appendChild(actionBarContainer);
-		}
-
-		return { templateDisposables, label, toolbar, actionBarContainer, contextKeyService };
+		return { templateDisposables, label, toolbar: undefined };
 	}
 
 
@@ -335,6 +318,8 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 	}
 
 	renderElement(data: IChatCollapsibleListItem, index: number, templateData: ICollapsibleListTemplate, height: number | undefined): void {
+		templateData.toolbar?.dispose();
+
 		if (data.kind === 'warning') {
 			templateData.label.setResource({ name: data.content.value }, { icon: Codicon.warning });
 			return;
@@ -388,7 +373,7 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 				templateData.label.setFile(uri, {
 					fileKind: FileKind.FILE,
 					// Should not have this live-updating data on a historical reference
-					fileDecorations: undefined,
+					fileDecorations: this.options?.enableFileDecorations ? { badges: true, colors: true } : { badges: false, colors: false },
 					range: 'range' in reference ? reference.range : undefined,
 					title: data.options?.status?.description ?? data.title
 				});
@@ -406,20 +391,10 @@ class CollapsibleListRenderer implements IListRenderer<IChatCollapsibleListItem,
 			}
 		}
 
-		if (data.state !== undefined) {
-			if (templateData.actionBarContainer) {
-				if (data.state === WorkingSetEntryState.Modified && !templateData.actionBarContainer.classList.contains('modified')) {
-					templateData.actionBarContainer.classList.add('modified');
-				} else if (data.state !== WorkingSetEntryState.Modified) {
-					templateData.actionBarContainer.classList.remove('modified');
-				}
-			}
-			if (templateData.toolbar) {
-				templateData.toolbar.context = arg;
-			}
-			if (templateData.contextKeyService && data.state !== undefined) {
-				chatEditingWidgetFileStateContextKey.bindTo(templateData.contextKeyService).set(data.state);
-			}
+		if (this.menuId) {
+			const actionBarContainer = $('.chat-collapsible-list-action-bar');
+			templateData.toolbar = templateData.templateDisposables.add(this.instantiationService.createInstance(MenuWorkbenchToolBar, actionBarContainer, this.menuId, { menuOptions: { shouldForwardArgs: true, arg: arg } }));
+			templateData.label.element.appendChild(actionBarContainer);
 		}
 	}
 

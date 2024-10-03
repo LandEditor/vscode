@@ -210,11 +210,7 @@ export class MainThreadAuthentication extends Disposable implements MainThreadAu
 			this._removeAccountPreference(extensionId, providerId, scopes);
 		}
 
-		const matchingAccountPreferenceSession = this._getAccountPreference(extensionId, providerId, scopes, sessions)
-			// If account was specified, grab the first session since all sessions will be using that account (will be undefined if there are no sessions)
-			?? options.account
-			? sessions[0]
-			: undefined;
+		const matchingAccountPreferenceSession = this._getAccountPreference(extensionId, providerId, scopes, sessions);
 
 		// Check if the sessions we have are valid
 		if (!options.forceNewSession && sessions.length) {

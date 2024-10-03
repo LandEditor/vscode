@@ -684,12 +684,6 @@
 			},
 			{
 				"category": "Git",
-				"command": "git.cherryPickAbort",
-				"enablement": "!operationInProgress",
-				"title": "%command.cherryPickAbort%"
-			},
-			{
-				"category": "Git",
 				"command": "git.addRemote",
 				"enablement": "!operationInProgress",
 				"title": "%command.addRemote%"
@@ -1990,10 +1984,6 @@
 				{
 					"command": "git.cherryPick",
 					"when": "config.git.enabled && !git.missing && gitOpenRepositoryCount != 0"
-				},
-				{
-					"command": "git.cherryPickAbort",
-					"when": "config.git.enabled && !git.missing && gitOpenRepositoryCount != 0 && gitCherryPickInProgress"
 				},
 				{
 					"command": "git.pull",
@@ -3339,19 +3329,19 @@
 		]
 	},
 	"dependencies": {
-		"@joaomoreno/unique-names-generator": "^5.1.0",
-		"byline": "^5.0.0",
-		"file-type": "16.5.4",
+		"@joaomoreno/unique-names-generator": "5.1.0",
+		"byline": "5.0.0",
+		"file-type": "19.5.0",
 		"jschardet": "3.1.4",
-		"picomatch": "2.3.1",
-		"which": "4.0.0"
+		"picomatch": "4.0.2",
+		"which": "5.0.0"
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/byline": "4.2.31",
-		"@types/node": "20.x",
-		"@types/picomatch": "2.3.0",
-		"@types/which": "3.0.0"
+		"@types/byline": "4.2.36",
+		"@types/node": "22.x",
+		"@types/picomatch": "3.0.1",
+		"@types/which": "3.0.4"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [

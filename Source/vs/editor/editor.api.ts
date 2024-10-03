@@ -40,14 +40,13 @@ export const languages = api.languages;
 interface IMonacoEnvironment {
 	globalAPI?: boolean;
 }
-
 const monacoEnvironment: IMonacoEnvironment | undefined = (globalThis as any).MonacoEnvironment;
-if (monacoEnvironment?.globalAPI || (typeof (globalThis as any).define === 'function' && ((globalThis as any).define).amd)) {
+if (monacoEnvironment?.globalAPI || (typeof define === 'function' && (<any>define).amd)) {
 	globalThis.monaco = api;
 }
 
-if (typeof (globalThis as any).require !== 'undefined' && typeof (globalThis as any).require.config === 'function') {
-	(globalThis as any).require.config({
+if (typeof globalThis.require !== 'undefined' && typeof globalThis.require.config === 'function') {
+	globalThis.require.config({
 		ignoreDuplicateModules: [
 			'vscode-languageserver-types',
 			'vscode-languageserver-types/main',

@@ -34,7 +34,7 @@ echo "Storing crash reports into '$VSCODECRASHDIR'."
 echo "Storing log files into '$VSCODELOGSDIR'."
 
 
-# Unit tests
+# Tests standalone (AMD)
 
 echo
 echo "### node.js integration tests"

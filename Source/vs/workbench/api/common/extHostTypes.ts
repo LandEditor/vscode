@@ -813,6 +813,7 @@ export interface IFileCellEdit {
 	readonly _type: FileEditType.Cell;
 	readonly uri: URI;
 	readonly edit?: ICellMetadataEdit | IDocumentMetadataEdit;
+	readonly notebookMetadata?: Record<string, any>;
 	readonly metadata?: vscode.WorkspaceEditEntryMetadata;
 }
 
@@ -855,7 +856,7 @@ export class WorkspaceEdit implements vscode.WorkspaceEdit {
 	// --- notebook
 
 	private replaceNotebookMetadata(uri: URI, value: Record<string, any>, metadata?: vscode.WorkspaceEditEntryMetadata): void {
-		this._edits.push({ _type: FileEditType.Cell, metadata, uri, edit: { editType: CellEditType.DocumentMetadata, metadata: value } });
+		this._edits.push({ _type: FileEditType.Cell, metadata, uri, edit: { editType: CellEditType.DocumentMetadata, metadata: value }, notebookMetadata: value });
 	}
 
 	private replaceNotebookCells(uri: URI, startOrRange: vscode.NotebookRange, cellData: vscode.NotebookCellData[], metadata?: vscode.WorkspaceEditEntryMetadata): void {
@@ -4420,13 +4421,10 @@ export class ChatResponseFileTreePart {
 	}
 }
 
-export class ChatResponseAnchorPart implements vscode.ChatResponseAnchorPart {
+export class ChatResponseAnchorPart {
 	value: vscode.Uri | vscode.Location;
-	title?: string;
-
 	value2: vscode.Uri | vscode.Location | vscode.SymbolInformation;
-	resolve?(token: vscode.CancellationToken): Thenable<void>;
-
+	title?: string;
 	constructor(value: vscode.Uri | vscode.Location | vscode.SymbolInformation, title?: string) {
 		this.value = value as any;
 		this.value2 = value;
@@ -4561,15 +4559,6 @@ export class ChatRequestNotebookData implements vscode.ChatRequestNotebookData {
 	constructor(
 		readonly cell: vscode.TextDocument
 	) { }
-}
-
-export class ChatReferenceBinaryData implements vscode.ChatReferenceBinaryData {
-	mimeType: string;
-	data: () => Thenable<Uint8Array>;
-	constructor(mimeType: string, data: () => Thenable<Uint8Array>) {
-		this.mimeType = mimeType;
-		this.data = data;
-	}
 }
 
 export enum LanguageModelChatMessageRole {

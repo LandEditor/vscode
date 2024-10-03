@@ -27,6 +27,7 @@ import { TabFocus } from '../../../../editor/browser/config/tabFocus.js';
 import * as nls from '../../../../nls.js';
 import { IAccessibilityService } from '../../../../platform/accessibility/common/accessibility.js';
 import { AccessibilitySignal, IAccessibilitySignalService } from '../../../../platform/accessibilitySignal/browser/accessibilitySignalService.js';
+import { IClipboardService } from '../../../../platform/clipboard/common/clipboardService.js';
 import { ICommandService } from '../../../../platform/commands/common/commands.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
 import { IContextKey, IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
@@ -42,7 +43,7 @@ import { IProductService } from '../../../../platform/product/common/productServ
 import { IQuickInputService, IQuickPickItem, QuickPickItem } from '../../../../platform/quickinput/common/quickInput.js';
 import { IStorageService, StorageScope, StorageTarget } from '../../../../platform/storage/common/storage.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
-import { IMarkProperties, TerminalCapability } from '../../../../platform/terminal/common/capabilities/capabilities.js';
+import { IMarkProperties, ITerminalCommand, TerminalCapability } from '../../../../platform/terminal/common/capabilities/capabilities.js';
 import { TerminalCapabilityStoreMultiplexer } from '../../../../platform/terminal/common/capabilities/terminalCapabilityStore.js';
 import { IEnvironmentVariableCollection, IMergedEnvironmentVariableCollection } from '../../../../platform/terminal/common/environmentVariable.js';
 import { deserializeEnvironmentVariableCollections } from '../../../../platform/terminal/common/environmentVariableShared.js';
@@ -63,12 +64,14 @@ import { TerminalEditorInput } from './terminalEditorInput.js';
 import { TerminalExtensionsRegistry } from './terminalExtensions.js';
 import { getColorClass, createColorStyleElement, getStandardColors } from './terminalIcon.js';
 import { TerminalProcessManager } from './terminalProcessManager.js';
+import { showRunRecentQuickPick } from './terminalRunRecentQuickPick.js';
 import { ITerminalStatusList, TerminalStatus, TerminalStatusList } from './terminalStatusList.js';
 import { getTerminalResourcesFromDragEvent, getTerminalUri } from './terminalUri.js';
 import { TerminalWidgetManager } from './widgets/widgetManager.js';
 import { LineDataEventAddon } from './xterm/lineDataEventAddon.js';
 import { XtermTerminal, getXtermScaledDimensions } from './xterm/xtermTerminal.js';
 import { IEnvironmentVariableInfo } from '../common/environmentVariable.js';
+import { getCommandHistory, getDirectoryHistory } from '../common/history.js';
 import { DEFAULT_COMMANDS_TO_SKIP_SHELL, ITerminalProcessManager, ITerminalProfileResolverService, ProcessState, TERMINAL_CREATION_COMMANDS, TERMINAL_VIEW_ID, TerminalCommandId } from '../common/terminal.js';
 import { TERMINAL_BACKGROUND_COLOR } from '../common/terminalColorRegistry.js';
 import { TerminalContextKeys } from '../common/terminalContextKey.js';
@@ -83,6 +86,7 @@ import { importAMDNodeModule } from '../../../../amdX.js';
 import type { IMarker, Terminal as XTermTerminal } from '@xterm/xterm';
 import { AccessibilityCommandId } from '../../accessibility/common/accessibilityCommands.js';
 import { terminalStrings } from '../common/terminalStrings.js';
+import { shouldPasteTerminalText } from '../common/terminalClipboard.js';
 import { TerminalIconPicker } from './terminalIconPicker.js';
 import { IHostService } from '../../../services/host/browser/host.js';
 import { TerminalResizeDebouncer } from './terminalResizeDebouncer.js';
@@ -346,6 +350,11 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 	private readonly _onDidChangeVisibility = this._register(new Emitter<boolean>());
 	readonly onDidChangeVisibility = this._onDidChangeVisibility.event;
 
+	private readonly _onWillPaste = this._register(new Emitter<string>());
+	readonly onWillPaste = this._onWillPaste.event;
+	private readonly _onDidPaste = this._register(new Emitter<string>());
+	readonly onDidPaste = this._onDidPaste.event;
+
 	private readonly _onLineData = this._register(new Emitter<string>({
 		onDidAddFirstListener: async () => (this.xterm ?? await this._xtermReadyPromise).raw.loadAddon(this._lineDataEventAddon!)
 	}));
@@ -353,6 +362,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 
 	constructor(
 		private readonly _terminalShellTypeContextKey: IContextKey<string>,
+		private readonly _terminalInRunCommandPicker: IContextKey<boolean>,
 		private _shellLaunchConfig: IShellLaunchConfig,
 		@IContextKeyService private readonly _contextKeyService: IContextKeyService,
 		@IContextMenuService private readonly _contextMenuService: IContextMenuService,
@@ -364,6 +374,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		@INotificationService private readonly _notificationService: INotificationService,
 		@IPreferencesService private readonly _preferencesService: IPreferencesService,
 		@IViewsService private readonly _viewsService: IViewsService,
+		@IClipboardService private readonly _clipboardService: IClipboardService,
 		@IThemeService private readonly _themeService: IThemeService,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@ITerminalLogService private readonly _logService: ITerminalLogService,
@@ -439,16 +450,24 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		this._terminalShellIntegrationEnabledContextKey = TerminalContextKeys.terminalShellIntegrationEnabled.bindTo(scopedContextKeyService);
 
 		this._logService.trace(`terminalInstance#ctor (instanceId: ${this.instanceId})`, this._shellLaunchConfig);
-		this._register(this.capabilities.onDidAddCapabilityType(e => this._logService.debug('terminalInstance added capability', e)));
-		this._register(this.capabilities.onDidRemoveCapabilityType(e => this._logService.debug('terminalInstance removed capability', e)));
 		this._register(this.capabilities.onDidAddCapabilityType(e => {
+			this._logService.debug('terminalInstance added capability', e);
 			if (e === TerminalCapability.CwdDetection) {
 				this.capabilities.get(TerminalCapability.CwdDetection)?.onDidChangeCwd(e => {
 					this._cwd = e;
 					this._setTitle(this.title, TitleEventSource.Config);
+					this._scopedInstantiationService.invokeFunction(getDirectoryHistory)?.add(e, { remoteAuthority: this.remoteAuthority });
+				});
+			} else if (e === TerminalCapability.CommandDetection) {
+				const commandCapability = this.capabilities.get(TerminalCapability.CommandDetection);
+				commandCapability?.onCommandFinished(e => {
+					if (e.command.trim().length > 0) {
+						this._scopedInstantiationService.invokeFunction(getCommandHistory)?.add(e.command, { shellType: this._shellType });
+					}
 				});
 			}
 		}));
+		this._register(this.capabilities.onDidRemoveCapabilityType(e => this._logService.debug('terminalInstance removed capability', e)));
 
 		// Resolve just the icon ahead of time so that it shows up immediately in the tabs. This is
 		// disabled in remote because this needs to be sync and the OS may differ on the remote
@@ -574,11 +593,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			}
 			let contribution: ITerminalContribution;
 			try {
-				contribution = this._register(this._scopedInstantiationService.createInstance(desc.ctor, {
-					instance: this,
-					processManager: this._processManager,
-					widgetManager: this._widgetManager
-				}));
+				contribution = this._register(this._scopedInstantiationService.createInstance(desc.ctor, this, this._processManager, this._widgetManager));
 				this._contributions.set(desc.id, contribution);
 			} catch (err) {
 				onUnexpectedError(err);
@@ -764,7 +779,11 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		this._register(toDisposable(() => this._resizeDebouncer = undefined));
 		this.updateAccessibilitySupport();
 		this._register(this.xterm.onDidRequestRunCommand(e => {
-			this.sendText(e.command.command, e.noNewLine ? false : true);
+			if (e.copyAsHtml) {
+				this.copySelection(true, e.command);
+			} else {
+				this.sendText(e.command.command, e.noNewLine ? false : true);
+			}
 		}));
 		this._register(this.xterm.onDidRequestRefreshDimensions(() => {
 			if (this._lastLayoutDimensions) {
@@ -792,7 +811,7 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 				this._accessibilitySignalService.playSignal(AccessibilitySignal.terminalBell);
 			}));
 		}, 1000, this._store);
-		this._register(xterm.raw.onSelectionChange(() => this._onDidChangeSelection.fire(this)));
+		this._register(xterm.raw.onSelectionChange(async () => this._onSelectionChange()));
 		this._register(xterm.raw.buffer.onBufferChange(() => this._refreshAltBufferContextKey()));
 
 		this._register(this._processManager.onProcessData(e => this._onProcessData(e)));
@@ -877,6 +896,12 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		}
 		// Use bracketed paste mode only when not running the command
 		await this.sendText(commandLine, shouldExecute, !shouldExecute);
+	}
+
+	async runRecent(type: 'command' | 'cwd', filterMode?: 'fuzzy' | 'contiguous', value?: string): Promise<void> {
+		return this._scopedInstantiationService.invokeFunction(
+			showRunRecentQuickPick, this, this._terminalInRunCommandPicker, type, filterMode, value
+		);
 	}
 
 	detachFromElement(): void {
@@ -1123,6 +1148,11 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		return this.xterm ? this.xterm.raw.hasSelection() : false;
 	}
 
+	async copySelection(asHtml?: boolean, command?: ITerminalCommand): Promise<void> {
+		const xterm = await this._xtermReadyPromise;
+		await xterm.copySelection(asHtml, command);
+	}
+
 	get selection(): string | undefined {
 		return this.xterm && this.hasSelection() ? this.xterm.raw.getSelection() : undefined;
 	}
@@ -1213,6 +1243,36 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 		await this._xtermReadyPromise;
 		await this._attachBarrier.wait();
 		this.focus(force);
+	}
+
+	async paste(): Promise<void> {
+		await this._paste(await this._clipboardService.readText());
+	}
+
+	async pasteSelection(): Promise<void> {
+		await this._paste(await this._clipboardService.readText('selection'));
+	}
+
+	private async _paste(value: string): Promise<void> {
+		if (!this.xterm) {
+			return;
+		}
+
+		let currentText = value;
+		const shouldPasteText = await this._scopedInstantiationService.invokeFunction(shouldPasteTerminalText, currentText, this.xterm?.raw.modes.bracketedPasteMode);
+		if (!shouldPasteText) {
+			return;
+		}
+
+		if (typeof shouldPasteText === 'object') {
+			currentText = shouldPasteText.modifiedText;
+		}
+
+		this.focus();
+
+		this._onWillPaste.fire(currentText);
+		this.xterm.raw.paste(currentText);
+		this._onDidPaste.fire(currentText);
 	}
 
 	async sendText(text: string, shouldExecute: boolean, bracketedPasteMode?: boolean): Promise<void> {
@@ -1727,6 +1787,27 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			})) === true;
 	}
 
+	private async _onSelectionChange(): Promise<void> {
+		this._onDidChangeSelection.fire(this);
+		if (this._configurationService.getValue(TerminalSettingId.CopyOnSelection)) {
+			if (this._overrideCopySelection === false) {
+				return;
+			}
+			if (this.hasSelection()) {
+				await this.copySelection();
+			}
+		}
+	}
+
+	private _overrideCopySelection: boolean | undefined = undefined;
+	overrideCopyOnSelection(value: boolean): IDisposable {
+		if (this._overrideCopySelection !== undefined) {
+			throw new Error('Cannot set a copy on selection override multiple times');
+		}
+		this._overrideCopySelection = value;
+		return toDisposable(() => this._overrideCopySelection = undefined);
+	}
+
 	@debounce(2000)
 	private async _updateProcessCwd(): Promise<void> {
 		if (this.isDisposed || this.shellLaunchConfig.customPtyImplementation) {
@@ -2233,17 +2314,12 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 			return { cancelContextMenu: true };
 		}
 
-		// Allow contributions to handle the mouse event first
-		for (const contrib of this._contributions.values()) {
-			const result = await contrib.handleMouseEvent?.(event);
-			if (result?.handled) {
-				return { cancelContextMenu: true };
-			}
-		}
-
 		// Middle click
 		if (event.which === 2) {
 			switch (this._terminalConfigurationService.config.middleClickBehavior) {
+				case 'paste':
+					this.paste();
+					break;
 				case 'default':
 				default:
 					// Drop selection and focus terminal on Linux to enable middle button paste
@@ -2256,18 +2332,38 @@ export class TerminalInstance extends Disposable implements ITerminalInstance {
 
 		// Right click
 		if (event.which === 3) {
-			// Shift click forces the context menu
-			if (event.shiftKey) {
-				openContextMenu(dom.getActiveWindow(), event, this, contextMenu, this._contextMenuService);
-				return;
-			}
-
 			const rightClickBehavior = this._terminalConfigurationService.config.rightClickBehavior;
 			if (rightClickBehavior === 'nothing') {
 				if (!event.shiftKey) {
 					return { cancelContextMenu: true };
 				}
 				return;
+			}
+			else if (rightClickBehavior === 'copyPaste' || rightClickBehavior === 'paste') {
+				// copyPaste: Shift+right click should open context menu
+				if (rightClickBehavior === 'copyPaste' && event.shiftKey) {
+					openContextMenu(dom.getActiveWindow(), event, this, contextMenu, this._contextMenuService);
+					return;
+				}
+
+				if (rightClickBehavior === 'copyPaste' && this.hasSelection()) {
+					await this.copySelection();
+					this.clearSelection();
+				} else {
+					if (BrowserFeatures.clipboard.readText) {
+						this.paste();
+					} else {
+						this._notificationService.info(`This browser doesn't support the clipboard.readText API needed to trigger a paste, try ${isMacintosh ? '⌘' : 'Ctrl'}+V instead.`);
+					}
+				}
+				// Clear selection after all click event bubbling is finished on Mac to prevent
+				// right-click selecting a word which is seemed cannot be disabled. There is a
+				// flicker when pasting but this appears to give the best experience if the
+				// setting is enabled.
+				if (isMacintosh) {
+					setTimeout(() => this.clearSelection(), 0);
+				}
+				return { cancelContextMenu: true };
 			}
 		}
 	}

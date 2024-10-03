@@ -632,7 +632,7 @@ export namespace WorkspaceEdit {
 					}
 
 					// file operation
-					result.edits.push({
+					result.edits.push(<extHostProtocol.IWorkspaceFileEditDto>{
 						oldResource: entry.from,
 						newResource: entry.to,
 						options: { ...entry.options, contents },
@@ -641,14 +641,14 @@ export namespace WorkspaceEdit {
 
 				} else if (entry._type === types.FileEditType.Text) {
 					// text edits
-					result.edits.push({
+					result.edits.push(<languages.IWorkspaceTextEdit>{
 						resource: entry.uri,
 						textEdit: TextEdit.from(entry.edit),
 						versionId: !toCreate.has(entry.uri) ? versionInfo?.getTextDocumentVersion(entry.uri) : undefined,
 						metadata: entry.metadata
 					});
 				} else if (entry._type === types.FileEditType.Snippet) {
-					result.edits.push({
+					result.edits.push(<languages.IWorkspaceTextEdit>{
 						resource: entry.uri,
 						textEdit: {
 							range: Range.from(entry.range),
@@ -661,16 +661,17 @@ export namespace WorkspaceEdit {
 
 				} else if (entry._type === types.FileEditType.Cell) {
 					// cell edit
-					result.edits.push({
+					result.edits.push(<notebooks.IWorkspaceNotebookCellEdit>{
 						metadata: entry.metadata,
 						resource: entry.uri,
 						cellEdit: entry.edit,
+						notebookMetadata: entry.notebookMetadata,
 						notebookVersionId: versionInfo?.getNotebookDocumentVersion(entry.uri)
 					});
 
 				} else if (entry._type === types.FileEditType.CellReplace) {
 					// cell replace
-					result.edits.push({
+					result.edits.push(<extHostProtocol.IWorkspaceCellEditDto>{
 						metadata: entry.metadata,
 						resource: entry.uri,
 						notebookVersionId: versionInfo?.getNotebookDocumentVersion(entry.uri),
@@ -1604,10 +1605,10 @@ export namespace LanguageSelector {
 			return selector;
 		} else {
 			const filter = selector as vscode.DocumentFilter; // TODO: microsoft/TypeScript#42768
-			return {
+			return <languageSelector.LanguageFilter>{
 				language: filter.language,
 				scheme: filter.scheme,
-				pattern: GlobPattern.from(filter.pattern) ?? undefined,
+				pattern: GlobPattern.from(filter.pattern),
 				exclusive: filter.exclusive,
 				notebookType: filter.notebookType
 			};
@@ -2506,7 +2507,7 @@ export namespace ChatResponseAnchorPart {
 	export function from(part: vscode.ChatResponseAnchorPart): Dto<IChatContentInlineReference> {
 		// Work around type-narrowing confusion between vscode.Uri and URI
 		const isUri = (thing: unknown): thing is vscode.Uri => URI.isUri(thing);
-		const isSymbolInformation = (thing: object): thing is vscode.SymbolInformation => 'name' in thing;
+		const isSymbolInformation = (x: any): x is vscode.SymbolInformation => x instanceof types.SymbolInformation;
 
 		return {
 			kind: 'inlineReference',
@@ -2795,7 +2796,7 @@ export namespace ChatPromptReference {
 			range: variable.range && [variable.range.start, variable.range.endExclusive],
 			value: isUriComponents(value) ? URI.revive(value) :
 				value && typeof value === 'object' && 'uri' in value && 'range' in value && isUriComponents(value.uri) ?
-					Location.to(revive(value)) : variable.isImage ? new types.ChatReferenceBinaryData('image/*', () => Promise.resolve(new Uint8Array(Object.values(value)))) : value,
+					Location.to(revive(value)) : value,
 			modelDescription: variable.modelDescription
 		};
 	}
@@ -2926,11 +2927,10 @@ export namespace LanguageModelToolDescription {
 	export function to(item: IToolData): vscode.LanguageModelToolDescription {
 		return {
 			id: item.id,
-			description: item.modelDescription,
+			modelDescription: item.modelDescription,
 			parametersSchema: item.parametersSchema,
 			displayName: item.displayName,
 			supportedContentTypes: item.supportedContentTypes,
-			tags: item.tags ?? [],
 		};
 	}
 }

@@ -14,6 +14,7 @@ import { ResourceMap } from '../../../base/common/map.js';
 import { revive } from '../../../base/common/marshalling.js';
 import { mixin } from '../../../base/common/objects.js';
 import { URI } from '../../../base/common/uri.js';
+import { ISingleEditOperation } from '../../../editor/common/core/editOperation.js';
 import { Position as EditorPosition, IPosition } from '../../../editor/common/core/position.js';
 import { Range as EditorRange, IRange } from '../../../editor/common/core/range.js';
 import { Selection } from '../../../editor/common/core/selection.js';
@@ -433,20 +434,20 @@ export class MainThreadLanguageFeatures extends Disposable implements MainThread
 	// --- formatting
 
 	$registerDocumentFormattingSupport(handle: number, selector: IDocumentFilterDto[], extensionId: ExtensionIdentifier, displayName: string): void {
-		this._registrations.set(handle, this._languageFeaturesService.documentFormattingEditProvider.register(selector, {
+		this._registrations.set(handle, this._languageFeaturesService.documentFormattingEditProvider.register(selector, <languages.DocumentFormattingEditProvider>{
 			extensionId,
 			displayName,
-			provideDocumentFormattingEdits: (model: ITextModel, options: languages.FormattingOptions, token: CancellationToken): Promise<languages.TextEdit[] | undefined> => {
+			provideDocumentFormattingEdits: (model: ITextModel, options: languages.FormattingOptions, token: CancellationToken): Promise<ISingleEditOperation[] | undefined> => {
 				return this._proxy.$provideDocumentFormattingEdits(handle, model.uri, options, token);
 			}
 		}));
 	}
 
 	$registerRangeFormattingSupport(handle: number, selector: IDocumentFilterDto[], extensionId: ExtensionIdentifier, displayName: string, supportsRanges: boolean): void {
-		this._registrations.set(handle, this._languageFeaturesService.documentRangeFormattingEditProvider.register(selector, {
+		this._registrations.set(handle, this._languageFeaturesService.documentRangeFormattingEditProvider.register(selector, <languages.DocumentRangeFormattingEditProvider>{
 			extensionId,
 			displayName,
-			provideDocumentRangeFormattingEdits: (model: ITextModel, range: EditorRange, options: languages.FormattingOptions, token: CancellationToken): Promise<languages.TextEdit[] | undefined> => {
+			provideDocumentRangeFormattingEdits: (model: ITextModel, range: EditorRange, options: languages.FormattingOptions, token: CancellationToken): Promise<ISingleEditOperation[] | undefined> => {
 				return this._proxy.$provideDocumentRangeFormattingEdits(handle, model.uri, range, options, token);
 			},
 			provideDocumentRangesFormattingEdits: !supportsRanges
@@ -458,10 +459,10 @@ export class MainThreadLanguageFeatures extends Disposable implements MainThread
 	}
 
 	$registerOnTypeFormattingSupport(handle: number, selector: IDocumentFilterDto[], autoFormatTriggerCharacters: string[], extensionId: ExtensionIdentifier): void {
-		this._registrations.set(handle, this._languageFeaturesService.onTypeFormattingEditProvider.register(selector, {
+		this._registrations.set(handle, this._languageFeaturesService.onTypeFormattingEditProvider.register(selector, <languages.OnTypeFormattingEditProvider>{
 			extensionId,
 			autoFormatTriggerCharacters,
-			provideOnTypeFormattingEdits: (model: ITextModel, position: EditorPosition, ch: string, options: languages.FormattingOptions, token: CancellationToken): Promise<languages.TextEdit[] | undefined> => {
+			provideOnTypeFormattingEdits: (model: ITextModel, position: EditorPosition, ch: string, options: languages.FormattingOptions, token: CancellationToken): Promise<ISingleEditOperation[] | undefined> => {
 				return this._proxy.$provideOnTypeFormattingEdits(handle, model.uri, position, ch, options, token);
 			}
 		}));
@@ -545,18 +546,6 @@ export class MainThreadLanguageFeatures extends Disposable implements MainThread
 		const commandIdent = data[ISuggestDataDtoField.commandIdent];
 		const commitChars = data[ISuggestDataDtoField.commitCharacters];
 
-		type IdentCommand = languages.Command & { $ident: string | undefined };
-
-		let command: IdentCommand | undefined;
-		if (commandId) {
-			command = {
-				$ident: commandIdent,
-				id: commandId,
-				title: '',
-				arguments: commandIdent ? [commandIdent] : data[ISuggestDataDtoField.commandArguments], // Automatically fill in ident as first argument
-			};
-		}
-
 		return {
 			label,
 			extensionId,
@@ -572,7 +561,12 @@ export class MainThreadLanguageFeatures extends Disposable implements MainThread
 			insertTextRules: data[ISuggestDataDtoField.insertTextRules],
 			commitCharacters: commitChars ? Array.from(commitChars) : undefined,
 			additionalTextEdits: data[ISuggestDataDtoField.additionalTextEdits],
-			command,
+			command: commandId ? {
+				$ident: commandIdent,
+				id: commandId,
+				title: '',
+				arguments: commandIdent ? [commandIdent] : data[ISuggestDataDtoField.commandArguments], // Automatically fill in ident as first argument
+			} as languages.Command : undefined,
 			// not-standard
 			_id: data.x,
 		};

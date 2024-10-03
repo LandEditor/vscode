@@ -34,15 +34,13 @@ import { SimpleSettingRenderer } from '../../markdown/browser/markdownSettingRen
 import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { Schemas } from '../../../../base/common/network.js';
 import { ICodeEditorService } from '../../../../editor/browser/services/codeEditorService.js';
-import { dirname } from '../../../../base/common/resources.js';
-import { asWebviewUri } from '../../webview/common/webview.js';
 
 export class ReleaseNotesManager {
 	private readonly _simpleSettingRenderer: SimpleSettingRenderer;
 	private readonly _releaseNotesCache = new Map<string, Promise<string>>();
 
 	private _currentReleaseNotes: WebviewInput | undefined = undefined;
-	private _lastMeta: { text: string; base: URI } | undefined;
+	private _lastText: string | undefined;
 	private readonly disposables = new DisposableStore();
 
 	public constructor(
@@ -70,30 +68,19 @@ export class ReleaseNotesManager {
 	}
 
 	private async updateHtml() {
-		if (!this._currentReleaseNotes || !this._lastMeta) {
+		if (!this._currentReleaseNotes || !this._lastText) {
 			return;
 		}
-		const html = await this.renderBody(this._lastMeta);
+		const html = await this.renderBody(this._lastText);
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.webview.setHtml(html);
 		}
 	}
 
-	private async getBase(useCurrentFile: boolean) {
-		if (useCurrentFile) {
-			const currentFileUri = this._codeEditorService.getActiveCodeEditor()?.getModel()?.uri;
-			if (currentFileUri) {
-				return dirname(currentFileUri);
-			}
-		}
-		return URI.parse('https://code.visualstudio.com/raw');
-	}
-
 	public async show(version: string, useCurrentFile: boolean): Promise<boolean> {
 		const releaseNoteText = await this.loadReleaseNotes(version, useCurrentFile);
-		const base = await this.getBase(useCurrentFile);
-		this._lastMeta = { text: releaseNoteText, base };
-		const html = await this.renderBody(this._lastMeta);
+		this._lastText = releaseNoteText;
+		const html = await this.renderBody(releaseNoteText);
 		const title = nls.localize('releaseNotesInputName', "Release Notes: {0}", version);
 
 		const activeEditorPane = this._editorService.activeEditorPane;
@@ -108,10 +95,10 @@ export class ReleaseNotesManager {
 					options: {
 						tryRestoreScrollPosition: true,
 						enableFindWidget: true,
-						disableServiceWorker: useCurrentFile ? false : true,
+						disableServiceWorker: true,
 					},
 					contentOptions: {
-						localResourceRoots: useCurrentFile ? [base] : [],
+						localResourceRoots: [],
 						allowScripts: true
 					},
 					extension: undefined
@@ -260,10 +247,10 @@ export class ReleaseNotesManager {
 		return uri;
 	}
 
-	private async renderBody(fileContent: { text: string; base: URI }) {
+	private async renderBody(text: string) {
 		const nonce = generateUuid();
 
-		const content = await renderMarkdownDocument(fileContent.text, this._extensionService, this._languageService, {
+		const content = await renderMarkdownDocument(text, this._extensionService, this._languageService, {
 			shouldSanitize: false,
 			markedExtensions: [{
 				renderer: {
@@ -279,7 +266,7 @@ export class ReleaseNotesManager {
 		return `<!DOCTYPE html>
 		<html>
 			<head>
-				<base href="${asWebviewUri(fileContent.base).toString(true)}/" >
+				<base href="https://code.visualstudio.com/raw/">
 				<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
 				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: data:; media-src https:; style-src 'nonce-${nonce}' https://code.visualstudio.com; script-src 'nonce-${nonce}';">
 				<style nonce="${nonce}">

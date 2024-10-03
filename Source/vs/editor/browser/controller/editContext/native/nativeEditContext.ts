@@ -5,7 +5,7 @@
 
 import './nativeEditContext.css';
 import { isFirefox } from '../../../../../base/browser/browser.js';
-import { addDisposableListener, getActiveWindow } from '../../../../../base/browser/dom.js';
+import { addDisposableListener } from '../../../../../base/browser/dom.js';
 import { FastDomNode } from '../../../../../base/browser/fastDomNode.js';
 import { StandardKeyboardEvent } from '../../../../../base/browser/keyboardEvent.js';
 import { KeyCode } from '../../../../../base/common/keyCodes.js';
@@ -26,7 +26,6 @@ import { Selection } from '../../../../common/core/selection.js';
 import { Position } from '../../../../common/core/position.js';
 import { IVisibleRangeProvider } from '../textArea/textAreaEditContext.js';
 import { PositionOffsetTransformer } from '../../../../common/core/positionToOffset.js';
-import { IDisposable, MutableDisposable } from '../../../../../base/common/lifecycle.js';
 
 // Corresponds to classes in nativeEditContext.css
 enum CompositionClassName {
@@ -50,8 +49,6 @@ export class NativeEditContext extends AbstractEditContext {
 
 	private readonly _focusTracker: FocusTracker;
 
-	private readonly _selectionChangeListener: MutableDisposable<IDisposable>;
-
 	constructor(
 		context: ViewContext,
 		overflowGuardContainer: FastDomNode<HTMLElement>,
@@ -69,14 +66,10 @@ export class NativeEditContext extends AbstractEditContext {
 		overflowGuardContainer.appendChild(this.domNode);
 		this._parent = overflowGuardContainer.domNode;
 
-		this._selectionChangeListener = this._register(new MutableDisposable());
-		this._focusTracker = this._register(new FocusTracker(this.domNode.domNode, (newFocusValue: boolean) => {
-			this._selectionChangeListener.value = newFocusValue ? this._setSelectionChangeListener(viewController) : undefined;
-			this._context.viewModel.setHasFocus(newFocusValue);
-		}));
+		this._focusTracker = this._register(new FocusTracker(this.domNode.domNode, (newFocusValue: boolean) => this._context.viewModel.setHasFocus(newFocusValue)));
 
 		this._editContext = new EditContext();
-		this.setEditContextOnDomNode();
+		this.domNode.domNode.editContext = this._editContext;
 
 		this._screenReaderSupport = instantiationService.createInstance(ScreenReaderSupport, this.domNode, context);
 
@@ -175,12 +168,6 @@ export class NativeEditContext extends AbstractEditContext {
 	public focus(): void { this._focusTracker.focus(); }
 
 	public refreshFocusState(): void { }
-
-	// TODO: added as a workaround fix for https://github.com/microsoft/vscode/issues/229825
-	// When this issue will be fixed the following should be removed.
-	public setEditContextOnDomNode(): void {
-		this.domNode.domNode.editContext = this._editContext;
-	}
 
 	// --- Private methods ---
 
@@ -389,39 +376,5 @@ export class NativeEditContext extends AbstractEditContext {
 			storedMetadata
 		);
 		clipboardService.writeText(dataToCopy.text);
-	}
-
-	private _setSelectionChangeListener(viewController: ViewController): IDisposable {
-		// See https://github.com/microsoft/vscode/issues/27216 and https://github.com/microsoft/vscode/issues/98256
-		// When using a Braille display or NVDA for example, it is possible for users to reposition the
-		// system caret. This is reflected in Chrome as a `selectionchange` event and needs to be reflected within the editor.
-
-		return addDisposableListener(this.domNode.domNode.ownerDocument, 'selectionchange', () => {
-			if (!this.isFocused()) {
-				return;
-			}
-			const activeDocument = getActiveWindow().document;
-			const activeDocumentSelection = activeDocument.getSelection();
-			if (!activeDocumentSelection) {
-				return;
-			}
-			const rangeCount = activeDocumentSelection.rangeCount;
-			if (rangeCount === 0) {
-				return;
-			}
-			const range = activeDocumentSelection.getRangeAt(0);
-			const startPositionOfScreenReaderContentWithinEditor = this._screenReaderSupport.startPositionOfScreenReaderContentWithinEditor();
-			if (!startPositionOfScreenReaderContentWithinEditor) {
-				return;
-			}
-			const model = this._context.viewModel.model;
-			const offsetOfStartOfScreenReaderContent = model.getOffsetAt(startPositionOfScreenReaderContentWithinEditor);
-			const offsetOfSelectionStart = range.startOffset + offsetOfStartOfScreenReaderContent;
-			const offsetOfSelectionEnd = range.endOffset + offsetOfStartOfScreenReaderContent;
-			const positionOfSelectionStart = model.getPositionAt(offsetOfSelectionStart);
-			const positionOfSelectionEnd = model.getPositionAt(offsetOfSelectionEnd);
-			const newSelection = Selection.fromPositions(positionOfSelectionStart, positionOfSelectionEnd);
-			viewController.setSelection(newSelection);
-		});
 	}
 }

@@ -269,7 +269,7 @@ function packageTask(platform, arch, sourceFolderName, destinationFolderName, op
 		}
 
 		const name = product.nameShort;
-		const packageJsonUpdates = { name, version };
+		const packageJsonUpdates = { name, version, ...{ type: 'module', main: 'out/main.js' } }; // TODO@esm this should be configured in the top level package.json
 
 		// for linux url handling
 		if (platform === 'linux') {

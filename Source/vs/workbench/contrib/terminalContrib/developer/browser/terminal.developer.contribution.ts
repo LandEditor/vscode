@@ -9,6 +9,7 @@ import { VSBuffer } from '../../../../../base/common/buffer.js';
 import { Event } from '../../../../../base/common/event.js';
 import { Disposable, DisposableMap, DisposableStore, IDisposable, MutableDisposable, combinedDisposable, dispose } from '../../../../../base/common/lifecycle.js';
 import { URI } from '../../../../../base/common/uri.js';
+import './media/developer.css';
 import { localize, localize2 } from '../../../../../nls.js';
 import { Categories } from '../../../../../platform/action/common/actionCommonCategories.js';
 import { IClipboardService } from '../../../../../platform/clipboard/common/clipboardService.js';
@@ -21,13 +22,14 @@ import { IQuickInputService } from '../../../../../platform/quickinput/common/qu
 import { ITerminalCommand, TerminalCapability, type ICommandDetectionCapability } from '../../../../../platform/terminal/common/capabilities/capabilities.js';
 import { ITerminalLogService, TerminalSettingId } from '../../../../../platform/terminal/common/terminal.js';
 import { IWorkspaceContextService } from '../../../../../platform/workspace/common/workspace.js';
-import { IStatusbarService, StatusbarAlignment, type IStatusbarEntry, type IStatusbarEntryAccessor } from '../../../../services/statusbar/browser/statusbar.js';
 import { IInternalXtermTerminal, ITerminalContribution, ITerminalInstance, IXtermTerminal } from '../../../terminal/browser/terminal.js';
 import { registerTerminalAction } from '../../../terminal/browser/terminalActions.js';
-import { registerTerminalContribution, type ITerminalContributionContext } from '../../../terminal/browser/terminalExtensions.js';
+import { registerTerminalContribution } from '../../../terminal/browser/terminalExtensions.js';
+import { TerminalWidgetManager } from '../../../terminal/browser/widgets/widgetManager.js';
+import { ITerminalProcessManager } from '../../../terminal/common/terminal.js';
 import { TerminalContextKeys } from '../../../terminal/common/terminalContextKey.js';
 import { TerminalDeveloperCommandId } from '../common/terminal.developer.js';
-import './media/developer.css';
+import { IStatusbarService, StatusbarAlignment, type IStatusbarEntry, type IStatusbarEntryAccessor } from '../../../../services/statusbar/browser/statusbar.js';
 
 registerTerminalAction({
 	id: TerminalDeveloperCommandId.ShowTextureAtlas,
@@ -228,7 +230,9 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 	private readonly _statusbarEntryAccessor: MutableDisposable<IStatusbarEntryAccessor> = this._register(new MutableDisposable());
 
 	constructor(
-		private readonly _ctx: ITerminalContributionContext,
+		private readonly _instance: ITerminalInstance,
+		processManager: ITerminalProcessManager,
+		widgetManager: TerminalWidgetManager,
 		@IConfigurationService private readonly _configurationService: IConfigurationService,
 		@IStatusbarService private readonly _statusbarService: IStatusbarService,
 	) {
@@ -249,7 +253,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 		const devMode: boolean = this._isEnabled();
 		this._xterm?.raw.element?.classList.toggle('dev-mode', devMode);
 
-		const commandDetection = this._ctx.instance.capabilities.get(TerminalCapability.CommandDetection);
+		const commandDetection = this._instance.capabilities.get(TerminalCapability.CommandDetection);
 		if (devMode) {
 			if (commandDetection) {
 				const commandDecorations = new DisposableMap<ITerminalCommand, IDisposable>();
@@ -258,8 +262,8 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 					commandDecorations,
 					otherDisposables,
 					// Prompt input
-					this._ctx.instance.onDidBlur(() => this._updateDevMode()),
-					this._ctx.instance.onDidFocus(() => this._updateDevMode()),
+					this._instance.onDidBlur(() => this._updateDevMode()),
+					this._instance.onDidFocus(() => this._updateDevMode()),
 					commandDetection.promptInputModel.onDidChangeInput(() => this._updateDevMode()),
 					// Sequence markers
 					commandDetection.onCommandFinished(command => {
@@ -267,7 +271,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 						const decorations: IDisposable[] = [];
 						commandDecorations.set(command, combinedDisposable(...decorations));
 						if (command.promptStartMarker) {
-							const d = this._ctx.instance.xterm!.raw?.registerDecoration({
+							const d = this._instance.xterm!.raw?.registerDecoration({
 								marker: command.promptStartMarker
 							});
 							if (d) {
@@ -279,7 +283,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 							}
 						}
 						if (command.marker) {
-							const d = this._ctx.instance.xterm!.raw?.registerDecoration({
+							const d = this._instance.xterm!.raw?.registerDecoration({
 								marker: command.marker,
 								x: command.startX
 							});
@@ -292,7 +296,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 							}
 						}
 						if (command.executedMarker) {
-							const d = this._ctx.instance.xterm!.raw?.registerDecoration({
+							const d = this._instance.xterm!.raw?.registerDecoration({
 								marker: command.executedMarker,
 								x: command.executedX
 							});
@@ -305,7 +309,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 							}
 						}
 						if (command.endMarker) {
-							const d = this._ctx.instance.xterm!.raw?.registerDecoration({
+							const d = this._instance.xterm!.raw?.registerDecoration({
 								marker: command.endMarker
 							});
 							if (d) {
@@ -331,7 +335,7 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 
 				this._updatePromptInputStatusBar(commandDetection);
 			} else {
-				this._activeDevModeDisposables.value = this._ctx.instance.capabilities.onDidAddCapabilityType(e => {
+				this._activeDevModeDisposables.value = this._instance.capabilities.onDidAddCapabilityType(e => {
 					if (e === TerminalCapability.CommandDetection) {
 						this._updateDevMode();
 					}
@@ -359,11 +363,11 @@ class DevModeContribution extends Disposable implements ITerminalContribution {
 				kind: 'prominent'
 			};
 			if (!this._statusbarEntryAccessor.value) {
-				this._statusbarEntryAccessor.value = this._statusbarService.addEntry(this._statusbarEntry, `terminal.promptInput.${this._ctx.instance.instanceId}`, StatusbarAlignment.LEFT);
+				this._statusbarEntryAccessor.value = this._statusbarService.addEntry(this._statusbarEntry, `terminal.promptInput.${this._instance.instanceId}`, StatusbarAlignment.LEFT);
 			} else {
 				this._statusbarEntryAccessor.value.update(this._statusbarEntry);
 			}
-			this._statusbarService.updateEntryVisibility(`terminal.promptInput.${this._ctx.instance.instanceId}`, this._ctx.instance.hasFocus);
+			this._statusbarService.updateEntryVisibility(`terminal.promptInput.${this._instance.instanceId}`, this._instance.hasFocus);
 		}
 	}
 }
