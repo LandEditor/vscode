@@ -258,9 +258,7 @@ class PieceTreeSearchCache {
 		return null;
 	}
 
-	public get2(
-		lineNumber: number,
-	): {
+	public get2(lineNumber: number): {
 		node: TreeNode;
 		nodeStartOffset: number;
 		nodeStartLineNumber: number;

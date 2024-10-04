@@ -1347,9 +1347,7 @@ export abstract class AbstractExtHostExtensionService
 
 	// -- called by main thread
 
-	private async _activateAndGetResolver(
-		remoteAuthority: string,
-	): Promise<{
+	private async _activateAndGetResolver(remoteAuthority: string): Promise<{
 		authorityPrefix: string;
 		resolver: vscode.RemoteAuthorityResolver | undefined;
 	}> {

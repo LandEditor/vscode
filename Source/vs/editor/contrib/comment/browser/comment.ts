@@ -44,13 +44,11 @@ abstract class CommentLineAction extends EditorAction {
 		const modelOptions = model.getOptions();
 		const commentsOptions = editor.getOption(EditorOption.comments);
 
-		const selections = editor
-			.getSelections()
-			.map((selection, index) => ({
-				selection,
-				index,
-				ignoreFirstLine: false,
-			}));
+		const selections = editor.getSelections().map((selection, index) => ({
+			selection,
+			index,
+			ignoreFirstLine: false,
+		}));
 		selections.sort((a, b) =>
 			Range.compareRangesUsingStarts(a.selection, b.selection),
 		);

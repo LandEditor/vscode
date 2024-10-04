@@ -1581,7 +1581,7 @@ export class WorkspaceService
 				if (added.length || removed.length || changed.length) {
 					newFolders = await this.toValidWorkspaceFolders(newFolders);
 				} else {
-				/* Otherwise use existing */
+					/* Otherwise use existing */
 					newFolders = this.workspace.folders;
 				}
 			}

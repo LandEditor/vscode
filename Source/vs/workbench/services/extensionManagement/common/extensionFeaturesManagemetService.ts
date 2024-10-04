@@ -128,9 +128,7 @@ class ExtensionFeaturesManagementService
 		}
 	}
 
-	getEnablementData(
-		featureId: string,
-	): {
+	getEnablementData(featureId: string): {
 		readonly extension: ExtensionIdentifier;
 		readonly enabled: boolean;
 	}[] {

@@ -224,9 +224,7 @@ export class CommentThreadBody<
 		return pendingEdits;
 	}
 
-	getCommentCoords(
-		commentUniqueId: number,
-	):
+	getCommentCoords(commentUniqueId: number):
 		| {
 				thread: dom.IDomNodePagePosition;
 				comment: dom.IDomNodePagePosition;

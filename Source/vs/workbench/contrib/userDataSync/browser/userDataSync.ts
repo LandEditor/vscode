@@ -1940,12 +1940,10 @@ export class UserDataSyncWorkbenchContribution
 						});
 					}
 					run(accessor: ServicesAccessor): void {
-						accessor
-							.get(IPreferencesService)
-							.openUserSettings({
-								jsonEditor: false,
-								query: "@tag:sync",
-							});
+						accessor.get(IPreferencesService).openUserSettings({
+							jsonEditor: false,
+							query: "@tag:sync",
+						});
 					}
 				},
 			),

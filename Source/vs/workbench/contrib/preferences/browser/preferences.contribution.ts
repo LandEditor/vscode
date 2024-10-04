@@ -595,12 +595,10 @@ class PreferencesActionsContribution
 						});
 					}
 					async run(accessor: ServicesAccessor) {
-						await accessor
-							.get(IPreferencesService)
-							.openSettings({
-								jsonEditor: false,
-								query: "@tag:accessibility",
-							});
+						await accessor.get(IPreferencesService).openSettings({
+							jsonEditor: false,
+							query: "@tag:accessibility",
+						});
 					}
 				},
 			),
@@ -794,12 +792,10 @@ class PreferencesActionsContribution
 						if (editorPane instanceof SettingsEditor2) {
 							editorPane.focusSearch(`@tag:usesOnlineServices`);
 						} else {
-							accessor
-								.get(IPreferencesService)
-								.openSettings({
-									jsonEditor: false,
-									query: "@tag:usesOnlineServices",
-								});
+							accessor.get(IPreferencesService).openSettings({
+								jsonEditor: false,
+								query: "@tag:usesOnlineServices",
+							});
 						}
 					}
 				},
@@ -851,12 +847,10 @@ class PreferencesActionsContribution
 						if (editorPane instanceof SettingsEditor2) {
 							editorPane.focusSearch(`@tag:telemetry`);
 						} else {
-							accessor
-								.get(IPreferencesService)
-								.openSettings({
-									jsonEditor: false,
-									query: "@tag:telemetry",
-								});
+							accessor.get(IPreferencesService).openSettings({
+								jsonEditor: false,
+								query: "@tag:telemetry",
+							});
 						}
 					}
 				},

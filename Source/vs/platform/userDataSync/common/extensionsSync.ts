@@ -662,9 +662,7 @@ export class LocalExtensionsProvider {
 		private readonly logService: IUserDataSyncLogService,
 	) {}
 
-	async getLocalExtensions(
-		profile: IUserDataProfile,
-	): Promise<{
+	async getLocalExtensions(profile: IUserDataProfile): Promise<{
 		localExtensions: ILocalSyncExtension[];
 		ignoredExtensions: string[];
 	}> {

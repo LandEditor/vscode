@@ -1220,12 +1220,10 @@ KeybindingsRegistry.registerCommandAndKeybindingRule({
 			if (model) {
 				const position = control.getPosition();
 				if (position) {
-					const bps = debugService
-						.getModel()
-						.getBreakpoints({
-							uri: model.uri,
-							lineNumber: position.lineNumber,
-						});
+					const bps = debugService.getModel().getBreakpoints({
+						uri: model.uri,
+						lineNumber: position.lineNumber,
+					});
 					if (bps.length) {
 						debugService.enableOrDisableBreakpoints(
 							!bps[0].enabled,

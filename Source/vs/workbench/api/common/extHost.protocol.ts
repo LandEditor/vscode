@@ -4606,7 +4606,7 @@ export type NotebookRawContentEventDto =
 	| notebookCommon.NotebookCellsChangeInternalMetadataEvent
 	// | notebookCommon.NotebookDocumentChangeMetadataEvent
 	| notebookCommon.NotebookCellContentChangeEvent;
-	// | notebookCommon.NotebookDocumentUnknownChangeEvent
+// | notebookCommon.NotebookDocumentUnknownChangeEvent
 
 export type NotebookCellsChangedEventDto = {
 	readonly rawEvents: NotebookRawContentEventDto[];

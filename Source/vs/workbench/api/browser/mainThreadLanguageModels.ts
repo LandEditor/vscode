@@ -84,12 +84,10 @@ export class MainThreadLanguageModels implements MainThreadLanguageModelsShape {
 			ExtHostContext.ExtHostChatProvider,
 		);
 		this._proxy.$acceptChatModelMetadata({
-			added: _chatProviderService
-				.getLanguageModelIds()
-				.map((id) => ({
-					identifier: id,
-					metadata: _chatProviderService.lookupLanguageModel(id)!,
-				})),
+			added: _chatProviderService.getLanguageModelIds().map((id) => ({
+				identifier: id,
+				metadata: _chatProviderService.lookupLanguageModel(id)!,
+			})),
 		});
 		this._store.add(
 			_chatProviderService.onDidChangeLanguageModels(
