@@ -3,16 +3,21 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Disposable } from '../../../../../base/common/lifecycle.js';
-import { IChatWidget } from '../chat.js';
-import { ChatWidget, IChatWidgetContrib } from '../chatWidget.js';
-import { IChatRequestVariableEntry, isChatRequestVariableEntry } from '../../common/chatModel.js';
+import { Disposable } from "../../../../../base/common/lifecycle.js";
+import {
+	IChatRequestVariableEntry,
+	isChatRequestVariableEntry,
+} from "../../common/chatModel.js";
+import { IChatWidget } from "../chat.js";
+import { ChatWidget, IChatWidgetContrib } from "../chatWidget.js";
 
-export class ChatContextAttachments extends Disposable implements IChatWidgetContrib {
-
+export class ChatContextAttachments
+	extends Disposable
+	implements IChatWidgetContrib
+{
 	private _attachedContext = new Map<string, IChatRequestVariableEntry>();
 
-	public static readonly ID = 'chatContextAttachments';
+	public static readonly ID = "chatContextAttachments";
 
 	get id() {
 		return ChatContextAttachments.ID;
@@ -21,18 +26,24 @@ export class ChatContextAttachments extends Disposable implements IChatWidgetCon
 	constructor(readonly widget: IChatWidget) {
 		super();
 
-		this._register(this.widget.onDidChangeContext(({ removed, added }) => {
-			removed?.forEach(attachment => this._attachedContext.delete(attachment.id));
-			added?.forEach(attachment => {
-				if (!this._attachedContext.has(attachment.id)) {
-					this._attachedContext.set(attachment.id, attachment);
-				}
-			});
-		}));
+		this._register(
+			this.widget.onDidChangeContext(({ removed, added }) => {
+				removed?.forEach((attachment) =>
+					this._attachedContext.delete(attachment.id),
+				);
+				added?.forEach((attachment) => {
+					if (!this._attachedContext.has(attachment.id)) {
+						this._attachedContext.set(attachment.id, attachment);
+					}
+				});
+			}),
+		);
 
-		this._register(this.widget.onDidSubmitAgent(() => {
-			this._clearAttachedContext();
-		}));
+		this._register(
+			this.widget.onDidSubmitAgent(() => {
+				this._clearAttachedContext();
+			}),
+		);
 	}
 
 	getInputState(): IChatRequestVariableEntry[] {
@@ -40,7 +51,9 @@ export class ChatContextAttachments extends Disposable implements IChatWidgetCon
 	}
 
 	setInputState(s: unknown): void {
-		const attachments = Array.isArray(s) ? s.filter(isChatRequestVariableEntry) : [];
+		const attachments = Array.isArray(s)
+			? s.filter(isChatRequestVariableEntry)
+			: [];
 		this.setContext(true, ...attachments);
 	}
 
@@ -48,7 +61,10 @@ export class ChatContextAttachments extends Disposable implements IChatWidgetCon
 		return new Set(this._attachedContext.keys());
 	}
 
-	setContext(overwrite: boolean, ...attachments: IChatRequestVariableEntry[]) {
+	setContext(
+		overwrite: boolean,
+		...attachments: IChatRequestVariableEntry[]
+	) {
 		if (overwrite) {
 			this._attachedContext.clear();
 		}

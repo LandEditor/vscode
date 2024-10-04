@@ -3,10 +3,16 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { getNLSLanguage, getNLSMessages } from './nls.messages.js';
-export { getNLSLanguage, getNLSMessages } from './nls.messages.js';
+import { getNLSLanguage, getNLSMessages } from "./nls.messages.js";
 
-const isPseudo = getNLSLanguage() === 'pseudo' || (typeof document !== 'undefined' && document.location && typeof document.location.hash === 'string' && document.location.hash.indexOf('pseudo=true') >= 0);
+export { getNLSLanguage, getNLSMessages } from "./nls.messages.js";
+
+const isPseudo =
+	getNLSLanguage() === "pseudo" ||
+	(typeof document !== "undefined" &&
+		document.location &&
+		typeof document.location.hash === "string" &&
+		document.location.hash.indexOf("pseudo=true") >= 0);
 
 export interface ILocalizeInfo {
 	key: string;
@@ -18,7 +24,10 @@ export interface ILocalizedString {
 	value: string;
 }
 
-function _format(message: string, args: (string | number | boolean | undefined | null)[]): string {
+function _format(
+	message: string,
+	args: (string | number | boolean | undefined | null)[],
+): string {
 	let result: string;
 
 	if (args.length === 0) {
@@ -28,9 +37,14 @@ function _format(message: string, args: (string | number | boolean | undefined |
 			const index = rest[0];
 			const arg = args[index];
 			let result = match;
-			if (typeof arg === 'string') {
+			if (typeof arg === "string") {
 				result = arg;
-			} else if (typeof arg === 'number' || typeof arg === 'boolean' || arg === void 0 || arg === null) {
+			} else if (
+				typeof arg === "number" ||
+				typeof arg === "boolean" ||
+				arg === void 0 ||
+				arg === null
+			) {
 				result = String(arg);
 			}
 			return result;
@@ -39,7 +53,7 @@ function _format(message: string, args: (string | number | boolean | undefined |
 
 	if (isPseudo) {
 		// FF3B and FF3D is the Unicode zenkaku representation for [ and ]
-		result = '\uFF3B' + result.replace(/[aouei]/g, '$&$&') + '\uFF3D';
+		result = "\uFF3B" + result.replace(/[aouei]/g, "$&$&") + "\uFF3D";
 	}
 
 	return result;
@@ -57,7 +71,11 @@ function _format(message: string, args: (string | number | boolean | undefined |
  *
  * @returns string The localized string.
  */
-export function localize(info: ILocalizeInfo, message: string, ...args: (string | number | boolean | undefined | null)[]): string;
+export function localize(
+	info: ILocalizeInfo,
+	message: string,
+	...args: (string | number | boolean | undefined | null)[]
+): string;
 
 /**
  * Marks a string to be localized. Returns the localized string.
@@ -71,13 +89,21 @@ export function localize(info: ILocalizeInfo, message: string, ...args: (string 
  *
  * @returns string The localized string.
  */
-export function localize(key: string, message: string, ...args: (string | number | boolean | undefined | null)[]): string;
+export function localize(
+	key: string,
+	message: string,
+	...args: (string | number | boolean | undefined | null)[]
+): string;
 
 /**
  * @skipMangle
  */
-export function localize(data: ILocalizeInfo | string /* | number when built */, message: string /* | null when built */, ...args: (string | number | boolean | undefined | null)[]): string {
-	if (typeof data === 'number') {
+export function localize(
+	data: ILocalizeInfo | string /* | number when built */,
+	message: string /* | null when built */,
+	...args: (string | number | boolean | undefined | null)[]
+): string {
+	if (typeof data === "number") {
 		return _format(lookupMessage(data, message), args);
 	}
 	return _format(message, args);
@@ -90,8 +116,8 @@ export function localize(data: ILocalizeInfo | string /* | number when built */,
  */
 function lookupMessage(index: number, fallback: string | null): string {
 	const message = getNLSMessages()?.[index];
-	if (typeof message !== 'string') {
-		if (typeof fallback === 'string') {
+	if (typeof message !== "string") {
+		if (typeof fallback === "string") {
 			return fallback;
 		}
 		throw new Error(`!!! NLS MISSING: ${index} !!!`);
@@ -112,7 +138,11 @@ function lookupMessage(index: number, fallback: string | null): string {
  *
  * @returns ILocalizedString which contains the localized string and the original string.
  */
-export function localize2(info: ILocalizeInfo, message: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString;
+export function localize2(
+	info: ILocalizeInfo,
+	message: string,
+	...args: (string | number | boolean | undefined | null)[]
+): ILocalizedString;
 
 /**
  * Marks a string to be localized. Returns an {@linkcode ILocalizedString}
@@ -127,14 +157,22 @@ export function localize2(info: ILocalizeInfo, message: string, ...args: (string
  *
  * @returns ILocalizedString which contains the localized string and the original string.
  */
-export function localize2(key: string, message: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString;
+export function localize2(
+	key: string,
+	message: string,
+	...args: (string | number | boolean | undefined | null)[]
+): ILocalizedString;
 
 /**
  * @skipMangle
  */
-export function localize2(data: ILocalizeInfo | string /* | number when built */, originalMessage: string, ...args: (string | number | boolean | undefined | null)[]): ILocalizedString {
+export function localize2(
+	data: ILocalizeInfo | string /* | number when built */,
+	originalMessage: string,
+	...args: (string | number | boolean | undefined | null)[]
+): ILocalizedString {
 	let message: string;
-	if (typeof data === 'number') {
+	if (typeof data === "number") {
 		message = lookupMessage(data, originalMessage);
 	} else {
 		message = originalMessage;
@@ -144,12 +182,14 @@ export function localize2(data: ILocalizeInfo | string /* | number when built */
 
 	return {
 		value,
-		original: originalMessage === message ? value : _format(originalMessage, args)
+		original:
+			originalMessage === message
+				? value
+				: _format(originalMessage, args),
 	};
 }
 
 export interface INLSLanguagePackConfiguration {
-
 	/**
 	 * The path to the translations config file that contains pointers to
 	 * all message bundles for `main` and extensions.
@@ -171,7 +211,6 @@ export interface INLSLanguagePackConfiguration {
 }
 
 export interface INLSConfiguration {
-
 	/**
 	 * Locale as defined in `argv.json` or `app.getLocale()`.
 	 */
@@ -229,7 +268,10 @@ export interface ILanguagePack {
 	readonly hash: string;
 	readonly label: string | undefined;
 	readonly extensions: {
-		readonly extensionIdentifier: { readonly id: string; readonly uuid?: string };
+		readonly extensionIdentifier: {
+			readonly id: string;
+			readonly uuid?: string;
+		};
 		readonly version: string;
 	}[];
 	readonly translations: Record<string, string | undefined>;

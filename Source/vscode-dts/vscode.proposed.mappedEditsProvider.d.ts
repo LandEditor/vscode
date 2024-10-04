@@ -3,8 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-declare module 'vscode' {
-
+declare module "vscode" {
 	export interface DocumentContextItem {
 		readonly uri: Uri;
 		readonly version: number;
@@ -12,12 +11,12 @@ declare module 'vscode' {
 	}
 
 	export interface ConversationRequest {
-		readonly type: 'request';
+		readonly type: "request";
 		readonly message: string;
 	}
 
 	export interface ConversationResponse {
-		readonly type: 'response';
+		readonly type: "response";
 		readonly message: string;
 		readonly result?: ChatResult;
 		readonly references?: DocumentContextItem[];
@@ -49,12 +48,16 @@ declare module 'vscode' {
 			document: TextDocument,
 			codeBlocks: string[],
 			context: MappedEditsContext,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<WorkspaceEdit | null>;
 	}
 
 	export interface MappedEditsRequest {
-		readonly codeBlocks: { code: string; resource: Uri; markdownBeforeBlock?: string }[];
+		readonly codeBlocks: {
+			code: string;
+			resource: Uri;
+			markdownBeforeBlock?: string;
+		}[];
 		readonly conversation: (ConversationRequest | ConversationResponse)[]; // for every prior response that contains codeblocks, make sure we pass the code as well as the resources based on the reported codemapper URIs
 	}
 
@@ -73,13 +76,18 @@ declare module 'vscode' {
 		provideMappedEdits(
 			request: MappedEditsRequest,
 			result: MappedEditsResponseStream,
-			token: CancellationToken
+			token: CancellationToken,
 		): ProviderResult<MappedEditsResult>;
 	}
 
 	namespace chat {
-		export function registerMappedEditsProvider(documentSelector: DocumentSelector, provider: MappedEditsProvider): Disposable;
+		export function registerMappedEditsProvider(
+			documentSelector: DocumentSelector,
+			provider: MappedEditsProvider,
+		): Disposable;
 
-		export function registerMappedEditsProvider2(provider: MappedEditsProvider2): Disposable;
+		export function registerMappedEditsProvider2(
+			provider: MappedEditsProvider2,
+		): Disposable;
 	}
 }

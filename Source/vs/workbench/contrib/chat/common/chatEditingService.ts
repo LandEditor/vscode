@@ -3,16 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Event } from '../../../../base/common/event.js';
-import { IObservable, ITransaction } from '../../../../base/common/observable.js';
-import { URI } from '../../../../base/common/uri.js';
-import { TextEdit } from '../../../../editor/common/languages.js';
-import { localize } from '../../../../nls.js';
-import { RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
-import { createDecorator } from '../../../../platform/instantiation/common/instantiation.js';
-import { IChatResponseModel } from './chatModel.js';
+import { Event } from "../../../../base/common/event.js";
+import {
+	IObservable,
+	ITransaction,
+} from "../../../../base/common/observable.js";
+import { URI } from "../../../../base/common/uri.js";
+import { TextEdit } from "../../../../editor/common/languages.js";
+import { localize } from "../../../../nls.js";
+import { RawContextKey } from "../../../../platform/contextkey/common/contextkey.js";
+import { createDecorator } from "../../../../platform/instantiation/common/instantiation.js";
+import { IChatResponseModel } from "./chatModel.js";
 
-export const IChatEditingService = createDecorator<IChatEditingService>('chatEditingService');
+export const IChatEditingService =
+	createDecorator<IChatEditingService>("chatEditingService");
 
 export interface IChatEditingService {
 	_serviceBrand: undefined;
@@ -21,7 +25,10 @@ export interface IChatEditingService {
 
 	readonly currentEditingSession: IChatEditingSession | null;
 
-	startOrContinueEditingSession(chatSessionId: string, options?: { silent: boolean }): Promise<IChatEditingSession>;
+	startOrContinueEditingSession(
+		chatSessionId: string,
+		options?: { silent: boolean },
+	): Promise<IChatEditingSession>;
 	addFileToWorkingSet(resource: URI): Promise<void>;
 	triggerEditComputation(responseModel: IChatResponseModel): Promise<void>;
 }
@@ -67,12 +74,28 @@ export const enum ChatEditingSessionState {
 	Initial = 0,
 	StreamingEdits = 1,
 	Idle = 2,
-	Disposed = 3
+	Disposed = 3,
 }
 
-export const CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME = 'chat-editing-multi-diff-source';
+export const CHAT_EDITING_MULTI_DIFF_SOURCE_RESOLVER_SCHEME =
+	"chat-editing-multi-diff-source";
 
-export const chatEditingWidgetFileStateContextKey = new RawContextKey<WorkingSetEntryState>('chatEditingWidgetFileState', undefined, localize('chatEditingWidgetFileState', "The current state of the file in the chat editing widget"));
-export const decidedChatEditingResourceContextKey = new RawContextKey<string[]>('decidedChatEditingResource', []);
-export const chatEditingResourceContextKey = new RawContextKey<string | undefined>('chatEditingResource', undefined);
-export const inChatEditingSessionContextKey = new RawContextKey<boolean | undefined>('inChatEditingSession', undefined);
+export const chatEditingWidgetFileStateContextKey =
+	new RawContextKey<WorkingSetEntryState>(
+		"chatEditingWidgetFileState",
+		undefined,
+		localize(
+			"chatEditingWidgetFileState",
+			"The current state of the file in the chat editing widget",
+		),
+	);
+export const decidedChatEditingResourceContextKey = new RawContextKey<string[]>(
+	"decidedChatEditingResource",
+	[],
+);
+export const chatEditingResourceContextKey = new RawContextKey<
+	string | undefined
+>("chatEditingResource", undefined);
+export const inChatEditingSessionContextKey = new RawContextKey<
+	boolean | undefined
+>("inChatEditingSession", undefined);

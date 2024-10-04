@@ -7,7 +7,11 @@
 
 /** @deprecated */
 declare const define: {
-	(moduleName: string, dependencies: string[], callback: (...args: any[]) => any): any;
+	(
+		moduleName: string,
+		dependencies: string[],
+		callback: (...args: any[]) => any,
+	): any;
 	(moduleName: string, dependencies: string[], definition: any): any;
 	(moduleName: string, callback: (...args: any[]) => any): any;
 	(moduleName: string, definition: any): any;
@@ -16,7 +20,11 @@ declare const define: {
 };
 
 interface NodeRequire {
-	(dependencies: string[], callback: (...args: any[]) => any, errorback?: (err: any) => void): any;
+	(
+		dependencies: string[],
+		callback: (...args: any[]) => any,
+		errorback?: (err: any) => void,
+	): any;
 	config(data: any): any;
 }
 
