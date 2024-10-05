@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 use zbus::{dbus_proxy, Connection};
 
@@ -25,7 +26,7 @@ use crate::{
 )]
 trait PMInhibitor {
 	#[dbus_proxy(name = "Inhibit")]
-	fn inhibit(&self, what: &str, why: &str) -> zbus::Result<u32>;
+	fn inhibit(&self, what:&str, why:&str) -> zbus::Result<u32>;
 }
 
 /// A slightly better documented version which seems commonly used.
@@ -37,11 +38,12 @@ trait PMInhibitor {
 )]
 trait ScreenSaver {
 	#[dbus_proxy(name = "Inhibit")]
-	fn inhibit(&self, what: &str, why: &str) -> zbus::Result<u32>;
+	fn inhibit(&self, what:&str, why:&str) -> zbus::Result<u32>;
 }
 
 pub struct SleepInhibitor {
-	_connection: Connection, // Inhibition is released when the connection is closed
+	_connection:Connection, /* Inhibition is released when the connection is
+	                         * closed */
 }
 
 impl SleepInhibitor {
@@ -53,7 +55,9 @@ impl SleepInhibitor {
 		macro_rules! try_inhibit {
 			($proxy:ident) => {
 				match $proxy::new(&connection).await {
-					Ok(proxy) => proxy.inhibit(APPLICATION_NAME, "running tunnel").await,
+					Ok(proxy) => {
+						proxy.inhibit(APPLICATION_NAME, "running tunnel").await
+					},
 					Err(e) => Err(e),
 				}
 			};
@@ -64,7 +68,8 @@ impl SleepInhibitor {
 				return Err(wrap(
 					e2,
 					format!(
-						"error requesting sleep inhibition, pminhibitor gave {}, screensaver gave",
+						"error requesting sleep inhibition, pminhibitor gave \
+						 {}, screensaver gave",
 						e1
 					),
 				)
@@ -72,8 +77,6 @@ impl SleepInhibitor {
 			}
 		}
 
-		Ok(SleepInhibitor {
-			_connection: connection,
-		})
+		Ok(SleepInhibitor { _connection:connection })
 	}
 }

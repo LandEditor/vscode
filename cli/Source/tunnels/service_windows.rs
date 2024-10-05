@@ -1,40 +1,47 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
+
+use std::{os::windows::process::CommandExt, path::PathBuf, process::Stdio};
 
 use async_trait::async_trait;
 use shell_escape::windows::escape as shell_escape;
-use std::os::windows::process::CommandExt;
-use std::{path::PathBuf, process::Stdio};
 use winapi::um::winbase::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
 use winreg::{enums::HKEY_CURRENT_USER, RegKey};
 
-use crate::util::command::new_std_command;
+use super::service::{
+	tail_log_file,
+	ServiceContainer,
+	ServiceManager as CliServiceManager,
+};
 use crate::{
 	constants::TUNNEL_ACTIVITY_NAME,
 	log,
 	state::LauncherPaths,
 	tunnels::{protocol, singleton_client::do_single_rpc_call},
-	util::errors::{wrap, wrapdbg, AnyError},
+	util::{
+		command::new_std_command,
+		errors::{wrap, wrapdbg, AnyError},
+	},
 };
 
-use super::service::{tail_log_file, ServiceContainer, ServiceManager as CliServiceManager};
-
-const DID_LAUNCH_AS_HIDDEN_PROCESS: &str = "VSCODE_CLI_DID_LAUNCH_AS_HIDDEN_PROCESS";
+const DID_LAUNCH_AS_HIDDEN_PROCESS:&str =
+	"VSCODE_CLI_DID_LAUNCH_AS_HIDDEN_PROCESS";
 
 pub struct WindowsService {
-	log: log::Logger,
-	tunnel_lock: PathBuf,
-	log_file: PathBuf,
+	log:log::Logger,
+	tunnel_lock:PathBuf,
+	log_file:PathBuf,
 }
 
 impl WindowsService {
-	pub fn new(log: log::Logger, paths: &LauncherPaths) -> Self {
+	pub fn new(log:log::Logger, paths:&LauncherPaths) -> Self {
 		Self {
 			log,
-			tunnel_lock: paths.tunnel_lockfile(),
-			log_file: paths.service_log_file(),
+			tunnel_lock:paths.tunnel_lockfile(),
+			log_file:paths.service_log_file(),
 		}
 	}
 
@@ -48,14 +55,18 @@ impl WindowsService {
 
 #[async_trait]
 impl CliServiceManager for WindowsService {
-	async fn register(&self, exe: std::path::PathBuf, args: &[&str]) -> Result<(), AnyError> {
+	async fn register(
+		&self,
+		exe:std::path::PathBuf,
+		args:&[&str],
+	) -> Result<(), AnyError> {
 		let key = WindowsService::open_key()?;
 
 		let mut reg_str = String::new();
 		let mut cmd = new_std_command(&exe);
 		reg_str.push_str(shell_escape(exe.to_string_lossy()).as_ref());
 
-		let mut add_arg = |arg: &str| {
+		let mut add_arg = |arg:&str| {
 			reg_str.push(' ');
 			reg_str.push_str(shell_escape((*arg).into()).as_ref());
 			cmd.arg(arg);
@@ -68,8 +79,9 @@ impl CliServiceManager for WindowsService {
 		add_arg("--log-to-file");
 		add_arg(self.log_file.to_string_lossy().as_ref());
 
-		key.set_value(TUNNEL_ACTIVITY_NAME, &reg_str)
-			.map_err(|e| AnyError::from(wrapdbg(e, "error setting registry key")))?;
+		key.set_value(TUNNEL_ACTIVITY_NAME, &reg_str).map_err(|e| {
+			AnyError::from(wrapdbg(e, "error setting registry key"))
+		})?;
 
 		info!(self.log, "Successfully registered service...");
 
@@ -77,8 +89,7 @@ impl CliServiceManager for WindowsService {
 		cmd.stdout(Stdio::null());
 		cmd.stdin(Stdio::null());
 		cmd.creation_flags(CREATE_NEW_PROCESS_GROUP | DETACHED_PROCESS);
-		cmd.spawn()
-			.map_err(|e| wrapdbg(e, "error starting service"))?;
+		cmd.spawn().map_err(|e| wrapdbg(e, "error starting service"))?;
 
 		info!(self.log, "Tunnel service successfully started");
 		Ok(())
@@ -90,8 +101,8 @@ impl CliServiceManager for WindowsService {
 
 	async fn run(
 		self,
-		launcher_paths: LauncherPaths,
-		mut handle: impl 'static + ServiceContainer,
+		launcher_paths:LauncherPaths,
+		mut handle:impl 'static + ServiceContainer,
 	) -> Result<(), AnyError> {
 		if std::env::var(DID_LAUNCH_AS_HIDDEN_PROCESS).is_ok() {
 			return handle.run_service(self.log, launcher_paths).await;
@@ -121,8 +132,8 @@ impl CliServiceManager for WindowsService {
 	async fn unregister(&self) -> Result<(), AnyError> {
 		let key = WindowsService::open_key()?;
 		match key.delete_value(TUNNEL_ACTIVITY_NAME) {
-			Ok(_) => {}
-			Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+			Ok(_) => {},
+			Err(e) if e.kind() == std::io::ErrorKind::NotFound => {},
 			Err(e) => return Err(wrap(e, "error deleting registry key").into()),
 		}
 
@@ -137,7 +148,12 @@ impl CliServiceManager for WindowsService {
 		.await;
 
 		if r.is_err() {
-			warning!(self.log, "The tunnel service has been unregistered, but we couldn't find a running tunnel process. You may need to restart or log out and back in to fully stop the tunnel.");
+			warning!(
+				self.log,
+				"The tunnel service has been unregistered, but we couldn't \
+				 find a running tunnel process. You may need to restart or \
+				 log out and back in to fully stop the tunnel."
+			);
 		} else {
 			info!(self.log, "Successfully shut down running tunnel.");
 		}

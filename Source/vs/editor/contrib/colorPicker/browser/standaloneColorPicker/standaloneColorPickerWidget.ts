@@ -207,9 +207,7 @@ export class StandaloneColorPickerWidget
 		);
 	}
 
-	private async _computeAsync(
-		range: IRange,
-	): Promise<{
+	private async _computeAsync(range: IRange): Promise<{
 		result: StandaloneColorPickerHover;
 		foundInEditor: boolean;
 	} | null> {

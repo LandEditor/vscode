@@ -1,22 +1,20 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-use crate::{
-	constants::get_default_user_agent,
-	log,
-	util::errors::{self, WrappedError},
-};
-use async_trait::async_trait;
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 use core::panic;
+use std::{io, pin::Pin, str::FromStr, sync::Arc, task::Poll};
+
+use async_trait::async_trait;
 use futures::stream::TryStreamExt;
 use hyper::{
 	header::{HeaderName, CONTENT_LENGTH},
 	http::HeaderValue,
-	HeaderMap, StatusCode,
+	HeaderMap,
+	StatusCode,
 };
 use serde::de::DeserializeOwned;
-use std::{io, pin::Pin, str::FromStr, sync::Arc, task::Poll};
 use tokio::{
 	fs,
 	io::{AsyncRead, AsyncReadExt},
@@ -28,15 +26,19 @@ use super::{
 	errors::{wrap, AnyError, StatusError},
 	io::{copy_async_progress, ReadBuffer, ReportCopyProgress},
 };
+use crate::{
+	constants::get_default_user_agent,
+	log,
+	util::errors::{self, WrappedError},
+};
 
 pub async fn download_into_file<T>(
-	filename: &std::path::Path,
-	progress: T,
-	mut res: SimpleResponse,
+	filename:&std::path::Path,
+	progress:T,
+	mut res:SimpleResponse,
 ) -> Result<fs::File, WrappedError>
 where
-	T: ReportCopyProgress,
-{
+	T: ReportCopyProgress, {
 	let mut file = fs::File::create(filename)
 		.await
 		.map_err(|e| errors::wrap(e, "failed to create file"))?;
@@ -56,29 +58,28 @@ where
 }
 
 pub struct SimpleResponse {
-	pub status_code: StatusCode,
-	pub headers: HeaderMap,
-	pub read: Pin<Box<dyn Send + AsyncRead + 'static>>,
-	pub url: Option<url::Url>,
+	pub status_code:StatusCode,
+	pub headers:HeaderMap,
+	pub read:Pin<Box<dyn Send + AsyncRead + 'static>>,
+	pub url:Option<url::Url>,
 }
 
 impl SimpleResponse {
 	pub fn url_path_basename(&self) -> Option<String> {
 		self.url.as_ref().and_then(|u| {
-			u.path_segments()
-				.and_then(|s| s.last().map(|s| s.to_owned()))
+			u.path_segments().and_then(|s| s.last().map(|s| s.to_owned()))
 		})
 	}
 }
 
 impl SimpleResponse {
-	pub fn generic_error(url: &str) -> Self {
+	pub fn generic_error(url:&str) -> Self {
 		let (_, rx) = mpsc::unbounded_channel();
 		SimpleResponse {
-			url: url::Url::parse(url).ok(),
-			status_code: StatusCode::INTERNAL_SERVER_ERROR,
-			headers: HeaderMap::new(),
-			read: Box::pin(DelegatedReader::new(rx)),
+			url:url::Url::parse(url).ok(),
+			status_code:StatusCode::INTERNAL_SERVER_ERROR,
+			headers:HeaderMap::new(),
+			read:Box::pin(DelegatedReader::new(rx)),
 		}
 	}
 
@@ -88,28 +89,30 @@ impl SimpleResponse {
 		self.read.read_to_string(&mut body).await.ok();
 
 		StatusError {
-			url: self
+			url:self
 				.url
 				.map(|u| u.to_string())
 				.unwrap_or_else(|| "<invalid url>".to_owned()),
-			status_code: self.status_code.as_u16(),
+			status_code:self.status_code.as_u16(),
 			body,
 		}
 	}
 
 	/// Deserializes the response body as JSON
-	pub async fn json<T: DeserializeOwned>(&mut self) -> Result<T, AnyError> {
+	pub async fn json<T:DeserializeOwned>(&mut self) -> Result<T, AnyError> {
 		let mut buf = vec![];
 
 		// ideally serde would deserialize a stream, but it does not appear that
-		// is supported. reqwest itself reads and decodes separately like we do here:
+		// is supported. reqwest itself reads and decodes separately like we do
+		// here:
 		self.read
 			.read_to_end(&mut buf)
 			.await
 			.map_err(|e| wrap(e, "error reading response"))?;
 
-		let t = serde_json::from_slice(&buf)
-			.map_err(|e| wrap(e, format!("error decoding json from {:?}", self.url)))?;
+		let t = serde_json::from_slice(&buf).map_err(|e| {
+			wrap(e, format!("error decoding json from {:?}", self.url))
+		})?;
 
 		Ok(t)
 	}
@@ -123,8 +126,8 @@ impl SimpleResponse {
 pub trait SimpleHttp {
 	async fn make_request(
 		&self,
-		method: &'static str,
-		url: String,
+		method:&'static str,
+		url:String,
 	) -> Result<SimpleResponse, AnyError>;
 }
 
@@ -133,36 +136,32 @@ pub type BoxedHttp = Arc<dyn SimpleHttp + Send + Sync + 'static>;
 // Implementation of SimpleHttp that uses a reqwest client.
 #[derive(Clone)]
 pub struct ReqwestSimpleHttp {
-	client: reqwest::Client,
+	client:reqwest::Client,
 }
 
 impl ReqwestSimpleHttp {
 	pub fn new() -> Self {
 		Self {
-			client: reqwest::ClientBuilder::new()
+			client:reqwest::ClientBuilder::new()
 				.user_agent(get_default_user_agent())
 				.build()
 				.unwrap(),
 		}
 	}
 
-	pub fn with_client(client: reqwest::Client) -> Self {
-		Self { client }
-	}
+	pub fn with_client(client:reqwest::Client) -> Self { Self { client } }
 }
 
 impl Default for ReqwestSimpleHttp {
-	fn default() -> Self {
-		Self::new()
-	}
+	fn default() -> Self { Self::new() }
 }
 
 #[async_trait]
 impl SimpleHttp for ReqwestSimpleHttp {
 	async fn make_request(
 		&self,
-		method: &'static str,
-		url: String,
+		method:&'static str,
+		url:String,
 	) -> Result<SimpleResponse, AnyError> {
 		let res = self
 			.client
@@ -171,12 +170,17 @@ impl SimpleHttp for ReqwestSimpleHttp {
 			.await?;
 
 		Ok(SimpleResponse {
-			status_code: res.status(),
-			headers: res.headers().clone(),
-			url: Some(res.url().clone()),
-			read: Box::pin(
+			status_code:res.status(),
+			headers:res.headers().clone(),
+			url:Some(res.url().clone()),
+			read:Box::pin(
 				res.bytes_stream()
-					.map_err(|e| futures::io::Error::new(futures::io::ErrorKind::Other, e))
+					.map_err(|e| {
+						futures::io::Error::new(
+							futures::io::ErrorKind::Other,
+							e,
+						)
+					})
 					.into_async_read()
 					.compat(),
 			),
@@ -185,32 +189,30 @@ impl SimpleHttp for ReqwestSimpleHttp {
 }
 
 enum DelegatedHttpEvent {
-	InitResponse {
-		status_code: u16,
-		headers: Vec<(String, String)>,
-	},
+	InitResponse { status_code:u16, headers:Vec<(String, String)> },
 	Body(Vec<u8>),
 	End,
 }
 
 // Handle for a delegated request that allows manually issuing and response.
 pub struct DelegatedHttpRequest {
-	pub method: &'static str,
-	pub url: String,
-	ch: mpsc::UnboundedSender<DelegatedHttpEvent>,
+	pub method:&'static str,
+	pub url:String,
+	ch:mpsc::UnboundedSender<DelegatedHttpEvent>,
 }
 
 impl DelegatedHttpRequest {
-	pub fn initial_response(&self, status_code: u16, headers: Vec<(String, String)>) {
+	pub fn initial_response(
+		&self,
+		status_code:u16,
+		headers:Vec<(String, String)>,
+	) {
 		self.ch
-			.send(DelegatedHttpEvent::InitResponse {
-				status_code,
-				headers,
-			})
+			.send(DelegatedHttpEvent::InitResponse { status_code, headers })
 			.ok();
 	}
 
-	pub fn body(&self, chunk: Vec<u8>) {
+	pub fn body(&self, chunk:Vec<u8>) {
 		self.ch.send(DelegatedHttpEvent::Body(chunk)).ok();
 	}
 
@@ -218,28 +220,22 @@ impl DelegatedHttpRequest {
 }
 
 impl Drop for DelegatedHttpRequest {
-	fn drop(&mut self) {
-		self.ch.send(DelegatedHttpEvent::End).ok();
-	}
+	fn drop(&mut self) { self.ch.send(DelegatedHttpEvent::End).ok(); }
 }
 
 /// Implementation of SimpleHttp that allows manually controlling responses.
 #[derive(Clone)]
 pub struct DelegatedSimpleHttp {
-	start_request: mpsc::Sender<DelegatedHttpRequest>,
-	log: log::Logger,
+	start_request:mpsc::Sender<DelegatedHttpRequest>,
+	log:log::Logger,
 }
 
 impl DelegatedSimpleHttp {
-	pub fn new(log: log::Logger) -> (Self, mpsc::Receiver<DelegatedHttpRequest>) {
+	pub fn new(
+		log:log::Logger,
+	) -> (Self, mpsc::Receiver<DelegatedHttpRequest>) {
 		let (tx, rx) = mpsc::channel(4);
-		(
-			DelegatedSimpleHttp {
-				log,
-				start_request: tx,
-			},
-			rx,
-		)
+		(DelegatedSimpleHttp { log, start_request:tx }, rx)
 	}
 }
 
@@ -247,18 +243,14 @@ impl DelegatedSimpleHttp {
 impl SimpleHttp for DelegatedSimpleHttp {
 	async fn make_request(
 		&self,
-		method: &'static str,
-		url: String,
+		method:&'static str,
+		url:String,
 	) -> Result<SimpleResponse, AnyError> {
 		trace!(self.log, "making delegated request to {}", url);
 		let (tx, mut rx) = mpsc::unbounded_channel();
 		let sent = self
 			.start_request
-			.send(DelegatedHttpRequest {
-				method,
-				url: url.clone(),
-				ch: tx,
-			})
+			.send(DelegatedHttpRequest { method, url:url.clone(), ch:tx })
 			.await;
 
 		if sent.is_err() {
@@ -266,10 +258,7 @@ impl SimpleHttp for DelegatedSimpleHttp {
 		}
 
 		match rx.recv().await {
-			Some(DelegatedHttpEvent::InitResponse {
-				status_code,
-				headers,
-			}) => {
+			Some(DelegatedHttpEvent::InitResponse { status_code, headers }) => {
 				trace!(
 					self.log,
 					"delegated request to {} resulted in status = {}",
@@ -287,50 +276,59 @@ impl SimpleHttp for DelegatedSimpleHttp {
 				}
 
 				Ok(SimpleResponse {
-					url: url::Url::parse(&url).ok(),
-					status_code: StatusCode::from_u16(status_code)
+					url:url::Url::parse(&url).ok(),
+					status_code:StatusCode::from_u16(status_code)
 						.unwrap_or(StatusCode::INTERNAL_SERVER_ERROR),
-					headers: headers_map,
-					read: Box::pin(DelegatedReader::new(rx)),
+					headers:headers_map,
+					read:Box::pin(DelegatedReader::new(rx)),
 				})
-			}
-			Some(DelegatedHttpEvent::End) => Ok(SimpleResponse::generic_error(&url)),
-			Some(_) => panic!("expected initresponse as first message from delegated http"),
+			},
+			Some(DelegatedHttpEvent::End) => {
+				Ok(SimpleResponse::generic_error(&url))
+			},
+			Some(_) => {
+				panic!(
+					"expected initresponse as first message from delegated \
+					 http"
+				)
+			},
 			None => Ok(SimpleResponse::generic_error(&url)), // sender shut down
 		}
 	}
 }
 
 struct DelegatedReader {
-	receiver: mpsc::UnboundedReceiver<DelegatedHttpEvent>,
-	readbuf: ReadBuffer,
+	receiver:mpsc::UnboundedReceiver<DelegatedHttpEvent>,
+	readbuf:ReadBuffer,
 }
 
 impl DelegatedReader {
-	pub fn new(rx: mpsc::UnboundedReceiver<DelegatedHttpEvent>) -> Self {
-		DelegatedReader {
-			readbuf: ReadBuffer::default(),
-			receiver: rx,
-		}
+	pub fn new(rx:mpsc::UnboundedReceiver<DelegatedHttpEvent>) -> Self {
+		DelegatedReader { readbuf:ReadBuffer::default(), receiver:rx }
 	}
 }
 
 impl AsyncRead for DelegatedReader {
 	fn poll_read(
 		mut self: Pin<&mut Self>,
-		cx: &mut std::task::Context<'_>,
-		buf: &mut tokio::io::ReadBuf<'_>,
+		cx:&mut std::task::Context<'_>,
+		buf:&mut tokio::io::ReadBuf<'_>,
 	) -> std::task::Poll<std::io::Result<()>> {
 		if let Some((v, s)) = self.readbuf.take_data() {
 			return self.readbuf.put_data(buf, v, s);
 		}
 
 		match self.receiver.poll_recv(cx) {
-			Poll::Ready(Some(DelegatedHttpEvent::Body(msg))) => self.readbuf.put_data(buf, msg, 0),
+			Poll::Ready(Some(DelegatedHttpEvent::Body(msg))) => {
+				self.readbuf.put_data(buf, msg, 0)
+			},
 			Poll::Ready(Some(_)) => Poll::Ready(Ok(())), // EOF
 			Poll::Ready(None) => {
-				Poll::Ready(Err(io::Error::new(io::ErrorKind::UnexpectedEof, "EOF")))
-			}
+				Poll::Ready(Err(io::Error::new(
+					io::ErrorKind::UnexpectedEof,
+					"EOF",
+				)))
+			},
 			Poll::Pending => Poll::Pending,
 		}
 	}
@@ -339,30 +337,29 @@ impl AsyncRead for DelegatedReader {
 /// Simple http implementation that falls back to delegated http if
 /// making a direct reqwest fails.
 pub struct FallbackSimpleHttp {
-	native: ReqwestSimpleHttp,
-	delegated: DelegatedSimpleHttp,
+	native:ReqwestSimpleHttp,
+	delegated:DelegatedSimpleHttp,
 }
 
 impl FallbackSimpleHttp {
-	pub fn new(native: ReqwestSimpleHttp, delegated: DelegatedSimpleHttp) -> Self {
+	pub fn new(
+		native:ReqwestSimpleHttp,
+		delegated:DelegatedSimpleHttp,
+	) -> Self {
 		FallbackSimpleHttp { native, delegated }
 	}
 
-	pub fn native(&self) -> ReqwestSimpleHttp {
-		self.native.clone()
-	}
+	pub fn native(&self) -> ReqwestSimpleHttp { self.native.clone() }
 
-	pub fn delegated(&self) -> DelegatedSimpleHttp {
-		self.delegated.clone()
-	}
+	pub fn delegated(&self) -> DelegatedSimpleHttp { self.delegated.clone() }
 }
 
 #[async_trait]
 impl SimpleHttp for FallbackSimpleHttp {
 	async fn make_request(
 		&self,
-		method: &'static str,
-		url: String,
+		method:&'static str,
+		url:String,
 	) -> Result<SimpleResponse, AnyError> {
 		let r1 = self.native.make_request(method, url.clone()).await;
 		if let Ok(res) = r1 {

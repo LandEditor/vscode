@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 pub mod code_server;
 pub mod dev_tunnels;
@@ -35,8 +36,17 @@ mod service_windows;
 mod socket_signal;
 mod wsl_detect;
 
-pub use control_server::{serve, serve_stream, AuthRequired, Next, ServeStreamParams};
+pub use control_server::{
+	serve,
+	serve_stream,
+	AuthRequired,
+	Next,
+	ServeStreamParams,
+};
 pub use nosleep::SleepInhibitor;
 pub use service::{
-	create_service_manager, ServiceContainer, ServiceManager, SERVICE_LOG_FILE_NAME,
+	create_service_manager,
+	ServiceContainer,
+	ServiceManager,
+	SERVICE_LOG_FILE_NAME,
 };

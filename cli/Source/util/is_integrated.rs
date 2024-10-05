@@ -1,7 +1,8 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
 use std::{env, io};
 
@@ -11,7 +12,11 @@ pub fn is_integrated_cli() -> io::Result<bool> {
 	let exe = env::current_exe()?;
 
 	let parent = match exe.parent() {
-		Some(parent) if parent.file_name().and_then(|n| n.to_str()) == Some("bin") => parent,
+		Some(parent)
+			if parent.file_name().and_then(|n| n.to_str()) == Some("bin") =>
+		{
+			parent
+		},
 		_ => return Ok(false),
 	};
 

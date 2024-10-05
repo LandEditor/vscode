@@ -1,57 +1,60 @@
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
+// ---------------------------------------------------------------------------------------------
+//  Copyright (c) Microsoft Corporation. All rights reserved.
+//  Licensed under the MIT License. See License.txt in the project root for
+// license information.
+// --------------------------------------------------------------------------------------------
 
-use std::fmt::Display;
-
-use std::io::{BufWriter, Write};
+use std::{
+	fmt::Display,
+	io::{BufWriter, Write},
+};
 
 use super::args::OutputFormat;
 
 pub struct Column {
-	max_width: usize,
-	heading: &'static str,
-	data: Vec<String>,
+	max_width:usize,
+	heading:&'static str,
+	data:Vec<String>,
 }
 
 impl Column {
-	pub fn new(heading: &'static str) -> Self {
-		Column {
-			max_width: heading.len(),
-			heading,
-			data: vec![],
-		}
+	pub fn new(heading:&'static str) -> Self {
+		Column { max_width:heading.len(), heading, data:vec![] }
 	}
 
-	pub fn add_row(&mut self, row: String) {
+	pub fn add_row(&mut self, row:String) {
 		self.max_width = std::cmp::max(self.max_width, row.len());
 		self.data.push(row);
 	}
 }
 
 impl OutputFormat {
-	pub fn print_table(&self, table: OutputTable) -> Result<(), std::io::Error> {
+	pub fn print_table(&self, table:OutputTable) -> Result<(), std::io::Error> {
 		match *self {
-			OutputFormat::Json => JsonTablePrinter().print(table, &mut std::io::stdout()),
-			OutputFormat::Text => TextTablePrinter().print(table, &mut std::io::stdout()),
+			OutputFormat::Json => {
+				JsonTablePrinter().print(table, &mut std::io::stdout())
+			},
+			OutputFormat::Text => {
+				TextTablePrinter().print(table, &mut std::io::stdout())
+			},
 		}
 	}
 }
 
 pub struct OutputTable {
-	cols: Vec<Column>,
+	cols:Vec<Column>,
 }
 
 impl OutputTable {
-	pub fn new(cols: Vec<Column>) -> Self {
-		OutputTable { cols }
-	}
+	pub fn new(cols:Vec<Column>) -> Self { OutputTable { cols } }
 }
 
 trait TablePrinter {
-	fn print(&self, table: OutputTable, out: &mut dyn std::io::Write)
-		-> Result<(), std::io::Error>;
+	fn print(
+		&self,
+		table:OutputTable,
+		out:&mut dyn std::io::Write,
+	) -> Result<(), std::io::Error>;
 }
 
 pub struct JsonTablePrinter();
@@ -59,8 +62,8 @@ pub struct JsonTablePrinter();
 impl TablePrinter for JsonTablePrinter {
 	fn print(
 		&self,
-		table: OutputTable,
-		out: &mut dyn std::io::Write,
+		table:OutputTable,
+		out:&mut dyn std::io::Write,
 	) -> Result<(), std::io::Error> {
 		let mut bw = BufWriter::new(out);
 		bw.write_all(b"[")?;
@@ -92,8 +95,8 @@ pub struct TextTablePrinter();
 impl TablePrinter for TextTablePrinter {
 	fn print(
 		&self,
-		table: OutputTable,
-		out: &mut dyn std::io::Write,
+		table:OutputTable,
+		out:&mut dyn std::io::Write,
 	) -> Result<(), std::io::Error> {
 		let mut bw = BufWriter::new(out);
 
@@ -111,7 +114,11 @@ impl TablePrinter for TextTablePrinter {
 		if !table.cols.is_empty() {
 			let data_len = table.cols[0].data.len();
 			for i in 0..data_len {
-				write_columns(&mut bw, table.cols.iter().map(|c| &c.data[i]), &sizes)?;
+				write_columns(
+					&mut bw,
+					table.cols.iter().map(|c| &c.data[i]),
+					&sizes,
+				)?;
 			}
 		}
 
@@ -120,13 +127,12 @@ impl TablePrinter for TextTablePrinter {
 }
 
 fn write_columns<T>(
-	mut w: impl Write,
-	cols: impl Iterator<Item = T>,
-	sizes: &[usize],
+	mut w:impl Write,
+	cols:impl Iterator<Item = T>,
+	sizes:&[usize],
 ) -> Result<(), std::io::Error>
 where
-	T: Display,
-{
+	T: Display, {
 	w.write_all(b"|")?;
 	for (i, col) in cols.enumerate() {
 		write!(w, " {:width$} |", col, width = sizes[i])?;

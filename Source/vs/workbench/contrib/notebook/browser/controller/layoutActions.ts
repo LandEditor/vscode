@@ -124,12 +124,10 @@ registerAction2(
 			});
 		}
 		run(accessor: ServicesAccessor): void {
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@tag:notebookLayout",
-				});
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@tag:notebookLayout",
+			});
 		}
 	},
 );
@@ -156,12 +154,10 @@ registerAction2(
 			});
 		}
 		run(accessor: ServicesAccessor): void {
-			accessor
-				.get(IPreferencesService)
-				.openSettings({
-					jsonEditor: false,
-					query: "@tag:notebookLayout",
-				});
+			accessor.get(IPreferencesService).openSettings({
+				jsonEditor: false,
+				query: "@tag:notebookLayout",
+			});
 		}
 	},
 );
