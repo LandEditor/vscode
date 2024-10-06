@@ -6,7 +6,8 @@
 // version: 7
 // https://github.com/microsoft/vscode/issues/213274
 
-declare module "vscode" {
+declare module 'vscode' {
+
 	// TODO@API capabilities
 
 	// API -> LM: an tool/function that is available to the language model
@@ -45,11 +46,9 @@ declare module "vscode" {
 	}
 
 	export interface LanguageModelChatResponse {
-		stream: AsyncIterable<
-			| LanguageModelChatResponseTextPart
-			| LanguageModelChatResponseToolCallPart
-		>;
+		stream: AsyncIterable<LanguageModelChatResponseTextPart | LanguageModelChatResponseToolCallPart>;
 	}
+
 
 	// USER -> LM: the result of a function call
 	export class LanguageModelChatMessageToolResultPart {
@@ -69,11 +68,7 @@ declare module "vscode" {
 		 * LanguageModelChatMessageToolResultPart: only on User messages
 		 * LanguageModelChatResponseToolCallPart: only on Assistant messages
 		 */
-		content2: (
-			| string
-			| LanguageModelChatMessageToolResultPart
-			| LanguageModelChatResponseToolCallPart
-		)[];
+		content2: (string | LanguageModelChatMessageToolResultPart | LanguageModelChatResponseToolCallPart)[];
 	}
 
 	// Tool registration/invoking between extensions
@@ -93,7 +88,7 @@ declare module "vscode" {
 		/**
 		 * A string representation of the result.
 		 */
-		"text/plain"?: string;
+		'text/plain'?: string;
 	}
 
 	export namespace lm {
@@ -101,10 +96,7 @@ declare module "vscode" {
 		 * Register a LanguageModelTool. The tool must also be registered in the package.json `languageModelTools` contribution
 		 * point. A registered tool is available in the {@link lm.tools} list for any extension to invoke.
 		 */
-		export function registerTool<T>(
-			id: string,
-			tool: LanguageModelTool<T>,
-		): Disposable;
+		export function registerTool<T>(id: string, tool: LanguageModelTool<T>): Disposable;
 
 		/**
 		 * A list of all available tools.
@@ -114,11 +106,7 @@ declare module "vscode" {
 		/**
 		 * Invoke a tool with the given parameters.
 		 */
-		export function invokeTool<T>(
-			id: string,
-			options: LanguageModelToolInvocationOptions<T>,
-			token: CancellationToken,
-		): Thenable<LanguageModelToolResult>;
+		export function invokeTool<T>(id: string, options: LanguageModelToolInvocationOptions<T>, token: CancellationToken): Thenable<LanguageModelToolResult>;
 	}
 
 	/**
@@ -165,10 +153,7 @@ declare module "vscode" {
 			 * @param token Optional cancellation token.  See {@link CancellationTokenSource} for how to create one.
 			 * @returns A thenable that resolves to the number of tokens.
 			 */
-			countTokens(
-				text: string,
-				token?: CancellationToken,
-			): Thenable<number>;
+			countTokens(text: string, token?: CancellationToken): Thenable<number>;
 		};
 	}
 
@@ -257,19 +242,13 @@ declare module "vscode" {
 		/**
 		 * Invoke the tool with the given parameters and return a result.
 		 */
-		invoke(
-			options: LanguageModelToolInvocationOptions<T>,
-			token: CancellationToken,
-		): ProviderResult<LanguageModelToolResult>;
+		invoke(options: LanguageModelToolInvocationOptions<T>, token: CancellationToken): ProviderResult<LanguageModelToolResult>;
 
 		/**
 		 * Called once before a tool is invoked. May be implemented to customize the progress message that appears while the tool
 		 * is running, and the messages that appear when the tool needs confirmation.
 		 */
-		prepareToolInvocation?(
-			options: LanguageModelToolInvocationPrepareOptions<T>,
-			token: CancellationToken,
-		): ProviderResult<PreparedToolInvocation>;
+		prepareToolInvocation?(options: LanguageModelToolInvocationPrepareOptions<T>, token: CancellationToken): ProviderResult<PreparedToolInvocation>;
 	}
 
 	/**

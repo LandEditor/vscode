@@ -1,33 +1,26 @@
-// ---------------------------------------------------------------------------------------------
-//  Copyright (c) Microsoft Corporation. All rights reserved.
-//  Licensed under the MIT License. See License.txt in the project root for
-// license information.
-// --------------------------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
 
 use std::collections::HashMap;
 
 use cli::commands::args::{
-	CliCore,
-	Commands,
-	DesktopCodeOptions,
-	ExtensionArgs,
-	ExtensionSubcommand,
-	InstallExtensionArgs,
-	ListExtensionArgs,
-	UninstallExtensionArgs,
+	CliCore, Commands, DesktopCodeOptions, ExtensionArgs, ExtensionSubcommand,
+	InstallExtensionArgs, ListExtensionArgs, UninstallExtensionArgs,
 };
 
 /// Tries to parse the argv using the legacy CLI interface, looking for its
 /// flags and generating a CLI with subcommands if those don't exist.
 pub fn try_parse_legacy(
-	iter:impl IntoIterator<Item = impl Into<std::ffi::OsString>>,
+	iter: impl IntoIterator<Item = impl Into<std::ffi::OsString>>,
 ) -> Option<CliCore> {
 	let raw = clap_lex::RawArgs::new(iter);
 	let mut cursor = raw.cursor();
 	raw.next(&mut cursor); // Skip the bin
 
 	// First make a hashmap of all flags and capture positional arguments.
-	let mut args:HashMap<String, Vec<String>> = HashMap::new();
+	let mut args: HashMap<String, Vec<String>> = HashMap::new();
 	let mut last_arg = None;
 	while let Some(arg) = raw.next(&mut cursor) {
 		if let Some((long, value)) = arg.to_long() {
@@ -38,14 +31,14 @@ pub fn try_parse_legacy(
 						if let Some(v) = value {
 							prev.push(v.to_string_lossy().to_string());
 						}
-					},
+					}
 					None => {
 						if let Some(v) = value {
 							args.insert(long.to_string(), vec![v.to_string_lossy().to_string()]);
 						} else {
 							args.insert(long.to_string(), vec![]);
 						}
-					},
+					}
 				}
 			}
 		} else if let Ok(value) = arg.to_value() {
@@ -61,11 +54,11 @@ pub fn try_parse_legacy(
 	}
 
 	let get_first_arg_value =
-		|key:&str| args.get(key).and_then(|v| v.first()).map(|s| s.to_string());
+		|key: &str| args.get(key).and_then(|v| v.first()).map(|s| s.to_string());
 	let desktop_code_options = DesktopCodeOptions {
-		extensions_dir:get_first_arg_value("extensions-dir"),
-		user_data_dir:get_first_arg_value("user-data-dir"),
-		use_version:None,
+		extensions_dir: get_first_arg_value("extensions-dir"),
+		user_data_dir: get_first_arg_value("user-data-dir"),
+		use_version: None,
 	};
 
 	// Now translate them to subcommands.
@@ -77,10 +70,10 @@ pub fn try_parse_legacy(
 
 	if args.contains_key("list-extensions") {
 		Some(CliCore {
-			subcommand:Some(Commands::Extension(ExtensionArgs {
-				subcommand:ExtensionSubcommand::List(ListExtensionArgs {
-					category:get_first_arg_value("category"),
-					show_versions:args.contains_key("show-versions"),
+			subcommand: Some(Commands::Extension(ExtensionArgs {
+				subcommand: ExtensionSubcommand::List(ListExtensionArgs {
+					category: get_first_arg_value("category"),
+					show_versions: args.contains_key("show-versions"),
 				}),
 				desktop_code_options,
 			})),
@@ -88,11 +81,11 @@ pub fn try_parse_legacy(
 		})
 	} else if let Some(exts) = args.remove("install-extension") {
 		Some(CliCore {
-			subcommand:Some(Commands::Extension(ExtensionArgs {
-				subcommand:ExtensionSubcommand::Install(InstallExtensionArgs {
-					id_or_path:exts,
-					pre_release:args.contains_key("pre-release"),
-					force:args.contains_key("force"),
+			subcommand: Some(Commands::Extension(ExtensionArgs {
+				subcommand: ExtensionSubcommand::Install(InstallExtensionArgs {
+					id_or_path: exts,
+					pre_release: args.contains_key("pre-release"),
+					force: args.contains_key("force"),
 				}),
 				desktop_code_options,
 			})),
@@ -100,22 +93,25 @@ pub fn try_parse_legacy(
 		})
 	} else if let Some(_exts) = args.remove("update-extensions") {
 		Some(CliCore {
-			subcommand:Some(Commands::Extension(ExtensionArgs {
-				subcommand:ExtensionSubcommand::Update,
+			subcommand: Some(Commands::Extension(ExtensionArgs {
+				subcommand: ExtensionSubcommand::Update,
 				desktop_code_options,
 			})),
 			..Default::default()
 		})
 	} else if let Some(exts) = args.remove("uninstall-extension") {
 		Some(CliCore {
-			subcommand:Some(Commands::Extension(ExtensionArgs {
-				subcommand:ExtensionSubcommand::Uninstall(UninstallExtensionArgs { id:exts }),
+			subcommand: Some(Commands::Extension(ExtensionArgs {
+				subcommand: ExtensionSubcommand::Uninstall(UninstallExtensionArgs { id: exts }),
 				desktop_code_options,
 			})),
 			..Default::default()
 		})
 	} else if args.contains_key("status") {
-		Some(CliCore { subcommand:Some(Commands::Status), ..Default::default() })
+		Some(CliCore {
+			subcommand: Some(Commands::Status),
+			..Default::default()
+		})
 	} else {
 		None
 	}
@@ -127,7 +123,13 @@ mod tests {
 
 	#[test]
 	fn test_parses_list_extensions() {
-		let args = vec!["code", "--list-extensions", "--category", "themes", "--show-versions"];
+		let args = vec![
+			"code",
+			"--list-extensions",
+			"--category",
+			"themes",
+			"--show-versions",
+		];
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
@@ -135,7 +137,10 @@ mod tests {
 				assert_eq!(list_args.category, Some("themes".to_string()));
 				assert!(list_args.show_versions);
 			} else {
-				panic!("Expected list subcommand, got {:?}", extension_args.subcommand);
+				panic!(
+					"Expected list subcommand, got {:?}",
+					extension_args.subcommand
+				);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
@@ -163,7 +168,10 @@ mod tests {
 				assert!(install_args.pre_release);
 				assert!(install_args.force);
 			} else {
-				panic!("Expected install subcommand, got {:?}", extension_args.subcommand);
+				panic!(
+					"Expected install subcommand, got {:?}",
+					extension_args.subcommand
+				);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
@@ -179,7 +187,10 @@ mod tests {
 			if let ExtensionSubcommand::Uninstall(uninstall_args) = extension_args.subcommand {
 				assert_eq!(uninstall_args.id, vec!["connor4312.codesong"]);
 			} else {
-				panic!("Expected uninstall subcommand, got {:?}", extension_args.subcommand);
+				panic!(
+					"Expected uninstall subcommand, got {:?}",
+					extension_args.subcommand
+				);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
@@ -200,12 +211,21 @@ mod tests {
 		let cli = try_parse_legacy(args).unwrap();
 
 		if let Some(Commands::Extension(extension_args)) = cli.subcommand {
-			assert_eq!(extension_args.desktop_code_options.user_data_dir, Some("foo".to_string()));
-			assert_eq!(extension_args.desktop_code_options.extensions_dir, Some("bar".to_string()));
+			assert_eq!(
+				extension_args.desktop_code_options.user_data_dir,
+				Some("foo".to_string())
+			);
+			assert_eq!(
+				extension_args.desktop_code_options.extensions_dir,
+				Some("bar".to_string())
+			);
 			if let ExtensionSubcommand::Uninstall(uninstall_args) = extension_args.subcommand {
 				assert_eq!(uninstall_args.id, vec!["connor4312.codesong"]);
 			} else {
-				panic!("Expected uninstall subcommand, got {:?}", extension_args.subcommand);
+				panic!(
+					"Expected uninstall subcommand, got {:?}",
+					extension_args.subcommand
+				);
 			}
 		} else {
 			panic!("Expected extension subcommand, got {:?}", cli.subcommand);
