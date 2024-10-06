@@ -30,25 +30,14 @@ use tokio::{
 
 use super::{args::ServeWebArgs, CommandContext};
 use crate::{
-	async_pipe::{
-		get_socket_name,
-		get_socket_rw_stream,
-		listen_socket_rw_stream,
-		AsyncPipe,
-	},
+	async_pipe::{get_socket_name, get_socket_rw_stream, listen_socket_rw_stream, AsyncPipe},
 	constants::VSCODE_CLI_QUALITY,
 	download_cache::DownloadCache,
 	log,
 	options::Quality,
 	state::{LauncherPaths, PersistedState},
 	tunnels::{legal, shutdown_signal::ShutdownRequest},
-	update_service::{
-		unzip_downloaded_release,
-		Platform,
-		Release,
-		TargetKind,
-		UpdateService,
-	},
+	update_service::{unzip_downloaded_release, Platform, Release, TargetKind, UpdateService},
 	util::{
 		command::new_script_command,
 		errors::{AnyError, CodeError},
@@ -84,14 +73,10 @@ const SECRET_KEY_COOKIE_NAME:&str = "vscode-cli-secret-half";
 /// page. The VS Code server prefixes all assets and connections it loads with
 /// its version string, so existing clients can continue to get served even
 /// while new clients get new VS Code Server versions.
-pub async fn serve_web(
-	ctx:CommandContext,
-	mut args:ServeWebArgs,
-) -> Result<i32, AnyError> {
+pub async fn serve_web(ctx:CommandContext, mut args:ServeWebArgs) -> Result<i32, AnyError> {
 	legal::require_consent(&ctx.paths, args.accept_server_license_terms)?;
 
-	let platform:crate::update_service::Platform =
-		PreReqChecker::new().verify().await?;
+	let platform:crate::update_service::Platform = PreReqChecker::new().verify().await?;
 	if !args.without_connection_token {
 		if let Some(p) = args.connection_token_file.as_deref() {
 			let token = fs::read_to_string(PathBuf::from(p))
@@ -102,29 +87,21 @@ pub async fn serve_web(
 			// server versions are executed, they will need to have a single
 			// shared token.
 			let token_path = ctx.paths.root().join("serve-web-token");
-			let token = mint_connection_token(
-				&token_path,
-				args.connection_token.clone(),
-			)
-			.map_err(CodeError::CouldNotCreateConnectionTokenFile)?;
+			let token = mint_connection_token(&token_path, args.connection_token.clone())
+				.map_err(CodeError::CouldNotCreateConnectionTokenFile)?;
 			args.connection_token = Some(token);
-			args.connection_token_file =
-				Some(token_path.to_string_lossy().to_string());
+			args.connection_token_file = Some(token_path.to_string_lossy().to_string());
 		}
 	}
 
-	let cm:Arc<ConnectionManager> =
-		ConnectionManager::new(&ctx, platform, args.clone());
+	let cm:Arc<ConnectionManager> = ConnectionManager::new(&ctx, platform, args.clone());
 	let update_check_interval = 3600;
 	cm.clone().start_update_checker(Duration::from_secs(update_check_interval));
 
 	let key = get_server_key_half(&ctx.paths);
 	let make_svc = move || {
-		let ctx = HandleContext {
-			cm:cm.clone(),
-			log:cm.log.clone(),
-			server_secret_key:key.clone(),
-		};
+		let ctx =
+			HandleContext { cm:cm.clone(), log:cm.log.clone(), server_secret_key:key.clone() };
 		let service = service_fn(move |req| handle(ctx.clone(), req));
 		async move { Ok::<_, Infallible>(service) }
 	};
@@ -145,15 +122,11 @@ pub async fn serve_web(
 	} else {
 		let addr:SocketAddr = match &args.host {
 			Some(h) => {
-				SocketAddr::new(
-					h.parse().map_err(CodeError::InvalidHostAddress)?,
-					args.port,
-				)
+				SocketAddr::new(h.parse().map_err(CodeError::InvalidHostAddress)?, args.port)
 			},
 			None => SocketAddr::new(IpAddr::V4(Ipv4Addr::LOCALHOST), args.port),
 		};
-		let builder = Server::try_bind(&addr)
-			.map_err(CodeError::CouldNotListenOnInterface)?;
+		let builder = Server::try_bind(&addr).map_err(CodeError::CouldNotListenOnInterface)?;
 
 		let mut listening = format!("Web UI available at http://{}", addr);
 		if let Some(base) = args.server_base_path {
@@ -188,16 +161,12 @@ struct HandleContext {
 }
 
 /// Handler function for an inbound request
-async fn handle(
-	ctx:HandleContext,
-	req:Request<Body>,
-) -> Result<Response<Body>, Infallible> {
+async fn handle(ctx:HandleContext, req:Request<Body>) -> Result<Response<Body>, Infallible> {
 	let client_key_half = get_client_key_half(&req);
 	let path = req.uri().path();
 
 	let mut res = if path.starts_with(&ctx.cm.base_path)
-		&& path.get(ctx.cm.base_path.len()..).unwrap_or_default()
-			== SECRET_KEY_MINT_PATH
+		&& path.get(ctx.cm.base_path.len()..).unwrap_or_default() == SECRET_KEY_MINT_PATH
 	{
 		handle_secret_mint(&ctx, req)
 	} else {
@@ -209,13 +178,8 @@ async fn handle(
 	Ok(res)
 }
 
-async fn handle_proxied(
-	ctx:&HandleContext,
-	req:Request<Body>,
-) -> Response<Body> {
-	let release = if let Some((r, _)) =
-		get_release_from_path(req.uri().path(), ctx.cm.platform)
-	{
+async fn handle_proxied(ctx:&HandleContext, req:Request<Body>) -> Response<Body> {
+	let release = if let Some((r, _)) = get_release_from_path(req.uri().path(), ctx.cm.platform) {
 		r
 	} else {
 		match ctx.cm.get_release_from_cache().await {
@@ -255,11 +219,7 @@ fn handle_secret_mint(ctx:&HandleContext, req:Request<Body>) -> Response<Body> {
 /// sets the `PATH_COOKIE_VALUE` so workbench.ts knows about the 'mint'
 /// endpoint, and maintains the http-only cookie the client will use for
 /// cookies.
-fn append_secret_headers(
-	base_path:&str,
-	res:&mut Response<Body>,
-	client_key_half:&SecretKeyPart,
-) {
+fn append_secret_headers(base_path:&str, res:&mut Response<Body>, client_key_half:&SecretKeyPart) {
 	let headers = res.headers_mut();
 	headers.append(
 		hyper::header::SET_COOKIE,
@@ -284,10 +244,7 @@ fn append_secret_headers(
 
 /// Gets the release info from the VS Code path prefix, which is in the
 /// format `/<quality>-<commit>/...`
-fn get_release_from_path(
-	path:&str,
-	platform:Platform,
-) -> Option<(Release, String)> {
+fn get_release_from_path(path:&str, platform:Platform) -> Option<(Release, String)> {
 	if !path.starts_with('/') {
 		return None; // paths must start with '/'
 	}
@@ -331,10 +288,7 @@ async fn forward_http_req_to_server(
 
 	tokio::spawn(connection);
 
-	let res = request_sender
-		.send_request(req)
-		.await
-		.unwrap_or_else(response::connection_err);
+	let res = request_sender.send_request(req).await.unwrap_or_else(response::connection_err);
 
 	// technically, we should buffer the body into memory since it may not be
 	// read at this point, but because the keepalive time is very large
@@ -380,19 +334,12 @@ async fn forward_ws_req_to_server(
 	// socket
 	if res.status() == hyper::StatusCode::SWITCHING_PROTOCOLS {
 		tokio::spawn(async move {
-			let (s_req, s_res) = tokio::join!(
-				hyper::upgrade::on(&mut req),
-				hyper::upgrade::on(&mut res)
-			);
+			let (s_req, s_res) =
+				tokio::join!(hyper::upgrade::on(&mut req), hyper::upgrade::on(&mut res));
 
 			match (s_req, s_res) {
 				(Err(e1), Err(e2)) => {
-					debug!(
-						log,
-						"client ({}) and server ({}) websocket upgrade failed",
-						e1,
-						e2
-					)
+					debug!(log, "client ({}) and server ({}) websocket upgrade failed", e1, e2)
 				},
 				(Err(e1), _) => {
 					debug!(log, "client ({}) websocket upgrade failed", e1)
@@ -402,9 +349,7 @@ async fn forward_ws_req_to_server(
 				},
 				(Ok(mut s_req), Ok(mut s_res)) => {
 					trace!(log, "websocket upgrade succeeded");
-					let r =
-						tokio::io::copy_bidirectional(&mut s_req, &mut s_res)
-							.await;
+					let r = tokio::io::copy_bidirectional(&mut s_req, &mut s_res).await;
 					trace!(log, "websocket closed (error: {:?})", r.err());
 				},
 			}
@@ -598,14 +543,8 @@ fn normalize_base_path(p:&str) -> String {
 }
 
 impl ConnectionManager {
-	pub fn new(
-		ctx:&CommandContext,
-		platform:Platform,
-		args:ServeWebArgs,
-	) -> Arc<Self> {
-		let base_path = normalize_base_path(
-			args.server_base_path.as_deref().unwrap_or_default(),
-		);
+	pub fn new(ctx:&CommandContext, platform:Platform, args:ServeWebArgs) -> Arc<Self> {
+		let base_path = normalize_base_path(args.server_base_path.as_deref().unwrap_or_default());
 
 		let cache = DownloadCache::new(ctx.paths.web_server_storage());
 		let target_kind = TargetKind::Web;
@@ -617,21 +556,19 @@ impl ConnectionManager {
 			}
 		});
 
-		let latest_version =
-			tokio::sync::Mutex::new(cache.get().first().map(|latest_commit| {
-				(
-					Instant::now()
-						- Duration::from_secs(RELEASE_CHECK_INTERVAL),
-					Release {
-						name:String::from("0.0.0"), /* Version information
-						                             * not stored on cache */
-						commit:latest_commit.clone(),
-						platform,
-						target:target_kind,
-						quality,
-					},
-				)
-			}));
+		let latest_version = tokio::sync::Mutex::new(cache.get().first().map(|latest_commit| {
+			(
+				Instant::now() - Duration::from_secs(RELEASE_CHECK_INTERVAL),
+				Release {
+					name:String::from("0.0.0"), /* Version information
+					                             * not stored on cache */
+					commit:latest_commit.clone(),
+					platform,
+					target:target_kind,
+					quality,
+				},
+			)
+		}));
 
 		Arc::new(Self {
 			platform,
@@ -694,13 +631,9 @@ impl ConnectionManager {
 		let target_kind = TargetKind::Web;
 
 		let quality = VSCODE_CLI_QUALITY
-			.ok_or_else(|| {
-				CodeError::UpdatesNotConfigured("no configured quality")
-			})
+			.ok_or_else(|| CodeError::UpdatesNotConfigured("no configured quality"))
 			.and_then(|q| {
-				Quality::try_from(q).map_err(|_| {
-					CodeError::UpdatesNotConfigured("unknown quality")
-				})
+				Quality::try_from(q).map_err(|_| CodeError::UpdatesNotConfigured("unknown quality"))
 			})?;
 
 		let release = self
@@ -711,11 +644,7 @@ impl ConnectionManager {
 
 		// If the update service is unavailable and we have stale data, use that
 		if let (Err(e), Some((_, previous))) = (&release, latest.clone()) {
-			warning!(
-				self.log,
-				"error getting latest release, using stale: {}",
-				e
-			);
+			warning!(self.log, "error getting latest release, using stale: {}", e);
 			*latest = Some((now, previous.clone()));
 			return Ok(previous.clone());
 		}
@@ -731,10 +660,7 @@ impl ConnectionManager {
 	/// download/start if necessary. It returns
 	/// `CodeError::ServerNotYetDownloaded` while the server is downloading,
 	/// which is used to have a refresh loop on the page.
-	async fn get_version_data(
-		&self,
-		release:Release,
-	) -> Result<StartData, CodeError> {
+	async fn get_version_data(&self, release:Release) -> Result<StartData, CodeError> {
 		self.get_version_data_inner(release)?
 			.wait()
 			.await
@@ -762,20 +688,12 @@ impl ConnectionManager {
 
 		let (socket_path, opener) = new_barrier();
 		let state_map_dup = self.state.clone();
-		let args = StartArgs {
-			args:self.args.clone(),
-			log:self.log.clone(),
-			opener,
-			release,
-		};
+		let args = StartArgs { args:self.args.clone(), log:self.log.clone(), opener, release };
 
 		if let Some(p) = self.cache.exists(&args.release.commit) {
 			state.insert(
 				key.clone(),
-				VersionState {
-					socket_path:socket_path.clone(),
-					downloaded:true,
-				},
+				VersionState { socket_path:socket_path.clone(), downloaded:true },
 			);
 
 			tokio::spawn(async move {
@@ -784,19 +702,11 @@ impl ConnectionManager {
 			});
 			Ok(socket_path)
 		} else {
-			state.insert(
-				key.clone(),
-				VersionState { socket_path, downloaded:false },
-			);
+			state.insert(key.clone(), VersionState { socket_path, downloaded:false });
 			let update_service = self.update_service.clone();
 			let cache = self.cache.clone();
 			tokio::spawn(async move {
-				Self::download_version(
-					args,
-					update_service.clone(),
-					cache.clone(),
-				)
-				.await;
+				Self::download_version(args, update_service.clone(), cache.clone()).await;
 				state_map_dup.lock().unwrap().remove(&key);
 			});
 			Err(CodeError::ServerNotYetDownloaded)
@@ -804,23 +714,14 @@ impl ConnectionManager {
 	}
 
 	/// Downloads a server version into the cache and starts it.
-	async fn download_version(
-		args:StartArgs,
-		update_service:UpdateService,
-		cache:DownloadCache,
-	) {
+	async fn download_version(args:StartArgs, update_service:UpdateService, cache:DownloadCache) {
 		let release_for_fut = args.release.clone();
 		let log_for_fut = args.log.clone();
 		let dir_fut = cache.create(&args.release.commit, |target_dir| {
 			async move {
-				info!(
-					log_for_fut,
-					"Downloading server {}", release_for_fut.commit
-				);
+				info!(log_for_fut, "Downloading server {}", release_for_fut.commit);
 				let tmpdir = tempfile::tempdir().unwrap();
-				let response = update_service
-					.get_download_stream(&release_for_fut)
-					.await?;
+				let response = update_service.get_download_stream(&release_for_fut).await?;
 
 				let name = response.url_path_basename().unwrap();
 				let archive_path = tmpdir.path().join(name);
@@ -830,11 +731,7 @@ impl ConnectionManager {
 					response,
 				)
 				.await?;
-				unzip_downloaded_release(
-					&archive_path,
-					&target_dir,
-					SilentCopyProgress(),
-				)?;
+				unzip_downloaded_release(&archive_path, &target_dir, SilentCopyProgress())?;
 				Ok(())
 			}
 		});
@@ -849,8 +746,7 @@ impl ConnectionManager {
 	async fn start_version(args:StartArgs, path:PathBuf) {
 		info!(args.log, "Starting server {}", args.release.commit);
 
-		let executable =
-			path.join("bin").join(args.release.quality.server_entrypoint());
+		let executable = path.join("bin").join(args.release.quality.server_entrypoint());
 
 		let socket_path = get_socket_name();
 
@@ -911,8 +807,7 @@ impl ConnectionManager {
 		let (counter_tx, mut counter_rx) = tokio::sync::watch::channel(0);
 		let mut opener = Some((args.opener, socket_path, Arc::new(counter_tx)));
 		let commit_prefix = &args.release.commit[..7];
-		let kill_timer =
-			tokio::time::sleep(Duration::from_secs(SERVER_IDLE_TIMEOUT_SECS));
+		let kill_timer = tokio::time::sleep(Duration::from_secs(SERVER_IDLE_TIMEOUT_SECS));
 		pin!(kill_timer);
 
 		loop {
@@ -963,10 +858,7 @@ struct StartArgs {
 	opener:BarrierOpener<Result<StartData, String>>,
 }
 
-fn mint_connection_token(
-	path:&Path,
-	prefer_token:Option<String>,
-) -> std::io::Result<String> {
+fn mint_connection_token(path:&Path, prefer_token:Option<String>) -> std::io::Result<String> {
 	#[cfg(not(windows))]
 	use std::os::unix::fs::OpenOptionsExt;
 
@@ -988,8 +880,7 @@ fn mint_connection_token(
 	}
 
 	f.set_len(0)?;
-	let prefer_token =
-		prefer_token.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
+	let prefer_token = prefer_token.unwrap_or_else(|| uuid::Uuid::new_v4().to_string());
 	f.write_all(prefer_token.as_bytes())?;
 	Ok(prefer_token)
 }

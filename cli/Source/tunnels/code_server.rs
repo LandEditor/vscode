@@ -42,13 +42,7 @@ use crate::{
 	state::LauncherPaths,
 	trace,
 	tunnels::paths::{get_server_folder_name, SERVER_FOLDER_NAME},
-	update_service::{
-		unzip_downloaded_release,
-		Platform,
-		Release,
-		TargetKind,
-		UpdateService,
-	},
+	update_service::{unzip_downloaded_release, Platform, Release, TargetKind, UpdateService},
 	util::{
 		command::{
 			capture_command,
@@ -57,13 +51,7 @@ use crate::{
 			kill_tree,
 			new_script_command,
 		},
-		errors::{
-			wrap,
-			AnyError,
-			CodeError,
-			ExtensionInstallFailed,
-			WrappedError,
-		},
+		errors::{wrap, AnyError, CodeError, ExtensionInstallFailed, WrappedError},
 		http::{self, BoxedHttp},
 		io::SilentCopyProgress,
 		machine::process_exists,
@@ -75,8 +63,7 @@ use crate::{
 lazy_static! {
 	static ref LISTENING_PORT_RE: Regex =
 		Regex::new(r"Extension host agent listening on (.+)").unwrap();
-	static ref WEB_UI_RE: Regex =
-		Regex::new(r"Web UI available at (.+)").unwrap();
+	static ref WEB_UI_RE: Regex = Regex::new(r"Web UI available at (.+)").unwrap();
 }
 
 #[derive(Clone, Debug, Default)]
@@ -117,9 +104,7 @@ impl CodeServerArgs {
 		}
 	}
 
-	pub fn telemetry_disabled(&self) -> bool {
-		self.telemetry_level == Some(TelemetryLevel::Off)
-	}
+	pub fn telemetry_disabled(&self) -> bool { self.telemetry_level == Some(TelemetryLevel::Off) }
 
 	pub fn command_arguments(&self) -> Vec<String> {
 		let mut args = Vec::new();
@@ -373,9 +358,7 @@ impl<'a> ServerBuilder<'a> {
 			logger,
 			server_params,
 			launcher_paths,
-			server_paths:server_params
-				.as_installed_server()
-				.server_paths(launcher_paths),
+			server_paths:server_params.as_installed_server().server_paths(launcher_paths),
 			http,
 		}
 	}
@@ -397,8 +380,8 @@ impl<'a> ServerBuilder<'a> {
 		if !Path::new(&self.server_paths.logfile).exists() {
 			warning!(
 				self.logger,
-				"{} Server is running but its logfile is missing. Don't \
-				 delete the {} Server manually, run the command '{} prune'.",
+				"{} Server is running but its logfile is missing. Don't delete the {} Server \
+				 manually, run the command '{} prune'.",
 				QUALITYLESS_PRODUCT_NAME,
 				QUALITYLESS_PRODUCT_NAME,
 				APPLICATION_NAME
@@ -446,13 +429,9 @@ impl<'a> ServerBuilder<'a> {
 
 	/// Ensures the server is set up in the configured directory.
 	pub async fn setup(&self) -> Result<(), AnyError> {
-		debug!(
-			self.logger,
-			"Installing and setting up {}...", QUALITYLESS_SERVER_NAME
-		);
+		debug!(self.logger, "Installing and setting up {}...", QUALITYLESS_SERVER_NAME);
 
-		let update_service =
-			UpdateService::new(self.logger.clone(), self.http.clone());
+		let update_service = UpdateService::new(self.logger.clone(), self.http.clone());
 		let name = get_server_folder_name(
 			self.server_params.release.quality,
 			&self.server_params.release.commit,
@@ -463,16 +442,12 @@ impl<'a> ServerBuilder<'a> {
 			.server_cache
 			.create(name, |target_dir| {
 				async move {
-					let tmpdir = tempfile::tempdir().map_err(|e| {
-						wrap(e, "error creating temp download dir")
-					})?;
+					let tmpdir = tempfile::tempdir()
+						.map_err(|e| wrap(e, "error creating temp download dir"))?;
 
-					let response = update_service
-						.get_download_stream(&self.server_params.release)
-						.await?;
-					let archive_path = tmpdir
-						.path()
-						.join(response.url_path_basename().unwrap());
+					let response =
+						update_service.get_download_stream(&self.server_params.release).await?;
+					let archive_path = tmpdir.path().join(response.url_path_basename().unwrap());
 
 					info!(
 						self.logger,
@@ -483,8 +458,7 @@ impl<'a> ServerBuilder<'a> {
 
 					http::download_into_file(
 						&archive_path,
-						self.logger
-							.get_download_logger("server download progress:"),
+						self.logger.get_download_logger("server download progress:"),
 						response,
 					)
 					.await?;
@@ -493,30 +467,23 @@ impl<'a> ServerBuilder<'a> {
 					unzip_downloaded_release(
 						&archive_path,
 						&server_dir,
-						self.logger
-							.get_download_logger("server inflate progress:"),
+						self.logger.get_download_logger("server inflate progress:"),
 					)?;
 
 					if !skip_requirements_check().await {
 						let output = capture_command_and_check_status(
-							server_dir.join("bin").join(
-								self.server_params
-									.release
-									.quality
-									.server_entrypoint(),
-							),
+							server_dir
+								.join("bin")
+								.join(self.server_params.release.quality.server_entrypoint()),
 							&["--version"],
 						)
 						.await
-						.map_err(|e| {
-							wrap(e, "error checking server integrity")
-						})?;
+						.map_err(|e| wrap(e, "error checking server integrity"))?;
 
 						trace!(
 							self.logger,
 							"Server integrity verified, version: {}",
-							String::from_utf8_lossy(&output.stdout)
-								.replace('\n', " / ")
+							String::from_utf8_lossy(&output.stdout).replace('\n', " / ")
 						);
 					} else {
 						info!(self.logger, "Skipping server integrity check");
@@ -537,10 +504,7 @@ impl<'a> ServerBuilder<'a> {
 		Ok(())
 	}
 
-	pub async fn listen_on_port(
-		&self,
-		port:u16,
-	) -> Result<PortCodeServer, AnyError> {
+	pub async fn listen_on_port(&self, port:u16) -> Result<PortCodeServer, AnyError> {
 		let mut cmd = self.get_base_command();
 		cmd.arg("--start-server")
 			.arg("--enable-remote-auto-shutdown")
@@ -550,12 +514,8 @@ impl<'a> ServerBuilder<'a> {
 		let log_file = self.get_logfile()?;
 		let plog = self.logger.prefixed(&log::new_code_server_prefix());
 
-		let (mut origin, listen_rx) = monitor_server::<PortMatcher, u16>(
-			child,
-			Some(log_file),
-			plog,
-			false,
-		);
+		let (mut origin, listen_rx) =
+			monitor_server::<PortMatcher, u16>(child, Some(log_file), plog, false);
 
 		let port = match timeout(Duration::from_secs(8), listen_rx).await {
 			Err(_) => {
@@ -564,9 +524,7 @@ impl<'a> ServerBuilder<'a> {
 			},
 			Ok(Err(s)) => {
 				origin.kill().await;
-				return Err(
-					CodeError::ServerUnexpectedExit(format!("{}", s)).into()
-				);
+				return Err(CodeError::ServerUnexpectedExit(format!("{}", s)).into());
 			},
 			Ok(Ok(p)) => p,
 		};
@@ -584,16 +542,10 @@ impl<'a> ServerBuilder<'a> {
 	pub async fn install_extensions(&self) -> Result<(), AnyError> {
 		// cmd already has --install-extensions from base
 		let mut cmd = self.get_base_command();
-		let cmd_str = || {
-			self.server_params.code_server_args.command_arguments().join(" ")
-		};
+		let cmd_str = || self.server_params.code_server_args.command_arguments().join(" ");
 
 		let r = cmd.output().await.map_err(|e| {
-			CodeError::CommandFailed {
-				command:cmd_str(),
-				code:-1,
-				output:e.to_string(),
-			}
+			CodeError::CommandFailed { command:cmd_str(), code:-1, output:e.to_string() }
 		})?;
 
 		check_output_status(r, cmd_str)?;
@@ -601,17 +553,12 @@ impl<'a> ServerBuilder<'a> {
 		Ok(())
 	}
 
-	pub async fn listen_on_default_socket(
-		&self,
-	) -> Result<SocketCodeServer, AnyError> {
+	pub async fn listen_on_default_socket(&self) -> Result<SocketCodeServer, AnyError> {
 		let requested_file = get_socket_name();
 		self.listen_on_socket(&requested_file).await
 	}
 
-	pub async fn listen_on_socket(
-		&self,
-		socket:&Path,
-	) -> Result<SocketCodeServer, AnyError> {
+	pub async fn listen_on_socket(&self, socket:&Path) -> Result<SocketCodeServer, AnyError> {
 		Ok(spanf!(
 			self.logger,
 			self.logger.span("server.start").with_attributes(vec! {
@@ -622,10 +569,7 @@ impl<'a> ServerBuilder<'a> {
 		)?)
 	}
 
-	async fn _listen_on_socket(
-		&self,
-		socket:&Path,
-	) -> Result<SocketCodeServer, AnyError> {
+	async fn _listen_on_socket(&self, socket:&Path) -> Result<SocketCodeServer, AnyError> {
 		remove_file(&socket).await.ok(); // ignore any error if it doesn't exist
 
 		let mut cmd = self.get_base_command();
@@ -637,12 +581,8 @@ impl<'a> ServerBuilder<'a> {
 		let log_file = self.get_logfile()?;
 		let plog = self.logger.prefixed(&log::new_code_server_prefix());
 
-		let (mut origin, listen_rx) = monitor_server::<SocketMatcher, PathBuf>(
-			child,
-			Some(log_file),
-			plog,
-			false,
-		);
+		let (mut origin, listen_rx) =
+			monitor_server::<SocketMatcher, PathBuf>(child, Some(log_file), plog, false);
 
 		let socket = match timeout(Duration::from_secs(30), listen_rx).await {
 			Err(_) => {
@@ -651,9 +591,7 @@ impl<'a> ServerBuilder<'a> {
 			},
 			Ok(Err(s)) => {
 				origin.kill().await;
-				return Err(
-					CodeError::ServerUnexpectedExit(format!("{}", s)).into()
-				);
+				return Err(CodeError::ServerUnexpectedExit(format!("{}", s)).into());
 			},
 			Ok(Ok(socket)) => socket,
 		};
@@ -667,10 +605,7 @@ impl<'a> ServerBuilder<'a> {
 		})
 	}
 
-	async fn spawn_server_process(
-		&self,
-		mut cmd:Command,
-	) -> Result<Child, AnyError> {
+	async fn spawn_server_process(&self, mut cmd:Command) -> Result<Child, AnyError> {
 		info!(self.logger, "Starting server...");
 
 		debug!(self.logger, "Starting server with command... {:?}", cmd);
@@ -698,21 +633,14 @@ impl<'a> ServerBuilder<'a> {
 			.spawn()
 			.map_err(|e| CodeError::ServerUnexpectedExit(format!("{}", e)))?;
 
-		self.server_paths
-			.write_pid(child.id().expect("expected server to have pid"))?;
+		self.server_paths.write_pid(child.id().expect("expected server to have pid"))?;
 
 		Ok(child)
 	}
 
 	fn get_logfile(&self) -> Result<File, WrappedError> {
 		File::create(&self.server_paths.logfile).map_err(|e| {
-			wrap(
-				e,
-				format!(
-					"error creating log file {}",
-					self.server_paths.logfile.display()
-				),
-			)
+			wrap(e, format!("error creating log file {}", self.server_paths.logfile.display()))
 		})
 	}
 
@@ -733,11 +661,9 @@ fn monitor_server<M, R>(
 where
 	M: ServerOutputMatcher<R>,
 	R: 'static + Send + std::fmt::Debug, {
-	let stdout =
-		child.stdout.take().expect("child did not have a handle to stdout");
+	let stdout = child.stdout.take().expect("child did not have a handle to stdout");
 
-	let stderr =
-		child.stderr.take().expect("child did not have a handle to stdout");
+	let stderr = child.stderr.take().expect("child did not have a handle to stdout");
 
 	let (listen_tx, listen_rx) = tokio::sync::oneshot::channel();
 
@@ -837,9 +763,9 @@ pub struct WebUiMatcher();
 
 impl ServerOutputMatcher<reqwest::Url> for WebUiMatcher {
 	fn match_line(line:&str) -> Option<reqwest::Url> {
-		WEB_UI_RE.captures(line).and_then(|cap| {
-			cap.get(1).and_then(|uri| reqwest::Url::parse(uri.as_str()).ok())
-		})
+		WEB_UI_RE
+			.captures(line)
+			.and_then(|cap| cap.get(1).and_then(|uri| reqwest::Url::parse(uri.as_str()).ok()))
 	}
 }
 
@@ -857,23 +783,18 @@ fn parse_socket_from(text:&str) -> Option<PathBuf> {
 }
 
 fn parse_port_from(text:&str) -> Option<u16> {
-	LISTENING_PORT_RE.captures(text).and_then(|cap| {
-		cap.get(1).and_then(|path| path.as_str().parse::<u16>().ok())
-	})
+	LISTENING_PORT_RE
+		.captures(text)
+		.and_then(|cap| cap.get(1).and_then(|path| path.as_str().parse::<u16>().ok()))
 }
 
 pub fn print_listening(log:&log::Logger, tunnel_name:&str) {
-	debug!(
-		log,
-		"{} is listening for incoming connections", QUALITYLESS_SERVER_NAME
-	);
+	debug!(log, "{} is listening for incoming connections", QUALITYLESS_SERVER_NAME);
 
 	let home_dir = dirs::home_dir().unwrap_or_else(|| PathBuf::from(""));
-	let current_dir =
-		std::env::current_dir().unwrap_or_else(|_| PathBuf::from(""));
+	let current_dir = std::env::current_dir().unwrap_or_else(|_| PathBuf::from(""));
 
-	let dir =
-		if home_dir == current_dir { PathBuf::from("") } else { current_dir };
+	let dir = if home_dir == current_dir { PathBuf::from("") } else { current_dir };
 
 	let base_web_url = match EDITOR_WEB_URL {
 		Some(u) => u,
@@ -887,9 +808,7 @@ pub fn print_listening(log:&log::Logger, tunnel_name:&str) {
 		ps.push(tunnel_name);
 		for segment in &dir {
 			let as_str = segment.to_string_lossy();
-			if !(as_str.len() == 1
-				&& as_str.starts_with(std::path::MAIN_SEPARATOR))
-			{
+			if !(as_str.len() == 1 && as_str.starts_with(std::path::MAIN_SEPARATOR)) {
 				ps.push(as_str.as_ref());
 			}
 		}
@@ -904,38 +823,25 @@ pub async fn download_cli_into_cache(
 	release:&Release,
 	update_service:&UpdateService,
 ) -> Result<PathBuf, AnyError> {
-	let cache_name =
-		format!("{}-{}-{}", release.quality, release.commit, release.platform);
+	let cache_name = format!("{}-{}-{}", release.quality, release.commit, release.platform);
 	let cli_dir = cache
 		.create(&cache_name, |target_dir| {
 			async move {
-				let tmpdir = tempfile::tempdir()
-					.map_err(|e| wrap(e, "error creating temp download dir"))?;
-				let response =
-					update_service.get_download_stream(release).await?;
+				let tmpdir =
+					tempfile::tempdir().map_err(|e| wrap(e, "error creating temp download dir"))?;
+				let response = update_service.get_download_stream(release).await?;
 
 				let name = response.url_path_basename().unwrap();
 				let archive_path = tmpdir.path().join(name);
-				http::download_into_file(
-					&archive_path,
-					SilentCopyProgress(),
-					response,
-				)
-				.await?;
-				unzip_downloaded_release(
-					&archive_path,
-					&target_dir,
-					SilentCopyProgress(),
-				)?;
+				http::download_into_file(&archive_path, SilentCopyProgress(), response).await?;
+				unzip_downloaded_release(&archive_path, &target_dir, SilentCopyProgress())?;
 				Ok(())
 			}
 		})
 		.await?;
 
 	let cli = std::fs::read_dir(cli_dir)
-		.map_err(|_| {
-			CodeError::CorruptDownload("could not read cli folder contents")
-		})?
+		.map_err(|_| CodeError::CorruptDownload("could not read cli folder contents"))?
 		.next();
 
 	match cli {
@@ -951,8 +857,7 @@ pub async fn download_cli_into_cache(
 async fn get_should_use_breakaway_from_job() -> bool {
 	let mut cmd = Command::new("cmd");
 	cmd.creation_flags(
-		winapi::um::winbase::CREATE_NO_WINDOW
-			| winapi::um::winbase::CREATE_BREAKAWAY_FROM_JOB,
+		winapi::um::winbase::CREATE_NO_WINDOW | winapi::um::winbase::CREATE_BREAKAWAY_FROM_JOB,
 	);
 
 	cmd.args(["/C", "echo ok"]).output().await.is_ok()

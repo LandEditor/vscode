@@ -49,10 +49,7 @@ fn camel_case_to_constant_case(key:&str) -> String {
 	output
 }
 
-fn set_env_vars_from_map_keys(
-	prefix:&str,
-	map:impl IntoIterator<Item = (String, Value)>,
-) {
+fn set_env_vars_from_map_keys(prefix:&str, map:impl IntoIterator<Item = (String, Value)>) {
 	let mut win32_app_ids = vec![];
 
 	for (key, value) in map {
@@ -74,10 +71,7 @@ fn set_env_vars_from_map_keys(
 			},
 			"tunnelApplicationConfig" => {
 				if let Value::Object(v) = value {
-					set_env_vars_from_map_keys(
-						&format!("{}_{}", prefix, "TUNNEL"),
-						v,
-					);
+					set_env_vars_from_map_keys(&format!("{}_{}", prefix, "TUNNEL"), v);
 				}
 				continue;
 			},
@@ -92,20 +86,12 @@ fn set_env_vars_from_map_keys(
 		//#endregion
 
 		if let Value::String(s) = value {
-			println!(
-				"cargo:rustc-env={}_{}={}",
-				prefix,
-				camel_case_to_constant_case(&key),
-				s
-			);
+			println!("cargo:rustc-env={}_{}={}", prefix, camel_case_to_constant_case(&key), s);
 		}
 	}
 
 	if !win32_app_ids.is_empty() {
-		println!(
-			"cargo:rustc-env=VSCODE_CLI_WIN32_APP_IDS={}",
-			win32_app_ids.join(",")
-		);
+		println!("cargo:rustc-env=VSCODE_CLI_WIN32_APP_IDS={}", win32_app_ids.join(","));
 	}
 }
 
@@ -128,8 +114,7 @@ struct PackageJson {
 
 fn apply_build_environment_variables() {
 	let repo_dir = env::current_dir().unwrap().join("..");
-	let package_json =
-		read_json_from_path::<PackageJson>(&repo_dir.join("package.json"));
+	let package_json = read_json_from_path::<PackageJson>(&repo_dir.join("package.json"));
 	println!("cargo:rustc-env=VSCODE_CLI_VERSION={}", package_json.version);
 
 	match env::var("VSCODE_CLI_PRODUCT_JSON") {
@@ -163,9 +148,7 @@ fn ensure_file_headers(files:&[PathBuf]) -> Result<(), io::Error> {
 	for file in files {
 		let contents = fs::read(file)?;
 
-		if !(contents.starts_with(lf_header)
-			|| contents.starts_with(crlf_header))
-		{
+		if !(contents.starts_with(lf_header) || contents.starts_with(crlf_header)) {
 			eprintln!("File missing copyright header: {}", file.display());
 			ok = false;
 		}
@@ -192,9 +175,7 @@ fn enumerate_source_files() -> Result<Vec<PathBuf>, io::Error> {
 			let ftype = entry.file_type()?;
 			if ftype.is_dir() {
 				queue.push(entry.path());
-			} else if ftype.is_file()
-				&& entry.file_name().to_string_lossy().ends_with(".rs")
-			{
+			} else if ftype.is_file() && entry.file_name().to_string_lossy().ends_with(".rs") {
 				files.push(entry.path());
 			}
 		}

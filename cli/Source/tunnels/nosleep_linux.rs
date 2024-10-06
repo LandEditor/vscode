@@ -55,9 +55,7 @@ impl SleepInhibitor {
 		macro_rules! try_inhibit {
 			($proxy:ident) => {
 				match $proxy::new(&connection).await {
-					Ok(proxy) => {
-						proxy.inhibit(APPLICATION_NAME, "running tunnel").await
-					},
+					Ok(proxy) => proxy.inhibit(APPLICATION_NAME, "running tunnel").await,
 					Err(e) => Err(e),
 				}
 			};
@@ -68,8 +66,7 @@ impl SleepInhibitor {
 				return Err(wrap(
 					e2,
 					format!(
-						"error requesting sleep inhibition, pminhibitor gave \
-						 {}, screensaver gave",
+						"error requesting sleep inhibition, pminhibitor gave {}, screensaver gave",
 						e1
 					),
 				)

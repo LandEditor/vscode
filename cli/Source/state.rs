@@ -62,13 +62,7 @@ where
 		let s = serde_json::to_string(&state).unwrap();
 		self.state = Some(state);
 		self.write_state(s).map_err(|e| {
-			wrap(
-				e,
-				format!(
-					"error saving launcher state into {}",
-					self.path.display()
-				),
-			)
+			wrap(e, format!("error saving launcher state into {}", self.path.display()))
 		})
 	}
 
@@ -101,18 +95,12 @@ where
 	T: Clone + Serialize + DeserializeOwned + Default,
 {
 	/// Creates a new state container that persists to the given path.
-	pub fn new(path:PathBuf) -> PersistedState<T> {
-		Self::new_with_mode(path, 0o644)
-	}
+	pub fn new(path:PathBuf) -> PersistedState<T> { Self::new_with_mode(path, 0o644) }
 
 	/// Creates a new state container that persists to the given path.
 	pub fn new_with_mode(path:PathBuf, mode:u32) -> PersistedState<T> {
 		PersistedState {
-			container:Arc::new(Mutex::new(PersistedStateContainer {
-				path,
-				state:None,
-				mode,
-			})),
+			container:Arc::new(Mutex::new(PersistedStateContainer { path, state:None, mode })),
 		}
 	}
 
@@ -125,10 +113,7 @@ where
 	}
 
 	/// Mutates persisted state.
-	pub fn update<R>(
-		&self,
-		mutator:impl FnOnce(&mut T) -> R,
-	) -> Result<R, WrappedError> {
+	pub fn update<R>(&self, mutator:impl FnOnce(&mut T) -> R) -> Result<R, WrappedError> {
 		let mut container = self.container.lock().unwrap();
 		let mut state = container.load_or_get();
 		let r = mutator(&mut state);
@@ -159,19 +144,14 @@ impl LauncherPaths {
 		if let Err(e) = std::fs::rename(&old_dir, &new_dir) {
 			// no logger exists at this point in the lifecycle, so just log to
 			// stderr
-			eprintln!(
-				"Failed to migrate old CLI data directory, will create a new \
-				 one ({})",
-				e
-			);
+			eprintln!("Failed to migrate old CLI data directory, will create a new one ({})", e);
 		}
 
 		Self::new_for_path(new_dir)
 	}
 
 	pub fn new(root:Option<String>) -> Result<LauncherPaths, AnyError> {
-		let root = root
-			.unwrap_or_else(|| format!("~/{}/cli", DEFAULT_DATA_PARENT_DIR));
+		let root = root.unwrap_or_else(|| format!("~/{}/cli", DEFAULT_DATA_PARENT_DIR));
 		let mut replaced = root.to_owned();
 		for token in HOME_DIR_ALTS {
 			if root.contains(token) {
@@ -188,9 +168,8 @@ impl LauncherPaths {
 
 	fn new_for_path(root:PathBuf) -> Result<LauncherPaths, AnyError> {
 		if !root.exists() {
-			create_dir_all(&root).map_err(|e| {
-				wrap(e, format!("error creating directory {}", root.display()))
-			})?;
+			create_dir_all(&root)
+				.map_err(|e| wrap(e, format!("error creating directory {}", root.display())))?;
 		}
 
 		Ok(LauncherPaths::new_without_replacements(root))
@@ -213,35 +192,22 @@ impl LauncherPaths {
 
 	/// Lockfile for the running tunnel
 	pub fn tunnel_lockfile(&self) -> PathBuf {
-		self.root.join(format!(
-			"tunnel-{}.lock",
-			VSCODE_CLI_QUALITY.unwrap_or("oss")
-		))
+		self.root.join(format!("tunnel-{}.lock", VSCODE_CLI_QUALITY.unwrap_or("oss")))
 	}
 
 	/// Lockfile for port forwarding
 	pub fn forwarding_lockfile(&self) -> PathBuf {
-		self.root.join(format!(
-			"forwarding-{}.lock",
-			VSCODE_CLI_QUALITY.unwrap_or("oss")
-		))
+		self.root
+			.join(format!("forwarding-{}.lock", VSCODE_CLI_QUALITY.unwrap_or("oss")))
 	}
 
 	/// Suggested path for tunnel service logs, when using file logs
-	pub fn service_log_file(&self) -> PathBuf {
-		self.root.join("tunnel-service.log")
-	}
+	pub fn service_log_file(&self) -> PathBuf { self.root.join("tunnel-service.log") }
 
 	/// Removes the launcher data directory.
 	pub fn remove(&self) -> Result<(), WrappedError> {
 		remove_dir_all(&self.root).map_err(|e| {
-			wrap(
-				e,
-				format!(
-					"error removing launcher data directory {}",
-					self.root.display()
-				),
-			)
+			wrap(e, format!("error removing launcher data directory {}", self.root.display()))
 		})
 	}
 

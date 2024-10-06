@@ -188,9 +188,7 @@ impl AsyncPipeListener {
 	pub fn into_pollable(self) -> PollableAsyncListener {
 		PollableAsyncListener {
 			listener:Some(self),
-			write_fut:tokio_util::sync::ReusableBoxFuture::new(
-				make_accept_fut(None),
-			),
+			write_fut:tokio_util::sync::ReusableBoxFuture::new(make_accept_fut(None)),
 		}
 	}
 }
@@ -250,8 +248,7 @@ pub fn get_socket_name() -> PathBuf {
 	}
 }
 
-pub type AcceptedRW =
-	(Box<dyn AsyncRead + Send + Unpin>, Box<dyn AsyncWrite + Send + Unpin>);
+pub type AcceptedRW = (Box<dyn AsyncRead + Send + Unpin>, Box<dyn AsyncWrite + Send + Unpin>);
 
 #[async_trait]
 pub trait AsyncRWAccepter {
@@ -270,8 +267,7 @@ impl AsyncRWAccepter for AsyncPipeListener {
 #[async_trait]
 impl AsyncRWAccepter for TcpListener {
 	async fn accept_rw(&mut self) -> Result<AcceptedRW, CodeError> {
-		let (stream, _) =
-			self.accept().await.map_err(CodeError::AsyncPipeListenerFailed)?;
+		let (stream, _) = self.accept().await.map_err(CodeError::AsyncPipeListenerFailed)?;
 		let (read, write) = tokio::io::split(stream);
 		Ok((Box::new(read), Box::new(write)))
 	}

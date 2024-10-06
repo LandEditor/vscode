@@ -31,12 +31,8 @@ impl Column {
 impl OutputFormat {
 	pub fn print_table(&self, table:OutputTable) -> Result<(), std::io::Error> {
 		match *self {
-			OutputFormat::Json => {
-				JsonTablePrinter().print(table, &mut std::io::stdout())
-			},
-			OutputFormat::Text => {
-				TextTablePrinter().print(table, &mut std::io::stdout())
-			},
+			OutputFormat::Json => JsonTablePrinter().print(table, &mut std::io::stdout()),
+			OutputFormat::Text => TextTablePrinter().print(table, &mut std::io::stdout()),
 		}
 	}
 }
@@ -50,21 +46,13 @@ impl OutputTable {
 }
 
 trait TablePrinter {
-	fn print(
-		&self,
-		table:OutputTable,
-		out:&mut dyn std::io::Write,
-	) -> Result<(), std::io::Error>;
+	fn print(&self, table:OutputTable, out:&mut dyn std::io::Write) -> Result<(), std::io::Error>;
 }
 
 pub struct JsonTablePrinter();
 
 impl TablePrinter for JsonTablePrinter {
-	fn print(
-		&self,
-		table:OutputTable,
-		out:&mut dyn std::io::Write,
-	) -> Result<(), std::io::Error> {
+	fn print(&self, table:OutputTable, out:&mut dyn std::io::Write) -> Result<(), std::io::Error> {
 		let mut bw = BufWriter::new(out);
 		bw.write_all(b"[")?;
 
@@ -93,11 +81,7 @@ impl TablePrinter for JsonTablePrinter {
 pub struct TextTablePrinter();
 
 impl TablePrinter for TextTablePrinter {
-	fn print(
-		&self,
-		table:OutputTable,
-		out:&mut dyn std::io::Write,
-	) -> Result<(), std::io::Error> {
+	fn print(&self, table:OutputTable, out:&mut dyn std::io::Write) -> Result<(), std::io::Error> {
 		let mut bw = BufWriter::new(out);
 
 		let sizes = table.cols.iter().map(|c| c.max_width).collect::<Vec<_>>();
@@ -105,20 +89,12 @@ impl TablePrinter for TextTablePrinter {
 		// print headers
 		write_columns(&mut bw, table.cols.iter().map(|c| c.heading), &sizes)?;
 		// print --- separators
-		write_columns(
-			&mut bw,
-			table.cols.iter().map(|c| "-".repeat(c.max_width)),
-			&sizes,
-		)?;
+		write_columns(&mut bw, table.cols.iter().map(|c| "-".repeat(c.max_width)), &sizes)?;
 		// print each column
 		if !table.cols.is_empty() {
 			let data_len = table.cols[0].data.len();
 			for i in 0..data_len {
-				write_columns(
-					&mut bw,
-					table.cols.iter().map(|c| &c.data[i]),
-					&sizes,
-				)?;
+				write_columns(&mut bw, table.cols.iter().map(|c| &c.data[i]), &sizes)?;
 			}
 		}
 

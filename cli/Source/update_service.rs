@@ -62,14 +62,11 @@ fn quality_download_segment(quality:options::Quality) -> &'static str {
 }
 
 fn get_update_endpoint() -> Result<&'static str, CodeError> {
-	VSCODE_CLI_UPDATE_ENDPOINT
-		.ok_or_else(|| CodeError::UpdatesNotConfigured("no service url"))
+	VSCODE_CLI_UPDATE_ENDPOINT.ok_or_else(|| CodeError::UpdatesNotConfigured("no service url"))
 }
 
 impl UpdateService {
-	pub fn new(log:log::Logger, http:BoxedHttp) -> Self {
-		UpdateService { client:http, log }
-	}
+	pub fn new(log:log::Logger, http:BoxedHttp) -> Self { UpdateService { client:http, log } }
 
 	pub async fn get_release_by_semver_version(
 		&self,
@@ -79,10 +76,9 @@ impl UpdateService {
 		version:&str,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
-		let download_segment =
-			target.download_segment(platform).ok_or_else(|| {
-				CodeError::UnsupportedPlatform(platform.to_string())
-			})?;
+		let download_segment = target
+			.download_segment(platform)
+			.ok_or_else(|| CodeError::UnsupportedPlatform(platform.to_string()))?;
 		let download_url = format!(
 			"{}/api/versions/{}/{}/{}",
 			update_endpoint,
@@ -104,13 +100,7 @@ impl UpdateService {
 		let res = response.json::<UpdateServerVersion>().await?;
 		debug!(self.log, "Resolved version {} to {}", version, res.version);
 
-		Ok(Release {
-			target,
-			platform,
-			quality,
-			name:res.name,
-			commit:res.version,
-		})
+		Ok(Release { target, platform, quality, name:res.name, commit:res.version })
 	}
 
 	/// Gets the latest commit for the target of the given quality.
@@ -121,10 +111,9 @@ impl UpdateService {
 		quality:options::Quality,
 	) -> Result<Release, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
-		let download_segment =
-			target.download_segment(platform).ok_or_else(|| {
-				CodeError::UnsupportedPlatform(platform.to_string())
-			})?;
+		let download_segment = target
+			.download_segment(platform)
+			.ok_or_else(|| CodeError::UnsupportedPlatform(platform.to_string()))?;
 		let download_url = format!(
 			"{}/api/latest/{}/{}",
 			update_endpoint,
@@ -145,25 +134,16 @@ impl UpdateService {
 		let res = response.json::<UpdateServerVersion>().await?;
 		debug!(self.log, "Resolved quality {} to {}", quality, res.version);
 
-		Ok(Release {
-			target,
-			platform,
-			quality,
-			name:res.name,
-			commit:res.version,
-		})
+		Ok(Release { target, platform, quality, name:res.name, commit:res.version })
 	}
 
 	/// Gets the download stream for the release.
-	pub async fn get_download_stream(
-		&self,
-		release:&Release,
-	) -> Result<SimpleResponse, AnyError> {
+	pub async fn get_download_stream(&self, release:&Release) -> Result<SimpleResponse, AnyError> {
 		let update_endpoint = get_update_endpoint()?;
-		let download_segment =
-			release.target.download_segment(release.platform).ok_or_else(
-				|| CodeError::UnsupportedPlatform(release.platform.to_string()),
-			)?;
+		let download_segment = release
+			.target
+			.download_segment(release.platform)
+			.ok_or_else(|| CodeError::UnsupportedPlatform(release.platform.to_string()))?;
 
 		let download_url = format!(
 			"{}/commit:{}/{}/{}",
@@ -288,17 +268,9 @@ impl Platform {
 	pub fn web(&self) -> String { format!("{}-web", self.headless()) }
 
 	pub fn env_default() -> Option<Platform> {
-		if cfg!(all(
-			target_os = "linux",
-			target_arch = "x86_64",
-			target_env = "musl"
-		)) {
+		if cfg!(all(target_os = "linux", target_arch = "x86_64", target_env = "musl")) {
 			Some(Platform::LinuxAlpineX64)
-		} else if cfg!(all(
-			target_os = "linux",
-			target_arch = "aarch64",
-			target_env = "musl"
-		)) {
+		} else if cfg!(all(target_os = "linux", target_arch = "aarch64", target_env = "musl")) {
 			Some(Platform::LinuxAlpineARM64)
 		} else if cfg!(all(target_os = "linux", target_arch = "x86_64")) {
 			Some(Platform::LinuxX64)

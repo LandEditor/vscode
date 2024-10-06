@@ -16,10 +16,7 @@ use crate::{
 	},
 };
 
-pub async fn switch_to(
-	ctx:CommandContext,
-	args:UseVersionArgs,
-) -> Result<i32, AnyError> {
+pub async fn switch_to(ctx:CommandContext, args:UseVersionArgs) -> Result<i32, AnyError> {
 	let platform = PreReqChecker::new().verify().await?;
 	let vm = CodeVersionManager::new(ctx.log.clone(), &ctx.paths, platform);
 	let version = RequestedVersion::try_from(args.name.as_str())?;
@@ -27,11 +24,9 @@ pub async fn switch_to(
 	let maybe_path = match args.install_dir {
 		Some(d) => {
 			Some(
-				CodeVersionManager::get_entrypoint_for_install_dir(
-					&PathBuf::from(&d),
-				)
-				.await
-				.ok_or(NoInstallInUserProvidedPath(d))?,
+				CodeVersionManager::get_entrypoint_for_install_dir(&PathBuf::from(&d))
+					.await
+					.ok_or(NoInstallInUserProvidedPath(d))?,
 			)
 		},
 		None => vm.try_get_entrypoint(&version).await,

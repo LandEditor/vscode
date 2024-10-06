@@ -32,8 +32,7 @@ pub trait ServiceContainer: Send {
 pub trait ServiceManager {
 	/// Registers the current executable as a service to run with the given set
 	/// of arguments.
-	async fn register(&self, exe:PathBuf, args:&[&str])
-	-> Result<(), AnyError>;
+	async fn register(&self, exe:PathBuf, args:&[&str]) -> Result<(), AnyError>;
 
 	/// Runs the service using the given handle. The executable *must not* take
 	/// any action which may fail prior to calling this to ensure service
@@ -65,10 +64,7 @@ pub type ServiceManagerImpl = super::service_macos::LaunchdService;
 
 #[allow(unreachable_code)]
 #[allow(unused_variables)]
-pub fn create_service_manager(
-	log:log::Logger,
-	paths:&LauncherPaths,
-) -> ServiceManagerImpl {
+pub fn create_service_manager(log:log::Logger, paths:&LauncherPaths) -> ServiceManagerImpl {
 	#[cfg(target_os = "macos")]
 	{
 		super::service_macos::LaunchdService::new(log, paths)
@@ -90,8 +86,7 @@ pub(crate) async fn tail_log_file(log_file:&Path) -> Result<(), AnyError> {
 		return Ok(());
 	}
 
-	let file = std::fs::File::open(log_file)
-		.map_err(|e| wrap(e, "error opening log file"))?;
+	let file = std::fs::File::open(log_file).map_err(|e| wrap(e, "error opening log file"))?;
 	let mut rx = tailf(file, 20);
 	while let Some(line) = rx.recv().await {
 		match line {

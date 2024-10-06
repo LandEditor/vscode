@@ -38,22 +38,14 @@ impl PortForwardingProcessor {
 	}
 
 	/// Gets a handle that can be passed off to consumers of port forwarding.
-	pub fn handle(&self) -> PortForwarding {
-		PortForwarding { tx:self.tx.clone() }
-	}
+	pub fn handle(&self) -> PortForwarding { PortForwarding { tx:self.tx.clone() } }
 
 	/// Receives port forwarding requests. Consumers MUST call `process()`
 	/// with the received requests.
-	pub async fn recv(&mut self) -> Option<PortForwardingRec> {
-		self.rx.recv().await
-	}
+	pub async fn recv(&mut self) -> Option<PortForwardingRec> { self.rx.recv().await }
 
 	/// Processes the incoming forwarding request.
-	pub async fn process(
-		&mut self,
-		req:PortForwardingRec,
-		tunnel:&mut ActiveTunnel,
-	) {
+	pub async fn process(&mut self, req:PortForwardingRec, tunnel:&mut ActiveTunnel) {
 		match req {
 			PortForwardingRec::Forward(port, privacy, tx) => {
 				tx.send(self.process_forward(port, privacy, tunnel).await).ok();
@@ -103,11 +95,7 @@ pub struct PortForwarding {
 }
 
 impl PortForwarding {
-	pub async fn forward(
-		&self,
-		port:u16,
-		privacy:PortPrivacy,
-	) -> Result<String, AnyError> {
+	pub async fn forward(&self, port:u16, privacy:PortPrivacy) -> Result<String, AnyError> {
 		let (tx, rx) = oneshot::channel();
 		let req = PortForwardingRec::Forward(port, privacy, tx);
 

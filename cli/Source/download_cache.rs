@@ -31,10 +31,7 @@ pub struct DownloadCache {
 
 impl DownloadCache {
 	pub fn new(path:PathBuf) -> DownloadCache {
-		DownloadCache {
-			state:PersistedState::new(path.join(PERSISTED_STATE_FILE_NAME)),
-			path,
-		}
+		DownloadCache { state:PersistedState::new(path.join(PERSISTED_STATE_FILE_NAME)), path }
 	}
 
 	/// Gets the value stored on the state
@@ -60,8 +57,7 @@ impl DownloadCache {
 	pub fn delete(&self, name:&str) -> Result<(), WrappedError> {
 		let f = self.path.join(name);
 		if f.exists() {
-			std::fs::remove_dir_all(f)
-				.map_err(|e| wrap(e, "error removing cached folder"))?;
+			std::fs::remove_dir_all(f).map_err(|e| wrap(e, "error removing cached folder"))?;
 		}
 
 		self.state.update(|l| {
@@ -90,8 +86,7 @@ impl DownloadCache {
 		let temp_dir = self.path.join(format!("{}{}", name, STAGING_SUFFIX));
 		let _ = remove_dir_all(&temp_dir).await; // cleanup any existing
 
-		create_dir_all(&temp_dir)
-			.map_err(|e| wrap(e, "error creating server directory"))?;
+		create_dir_all(&temp_dir).map_err(|e| wrap(e, "error creating server directory"))?;
 		do_create(temp_dir.clone()).await?;
 
 		let _ = self.touch(name.to_string());
@@ -103,9 +98,7 @@ impl DownloadCache {
 					break;
 				},
 				Err(e) if attempt_no == RENAME_ATTEMPTS => {
-					return Err(
-						wrap(e, "error renaming downloaded server").into()
-					);
+					return Err(wrap(e, "error renaming downloaded server").into());
 				},
 				Err(_) => {
 					tokio::time::sleep(RENAME_DELAY).await;

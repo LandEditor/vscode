@@ -35,9 +35,7 @@ pub struct SingletonServer {
 }
 
 impl SingletonServer {
-	pub async fn accept(&mut self) -> Result<AsyncPipe, CodeError> {
-		self.server.accept().await
-	}
+	pub async fn accept(&mut self) -> Result<AsyncPipe, CodeError> { self.server.accept().await }
 }
 
 pub enum SingletonConnection {
@@ -58,9 +56,7 @@ struct LockFileMatter {
 
 /// Tries to acquire the singleton homed at the given lock file, either starting
 /// a new singleton if it doesn't exist, or connecting otherwise.
-pub async fn acquire_singleton(
-	lock_file:&Path,
-) -> Result<SingletonConnection, CodeError> {
+pub async fn acquire_singleton(lock_file:&Path) -> Result<SingletonConnection, CodeError> {
 	let file = OpenOptions::new()
 		.read(true)
 		.write(true)
@@ -71,23 +67,17 @@ pub async fn acquire_singleton(
 
 	match FileLock::acquire(file) {
 		Ok(Lock::AlreadyLocked(mut file)) => {
-			connect_as_client_with_file(&mut file)
-				.await
-				.map(SingletonConnection::Client)
+			connect_as_client_with_file(&mut file).await.map(SingletonConnection::Client)
 		},
 		Ok(Lock::Acquired(lock)) => {
-			start_singleton_server(lock)
-				.await
-				.map(SingletonConnection::Singleton)
+			start_singleton_server(lock).await.map(SingletonConnection::Singleton)
 		},
 		Err(e) => Err(e),
 	}
 }
 
 /// Tries to connect to the singleton homed at the given file as a client.
-pub async fn connect_as_client(
-	lock_file:&Path,
-) -> Result<AsyncPipe, CodeError> {
+pub async fn connect_as_client(lock_file:&Path) -> Result<AsyncPipe, CodeError> {
 	let mut file = OpenOptions::new()
 		.read(true)
 		.open(lock_file)
@@ -96,9 +86,7 @@ pub async fn connect_as_client(
 	connect_as_client_with_file(&mut file).await
 }
 
-async fn start_singleton_server(
-	mut lock:FileLock,
-) -> Result<SingletonServer, CodeError> {
+async fn start_singleton_server(mut lock:FileLock) -> Result<SingletonServer, CodeError> {
 	let socket_path = get_socket_name();
 
 	let mut vec = Vec::with_capacity(128);
@@ -121,9 +109,7 @@ async fn start_singleton_server(
 
 const MAX_CLIENT_ATTEMPTS:i32 = 10;
 
-async fn connect_as_client_with_file(
-	mut file:&mut File,
-) -> Result<AsyncPipe, CodeError> {
+async fn connect_as_client_with_file(mut file:&mut File) -> Result<AsyncPipe, CodeError> {
 	// retry, since someone else could get a lock and we could read it before
 	// the JSON info was finished writing out
 	let mut attempt = 0;
@@ -173,9 +159,7 @@ mod tests {
 	#[tokio::test]
 	async fn test_acquires_singleton() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
-		let s = acquire_singleton(&dir.path().join("lock"))
-			.await
-			.expect("expected to acquire");
+		let s = acquire_singleton(&dir.path().join("lock")).await.expect("expected to acquire");
 
 		match s {
 			SingletonConnection::Singleton(_) => {},
@@ -187,8 +171,7 @@ mod tests {
 	async fn test_acquires_client() {
 		let dir = tempfile::tempdir().expect("expected to make temp dir");
 		let lockfile = dir.path().join("lock");
-		let s1 =
-			acquire_singleton(&lockfile).await.expect("expected to acquire1");
+		let s1 = acquire_singleton(&lockfile).await.expect("expected to acquire1");
 		match s1 {
 			SingletonConnection::Singleton(mut l) => {
 				tokio::spawn(async move {
@@ -198,8 +181,7 @@ mod tests {
 			_ => panic!("expected to be singleton"),
 		};
 
-		let s2 =
-			acquire_singleton(&lockfile).await.expect("expected to acquire2");
+		let s2 = acquire_singleton(&lockfile).await.expect("expected to acquire2");
 		match s2 {
 			SingletonConnection::Client(_) => {},
 			_ => panic!("expected to be client"),

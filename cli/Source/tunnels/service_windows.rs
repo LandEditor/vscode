@@ -11,11 +11,7 @@ use shell_escape::windows::escape as shell_escape;
 use winapi::um::winbase::{CREATE_NEW_PROCESS_GROUP, DETACHED_PROCESS};
 use winreg::{enums::HKEY_CURRENT_USER, RegKey};
 
-use super::service::{
-	tail_log_file,
-	ServiceContainer,
-	ServiceManager as CliServiceManager,
-};
+use super::service::{tail_log_file, ServiceContainer, ServiceManager as CliServiceManager};
 use crate::{
 	constants::TUNNEL_ACTIVITY_NAME,
 	log,
@@ -27,8 +23,7 @@ use crate::{
 	},
 };
 
-const DID_LAUNCH_AS_HIDDEN_PROCESS:&str =
-	"VSCODE_CLI_DID_LAUNCH_AS_HIDDEN_PROCESS";
+const DID_LAUNCH_AS_HIDDEN_PROCESS:&str = "VSCODE_CLI_DID_LAUNCH_AS_HIDDEN_PROCESS";
 
 pub struct WindowsService {
 	log:log::Logger,
@@ -38,11 +33,7 @@ pub struct WindowsService {
 
 impl WindowsService {
 	pub fn new(log:log::Logger, paths:&LauncherPaths) -> Self {
-		Self {
-			log,
-			tunnel_lock:paths.tunnel_lockfile(),
-			log_file:paths.service_log_file(),
-		}
+		Self { log, tunnel_lock:paths.tunnel_lockfile(), log_file:paths.service_log_file() }
 	}
 
 	fn open_key() -> Result<RegKey, AnyError> {
@@ -55,11 +46,7 @@ impl WindowsService {
 
 #[async_trait]
 impl CliServiceManager for WindowsService {
-	async fn register(
-		&self,
-		exe:std::path::PathBuf,
-		args:&[&str],
-	) -> Result<(), AnyError> {
+	async fn register(&self, exe:std::path::PathBuf, args:&[&str]) -> Result<(), AnyError> {
 		let key = WindowsService::open_key()?;
 
 		let mut reg_str = String::new();
@@ -79,9 +66,8 @@ impl CliServiceManager for WindowsService {
 		add_arg("--log-to-file");
 		add_arg(self.log_file.to_string_lossy().as_ref());
 
-		key.set_value(TUNNEL_ACTIVITY_NAME, &reg_str).map_err(|e| {
-			AnyError::from(wrapdbg(e, "error setting registry key"))
-		})?;
+		key.set_value(TUNNEL_ACTIVITY_NAME, &reg_str)
+			.map_err(|e| AnyError::from(wrapdbg(e, "error setting registry key")))?;
 
 		info!(self.log, "Successfully registered service...");
 
@@ -95,9 +81,7 @@ impl CliServiceManager for WindowsService {
 		Ok(())
 	}
 
-	async fn show_logs(&self) -> Result<(), AnyError> {
-		tail_log_file(&self.log_file).await
-	}
+	async fn show_logs(&self) -> Result<(), AnyError> { tail_log_file(&self.log_file).await }
 
 	async fn run(
 		self,
@@ -150,9 +134,8 @@ impl CliServiceManager for WindowsService {
 		if r.is_err() {
 			warning!(
 				self.log,
-				"The tunnel service has been unregistered, but we couldn't \
-				 find a running tunnel process. You may need to restart or \
-				 log out and back in to fully stop the tunnel."
+				"The tunnel service has been unregistered, but we couldn't find a running tunnel \
+				 process. You may need to restart or log out and back in to fully stop the tunnel."
 			);
 		} else {
 			info!(self.log, "Successfully shut down running tunnel.");

@@ -63,10 +63,7 @@ pub async fn start_singleton_client(args:SingletonClientArgs) -> bool {
 	let (msg_tx, msg_rx) = mpsc::unbounded_channel();
 	let exit_entirely = Arc::new(AtomicBool::new(false));
 
-	debug!(
-		args.log,
-		"An existing tunnel is running on this machine, connecting to it..."
-	);
+	debug!(args.log, "An existing tunnel is running on this machine, connecting to it...");
 
 	if *IS_INTERACTIVE_CLI {
 		let stdin_handle = rpc.get_caller(msg_tx.clone());
@@ -81,17 +78,11 @@ pub async fn start_singleton_client(args:SingletonClientArgs) -> bool {
 
 				match input.chars().next().map(|c| c.to_ascii_lowercase()) {
 					Some('x') => {
-						stdin_handle.notify(
-							protocol::singleton::METHOD_SHUTDOWN,
-							EmptyObject {},
-						);
+						stdin_handle.notify(protocol::singleton::METHOD_SHUTDOWN, EmptyObject {});
 						return;
 					},
 					Some('r') => {
-						stdin_handle.notify(
-							protocol::singleton::METHOD_RESTART,
-							EmptyObject {},
-						);
+						stdin_handle.notify(protocol::singleton::METHOD_RESTART, EmptyObject {});
 					},
 					Some(_) | None => {},
 				}
@@ -106,53 +97,43 @@ pub async fn start_singleton_client(args:SingletonClientArgs) -> bool {
 		caller,
 	});
 
-	rpc.register_sync(
-		protocol::singleton::METHOD_SHUTDOWN,
-		|_:EmptyObject, c| {
-			c.exit_entirely.store(true, Ordering::SeqCst);
-			Ok(())
-		},
-	);
+	rpc.register_sync(protocol::singleton::METHOD_SHUTDOWN, |_:EmptyObject, c| {
+		c.exit_entirely.store(true, Ordering::SeqCst);
+		Ok(())
+	});
 
-	rpc.register_async(
-		protocol::singleton::METHOD_LOG_REPLY_DONE,
-		|_:EmptyObject, c| {
-			async move {
-				c.log.result(if *IS_INTERACTIVE_CLI {
-					CONTROL_INSTRUCTIONS_INTERACTIVE
-				} else {
-					CONTROL_INSTRUCTIONS_COMMON
-				});
+	rpc.register_async(protocol::singleton::METHOD_LOG_REPLY_DONE, |_:EmptyObject, c| {
+		async move {
+			c.log.result(if *IS_INTERACTIVE_CLI {
+				CONTROL_INSTRUCTIONS_INTERACTIVE
+			} else {
+				CONTROL_INSTRUCTIONS_COMMON
+			});
 
-				let res = c
-					.caller
-					.call::<_, _, protocol::singleton::StatusWithTunnelName>(
-						protocol::singleton::METHOD_STATUS,
-						protocol::EmptyObject {},
-					);
+			let res = c.caller.call::<_, _, protocol::singleton::StatusWithTunnelName>(
+				protocol::singleton::METHOD_STATUS,
+				protocol::EmptyObject {},
+			);
 
-				// we want to ensure the "listening" string always gets printed
-				// for consumers (i.e. VS Code). Ask for it. If the tunnel
-				// is not currently connected though, it will be soon, and
-				// that'll be in the log replays.
-				if let Ok(Ok(s)) = res.await {
-					if let Some(name) = s.name {
-						print_listening(&c.log, &name);
-					}
+			// we want to ensure the "listening" string always gets printed
+			// for consumers (i.e. VS Code). Ask for it. If the tunnel
+			// is not currently connected though, it will be soon, and
+			// that'll be in the log replays.
+			if let Ok(Ok(s)) = res.await {
+				if let Some(name) = s.name {
+					print_listening(&c.log, &name);
 				}
-
-				Ok(())
 			}
-		},
-	);
+
+			Ok(())
+		}
+	});
 
 	rpc.register_sync(
 		protocol::singleton::METHOD_LOG,
 		|log:protocol::singleton::LogMessageOwned, c| {
 			match log.level {
-				Some(level) => {
-					c.log.emit(level, &format!("{}{}", log.prefix, log.message))
-				},
+				Some(level) => c.log.emit(level, &format!("{}{}", log.prefix, log.message)),
 				None => c.log.result(format!("{}{}", log.prefix, log.message)),
 			}
 			Ok(())
@@ -160,9 +141,7 @@ pub async fn start_singleton_client(args:SingletonClientArgs) -> bool {
 	);
 
 	let (read, write) = socket_stream_split(args.stream);
-	let _ =
-		start_json_rpc(rpc.build(args.log), read, write, msg_rx, args.shutdown)
-			.await;
+	let _ = start_json_rpc(rpc.build(args.log), read, write, msg_rx, args.shutdown).await;
 
 	exit_entirely.load(Ordering::SeqCst)
 }

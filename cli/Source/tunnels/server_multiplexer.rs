@@ -28,14 +28,11 @@ pub struct ServerMultiplexer {
 }
 
 impl ServerMultiplexer {
-	pub fn new() -> Self {
-		Self { inner:Arc::new(std::sync::Mutex::new(Some(Vec::new()))) }
-	}
+	pub fn new() -> Self { Self { inner:Arc::new(std::sync::Mutex::new(Some(Vec::new()))) } }
 
 	/// Adds a new bridge to the multiplexer.
 	pub fn register(&self, id:u16, bridge:ServerBridge) {
-		let bridge_rec =
-			ServerBridgeRec { id, bridge:Some(bridge), write_queue:vec![] };
+		let bridge_rec = ServerBridgeRec { id, bridge:Some(bridge), write_queue:vec![] };
 
 		let mut lock = self.inner.lock().unwrap();
 		match &mut *lock {
@@ -56,12 +53,7 @@ impl ServerMultiplexer {
 	/// loop' to ensure message order is preserved exactly, which is necessary
 	/// for compression. Returns false if there was no server with the given
 	/// bridge_id.
-	pub fn write_message(
-		&self,
-		log:&log::Logger,
-		bridge_id:u16,
-		message:Vec<u8>,
-	) -> bool {
+	pub fn write_message(&self, log:&log::Logger, bridge_id:u16, message:Vec<u8>) -> bool {
 		let mut lock = self.inner.lock().unwrap();
 
 		let bridges = match &mut *lock {
@@ -96,10 +88,7 @@ impl ServerMultiplexer {
 			None => return,
 		};
 
-		join_all(
-			bridges.into_iter().filter_map(|b| b.bridge).map(|b| b.close()),
-		)
-		.await;
+		join_all(bridges.into_iter().filter_map(|b| b.bridge).map(|b| b.close())).await;
 	}
 }
 
@@ -108,12 +97,7 @@ impl ServerMultiplexer {
 /// the record still exists in the bridges_lock (i.e. we haven't shut down),
 /// it'll return the ServerBridge so that the next handle_server_message call
 /// starts the loop again. Otherwise, it'll close the bridge.
-async fn write_loop(
-	log:log::Logger,
-	id:u16,
-	mut bridge:ServerBridge,
-	bridges_lock:Inner,
-) {
+async fn write_loop(log:log::Logger, id:u16, mut bridge:ServerBridge, bridges_lock:Inner) {
 	let mut items_vec = vec![];
 	loop {
 		{
@@ -123,11 +107,10 @@ async fn write_loop(
 				None => break,
 			};
 
-			let bridge_rec =
-				match server_bridges.iter_mut().find(|b| id == b.id) {
-					Some(b) => b,
-					None => break,
-				};
+			let bridge_rec = match server_bridges.iter_mut().find(|b| id == b.id) {
+				Some(b) => b,
+				None => break,
+			};
 
 			if bridge_rec.write_queue.is_empty() {
 				bridge_rec.bridge = Some(bridge);

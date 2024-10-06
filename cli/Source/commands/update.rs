@@ -13,17 +13,10 @@ use crate::{
 	constants::PRODUCT_NAME_LONG,
 	self_update::SelfUpdate,
 	update_service::UpdateService,
-	util::{
-		errors::AnyError,
-		http::ReqwestSimpleHttp,
-		input::ProgressBarReporter,
-	},
+	util::{errors::AnyError, http::ReqwestSimpleHttp, input::ProgressBarReporter},
 };
 
-pub async fn update(
-	ctx:CommandContext,
-	args:StandaloneUpdateArgs,
-) -> Result<i32, AnyError> {
+pub async fn update(ctx:CommandContext, args:StandaloneUpdateArgs) -> Result<i32, AnyError> {
 	let update_service = UpdateService::new(
 		ctx.log.clone(),
 		Arc::new(ReqwestSimpleHttp::with_client(ctx.http.clone())),

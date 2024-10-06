@@ -91,55 +91,42 @@ pub fn make_singleton_server(
 		current_status:current_status.clone(),
 	});
 
-	rpc.register_sync(
-		protocol::singleton::METHOD_RESTART,
-		|_:protocol::EmptyObject, ctx| {
-			info!(ctx.log, "restarting tunnel after client request");
-			let _ = ctx.shutdown_tx.send(ShutdownSignal::RpcRestartRequested);
-			Ok(())
-		},
-	);
+	rpc.register_sync(protocol::singleton::METHOD_RESTART, |_:protocol::EmptyObject, ctx| {
+		info!(ctx.log, "restarting tunnel after client request");
+		let _ = ctx.shutdown_tx.send(ShutdownSignal::RpcRestartRequested);
+		Ok(())
+	});
 
-	rpc.register_sync(
-		protocol::singleton::METHOD_STATUS,
-		|_:protocol::EmptyObject, c| {
-			Ok(c.current_status
-				.lock()
-				.unwrap()
-				.as_ref()
-				.map(|s| {
-					protocol::singleton::StatusWithTunnelName {
-						name:Some(s.name.clone()),
-						status:s.lock.read(),
-					}
-				})
-				.unwrap_or_default())
-		},
-	);
+	rpc.register_sync(protocol::singleton::METHOD_STATUS, |_:protocol::EmptyObject, c| {
+		Ok(c.current_status
+			.lock()
+			.unwrap()
+			.as_ref()
+			.map(|s| {
+				protocol::singleton::StatusWithTunnelName {
+					name:Some(s.name.clone()),
+					status:s.lock.read(),
+				}
+			})
+			.unwrap_or_default())
+	});
 
-	rpc.register_sync(
-		protocol::singleton::METHOD_SHUTDOWN,
-		|_:protocol::EmptyObject, ctx| {
-			info!(
-				ctx.log,
-				"closing tunnel and all clients after a shutdown request"
-			);
-			let _ = ctx.broadcast_tx.send(RpcCaller::serialize_notify(
-				&JsonRpcSerializer {},
-				protocol::singleton::METHOD_SHUTDOWN,
-				protocol::EmptyObject {},
-			));
-			let _ = ctx.shutdown_tx.send(ShutdownSignal::RpcShutdownRequested);
-			Ok(())
-		},
-	);
+	rpc.register_sync(protocol::singleton::METHOD_SHUTDOWN, |_:protocol::EmptyObject, ctx| {
+		info!(ctx.log, "closing tunnel and all clients after a shutdown request");
+		let _ = ctx.broadcast_tx.send(RpcCaller::serialize_notify(
+			&JsonRpcSerializer {},
+			protocol::singleton::METHOD_SHUTDOWN,
+			protocol::EmptyObject {},
+		));
+		let _ = ctx.shutdown_tx.send(ShutdownSignal::RpcShutdownRequested);
+		Ok(())
+	});
 
 	// we tokio spawn instead of keeping a future, since we want it to progress
 	// even outside of the start_singleton_server loop (i.e. while the tunnel
 	// restarts)
 	let fut = tokio::spawn(async move {
-		serve_singleton_rpc(log_broadcast, server, rpc.build(log), shutdown_rx)
-			.await
+		serve_singleton_rpc(log_broadcast, server, rpc.build(log), shutdown_rx).await
 	});
 	RpcServer { shutdown_broadcast, current_status, fut }
 }
@@ -148,19 +135,14 @@ pub async fn start_singleton_server<'a>(
 	args:SingletonServerArgs<'_>,
 ) -> Result<ServerTermination, AnyError> {
 	let shutdown_rx = ShutdownRequest::create_rx([
-		ShutdownRequest::Derived(Box::new(
-			args.server.shutdown_broadcast.subscribe(),
-		)),
+		ShutdownRequest::Derived(Box::new(args.server.shutdown_broadcast.subscribe())),
 		ShutdownRequest::Derived(Box::new(args.shutdown.clone())),
 	]);
 
 	{
 		print_listening(&args.log, &args.tunnel.name);
 		let mut status = args.server.current_status.lock().unwrap();
-		*status = Some(StatusInfo {
-			name:args.tunnel.name.clone(),
-			lock:args.tunnel.status(),
-		})
+		*status = Some(StatusInfo { name:args.tunnel.name.clone(), lock:args.tunnel.status() })
 	}
 
 	let serve_fut = super::serve(
@@ -174,12 +156,7 @@ pub async fn start_singleton_server<'a>(
 
 	pin!(serve_fut);
 
-	match futures::future::select(
-		Pin::new(&mut args.server.fut),
-		&mut serve_fut,
-	)
-	.await
-	{
+	match futures::future::select(Pin::new(&mut args.server.fut), &mut serve_fut).await {
 		Either::Left((rpc_result, fut)) => {
 			// the rpc server will only end as a result of a graceful shutdown,
 			// or with an error. Return the result of the eventual shutdown
@@ -212,14 +189,7 @@ async fn serve_singleton_rpc<C:Clone + Send + Sync + 'static>(
 		let msg_rx = log_broadcast.replay_and_subscribe();
 		let shutdown_rx = shutdown_rx.clone();
 		tokio::spawn(async move {
-			let _ = start_json_rpc(
-				dispatcher.clone(),
-				read,
-				write,
-				msg_rx,
-				shutdown_rx,
-			)
-			.await;
+			let _ = start_json_rpc(dispatcher.clone(), read, write, msg_rx, shutdown_rx).await;
 		});
 	}
 }
@@ -244,17 +214,12 @@ impl BroadcastLogSink {
 		Self { tx, recent:Arc::new(Mutex::new(RingBuffer::new(50))) }
 	}
 
-	pub fn get_brocaster(&self) -> broadcast::Sender<Vec<u8>> {
-		self.tx.clone()
-	}
+	pub fn get_brocaster(&self) -> broadcast::Sender<Vec<u8>> { self.tx.clone() }
 
 	fn replay_and_subscribe(
 		&self,
-	) -> ConcatReceivable<
-		Vec<u8>,
-		mpsc::UnboundedReceiver<Vec<u8>>,
-		broadcast::Receiver<Vec<u8>>,
-	> {
+	) -> ConcatReceivable<Vec<u8>, mpsc::UnboundedReceiver<Vec<u8>>, broadcast::Receiver<Vec<u8>>>
+	{
 		let (log_replay_tx, log_replay_rx) = mpsc::unbounded_channel();
 
 		for log in self.recent.lock().unwrap().iter() {
@@ -277,18 +242,12 @@ impl log::LogSink for BroadcastLogSink {
 		let serialized = RpcCaller::serialize_notify(
 			&s,
 			protocol::singleton::METHOD_LOG,
-			protocol::singleton::LogMessage {
-				level:Some(level),
-				prefix,
-				message,
-			},
+			protocol::singleton::LogMessage { level:Some(level), prefix, message },
 		);
 
 		let _ = self.tx.send(serialized.clone());
 		self.recent.lock().unwrap().push(serialized);
 	}
 
-	fn write_result(&self, message:&str) {
-		self.write_log(log::Level::Info, "", message);
-	}
+	fn write_result(&self, message:&str) { self.write_log(log::Level::Info, "", message); }
 }

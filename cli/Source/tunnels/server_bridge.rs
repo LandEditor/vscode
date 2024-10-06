@@ -9,11 +9,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 use super::socket_signal::{ClientMessageDecoder, ServerMessageSink};
 use crate::{
-	async_pipe::{
-		get_socket_rw_stream,
-		socket_stream_split,
-		AsyncPipeWriteHalf,
-	},
+	async_pipe::{get_socket_rw_stream, socket_stream_split, AsyncPipeWriteHalf},
 	util::errors::AnyError,
 };
 

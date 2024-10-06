@@ -66,9 +66,9 @@ pub struct SimpleResponse {
 
 impl SimpleResponse {
 	pub fn url_path_basename(&self) -> Option<String> {
-		self.url.as_ref().and_then(|u| {
-			u.path_segments().and_then(|s| s.last().map(|s| s.to_owned()))
-		})
+		self.url
+			.as_ref()
+			.and_then(|u| u.path_segments().and_then(|s| s.last().map(|s| s.to_owned())))
 	}
 }
 
@@ -89,10 +89,7 @@ impl SimpleResponse {
 		self.read.read_to_string(&mut body).await.ok();
 
 		StatusError {
-			url:self
-				.url
-				.map(|u| u.to_string())
-				.unwrap_or_else(|| "<invalid url>".to_owned()),
+			url:self.url.map(|u| u.to_string()).unwrap_or_else(|| "<invalid url>".to_owned()),
 			status_code:self.status_code.as_u16(),
 			body,
 		}
@@ -110,9 +107,8 @@ impl SimpleResponse {
 			.await
 			.map_err(|e| wrap(e, "error reading response"))?;
 
-		let t = serde_json::from_slice(&buf).map_err(|e| {
-			wrap(e, format!("error decoding json from {:?}", self.url))
-		})?;
+		let t = serde_json::from_slice(&buf)
+			.map_err(|e| wrap(e, format!("error decoding json from {:?}", self.url)))?;
 
 		Ok(t)
 	}
@@ -175,12 +171,7 @@ impl SimpleHttp for ReqwestSimpleHttp {
 			url:Some(res.url().clone()),
 			read:Box::pin(
 				res.bytes_stream()
-					.map_err(|e| {
-						futures::io::Error::new(
-							futures::io::ErrorKind::Other,
-							e,
-						)
-					})
+					.map_err(|e| futures::io::Error::new(futures::io::ErrorKind::Other, e))
 					.into_async_read()
 					.compat(),
 			),
@@ -202,19 +193,11 @@ pub struct DelegatedHttpRequest {
 }
 
 impl DelegatedHttpRequest {
-	pub fn initial_response(
-		&self,
-		status_code:u16,
-		headers:Vec<(String, String)>,
-	) {
-		self.ch
-			.send(DelegatedHttpEvent::InitResponse { status_code, headers })
-			.ok();
+	pub fn initial_response(&self, status_code:u16, headers:Vec<(String, String)>) {
+		self.ch.send(DelegatedHttpEvent::InitResponse { status_code, headers }).ok();
 	}
 
-	pub fn body(&self, chunk:Vec<u8>) {
-		self.ch.send(DelegatedHttpEvent::Body(chunk)).ok();
-	}
+	pub fn body(&self, chunk:Vec<u8>) { self.ch.send(DelegatedHttpEvent::Body(chunk)).ok(); }
 
 	pub fn end(self) {}
 }
@@ -231,9 +214,7 @@ pub struct DelegatedSimpleHttp {
 }
 
 impl DelegatedSimpleHttp {
-	pub fn new(
-		log:log::Logger,
-	) -> (Self, mpsc::Receiver<DelegatedHttpRequest>) {
+	pub fn new(log:log::Logger) -> (Self, mpsc::Receiver<DelegatedHttpRequest>) {
 		let (tx, rx) = mpsc::channel(4);
 		(DelegatedSimpleHttp { log, start_request:tx }, rx)
 	}
@@ -261,16 +242,13 @@ impl SimpleHttp for DelegatedSimpleHttp {
 			Some(DelegatedHttpEvent::InitResponse { status_code, headers }) => {
 				trace!(
 					self.log,
-					"delegated request to {} resulted in status = {}",
-					url,
-					status_code
+					"delegated request to {} resulted in status = {}", url, status_code
 				);
 				let mut headers_map = HeaderMap::with_capacity(headers.len());
 				for (k, v) in &headers {
-					if let (Ok(key), Ok(value)) = (
-						HeaderName::from_str(&k.to_lowercase()),
-						HeaderValue::from_str(v),
-					) {
+					if let (Ok(key), Ok(value)) =
+						(HeaderName::from_str(&k.to_lowercase()), HeaderValue::from_str(v))
+					{
 						headers_map.insert(key, value);
 					}
 				}
@@ -283,14 +261,9 @@ impl SimpleHttp for DelegatedSimpleHttp {
 					read:Box::pin(DelegatedReader::new(rx)),
 				})
 			},
-			Some(DelegatedHttpEvent::End) => {
-				Ok(SimpleResponse::generic_error(&url))
-			},
+			Some(DelegatedHttpEvent::End) => Ok(SimpleResponse::generic_error(&url)),
 			Some(_) => {
-				panic!(
-					"expected initresponse as first message from delegated \
-					 http"
-				)
+				panic!("expected initresponse as first message from delegated http")
 			},
 			None => Ok(SimpleResponse::generic_error(&url)), // sender shut down
 		}
@@ -319,15 +292,10 @@ impl AsyncRead for DelegatedReader {
 		}
 
 		match self.receiver.poll_recv(cx) {
-			Poll::Ready(Some(DelegatedHttpEvent::Body(msg))) => {
-				self.readbuf.put_data(buf, msg, 0)
-			},
+			Poll::Ready(Some(DelegatedHttpEvent::Body(msg))) => self.readbuf.put_data(buf, msg, 0),
 			Poll::Ready(Some(_)) => Poll::Ready(Ok(())), // EOF
 			Poll::Ready(None) => {
-				Poll::Ready(Err(io::Error::new(
-					io::ErrorKind::UnexpectedEof,
-					"EOF",
-				)))
+				Poll::Ready(Err(io::Error::new(io::ErrorKind::UnexpectedEof, "EOF")))
 			},
 			Poll::Pending => Poll::Pending,
 		}
@@ -342,10 +310,7 @@ pub struct FallbackSimpleHttp {
 }
 
 impl FallbackSimpleHttp {
-	pub fn new(
-		native:ReqwestSimpleHttp,
-		delegated:DelegatedSimpleHttp,
-	) -> Self {
+	pub fn new(native:ReqwestSimpleHttp, delegated:DelegatedSimpleHttp) -> Self {
 		FallbackSimpleHttp { native, delegated }
 	}
 

@@ -34,8 +34,7 @@ impl Serialization for JsonRpcSerializer {
 		&self,
 		b:&[u8],
 	) -> Result<P, crate::util::errors::AnyError> {
-		serde_json::from_slice(b)
-			.map_err(|e| InvalidRpcDataError(e.to_string()).into())
+		serde_json::from_slice(b).map_err(|e| InvalidRpcDataError(e.to_string()).into())
 	}
 }
 

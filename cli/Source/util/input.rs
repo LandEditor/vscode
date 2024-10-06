@@ -18,9 +18,7 @@ pub struct ProgressBarReporter {
 }
 
 impl From<ProgressBar> for ProgressBarReporter {
-	fn from(bar:ProgressBar) -> Self {
-		ProgressBarReporter { bar, has_set_total:false }
-	}
+	fn from(bar:ProgressBar) -> Self { ProgressBarReporter { bar, has_set_total:false } }
 }
 
 impl ReportCopyProgress for ProgressBarReporter {
@@ -45,10 +43,7 @@ pub fn prompt_yn(text:&str) -> Result<bool, WrappedError> {
 		.map_err(|e| wrap(e, "Failed to read confirm input"))
 }
 
-pub fn prompt_options<T>(
-	text:impl Into<String>,
-	options:&[T],
-) -> Result<T, WrappedError>
+pub fn prompt_options<T>(text:impl Into<String>, options:&[T]) -> Result<T, WrappedError>
 where
 	T: Display + Copy, {
 	let chosen = Select::with_theme(&ColorfulTheme::default())
@@ -61,10 +56,7 @@ where
 	Ok(options[chosen])
 }
 
-pub fn prompt_placeholder(
-	question:&str,
-	placeholder:&str,
-) -> Result<String, WrappedError> {
+pub fn prompt_placeholder(question:&str, placeholder:&str) -> Result<String, WrappedError> {
 	Input::with_theme(&ColorfulTheme::default())
 		.with_prompt(question)
 		.default(placeholder.to_string())

@@ -13,31 +13,25 @@ use super::errors::CodeError;
 use crate::{constants::QUALITYLESS_SERVER_NAME, update_service::Platform};
 
 lazy_static! {
-	static ref LDCONFIG_STDC_RE: Regex =
-		Regex::new(r"libstdc\+\+.* => (.+)").unwrap();
-	static ref LDD_VERSION_RE: BinRegex =
-		BinRegex::new(r"^ldd.*(.+)\.(.+)\s").unwrap();
-	static ref GENERIC_VERSION_RE: Regex =
-		Regex::new(r"^([0-9]+)\.([0-9]+)$").unwrap();
+	static ref LDCONFIG_STDC_RE: Regex = Regex::new(r"libstdc\+\+.* => (.+)").unwrap();
+	static ref LDD_VERSION_RE: BinRegex = BinRegex::new(r"^ldd.*(.+)\.(.+)\s").unwrap();
+	static ref GENERIC_VERSION_RE: Regex = Regex::new(r"^([0-9]+)\.([0-9]+)$").unwrap();
 	static ref LIBSTD_CXX_VERSION_RE: BinRegex =
 		BinRegex::new(r"GLIBCXX_([0-9]+)\.([0-9]+)(?:\.([0-9]+))?").unwrap();
 	static ref MIN_LDD_VERSION: SimpleSemver = SimpleSemver::new(2, 28, 0);
-	static ref MIN_LEGACY_LDD_VERSION: SimpleSemver =
-		SimpleSemver::new(2, 17, 0);
+	static ref MIN_LEGACY_LDD_VERSION: SimpleSemver = SimpleSemver::new(2, 17, 0);
 }
 
 #[cfg(target_arch = "arm")]
 lazy_static! {
 	static ref MIN_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 26);
-	static ref MIN_LEGACY_CXX_VERSION: SimpleSemver =
-		SimpleSemver::new(3, 4, 22);
+	static ref MIN_LEGACY_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 22);
 }
 
 #[cfg(not(target_arch = "arm"))]
 lazy_static! {
 	static ref MIN_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 25);
-	static ref MIN_LEGACY_CXX_VERSION: SimpleSemver =
-		SimpleSemver::new(3, 4, 19);
+	static ref MIN_LEGACY_CXX_VERSION: SimpleSemver = SimpleSemver::new(3, 4, 19);
 }
 
 const NIXOS_TEST_PATH:&str = "/etc/NIXOS";
@@ -64,20 +58,14 @@ impl PreReqChecker {
 
 	#[cfg(target_os = "linux")]
 	pub async fn verify(&self) -> Result<Platform, CodeError> {
-		let (is_nixos, skip_glibc_checks, or_musl) = tokio::join!(
-			check_is_nixos(),
-			skip_requirements_check(),
-			check_musl_interpreter()
-		);
+		let (is_nixos, skip_glibc_checks, or_musl) =
+			tokio::join!(check_is_nixos(), skip_requirements_check(), check_musl_interpreter());
 
 		let (gnu_a, gnu_b) = if !skip_glibc_checks {
 			tokio::join!(check_glibc_version(), check_glibcxx_version())
 		} else {
 			println!("!!! WARNING: Skipping server pre-requisite check !!!");
-			println!(
-				"!!! Server stability is not guaranteed. Proceed at your own \
-				 risk. !!!"
-			);
+			println!("!!! Server stability is not guaranteed. Proceed at your own risk. !!!");
 			// Use the legacy server for #210029
 			(Ok(true), Ok(true))
 		};
@@ -123,16 +111,10 @@ impl PreReqChecker {
 			errors.push(e);
 		}
 
-		let bullets = errors
-			.iter()
-			.map(|e| format!("  - {}", e))
-			.collect::<Vec<String>>()
-			.join("\n");
+		let bullets =
+			errors.iter().map(|e| format!("  - {}", e)).collect::<Vec<String>>().join("\n");
 
-		Err(CodeError::PrerequisitesFailed {
-			bullets,
-			name:QUALITYLESS_SERVER_NAME,
-		})
+		Err(CodeError::PrerequisitesFailed { bullets, name:QUALITYLESS_SERVER_NAME })
 	}
 }
 
@@ -191,9 +173,7 @@ async fn check_glibc_version() -> Result<bool, String> {
 /// Check for nixos to avoid mandating glibc versions. See:
 /// https://github.com/microsoft/vscode-remote-release/issues/7129
 #[allow(dead_code)]
-async fn check_is_nixos() -> bool {
-	fs::metadata(NIXOS_TEST_PATH).await.is_ok()
-}
+async fn check_is_nixos() -> bool { fs::metadata(NIXOS_TEST_PATH).await.is_ok() }
 
 /// Do not remove this check.
 /// Provides a way to skip the server glibc requirements check from
@@ -233,23 +213,18 @@ async fn check_glibcxx_version() -> Result<bool, String> {
 				Ok(contents) => check_for_sufficient_glibcxx_versions(contents),
 				Err(e) => {
 					Err(format!(
-						"validate GLIBCXX version for GNU environments, but \
-						 could not: {}",
+						"validate GLIBCXX version for GNU environments, but could not: {}",
 						e
 					))
 				},
 			}
 		},
-		None => {
-			Err("find libstdc++.so or ldconfig for GNU environments".to_owned())
-		},
+		None => Err("find libstdc++.so or ldconfig for GNU environments".to_owned()),
 	}
 }
 
 #[cfg(target_os = "linux")]
-fn check_for_sufficient_glibcxx_versions(
-	contents:Vec<u8>,
-) -> Result<bool, String> {
+fn check_for_sufficient_glibcxx_versions(contents:Vec<u8>) -> Result<bool, String> {
 	let max_version = LIBSTD_CXX_VERSION_RE
 		.captures_iter(&contents)
 		.map(|m| {
@@ -309,9 +284,7 @@ fn extract_libstd_from_ldconfig(output:&[u8]) -> Option<String> {
 		.map(|cap| cap.as_str().to_owned())
 }
 
-fn u32_from_bytes(b:&[u8]) -> u32 {
-	String::from_utf8_lossy(b).parse::<u32>().unwrap_or(0)
-}
+fn u32_from_bytes(b:&[u8]) -> u32 { String::from_utf8_lossy(b).parse::<u32>().unwrap_or(0) }
 
 #[derive(Debug, Default, PartialEq, Eq)]
 struct SimpleSemver {
@@ -321,9 +294,7 @@ struct SimpleSemver {
 }
 
 impl PartialOrd for SimpleSemver {
-	fn partial_cmp(&self, other:&Self) -> Option<Ordering> {
-		Some(self.cmp(other))
-	}
+	fn partial_cmp(&self, other:&Self) -> Option<Ordering> { Some(self.cmp(other)) }
 }
 
 impl Ord for SimpleSemver {
@@ -343,9 +314,7 @@ impl Ord for SimpleSemver {
 }
 
 impl From<&SimpleSemver> for String {
-	fn from(s:&SimpleSemver) -> Self {
-		format!("v{}.{}.{}", s.major, s.minor, s.patch)
-	}
+	fn from(s:&SimpleSemver) -> Self { format!("v{}.{}.{}", s.major, s.minor, s.patch) }
 }
 
 impl std::fmt::Display for SimpleSemver {
@@ -356,9 +325,7 @@ impl std::fmt::Display for SimpleSemver {
 
 #[allow(dead_code)]
 impl SimpleSemver {
-	fn new(major:u32, minor:u32, patch:u32) -> SimpleSemver {
-		SimpleSemver { major, minor, patch }
-	}
+	fn new(major:u32, minor:u32, patch:u32) -> SimpleSemver { SimpleSemver { major, minor, patch } }
 }
 
 #[cfg(test)]
@@ -369,8 +336,7 @@ mod tests {
 	fn test_extract_libstd_from_ldconfig() {
 		let actual = "
 							libstoken.so.1 (libc6,x86-64) => /lib/x86_64-linux-gnu/libstoken.so.1
-							libstemmer.so.0d (libc6,x86-64) => \
-		              /lib/x86_64-linux-gnu/libstemmer.so.0d
+							libstemmer.so.0d (libc6,x86-64) => /lib/x86_64-linux-gnu/libstemmer.so.0d
 							libstdc++.so.6 (libc6,x86-64) => /lib/x86_64-linux-gnu/libstdc++.so.6
 							libstartup-notification-1.so.0 (libc6,x86-64) => \
 		              /lib/x86_64-linux-gnu/libstartup-notification-1.so.0
@@ -384,12 +350,7 @@ mod tests {
 			Some("/lib/x86_64-linux-gnu/libstdc++.so.6".to_owned()),
 		);
 
-		assert_eq!(
-			extract_libstd_from_ldconfig(
-				&"nothing here!".to_owned().into_bytes()
-			),
-			None,
-		);
+		assert_eq!(extract_libstd_from_ldconfig(&"nothing here!".to_owned().into_bytes()), None,);
 	}
 
 	#[test]
@@ -407,17 +368,12 @@ mod tests {
 	fn check_for_sufficient_glibcxx_versions() {
 		let actual = "ldd (Ubuntu GLIBC 2.31-0ubuntu9.7) 2.31
 					Copyright (C) 2020 Free Software Foundation, Inc.
-					This is free software; see the source for copying conditions.  There is \
-		              NO
-					warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR \
-		              PURPOSE.
+					This is free software; see the source for copying conditions.  There is NO
+					warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 					Written by Roland McGrath and Ulrich Drepper."
 			.to_owned()
 			.into_bytes();
 
-		assert_eq!(
-			extract_ldd_version(&actual),
-			Some(SimpleSemver::new(2, 31, 0)),
-		);
+		assert_eq!(extract_ldd_version(&actual), Some(SimpleSemver::new(2, 31, 0)),);
 	}
 }

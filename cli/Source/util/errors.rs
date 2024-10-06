@@ -8,12 +8,7 @@ use std::fmt::Display;
 use thiserror::Error;
 
 use crate::{
-	constants::{
-		APPLICATION_NAME,
-		CONTROL_PORT,
-		DOCUMENTATION_URL,
-		QUALITYLESS_PRODUCT_NAME,
-	},
+	constants::{APPLICATION_NAME, CONTROL_PORT, DOCUMENTATION_URL, QUALITYLESS_PRODUCT_NAME},
 	rpc::ResponseError,
 };
 
@@ -43,10 +38,7 @@ impl WrappedError {
 impl From<reqwest::Error> for WrappedError {
 	fn from(e:reqwest::Error) -> WrappedError {
 		WrappedError {
-			message:format!(
-				"error requesting {}",
-				e.url().map_or("<unknown>", |u| u.as_str())
-			),
+			message:format!("error requesting {}", e.url().map_or("<unknown>", |u| u.as_str())),
 			original:format!("{}", e),
 		}
 	}
@@ -76,28 +68,16 @@ pub struct StatusError {
 
 impl std::fmt::Display for StatusError {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(
-			f,
-			"error requesting {}: {} {}",
-			self.url, self.status_code, self.body
-		)
+		write!(f, "error requesting {}: {} {}", self.url, self.status_code, self.body)
 	}
 }
 
 impl StatusError {
-	pub async fn from_res(
-		res:reqwest::Response,
-	) -> Result<StatusError, AnyError> {
+	pub async fn from_res(res:reqwest::Response) -> Result<StatusError, AnyError> {
 		let status_code = res.status().as_u16();
 		let url = res.url().to_string();
 		let body = res.text().await.map_err(|e| {
-			wrap(
-				e,
-				format!(
-					"failed to read response body on {} code from {}",
-					status_code, url
-				),
-			)
+			wrap(e, format!("failed to read response body on {} code from {}", status_code, url))
 		})?;
 
 		Ok(StatusError { url, status_code, body })
@@ -110,9 +90,7 @@ impl StatusError {
 pub struct MismatchConnectionToken(pub String);
 
 impl std::fmt::Display for MismatchConnectionToken {
-	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(f, "{}", self.0)
-	}
+	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result { write!(f, "{}", self.0) }
 }
 
 // When the VS Code server has an unrecognized extension (rather than zip or gz)
@@ -147,8 +125,8 @@ impl std::fmt::Display for MissingEntrypointError {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"Missing entrypoints in server download. Most likely this is a \
-			 corrupted download. Please retry"
+			"Missing entrypoints in server download. Most likely this is a corrupted download. \
+			 Please retry"
 		)
 	}
 }
@@ -174,8 +152,8 @@ impl std::fmt::Display for NoHomeForLauncherError {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"No $HOME variable was found in your environment. Either set it, \
-			 or specify a `--data-dir` manually when invoking the launcher.",
+			"No $HOME variable was found in your environment. Either set it, or specify a \
+			 `--data-dir` manually when invoking the launcher.",
 		)
 	}
 }
@@ -184,9 +162,7 @@ impl std::fmt::Display for NoHomeForLauncherError {
 pub struct InvalidTunnelName(pub String);
 
 impl std::fmt::Display for InvalidTunnelName {
-	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(f, "{}", &self.0)
-	}
+	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result { write!(f, "{}", &self.0) }
 }
 
 #[derive(Debug)]
@@ -194,11 +170,7 @@ pub struct TunnelCreationFailed(pub String, pub String);
 
 impl std::fmt::Display for TunnelCreationFailed {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(
-			f,
-			"Could not create tunnel with name: {}\nReason: {}",
-			&self.0, &self.1
-		)
+		write!(f, "Could not create tunnel with name: {}\nReason: {}", &self.0, &self.1)
 	}
 }
 
@@ -206,9 +178,7 @@ impl std::fmt::Display for TunnelCreationFailed {
 pub struct TunnelHostFailed(pub String);
 
 impl std::fmt::Display for TunnelHostFailed {
-	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(f, "{}", &self.0)
-	}
+	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result { write!(f, "{}", &self.0) }
 }
 
 #[derive(Debug)]
@@ -227,8 +197,8 @@ impl std::fmt::Display for MismatchedLaunchModeError {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"A server is already running, but it was not launched in the same \
-			 listening mode (port vs. socket) as this request"
+			"A server is already running, but it was not launched in the same listening mode \
+			 (port vs. socket) as this request"
 		)
 	}
 }
@@ -258,13 +228,9 @@ impl std::fmt::Display for NoInstallInUserProvidedPath {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"No {} installation could be found in {}. You can run `{} \
-			 --use-quality=stable` to switch to the latest stable version of \
-			 {}.",
-			QUALITYLESS_PRODUCT_NAME,
-			self.0,
-			APPLICATION_NAME,
-			QUALITYLESS_PRODUCT_NAME
+			"No {} installation could be found in {}. You can run `{} --use-quality=stable` to \
+			 switch to the latest stable version of {}.",
+			QUALITYLESS_PRODUCT_NAME, self.0, APPLICATION_NAME, QUALITYLESS_PRODUCT_NAME
 		)
 	}
 }
@@ -276,8 +242,8 @@ impl std::fmt::Display for InvalidRequestedVersion {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"The reqested version is invalid, expected one of 'stable', \
-			 'insiders', version number (x.y.z), or absolute path.",
+			"The reqested version is invalid, expected one of 'stable', 'insiders', version \
+			 number (x.y.z), or absolute path.",
 		)
 	}
 }
@@ -316,8 +282,8 @@ impl std::fmt::Display for ServiceAlreadyRegistered {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"Already registered the service. Run `{} tunnel service \
-			 uninstall` to unregister it first",
+			"Already registered the service. Run `{} tunnel service uninstall` to unregister it \
+			 first",
 			APPLICATION_NAME
 		)
 	}
@@ -360,11 +326,7 @@ pub struct CorruptDownload(pub String);
 
 impl std::fmt::Display for CorruptDownload {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
-		write!(
-			f,
-			"Error updating the {} CLI: {}",
-			QUALITYLESS_PRODUCT_NAME, self.0
-		)
+		write!(f, "Error updating the {} CLI: {}", QUALITYLESS_PRODUCT_NAME, self.0)
 	}
 }
 
@@ -375,8 +337,8 @@ impl std::fmt::Display for MissingHomeDirectory {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		write!(
 			f,
-			"Could not find your home directory. Please ensure this command \
-			 is running in the context of an normal user."
+			"Could not find your home directory. Please ensure this command is running in the \
+			 context of an normal user."
 		)
 	}
 }
@@ -440,9 +402,8 @@ impl Display for DbusConnectFailedError {
 	fn fmt(&self, f:&mut std::fmt::Formatter) -> std::fmt::Result {
 		let mut str = String::new();
 		str.push_str(
-			"Error creating dbus session. This command uses systemd for \
-			 managing services, you should check that systemd is installed \
-			 and under your user.",
+			"Error creating dbus session. This command uses systemd for managing services, you \
+			 should check that systemd is installed and under your user.",
 		);
 
 		if std::env::var("WSL_DISTRO_NAME").is_ok() {
@@ -450,11 +411,10 @@ impl Display for DbusConnectFailedError {
 		}
 
 		str.push_str(
-			"If running `systemctl status` works, systemd is ok, but your \
-			 session dbus may not be. You might need to:\n\n- Install the \
-			 `dbus-user-session` package, and reboot if it was not \
-			 installed\n- Start the user dbus session with `systemctl --user \
-			 enable dbus --now`.\n\nThe error encountered was: ",
+			"If running `systemctl status` works, systemd is ok, but your session dbus may not \
+			 be. You might need to:\n\n- Install the `dbus-user-session` package, and reboot if \
+			 it was not installed\n- Start the user dbus session with `systemctl --user enable \
+			 dbus --now`.\n\nThe error encountered was: ",
 		);
 		str.push_str(&self.0);
 		str.push('\n');
@@ -492,10 +452,7 @@ pub enum CodeError {
 
 	#[error("platform not currently supported: {0}")]
 	UnsupportedPlatform(String),
-	#[error(
-		"This machine does not meet {name}'s prerequisites, expected \
-		 either...\n{bullets}"
-	)]
+	#[error("This machine does not meet {name}'s prerequisites, expected either...\n{bullets}")]
 	PrerequisitesFailed { name:&'static str, bullets:String },
 	#[error("failed to spawn process: {0:?}")]
 	ProcessSpawnFailed(std::io::Error),
@@ -522,17 +479,14 @@ pub enum CodeError {
 	#[error("could not start server on the given host/port: {0}")]
 	CouldNotListenOnInterface(hyper::Error),
 	#[error(
-		"Run this command again with --accept-server-license-terms to \
-		 indicate your agreement."
+		"Run this command again with --accept-server-license-terms to indicate your agreement."
 	)]
 	NeedsInteractiveLegalConsent,
 	#[error("Sorry, you cannot use this CLI without accepting the terms.")]
 	DeniedLegalConset,
 	#[error("The server is not yet downloaded, try again shortly.")]
 	ServerNotYetDownloaded,
-	#[error(
-		"An error was encountered downloading the server, please retry: {0}"
-	)]
+	#[error("An error was encountered downloading the server, please retry: {0}")]
 	ServerDownloadError(String),
 	#[error("Updates are are not available: {0}")]
 	UpdatesNotConfigured(&'static str),
@@ -544,8 +498,8 @@ pub enum CodeError {
 	#[error("Could not write connection token file: {0}")]
 	CouldNotCreateConnectionTokenFile(std::io::Error),
 	#[error(
-		"A tunnel with the name {0} exists and is in-use. Please pick a \
-		 different name or stop the existing tunnel."
+		"A tunnel with the name {0} exists and is in-use. Please pick a different name or stop \
+		 the existing tunnel."
 	)]
 	TunnelActiveAndInUse(String),
 	#[error("Timed out looking for port/socket")]
@@ -586,7 +540,5 @@ makeAnyError!(
 );
 
 impl From<reqwest::Error> for AnyError {
-	fn from(e:reqwest::Error) -> AnyError {
-		AnyError::WrappedError(WrappedError::from(e))
-	}
+	fn from(e:reqwest::Error) -> AnyError { AnyError::WrappedError(WrappedError::from(e)) }
 }

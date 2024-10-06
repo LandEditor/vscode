@@ -231,18 +231,13 @@ mod tests {
 		let dir = tempfile::tempdir().unwrap();
 		let file_path = dir.path().join("tmp");
 
-		let read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		let mut rx = tailf(read_file, 32);
 		assert!(rx.try_recv().is_err());
 
-		let mut append_file =
-			OpenOptions::new().append(true).open(&file_path).unwrap();
+		let mut append_file = OpenOptions::new().append(true).open(&file_path).unwrap();
 		writeln!(&mut append_file, "some line").unwrap();
 
 		let recv = rx.recv().await;
@@ -268,12 +263,8 @@ mod tests {
 		let dir = tempfile::tempdir().unwrap();
 		let file_path = dir.path().join("tmp");
 
-		let mut read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let mut read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 
 		writeln!(&mut read_file, "some existing content").unwrap();
 		let mut rx = tailf(read_file, 0);
@@ -302,30 +293,20 @@ mod tests {
 		let dir = tempfile::tempdir().unwrap();
 		let file_path = dir.path().join("tmp");
 
-		let mut read_file = OpenOptions::new()
-			.write(true)
-			.read(true)
-			.create(true)
-			.open(&file_path)
-			.unwrap();
+		let mut read_file =
+			OpenOptions::new().write(true).read(true).create(true).open(&file_path).unwrap();
 		let mut rng = rand::thread_rng();
 
 		let mut written = vec![];
-		let base_line =
-			"Elit ipsum cillum ex cillum. Adipisicing consequat cupidatat do \
-			 proident ut in sunt Lorem ipsum tempor. Eiusmod ipsum Lorem \
-			 labore exercitation sunt pariatur excepteur fugiat cillum velit \
-			 cillum enim. Nisi Lorem cupidatat ad enim velit officia eiusmod \
-			 esse tempor aliquip. Deserunt pariatur tempor in duis culpa esse \
-			 sit nulla irure ullamco ipsum voluptate non laboris. Occaecat \
-			 officia nulla officia mollit do aliquip reprehenderit ad \
-			 incididunt.";
+		let base_line = "Elit ipsum cillum ex cillum. Adipisicing consequat cupidatat do proident \
+		                 ut in sunt Lorem ipsum tempor. Eiusmod ipsum Lorem labore exercitation \
+		                 sunt pariatur excepteur fugiat cillum velit cillum enim. Nisi Lorem \
+		                 cupidatat ad enim velit officia eiusmod esse tempor aliquip. Deserunt \
+		                 pariatur tempor in duis culpa esse sit nulla irure ullamco ipsum \
+		                 voluptate non laboris. Occaecat officia nulla officia mollit do aliquip \
+		                 reprehenderit ad incididunt.";
 		for i in 0..100 {
-			let line = format!(
-				"{}: {}",
-				i,
-				&base_line[..rng.gen_range(0..base_line.len())]
-			);
+			let line = format!("{}: {}", i, &base_line[..rng.gen_range(0..base_line.len())]);
 			writeln!(&mut read_file, "{}", line).unwrap();
 			written.push(line);
 		}
@@ -337,8 +318,7 @@ mod tests {
 		for i in 0..last_n {
 			let recv = rx.try_recv().unwrap();
 			if let TailEvent::Line(l) = recv {
-				let mut expected =
-					written[written.len() - last_n + i].to_string();
+				let mut expected = written[written.len() - last_n + i].to_string();
 				expected.push('\n');
 				assert_eq!(expected, l);
 			} else {
@@ -348,8 +328,7 @@ mod tests {
 
 		assert!(rx.try_recv().is_err());
 
-		let mut append_file =
-			OpenOptions::new().append(true).open(&file_path).unwrap();
+		let mut append_file = OpenOptions::new().append(true).open(&file_path).unwrap();
 		writeln!(append_file, " is now complete").unwrap();
 
 		let recv = rx.recv().await;

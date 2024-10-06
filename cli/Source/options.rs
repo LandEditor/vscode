@@ -10,17 +10,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::constants::SERVER_NAME_MAP;
 
-#[derive(
-	clap::ValueEnum,
-	Copy,
-	Clone,
-	Debug,
-	Hash,
-	PartialEq,
-	Eq,
-	Serialize,
-	Deserialize,
-)]
+#[derive(clap::ValueEnum, Copy, Clone, Debug, Hash, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Quality {
 	#[serde(rename = "stable")]
 	Stable,
@@ -82,8 +72,7 @@ impl TryFrom<&str> for Quality {
 			"exploration" => Ok(Quality::Exploration),
 			_ => {
 				Err(format!(
-					"Unknown quality: {}. Must be one of stable, insiders, or \
-					 exploration.",
+					"Unknown quality: {}. Must be one of stable, insiders, or exploration.",
 					s
 				))
 			},
@@ -91,9 +80,7 @@ impl TryFrom<&str> for Quality {
 	}
 }
 
-#[derive(
-	clap::ValueEnum, Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize,
-)]
+#[derive(clap::ValueEnum, Copy, Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum TelemetryLevel {
 	Off,
 	Crash,

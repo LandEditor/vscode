@@ -17,8 +17,7 @@ const HELP_COMMANDS:&str = concatcp!(
 	constants::APPLICATION_NAME,
 	" [options][paths...]
 
-To read output from another program, append '-' (e.g. 'echo Hello World | \
-	 {name} -')"
+To read output from another program, append '-' (e.g. 'echo Hello World | {name} -')"
 );
 
 const STANDALONE_TEMPLATE:&str = concatcp!(
@@ -53,8 +52,7 @@ const NUMBER_IN_VERSION:&str = match constants::VSCODE_CLI_VERSION {
 	Some(c) => c,
 	None => "dev",
 };
-const VERSION:&str =
-	concatcp!(NUMBER_IN_VERSION, " (commit ", COMMIT_IN_VERSION, ")");
+const VERSION:&str = concatcp!(NUMBER_IN_VERSION, " (commit ", COMMIT_IN_VERSION, ")");
 
 #[derive(Parser, Debug, Default)]
 #[clap(

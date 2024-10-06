@@ -116,10 +116,7 @@ impl PortForwardingSender {
 						None => {
 							let mut count = PortCount::default();
 							count[p.privacy] += 1;
-							v.insert(
-								p.number,
-								PortMapRec { count, protocol:p.protocol },
-							);
+							v.insert(p.number, PortMapRec { count, protocol:p.protocol });
 						},
 					};
 				}
@@ -131,9 +128,7 @@ impl PortForwardingSender {
 }
 
 impl Clone for PortForwardingSender {
-	fn clone(&self) -> Self {
-		Self { current:Mutex::new(vec![]), sender:self.sender.clone() }
-	}
+	fn clone(&self) -> Self { Self { current:Mutex::new(vec![]), sender:self.sender.clone() } }
 }
 
 impl Drop for PortForwardingSender {
@@ -158,19 +153,14 @@ impl PortForwardingReceiver {
 	}
 
 	/// Applies all changes from PortForwardingHandles to the tunnel.
-	pub async fn apply_to(
-		&mut self,
-		log:log::Logger,
-		tunnel:Arc<ActiveTunnel>,
-	) {
+	pub async fn apply_to(&mut self, log:log::Logger, tunnel:Arc<ActiveTunnel>) {
 		let mut current:PortMap = HashMap::new();
 		while self.receiver.changed().await.is_ok() {
 			let next = self.receiver.borrow().clone();
 
 			for (port, rec) in current.iter() {
 				let privacy = rec.count.primary_privacy();
-				if !matches!(next.get(port), Some(n) if n.count.primary_privacy() == privacy)
-				{
+				if !matches!(next.get(port), Some(n) if n.count.primary_privacy() == privacy) {
 					match tunnel.remove_port(*port).await {
 						Ok(_) => {
 							info!(
@@ -184,10 +174,7 @@ impl PortForwardingReceiver {
 						Err(e) => {
 							error!(
 								log,
-								"failed to stop forwarding {} port {}: {}",
-								rec.protocol,
-								port,
-								e
+								"failed to stop forwarding {} port {}: {}", rec.protocol, port, e
 							)
 						},
 					}
@@ -196,29 +183,13 @@ impl PortForwardingReceiver {
 
 			for (port, rec) in next.iter() {
 				let privacy = rec.count.primary_privacy();
-				if !matches!(current.get(port), Some(n) if n.count.primary_privacy() == privacy)
-				{
-					match tunnel
-						.add_port_tcp(*port, privacy, rec.protocol)
-						.await
-					{
+				if !matches!(current.get(port), Some(n) if n.count.primary_privacy() == privacy) {
+					match tunnel.add_port_tcp(*port, privacy, rec.protocol).await {
 						Ok(_) => {
-							info!(
-								log,
-								"forwarding {} port {} at {:?}",
-								rec.protocol,
-								port,
-								privacy
-							)
+							info!(log, "forwarding {} port {} at {:?}", rec.protocol, port, privacy)
 						},
 						Err(e) => {
-							error!(
-								log,
-								"failed to forward {} port {}: {}",
-								rec.protocol,
-								port,
-								e
-							)
+							error!(log, "failed to forward {} port {}: {}", rec.protocol, port, e)
 						},
 					}
 				}
@@ -251,8 +222,7 @@ pub async fn client(args:SingletonClientArgs) -> Result<(), std::io::Error> {
 
 	debug!(
 		log,
-		"An existing port forwarding process is running on this machine, \
-		 connecting to it..."
+		"An existing port forwarding process is running on this machine, connecting to it..."
 	);
 
 	let caller = rpc.get_caller(msg_tx);
@@ -341,26 +311,18 @@ async fn serve_singleton_rpc(
 			// dispatcher so that we can have the "handle" drop when the
 			// connection drops.
 			let rpc = new_json_rpc();
-			let mut rpc = rpc.methods(SingletonServerContext {
-				log:log.clone(),
-				handle,
-				tunnel,
-			});
+			let mut rpc = rpc.methods(SingletonServerContext { log:log.clone(), handle, tunnel });
 
 			rpc.register_sync(
 				protocol::forward_singleton::METHOD_SET_PORTS,
 				|p:protocol::forward_singleton::SetPortsParams, ctx| {
 					info!(ctx.log, "client setting ports to {:?}", p.ports);
 					ctx.handle.set_ports(p.ports);
-					Ok(SetPortsResponse {
-						port_format:ctx.tunnel.get_port_format().ok(),
-					})
+					Ok(SetPortsResponse { port_format:ctx.tunnel.get_port_format().ok() })
 				},
 			);
 
-			let _ =
-				start_json_rpc(rpc.build(log), read, write, (), shutdown_rx)
-					.await;
+			let _ = start_json_rpc(rpc.build(log), read, write, (), shutdown_rx).await;
 		});
 	}
 }

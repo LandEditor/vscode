@@ -53,20 +53,14 @@ impl ServiceManager for LaunchdService {
 		)
 		.await?;
 
-		capture_command_and_check_status(
-			"launchctl",
-			&["start", &get_service_label()],
-		)
-		.await?;
+		capture_command_and_check_status("launchctl", &["start", &get_service_label()]).await?;
 
 		info!(self.log, "Tunnel service successfully started");
 
 		Ok(())
 	}
 
-	async fn show_logs(&self) -> Result<(), AnyError> {
-		tail_log_file(&self.log_file).await
-	}
+	async fn show_logs(&self) -> Result<(), AnyError> { tail_log_file(&self.log_file).await }
 
 	async fn run(
 		self,
@@ -77,20 +71,14 @@ impl ServiceManager for LaunchdService {
 	}
 
 	async fn is_installed(&self) -> Result<bool, AnyError> {
-		let cmd =
-			capture_command_and_check_status("launchctl", &["list"]).await?;
+		let cmd = capture_command_and_check_status("launchctl", &["list"]).await?;
 		Ok(String::from_utf8_lossy(&cmd.stdout).contains(&get_service_label()))
 	}
 
 	async fn unregister(&self) -> Result<(), crate::util::errors::AnyError> {
 		let service_file = get_service_file_path()?;
 
-		match capture_command_and_check_status(
-			"launchctl",
-			&["stop", &get_service_label()],
-		)
-		.await
-		{
+		match capture_command_and_check_status("launchctl", &["stop", &get_service_label()]).await {
 			Ok(_) => {},
 			// status 3 == "no such process"
 			Err(CodeError::CommandFailed { code: 3, .. }) => {},
@@ -115,9 +103,7 @@ impl ServiceManager for LaunchdService {
 	}
 }
 
-fn get_service_label() -> String {
-	format!("com.visualstudio.{}.tunnel", APPLICATION_NAME)
-}
+fn get_service_label() -> String { format!("com.visualstudio.{}.tunnel", APPLICATION_NAME) }
 
 fn get_service_file_path() -> Result<PathBuf, MissingHomeDirectory> {
 	match dirs::home_dir() {

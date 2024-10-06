@@ -8,12 +8,7 @@ use serde::Serialize;
 use tokio::sync::mpsc;
 
 use super::{
-	protocol::{
-		ClientRequestMethod,
-		RefServerMessageParams,
-		ServerClosedParams,
-		ToClientRequest,
-	},
+	protocol::{ClientRequestMethod, RefServerMessageParams, ServerClosedParams, ToClientRequest},
 	server_multiplexer::ServerMultiplexer,
 };
 use crate::msgpack_rpc::MsgPackCaller;
@@ -55,11 +50,7 @@ pub struct ServerMessageSink {
 }
 
 impl ServerMessageSink {
-	pub fn new_plain(
-		multiplexer:ServerMultiplexer,
-		id:u16,
-		tx:ServerMessageDestination,
-	) -> Self {
+	pub fn new_plain(multiplexer:ServerMultiplexer, id:u16, tx:ServerMessageDestination) -> Self {
 		Self { tx:Some(tx), id, multiplexer, flate:None }
 	}
 
@@ -72,15 +63,14 @@ impl ServerMessageSink {
 			tx:Some(tx),
 			id,
 			multiplexer,
-			flate:Some(FlateStream::new(CompressFlateAlgorithm(
-				flate2::Compress::new(flate2::Compression::new(2), false),
-			))),
+			flate:Some(FlateStream::new(CompressFlateAlgorithm(flate2::Compress::new(
+				flate2::Compression::new(2),
+				false,
+			)))),
 		}
 	}
 
-	pub async fn server_closed(
-		&mut self,
-	) -> Result<(), mpsc::error::SendError<SocketSignal>> {
+	pub async fn server_closed(&mut self) -> Result<(), mpsc::error::SendError<SocketSignal>> {
 		self.server_message_or_closed(None).await
 	}
 
@@ -100,12 +90,9 @@ impl ServerMessageSink {
 
 		if let Some(b) = body_or_end {
 			let body = self.get_server_msg_content(b, false);
-			let r = send_data_or_close_if_none(
-				i,
-				&mut tx,
-				Some(RefServerMessageParams { i, body }),
-			)
-			.await;
+			let r =
+				send_data_or_close_if_none(i, &mut tx, Some(RefServerMessageParams { i, body }))
+					.await;
 			self.tx = Some(tx);
 			return r;
 		}
@@ -151,11 +138,7 @@ async fn send_data_or_close_if_none(
 				id:None,
 				params:match msg {
 					Some(msg) => ClientRequestMethod::servermsg(msg),
-					None => {
-						ClientRequestMethod::serverclose(ServerClosedParams {
-							i,
-						})
-					},
+					None => ClientRequestMethod::serverclose(ServerClosedParams { i }),
 				},
 			}))
 			.await
@@ -183,16 +166,11 @@ impl ClientMessageDecoder {
 
 	pub fn new_compressed() -> Self {
 		ClientMessageDecoder {
-			dec:Some(FlateStream::new(DecompressFlateAlgorithm(
-				flate2::Decompress::new(false),
-			))),
+			dec:Some(FlateStream::new(DecompressFlateAlgorithm(flate2::Decompress::new(false)))),
 		}
 	}
 
-	pub fn decode<'a:'b, 'b>(
-		&'a mut self,
-		message:&'b [u8],
-	) -> std::io::Result<&'b [u8]> {
+	pub fn decode<'a:'b, 'b>(&'a mut self, message:&'b [u8]) -> std::io::Result<&'b [u8]> {
 		match &mut self.dec {
 			// todo@connor4312 do we ever need to actually 'finish' the client
 			// message stream?
@@ -231,9 +209,9 @@ impl FlateAlgorithm for DecompressFlateAlgorithm {
 			false => flate2::FlushDecompress::None,
 		};
 
-		self.0.decompress(contents, output, mode).map_err(|e| {
-			std::io::Error::new(std::io::ErrorKind::InvalidInput, e)
-		})
+		self.0
+			.decompress(contents, output, mode)
+			.map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
 	}
 }
 
@@ -255,9 +233,9 @@ impl FlateAlgorithm for CompressFlateAlgorithm {
 			false => flate2::FlushCompress::Sync,
 		};
 
-		self.0.compress(contents, output, mode).map_err(|e| {
-			std::io::Error::new(std::io::ErrorKind::InvalidInput, e)
-		})
+		self.0
+			.compress(contents, output, mode)
+			.map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidInput, e))
 	}
 }
 
@@ -274,30 +252,21 @@ where
 {
 	pub fn new(alg:A) -> Self { Self { flate:alg, output:vec![0; 4096] } }
 
-	pub fn process(
-		&mut self,
-		contents:&[u8],
-		finish:bool,
-	) -> std::io::Result<&[u8]> {
+	pub fn process(&mut self, contents:&[u8], finish:bool) -> std::io::Result<&[u8]> {
 		let mut out_offset = 0;
 		let mut in_offset = 0;
 		loop {
 			let in_before = self.flate.total_in();
 			let out_before = self.flate.total_out();
 
-			match self.flate.process(
-				&contents[in_offset..],
-				&mut self.output[out_offset..],
-				finish,
-			) {
+			match self
+				.flate
+				.process(&contents[in_offset..], &mut self.output[out_offset..], finish)
+			{
 				Ok(flate2::Status::Ok | flate2::Status::BufError) => {
-					let processed_len = in_offset
-						+ (self.flate.total_in() - in_before) as usize;
-					let output_len = out_offset
-						+ (self.flate.total_out() - out_before) as usize;
-					if processed_len < contents.len()
-						|| output_len == self.output.len()
-					{
+					let processed_len = in_offset + (self.flate.total_in() - in_before) as usize;
+					let output_len = out_offset + (self.flate.total_out() - out_before) as usize;
+					if processed_len < contents.len() || output_len == self.output.len() {
 						// If we filled the output buffer but there's more data
 						// to compress, or the output got filled after
 						// processing all input, extend the output buffer
@@ -364,9 +333,7 @@ mod tests {
 		let mut dec = ClientMessageDecoder::new_compressed();
 		let mut len = 0;
 		for b in TEST_191501_BUFS {
-			let b = general_purpose::STANDARD
-				.decode(b)
-				.expect("expected no decode error");
+			let b = general_purpose::STANDARD.decode(b).expect("expected no decode error");
 			let s = dec.decode(&b).expect("expected no decompress error");
 			len += s.len();
 		}

@@ -41,10 +41,7 @@ impl FileLock {
 			shared::winerror::{ERROR_IO_PENDING, ERROR_LOCK_VIOLATION},
 			um::{
 				fileapi::LockFileEx,
-				minwinbase::{
-					LOCKFILE_EXCLUSIVE_LOCK,
-					LOCKFILE_FAIL_IMMEDIATELY,
-				},
+				minwinbase::{LOCKFILE_EXCLUSIVE_LOCK, LOCKFILE_FAIL_IMMEDIATELY},
 			},
 		};
 
@@ -71,9 +68,7 @@ impl FileLock {
 		let raw = err.raw_os_error();
 		// docs report it should return ERROR_IO_PENDING, but in my testing it
 		// actually returns ERROR_LOCK_VIOLATION. Or maybe winapi is wrong?
-		if raw == Some(ERROR_IO_PENDING as i32)
-			|| raw == Some(ERROR_LOCK_VIOLATION as i32)
-		{
+		if raw == Some(ERROR_IO_PENDING as i32) || raw == Some(ERROR_LOCK_VIOLATION as i32) {
 			return Ok(Lock::AlreadyLocked(file));
 		}
 
@@ -111,13 +106,7 @@ impl Drop for FileLock {
 		use winapi::um::fileapi::UnlockFileEx;
 
 		unsafe {
-			UnlockFileEx(
-				self.file.as_raw_handle(),
-				0,
-				u32::MAX,
-				u32::MAX,
-				&mut self.overlapped,
-			)
+			UnlockFileEx(self.file.as_raw_handle(), 0, u32::MAX, u32::MAX, &mut self.overlapped)
 		};
 	}
 

@@ -38,8 +38,7 @@ impl ServerPaths {
 	// Returns the process ID, if the server is running.
 	pub fn get_running_pid(&self) -> Option<u32> {
 		if let Some(pid) = self.read_pid() {
-			return match machine::process_at_path_exists(pid, &self.executable)
-			{
+			return match machine::process_at_path_exists(pid, &self.executable) {
 				true => Some(pid),
 				false => None,
 			};
@@ -57,26 +56,14 @@ impl ServerPaths {
 	/// Delete the server directory
 	pub fn delete(&self) -> Result<(), WrappedError> {
 		remove_dir_all(&self.server_dir).map_err(|e| {
-			wrap(
-				e,
-				format!(
-					"error deleting server dir {}",
-					self.server_dir.display()
-				),
-			)
+			wrap(e, format!("error deleting server dir {}", self.server_dir.display()))
 		})
 	}
 
 	// VS Code Server pid
 	pub fn write_pid(&self, pid:u32) -> Result<(), WrappedError> {
 		write(&self.pidfile, format!("{}", pid)).map_err(|e| {
-			wrap(
-				e,
-				format!(
-					"error writing process id into {}",
-					self.pidfile.display()
-				),
-			)
+			wrap(e, format!("error writing process id into {}", self.pidfile.display()))
 		})
 	}
 
@@ -98,9 +85,7 @@ impl InstalledServer {
 		let server_dir = self.get_install_folder(p);
 		ServerPaths {
 			// allow using the OSS server in development via an override
-			executable:if let Some(p) =
-				option_env!("VSCODE_CLI_OVERRIDE_SERVER_PATH")
-			{
+			executable:if let Some(p) = option_env!("VSCODE_CLI_OVERRIDE_SERVER_PATH") {
 				PathBuf::from(p)
 			} else {
 				server_dir
@@ -116,10 +101,7 @@ impl InstalledServer {
 
 	fn get_install_folder(&self, p:&LauncherPaths) -> PathBuf {
 		p.server_cache.path().join(if !self.headless {
-			format!(
-				"{}-web",
-				get_server_folder_name(self.quality, &self.commit)
-			)
+			format!("{}-web", get_server_folder_name(self.quality, &self.commit))
 		} else {
 			get_server_folder_name(self.quality, &self.commit)
 		})
@@ -127,9 +109,7 @@ impl InstalledServer {
 }
 
 /// Prunes servers not currently running, and returns the deleted servers.
-pub fn prune_stopped_servers(
-	launcher_paths:&LauncherPaths,
-) -> Result<Vec<ServerPaths>, AnyError> {
+pub fn prune_stopped_servers(launcher_paths:&LauncherPaths) -> Result<Vec<ServerPaths>, AnyError> {
 	get_all_servers(launcher_paths)
 		.into_iter()
 		.map(|s| s.server_paths(launcher_paths))
@@ -156,11 +136,7 @@ pub fn get_all_servers(lp:&LauncherPaths) -> Vec<InstalledServer> {
 				Err(_) => continue,
 			};
 
-			servers.push(InstalledServer {
-				quality,
-				commit:commit.to_string(),
-				headless:true,
-			});
+			servers.push(InstalledServer { quality, commit:commit.to_string(), headless:true });
 		}
 	}
 

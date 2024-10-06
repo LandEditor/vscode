@@ -17,11 +17,7 @@ use std::{
 use chrono::Local;
 use opentelemetry::{
 	sdk::trace::{Tracer, TracerProvider},
-	trace::{
-		SpanBuilder,
-		Tracer as TraitTracer,
-		TracerProvider as TracerProviderTrait,
-	},
+	trace::{SpanBuilder, Tracer as TraitTracer, TracerProvider as TracerProviderTrait},
 };
 use serde::{Deserialize, Serialize};
 
@@ -34,16 +30,7 @@ pub fn next_counter() -> u32 { INSTANCE_COUNTER.fetch_add(1, Ordering::SeqCst) }
 
 // Log level
 #[derive(
-	clap::ValueEnum,
-	PartialEq,
-	Eq,
-	PartialOrd,
-	Clone,
-	Copy,
-	Debug,
-	Serialize,
-	Deserialize,
-	Default,
+	clap::ValueEnum, PartialEq, Eq, PartialOrd, Clone, Copy, Debug, Serialize, Deserialize, Default,
 )]
 pub enum Level {
 	Trace = 0,
@@ -104,9 +91,7 @@ impl Level {
 
 pub fn new_tunnel_prefix() -> String { format!("[tunnel.{}]", next_counter()) }
 
-pub fn new_code_server_prefix() -> String {
-	format!("[codeserver.{}]", next_counter())
-}
+pub fn new_code_server_prefix() -> String { format!("[codeserver.{}]", next_counter()) }
 
 pub fn new_rpc_prefix() -> String { format!("[rpc.{}]", next_counter()) }
 
@@ -175,8 +160,7 @@ impl FileLogSink {
 			let _ = std::fs::remove_file(path);
 		}
 
-		let file =
-			std::fs::OpenOptions::new().append(true).create(true).open(path)?;
+		let file = std::fs::OpenOptions::new().append(true).create(true).open(path)?;
 
 		Ok(Self { level, file:Arc::new(std::sync::Mutex::new(file)) })
 	}
@@ -200,9 +184,7 @@ impl LogSink for FileLogSink {
 impl Logger {
 	pub fn test() -> Self {
 		Self {
-			tracer:Arc::new(
-				TracerProvider::builder().build().tracer("codeclitest"),
-			),
+			tracer:Arc::new(TracerProvider::builder().build().tracer("codeclitest")),
 			sink:vec![],
 			prefix:None,
 		}
@@ -262,10 +244,7 @@ impl Logger {
 		Logger { sink:vec![Box::new(sink)], ..self.clone() }
 	}
 
-	pub fn get_download_logger<'a>(
-		&'a self,
-		prefix:&'static str,
-	) -> DownloadLogger<'a> {
+	pub fn get_download_logger<'a>(&'a self, prefix:&'static str) -> DownloadLogger<'a> {
 		DownloadLogger { prefix, logger:self }
 	}
 }
@@ -289,10 +268,8 @@ impl<'a> crate::util::io::ReportCopyProgress for DownloadLogger<'a> {
 				),
 			);
 		} else {
-			self.logger.emit(
-				Level::Trace,
-				&format!("{} {}/{}", self.prefix, bytes_so_far, total_bytes,),
-			);
+			self.logger
+				.emit(Level::Trace, &format!("{} {}/{}", self.prefix, bytes_so_far, total_bytes,));
 		}
 	}
 }
@@ -338,9 +315,7 @@ pub fn install_global_logger(log:Logger) {
 struct RustyLogger(Logger);
 
 impl log::Log for RustyLogger {
-	fn enabled(&self, metadata:&log::Metadata) -> bool {
-		metadata.level() <= log::Level::Debug
-	}
+	fn enabled(&self, metadata:&log::Metadata) -> bool { metadata.level() <= log::Level::Debug }
 
 	fn log(&self, record:&log::Record) {
 		if !self.enabled(record.metadata()) {

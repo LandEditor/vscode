@@ -12,11 +12,7 @@ pub fn is_integrated_cli() -> io::Result<bool> {
 	let exe = env::current_exe()?;
 
 	let parent = match exe.parent() {
-		Some(parent)
-			if parent.file_name().and_then(|n| n.to_str()) == Some("bin") =>
-		{
-			parent
-		},
+		Some(parent) if parent.file_name().and_then(|n| n.to_str()) == Some("bin") => parent,
 		_ => return Ok(false),
 	};
 
@@ -25,11 +21,8 @@ pub fn is_integrated_cli() -> io::Result<bool> {
 		None => return Ok(false),
 	};
 
-	let expected_file = if cfg!(target_os = "macos") {
-		"node_modules.asar"
-	} else {
-		"resources.pak"
-	};
+	let expected_file =
+		if cfg!(target_os = "macos") { "node_modules.asar" } else { "resources.pak" };
 
 	Ok(parent.join(expected_file).exists())
 }

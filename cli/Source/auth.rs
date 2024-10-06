@@ -17,12 +17,7 @@ use tunnels::{
 };
 
 use crate::{
-	constants::{
-		get_default_user_agent,
-		APPLICATION_NAME,
-		IS_INTERACTIVE_CLI,
-		PRODUCT_NAME_LONG,
-	},
+	constants::{get_default_user_agent, APPLICATION_NAME, IS_INTERACTIVE_CLI, PRODUCT_NAME_LONG},
 	debug,
 	error,
 	info,
@@ -93,7 +88,7 @@ impl AuthProvider {
 		match self {
 			AuthProvider::Microsoft => {
 				"https://login.microsoftonline.com/organizations/oauth2/v2.0/devicecode"
-			}
+			},
 			AuthProvider::Github => "https://github.com/login/device/code",
 		}
 	}
@@ -102,7 +97,7 @@ impl AuthProvider {
 		match self {
 			AuthProvider::Microsoft => {
 				"https://login.microsoftonline.com/organizations/oauth2/v2.0/token"
-			}
+			},
 			AuthProvider::Github => "https://github.com/login/oauth/access_token",
 		}
 	}
@@ -110,10 +105,7 @@ impl AuthProvider {
 	pub fn get_default_scopes(&self) -> String {
 		match self {
 			AuthProvider::Microsoft => {
-				format!(
-					"{}/.default+offline_access+profile+openid",
-					PROD_FIRST_PARTY_APP_ID
-				)
+				format!("{}/.default+offline_access+profile+openid", PROD_FIRST_PARTY_APP_ID)
 			},
 			AuthProvider::Github => "read:user+read:org".to_string(),
 		}
@@ -147,11 +139,7 @@ async fn get_github_user(
 }
 
 impl StoredCredential {
-	pub async fn is_expired(
-		&self,
-		log:&log::Logger,
-		client:&reqwest::Client,
-	) -> bool {
+	pub async fn is_expired(&self, log:&log::Logger, client:&reqwest::Client) -> bool {
 		match self.provider {
 			AuthProvider::Microsoft => {
 				self.expires_at
@@ -183,17 +171,12 @@ impl StoredCredential {
 		}
 	}
 
-	fn from_response(
-		auth:AuthenticationResponse,
-		provider:AuthProvider,
-	) -> Self {
+	fn from_response(auth:AuthenticationResponse, provider:AuthProvider) -> Self {
 		StoredCredential {
 			provider,
 			access_token:auth.access_token,
 			refresh_token:auth.refresh_token,
-			expires_at:auth
-				.expires_in
-				.map(|e| Utc::now() + chrono::Duration::seconds(e)),
+			expires_at:auth.expires_in.map(|e| Utc::now() + chrono::Duration::seconds(e)),
 		}
 	}
 }
@@ -300,9 +283,7 @@ impl StorageImplementation for ThreadKeyringStorage {
 		self.thread_op(move |s| s.store(value))
 	}
 
-	fn clear(&mut self) -> Result<(), AnyError> {
-		self.thread_op(|s| s.clear())
-	}
+	fn clear(&mut self) -> Result<(), AnyError> { self.thread_op(|s| s.clear()) }
 }
 
 #[derive(Default)]
@@ -317,11 +298,7 @@ macro_rules! get_next_entry {
 		match $self.entries.get($i) {
 			Some(e) => e,
 			None => {
-				let e = keyring::Entry::new(
-					"vscode-cli",
-					&format!("vscode-cli-{}", $i),
-				)
-				.unwrap();
+				let e = keyring::Entry::new("vscode-cli", &format!("vscode-cli-{}", $i)).unwrap();
 				$self.entries.push(e);
 				$self.entries.last().unwrap()
 			},
@@ -337,14 +314,12 @@ impl StorageImplementation for KeyringStorage {
 			let entry = get_next_entry!(self, i);
 			let next_chunk = match entry.get_password() {
 				Ok(value) => value,
-				Err(keyring::Error::NoEntry) => return Ok(None), /* missing entries? */
+				Err(keyring::Error::NoEntry) => return Ok(None), // missing entries?
 				Err(e) => return Err(wrap(e, "error reading keyring").into()),
 			};
 
 			if next_chunk.ends_with(CONTINUE_MARKER) {
-				str.push_str(
-					&next_chunk[..next_chunk.len() - CONTINUE_MARKER.len()],
-				);
+				str.push_str(&next_chunk[..next_chunk.len() - CONTINUE_MARKER.len()]);
 			} else {
 				str.push_str(&next_chunk);
 				break;
@@ -381,9 +356,7 @@ impl StorageImplementation for KeyringStorage {
 	fn clear(&mut self) -> Result<(), AnyError> {
 		self.read().ok(); // make sure component parts are available
 		for entry in self.entries.iter() {
-			entry
-				.delete_password()
-				.map_err(|e| wrap(e, "error updating keyring"))?;
+			entry.delete_password().map_err(|e| wrap(e, "error updating keyring"))?;
 		}
 		self.entries.clear();
 
@@ -402,9 +375,7 @@ impl StorageImplementation for FileStorage {
 		self.0.save(Some(seal(&value))).map_err(|e| e.into())
 	}
 
-	fn clear(&mut self) -> Result<(), AnyError> {
-		self.0.save(None).map_err(|e| e.into())
-	}
+	fn clear(&mut self) -> Result<(), AnyError> { self.0.save(None).map_err(|e| e.into()) }
 }
 
 impl Auth {
@@ -429,19 +400,16 @@ impl Auth {
 		let mut keyring_storage = KeyringStorage::default();
 		#[cfg(target_os = "linux")]
 		let mut keyring_storage = ThreadKeyringStorage::default();
-		let mut file_storage = FileStorage(PersistedState::new_with_mode(
-			self.file_storage_path.clone(),
-			0o600,
-		));
+		let mut file_storage =
+			FileStorage(PersistedState::new_with_mode(self.file_storage_path.clone(), 0o600));
 
-		let native_storage_result =
-			if std::env::var("VSCODE_CLI_USE_FILE_KEYCHAIN").is_ok()
-				|| self.file_storage_path.exists()
-			{
-				Err(wrap("", "user prefers file storage").into())
-			} else {
-				keyring_storage.read()
-			};
+		let native_storage_result = if std::env::var("VSCODE_CLI_USE_FILE_KEYCHAIN").is_ok()
+			|| self.file_storage_path.exists()
+		{
+			Err(wrap("", "user prefers file storage").into())
+		} else {
+			keyring_storage.read()
+		};
 
 		let mut storage = match native_storage_result {
 			Ok(v) => {
@@ -454,9 +422,11 @@ impl Auth {
 			Err(e) => {
 				debug!(self.log, "Using file keychain storage due to: {}", e);
 				StorageWithLastRead {
-					last_read:Cell::new(file_storage.read().map_err(|e| {
-						wrap(e, "could not read from file storage")
-					})),
+					last_read:Cell::new(
+						file_storage
+							.read()
+							.map_err(|e| wrap(e, "could not read from file storage")),
+					),
 					fallback_storage:None,
 					storage:Box::new(file_storage),
 				}
@@ -469,9 +439,7 @@ impl Auth {
 	}
 
 	/// Gets a tunnel Authentication for use in the tunnel management API.
-	pub async fn get_tunnel_authentication(
-		&self,
-	) -> Result<Authorization, AnyError> {
+	pub async fn get_tunnel_authentication(&self) -> Result<Authorization, AnyError> {
 		let cred = self.get_credential().await?;
 		let auth = match cred.provider {
 			AuthProvider::Microsoft => Authorization::Bearer(cred.access_token),
@@ -488,9 +456,7 @@ impl Auth {
 	}
 
 	/// Reads the current details from the keyring.
-	pub fn get_current_credential(
-		&self,
-	) -> Result<Option<StoredCredential>, WrappedError> {
+	pub fn get_current_credential(&self) -> Result<Option<StoredCredential>, WrappedError> {
 		self.with_storage(|storage| {
 			let value = storage.last_read.replace(Ok(None));
 			storage.last_read.set(value.clone());
@@ -554,11 +520,8 @@ impl Auth {
 					Ok(None) => old_creds,
 					Err(e) => {
 						info!(self.log, "error refreshing token: {}", e);
-						let new_creds = self
-							.do_device_code_flow_with_provider(
-								old_creds.provider,
-							)
-							.await?;
+						let new_creds =
+							self.do_device_code_flow_with_provider(old_creds.provider).await?;
 						self.store_credentials(new_creds.clone());
 						new_creds
 					},
@@ -573,11 +536,7 @@ impl Auth {
 			},
 
 			Err(e) => {
-				warning!(
-					self.log,
-					"Error reading token from keyring, getting a new one: {}",
-					e
-				);
+				warning!(self.log, "Error reading token from keyring, getting a new one: {}", e);
 				let creds = self.do_device_code_flow().await?;
 				self.store_credentials(creds.clone());
 				creds
@@ -591,27 +550,16 @@ impl Auth {
 	fn store_credentials(&self, creds:StoredCredential) {
 		self.with_storage(|storage| {
 			if let Err(e) = storage.storage.store(creds.clone()) {
-				warning!(
-					self.log,
-					"Failed to update keyring with new credentials: {}",
-					e
-				);
+				warning!(self.log, "Failed to update keyring with new credentials: {}", e);
 
 				if let Some(fb) = storage.fallback_storage.take() {
 					storage.storage = Box::new(fb);
 					match storage.storage.store(creds.clone()) {
 						Err(e) => {
-							warning!(
-								self.log,
-								"Also failed to update fallback storage: {}",
-								e
-							)
+							warning!(self.log, "Also failed to update fallback storage: {}", e)
 						},
 						Ok(_) => {
-							debug!(
-								self.log,
-								"Updated fallback storage successfully"
-							)
+							debug!(self.log, "Updated fallback storage successfully")
 						},
 					}
 				}
@@ -645,8 +593,7 @@ impl Auth {
 				self.do_grant(
 					creds.provider,
 					format!(
-						"client_id={}&grant_type=refresh_token&\
-						 refresh_token={}",
+						"client_id={}&grant_type=refresh_token&refresh_token={}",
 						creds.provider.client_id(),
 						t
 					),
@@ -656,9 +603,7 @@ impl Auth {
 			},
 			None => {
 				match creds.provider {
-					AuthProvider::Github => {
-						self.touch_github_token(creds).await.map(|_| None)
-					},
+					AuthProvider::Github => self.touch_github_token(creds).await.map(|_| None),
 					_ => Err(RefreshTokenNotAvailableError().into()),
 				}
 			},
@@ -681,9 +626,7 @@ impl Auth {
 
 		let status_code = response.status().as_u16();
 		let body = response.bytes().await?;
-		if let Ok(body) =
-			serde_json::from_slice::<AuthenticationResponse>(&body)
-		{
+		if let Ok(body) = serde_json::from_slice::<AuthenticationResponse>(&body) {
 			return Ok(StoredCredential::from_response(body, provider));
 		}
 
@@ -693,12 +636,8 @@ impl Auth {
 	/// GH doesn't have a refresh token, but does limit to the 10 most recently
 	/// used tokens per user (#9052), so for the github "refresh" just request
 	/// the current user.
-	async fn touch_github_token(
-		&self,
-		credential:&StoredCredential,
-	) -> Result<(), AnyError> {
-		let response =
-			get_github_user(&self.client, &credential.access_token).await?;
+	async fn touch_github_token(&self, credential:&StoredCredential) -> Result<(), AnyError> {
+		let response = get_github_user(&self.client, &credential.access_token).await?;
 		if response.status().is_success() {
 			return Ok(());
 		}
@@ -708,17 +647,9 @@ impl Auth {
 		Err(Auth::handle_grant_error(GH_USER_ENDPOINT, status_code, body))
 	}
 
-	fn handle_grant_error(
-		url:&str,
-		status_code:u16,
-		body:bytes::Bytes,
-	) -> AnyError {
+	fn handle_grant_error(url:&str, status_code:u16, body:bytes::Bytes) -> AnyError {
 		if let Ok(res) = serde_json::from_slice::<AuthenticationError>(&body) {
-			return OAuthError {
-				error:res.error,
-				error_description:res.error_description,
-			}
-			.into();
+			return OAuthError { error:res.error, error_description:res.error_description }.into();
 		}
 
 		return StatusError {
@@ -739,8 +670,8 @@ impl Auth {
 		if !*IS_INTERACTIVE_CLI {
 			info!(
 				self.log,
-				"Using GitHub for authentication, run `{} tunnel user login \
-				 --provider <provider>` option to change this.",
+				"Using GitHub for authentication, run `{} tunnel user login --provider \
+				 <provider>` option to change this.",
 				APPLICATION_NAME
 			);
 			return Ok(AuthProvider::Github);
@@ -776,24 +707,21 @@ impl Auth {
 			}
 
 			let init_code_json = init_code.json::<DeviceCodeResponse>().await?;
-			let expires_at = Utc::now()
-				+ chrono::Duration::seconds(init_code_json.expires_in);
+			let expires_at = Utc::now() + chrono::Duration::seconds(init_code_json.expires_in);
 
 			match &init_code_json.message {
 				Some(m) => self.log.result(m),
 				None => {
 					self.log.result(format!(
-						"To grant access to the server, please log into {} \
-						 and use code {}",
-						init_code_json.verification_uri,
-						init_code_json.user_code
+						"To grant access to the server, please log into {} and use code {}",
+						init_code_json.verification_uri, init_code_json.user_code
 					))
 				},
 			};
 
 			let body = format!(
-				"client_id={}&grant_type=urn:ietf:params:oauth:grant-type:\
-				 device_code&device_code={}",
+				"client_id={}&grant_type=urn:ietf:params:oauth:grant-type:device_code&\
+				 device_code={}",
 				provider.client_id(),
 				init_code_json.device_code
 			);
@@ -814,10 +742,7 @@ impl Auth {
 						trace!(self.log, "refresh poll failed, slowing down");
 					},
 					Err(e) => {
-						trace!(
-							self.log,
-							"refresh poll failed, retrying: {}", e
-						);
+						trace!(self.log, "refresh poll failed, retrying: {}", e);
 					},
 				}
 			}
@@ -839,11 +764,7 @@ impl Auth {
 				min_refresh
 			} else {
 				match credential.expires_at {
-					Some(d) => {
-						((d - Utc::now()) * 2 / 3)
-							.to_std()
-							.unwrap_or(min_refresh)
-					},
+					Some(d) => ((d - Utc::now()) * 2 / 3).to_std().unwrap_or(min_refresh),
 					None => default_refresh,
 				}
 			};
@@ -853,9 +774,7 @@ impl Auth {
 
 			match this.do_refresh_token(&credential).await {
 				// 4xx error means this token is probably not good any mode
-				Err(AnyError::StatusError(e))
-					if e.status_code >= 400 && e.status_code < 500 =>
-				{
+				Err(AnyError::StatusError(e)) if e.status_code >= 400 && e.status_code < 500 => {
 					error!(this.log, "failed to keep token alive: {:?}", e);
 					return Err(e.into());
 				},
@@ -868,10 +787,7 @@ impl Auth {
 					continue;
 				},
 				Ok(c) => {
-					trace!(
-						this.log,
-						"token was successfully refreshed in keepalive"
-					);
+					trace!(this.log, "token was successfully refreshed in keepalive");
 					last_did_error = false;
 					if let Some(c) = c {
 						this.store_credentials(c.clone());
@@ -898,8 +814,7 @@ lazy_static::lazy_static! {
 
 #[cfg(feature = "vscode-encrypt")]
 fn encrypt(value:&str) -> String {
-	vscode_encrypt::encrypt(&HOSTNAME, value.as_bytes())
-		.expect("expected to encrypt")
+	vscode_encrypt::encrypt(&HOSTNAME, value.as_bytes()).expect("expected to encrypt")
 }
 
 #[cfg(feature = "vscode-encrypt")]

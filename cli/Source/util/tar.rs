@@ -15,9 +15,7 @@ use tar::Archive;
 use super::{errors::wrapdbg, io::ReportCopyProgress};
 use crate::util::errors::{wrap, WrappedError};
 
-fn should_skip_first_segment(
-	file:&fs::File,
-) -> Result<(bool, u64), WrappedError> {
+fn should_skip_first_segment(file:&fs::File) -> Result<(bool, u64), WrappedError> {
 	// unfortunately, we need to re-read the archive here since you cannot reuse
 	// `.entries()`. But this will generally only look at one or two files, so
 	// this should be acceptably speedy... If not, we could hardcode behavior
@@ -25,8 +23,7 @@ fn should_skip_first_segment(
 
 	let tar = GzDecoder::new(file);
 	let mut archive = Archive::new(tar);
-	let mut entries =
-		archive.entries().map_err(|e| wrap(e, "error opening archive"))?;
+	let mut entries = archive.entries().map_err(|e| wrap(e, "error opening archive"))?;
 
 	let first_name = {
 		let file = entries
@@ -86,9 +83,7 @@ where
 				last_reported_at = entries_so_far;
 			}
 
-			let entry_path = entry
-				.path()
-				.map_err(|e| wrap(e, "error reading entry path"))?;
+			let entry_path = entry.path().map_err(|e| wrap(e, "error reading entry path"))?;
 
 			let path = parent_path.join(if skip_first {
 				entry_path.iter().skip(1).collect::<PathBuf>()
@@ -97,14 +92,13 @@ where
 			});
 
 			if let Some(p) = path.parent() {
-				fs::create_dir_all(p).map_err(|e| {
-					wrap(e, format!("could not create dir for {}", p.display()))
-				})?;
+				fs::create_dir_all(p)
+					.map_err(|e| wrap(e, format!("could not create dir for {}", p.display())))?;
 			}
 
-			entry.unpack(&path).map_err(|e| {
-				wrapdbg(e, format!("error unpacking {}", path.display()))
-			})?;
+			entry
+				.unpack(&path)
+				.map_err(|e| wrapdbg(e, format!("error unpacking {}", path.display())))?;
 
 			Ok(())
 		})?;

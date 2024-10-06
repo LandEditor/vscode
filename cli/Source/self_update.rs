@@ -11,13 +11,7 @@ use tempfile::tempdir;
 use crate::{
 	constants::{VSCODE_CLI_COMMIT, VSCODE_CLI_QUALITY},
 	options::Quality,
-	update_service::{
-		unzip_downloaded_release,
-		Platform,
-		Release,
-		TargetKind,
-		UpdateService,
-	},
+	update_service::{unzip_downloaded_release, Platform, Release, TargetKind, UpdateService},
 	util::{
 		command::new_std_command,
 		errors::{wrap, AnyError, CodeError, CorruptDownload},
@@ -37,24 +31,17 @@ static OLD_UPDATE_EXTENSION:&str = "Updating CLI";
 
 impl<'a> SelfUpdate<'a> {
 	pub fn new(update_service:&'a UpdateService) -> Result<Self, AnyError> {
-		let commit = VSCODE_CLI_COMMIT.ok_or_else(|| {
-			CodeError::UpdatesNotConfigured("unknown build commit")
-		})?;
+		let commit = VSCODE_CLI_COMMIT
+			.ok_or_else(|| CodeError::UpdatesNotConfigured("unknown build commit"))?;
 
 		let quality = VSCODE_CLI_QUALITY
-			.ok_or_else(|| {
-				CodeError::UpdatesNotConfigured("no configured quality")
-			})
+			.ok_or_else(|| CodeError::UpdatesNotConfigured("no configured quality"))
 			.and_then(|q| {
-				Quality::try_from(q).map_err(|_| {
-					CodeError::UpdatesNotConfigured("unknown quality")
-				})
+				Quality::try_from(q).map_err(|_| CodeError::UpdatesNotConfigured("unknown quality"))
 			})?;
 
 		let platform = Platform::env_default().ok_or_else(|| {
-			CodeError::UpdatesNotConfigured(
-				"Unknown platform, please report this error",
-			)
+			CodeError::UpdatesNotConfigured("Unknown platform, please report this error")
 		})?;
 
 		Ok(Self { commit, quality, platform, update_service })
@@ -68,9 +55,7 @@ impl<'a> SelfUpdate<'a> {
 	}
 
 	/// Gets whether the given release is what this CLI is built against
-	pub fn is_up_to_date_with(&self, release:&Release) -> bool {
-		release.commit == self.commit
-	}
+	pub fn is_up_to_date_with(&self, release:&Release) -> bool { release.commit == self.commit }
 
 	/// Cleans up old self-updated binaries. Should be called with regularity.
 	/// May fail if old versions are still running.
@@ -91,25 +76,19 @@ impl<'a> SelfUpdate<'a> {
 		progress:impl ReportCopyProgress,
 	) -> Result<(), AnyError> {
 		// 1. Download the archive into a temporary directory
-		let tempdir =
-			tempdir().map_err(|e| wrap(e, "Failed to create temp dir"))?;
+		let tempdir = tempdir().map_err(|e| wrap(e, "Failed to create temp dir"))?;
 		let stream = self.update_service.get_download_stream(release).await?;
-		let archive_path =
-			tempdir.path().join(stream.url_path_basename().unwrap());
+		let archive_path = tempdir.path().join(stream.url_path_basename().unwrap());
 		http::download_into_file(&archive_path, progress, stream).await?;
 
 		// 2. Unzip the archive and get the binary
-		let target_path = std::env::current_exe()
-			.map_err(|e| wrap(e, "could not get current exe"))?;
+		let target_path =
+			std::env::current_exe().map_err(|e| wrap(e, "could not get current exe"))?;
 		let staging_path = target_path.with_extension(".update");
 		let archive_contents_path = tempdir.path().join("content");
 		// unzipping the single binary is pretty small and fast--don't bother
 		// with passing progress
-		unzip_downloaded_release(
-			&archive_path,
-			&archive_contents_path,
-			SilentCopyProgress(),
-		)?;
+		unzip_downloaded_release(&archive_path, &archive_contents_path, SilentCopyProgress())?;
 		copy_updated_cli_to_path(&archive_contents_path, &staging_path)?;
 
 		// 3. Copy file metadata, make sure the new binary is executable\
@@ -121,14 +100,9 @@ impl<'a> SelfUpdate<'a> {
 		// by the OS later. However, this can fail if the tempdir is on a
 		// different drive than the installation dir. In this case just rename
 		// it to ".old".
-		if fs::rename(&target_path, tempdir.path().join("old-code-cli"))
-			.is_err()
-		{
-			fs::rename(
-				&target_path,
-				target_path.with_extension(OLD_UPDATE_EXTENSION),
-			)
-			.map_err(|e| wrap(e, "failed to rename old CLI"))?;
+		if fs::rename(&target_path, tempdir.path().join("old-code-cli")).is_err() {
+			fs::rename(&target_path, target_path.with_extension(OLD_UPDATE_EXTENSION))
+				.map_err(|e| wrap(e, "failed to rename old CLI"))?;
 		}
 
 		fs::rename(&staging_path, &target_path)
@@ -139,19 +113,14 @@ impl<'a> SelfUpdate<'a> {
 }
 
 fn validate_cli_is_good(exe_path:&Path) -> Result<(), AnyError> {
-	let o = new_std_command(exe_path).args(["--version"]).output().map_err(
-		|e| {
-			CorruptDownload(format!(
-				"could not execute new binary, aborting: {}",
-				e
-			))
-		},
-	)?;
+	let o = new_std_command(exe_path)
+		.args(["--version"])
+		.output()
+		.map_err(|e| CorruptDownload(format!("could not execute new binary, aborting: {}", e)))?;
 
 	if !o.status.success() {
 		let msg = format!(
-			"could not execute new binary, aborting. \
-			 Stdout:\n\n{}\n\nStderr:\n\n{}",
+			"could not execute new binary, aborting. Stdout:\n\n{}\n\nStderr:\n\n{}",
 			String::from_utf8_lossy(&o.stdout),
 			String::from_utf8_lossy(&o.stderr),
 		);
@@ -162,24 +131,17 @@ fn validate_cli_is_good(exe_path:&Path) -> Result<(), AnyError> {
 	Ok(())
 }
 
-fn copy_updated_cli_to_path(
-	unzipped_content:&Path,
-	staging_path:&Path,
-) -> Result<(), AnyError> {
+fn copy_updated_cli_to_path(unzipped_content:&Path, staging_path:&Path) -> Result<(), AnyError> {
 	let unzipped_files = fs::read_dir(unzipped_content)
 		.map_err(|e| wrap(e, "could not read update contents"))?
 		.collect::<Vec<_>>();
 	if unzipped_files.len() != 1 {
-		let msg = format!(
-			"expected exactly one file in update, got {}",
-			unzipped_files.len()
-		);
+		let msg = format!("expected exactly one file in update, got {}", unzipped_files.len());
 		return Err(CorruptDownload(msg).into());
 	}
 
-	let archive_file = unzipped_files[0]
-		.as_ref()
-		.map_err(|e| wrap(e, "error listing update files"))?;
+	let archive_file =
+		unzipped_files[0].as_ref().map_err(|e| wrap(e, "error listing update files"))?;
 	fs::copy(archive_file.path(), staging_path)
 		.map_err(|e| wrap(e, "error copying to staging file"))?;
 	Ok(())
@@ -201,8 +163,7 @@ fn copy_file_metadata(from:&Path, to:&Path) -> Result<(), std::io::Error> {
 
 	// based on coreutils' chown https://github.com/uutils/coreutils/blob/72b4629916abe0852ad27286f4e307fbca546b6e/src/chown/chown.rs#L266-L281
 	let s = std::ffi::CString::new(to.as_os_str().as_bytes()).unwrap();
-	let ret =
-		unsafe { libc::chown(s.as_ptr(), metadata.uid(), metadata.gid()) };
+	let ret = unsafe { libc::chown(s.as_ptr(), metadata.uid(), metadata.gid()) };
 	if ret != 0 {
 		return Err(std::io::Error::last_os_error());
 	}

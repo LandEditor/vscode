@@ -84,9 +84,7 @@ pub fn new_tokio_command(exe:impl AsRef<OsStr>) -> Command {
 
 /// Makes a new Command, setting flags to avoid extra windows on win32
 #[cfg(not(windows))]
-pub fn new_tokio_command(exe:impl AsRef<OsStr>) -> Command {
-	tokio::process::Command::new(exe)
-}
+pub fn new_tokio_command(exe:impl AsRef<OsStr>) -> Command { tokio::process::Command::new(exe) }
 
 /// Makes a new command to run the target script. For windows, ensures it's run
 /// in a cmd.exe context.
@@ -126,8 +124,7 @@ pub fn new_std_command(exe:impl AsRef<OsStr>) -> std::process::Command {
 /// Kills and processes and all of its children.
 #[cfg(windows)]
 pub async fn kill_tree(process_id:u32) -> Result<(), CodeError> {
-	capture_command("taskkill", &["/t", "/pid", &process_id.to_string()])
-		.await?;
+	capture_command("taskkill", &["/t", "/pid", &process_id.to_string()]).await?;
 	Ok(())
 }
 
@@ -158,14 +155,12 @@ pub async fn kill_tree(process_id:u32) -> Result<(), CodeError> {
 			}
 		})?;
 
-	let mut kill_futures =
-		vec![tokio::spawn(async move { kill_single_pid(parent_id).await })];
+	let mut kill_futures = vec![tokio::spawn(async move { kill_single_pid(parent_id).await })];
 
 	if let Some(stdout) = prgrep_cmd.stdout.take() {
 		let mut reader = BufReader::new(stdout).lines();
 		while let Some(line) = reader.next_line().await.unwrap_or(None) {
-			kill_futures
-				.push(tokio::spawn(async move { kill_single_pid(line).await }))
+			kill_futures.push(tokio::spawn(async move { kill_single_pid(line).await }))
 		}
 	}
 

@@ -104,10 +104,7 @@ pub struct CodeVersionManager {
 
 impl CodeVersionManager {
 	pub fn new(log:log::Logger, lp:&LauncherPaths, _platform:Platform) -> Self {
-		CodeVersionManager {
-			log,
-			state:PersistedState::new(lp.root().join("versions.json")),
-		}
+		CodeVersionManager { log, state:PersistedState::new(lp.root().join("versions.json")) }
 	}
 
 	/// Tries to find the binary entrypoint for VS Code installed in the path.
@@ -117,10 +114,8 @@ impl CodeVersionManager {
 		// Check whether the user is supplying a path to the CLI directly (e.g.
 		// #164622)
 		if let Ok(true) = path.metadata().map(|m| m.is_file()) {
-			let result = new_std_command(path)
-				.args(["--version"])
-				.output()
-				.map(|o| o.status.success());
+			let result =
+				new_std_command(path).args(["--version"]).output().map(|o| o.status.success());
 
 			if let Ok(true) = result {
 				return Some(path.to_owned());
@@ -165,8 +160,7 @@ impl CodeVersionManager {
 		version:RequestedVersion,
 		path:PathBuf,
 	) -> usize {
-		if let Some(i) = state.versions.iter().position(|(v, _)| v == &version)
-		{
+		if let Some(i) = state.versions.iter().position(|(v, _)| v == &version) {
 			state.versions[i].1 = path.into_os_string();
 			i
 		} else {
@@ -186,14 +180,9 @@ impl CodeVersionManager {
 	}
 
 	/// Tries to get the entrypoint for the version, if one can be found.
-	pub async fn try_get_entrypoint(
-		&self,
-		version:&RequestedVersion,
-	) -> Option<PathBuf> {
+	pub async fn try_get_entrypoint(&self, version:&RequestedVersion) -> Option<PathBuf> {
 		let mut state = self.state.load();
-		if let Some((_, install_path)) =
-			state.versions.iter().find(|(v, _)| v == version)
-		{
+		if let Some((_, install_path)) = state.versions.iter().find(|(v, _)| v == version) {
 			let p = PathBuf::from(install_path);
 			if p.exists() {
 				return Some(p);
@@ -207,11 +196,7 @@ impl CodeVersionManager {
 				match detect_installed_program(&self.log) {
 					Ok(p) => p,
 					Err(e) => {
-						warning!(
-							self.log,
-							"error looking up installed applications: {}",
-							e
-						);
+						warning!(self.log, "error looking up installed applications: {}", e);
 						return None;
 					},
 				}
@@ -237,10 +222,7 @@ impl CodeVersionManager {
 /// Shows a nice UI prompt to users asking them if they want to install the
 /// requested version.
 pub fn prompt_to_install(version:&RequestedVersion) {
-	println!(
-		"No installation of {} {} was found.",
-		QUALITYLESS_PRODUCT_NAME, version
-	);
+	println!("No installation of {} {} was found.", QUALITYLESS_PRODUCT_NAME, version);
 
 	if let RequestedVersion::Default = version {
 		if let Some(uri) = PRODUCT_DOWNLOAD_URL {
@@ -249,8 +231,8 @@ pub fn prompt_to_install(version:&RequestedVersion) {
 			// macOS and on windows we can download and spawn the GUI installer
 			#[cfg(target_os = "linux")]
 			println!(
-				"Install it from your system's package manager or {}, restart \
-				 your shell, and try again.",
+				"Install it from your system's package manager or {}, restart your shell, and try \
+				 again.",
 				uri
 			);
 			#[cfg(target_os = "macos")]
@@ -262,8 +244,8 @@ pub fn prompt_to_install(version:&RequestedVersion) {
 
 	println!();
 	println!(
-		"If you already installed {} and we didn't detect it, run `{} \
-		 --install-dir /path/to/installation`",
+		"If you already installed {} and we didn't detect it, run `{} --install-dir \
+		 /path/to/installation`",
 		QUALITYLESS_PRODUCT_NAME,
 		version.get_command()
 	);
@@ -301,8 +283,8 @@ fn detect_installed_program(log:&log::Logger) -> io::Result<Vec<PathBuf>> {
 	// for the `Location:` line for the path.
 	info!(
 		log,
-		"Searching for installations on your machine, this is done once and \
-		 will take about 10 seconds..."
+		"Searching for installations on your machine, this is done once and will take about 10 \
+		 seconds..."
 	);
 
 	let stdout = new_std_command("system_profiler")
@@ -329,15 +311,9 @@ fn detect_installed_program(log:&log::Logger) -> io::Result<Vec<PathBuf>> {
 			State::LookingForLocation => {
 				if let Some(suffix) = line.strip_prefix(LOCATION_PREFIX) {
 					output.push(
-						[
-							suffix.trim(),
-							"Contents/Resources",
-							"app",
-							"bin",
-							"code",
-						]
-						.iter()
-						.collect(),
+						[suffix.trim(), "Contents/Resources", "app", "bin", "code"]
+							.iter()
+							.collect(),
 					);
 					state = State::LookingForName;
 				}
@@ -370,17 +346,10 @@ fn detect_installed_program(_log:&log::Logger) -> io::Result<Vec<PathBuf>> {
 	let scopes = [
 		(
 			HKEY_LOCAL_MACHINE,
-			"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\\
-			 Uninstall",
+			"SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
 		),
-		(
-			HKEY_LOCAL_MACHINE,
-			"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-		),
-		(
-			HKEY_CURRENT_USER,
-			"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall",
-		),
+		(HKEY_LOCAL_MACHINE, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"),
+		(HKEY_CURRENT_USER, "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall"),
 	];
 
 	for (scope, key) in scopes {
@@ -392,17 +361,11 @@ fn detect_installed_program(_log:&log::Logger) -> io::Result<Vec<PathBuf>> {
 		for key in cur_ver.enum_keys().flatten() {
 			if app_ids.iter().any(|id| key.contains(id)) {
 				let sk = cur_ver.open_subkey(&key)?;
-				if let Ok(location) =
-					sk.get_value::<String, _>("InstallLocation")
-				{
+				if let Ok(location) = sk.get_value::<String, _>("InstallLocation") {
 					output.push(
-						[
-							location.as_str(),
-							"bin",
-							&format!("{}.cmd", APPLICATION_NAME),
-						]
-						.iter()
-						.collect(),
+						[location.as_str(), "bin", &format!("{}.cmd", APPLICATION_NAME)]
+							.iter()
+							.collect(),
 					)
 				}
 			}
@@ -426,8 +389,7 @@ fn detect_installed_program(log:&log::Logger) -> io::Result<Vec<PathBuf>> {
 		},
 	};
 
-	let current_exe =
-		std::env::current_exe().expect("expected to read current exe");
+	let current_exe = std::env::current_exe().expect("expected to read current exe");
 	let mut output = vec![];
 	for dir in path.split(':') {
 		let target:PathBuf = [dir, APPLICATION_NAME].iter().collect();
@@ -464,19 +426,14 @@ mod tests {
 	use super::*;
 
 	fn make_fake_vscode_install(path:&Path) {
-		let bin = DESKTOP_CLI_RELATIVE_PATH
-			.split(',')
-			.next()
-			.expect("expected exe path");
+		let bin = DESKTOP_CLI_RELATIVE_PATH.split(',').next().expect("expected exe path");
 
 		let binary_file_path = path.join(bin);
-		let parent_dir_path =
-			binary_file_path.parent().expect("expected parent path");
+		let parent_dir_path = binary_file_path.parent().expect("expected parent path");
 
 		create_dir_all(parent_dir_path).expect("expected to create parent dir");
 
-		let mut binary_file =
-			File::create(binary_file_path).expect("expected to make file");
+		let mut binary_file = File::create(binary_file_path).expect("expected to make file");
 		binary_file.write_all(b"").expect("expected to write binary");
 	}
 
@@ -501,11 +458,7 @@ mod tests {
 	async fn test_set_preferred_version() {
 		let dir = make_multiple_vscode_install();
 		let lp = LauncherPaths::new_without_replacements(dir.path().to_owned());
-		let vm1 = CodeVersionManager::new(
-			log::Logger::test(),
-			&lp,
-			Platform::LinuxARM64,
-		);
+		let vm1 = CodeVersionManager::new(log::Logger::test(), &lp, Platform::LinuxARM64);
 
 		assert_eq!(vm1.get_preferred_version(), RequestedVersion::Default);
 		vm1.set_preferred_version(
@@ -521,20 +474,10 @@ mod tests {
 		.await
 		.expect("expected to store");
 
-		assert_eq!(
-			vm1.get_preferred_version(),
-			RequestedVersion::Commit("foobar2".to_string()),
-		);
+		assert_eq!(vm1.get_preferred_version(), RequestedVersion::Commit("foobar2".to_string()),);
 
-		let vm2 = CodeVersionManager::new(
-			log::Logger::test(),
-			&lp,
-			Platform::LinuxARM64,
-		);
-		assert_eq!(
-			vm2.get_preferred_version(),
-			RequestedVersion::Commit("foobar2".to_string()),
-		);
+		let vm2 = CodeVersionManager::new(log::Logger::test(), &lp, Platform::LinuxARM64);
+		assert_eq!(vm2.get_preferred_version(), RequestedVersion::Commit("foobar2".to_string()),);
 	}
 
 	#[tokio::test]
@@ -550,11 +493,9 @@ mod tests {
 		);
 
 		assert!(
-			CodeVersionManager::get_entrypoint_for_install_dir(
-				&dir.path().join("invalid")
-			)
-			.await
-			.is_none()
+			CodeVersionManager::get_entrypoint_for_install_dir(&dir.path().join("invalid"))
+				.await
+				.is_none()
 		);
 	}
 
@@ -575,8 +516,7 @@ mod tests {
 
 			let path = dir.path().join("code");
 			{
-				let mut f =
-					File::create(&path).expect("expected to create file");
+				let mut f = File::create(&path).expect("expected to create file");
 				f.write_all(b"#!/bin/sh").expect("expected to write to file");
 			}
 			fs::set_permissions(&path, fs::Permissions::from_mode(0o777))
@@ -585,10 +525,7 @@ mod tests {
 		};
 
 		assert_eq!(
-			CodeVersionManager::get_entrypoint_for_install_dir(
-				&binary_file_path
-			)
-			.await,
+			CodeVersionManager::get_entrypoint_for_install_dir(&binary_file_path).await,
 			Some(binary_file_path)
 		);
 	}

@@ -75,19 +75,12 @@ impl ShutdownRequest {
 
 	/// Creates a receiver channel sent to once any of the signals are received.
 	/// Note: does not handle ServiceStopped
-	pub fn create_rx(
-		signals:impl IntoIterator<Item = ShutdownRequest>,
-	) -> Barrier<ShutdownSignal> {
+	pub fn create_rx(signals:impl IntoIterator<Item = ShutdownRequest>) -> Barrier<ShutdownSignal> {
 		let (barrier, opener) = new_barrier();
-		let futures = signals
-			.into_iter()
-			.map(|s| s.wait())
-			.collect::<FuturesUnordered<_>>();
+		let futures = signals.into_iter().map(|s| s.wait()).collect::<FuturesUnordered<_>>();
 
 		tokio::spawn(async move {
-			if let Some(s) =
-				futures.filter_map(futures::future::ready).next().await
-			{
+			if let Some(s) = futures.filter_map(futures::future::ready).next().await {
 				opener.open(s);
 			}
 		});

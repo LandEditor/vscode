@@ -27,8 +27,7 @@ extern {
 
 const NUM_ASSERTIONS:usize = 2;
 
-const ASSERTIONS:[&str; NUM_ASSERTIONS] =
-	["PreventUserIdleSystemSleep", "PreventSystemSleep"];
+const ASSERTIONS:[&str; NUM_ASSERTIONS] = ["PreventUserIdleSystemSleep", "PreventSystemSleep"];
 
 struct Assertion(u32);
 
@@ -69,10 +68,7 @@ impl SleepInhibitor {
 		let mut assertions = Vec::with_capacity(NUM_ASSERTIONS);
 		let assertion_name = CFString::from_static_string(TUNNEL_ACTIVITY_NAME);
 		for typ in ASSERTIONS {
-			assertions.push(Assertion::make(
-				&CFString::from_static_string(typ),
-				&assertion_name,
-			)?);
+			assertions.push(Assertion::make(&CFString::from_static_string(typ), &assertion_name)?);
 		}
 
 		Ok(Self { _assertions:assertions })

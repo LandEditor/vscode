@@ -141,9 +141,7 @@ mod tests {
 
 	#[test]
 	fn test_canonical_exe_not_in_snap2() {
-		let exe =
-			canonical_exe_inner(Ok(PathBuf::from("/not-in-snap")), None, None)
-				.unwrap();
+		let exe = canonical_exe_inner(Ok(PathBuf::from("/not-in-snap")), None, None).unwrap();
 		assert_eq!(exe, PathBuf::from("/not-in-snap"));
 	}
 }

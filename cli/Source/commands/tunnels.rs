@@ -58,11 +58,7 @@ use crate::{
 		protocol,
 		serve_stream,
 		shutdown_signal::ShutdownRequest,
-		singleton_client::{
-			do_single_rpc_call,
-			start_singleton_client,
-			SingletonClientArgs,
-		},
+		singleton_client::{do_single_rpc_call, start_singleton_client, SingletonClientArgs},
 		singleton_server::{
 			make_singleton_server,
 			start_singleton_server,
@@ -112,12 +108,7 @@ fn fulfill_existing_tunnel_args(
 		},
 
 		(Some(tunnel_id), Some(cluster), Some(host_token)) => {
-			Some(dev_tunnels::ExistingTunnel {
-				tunnel_id,
-				tunnel_name,
-				host_token,
-				cluster,
-			})
+			Some(dev_tunnels::ExistingTunnel { tunnel_id, tunnel_name, host_token, cluster })
 		},
 
 		_ => None,
@@ -155,14 +146,10 @@ impl ServiceContainer for TunnelServiceContainer {
 	}
 }
 
-pub async fn command_shell(
-	ctx:CommandContext,
-	args:CommandShellArgs,
-) -> Result<i32, AnyError> {
+pub async fn command_shell(ctx:CommandContext, args:CommandShellArgs) -> Result<i32, AnyError> {
 	let platform = PreReqChecker::new().verify().await?;
 	let mut shutdown_reqs = vec![ShutdownRequest::CtrlC];
-	if let Some(p) = args.parent_process_id.and_then(|p| Pid::from_str(&p).ok())
-	{
+	if let Some(p) = args.parent_process_id.and_then(|p| Pid::from_str(&p).ok()) {
 		shutdown_reqs.push(ShutdownRequest::ParentProcessKilled(p));
 	}
 
@@ -199,12 +186,9 @@ pub async fn command_shell(
 					.map(|h| h.parse().map_err(CodeError::InvalidHostAddress))
 					.unwrap_or(Ok(IpAddr::V4(Ipv4Addr::LOCALHOST)))?;
 
-				let lower_port =
-					args.on_port.first().copied().unwrap_or_default();
+				let lower_port = args.on_port.first().copied().unwrap_or_default();
 				let port_no = if let Some(upper) = args.on_port.get(1) {
-					find_unused_port(&host, lower_port, *upper)
-						.await
-						.unwrap_or_default()
+					find_unused_port(&host, lower_port, *upper).await.unwrap_or_default()
 				} else {
 					lower_port
 				};
@@ -214,16 +198,12 @@ pub async fn command_shell(
 					.await
 					.map_err(|e| wrap(e, "error listening on port"))?;
 
-				params.log.result(format!(
-					"Listening on {}",
-					listener.local_addr().unwrap()
-				));
+				params.log.result(format!("Listening on {}", listener.local_addr().unwrap()));
 
 				Box::new(listener)
 			},
 			_ => {
-				serve_stream(tokio::io::stdin(), tokio::io::stderr(), params)
-					.await;
+				serve_stream(tokio::io::stdin(), tokio::io::stderr(), params).await;
 				return Ok(0);
 			},
 		};
@@ -251,11 +231,7 @@ pub async fn command_shell(
 	}
 }
 
-async fn find_unused_port(
-	host:&IpAddr,
-	start_port:u16,
-	end_port:u16,
-) -> Option<u16> {
+async fn find_unused_port(host:&IpAddr, start_port:u16, end_port:u16) -> Option<u16> {
 	for port in start_port..=end_port {
 		if is_port_available(*host, port).await {
 			return Some(port);
@@ -279,11 +255,9 @@ pub async fn service(
 
 			if let Some(name) = &args.name {
 				// ensure the name matches, and tunnel exists
-				dev_tunnels::DevTunnels::new_remote_tunnel(
-					&ctx.log, auth, &ctx.paths,
-				)
-				.rename_tunnel(name)
-				.await?;
+				dev_tunnels::DevTunnels::new_remote_tunnel(&ctx.log, auth, &ctx.paths)
+					.rename_tunnel(name)
+					.await?;
 			} else {
 				// still ensure they're logged in, otherwise subsequent serving
 				// will fail
@@ -291,13 +265,9 @@ pub async fn service(
 			}
 
 			// likewise for license consent
-			legal::require_consent(
-				&ctx.paths,
-				args.accept_server_license_terms,
-			)?;
+			legal::require_consent(&ctx.paths, args.accept_server_license_terms)?;
 
-			let current_exe = canonical_exe()
-				.map_err(|e| wrap(e, "could not get current exe"))?;
+			let current_exe = canonical_exe().map_err(|e| wrap(e, "could not get current exe"))?;
 
 			manager
 				.register(
@@ -313,9 +283,8 @@ pub async fn service(
 				)
 				.await?;
 			ctx.log.result(format!(
-				"Service successfully installed! You can use `{} tunnel \
-				 service log` to monitor it, and `{} tunnel service \
-				 uninstall` to remove it.",
+				"Service successfully installed! You can use `{} tunnel service log` to monitor \
+				 it, and `{} tunnel service uninstall` to remove it.",
 				APPLICATION_NAME, APPLICATION_NAME
 			));
 		},
@@ -326,19 +295,14 @@ pub async fn service(
 			manager.show_logs().await?;
 		},
 		TunnelServiceSubCommands::InternalRun => {
-			manager
-				.run(ctx.paths.clone(), TunnelServiceContainer::new(ctx.args))
-				.await?;
+			manager.run(ctx.paths.clone(), TunnelServiceContainer::new(ctx.args)).await?;
 		},
 	}
 
 	Ok(0)
 }
 
-pub async fn user(
-	ctx:CommandContext,
-	user_args:TunnelUserSubCommands,
-) -> Result<i32, AnyError> {
+pub async fn user(ctx:CommandContext, user_args:TunnelUserSubCommands) -> Result<i32, AnyError> {
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
 	match user_args {
 		TunnelUserSubCommands::Login(mut login_args) => {
@@ -366,18 +330,12 @@ pub async fn user(
 }
 
 /// Remove the tunnel used by this tunnel, if any.
-pub async fn rename(
-	ctx:CommandContext,
-	rename_args:TunnelRenameArgs,
-) -> Result<i32, AnyError> {
+pub async fn rename(ctx:CommandContext, rename_args:TunnelRenameArgs) -> Result<i32, AnyError> {
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
-	let mut dt =
-		dev_tunnels::DevTunnels::new_remote_tunnel(&ctx.log, auth, &ctx.paths);
+	let mut dt = dev_tunnels::DevTunnels::new_remote_tunnel(&ctx.log, auth, &ctx.paths);
 	dt.rename_tunnel(&rename_args.name).await?;
-	ctx.log.result(format!(
-		"Successfully renamed this tunnel to {}",
-		&rename_args.name
-	));
+	ctx.log
+		.result(format!("Successfully renamed this tunnel to {}", &rename_args.name));
 
 	Ok(0)
 }
@@ -385,8 +343,7 @@ pub async fn rename(
 /// Remove the tunnel used by this tunnel, if any.
 pub async fn unregister(ctx:CommandContext) -> Result<i32, AnyError> {
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
-	let mut dt =
-		dev_tunnels::DevTunnels::new_remote_tunnel(&ctx.log, auth, &ctx.paths);
+	let mut dt = dev_tunnels::DevTunnels::new_remote_tunnel(&ctx.log, auth, &ctx.paths);
 	dt.remove_tunnel().await?;
 	Ok(0)
 }
@@ -422,14 +379,13 @@ pub struct StatusOutput {
 }
 
 pub async fn status(ctx:CommandContext) -> Result<i32, AnyError> {
-	let tunnel =
-		do_single_rpc_call::<_, protocol::singleton::StatusWithTunnelName>(
-			&ctx.paths.tunnel_lockfile(),
-			ctx.log.clone(),
-			protocol::singleton::METHOD_STATUS,
-			protocol::EmptyObject {},
-		)
-		.await;
+	let tunnel = do_single_rpc_call::<_, protocol::singleton::StatusWithTunnelName>(
+		&ctx.paths.tunnel_lockfile(),
+		ctx.log.clone(),
+		protocol::singleton::METHOD_STATUS,
+		protocol::EmptyObject {},
+	)
+	.await;
 
 	let service_installed = create_service_manager(ctx.log.clone(), &ctx.paths)
 		.is_installed()
@@ -441,9 +397,7 @@ pub async fn status(ctx:CommandContext) -> Result<i32, AnyError> {
 			service_installed,
 			tunnel:match tunnel {
 				Ok(s) => Some(s),
-				Err(
-					CodeError::NoRunningTunnel | CodeError::AsyncPipeFailed(_),
-				) => None,
+				Err(CodeError::NoRunningTunnel | CodeError::AsyncPipeFailed(_)) => None,
 				Err(e) => return Err(e.into()),
 			},
 		})
@@ -471,10 +425,7 @@ pub async fn prune(ctx:CommandContext) -> Result<i32, AnyError> {
 }
 
 /// Starts the gateway server.
-pub async fn serve(
-	ctx:CommandContext,
-	gateway_args:TunnelServeArgs,
-) -> Result<i32, AnyError> {
+pub async fn serve(ctx:CommandContext, gateway_args:TunnelServeArgs) -> Result<i32, AnyError> {
 	let CommandContext { log, paths, args, .. } = ctx;
 
 	let no_sleep = match gateway_args.no_sleep.then(SleepInhibitor::new) {
@@ -494,9 +445,7 @@ pub async fn serve(
 
 	let mut csa = (&args).into();
 	gateway_args.server_args.apply_to(&mut csa);
-	let result =
-		serve_with_csa(paths, log, gateway_args, csa, TUNNEL_CLI_LOCK_NAME)
-			.await;
+	let result = serve_with_csa(paths, log, gateway_args, csa, TUNNEL_CLI_LOCK_NAME).await;
 	drop(no_sleep);
 
 	result
@@ -546,21 +495,15 @@ pub async fn forward(
 		match acquire_singleton(&ctx.paths.forwarding_lockfile()).await {
 			Ok(SingletonConnection::Client(stream)) => {
 				debug!(ctx.log, "starting as client to singleton");
-				let r = local_forwarding::client(
-					local_forwarding::SingletonClientArgs {
-						log:ctx.log.clone(),
-						shutdown:shutdown.clone(),
-						stream,
-						port_requests:own_ports_rx.clone(),
-					},
-				)
+				let r = local_forwarding::client(local_forwarding::SingletonClientArgs {
+					log:ctx.log.clone(),
+					shutdown:shutdown.clone(),
+					stream,
+					port_requests:own_ports_rx.clone(),
+				})
 				.await;
 				if let Err(e) = r {
-					warning!(
-						ctx.log,
-						"error contacting forwarding singleton: {}",
-						e
-					);
+					warning!(ctx.log, "error contacting forwarding singleton: {}", e);
 				}
 			},
 			Ok(SingletonConnection::Singleton(server)) => break server,
@@ -573,26 +516,17 @@ pub async fn forward(
 
 	// #region singleton handler
 	let auth = Auth::new(&ctx.paths, ctx.log.clone());
-	if let (Some(p), Some(at)) = (
-		forward_args.login.provider.take(),
-		forward_args.login.access_token.take(),
-	) {
-		auth.login(
-			Some(p.into()),
-			Some(at),
-			forward_args.login.refresh_token.take(),
-		)
-		.await?;
+	if let (Some(p), Some(at)) =
+		(forward_args.login.provider.take(), forward_args.login.access_token.take())
+	{
+		auth.login(Some(p.into()), Some(at), forward_args.login.refresh_token.take())
+			.await?;
 	}
 
-	let mut tunnels =
-		DevTunnels::new_port_forwarding(&ctx.log, auth, &ctx.paths);
-	let tunnel = tunnels
-		.start_new_launcher_tunnel(None, true, &forward_args.ports)
-		.await?;
+	let mut tunnels = DevTunnels::new_port_forwarding(&ctx.log, auth, &ctx.paths);
+	let tunnel = tunnels.start_new_launcher_tunnel(None, true, &forward_args.ports).await?;
 
-	local_forwarding::server(ctx.log, tunnel, server, own_ports_rx, shutdown)
-		.await?;
+	local_forwarding::server(ctx.log, tunnel, server, own_ports_rx, shutdown).await?;
 
 	Ok(0)
 }
@@ -632,13 +566,9 @@ async fn serve_with_csa(
 	// current_exe will point to the wrong path.
 	let current_exe = std::env::current_exe().unwrap();
 
-	let mut vec = vec![
-		ShutdownRequest::CtrlC,
-		ShutdownRequest::ExeUninstalled(current_exe.to_owned()),
-	];
-	if let Some(p) =
-		gateway_args.parent_process_id.and_then(|p| Pid::from_str(&p).ok())
-	{
+	let mut vec =
+		vec![ShutdownRequest::CtrlC, ShutdownRequest::ExeUninstalled(current_exe.to_owned())];
+	if let Some(p) = gateway_args.parent_process_id.and_then(|p| Pid::from_str(&p).ok()) {
 		vec.push(ShutdownRequest::ParentProcessKilled(p));
 	}
 	let mut shutdown = ShutdownRequest::create_rx(vec);
@@ -657,8 +587,7 @@ async fn serve_with_csa(
 				{
 					warning!(
 						log,
-						"Command-line options will not be applied until the \
-						 existing tunnel exits."
+						"Command-line options will not be applied until the existing tunnel exits."
 					);
 				}
 
@@ -682,23 +611,17 @@ async fn serve_with_csa(
 
 	debug!(log, "starting as new singleton");
 
-	let mut server = make_singleton_server(
-		log_broadcast.clone(),
-		log.clone(),
-		server,
-		shutdown.clone(),
-	);
-	let platform =
-		spanf!(log, log.span("prereq"), PreReqChecker::new().verify())?;
+	let mut server =
+		make_singleton_server(log_broadcast.clone(), log.clone(), server, shutdown.clone());
+	let platform = spanf!(log, log.span("prereq"), PreReqChecker::new().verify())?;
 	let _lock = app_mutex_name.map(AppMutex::new);
 
 	let auth = Auth::new(&paths, log.clone());
 	let mut dt = dev_tunnels::DevTunnels::new_remote_tunnel(&log, auth, &paths);
 	loop {
-		let tunnel = if let Some(t) = fulfill_existing_tunnel_args(
-			gateway_args.tunnel.clone(),
-			&gateway_args.name,
-		) {
+		let tunnel = if let Some(t) =
+			fulfill_existing_tunnel_args(gateway_args.tunnel.clone(), &gateway_args.name)
+		{
 			dt.start_existing_tunnel(t).await
 		} else {
 			tokio::select! {

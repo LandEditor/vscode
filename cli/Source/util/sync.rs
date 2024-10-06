@@ -95,9 +95,7 @@ impl<T:Send> Receivable<T> for mpsc::UnboundedReceiver<T> {
 
 #[async_trait]
 impl<T:Send> Receivable<T> for () {
-	async fn recv_msg(&mut self) -> Option<T> {
-		futures::future::pending().await
-	}
+	async fn recv_msg(&mut self) -> Option<T> { futures::future::pending().await }
 }
 
 pub struct ConcatReceivable<T:Send, A:Receivable<T>, B:Receivable<T>> {
@@ -107,9 +105,7 @@ pub struct ConcatReceivable<T:Send, A:Receivable<T>, B:Receivable<T>> {
 }
 
 impl<T:Send, A:Receivable<T>, B:Receivable<T>> ConcatReceivable<T, A, B> {
-	pub fn new(left:A, right:B) -> Self {
-		Self { left:Some(left), right, _marker:PhantomData }
-	}
+	pub fn new(left:A, right:B) -> Self { Self { left:Some(left), right, _marker:PhantomData } }
 }
 
 #[async_trait]

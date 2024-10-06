@@ -29,34 +29,21 @@ pub struct SystemdService {
 
 impl SystemdService {
 	pub fn new(log:log::Logger, paths:LauncherPaths) -> Self {
-		Self {
-			log,
-			service_file:paths
-				.root()
-				.join(SystemdService::service_name_string()),
-		}
+		Self { log, service_file:paths.root().join(SystemdService::service_name_string()) }
 	}
 }
 
 impl SystemdService {
 	async fn connect() -> Result<Connection, AnyError> {
-		let connection = Connection::session()
-			.await
-			.map_err(|e| DbusConnectFailedError(e.to_string()))?;
+		let connection =
+			Connection::session().await.map_err(|e| DbusConnectFailedError(e.to_string()))?;
 		Ok(connection)
 	}
 
-	async fn proxy(
-		connection:&Connection,
-	) -> Result<SystemdManagerDbusProxy<'_>, AnyError> {
-		let proxy =
-			SystemdManagerDbusProxy::new(connection).await.map_err(|e| {
-				wrap(
-					e,
-					"error connecting to systemd, you may need to re-run with \
-					 sudo:",
-				)
-			})?;
+	async fn proxy(connection:&Connection) -> Result<SystemdManagerDbusProxy<'_>, AnyError> {
+		let proxy = SystemdManagerDbusProxy::new(connection).await.map_err(|e| {
+			wrap(e, "error connecting to systemd, you may need to re-run with sudo:")
+		})?;
 
 		Ok(proxy)
 	}
@@ -65,9 +52,7 @@ impl SystemdService {
 		self.service_file.as_os_str().to_string_lossy().to_string()
 	}
 
-	fn service_name_string() -> String {
-		format!("{}-tunnel.service", APPLICATION_NAME)
-	}
+	fn service_name_string() -> String { format!("{}-tunnel.service", APPLICATION_NAME) }
 }
 
 #[async_trait]
@@ -116,22 +101,17 @@ impl ServiceManager for SystemdService {
 		info!(self.log, "Successfully enabled unit files...");
 
 		proxy
-			.start_unit(
-				SystemdService::service_name_string(),
-				"replace".to_string(),
-			)
+			.start_unit(SystemdService::service_name_string(), "replace".to_string())
 			.await
 			.map_err(|e| wrap(e, "error starting service"))?;
 
 		info!(self.log, "Tunnel service successfully started");
 
-		if std::env::var("SSH_CLIENT").is_ok()
-			|| std::env::var("SSH_TTY").is_ok()
-		{
+		if std::env::var("SSH_CLIENT").is_ok() || std::env::var("SSH_TTY").is_ok() {
 			info!(
 				self.log,
-				"Tip: run `sudo loginctl enable-linger $USER` to ensure the \
-				 service stays running after you disconnect."
+				"Tip: run `sudo loginctl enable-linger $USER` to ensure the service stays running \
+				 after you disconnect."
 			);
 		}
 
@@ -141,9 +121,7 @@ impl ServiceManager for SystemdService {
 	async fn is_installed(&self) -> Result<bool, AnyError> {
 		let connection = SystemdService::connect().await?;
 		let proxy = SystemdService::proxy(&connection).await?;
-		let state = proxy
-			.get_unit_file_state(SystemdService::service_name_string())
-			.await;
+		let state = proxy.get_unit_file_state(SystemdService::service_name_string()).await;
 
 		if let Ok(s) = state { Ok(s == "enabled") } else { Ok(false) }
 	}
@@ -159,25 +137,14 @@ impl ServiceManager for SystemdService {
 	async fn show_logs(&self) -> Result<(), AnyError> {
 		// show the systemctl status header...
 		Command::new("systemctl")
-			.args([
-				"--user",
-				"status",
-				"-n",
-				"0",
-				&SystemdService::service_name_string(),
-			])
+			.args(["--user", "status", "-n", "0", &SystemdService::service_name_string()])
 			.status()
 			.map(|s| s.code().unwrap_or(1))
 			.map_err(|e| wrap(e, "error running systemctl"))?;
 
 		// then follow log files
 		Command::new("journalctl")
-			.args([
-				"--user",
-				"-f",
-				"-u",
-				&SystemdService::service_name_string(),
-			])
+			.args(["--user", "-f", "-u", &SystemdService::service_name_string()])
 			.status()
 			.map(|s| s.code().unwrap_or(1))
 			.map_err(|e| wrap(e, "error running journalctl"))?;
@@ -189,10 +156,7 @@ impl ServiceManager for SystemdService {
 		let proxy = SystemdService::proxy(&connection).await?;
 
 		proxy
-			.stop_unit(
-				SystemdService::service_name_string(),
-				"replace".to_string(),
-			)
+			.stop_unit(SystemdService::service_name_string(), "replace".to_string())
 			.await
 			.map_err(|e| wrap(e, "error unregistering service"))?;
 
@@ -270,18 +234,10 @@ trait SystemdManagerDbus {
 	) -> zbus::Result<Vec<(String, String, String)>>;
 
 	#[dbus_proxy(name = "StartUnit")]
-	fn start_unit(
-		&self,
-		name:String,
-		mode:String,
-	) -> zbus::Result<zvariant::OwnedObjectPath>;
+	fn start_unit(&self, name:String, mode:String) -> zbus::Result<zvariant::OwnedObjectPath>;
 
 	#[dbus_proxy(name = "StopUnit")]
-	fn stop_unit(
-		&self,
-		name:String,
-		mode:String,
-	) -> zbus::Result<zvariant::OwnedObjectPath>;
+	fn stop_unit(&self, name:String, mode:String) -> zbus::Result<zvariant::OwnedObjectPath>;
 
 	#[dbus_proxy(name = "Reload")]
 	fn reload(&self) -> zbus::Result<()>;

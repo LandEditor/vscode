@@ -10,9 +10,7 @@ pub struct RingBuffer<T> {
 }
 
 impl<T> RingBuffer<T> {
-	pub fn new(capacity:usize) -> Self {
-		Self { data:Vec::with_capacity(capacity), i:0 }
-	}
+	pub fn new(capacity:usize) -> Self { Self { data:Vec::with_capacity(capacity), i:0 } }
 
 	pub fn capacity(&self) -> usize { self.data.capacity() }
 
@@ -32,9 +30,7 @@ impl<T> RingBuffer<T> {
 		self.i = (self.i + 1) % self.data.capacity();
 	}
 
-	pub fn iter(&self) -> RingBufferIter<'_, T> {
-		RingBufferIter { index:0, buffer:self }
-	}
+	pub fn iter(&self) -> RingBufferIter<'_, T> { RingBufferIter { index:0, buffer:self } }
 }
 
 impl<T:Default> IntoIterator for RingBuffer<T> {

@@ -32,8 +32,7 @@ impl AppMutex {
 		use std::ffi::CString;
 
 		let cname = CString::new(name).unwrap();
-		let handle =
-			unsafe { CreateMutexA(ptr::null_mut(), 0, cname.as_ptr() as _) };
+		let handle = unsafe { CreateMutexA(ptr::null_mut(), 0, cname.as_ptr() as _) };
 
 		if !handle.is_null() {
 			return Ok(Self { handle });

@@ -23,20 +23,13 @@ use tokio::{
 
 use crate::{log, util::errors::AnyError};
 
-pub type SyncMethod =
-	Arc<dyn Send + Sync + Fn(Option<u32>, &[u8]) -> Option<Vec<u8>>>;
-pub type AsyncMethod = Arc<
-	dyn Send
-		+ Sync
-		+ Fn(Option<u32>, &[u8]) -> BoxFuture<'static, Option<Vec<u8>>>,
->;
+pub type SyncMethod = Arc<dyn Send + Sync + Fn(Option<u32>, &[u8]) -> Option<Vec<u8>>>;
+pub type AsyncMethod =
+	Arc<dyn Send + Sync + Fn(Option<u32>, &[u8]) -> BoxFuture<'static, Option<Vec<u8>>>>;
 pub type Duplex = Arc<
 	dyn Send
 		+ Sync
-		+ Fn(
-			Option<u32>,
-			&[u8],
-		) -> (Option<StreamDto>, BoxFuture<'static, Option<Vec<u8>>>),
+		+ Fn(Option<u32>, &[u8]) -> (Option<StreamDto>, BoxFuture<'static, Option<Vec<u8>>>),
 >;
 
 pub enum Method {
@@ -72,22 +65,12 @@ impl<S:Serialization> RpcBuilder<S> {
 
 	/// Creates a caller that will be connected to any eventual dispatchers,
 	/// and that sends data to the "tx" channel.
-	pub fn get_caller(
-		&mut self,
-		sender:mpsc::UnboundedSender<Vec<u8>>,
-	) -> RpcCaller<S> {
-		RpcCaller {
-			serializer:self.serializer.clone(),
-			calls:self.calls.clone(),
-			sender,
-		}
+	pub fn get_caller(&mut self, sender:mpsc::UnboundedSender<Vec<u8>>) -> RpcCaller<S> {
+		RpcCaller { serializer:self.serializer.clone(), calls:self.calls.clone(), sender }
 	}
 
 	/// Gets a method builder.
-	pub fn methods<C:Send + Sync + 'static>(
-		self,
-		context:C,
-	) -> RpcMethodBuilder<S, C> {
+	pub fn methods<C:Send + Sync + 'static>(self, context:C) -> RpcMethodBuilder<S, C> {
 		RpcMethodBuilder {
 			context:Arc::new(context),
 			serializer:self.serializer,
@@ -112,11 +95,8 @@ struct DuplexStreamStarted {
 
 impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 	/// Registers a synchronous rpc call that returns its result directly.
-	pub fn register_sync<P, R, F>(
-		&mut self,
-		method_name:&'static str,
-		callback:F,
-	) where
+	pub fn register_sync<P, R, F>(&mut self, method_name:&'static str, callback:F)
+	where
 		P: DeserializeOwned,
 		R: Serialize,
 		F: Fn(P, &C) -> Result<R, AnyError> + Send + Sync + 'static, {
@@ -135,29 +115,19 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 						return id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error:ResponseError {
-									code:0,
-									message:format!("{:?}", err),
-								},
+								error:ResponseError { code:0, message:format!("{:?}", err) },
 							})
 						});
 					},
 				};
 
 				match callback(param.params, &context) {
-					Ok(result) => {
-						id.map(|id| {
-							serial.serialize(&SuccessResponse { id, result })
-						})
-					},
+					Ok(result) => id.map(|id| serial.serialize(&SuccessResponse { id, result })),
 					Err(err) => {
 						id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error:ResponseError {
-									code:-1,
-									message:format!("{:?}", err),
-								},
+								error:ResponseError { code:-1, message:format!("{:?}", err) },
 							})
 						})
 					},
@@ -167,11 +137,8 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 	}
 
 	/// Registers an async rpc call that returns a Future.
-	pub fn register_async<P, R, Fut, F>(
-		&mut self,
-		method_name:&'static str,
-		callback:F,
-	) where
+	pub fn register_async<P, R, Fut, F>(&mut self, method_name:&'static str, callback:F)
+	where
 		P: DeserializeOwned + Send + 'static,
 		R: Serialize + Send + Sync + 'static,
 		Fut: Future<Output = Result<R, AnyError>> + Send,
@@ -187,10 +154,7 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 						return future::ready(id.map(|id| {
 							serial.serialize(ErrorResponse {
 								id,
-								error:ResponseError {
-									code:0,
-									message:format!("{:?}", err),
-								},
+								error:ResponseError { code:0, message:format!("{:?}", err) },
 							})
 						}))
 						.boxed();
@@ -203,19 +167,13 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 				let fut = async move {
 					match callback(param.params, context).await {
 						Ok(result) => {
-							id.map(|id| {
-								serial
-									.serialize(&SuccessResponse { id, result })
-							})
+							id.map(|id| serial.serialize(&SuccessResponse { id, result }))
 						},
 						Err(err) => {
 							id.map(|id| {
 								serial.serialize(ErrorResponse {
 									id,
-									error:ResponseError {
-										code:-1,
-										message:format!("{:?}", err),
-									},
+									error:ResponseError { code:-1, message:format!("{:?}", err) },
 								})
 							})
 						},
@@ -238,11 +196,7 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		P: DeserializeOwned + Send + 'static,
 		R: Serialize + Send + Sync + 'static,
 		Fut: Future<Output = Result<R, AnyError>> + Send,
-		F: (Fn(Vec<DuplexStream>, P, Arc<C>) -> Fut)
-			+ Clone
-			+ Send
-			+ Sync
-			+ 'static, {
+		F: (Fn(Vec<DuplexStream>, P, Arc<C>) -> Fut) + Clone + Send + Sync + 'static, {
 		let serial = self.serializer.clone();
 		let context = self.context.clone();
 		self.methods.insert(
@@ -256,10 +210,7 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 							future::ready(id.map(|id| {
 								serial.serialize(ErrorResponse {
 									id,
-									error:ResponseError {
-										code:0,
-										message:format!("{:?}", err),
-									},
+									error:ResponseError { code:0, message:format!("{:?}", err) },
 								})
 							}))
 							.boxed(),
@@ -271,10 +222,8 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 				let serial = serial.clone();
 				let context = context.clone();
 
-				let mut dto = StreamDto {
-					req_id:id.unwrap_or(0),
-					streams:Vec::with_capacity(streams),
-				};
+				let mut dto =
+					StreamDto { req_id:id.unwrap_or(0), streams:Vec::with_capacity(streams) };
 				let mut servers = Vec::with_capacity(streams);
 
 				for _ in 0..streams {
@@ -285,22 +234,12 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 
 				let fut = async move {
 					match callback(servers, param.params, context).await {
-						Ok(r) => {
-							id.map(|id| {
-								serial.serialize(&SuccessResponse {
-									id,
-									result:r,
-								})
-							})
-						},
+						Ok(r) => id.map(|id| serial.serialize(&SuccessResponse { id, result:r })),
 						Err(err) => {
 							id.map(|id| {
 								serial.serialize(ErrorResponse {
 									id,
-									error:ResponseError {
-										code:-1,
-										message:format!("{:?}", err),
-									},
+									error:ResponseError { code:-1, message:format!("{:?}", err) },
 								})
 							})
 						},
@@ -317,25 +256,19 @@ impl<S:Serialization, C:Send + Sync + 'static> RpcMethodBuilder<S, C> {
 		let streams = Streams::default();
 
 		let s1 = streams.clone();
-		self.register_async(
-			METHOD_STREAM_ENDED,
-			move |m:StreamEndedParams, _| {
-				let s1 = s1.clone();
-				async move {
-					s1.remove(m.stream).await;
-					Ok(())
-				}
-			},
-		);
+		self.register_async(METHOD_STREAM_ENDED, move |m:StreamEndedParams, _| {
+			let s1 = s1.clone();
+			async move {
+				s1.remove(m.stream).await;
+				Ok(())
+			}
+		});
 
 		let s2 = streams.clone();
-		self.register_sync(
-			METHOD_STREAM_DATA,
-			move |m:StreamDataIncomingParams, _| {
-				s2.write(m.stream, m.segment);
-				Ok(())
-			},
-		);
+		self.register_sync(METHOD_STREAM_DATA, move |m:StreamDataIncomingParams, _| {
+			s2.write(m.stream, m.segment);
+			Ok(())
+		});
 
 		RpcDispatcher {
 			log,
@@ -361,11 +294,7 @@ pub struct RpcCaller<S:Serialization> {
 }
 
 impl<S:Serialization> RpcCaller<S> {
-	pub fn serialize_notify<M, A>(
-		serializer:&S,
-		method:M,
-		params:A,
-	) -> Vec<u8>
+	pub fn serialize_notify<M, A>(serializer:&S, method:M, params:A) -> Vec<u8>
 	where
 		S: Serialization,
 		M: AsRef<str> + serde::Serialize,
@@ -384,22 +313,14 @@ impl<S:Serialization> RpcCaller<S> {
 	}
 
 	/// Enqueues an outbound call, returning its result.
-	pub fn call<M, A, R>(
-		&self,
-		method:M,
-		params:A,
-	) -> oneshot::Receiver<Result<R, ResponseError>>
+	pub fn call<M, A, R>(&self, method:M, params:A) -> oneshot::Receiver<Result<R, ResponseError>>
 	where
 		M: AsRef<str> + serde::Serialize,
 		A: Serialize,
 		R: DeserializeOwned + Send + 'static, {
 		let (tx, rx) = oneshot::channel();
 		let id = next_message_id();
-		let body = self.serializer.serialize(&FullRequest {
-			id:Some(id),
-			method,
-			params,
-		});
+		let body = self.serializer.serialize(&FullRequest { id:Some(id), method, params });
 
 		if self.sender.send(body).is_err() {
 			drop(tx);
@@ -416,11 +337,7 @@ impl<S:Serialization> RpcCaller<S> {
 						match serializer.deserialize::<SuccessResponse<R>>(&r) {
 							Ok(r) => tx.send(Ok(r.result)).ok(),
 							Err(err) => {
-								tx.send(Err(ResponseError {
-									code:0,
-									message:err.to_string(),
-								}))
-								.ok()
+								tx.send(Err(ResponseError { code:0, message:err.to_string() })).ok()
 							},
 						}
 					},
@@ -446,9 +363,7 @@ pub struct RpcDispatcher<S, C> {
 }
 
 static MESSAGE_ID_COUNTER:AtomicU32 = AtomicU32::new(0);
-fn next_message_id() -> u32 {
-	MESSAGE_ID_COUNTER.fetch_add(1, Ordering::SeqCst)
-}
+fn next_message_id() -> u32 { MESSAGE_ID_COUNTER.fetch_add(1, Ordering::SeqCst) }
 
 impl<S:Serialization, C:Send + Sync> RpcDispatcher<S, C> {
 	/// Runs the incoming request, returning the result of the call
@@ -461,46 +376,29 @@ impl<S:Serialization, C:Send + Sync> RpcDispatcher<S, C> {
 		match self.serializer.deserialize::<PartialIncoming>(body) {
 			Ok(partial) => self.dispatch_with_partial(body, partial),
 			Err(_err) => {
-				warning!(
-					self.log,
-					"Failed to deserialize request, hex: {:X?}",
-					body
-				);
+				warning!(self.log, "Failed to deserialize request, hex: {:X?}", body);
 				MaybeSync::Sync(None)
 			},
 		}
 	}
 
 	/// Like dispatch, but allows passing an existing PartialIncoming.
-	pub fn dispatch_with_partial(
-		&self,
-		body:&[u8],
-		partial:PartialIncoming,
-	) -> MaybeSync {
+	pub fn dispatch_with_partial(&self, body:&[u8], partial:PartialIncoming) -> MaybeSync {
 		let id = partial.id;
 
 		if let Some(method_name) = partial.method {
 			let method = self.methods.get(method_name.as_str());
 			match method {
-				Some(Method::Sync(callback)) => {
-					MaybeSync::Sync(callback(id, body))
-				},
-				Some(Method::Async(callback)) => {
-					MaybeSync::Future(callback(id, body))
-				},
-				Some(Method::Duplex(callback)) => {
-					MaybeSync::Stream(callback(id, body))
-				},
+				Some(Method::Sync(callback)) => MaybeSync::Sync(callback(id, body)),
+				Some(Method::Async(callback)) => MaybeSync::Future(callback(id, body)),
+				Some(Method::Duplex(callback)) => MaybeSync::Stream(callback(id, body)),
 				None => {
 					MaybeSync::Sync(id.map(|id| {
 						self.serializer.serialize(ErrorResponse {
 							id,
 							error:ResponseError {
 								code:-1,
-								message:format!(
-									"Method not found: {}",
-									method_name
-								),
+								message:format!("Method not found: {}", method_name),
 							},
 						})
 					}))
@@ -532,11 +430,7 @@ impl<S:Serialization, C:Send + Sync> RpcDispatcher<S, C> {
 						id:None,
 						method:METHOD_STREAMS_STARTED,
 						params:DuplexStreamStarted {
-							stream_ids:dto
-								.streams
-								.iter()
-								.map(|(id, _)| *id)
-								.collect(),
+							stream_ids:dto.streams.iter().map(|(id, _)| *id).collect(),
 							for_request_id:dto.req_id,
 						},
 					})
@@ -645,10 +539,10 @@ impl Streams {
 	}
 
 	pub fn insert(&self, id:u32, stream:WriteHalf<DuplexStream>) {
-		self.map.lock().unwrap().insert(
-			id,
-			StreamRec { write:Some(stream), q:Vec::new(), ended:false },
-		);
+		self.map
+			.lock()
+			.unwrap()
+			.insert(id, StreamRec { write:Some(stream), q:Vec::new(), ended:false });
 	}
 }
 
