@@ -3,11 +3,11 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { cpus } from "node:os";
-import * as threads from "node:worker_threads";
-import * as swc from "@swc/core";
-import * as ts from "typescript";
-import * as Vinyl from "vinyl";
+import * as esbuild from 'esbuild';
+import * as ts from 'typescript';
+import * as threads from 'node:worker_threads';
+import * as Vinyl from 'vinyl';
+import { cpus } from 'node:os';
 
 interface TranspileReq {
 	readonly tsSrcs: string[];
@@ -19,36 +19,26 @@ interface TranspileRes {
 	readonly diagnostics: ts.Diagnostic[][];
 }
 
-function transpile(
-	tsSrc: string,
-	options: ts.TranspileOptions,
-): { jsSrc: string; diag: ts.Diagnostic[] } {
+function transpile(tsSrc: string, options: ts.TranspileOptions): { jsSrc: string; diag: ts.Diagnostic[] } {
+
 	const isAmd = /\n(import|export)/m.test(tsSrc);
 	if (!isAmd && options.compilerOptions?.module === ts.ModuleKind.AMD) {
 		// enforce NONE module-system for not-amd cases
-		options = {
-			...options,
-			...{
-				compilerOptions: {
-					...options.compilerOptions,
-					module: ts.ModuleKind.None,
-				},
-			},
-		};
+		options = { ...options, ...{ compilerOptions: { ...options.compilerOptions, module: ts.ModuleKind.None } } };
 	}
 	const out = ts.transpileModule(tsSrc, options);
 	return {
 		jsSrc: out.outputText,
-		diag: out.diagnostics ?? [],
+		diag: out.diagnostics ?? []
 	};
 }
 
 if (!threads.isMainThread) {
 	// WORKER
-	threads.parentPort?.addListener("message", (req: TranspileReq) => {
+	threads.parentPort?.addListener('message', (req: TranspileReq) => {
 		const res: TranspileRes = {
 			jsSrcs: [],
-			diagnostics: [],
+			diagnostics: []
 		};
 		for (const tsSrc of req.tsSrcs) {
 			const out = transpile(tsSrc, req.options);
@@ -60,6 +50,7 @@ if (!threads.isMainThread) {
 }
 
 class OutputFileNameOracle {
+
 	readonly getOutputFileName: (name: string) => string;
 
 	constructor(cmdLine: ts.ParsedCommandLine, configFilePath: string) {
@@ -67,14 +58,11 @@ class OutputFileNameOracle {
 		// given a TS input path and its config
 		type InternalTsApi = typeof ts & {
 			normalizePath(path: string): string;
-			getOutputFileNames(
-				commandLine: ts.ParsedCommandLine,
-				inputFileName: string,
-				ignoreCase: boolean,
-			): readonly string[];
+			getOutputFileNames(commandLine: ts.ParsedCommandLine, inputFileName: string, ignoreCase: boolean): readonly string[];
 		};
 		this.getOutputFileName = (file) => {
 			try {
+
 				// windows: path-sep normalizing
 				file = (<InternalTsApi>ts).normalizePath(file);
 
@@ -82,20 +70,17 @@ class OutputFileNameOracle {
 					// this is needed for the INTERNAL getOutputFileNames-call below...
 					cmdLine.options.configFilePath = configFilePath;
 				}
-				const isDts = file.endsWith(".d.ts");
+				const isDts = file.endsWith('.d.ts');
 				if (isDts) {
-					file = file.slice(0, -5) + ".ts";
+					file = file.slice(0, -5) + '.ts';
 					cmdLine.fileNames.push(file);
 				}
-				const outfile = (<InternalTsApi>ts).getOutputFileNames(
-					cmdLine,
-					file,
-					true,
-				)[0];
+				const outfile = (<InternalTsApi>ts).getOutputFileNames(cmdLine, file, true)[0];
 				if (isDts) {
 					cmdLine.fileNames.pop();
 				}
 				return outfile;
+
 			} catch (err) {
 				console.error(file, cmdLine.fileNames);
 				console.error(err);
@@ -106,24 +91,20 @@ class OutputFileNameOracle {
 }
 
 class TranspileWorker {
+
 	private static pool = 1;
 
 	readonly id = TranspileWorker.pool++;
 
 	private _worker = new threads.Worker(__filename);
-	private _pending?: [
-		resolve: Function,
-		reject: Function,
-		file: Vinyl[],
-		options: ts.TranspileOptions,
-		t1: number,
-	];
+	private _pending?: [resolve: Function, reject: Function, file: Vinyl[], options: ts.TranspileOptions, t1: number];
 	private _durations: number[] = [];
 
 	constructor(outFileFn: (fileName: string) => string) {
-		this._worker.addListener("message", (res: TranspileRes) => {
+
+		this._worker.addListener('message', (res: TranspileRes) => {
 			if (!this._pending) {
-				console.error("RECEIVING data WITHOUT request");
+				console.error('RECEIVING data WITHOUT request');
 				return;
 			}
 
@@ -145,12 +126,10 @@ class TranspileWorker {
 				const enum SuffixTypes {
 					Dts = 5,
 					Ts = 3,
-					Unknown = 0,
+					Unknown = 0
 				}
-				const suffixLen = file.path.endsWith(".d.ts")
-					? SuffixTypes.Dts
-					: file.path.endsWith(".ts")
-						? SuffixTypes.Ts
+				const suffixLen = file.path.endsWith('.d.ts') ? SuffixTypes.Dts
+					: file.path.endsWith('.ts') ? SuffixTypes.Ts
 						: SuffixTypes.Unknown;
 
 				// check if output of a DTS-files isn't just "empty" and iff so
@@ -162,13 +141,11 @@ class TranspileWorker {
 				const outBase = options.compilerOptions?.outDir ?? file.base;
 				const outPath = outFileFn(file.path);
 
-				outFiles.push(
-					new Vinyl({
-						path: outPath,
-						base: outBase,
-						contents: Buffer.from(jsSrc),
-					}),
-				);
+				outFiles.push(new Vinyl({
+					path: outPath,
+					base: outBase,
+					contents: Buffer.from(jsSrc),
+				}));
 			}
 
 			this._pending = undefined;
@@ -193,13 +170,13 @@ class TranspileWorker {
 
 	next(files: Vinyl[], options: ts.TranspileOptions) {
 		if (this._pending !== undefined) {
-			throw new Error("BUSY");
+			throw new Error('BUSY');
 		}
 		return new Promise<Vinyl[]>((resolve, reject) => {
 			this._pending = [resolve, reject, files, options, Date.now()];
 			const req: TranspileReq = {
 				options,
-				tsSrcs: files.map((file) => String(file.contents)),
+				tsSrcs: files.map(file => String(file.contents))
 			};
 			this._worker.postMessage(req);
 		});
@@ -213,9 +190,11 @@ export interface ITranspiler {
 }
 
 export class TscTranspiler implements ITranspiler {
-	static P = Math.floor(cpus().length * 0.5);
+
+	static P = Math.floor(cpus().length * .5);
 
 	private readonly _outputFileNames: OutputFileNameOracle;
+
 
 	public onOutfile?: (file: Vinyl) => void;
 
@@ -227,13 +206,10 @@ export class TscTranspiler implements ITranspiler {
 		logFn: (topic: string, message: string) => void,
 		private readonly _onError: (err: any) => void,
 		configFilePath: string,
-		private readonly _cmdLine: ts.ParsedCommandLine,
+		private readonly _cmdLine: ts.ParsedCommandLine
 	) {
-		logFn("Transpile", `will use ${TscTranspiler.P} transpile worker`);
-		this._outputFileNames = new OutputFileNameOracle(
-			_cmdLine,
-			configFilePath,
-		);
+		logFn('Transpile', `will use ${TscTranspiler.P} transpile worker`);
+		this._outputFileNames = new OutputFileNameOracle(_cmdLine, configFilePath);
 	}
 
 	async join() {
@@ -243,11 +219,13 @@ export class TscTranspiler implements ITranspiler {
 		this._allJobs.length = 0;
 
 		// terminate all worker
-		this._workerPool.forEach((w) => w.terminate());
+		this._workerPool.forEach(w => w.terminate());
 		this._workerPool.length = 0;
 	}
 
+
 	transpile(file: Vinyl) {
+
 		if (this._cmdLine.options.noEmit) {
 			// not doing ANYTHING here
 			return;
@@ -260,6 +238,7 @@ export class TscTranspiler implements ITranspiler {
 	}
 
 	private _consumeQueue(): void {
+
 		if (this._queue.length === 0) {
 			// no work...
 			return;
@@ -268,15 +247,11 @@ export class TscTranspiler implements ITranspiler {
 		// kinda LAZYily create workers
 		if (this._workerPool.length === 0) {
 			for (let i = 0; i < TscTranspiler.P; i++) {
-				this._workerPool.push(
-					new TranspileWorker((file) =>
-						this._outputFileNames.getOutputFileName(file),
-					),
-				);
+				this._workerPool.push(new TranspileWorker(file => this._outputFileNames.getOutputFileName(file)));
 			}
 		}
 
-		const freeWorker = this._workerPool.filter((w) => !w.isBusy);
+		const freeWorker = this._workerPool.filter(w => !w.isBusy);
 		if (freeWorker.length === 0) {
 			// OK, they will pick up work themselves
 			return;
@@ -287,7 +262,8 @@ export class TscTranspiler implements ITranspiler {
 				break;
 			}
 
-			const job = new Promise((resolve) => {
+			const job = new Promise(resolve => {
+
 				const consume = () => {
 					const files = this._queue.splice(0, TscTranspiler.P);
 					if (files.length === 0) {
@@ -297,17 +273,14 @@ export class TscTranspiler implements ITranspiler {
 					}
 					// work on the NEXT file
 					// const [inFile, outFn] = req;
-					worker
-						.next(files, { compilerOptions: this._cmdLine.options })
-						.then((outFiles) => {
-							if (this.onOutfile) {
-								outFiles.map(this.onOutfile, this);
-							}
-							consume();
-						})
-						.catch((err) => {
-							this._onError(err);
-						});
+					worker.next(files, { compilerOptions: this._cmdLine.options }).then(outFiles => {
+						if (this.onOutfile) {
+							outFiles.map(this.onOutfile, this);
+						}
+						consume();
+					}).catch(err => {
+						this._onError(err);
+					});
 				};
 
 				consume();
@@ -318,32 +291,46 @@ export class TscTranspiler implements ITranspiler {
 	}
 }
 
-function _isDefaultEmpty(src: string): boolean {
-	return (
-		src
-			.replace('"use strict";', "")
-			.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, "$1")
-			.trim().length === 0
-	);
-}
-
-export class SwcTranspiler implements ITranspiler {
-	onOutfile?: ((file: Vinyl) => void) | undefined;
+export class ESBuildTranspiler implements ITranspiler {
 
 	private readonly _outputFileNames: OutputFileNameOracle;
 	private _jobs: Promise<any>[] = [];
+
+	onOutfile?: ((file: Vinyl) => void) | undefined;
+
+	private readonly _transformOpts: esbuild.TransformOptions;
 
 	constructor(
 		private readonly _logFn: (topic: string, message: string) => void,
 		private readonly _onError: (err: any) => void,
 		configFilePath: string,
-		private readonly _cmdLine: ts.ParsedCommandLine,
+		private readonly _cmdLine: ts.ParsedCommandLine
 	) {
-		_logFn("Transpile", `will use SWC to transpile source files`);
-		this._outputFileNames = new OutputFileNameOracle(
-			_cmdLine,
-			configFilePath,
-		);
+		_logFn('Transpile', `will use ESBuild to transpile source files`);
+		this._outputFileNames = new OutputFileNameOracle(_cmdLine, configFilePath);
+
+		const isExtension = configFilePath.includes('extensions');
+
+		this._transformOpts = {
+			target: ['es2022'],
+			format: isExtension ? 'cjs' : 'esm',
+			platform: isExtension ? 'node' : undefined,
+			loader: 'ts',
+			sourcemap: 'inline',
+			tsconfigRaw: JSON.stringify({
+				compilerOptions: {
+					...this._cmdLine.options,
+					...{
+						module: isExtension ? ts.ModuleKind.CommonJS : undefined
+					} satisfies ts.CompilerOptions
+				}
+			}),
+			supported: {
+				'class-static-blocks': false, // SEE https://github.com/evanw/esbuild/issues/3823,
+				'dynamic-import': !isExtension, // see https://github.com/evanw/esbuild/issues/1281
+				'class-field': !isExtension
+			}
+		};
 	}
 
 	async join(): Promise<void> {
@@ -353,103 +340,42 @@ export class SwcTranspiler implements ITranspiler {
 	}
 
 	transpile(file: Vinyl): void {
-		if (this._cmdLine.options.noEmit) {
-			// not doing ANYTHING here
-			return;
+		if (!(file.contents instanceof Buffer)) {
+			throw Error('file.contents must be a Buffer');
 		}
-
-		const tsSrc = String(file.contents);
 		const t1 = Date.now();
+		this._jobs.push(esbuild.transform(file.contents, {
+			...this._transformOpts,
+			sourcefile: file.path,
+		}).then(result => {
 
-		let options: swc.Options = SwcTranspiler._swcrcEsm;
-		if (this._cmdLine.options.module === ts.ModuleKind.AMD) {
-			const isAmd = /\n(import|export)/m.test(tsSrc);
-			if (isAmd) {
-				options = SwcTranspiler._swcrcAmd;
+			// check if output of a DTS-files isn't just "empty" and iff so
+			// skip this file
+			if (file.path.endsWith('.d.ts') && _isDefaultEmpty(result.code)) {
+				return;
 			}
-		} else if (
-			this._cmdLine.options.module === ts.ModuleKind.CommonJS ||
-			this._cmdLine.options.module === ts.ModuleKind.Node16
-		) {
-			options = SwcTranspiler._swcrcCommonJS;
-		}
 
-		this._jobs.push(
-			swc
-				.transform(tsSrc, options)
-				.then((output) => {
-					// check if output of a DTS-files isn't just "empty" and iff so
-					// skip this file
-					if (
-						file.path.endsWith(".d.ts") &&
-						_isDefaultEmpty(output.code)
-					) {
-						return;
-					}
+			const outBase = this._cmdLine.options.outDir ?? file.base;
+			const outPath = this._outputFileNames.getOutputFileName(file.path);
 
-					const outBase = this._cmdLine.options.outDir ?? file.base;
-					const outPath = this._outputFileNames.getOutputFileName(
-						file.path,
-					);
+			this.onOutfile!(new Vinyl({
+				path: outPath,
+				base: outBase,
+				contents: Buffer.from(result.code),
+			}));
 
-					this.onOutfile!(
-						new Vinyl({
-							path: outPath,
-							base: outBase,
-							contents: Buffer.from(output.code),
-						}),
-					);
+			this._logFn('Transpile', `esbuild took ${Date.now() - t1}ms for ${file.path}`);
 
-					this._logFn(
-						"Transpile",
-						`swc took ${Date.now() - t1}ms for ${file.path}`,
-					);
-				})
-				.catch((err) => {
-					this._onError(err);
-				}),
-		);
+		}).catch(err => {
+			this._onError(err);
+		}));
 	}
+}
 
-	// --- .swcrc
-
-	private static readonly _swcrcAmd: swc.Options = {
-		exclude: ".js$",
-		jsc: {
-			parser: {
-				syntax: "typescript",
-				tsx: false,
-				decorators: true,
-			},
-			target: "es2022",
-			loose: false,
-			minify: {
-				compress: false,
-				mangle: false,
-			},
-			transform: {
-				useDefineForClassFields: false,
-			},
-		},
-		module: {
-			type: "amd",
-			noInterop: false,
-		},
-		minify: false,
-	};
-
-	private static readonly _swcrcCommonJS: swc.Options = {
-		...this._swcrcAmd,
-		module: {
-			type: "commonjs",
-			importInterop: "swc",
-		},
-	};
-
-	private static readonly _swcrcEsm: swc.Options = {
-		...this._swcrcAmd,
-		module: {
-			type: "es6",
-		},
-	};
+function _isDefaultEmpty(src: string): boolean {
+	return src
+		.replace('"use strict";', '')
+		.replace(/\/\/# sourceMappingURL.*^/, '')
+		.replace(/\/\*[\s\S]*?\*\/|([^\\:]|^)\/\/.*$/gm, '$1')
+		.trim().length === 0;
 }
