@@ -89,6 +89,7 @@ or treaty, and any national implementations thereof.
    affirms that he or she will not (i) exercise any of his or her remaining
    Copyright and Related Rights in the Work or (ii) assert any associated claims
    and causes of action with respect to the Work, in either case contrary to
+   Affirmer's express .
 
 4. Limitations and Disclaimers.
 
@@ -116,7 +117,7 @@ and is subject to its terms and conditions:
 
 MIT License
 
-Copyright (c) 2015 - present Microsoft Corporation
+Copyright (c) 2019 Jeff Hykin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of
 this software and associated documentation files (the "Software"), to deal in
@@ -133,4 +134,9 @@ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
 FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
 COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
 IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. The
+MIT License (MIT)
+
+Copyright (c) Microsoft 2018
+
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
