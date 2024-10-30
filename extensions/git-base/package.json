@@ -104,7 +104,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "20.x"
+    "@types/node": "22.8.4"
   },
   "repository": {
     "type": "git",

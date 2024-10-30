@@ -3,7 +3,7 @@
   "displayName": "VS Code Selfhost Import Aid",
   "description": "Util to improve dealing with imports",
   "engines": {
-    "vscode": "^1.88.0"
+    "vscode": "1.88.0"
   },
   "version": "0.0.1",
   "publisher": "ms-vscode",
@@ -24,6 +24,6 @@
     "watch": "gulp watch-extension:vscode-selfhost-import-aid"
   },
   "dependencies": {
-    "typescript": "5.5.4"
+    "typescript": "5.6.3"
   }
 }
