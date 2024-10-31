@@ -1806,7 +1806,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.8.4",
+		"@types/node": "22.8.6",
 		"@types/semver": "7.5.8"
 	},
 	"displayName": "%displayName%",
