@@ -96,7 +96,7 @@
 	"dependencies": {},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.8.6",
+		"@types/node": "22.8.7",
 		"@types/node-fetch": "2.6.11",
 		"@types/randombytes": "2.0.3",
 		"@types/sha.js": "2.4.4",

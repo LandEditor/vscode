@@ -195,7 +195,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.8.6"
+		"@types/node": "22.8.7"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [

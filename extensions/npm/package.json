@@ -329,7 +329,7 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@types/minimatch": "5.1.2",
-		"@types/node": "22.8.6",
+		"@types/node": "22.8.7",
 		"@types/which": "3.0.4"
 	},
 	"displayName": "%displayName%",

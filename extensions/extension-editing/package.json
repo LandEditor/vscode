@@ -53,7 +53,7 @@
 	"description": "%description%",
 	"devDependencies": {
 		"@types/markdown-it": "14.1.2",
-		"@types/node": "22.8.6"
+		"@types/node": "22.8.7"
 	},
 	"displayName": "%displayName%",
 	"icon": "images/icon.png",
