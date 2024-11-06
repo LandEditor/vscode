@@ -201,9 +201,9 @@ export class DocumentRangeMap {
     public readonly rangeMappings: RangeMapping[], public readonly inputLineCount: number) {
         assertFn(() => checkAdjacentItems(rangeMappings, (m1, m2) => rangeIsBeforeOrTouching(m1.inputRange, m2.inputRange) &&
             rangeIsBeforeOrTouching(m1.outputRange, m2.outputRange) /*&&
-        lengthBetweenPositions(m1.inputRange.getEndPosition(), m2.inputRange.getStartPosition()).equals(
-            lengthBetweenPositions(m1.outputRange.getEndPosition(), m2.outputRange.getStartPosition())
-        )*/));
+lengthBetweenPositions(m1.inputRange.getEndPosition(), m2.inputRange.getStartPosition()).equals(
+    lengthBetweenPositions(m1.outputRange.getEndPosition(), m2.outputRange.getStartPosition())
+)*/));
     }
     public project(position: Position): RangeMapping {
         const lastBefore = findLast(this.rangeMappings, r => r.inputRange.getStartPosition().isBeforeOrEqual(position));

@@ -554,9 +554,12 @@ class VisibleProgress {
         this._currentProgress = null;
         this._currentTimer = null;
         const promise = new Promise<void>((resolve) => this._currentProgressPromiseResolve = resolve);
-        progressService.withProgress({ location: location, buttons: buttons }, (progress) => { if (!this._isDisposed) {
-            this._currentProgress = progress;
-        } return promise; }, (choice) => onDidCancel(choice, this._lastReport));
+        progressService.withProgress({ location: location, buttons: buttons }, (progress) => {
+            if (!this._isDisposed) {
+                this._currentProgress = progress;
+            }
+            return promise;
+        }, (choice) => onDidCancel(choice, this._lastReport));
         if (this._lastReport) {
             this.report();
         }

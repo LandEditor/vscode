@@ -58,12 +58,14 @@ export class GettingStartedIndexList<T extends {
     onDidChange(listener: () => void) {
         this._register(this.onDidChangeEntries(listener));
     }
-    register(d: IDisposable) { if (this.isDisposed) {
-        d.dispose();
+    register(d: IDisposable) {
+        if (this.isDisposed) {
+            d.dispose();
+        }
+        else {
+            this._register(d);
+        }
     }
-    else {
-        this._register(d);
-    } }
     override dispose() {
         this.isDisposed = true;
         super.dispose();

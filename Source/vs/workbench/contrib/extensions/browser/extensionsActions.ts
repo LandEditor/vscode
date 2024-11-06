@@ -1030,9 +1030,11 @@ export class DropDownExtensionActionViewItem extends ActionViewItem {
                 getAnchor: () => anchor,
                 getActions: () => actions,
                 actionRunner: this.actionRunner,
-                onHide: () => { if (disposeActionsOnHide) {
-                    disposeIfDisposable(actions);
-                } }
+                onHide: () => {
+                    if (disposeActionsOnHide) {
+                        disposeIfDisposable(actions);
+                    }
+                }
             });
         }
     }

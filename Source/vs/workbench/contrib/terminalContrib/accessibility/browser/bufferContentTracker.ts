@@ -93,9 +93,11 @@ export class BufferContentTracker extends Disposable {
         let linesToRemove = this._priorEditorViewportLineCount;
         let index = 1;
         while (linesToRemove) {
-            this.bufferToEditorLineMapping.forEach((value, key) => { if (value === this._lines.length - index) {
-                this.bufferToEditorLineMapping.delete(key);
-            } });
+            this.bufferToEditorLineMapping.forEach((value, key) => {
+                if (value === this._lines.length - index) {
+                    this.bufferToEditorLineMapping.delete(key);
+                }
+            });
             this._lines.pop();
             index++;
             linesToRemove--;

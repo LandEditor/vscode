@@ -45,9 +45,11 @@ export function merge(localExtensions: ILocalSyncExtension[], remoteExtensions: 
     remoteExtensions = remoteExtensions.map(massageIncomingExtension);
     lastSyncExtensions = lastSyncExtensions ? lastSyncExtensions.map(massageIncomingExtension) : null;
     const uuids: Map<string, string> = new Map<string, string>();
-    const addUUID = (identifier: IExtensionIdentifier) => { if (identifier.uuid) {
-        uuids.set(identifier.id.toLowerCase(), identifier.uuid);
-    } };
+    const addUUID = (identifier: IExtensionIdentifier) => {
+        if (identifier.uuid) {
+            uuids.set(identifier.id.toLowerCase(), identifier.uuid);
+        }
+    };
     localExtensions.forEach(({ identifier }) => addUUID(identifier));
     remoteExtensions.forEach(({ identifier }) => addUUID(identifier));
     lastSyncExtensions?.forEach(({ identifier }) => addUUID(identifier));

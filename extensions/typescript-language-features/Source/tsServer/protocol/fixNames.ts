@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 export const addMissingAwait = 'addMissingAwait';
 export const addMissingNewOperator = 'addMissingNewOperator';
 export const addMissingOverride = 'fixOverrideModifier';

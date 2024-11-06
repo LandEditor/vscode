@@ -185,12 +185,14 @@ class LanguagePacksCache extends Disposable {
                 .then(undefined, err => err.code === 'ENOENT' ? Promise.resolve('{}') : Promise.reject(err))
                 .then<{
                 [language: string]: ILanguagePack;
-            }>(raw => { try {
-                return JSON.parse(raw);
-            }
-            catch (e) {
-                return {};
-            } })
+            }>(raw => {
+                try {
+                    return JSON.parse(raw);
+                }
+                catch (e) {
+                    return {};
+                }
+            })
                 .then(languagePacks => { result = fn(languagePacks); return languagePacks; })
                 .then(languagePacks => {
                 for (const language of Object.keys(languagePacks)) {

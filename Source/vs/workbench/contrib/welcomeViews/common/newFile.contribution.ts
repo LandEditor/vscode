@@ -65,9 +65,11 @@ class NewFileTemplatesManager extends Disposable {
     menuService: IMenuService) {
         super();
         NewFileTemplatesManager.Instance = this;
-        this._register({ dispose() { if (NewFileTemplatesManager.Instance === this) {
-                NewFileTemplatesManager.Instance = undefined;
-            } } });
+        this._register({ dispose() {
+                if (NewFileTemplatesManager.Instance === this) {
+                    NewFileTemplatesManager.Instance = undefined;
+                }
+            } });
         this.menu = menuService.createMenu(MenuId.NewFile, contextKeyService);
     }
     private allEntries(): NewFileItem[] {

@@ -332,6 +332,8 @@ export class ExtHostDiagnostics implements ExtHostDiagnosticsShape {
             const name = '_generated_mirror';
             const collection = new DiagnosticCollection(name, name, Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER, // no limits because this collection is just a mirror of "sanitized" data
             // no limits because this collection is just a mirror of "sanitized" data
+            // no limits because this collection is just a mirror of "sanitized" data
+            // no limits because this collection is just a mirror of "sanitized" data
             _uri => undefined, this._fileSystemInfoService.extUri, undefined, this._onDidChangeDiagnostics);
             this._collections.set(name, collection);
             this._mirrorCollection = collection;

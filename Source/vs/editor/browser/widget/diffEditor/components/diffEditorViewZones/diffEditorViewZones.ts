@@ -60,12 +60,16 @@ export class DiffEditorViewZones extends Disposable {
         const updateImmediately = this._register(new RunOnceScheduler(() => {
             state.set(state.get() + 1, undefined);
         }, 0));
-        this._register(this._editors.original.onDidChangeViewZones((_args) => { if (!this._canIgnoreViewZoneUpdateEvent()) {
-            updateImmediately.schedule();
-        } }));
-        this._register(this._editors.modified.onDidChangeViewZones((_args) => { if (!this._canIgnoreViewZoneUpdateEvent()) {
-            updateImmediately.schedule();
-        } }));
+        this._register(this._editors.original.onDidChangeViewZones((_args) => {
+            if (!this._canIgnoreViewZoneUpdateEvent()) {
+                updateImmediately.schedule();
+            }
+        }));
+        this._register(this._editors.modified.onDidChangeViewZones((_args) => {
+            if (!this._canIgnoreViewZoneUpdateEvent()) {
+                updateImmediately.schedule();
+            }
+        }));
         this._register(this._editors.original.onDidChangeConfiguration((args) => {
             if (args.hasChanged(EditorOption.wrappingInfo) || args.hasChanged(EditorOption.lineHeight)) {
                 updateImmediately.schedule();

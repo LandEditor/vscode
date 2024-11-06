@@ -290,9 +290,12 @@ class MarkerWidget extends Disposable {
         action.enabled = !!viewModel && marker.lines.length > 1;
         action.tooltip = multiline ? localize('single line', "Show message in single line") : localize('multi line', "Show message in multiple lines");
         action.class = ThemeIcon.asClassName(multiline ? expandedIcon : collapsedIcon);
-        action.run = () => { if (viewModel) {
-            viewModel.multiline = !viewModel.multiline;
-        } return Promise.resolve(); };
+        action.run = () => {
+            if (viewModel) {
+                viewModel.multiline = !viewModel.multiline;
+            }
+            return Promise.resolve();
+        };
         multilineActionbar.push([action], { icon: true, label: false });
     }
     private renderMessageAndDetails(element: Marker, filterData: MarkerFilterData | undefined): void {

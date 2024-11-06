@@ -300,9 +300,11 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
             if (setIsUpdating) {
                 setIsUpdating(true);
             }
-            editor.changeViewZones(a => { for (const id of changeSummary.zoneIds) {
-                a.layoutZone(id);
-            } });
+            editor.changeViewZones(a => {
+                for (const id of changeSummary.zoneIds) {
+                    a.layoutZone(id);
+                }
+            });
             if (setIsUpdating) {
                 setIsUpdating(false);
             }
@@ -313,9 +315,11 @@ export function applyViewZones(editor: ICodeEditor, viewZones: IObservable<IObse
             if (setIsUpdating) {
                 setIsUpdating(true);
             }
-            editor.changeViewZones(a => { for (const id of lastViewZoneIds) {
-                a.removeZone(id);
-            } });
+            editor.changeViewZones(a => {
+                for (const id of lastViewZoneIds) {
+                    a.removeZone(id);
+                }
+            });
             zoneIds?.clear();
             if (setIsUpdating) {
                 setIsUpdating(false);

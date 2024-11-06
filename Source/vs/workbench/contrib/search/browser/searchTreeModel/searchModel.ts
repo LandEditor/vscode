@@ -150,9 +150,11 @@ export class SearchModelImpl extends Disposable implements ISearchModel {
         const notebookResult = this.notebookSearchService.notebookSearch(query, tokenSource.token, searchInstanceID, asyncGenerateOnProgress);
         const textResult = this.searchService.textSearchSplitSyncAsync(searchQuery, tokenSource.token, asyncGenerateOnProgress, notebookResult.openFilesToScan, notebookResult.allScannedFiles);
         const syncResults = textResult.syncResults.results;
-        syncResults.forEach(p => { if (p) {
-            syncGenerateOnProgress(p);
-        } });
+        syncResults.forEach(p => {
+            if (p) {
+                syncGenerateOnProgress(p);
+            }
+        });
         const getAsyncResults = async (): Promise<ISearchComplete> => {
             const searchStart = Date.now();
             // resolve async parts of search

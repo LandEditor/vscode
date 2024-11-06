@@ -2137,14 +2137,18 @@ export abstract class AbstractTree<T, TFilterData, TRef> implements IDisposable 
     private readonly _onWillRefilter = new Emitter<void>();
     readonly onWillRefilter: Event<void> = this._onWillRefilter.event;
     get findMode(): TreeFindMode { return this.findController?.mode ?? TreeFindMode.Highlight; }
-    set findMode(findMode: TreeFindMode) { if (this.findController) {
-        this.findController.mode = findMode;
-    } }
+    set findMode(findMode: TreeFindMode) {
+        if (this.findController) {
+            this.findController.mode = findMode;
+        }
+    }
     readonly onDidChangeFindMode: Event<TreeFindMode>;
     get findMatchType(): TreeFindMatchType { return this.findController?.matchType ?? TreeFindMatchType.Fuzzy; }
-    set findMatchType(findFuzzy: TreeFindMatchType) { if (this.findController) {
-        this.findController.matchType = findFuzzy;
-    } }
+    set findMatchType(findFuzzy: TreeFindMatchType) {
+        if (this.findController) {
+            this.findController.matchType = findFuzzy;
+        }
+    }
     readonly onDidChangeFindMatchType: Event<TreeFindMatchType>;
     get onDidChangeFindPattern(): Event<string> { return this.findController ? this.findController.onDidChangePattern : Event.None; }
     get expandOnDoubleClick(): boolean { return typeof this._options.expandOnDoubleClick === 'undefined' ? true : this._options.expandOnDoubleClick; }
