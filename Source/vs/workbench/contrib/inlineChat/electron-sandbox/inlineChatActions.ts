@@ -20,59 +20,50 @@ import { HasSpeechProvider, ISpeechService } from '../../speech/common/speechSer
 import { localize2 } from '../../../../nls.js';
 import { Action2 } from '../../../../platform/actions/common/actions.js';
 import { IConfigurationService } from '../../../../platform/configuration/common/configuration.js';
-
 export class HoldToSpeak extends AbstractInlineChatAction {
-
-	constructor() {
-		super({
-			id: 'inlineChat.holdForSpeech',
-			precondition: ContextKeyExpr.and(HasSpeechProvider, CTX_INLINE_CHAT_VISIBLE),
-			title: localize2('holdForSpeech', "Hold for Speech"),
-			keybinding: {
-				when: EditorContextKeys.textInputFocus,
-				weight: KeybindingWeight.WorkbenchContrib,
-				primary: KeyMod.CtrlCmd | KeyCode.KeyI,
-			},
-		});
-	}
-
-	override runInlineChatCommand(accessor: ServicesAccessor, ctrl: InlineChatController, editor: ICodeEditor, ...args: any[]): void {
-		holdForSpeech(accessor, ctrl, this);
-	}
+    constructor() {
+        super({
+            id: 'inlineChat.holdForSpeech',
+            precondition: ContextKeyExpr.and(HasSpeechProvider, CTX_INLINE_CHAT_VISIBLE),
+            title: localize2('holdForSpeech', "Hold for Speech"),
+            keybinding: {
+                when: EditorContextKeys.textInputFocus,
+                weight: KeybindingWeight.WorkbenchContrib,
+                primary: KeyMod.CtrlCmd | KeyCode.KeyI,
+            },
+        });
+    }
+    override runInlineChatCommand(accessor: ServicesAccessor, ctrl: InlineChatController, editor: ICodeEditor, ...args: any[]): void {
+        holdForSpeech(accessor, ctrl, this);
+    }
 }
-
 function holdForSpeech(accessor: ServicesAccessor, ctrl: InlineChatController, action: Action2): void {
-
-	const configService = accessor.get(IConfigurationService);
-	const speechService = accessor.get(ISpeechService);
-	const keybindingService = accessor.get(IKeybindingService);
-	const commandService = accessor.get(ICommandService);
-
-	// enabled or possible?
-	if (!configService.getValue<boolean>(InlineChatConfigKeys.HoldToSpeech || !speechService.hasSpeechProvider)) {
-		return;
-	}
-
-	const holdMode = keybindingService.enableKeybindingHoldMode(action.desc.id);
-	if (!holdMode) {
-		return;
-	}
-	let listening = false;
-	const handle = disposableTimeout(() => {
-		// start VOICE input
-		commandService.executeCommand(StartVoiceChatAction.ID, { voice: { disableTimeout: true } } satisfies IChatExecuteActionContext);
-		listening = true;
-	}, VOICE_KEY_HOLD_THRESHOLD);
-
-	holdMode.finally(() => {
-		if (listening) {
-			commandService.executeCommand(StopListeningAction.ID).finally(() => {
-				ctrl.acceptInput();
-			});
-		}
-		handle.dispose();
-	});
+    const configService = accessor.get(IConfigurationService);
+    const speechService = accessor.get(ISpeechService);
+    const keybindingService = accessor.get(IKeybindingService);
+    const commandService = accessor.get(ICommandService);
+    // enabled or possible?
+    if (!configService.getValue<boolean>(InlineChatConfigKeys.HoldToSpeech || !speechService.hasSpeechProvider)) {
+        return;
+    }
+    const holdMode = keybindingService.enableKeybindingHoldMode(action.desc.id);
+    if (!holdMode) {
+        return;
+    }
+    let listening = false;
+    const handle = disposableTimeout(() => {
+        // start VOICE input
+        commandService.executeCommand(StartVoiceChatAction.ID, { voice: { disableTimeout: true } } satisfies IChatExecuteActionContext);
+        listening = true;
+    }, VOICE_KEY_HOLD_THRESHOLD);
+    holdMode.finally(() => {
+        if (listening) {
+            commandService.executeCommand(StopListeningAction.ID).finally(() => {
+                ctrl.acceptInput();
+            });
+        }
+        handle.dispose();
+    });
 }
-
 // make this accessible to the chat actions from the browser layer
 setHoldForSpeech(holdForSpeech);

@@ -2,15 +2,12 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 // Primary workbench contribution
 import './browser/terminal.contribution.js';
-
 // Misc extensions to the workbench contribution
 import './common/environmentVariable.contribution.js';
 import './common/terminalExtensionPoints.contribution.js';
 import './browser/terminalView.js';
-
 // Terminal contributions - Standalone extensions to the terminal, these cannot be imported from the
 // primary workbench contribution)
 import '../terminalContrib/accessibility/browser/terminal.accessibility.contribution.js';

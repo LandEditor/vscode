@@ -2,10 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import { IWorkbenchContribution, WorkbenchPhase, registerWorkbenchContribution2 } from '../../common/contributions.js';
 import { IInstantiationService } from '../../../platform/instantiation/common/instantiation.js';
-
 // --- other interested parties
 import { JSONValidationExtensionPoint } from '../common/jsonValidationExtensionPoint.js';
 import { ColorExtensionPoint } from '../../services/themes/common/colorExtensionPoint.js';
@@ -13,7 +11,6 @@ import { IconExtensionPoint } from '../../services/themes/common/iconExtensionPo
 import { TokenClassificationExtensionPoints } from '../../services/themes/common/tokenClassificationExtensionPoint.js';
 import { LanguageConfigurationFileHandler } from '../../contrib/codeEditor/common/languageConfigurationExtensionPoint.js';
 import { StatusBarItemsExtensionPoint } from './statusBarExtensionPoint.js';
-
 // --- mainThread participants
 import './mainThreadLocalization.js';
 import './mainThreadBulkEdits.js';
@@ -89,22 +86,18 @@ import './mainThreadShare.js';
 import './mainThreadProfileContentHandlers.js';
 import './mainThreadAiRelatedInformation.js';
 import './mainThreadAiEmbeddingVector.js';
-
 export class ExtensionPoints implements IWorkbenchContribution {
-
-	static readonly ID = 'workbench.contrib.extensionPoints';
-
-	constructor(
-		@IInstantiationService private readonly instantiationService: IInstantiationService
-	) {
-		// Classes that handle extension points...
-		this.instantiationService.createInstance(JSONValidationExtensionPoint);
-		this.instantiationService.createInstance(ColorExtensionPoint);
-		this.instantiationService.createInstance(IconExtensionPoint);
-		this.instantiationService.createInstance(TokenClassificationExtensionPoints);
-		this.instantiationService.createInstance(LanguageConfigurationFileHandler);
-		this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
-	}
+    static readonly ID = 'workbench.contrib.extensionPoints';
+    constructor(
+    @IInstantiationService
+    private readonly instantiationService: IInstantiationService) {
+        // Classes that handle extension points...
+        this.instantiationService.createInstance(JSONValidationExtensionPoint);
+        this.instantiationService.createInstance(ColorExtensionPoint);
+        this.instantiationService.createInstance(IconExtensionPoint);
+        this.instantiationService.createInstance(TokenClassificationExtensionPoints);
+        this.instantiationService.createInstance(LanguageConfigurationFileHandler);
+        this.instantiationService.createInstance(StatusBarItemsExtensionPoint);
+    }
 }
-
 registerWorkbenchContribution2(ExtensionPoints.ID, ExtensionPoints, WorkbenchPhase.BlockStartup);

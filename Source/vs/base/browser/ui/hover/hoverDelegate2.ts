@@ -2,24 +2,20 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import type { IHoverDelegate2 } from './hover.js';
-
 let baseHoverDelegate: IHoverDelegate2 = {
-	showHover: () => undefined,
-	hideHover: () => undefined,
-	showAndFocusLastHover: () => undefined,
-	setupManagedHover: () => null!,
-	showManagedHover: () => undefined
+    showHover: () => undefined,
+    hideHover: () => undefined,
+    showAndFocusLastHover: () => undefined,
+    setupManagedHover: () => null!,
+    showManagedHover: () => undefined
 };
-
 /**
  * Sets the hover delegate for use **only in the `base/` layer**.
  */
 export function setBaseLayerHoverDelegate(hoverDelegate: IHoverDelegate2): void {
-	baseHoverDelegate = hoverDelegate;
+    baseHoverDelegate = hoverDelegate;
 }
-
 /**
  * Gets the hover delegate for use **only in the `base/` layer**.
  *
@@ -28,5 +24,5 @@ export function setBaseLayerHoverDelegate(hoverDelegate: IHoverDelegate2): void 
  * only reason this should be used is if `IHoverService` is not available.
  */
 export function getBaseLayerHoverDelegate(): IHoverDelegate2 {
-	return baseHoverDelegate;
+    return baseHoverDelegate;
 }

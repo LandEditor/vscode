@@ -2,23 +2,17 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import { ContextKeyExpr, RawContextKey } from '../../../../platform/contextkey/common/contextkey.js';
 import { INTERACTIVE_WINDOW_EDITOR_ID, NOTEBOOK_EDITOR_ID, REPL_EDITOR_ID } from './notebookCommon.js';
-
-
-
 //#region Context Keys
 export const HAS_OPENED_NOTEBOOK = new RawContextKey<boolean>('userHasOpenedNotebook', false);
 export const KEYBINDING_CONTEXT_NOTEBOOK_FIND_WIDGET_FOCUSED = new RawContextKey<boolean>('notebookFindWidgetFocused', false);
 export const InteractiveWindowOpen = new RawContextKey<boolean>('interactiveWindowOpen', false);
-
 // Is Notebook
 export const NOTEBOOK_IS_ACTIVE_EDITOR = ContextKeyExpr.equals('activeEditor', NOTEBOOK_EDITOR_ID);
 export const INTERACTIVE_WINDOW_IS_ACTIVE_EDITOR = ContextKeyExpr.equals('activeEditor', INTERACTIVE_WINDOW_EDITOR_ID);
 export const REPL_NOTEBOOK_IS_ACTIVE_EDITOR = ContextKeyExpr.equals('activeEditor', REPL_EDITOR_ID);
 export const IS_COMPOSITE_NOTEBOOK = new RawContextKey<boolean>('isCompositeNotebook', false);
-
 // Editor keys
 // based on the focus of the notebook editor widget
 export const NOTEBOOK_EDITOR_FOCUSED = new RawContextKey<boolean>('notebookEditorFocused', false);
@@ -35,7 +29,6 @@ export const NOTEBOOK_BREAKPOINT_MARGIN_ACTIVE = new RawContextKey<boolean>('not
 export const NOTEBOOK_CELL_TOOLBAR_LOCATION = new RawContextKey<'left' | 'right' | 'hidden'>('notebookCellToolbarLocation', 'left');
 export const NOTEBOOK_CURSOR_NAVIGATION_MODE = new RawContextKey<boolean>('notebookCursorNavigationMode', false);
 export const NOTEBOOK_LAST_CELL_FAILED = new RawContextKey<boolean>('notebookLastCellFailed', false);
-
 // Cell keys
 export const NOTEBOOK_VIEW_TYPE = new RawContextKey<string>('notebookType', undefined);
 export const NOTEBOOK_CELL_TYPE = new RawContextKey<'code' | 'markup'>('notebookCellType', undefined);
@@ -55,7 +48,6 @@ export const NOTEBOOK_CELL_OUTPUT_COLLAPSED = new RawContextKey<boolean>('notebo
 export const NOTEBOOK_CELL_RESOURCE = new RawContextKey<string>('notebookCellResource', '');
 export const NOTEBOOK_CELL_GENERATED_BY_CHAT = new RawContextKey<boolean>('notebookCellGenerateByChat', false);
 export const NOTEBOOK_CELL_HAS_ERROR_DIAGNOSTICS = new RawContextKey<boolean>('notebookCellHasErrorDiagnostics', false);
-
 // Kernels
 export const NOTEBOOK_KERNEL = new RawContextKey<string>('notebookKernel', undefined);
 export const NOTEBOOK_KERNEL_COUNT = new RawContextKey<number>('notebookKernelCount', 0);
@@ -65,5 +57,4 @@ export const NOTEBOOK_INTERRUPTIBLE_KERNEL = new RawContextKey<boolean>('noteboo
 export const NOTEBOOK_MISSING_KERNEL_EXTENSION = new RawContextKey<boolean>('notebookMissingKernelExtension', false);
 export const NOTEBOOK_HAS_OUTPUTS = new RawContextKey<boolean>('notebookHasOutputs', false);
 export const KERNEL_HAS_VARIABLE_PROVIDER = new RawContextKey<boolean>('kernelHasVariableProvider', false);
-
 //#endregion

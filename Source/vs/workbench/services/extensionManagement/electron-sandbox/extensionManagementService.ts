@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import { generateUuid } from '../../../../base/common/uuid.js';
 import { ILocalExtension, IExtensionGalleryService, InstallOptions } from '../../../../platform/extensionManagement/common/extensionManagement.js';
 import { URI } from '../../../../base/common/uri.js';
@@ -26,56 +25,51 @@ import { IUserDataProfileService } from '../../userDataProfile/common/userDataPr
 import { IExtensionsScannerService } from '../../../../platform/extensionManagement/common/extensionsScannerService.js';
 import { ITelemetryService } from '../../../../platform/telemetry/common/telemetry.js';
 import { IUserDataProfilesService } from '../../../../platform/userDataProfile/common/userDataProfile.js';
-
 export class ExtensionManagementService extends BaseExtensionManagementService {
-
-	constructor(
-		@INativeWorkbenchEnvironmentService private readonly environmentService: INativeWorkbenchEnvironmentService,
-		@IExtensionManagementServerService extensionManagementServerService: IExtensionManagementServerService,
-		@IExtensionGalleryService extensionGalleryService: IExtensionGalleryService,
-		@IUserDataProfileService userDataProfileService: IUserDataProfileService,
-		@IUserDataProfilesService userDataProfilesService: IUserDataProfilesService,
-		@IConfigurationService configurationService: IConfigurationService,
-		@IProductService productService: IProductService,
-		@IDownloadService downloadService: IDownloadService,
-		@IUserDataSyncEnablementService userDataSyncEnablementService: IUserDataSyncEnablementService,
-		@IDialogService dialogService: IDialogService,
-		@IWorkspaceTrustRequestService workspaceTrustRequestService: IWorkspaceTrustRequestService,
-		@IExtensionManifestPropertiesService extensionManifestPropertiesService: IExtensionManifestPropertiesService,
-		@IFileService fileService: IFileService,
-		@ILogService logService: ILogService,
-		@IInstantiationService instantiationService: IInstantiationService,
-		@IExtensionsScannerService extensionsScannerService: IExtensionsScannerService,
-		@ITelemetryService telemetryService: ITelemetryService,
-	) {
-		super(
-			extensionManagementServerService,
-			extensionGalleryService,
-			userDataProfileService,
-			userDataProfilesService,
-			configurationService,
-			productService,
-			downloadService,
-			userDataSyncEnablementService,
-			dialogService,
-			workspaceTrustRequestService,
-			extensionManifestPropertiesService,
-			fileService,
-			logService,
-			instantiationService,
-			extensionsScannerService,
-			telemetryService
-		);
-	}
-
-	protected override async installVSIXInServer(vsix: URI, server: IExtensionManagementServer, options: InstallOptions | undefined): Promise<ILocalExtension> {
-		if (vsix.scheme === Schemas.vscodeRemote && server === this.extensionManagementServerService.localExtensionManagementServer) {
-			const downloadedLocation = joinPath(this.environmentService.tmpDir, generateUuid());
-			await this.downloadService.download(vsix, downloadedLocation);
-			vsix = downloadedLocation;
-		}
-		return super.installVSIXInServer(vsix, server, options);
-	}
+    constructor(
+    @INativeWorkbenchEnvironmentService
+    private readonly environmentService: INativeWorkbenchEnvironmentService, 
+    @IExtensionManagementServerService
+    extensionManagementServerService: IExtensionManagementServerService, 
+    @IExtensionGalleryService
+    extensionGalleryService: IExtensionGalleryService, 
+    @IUserDataProfileService
+    userDataProfileService: IUserDataProfileService, 
+    @IUserDataProfilesService
+    userDataProfilesService: IUserDataProfilesService, 
+    @IConfigurationService
+    configurationService: IConfigurationService, 
+    @IProductService
+    productService: IProductService, 
+    @IDownloadService
+    downloadService: IDownloadService, 
+    @IUserDataSyncEnablementService
+    userDataSyncEnablementService: IUserDataSyncEnablementService, 
+    @IDialogService
+    dialogService: IDialogService, 
+    @IWorkspaceTrustRequestService
+    workspaceTrustRequestService: IWorkspaceTrustRequestService, 
+    @IExtensionManifestPropertiesService
+    extensionManifestPropertiesService: IExtensionManifestPropertiesService, 
+    @IFileService
+    fileService: IFileService, 
+    @ILogService
+    logService: ILogService, 
+    @IInstantiationService
+    instantiationService: IInstantiationService, 
+    @IExtensionsScannerService
+    extensionsScannerService: IExtensionsScannerService, 
+    @ITelemetryService
+    telemetryService: ITelemetryService) {
+        super(extensionManagementServerService, extensionGalleryService, userDataProfileService, userDataProfilesService, configurationService, productService, downloadService, userDataSyncEnablementService, dialogService, workspaceTrustRequestService, extensionManifestPropertiesService, fileService, logService, instantiationService, extensionsScannerService, telemetryService);
+    }
+    protected override async installVSIXInServer(vsix: URI, server: IExtensionManagementServer, options: InstallOptions | undefined): Promise<ILocalExtension> {
+        if (vsix.scheme === Schemas.vscodeRemote && server === this.extensionManagementServerService.localExtensionManagementServer) {
+            const downloadedLocation = joinPath(this.environmentService.tmpDir, generateUuid());
+            await this.downloadService.download(vsix, downloadedLocation);
+            vsix = downloadedLocation;
+        }
+        return super.installVSIXInServer(vsix, server, options);
+    }
 }
-
 registerSingleton(IWorkbenchExtensionManagementService, ExtensionManagementService, InstantiationType.Delayed);

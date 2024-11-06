@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import { DecreaseHoverVerbosityLevel, GoToBottomHoverAction, GoToTopHoverAction, IncreaseHoverVerbosityLevel, PageDownHoverAction, PageUpHoverAction, ScrollDownHoverAction, ScrollLeftHoverAction, ScrollRightHoverAction, ScrollUpHoverAction, ShowDefinitionPreviewHoverAction, ShowOrFocusHoverAction } from './hoverActions.js';
 import { EditorContributionInstantiation, registerEditorAction, registerEditorContribution } from '../../../browser/editorExtensions.js';
 import { editorHoverBorder } from '../../../../platform/theme/common/colorRegistry.js';
@@ -15,7 +14,6 @@ import { GlyphHoverController } from './glyphHoverController.js';
 import './hover.css';
 import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
 import { ExtHoverAccessibleView, HoverAccessibilityHelp, HoverAccessibleView } from './hoverAccessibleViews.js';
-
 registerEditorContribution(ContentHoverController.ID, ContentHoverController, EditorContributionInstantiation.BeforeFirstInteraction);
 registerEditorContribution(GlyphHoverController.ID, GlyphHoverController, EditorContributionInstantiation.BeforeFirstInteraction);
 registerEditorAction(ShowOrFocusHoverAction);
@@ -32,15 +30,14 @@ registerEditorAction(IncreaseHoverVerbosityLevel);
 registerEditorAction(DecreaseHoverVerbosityLevel);
 HoverParticipantRegistry.register(MarkdownHoverParticipant);
 HoverParticipantRegistry.register(MarkerHoverParticipant);
-
 // theming
 registerThemingParticipant((theme, collector) => {
-	const hoverBorder = theme.getColor(editorHoverBorder);
-	if (hoverBorder) {
-		collector.addRule(`.monaco-editor .monaco-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
-		collector.addRule(`.monaco-editor .monaco-hover hr { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
-		collector.addRule(`.monaco-editor .monaco-hover hr { border-bottom: 0px solid ${hoverBorder.transparent(0.5)}; }`);
-	}
+    const hoverBorder = theme.getColor(editorHoverBorder);
+    if (hoverBorder) {
+        collector.addRule(`.monaco-editor .monaco-hover .hover-row:not(:first-child):not(:empty) { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
+        collector.addRule(`.monaco-editor .monaco-hover hr { border-top: 1px solid ${hoverBorder.transparent(0.5)}; }`);
+        collector.addRule(`.monaco-editor .monaco-hover hr { border-bottom: 0px solid ${hoverBorder.transparent(0.5)}; }`);
+    }
 });
 AccessibleViewRegistry.register(new HoverAccessibleView());
 AccessibleViewRegistry.register(new HoverAccessibilityHelp());

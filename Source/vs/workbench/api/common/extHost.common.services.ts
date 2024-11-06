@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
 import { IExtHostOutputService, ExtHostOutputService } from './extHostOutput.js';
 import { IExtHostWorkspace, ExtHostWorkspace } from './extHostWorkspace.js';
@@ -32,7 +31,6 @@ import { ExtHostAuthentication, IExtHostAuthentication } from './extHostAuthenti
 import { ExtHostLanguageModels, IExtHostLanguageModels } from './extHostLanguageModels.js';
 import { IExtHostTerminalShellIntegration, ExtHostTerminalShellIntegration } from './extHostTerminalShellIntegration.js';
 import { ExtHostTesting, IExtHostTesting } from './extHostTesting.js';
-
 registerSingleton(IExtHostLocalizationService, ExtHostLocalizationService, InstantiationType.Delayed);
 registerSingleton(ILoggerService, ExtHostLoggerService, InstantiationType.Delayed);
 registerSingleton(IExtHostApiDeprecationService, ExtHostApiDeprecationService, InstantiationType.Delayed);

@@ -2,38 +2,22 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
-
 // #######################################################################
 // ###                                                                 ###
 // ### !!! PLEASE ADD COMMON IMPORTS INTO WORKBENCH.COMMON.MAIN.TS !!! ###
 // ###                                                                 ###
 // #######################################################################
-
 //#region --- workbench common
-
 import './workbench.common.main.js';
-
 //#endregion
-
-
 //#region --- workbench (desktop main)
-
 import './electron-sandbox/desktop.main.js';
 import './electron-sandbox/desktop.contribution.js';
-
 //#endregion
-
-
 //#region --- workbench parts
-
 import './electron-sandbox/parts/dialogs/dialog.contribution.js';
-
 //#endregion
-
-
 //#region --- workbench services
-
 import './services/textfile/electron-sandbox/nativeTextFileService.js';
 import './services/dialogs/electron-sandbox/fileDialogService.js';
 import './services/workspaces/electron-sandbox/workspacesService.js';
@@ -84,103 +68,68 @@ import './services/extensions/electron-sandbox/nativeExtensionService.js';
 import '../platform/userDataProfile/electron-sandbox/userDataProfileStorageService.js';
 import './services/auxiliaryWindow/electron-sandbox/auxiliaryWindowService.js';
 import '../platform/extensionManagement/electron-sandbox/extensionsProfileScannerService.js';
-
 import { registerSingleton } from '../platform/instantiation/common/extensions.js';
 import { IUserDataInitializationService, UserDataInitializationService } from './services/userData/browser/userDataInit.js';
 import { SyncDescriptor } from '../platform/instantiation/common/descriptors.js';
-
 registerSingleton(IUserDataInitializationService, new SyncDescriptor(UserDataInitializationService, [[]], true));
-
-
 //#endregion
-
-
 //#region --- workbench contributions
-
 // Logs
 import './contrib/logs/electron-sandbox/logs.contribution.js';
-
 // Localizations
 import './contrib/localization/electron-sandbox/localization.contribution.js';
-
 // Explorer
 import './contrib/files/electron-sandbox/fileActions.contribution.js';
-
 // CodeEditor Contributions
 import './contrib/codeEditor/electron-sandbox/codeEditor.contribution.js';
-
 // Debug
 import './contrib/debug/electron-sandbox/extensionHostDebugService.js';
-
 // Extensions Management
 import './contrib/extensions/electron-sandbox/extensions.contribution.js';
-
 // Issues
 import './contrib/issue/electron-sandbox/issue.contribution.js';
-
 // Process
 import './contrib/issue/electron-sandbox/process.contribution.js';
-
 // Remote
 import './contrib/remote/electron-sandbox/remote.contribution.js';
-
 // Configuration Exporter
 import './contrib/configExporter/electron-sandbox/configurationExportHelper.contribution.js';
-
 // Terminal
 import './contrib/terminal/electron-sandbox/terminal.contribution.js';
-
 // Themes
 import './contrib/themes/browser/themes.test.contribution.js';
 import './services/themes/electron-sandbox/themes.contribution.js';
-
 // User Data Sync
 import './contrib/userDataSync/electron-sandbox/userDataSync.contribution.js';
-
 // Tags
 import './contrib/tags/electron-sandbox/workspaceTagsService.js';
 import './contrib/tags/electron-sandbox/tags.contribution.js';
-
 // Performance
 import './contrib/performance/electron-sandbox/performance.contribution.js';
-
 // Tasks
 import './contrib/tasks/electron-sandbox/taskService.js';
-
 // External terminal
 import './contrib/externalTerminal/electron-sandbox/externalTerminal.contribution.js';
-
 // Webview
 import './contrib/webview/electron-sandbox/webview.contribution.js';
-
 // Splash
 import './contrib/splash/electron-sandbox/splash.contribution.js';
-
 // Local History
 import './contrib/localHistory/electron-sandbox/localHistory.contribution.js';
-
 // Merge Editor
 import './contrib/mergeEditor/electron-sandbox/mergeEditor.contribution.js';
-
 // Multi Diff Editor
 import './contrib/multiDiffEditor/browser/multiDiffEditor.contribution.js';
-
 // Remote Tunnel
 import './contrib/remoteTunnel/electron-sandbox/remoteTunnel.contribution.js';
-
 // Chat
 import './contrib/chat/electron-sandbox/chat.contribution.js';
 import './contrib/inlineChat/electron-sandbox/inlineChat.contribution.js';
 import './contrib/chat/common/chatInstallEntitlement.contribution.js';
 import './contrib/chat/browser/chatMovedView.contribution.js';
-
 // Encryption
 import './contrib/encryption/electron-sandbox/encryption.contribution.js';
-
 // Emergency Alert
 import './contrib/emergencyAlert/electron-sandbox/emergencyAlert.contribution.js';
-
 //#endregion
-
-
 export { main } from './electron-sandbox/desktop.main.js';

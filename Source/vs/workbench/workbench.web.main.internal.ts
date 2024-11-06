@@ -2,38 +2,21 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
-
 // #######################################################################
 // ###                                                                 ###
 // ### !!! PLEASE ADD COMMON IMPORTS INTO WORKBENCH.COMMON.MAIN.TS !!! ###
 // ###                                                                 ###
 // #######################################################################
-
-
 //#region --- workbench common
-
 import './workbench.common.main.js';
-
 //#endregion
-
-
 //#region --- workbench parts
-
 import './browser/parts/dialogs/dialog.web.contribution.js';
-
 //#endregion
-
-
 //#region --- workbench (web main)
-
 import './browser/web.main.js';
-
 //#endregion
-
-
 //#region --- workbench services
-
 import './services/integrity/browser/integrityService.js';
 import './services/search/browser/searchService.js';
 import './services/textfile/browser/browserTextFileService.js';
@@ -66,7 +49,6 @@ import './services/userDataProfile/browser/userDataProfileStorageService.js';
 import './services/configurationResolver/browser/configurationResolverService.js';
 import '../platform/extensionResourceLoader/browser/extensionResourceLoaderService.js';
 import './services/auxiliaryWindow/browser/auxiliaryWindowService.js';
-
 import { InstantiationType, registerSingleton } from '../platform/instantiation/common/extensions.js';
 import { IAccessibilityService } from '../platform/accessibility/common/accessibility.js';
 import { IContextMenuService } from '../platform/contextview/browser/contextView.js';
@@ -92,7 +74,6 @@ import { ITimerService, TimerService } from './services/timer/browser/timerServi
 import { IDiagnosticsService, NullDiagnosticsService } from '../platform/diagnostics/common/diagnostics.js';
 import { ILanguagePackService } from '../platform/languagePacks/common/languagePacks.js';
 import { WebLanguagePacksService } from '../platform/languagePacks/browser/languagePacks.js';
-
 registerSingleton(IWorkbenchExtensionManagementService, ExtensionManagementService, InstantiationType.Delayed);
 registerSingleton(IAccessibilityService, AccessibilityService, InstantiationType.Delayed);
 registerSingleton(IContextMenuService, ContextMenuService, InstantiationType.Delayed);
@@ -109,64 +90,42 @@ registerSingleton(ITimerService, TimerService, InstantiationType.Delayed);
 registerSingleton(ICustomEndpointTelemetryService, NullEndpointTelemetryService, InstantiationType.Delayed);
 registerSingleton(IDiagnosticsService, NullDiagnosticsService, InstantiationType.Delayed);
 registerSingleton(ILanguagePackService, WebLanguagePacksService, InstantiationType.Delayed);
-
 //#endregion
-
-
 //#region --- workbench contributions
-
 // Logs
 import './contrib/logs/browser/logs.contribution.js';
-
 // Localization
 import './contrib/localization/browser/localization.contribution.js';
-
 // Performance
 import './contrib/performance/browser/performance.web.contribution.js';
-
 // Preferences
 import './contrib/preferences/browser/keyboardLayoutPicker.js';
-
 // Debug
 import './contrib/debug/browser/extensionHostDebugService.js';
-
 // Welcome Banner
 import './contrib/welcomeBanner/browser/welcomeBanner.contribution.js';
-
 // Welcome Dialog
 import './contrib/welcomeDialog/browser/welcomeDialog.contribution.js';
-
 // Webview
 import './contrib/webview/browser/webview.web.contribution.js';
-
 // Extensions Management
 import './contrib/extensions/browser/extensions.web.contribution.js';
-
 // Terminal
 import './contrib/terminal/browser/terminal.web.contribution.js';
 import './contrib/externalTerminal/browser/externalTerminal.contribution.js';
 import './contrib/terminal/browser/terminalInstanceService.js';
-
 // Tasks
 import './contrib/tasks/browser/taskService.js';
-
 // Tags
 import './contrib/tags/browser/workspaceTagsService.js';
-
 // Issues
 import './contrib/issue/browser/issue.contribution.js';
-
 // Splash
 import './contrib/splash/browser/splash.contribution.js';
-
 // Remote Start Entry for the Web
 import './contrib/remote/browser/remoteStartEntry.contribution.js';
-
 //#endregion
-
-
 //#region --- export workbench factory
-
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 //
 // Do NOT change these exports in a way that something is removed unless
@@ -174,7 +133,6 @@ import './contrib/remote/browser/remoteStartEntry.contribution.js';
 // an adoption when something changes.
 //
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 import { create, commands, env, window, workspace, logger } from './browser/web.factory.js';
 import { Menu } from './browser/web.api.js';
 import { URI } from '../base/common/uri.js';
@@ -183,58 +141,36 @@ import { Disposable } from '../base/common/lifecycle.js';
 import { GroupOrientation } from './services/editor/common/editorGroupsService.js';
 import { UserDataSyncResourceProviderService } from '../platform/userDataSync/common/userDataSyncResourceProvider.js';
 import { RemoteAuthorityResolverError, RemoteAuthorityResolverErrorCode } from '../platform/remote/common/remoteAuthorityResolver.js';
-
 // TODO@esm remove me once we stop supporting our web-esm-bridge
 if ((globalThis as any).__VSCODE_WEB_ESM_PROMISE) {
-	const exports = {
-
-		// Factory
-		create: create,
-
-		// Basic Types
-		URI: URI,
-		Event: Event,
-		Emitter: Emitter,
-		Disposable: Disposable,
-		// GroupOrientation,
-		LogLevel: LogLevel,
-		RemoteAuthorityResolverError: RemoteAuthorityResolverError,
-		RemoteAuthorityResolverErrorCode: RemoteAuthorityResolverErrorCode,
-
-		// Facade API
-		env: env,
-		window: window,
-		workspace: workspace,
-		commands: commands,
-		logger: logger,
-		Menu: Menu
-	};
-	(globalThis as any).__VSCODE_WEB_ESM_PROMISE(exports);
-	delete (globalThis as any).__VSCODE_WEB_ESM_PROMISE;
+    const exports = {
+        // Factory
+        create: create,
+        // Basic Types
+        URI: URI,
+        Event: Event,
+        Emitter: Emitter,
+        Disposable: Disposable,
+        // GroupOrientation,
+        LogLevel: LogLevel,
+        RemoteAuthorityResolverError: RemoteAuthorityResolverError,
+        RemoteAuthorityResolverErrorCode: RemoteAuthorityResolverErrorCode,
+        // Facade API
+        env: env,
+        window: window,
+        workspace: workspace,
+        commands: commands,
+        logger: logger,
+        Menu: Menu
+    };
+    (globalThis as any).__VSCODE_WEB_ESM_PROMISE(exports);
+    delete (globalThis as any).__VSCODE_WEB_ESM_PROMISE;
 }
-
-export {
-
-	// Factory
-	create,
-
-	// Basic Types
-	URI,
-	Event,
-	Emitter,
-	Disposable,
-	GroupOrientation,
-	LogLevel,
-	RemoteAuthorityResolverError,
-	RemoteAuthorityResolverErrorCode,
-
-	// Facade API
-	env,
-	window,
-	workspace,
-	commands,
-	logger,
-	Menu
-};
-
+export { 
+// Factory
+create, 
+// Basic Types
+URI, Event, Emitter, Disposable, GroupOrientation, LogLevel, RemoteAuthorityResolverError, RemoteAuthorityResolverErrorCode, 
+// Facade API
+env, window, workspace, commands, logger, Menu };
 //#endregion

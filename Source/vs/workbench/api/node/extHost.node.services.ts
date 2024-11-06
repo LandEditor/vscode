@@ -2,7 +2,6 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 import { InstantiationType, registerSingleton } from '../../../platform/instantiation/common/extensions.js';
 import { ExtHostTerminalService } from './extHostTerminalService.js';
 import { ExtHostTask } from './extHostTask.js';
@@ -26,19 +25,16 @@ import { ExtHostLogService } from '../common/extHostLogService.js';
 import { SyncDescriptor } from '../../../platform/instantiation/common/descriptors.js';
 import { ISignService } from '../../../platform/sign/common/sign.js';
 import { SignService } from '../../../platform/sign/node/signService.js';
-
 // #########################################################################
 // ###                                                                   ###
 // ### !!! PLEASE ADD COMMON IMPORTS INTO extHost.common.services.ts !!! ###
 // ###                                                                   ###
 // #########################################################################
-
 registerSingleton(IExtHostExtensionService, ExtHostExtensionService, InstantiationType.Eager);
 registerSingleton(ILoggerService, ExtHostLoggerService, InstantiationType.Delayed);
 registerSingleton(ILogService, new SyncDescriptor(ExtHostLogService, [false], true));
 registerSingleton(ISignService, SignService, InstantiationType.Delayed);
 registerSingleton(IExtensionStoragePaths, ExtensionStoragePaths, InstantiationType.Eager);
-
 registerSingleton(IExtHostDebugService, ExtHostDebugService, InstantiationType.Eager);
 registerSingleton(IExtHostSearch, NativeExtHostSearch, InstantiationType.Eager);
 registerSingleton(IExtHostTask, ExtHostTask, InstantiationType.Eager);

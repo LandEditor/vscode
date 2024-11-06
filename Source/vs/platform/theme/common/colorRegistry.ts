@@ -2,9 +2,7 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-
 export * from './colorUtils.js';
-
 // Make sure all color files are exported
 export * from './colors/baseColors.js';
 export * from './colors/chartsColors.js';
