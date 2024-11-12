@@ -3,12 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { Extensions, IConfigurationRegistry } from '../../../../platform/configuration/common/configurationRegistry.js';
-import { IInstantiationService } from '../../../../platform/instantiation/common/instantiation.js';
 import { Registry } from '../../../../platform/registry/common/platform.js';
-import { Extensions as WorkbenchExtensions, IWorkbenchContributionsRegistry } from '../../../common/contributions.js';
-import { CodeActionsExtensionPoint, codeActionsExtensionPointDescriptor } from '../common/codeActionsExtensionPoint.js';
-import { DocumentationExtensionPoint, documentationExtensionPointDescriptor } from '../common/documentationExtensionPoint.js';
-import { ExtensionsRegistry } from '../../../services/extensions/common/extensionsRegistry.js';
+import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
 import { CodeActionsContribution, editorConfiguration, notebookEditorConfiguration } from './codeActionsContribution.js';
 import { CodeActionDocumentationContribution } from './documentationContribution.js';
