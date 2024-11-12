@@ -41,6 +41,7 @@ export interface IChatEditingService {
 	restoreSnapshot(requestId: string | undefined): Promise<void>;
 
 	registerRelatedFilesProvider(handle: number, provider: IChatRelatedFilesProvider): IDisposable;
+	getRelatedFiles(chatSessionId: string, prompt: string, token: CancellationToken): Promise<readonly URI[] | undefined>;
 }
 
 export interface IChatRequestDraft {
