@@ -425,7 +425,6 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 		pass.setBindGroup(0, this._bindGroup);
 
 		if (this._renderStrategy?.draw) {
-			// TODO: Don't draw lines if ViewLinesGpu.canRender is false
 			this._renderStrategy.draw(pass, viewportData);
 		} else {
 			pass.draw(quadVertices.length / 2, visibleObjectCount);
@@ -441,65 +440,9 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 		this._lastViewLineOptions = options;
 	}
 
-	linesVisibleRangesForRange(_range: Range, includeNewLines: boolean): LineVisibleRanges[] | null {
-		if (!this._lastViewportData) {
-			return null;
-		}
-		const originalEndLineNumber = _range.endLineNumber;
-		const range = Range.intersectRanges(_range, this._lastViewportData.visibleRange);
-		if (!range) {
-			return null;
-		}
-
-		const rendStartLineNumber = this._lastViewportData.startLineNumber;
-		const rendEndLineNumber = this._lastViewportData.endLineNumber;
-
-		const viewportData = this._lastViewportData;
-		const viewLineOptions = this._lastViewLineOptions;
-
-		if (!viewportData || !viewLineOptions) {
-			return null;
-		}
-
-		const visibleRanges: LineVisibleRanges[] = [];
-
-		let nextLineModelLineNumber: number = 0;
-		if (includeNewLines) {
-			nextLineModelLineNumber = this._context.viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(range.startLineNumber, 1)).lineNumber;
-		}
-
-		for (let lineNumber = range.startLineNumber; lineNumber <= range.endLineNumber; lineNumber++) {
-
-			if (lineNumber < rendStartLineNumber || lineNumber > rendEndLineNumber) {
-				continue;
-			}
-			const startColumn = lineNumber === range.startLineNumber ? range.startColumn : 1;
-			const continuesInNextLine = lineNumber !== range.endLineNumber;
-			const endColumn = continuesInNextLine ? this._context.viewModel.getLineMaxColumn(lineNumber) : range.endColumn;
-
-			const visibleRangesForLine = this._visibleRangesForLineRange(lineNumber, startColumn, endColumn);
-
-			if (!visibleRangesForLine) {
-				continue;
-			}
-
-			if (includeNewLines && lineNumber < originalEndLineNumber) {
-				const currentLineModelLineNumber = nextLineModelLineNumber;
-				nextLineModelLineNumber = this._context.viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(lineNumber + 1, 1)).lineNumber;
-
-				if (currentLineModelLineNumber !== nextLineModelLineNumber) {
-					visibleRangesForLine.ranges[visibleRangesForLine.ranges.length - 1].width += viewLineOptions.spaceWidth;
-				}
-			}
-
-			visibleRanges.push(new LineVisibleRanges(visibleRangesForLine.outsideRenderedLine, lineNumber, HorizontalRange.from(visibleRangesForLine.ranges), continuesInNextLine));
-		}
-
-		if (visibleRanges.length === 0) {
-			return null;
-		}
-
-		return visibleRanges;
+	linesVisibleRangesForRange(range: Range, includeNewLines: boolean): LineVisibleRanges[] | null {
+		// TODO: Implement
+		return null;
 	}
 
 	private _visibleRangesForLineRange(lineNumber: number, startColumn: number, endColumn: number): VisibleRanges | null {
@@ -543,5 +486,44 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 			return null;
 		}
 		return new HorizontalPosition(visibleRanges.outsideRenderedLine, visibleRanges.ranges[0].left);
+	}
+
+	getLineWidth(lineNumber: number): number | undefined {
+		if (!this._lastViewportData || !this._lastViewLineOptions) {
+			return undefined;
+		}
+		if (!ViewGpuContext.canRender(this._lastViewLineOptions, this._lastViewportData, lineNumber)) {
+			return undefined;
+		}
+
+		const lineData = this._lastViewportData.getViewLineRenderingData(lineNumber);
+		const lineRange = this._visibleRangesForLineRange(lineNumber, 1, lineData.maxColumn);
+		const lastRange = lineRange?.ranges.at(-1);
+		if (lastRange) {
+			return lastRange.width;
+		}
+
+		return undefined;
+	}
+
+	getPositionAtCoordinate(lineNumber: number, mouseContentHorizontalOffset: number): Position | undefined {
+		if (!this._lastViewportData || !this._lastViewLineOptions) {
+			return undefined;
+		}
+		if (!ViewGpuContext.canRender(this._lastViewLineOptions, this._lastViewportData, lineNumber)) {
+			return undefined;
+		}
+		const lineData = this._lastViewportData.getViewLineRenderingData(lineNumber);
+		const content = lineData.content;
+		let visualColumn = Math.ceil(mouseContentHorizontalOffset / this._lastViewLineOptions.spaceWidth);
+		let contentColumn = 0;
+		while (visualColumn > 0) {
+			if (visualColumn - (content[contentColumn] === '\t' ? lineData.tabSize : 1) < 0) {
+				break;
+			}
+			visualColumn -= content[contentColumn] === '\t' ? lineData.tabSize : 1;
+			contentColumn++;
+		}
+		return new Position(lineNumber, contentColumn);
 	}
 }
