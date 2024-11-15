@@ -2,7 +2,8 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { ClientSecretCredential } from '@azure/identity';
+
+import { ClientAssertionCredential } from '@azure/identity';
 import { CosmosClient } from '@azure/cosmos';
 import { retry } from './retry';
 function getEnv(name: string): string {
@@ -31,21 +32,27 @@ async function getConfig(client: CosmosClient, quality: string): Promise<Config>
     return res.resources[0] as Config;
 }
 async function main(force: boolean): Promise<void> {
-    const commit = getEnv('BUILD_SOURCEVERSION');
-    const quality = getEnv('VSCODE_QUALITY');
-    const aadCredentials = new ClientSecretCredential(process.env['AZURE_TENANT_ID']!, process.env['AZURE_CLIENT_ID']!, process.env['AZURE_CLIENT_SECRET']!);
-    const client = new CosmosClient({ endpoint: process.env['AZURE_DOCUMENTDB_ENDPOINT']!, aadCredentials });
-    if (!force) {
-        const config = await getConfig(client, quality);
-        console.log('Quality config:', config);
-        if (config.frozen) {
-            console.log(`Skipping release because quality ${quality} is frozen.`);
-            return;
-        }
-    }
-    console.log(`Releasing build ${commit}...`);
-    const scripts = client.database('builds').container(quality).scripts;
-    await retry(() => scripts.storedProcedure('releaseBuild').execute('', [commit]));
+	const commit = getEnv('BUILD_SOURCEVERSION');
+	const quality = getEnv('VSCODE_QUALITY');
+
+	const aadCredentials = new ClientAssertionCredential(process.env['AZURE_TENANT_ID']!, process.env['AZURE_CLIENT_ID']!, () => Promise.resolve(process.env['AZURE_ID_TOKEN']!));
+	const client = new CosmosClient({ endpoint: process.env['AZURE_DOCUMENTDB_ENDPOINT']!, aadCredentials });
+
+	if (!force) {
+		const config = await getConfig(client, quality);
+
+		console.log('Quality config:', config);
+
+		if (config.frozen) {
+			console.log(`Skipping release because quality ${quality} is frozen.`);
+			return;
+		}
+	}
+
+	console.log(`Releasing build ${commit}...`);
+
+	const scripts = client.database('builds').container(quality).scripts;
+	await retry(() => scripts.storedProcedure('releaseBuild').execute('', [commit]));
 }
 const [, , force] = process.argv;
 console.log(process.argv);

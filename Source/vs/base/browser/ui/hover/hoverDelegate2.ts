@@ -2,13 +2,18 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+
+import { Disposable } from '../../../common/lifecycle.js';
 import type { IHoverDelegate2 } from './hover.js';
 let baseHoverDelegate: IHoverDelegate2 = {
-    showHover: () => undefined,
-    hideHover: () => undefined,
-    showAndFocusLastHover: () => undefined,
-    setupManagedHover: () => null!,
-    showManagedHover: () => undefined
+	showHover: () => undefined,
+	showDelayedHover: () => undefined,
+	setupDelayedHover: () => Disposable.None,
+	setupDelayedHoverAtMouse: () => Disposable.None,
+	hideHover: () => undefined,
+	showAndFocusLastHover: () => undefined,
+	setupManagedHover: () => null!,
+	showManagedHover: () => undefined
 };
 /**
  * Sets the hover delegate for use **only in the `base/` layer**.

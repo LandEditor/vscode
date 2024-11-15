@@ -9,6 +9,7 @@
 			"[yaml]": {
 				"diffEditor.ignoreTrimWhitespace": false,
 				"editor.autoIndent": "advanced",
+				"editor.defaultColorDecorators": false,
 				"editor.insertSpaces": true,
 				"editor.tabSize": 2
 			}

@@ -40,8 +40,8 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.8.7",
-		"@types/node-fetch": "2.6.11"
+		"@types/node": "22.9.0",
+		"@types/node-fetch": "2.6.12"
 	},
 	"displayName": "%displayName%",
 	"extensionKind": [

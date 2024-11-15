@@ -304,4 +304,9 @@ import './contrib/share/browser/share.contribution.js';
 import './contrib/scrollLocking/browser/scrollLocking.contribution.js';
 // Inline Completions
 import './contrib/inlineCompletions/browser/inlineCompletions.contribution.js';
+
+// Drop or paste into
+import './contrib/dropOrPasteInto/browser/dropOrPasteInto.contribution.js';
+
+
 //#endregion

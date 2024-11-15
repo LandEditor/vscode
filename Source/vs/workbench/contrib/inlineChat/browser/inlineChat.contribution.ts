@@ -18,7 +18,7 @@ import { IInlineChatSavingService } from './inlineChatSavingService.js';
 import { IInlineChatSessionService } from './inlineChatSessionService.js';
 import { InlineChatEnabler, InlineChatSessionServiceImpl } from './inlineChatSessionServiceImpl.js';
 import { AccessibleViewRegistry } from '../../../../platform/accessibility/browser/accessibleViewRegistry.js';
-import { CancelAction, SubmitAction } from '../../chat/browser/actions/chatExecuteActions.js';
+import { CancelAction, ChatSubmitAction } from '../../chat/browser/actions/chatExecuteActions.js';
 import { localize } from '../../../../nls.js';
 import { ChatContextKeys } from '../../chat/common/chatContextKeys.js';
 import { ContextKeyExpr } from '../../../../platform/contextkey/common/contextkey.js';
@@ -32,22 +32,30 @@ registerEditorContribution(InlineChatExansionContextKey.Id, InlineChatExansionCo
 registerAction2(InlineChatExpandLineAction);
 // --- MENU special ---
 const editActionMenuItem: IMenuItem = {
-    group: '0_main',
-    order: 0,
-    command: {
-        id: SubmitAction.ID,
-        title: localize('send.edit', "Edit Code"),
-    },
-    when: ContextKeyExpr.and(ChatContextKeys.inputHasText, CTX_INLINE_CHAT_REQUEST_IN_PROGRESS.toNegated(), CTX_INLINE_CHAT_EDITING),
+	group: '0_main',
+	order: 0,
+	command: {
+		id: ChatSubmitAction.ID,
+		title: localize('send.edit', "Edit Code"),
+	},
+	when: ContextKeyExpr.and(
+		ChatContextKeys.inputHasText,
+		CTX_INLINE_CHAT_REQUEST_IN_PROGRESS.toNegated(),
+		CTX_INLINE_CHAT_EDITING
+	),
 };
 const generateActionMenuItem: IMenuItem = {
-    group: '0_main',
-    order: 0,
-    command: {
-        id: SubmitAction.ID,
-        title: localize('send.generate', "Generate"),
-    },
-    when: ContextKeyExpr.and(ChatContextKeys.inputHasText, CTX_INLINE_CHAT_REQUEST_IN_PROGRESS.toNegated(), CTX_INLINE_CHAT_EDITING.toNegated()),
+	group: '0_main',
+	order: 0,
+	command: {
+		id: ChatSubmitAction.ID,
+		title: localize('send.generate', "Generate"),
+	},
+	when: ContextKeyExpr.and(
+		ChatContextKeys.inputHasText,
+		CTX_INLINE_CHAT_REQUEST_IN_PROGRESS.toNegated(),
+		CTX_INLINE_CHAT_EDITING.toNegated()
+	),
 };
 MenuRegistry.appendMenuItem(MENU_INLINE_CHAT_WIDGET_STATUS, editActionMenuItem);
 MenuRegistry.appendMenuItem(MENU_INLINE_CHAT_WIDGET_STATUS, generateActionMenuItem);

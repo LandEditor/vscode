@@ -2,7 +2,8 @@
 	"contributes": {
 		"configurationDefaults": {
 			"[python]": {
-				"diffEditor.ignoreTrimWhitespace": false
+				"diffEditor.ignoreTrimWhitespace": false,
+				"editor.defaultColorDecorators": false
 			}
 		},
 		"grammars": [

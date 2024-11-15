@@ -15,14 +15,17 @@ export interface IBorrowValue<T> {
     readonly value: T | undefined;
 }
 export interface INotebookEditorService {
-    _serviceBrand: undefined;
-    retrieveWidget(accessor: ServicesAccessor, groupId: number, input: NotebookEditorInput, creationOptions?: INotebookEditorCreationOptions, dimension?: Dimension, codeWindow?: CodeWindow): IBorrowValue<INotebookEditor>;
-    retrieveExistingWidgetFromURI(resource: URI): IBorrowValue<NotebookEditorWidget> | undefined;
-    retrieveAllExistingWidgets(): IBorrowValue<NotebookEditorWidget>[];
-    onDidAddNotebookEditor: Event<INotebookEditor>;
-    onDidRemoveNotebookEditor: Event<INotebookEditor>;
-    addNotebookEditor(editor: INotebookEditor): void;
-    removeNotebookEditor(editor: INotebookEditor): void;
-    getNotebookEditor(editorId: string): INotebookEditor | undefined;
-    listNotebookEditors(): readonly INotebookEditor[];
+	_serviceBrand: undefined;
+
+	retrieveWidget(accessor: ServicesAccessor, groupId: number, input: NotebookEditorInput, creationOptions?: INotebookEditorCreationOptions, dimension?: Dimension, codeWindow?: CodeWindow): IBorrowValue<INotebookEditor>;
+
+	retrieveExistingWidgetFromURI(resource: URI): IBorrowValue<NotebookEditorWidget> | undefined;
+	retrieveAllExistingWidgets(): IBorrowValue<NotebookEditorWidget>[];
+	onDidAddNotebookEditor: Event<INotebookEditor>;
+	onDidRemoveNotebookEditor: Event<INotebookEditor>;
+	addNotebookEditor(editor: INotebookEditor): void;
+	removeNotebookEditor(editor: INotebookEditor): void;
+	getNotebookEditor(editorId: string): INotebookEditor | undefined;
+	listNotebookEditors(): readonly INotebookEditor[];
+	updateReplContextKey(uri: string): void;
 }

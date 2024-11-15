@@ -46,129 +46,153 @@ const DEFAULT_FILE_HEADER = [
     ' *--------------------------------------------------------*/'
 ].join('\n');
 function bundleESMTask(opts: IBundleESMTaskOpts): NodeJS.ReadWriteStream {
-    const resourcesStream = es.through(); // this stream will contain the resources
-    const bundlesStream = es.through(); // this stream will contain the bundled files
-    const entryPoints = opts.entryPoints.map(entryPoint => {
-        if (typeof entryPoint === 'string') {
-            return { name: path.parse(entryPoint).name };
-        }
-        return entryPoint;
-    });
-    const allMentionedModules = new Set<string>();
-    for (const entryPoint of entryPoints) {
-        allMentionedModules.add(entryPoint.name);
-        entryPoint.include?.forEach(allMentionedModules.add, allMentionedModules);
-        entryPoint.exclude?.forEach(allMentionedModules.add, allMentionedModules);
-    }
-    const bundleAsync = async () => {
-        const files: VinylFile[] = [];
-        const tasks: Promise<any>[] = [];
-        for (const entryPoint of entryPoints) {
-            fancyLog(`Bundled entry point: ${ansiColors.yellow(entryPoint.name)}...`);
-            // support for 'dest' via esbuild#in/out
-            const dest = entryPoint.dest?.replace(/\.[^/.]+$/, '') ?? entryPoint.name;
-            // banner contents
-            const banner = {
-                js: DEFAULT_FILE_HEADER,
-                css: DEFAULT_FILE_HEADER
-            };
-            // TS Boilerplate
-            if (!opts.skipTSBoilerplateRemoval?.(entryPoint.name)) {
-                const tslibPath = path.join(require.resolve('tslib'), '../tslib.es6.js');
-                banner.js += await fs.promises.readFile(tslibPath, 'utf-8');
-            }
-            const contentsMapper: esbuild.Plugin = {
-                name: 'contents-mapper',
-                setup(build) {
-                    build.onLoad({ filter: /\.js$/ }, async ({ path }) => {
-                        const contents = await fs.promises.readFile(path, 'utf-8');
-                        // TS Boilerplate
-                        let newContents: string;
-                        if (!opts.skipTSBoilerplateRemoval?.(entryPoint.name)) {
-                            newContents = bundle.removeAllTSBoilerplate(contents);
-                        }
-                        else {
-                            newContents = contents;
-                        }
-                        // File Content Mapper
-                        const mapper = opts.fileContentMapper?.(path);
-                        if (mapper) {
-                            newContents = await mapper(newContents);
-                        }
-                        return { contents: newContents };
-                    });
-                }
-            };
-            const externalOverride: esbuild.Plugin = {
-                name: 'external-override',
-                setup(build) {
-                    // We inline selected modules that are we depend on on startup without
-                    // a conditional `await import(...)` by hooking into the resolution.
-                    build.onResolve({ filter: /^minimist$/ }, () => {
-                        return { path: path.join(REPO_ROOT_PATH, 'node_modules', 'minimist', 'index.js'), external: false };
-                    });
-                },
-            };
-            const task = esbuild.build({
-                bundle: true,
-                external: entryPoint.exclude,
-                packages: 'external', // "external all the things", see https://esbuild.github.io/api/#packages
-                platform: 'neutral', // makes esm
-                format: 'esm',
-                sourcemap: 'external',
-                plugins: [contentsMapper, externalOverride],
-                target: ['es2022'],
-                loader: {
-                    '.ttf': 'file',
-                    '.svg': 'file',
-                    '.png': 'file',
-                    '.sh': 'file',
-                },
-                assetNames: 'media/[name]', // moves media assets into a sub-folder "media"
-                banner: entryPoint.name === 'vs/workbench/workbench.web.main' ? undefined : banner, // TODO@esm remove line when we stop supporting web-amd-esm-bridge
-                entryPoints: [
-                    {
-                        in: path.join(REPO_ROOT_PATH, opts.src, `${entryPoint.name}.js`),
-                        out: dest,
-                    }
-                ],
-                outdir: path.join(REPO_ROOT_PATH, opts.src),
-                write: false, // enables res.outputFiles
-                metafile: true, // enables res.metafile
-                // minify: NOT enabled because we have a separate minify task that takes care of the TSLib banner as well
-            }).then(res => {
-                for (const file of res.outputFiles) {
-                    let sourceMapFile: esbuild.OutputFile | undefined = undefined;
-                    if (file.path.endsWith('.js')) {
-                        sourceMapFile = res.outputFiles.find(f => f.path === `${file.path}.map`);
-                    }
-                    const fileProps = {
-                        contents: Buffer.from(file.contents),
-                        sourceMap: sourceMapFile ? JSON.parse(sourceMapFile.text) : undefined, // support gulp-sourcemaps
-                        path: file.path,
-                        base: path.join(REPO_ROOT_PATH, opts.src)
-                    };
-                    files.push(new VinylFile(fileProps));
-                }
-            });
-            tasks.push(task);
-        }
-        await Promise.all(tasks);
-        return { files };
-    };
-    bundleAsync().then((output) => {
-        // bundle output (JS, CSS, SVG...)
-        es.readArray(output.files).pipe(bundlesStream);
-        // forward all resources
-        gulp.src(opts.resources ?? [], { base: `${opts.src}`, allowEmpty: true }).pipe(resourcesStream);
-    });
-    const result = es.merge(bundlesStream, resourcesStream);
-    return result
-        .pipe(sourcemaps.write('./', {
-        sourceRoot: undefined,
-        addComment: true,
-        includeContent: true
-    }));
+	const resourcesStream = es.through(); // this stream will contain the resources
+	const bundlesStream = es.through(); // this stream will contain the bundled files
+
+	const entryPoints = opts.entryPoints.map(entryPoint => {
+		if (typeof entryPoint === 'string') {
+			return { name: path.parse(entryPoint).name };
+		}
+
+		return entryPoint;
+	});
+
+	const allMentionedModules = new Set<string>();
+	for (const entryPoint of entryPoints) {
+		allMentionedModules.add(entryPoint.name);
+		entryPoint.include?.forEach(allMentionedModules.add, allMentionedModules);
+		entryPoint.exclude?.forEach(allMentionedModules.add, allMentionedModules);
+	}
+
+	const bundleAsync = async () => {
+		const files: VinylFile[] = [];
+		const tasks: Promise<any>[] = [];
+
+		for (const entryPoint of entryPoints) {
+			fancyLog(`Bundled entry point: ${ansiColors.yellow(entryPoint.name)}...`);
+
+			// support for 'dest' via esbuild#in/out
+			const dest = entryPoint.dest?.replace(/\.[^/.]+$/, '') ?? entryPoint.name;
+
+			// banner contents
+			const banner = {
+				js: DEFAULT_FILE_HEADER,
+				css: DEFAULT_FILE_HEADER
+			};
+
+			// TS Boilerplate
+			if (!opts.skipTSBoilerplateRemoval?.(entryPoint.name)) {
+				const tslibPath = path.join(require.resolve('tslib'), '../tslib.es6.js');
+				banner.js += await fs.promises.readFile(tslibPath, 'utf-8');
+			}
+
+			const contentsMapper: esbuild.Plugin = {
+				name: 'contents-mapper',
+				setup(build) {
+					build.onLoad({ filter: /\.js$/ }, async ({ path }) => {
+						const contents = await fs.promises.readFile(path, 'utf-8');
+
+						// TS Boilerplate
+						let newContents: string;
+						if (!opts.skipTSBoilerplateRemoval?.(entryPoint.name)) {
+							newContents = bundle.removeAllTSBoilerplate(contents);
+						} else {
+							newContents = contents;
+						}
+
+						// File Content Mapper
+						const mapper = opts.fileContentMapper?.(path.replace(/\\/g, '/'));
+						if (mapper) {
+							newContents = await mapper(newContents);
+						}
+
+						return { contents: newContents };
+					});
+				}
+			};
+
+			const externalOverride: esbuild.Plugin = {
+				name: 'external-override',
+				setup(build) {
+					// We inline selected modules that are we depend on on startup without
+					// a conditional `await import(...)` by hooking into the resolution.
+					build.onResolve({ filter: /^minimist$/ }, () => {
+						return { path: path.join(REPO_ROOT_PATH, 'node_modules', 'minimist', 'index.js'), external: false };
+					});
+				},
+			};
+
+			const task = esbuild.build({
+				bundle: true,
+				external: entryPoint.exclude,
+				packages: 'external', // "external all the things", see https://esbuild.github.io/api/#packages
+				platform: 'neutral', // makes esm
+				format: 'esm',
+				sourcemap: 'external',
+				plugins: [contentsMapper, externalOverride],
+				target: ['es2022'],
+				loader: {
+					'.ttf': 'file',
+					'.svg': 'file',
+					'.png': 'file',
+					'.sh': 'file',
+				},
+				assetNames: 'media/[name]', // moves media assets into a sub-folder "media"
+				banner: entryPoint.name === 'vs/workbench/workbench.web.main' ? undefined : banner, // TODO@esm remove line when we stop supporting web-amd-esm-bridge
+				entryPoints: [
+					{
+						in: path.join(REPO_ROOT_PATH, opts.src, `${entryPoint.name}.js`),
+						out: dest,
+					}
+				],
+				outdir: path.join(REPO_ROOT_PATH, opts.src),
+				write: false, // enables res.outputFiles
+				metafile: true, // enables res.metafile
+				// minify: NOT enabled because we have a separate minify task that takes care of the TSLib banner as well
+			}).then(res => {
+				for (const file of res.outputFiles) {
+					let sourceMapFile: esbuild.OutputFile | undefined = undefined;
+					if (file.path.endsWith('.js')) {
+						sourceMapFile = res.outputFiles.find(f => f.path === `${file.path}.map`);
+					}
+
+					const fileProps = {
+						contents: Buffer.from(file.contents),
+						sourceMap: sourceMapFile ? JSON.parse(sourceMapFile.text) : undefined, // support gulp-sourcemaps
+						path: file.path,
+						base: path.join(REPO_ROOT_PATH, opts.src)
+					};
+					files.push(new VinylFile(fileProps));
+				}
+			});
+
+			tasks.push(task);
+		}
+
+		await Promise.all(tasks);
+		return { files };
+	};
+
+	bundleAsync().then((output) => {
+
+		// bundle output (JS, CSS, SVG...)
+		es.readArray(output.files).pipe(bundlesStream);
+
+		// forward all resources
+		gulp.src(opts.resources ?? [], { base: `${opts.src}`, allowEmpty: true }).pipe(resourcesStream);
+	});
+
+	const result = es.merge(
+		bundlesStream,
+		resourcesStream
+	);
+
+	return result
+		.pipe(sourcemaps.write('./', {
+			sourceRoot: undefined,
+			addComment: true,
+			includeContent: true
+		}));
 }
 export interface IBundleESMTaskOpts {
     /**

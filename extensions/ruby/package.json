@@ -1,5 +1,10 @@
 {
 	"contributes": {
+		"configurationDefaults": {
+			"[ruby]": {
+				"editor.defaultColorDecorators": false
+			}
+		},
 		"grammars": [
 			{
 				"language": "ruby",

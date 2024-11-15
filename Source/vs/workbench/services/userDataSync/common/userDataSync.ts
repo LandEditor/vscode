@@ -53,8 +53,9 @@ export function getSyncAreaLabel(source: SyncResource): string {
     }
 }
 export const enum AccountStatus {
-    Unavailable = 'unavailable',
-    Available = 'available'
+	Uninitialized = 'uninitialized',
+	Unavailable = 'unavailable',
+	Available = 'available',
 }
 export interface IUserDataSyncConflictsView extends IView {
     open(conflict: IResourcePreview): Promise<void>;

@@ -1,5 +1,10 @@
 {
 	"contributes": {
+		"configurationDefaults": {
+			"[julia]": {
+				"editor.defaultColorDecorators": false
+			}
+		},
 		"grammars": [
 			{
 				"embeddedLanguages": {
@@ -38,11 +43,5 @@
 				"id": "juliamarkdown"
 			}
 		]
-	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "julia",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin JuliaEditorSupport/atom-language-julia grammars/julia_vscode.json ./syntaxes/julia.tmLanguage.json"
 	}
 }

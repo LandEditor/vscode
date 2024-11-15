@@ -159,41 +159,53 @@ CommandsRegistry.registerCommand({
     }
 });
 CommandsRegistry.registerCommand({
-    id: 'vscode.revealTest',
-    handler: async (accessor: ServicesAccessor, extId: string) => {
-        const test = accessor.get(ITestService).collection.getNodeById(extId);
-        if (!test) {
-            return;
-        }
-        const commandService = accessor.get(ICommandService);
-        const fileService = accessor.get(IFileService);
-        const openerService = accessor.get(IOpenerService);
-        const { range, uri } = test.item;
-        if (!uri) {
-            return;
-        }
-        // If an editor has the file open, there are decorations. Try to adjust the
-        // revealed range to those decorations (#133441).
-        const position = accessor.get(ITestingDecorationsService).getDecoratedTestPosition(uri, extId) || range?.getStartPosition();
-        accessor.get(ITestExplorerFilterState).reveal.set(extId, undefined);
-        accessor.get(ITestingPeekOpener).closeAllPeeks();
-        let isFile = true;
-        try {
-            if (!(await fileService.stat(uri)).isFile) {
-                isFile = false;
-            }
-        }
-        catch {
-            // ignored
-        }
-        if (!isFile) {
-            await commandService.executeCommand(REVEAL_IN_EXPLORER_COMMAND_ID, uri);
-            return;
-        }
-        await openerService.open(position
-            ? uri.with({ fragment: `L${position.lineNumber}:${position.column}` })
-            : uri);
-    }
+	id: 'vscode.revealTest',
+	handler: async (accessor: ServicesAccessor, extId: string, opts?: { preserveFocus?: boolean; openToSide?: boolean }) => {
+		const test = accessor.get(ITestService).collection.getNodeById(extId);
+		if (!test) {
+			return;
+		}
+		const commandService = accessor.get(ICommandService);
+		const fileService = accessor.get(IFileService);
+		const openerService = accessor.get(IOpenerService);
+
+		const { range, uri } = test.item;
+		if (!uri) {
+			return;
+		}
+
+		// If an editor has the file open, there are decorations. Try to adjust the
+		// revealed range to those decorations (#133441).
+		const position = accessor.get(ITestingDecorationsService).getDecoratedTestPosition(uri, extId) || range?.getStartPosition();
+
+		accessor.get(ITestExplorerFilterState).reveal.set(extId, undefined);
+		accessor.get(ITestingPeekOpener).closeAllPeeks();
+
+		let isFile = true;
+		try {
+			if (!(await fileService.stat(uri)).isFile) {
+				isFile = false;
+			}
+		} catch {
+			// ignored
+		}
+
+		if (!isFile) {
+			await commandService.executeCommand(REVEAL_IN_EXPLORER_COMMAND_ID, uri);
+			return;
+		}
+
+		await openerService.open(position
+			? uri.with({ fragment: `L${position.lineNumber}:${position.column}` })
+			: uri,
+			{
+				openToSide: opts?.openToSide,
+				editorOptions: {
+					preserveFocus: opts?.preserveFocus,
+				}
+			}
+		);
+	}
 });
 CommandsRegistry.registerCommand({
     id: 'vscode.runTestsById',

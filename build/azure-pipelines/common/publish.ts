@@ -40,6 +40,37 @@ class Temp {
         }
     }
 }
+
+/**
+ * Gets an access token converted from a WIF/OIDC id token.
+ * We need this since this build job takes a while to run and while id tokens live for 10 minutes only, access tokens live for 24 hours.
+ * Source: https://goodworkaround.com/2021/12/21/another-deep-dive-into-azure-ad-workload-identity-federation-using-github-actions/
+ */
+export async function getAccessToken(endpoint: string, tenantId: string, clientId: string, idToken: string): Promise<string> {
+	const body = new URLSearchParams({
+		scope: `${endpoint}.default`,
+		client_id: clientId,
+		grant_type: 'client_credentials',
+		client_assertion_type: 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer',
+		client_assertion: encodeURIComponent(idToken)
+	});
+
+	const response = await fetch(`https://login.microsoftonline.com/${tenantId}/oauth2/v2.0/token`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded'
+		},
+		body: body.toString()
+	});
+
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+
+	const aadToken = await response.json();
+	return aadToken.access_token;
+}
+
 interface RequestOptions {
     readonly body?: string;
 }
@@ -532,33 +563,51 @@ function getRealType(type: string) {
             return type;
     }
 }
-async function processArtifact(artifact: Artifact, artifactFilePath: string): Promise<void> {
-    const log = (...args: any[]) => console.log(`[${artifact.name}]`, ...args);
-    const match = /^vscode_(?<product>[^_]+)_(?<os>[^_]+)(?:_legacy)?_(?<arch>[^_]+)_(?<unprocessedType>[^_]+)$/.exec(artifact.name);
-    if (!match) {
-        throw new Error(`Invalid artifact name: ${artifact.name}`);
-    }
-    // getPlatform needs the unprocessedType
-    const quality = e('VSCODE_QUALITY');
-    const commit = e('BUILD_SOURCEVERSION');
-    const { product, os, arch, unprocessedType } = match.groups!;
-    const isLegacy = artifact.name.includes('_legacy');
-    const platform = getPlatform(product, os, arch, unprocessedType, isLegacy);
-    const type = getRealType(unprocessedType);
-    const size = fs.statSync(artifactFilePath).size;
-    const stream = fs.createReadStream(artifactFilePath);
-    const [hash, sha256hash] = await Promise.all([hashStream('sha1', stream), hashStream('sha256', stream)]); // CodeQL [SM04514] Using SHA1 only for legacy reasons, we are actually only respecting SHA256
-    const url = await releaseAndProvision(log, e('RELEASE_TENANT_ID'), e('RELEASE_CLIENT_ID'), e('RELEASE_AUTH_CERT_SUBJECT_NAME'), e('RELEASE_REQUEST_SIGNING_CERT_SUBJECT_NAME'), e('PROVISION_TENANT_ID'), e('PROVISION_AAD_USERNAME'), e('PROVISION_AAD_PASSWORD'), commit, quality, artifactFilePath);
-    const asset: Asset = { platform, type, url, hash, sha256hash, size, supportsFastUpdate: true };
-    log('Creating asset...', JSON.stringify(asset, undefined, 2));
-    await retry(async (attempt) => {
-        log(`Creating asset in Cosmos DB (attempt ${attempt})...`);
-        const aadCredentials = new ClientSecretCredential(e('AZURE_TENANT_ID'), e('AZURE_CLIENT_ID'), e('AZURE_CLIENT_SECRET'));
-        const client = new CosmosClient({ endpoint: e('AZURE_DOCUMENTDB_ENDPOINT'), aadCredentials });
-        const scripts = client.database('builds').container(quality).scripts;
-        await scripts.storedProcedure('createAsset').execute('', [commit, asset, true]);
-    });
-    log('Asset successfully created');
+
+async function processArtifact(artifact: Artifact, artifactFilePath: string, cosmosDBAccessToken: string): Promise<void> {
+	const log = (...args: any[]) => console.log(`[${artifact.name}]`, ...args);
+	const match = /^vscode_(?<product>[^_]+)_(?<os>[^_]+)(?:_legacy)?_(?<arch>[^_]+)_(?<unprocessedType>[^_]+)$/.exec(artifact.name);
+
+	if (!match) {
+		throw new Error(`Invalid artifact name: ${artifact.name}`);
+	}
+
+	// getPlatform needs the unprocessedType
+	const quality = e('VSCODE_QUALITY');
+	const commit = e('BUILD_SOURCEVERSION');
+	const { product, os, arch, unprocessedType } = match.groups!;
+	const isLegacy = artifact.name.includes('_legacy');
+	const platform = getPlatform(product, os, arch, unprocessedType, isLegacy);
+	const type = getRealType(unprocessedType);
+	const size = fs.statSync(artifactFilePath).size;
+	const stream = fs.createReadStream(artifactFilePath);
+	const [hash, sha256hash] = await Promise.all([hashStream('sha1', stream), hashStream('sha256', stream)]); // CodeQL [SM04514] Using SHA1 only for legacy reasons, we are actually only respecting SHA256
+
+	const url = await releaseAndProvision(
+		log,
+		e('RELEASE_TENANT_ID'),
+		e('RELEASE_CLIENT_ID'),
+		e('RELEASE_AUTH_CERT_SUBJECT_NAME'),
+		e('RELEASE_REQUEST_SIGNING_CERT_SUBJECT_NAME'),
+		e('PROVISION_TENANT_ID'),
+		e('PROVISION_AAD_USERNAME'),
+		e('PROVISION_AAD_PASSWORD'),
+		commit,
+		quality,
+		artifactFilePath
+	);
+
+	const asset: Asset = { platform, type, url, hash, sha256hash, size, supportsFastUpdate: true };
+	log('Creating asset...', JSON.stringify(asset, undefined, 2));
+
+	await retry(async (attempt) => {
+		log(`Creating asset in Cosmos DB (attempt ${attempt})...`);
+		const client = new CosmosClient({ endpoint: e('AZURE_DOCUMENTDB_ENDPOINT')!, tokenProvider: () => Promise.resolve(`type=aad&ver=1.0&sig=${cosmosDBAccessToken}`) });
+		const scripts = client.database('builds').container(quality).scripts;
+		await scripts.storedProcedure('createAsset').execute('', [commit, asset, true]);
+	});
+
+	log('Asset successfully created');
 }
 // It is VERY important that we don't download artifacts too much too fast from AZDO.
 // AZDO throttles us SEVERELY if we do. Not just that, but they also close open
@@ -567,113 +616,118 @@ async function processArtifact(artifact: Artifact, artifactFilePath: string): Pr
 // properly. For each extracted artifact, we spawn a worker thread to upload it to
 // the CDN and finally update the build in Cosmos DB.
 async function main() {
-    if (!isMainThread) {
-        const { artifact, artifactFilePath } = workerData;
-        await processArtifact(artifact, artifactFilePath);
-        return;
-    }
-    const done = new State();
-    const processing = new Set<string>();
-    for (const name of done) {
-        console.log(`\u2705 ${name}`);
-    }
-    const stages = new Set<string>(['Compile', 'CompileCLI']);
-    if (e('VSCODE_BUILD_STAGE_WINDOWS') === 'True') {
-        stages.add('Windows');
-    }
-    if (e('VSCODE_BUILD_STAGE_LINUX') === 'True') {
-        stages.add('Linux');
-    }
-    if (e('VSCODE_BUILD_STAGE_LINUX_LEGACY_SERVER') === 'True') {
-        stages.add('LinuxLegacyServer');
-    }
-    if (e('VSCODE_BUILD_STAGE_ALPINE') === 'True') {
-        stages.add('Alpine');
-    }
-    if (e('VSCODE_BUILD_STAGE_MACOS') === 'True') {
-        stages.add('macOS');
-    }
-    if (e('VSCODE_BUILD_STAGE_WEB') === 'True') {
-        stages.add('Web');
-    }
-    let resultPromise = Promise.resolve<PromiseSettledResult<void>[]>([]);
-    const operations: {
-        name: string;
-        operation: Promise<void>;
-    }[] = [];
-    while (true) {
-        const [timeline, artifacts] = await Promise.all([retry(() => getPipelineTimeline()), retry(() => getPipelineArtifacts())]);
-        const stagesCompleted = new Set<string>(timeline.records.filter(r => r.type === 'Stage' && r.state === 'completed' && stages.has(r.name)).map(r => r.name));
-        const stagesInProgress = [...stages].filter(s => !stagesCompleted.has(s));
-        const artifactsInProgress = artifacts.filter(a => processing.has(a.name));
-        if (stagesInProgress.length === 0 && artifacts.length === done.size + processing.size) {
-            break;
-        }
-        else if (stagesInProgress.length > 0) {
-            console.log('Stages in progress:', stagesInProgress.join(', '));
-        }
-        else if (artifactsInProgress.length > 0) {
-            console.log('Artifacts in progress:', artifactsInProgress.map(a => a.name).join(', '));
-        }
-        else {
-            console.log(`Waiting for a total of ${artifacts.length}, ${done.size} done, ${processing.size} in progress...`);
-        }
-        for (const artifact of artifacts) {
-            if (done.has(artifact.name) || processing.has(artifact.name)) {
-                continue;
-            }
-            console.log(`[${artifact.name}] Found new artifact`);
-            const artifactZipPath = path.join(e('AGENT_TEMPDIRECTORY'), `${artifact.name}.zip`);
-            await retry(async (attempt) => {
-                const start = Date.now();
-                console.log(`[${artifact.name}] Downloading (attempt ${attempt})...`);
-                await downloadArtifact(artifact, artifactZipPath);
-                const archiveSize = fs.statSync(artifactZipPath).size;
-                const downloadDurationS = (Date.now() - start) / 1000;
-                const downloadSpeedKBS = Math.round((archiveSize / 1024) / downloadDurationS);
-                console.log(`[${artifact.name}] Successfully downloaded after ${Math.floor(downloadDurationS)} seconds(${downloadSpeedKBS} KB/s).`);
-            });
-            const artifactFilePaths = await unzip(artifactZipPath, e('AGENT_TEMPDIRECTORY'));
-            const artifactFilePath = artifactFilePaths.filter(p => !/_manifest/.test(p))[0];
-            processing.add(artifact.name);
-            const promise = new Promise<void>((resolve, reject) => {
-                const worker = new Worker(__filename, { workerData: { artifact, artifactFilePath } });
-                worker.on('error', reject);
-                worker.on('exit', code => {
-                    if (code === 0) {
-                        resolve();
-                    }
-                    else {
-                        reject(new Error(`[${artifact.name}] Worker stopped with exit code ${code}`));
-                    }
-                });
-            });
-            const operation = promise.then(() => {
-                processing.delete(artifact.name);
-                done.add(artifact.name);
-                console.log(`\u2705 ${artifact.name} `);
-            });
-            operations.push({ name: artifact.name, operation });
-            resultPromise = Promise.allSettled(operations.map(o => o.operation));
-        }
-        await new Promise(c => setTimeout(c, 10000));
-    }
-    console.log(`Found all ${done.size + processing.size} artifacts, waiting for ${processing.size} artifacts to finish publishing...`);
-    const artifactsInProgress = operations.filter(o => processing.has(o.name));
-    if (artifactsInProgress.length > 0) {
-        console.log('Artifacts in progress:', artifactsInProgress.map(a => a.name).join(', '));
-    }
-    const results = await resultPromise;
-    for (let i = 0; i < operations.length; i++) {
-        const result = results[i];
-        if (result.status === 'rejected') {
-            console.error(`[${operations[i].name}]`, result.reason);
-        }
-    }
-    if (results.some(r => r.status === 'rejected')) {
-        throw new Error('Some artifacts failed to publish');
-    }
-    console.log(`All ${done.size} artifacts published!`);
+	if (!isMainThread) {
+		const { artifact, artifactFilePath, cosmosDBAccessToken } = workerData;
+		await processArtifact(artifact, artifactFilePath, cosmosDBAccessToken);
+		return;
+	}
+
+	const done = new State();
+	const processing = new Set<string>();
+
+	for (const name of done) {
+		console.log(`\u2705 ${name}`);
+	}
+
+	const stages = new Set<string>(['Compile', 'CompileCLI']);
+	if (e('VSCODE_BUILD_STAGE_WINDOWS') === 'True') { stages.add('Windows'); }
+	if (e('VSCODE_BUILD_STAGE_LINUX') === 'True') { stages.add('Linux'); }
+	if (e('VSCODE_BUILD_STAGE_LINUX_LEGACY_SERVER') === 'True') { stages.add('LinuxLegacyServer'); }
+	if (e('VSCODE_BUILD_STAGE_ALPINE') === 'True') { stages.add('Alpine'); }
+	if (e('VSCODE_BUILD_STAGE_MACOS') === 'True') { stages.add('macOS'); }
+	if (e('VSCODE_BUILD_STAGE_WEB') === 'True') { stages.add('Web'); }
+
+	let resultPromise = Promise.resolve<PromiseSettledResult<void>[]>([]);
+	const operations: { name: string; operation: Promise<void> }[] = [];
+	const cosmosDBAccessToken = await getAccessToken(e('AZURE_DOCUMENTDB_ENDPOINT')!, e('AZURE_TENANT_ID')!, e('AZURE_CLIENT_ID')!, e('AZURE_ID_TOKEN')!);
+
+	while (true) {
+		const [timeline, artifacts] = await Promise.all([retry(() => getPipelineTimeline()), retry(() => getPipelineArtifacts())]);
+		const stagesCompleted = new Set<string>(timeline.records.filter(r => r.type === 'Stage' && r.state === 'completed' && stages.has(r.name)).map(r => r.name));
+		const stagesInProgress = [...stages].filter(s => !stagesCompleted.has(s));
+		const artifactsInProgress = artifacts.filter(a => processing.has(a.name));
+
+		if (stagesInProgress.length === 0 && artifacts.length === done.size + processing.size) {
+			break;
+		} else if (stagesInProgress.length > 0) {
+			console.log('Stages in progress:', stagesInProgress.join(', '));
+		} else if (artifactsInProgress.length > 0) {
+			console.log('Artifacts in progress:', artifactsInProgress.map(a => a.name).join(', '));
+		} else {
+			console.log(`Waiting for a total of ${artifacts.length}, ${done.size} done, ${processing.size} in progress...`);
+		}
+
+		for (const artifact of artifacts) {
+			if (done.has(artifact.name) || processing.has(artifact.name)) {
+				continue;
+			}
+
+			console.log(`[${artifact.name}] Found new artifact`);
+
+			const artifactZipPath = path.join(e('AGENT_TEMPDIRECTORY'), `${artifact.name}.zip`);
+
+			await retry(async (attempt) => {
+				const start = Date.now();
+				console.log(`[${artifact.name}] Downloading (attempt ${attempt})...`);
+				await downloadArtifact(artifact, artifactZipPath);
+				const archiveSize = fs.statSync(artifactZipPath).size;
+				const downloadDurationS = (Date.now() - start) / 1000;
+				const downloadSpeedKBS = Math.round((archiveSize / 1024) / downloadDurationS);
+				console.log(`[${artifact.name}] Successfully downloaded after ${Math.floor(downloadDurationS)} seconds(${downloadSpeedKBS} KB/s).`);
+			});
+
+			const artifactFilePaths = await unzip(artifactZipPath, e('AGENT_TEMPDIRECTORY'));
+			const artifactFilePath = artifactFilePaths.filter(p => !/_manifest/.test(p))[0];
+
+			processing.add(artifact.name);
+			const promise = new Promise<void>((resolve, reject) => {
+				const worker = new Worker(__filename, { workerData: { artifact, artifactFilePath, cosmosDBAccessToken } });
+				worker.on('error', reject);
+				worker.on('exit', code => {
+					if (code === 0) {
+						resolve();
+					} else {
+						reject(new Error(`[${artifact.name}] Worker stopped with exit code ${code}`));
+					}
+				});
+			});
+
+			const operation = promise.then(() => {
+				processing.delete(artifact.name);
+				done.add(artifact.name);
+				console.log(`\u2705 ${artifact.name} `);
+			});
+
+			operations.push({ name: artifact.name, operation });
+			resultPromise = Promise.allSettled(operations.map(o => o.operation));
+		}
+
+		await new Promise(c => setTimeout(c, 10_000));
+	}
+
+	console.log(`Found all ${done.size + processing.size} artifacts, waiting for ${processing.size} artifacts to finish publishing...`);
+
+	const artifactsInProgress = operations.filter(o => processing.has(o.name));
+
+	if (artifactsInProgress.length > 0) {
+		console.log('Artifacts in progress:', artifactsInProgress.map(a => a.name).join(', '));
+	}
+
+	const results = await resultPromise;
+
+	for (let i = 0; i < operations.length; i++) {
+		const result = results[i];
+
+		if (result.status === 'rejected') {
+			console.error(`[${operations[i].name}]`, result.reason);
+		}
+	}
+
+	if (results.some(r => r.status === 'rejected')) {
+		throw new Error('Some artifacts failed to publish');
+	}
+
+	console.log(`All ${done.size} artifacts published!`);
 }
 if (require.main === module) {
     main().then(() => {

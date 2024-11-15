@@ -4,7 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import type { Terminal as RawXtermTerminal } from '@xterm/xterm';
 import { KeyCode, KeyMod } from '../../../../../base/common/keyCodes.js';
-import { DisposableStore } from '../../../../../base/common/lifecycle.js';
+import { DisposableStore, MutableDisposable } from '../../../../../base/common/lifecycle.js';
 import { localize2 } from '../../../../../nls.js';
 import { InstantiationType, registerSingleton } from '../../../../../platform/instantiation/common/extensions.js';
 import { IInstantiationService } from '../../../../../platform/instantiation/common/instantiation.js';
@@ -23,39 +23,50 @@ registerSingleton(ITerminalQuickFixService, TerminalQuickFixService, Instantiati
 // #endregion
 // #region Contributions
 class TerminalQuickFixContribution extends DisposableStore implements ITerminalContribution {
-    static readonly ID = 'quickFix';
-    static get(instance: ITerminalInstance): TerminalQuickFixContribution | null {
-        return instance.getContribution<TerminalQuickFixContribution>(TerminalQuickFixContribution.ID);
-    }
-    private _addon?: TerminalQuickFixAddon;
-    get addon(): TerminalQuickFixAddon | undefined { return this._addon; }
-    constructor(private readonly _ctx: ITerminalContributionContext, 
-    @IInstantiationService
-    private readonly _instantiationService: IInstantiationService) {
-        super();
-    }
-    xtermReady(xterm: IXtermTerminal & {
-        raw: RawXtermTerminal;
-    }): void {
-        // Create addon
-        this._addon = this._instantiationService.createInstance(TerminalQuickFixAddon, undefined, this._ctx.instance.capabilities);
-        xterm.raw.loadAddon(this._addon);
-        // Hook up listeners
-        this.add(this._addon.onDidRequestRerunCommand((e) => this._ctx.instance.runCommand(e.command, e.shouldExecute || false)));
-        // Register quick fixes
-        for (const actionOption of [
-            gitTwoDashes(),
-            gitFastForwardPull(),
-            freePort((port: string, command: string) => this._ctx.instance.freePortKillProcess(port, command)),
-            gitSimilar(),
-            gitPushSetUpstream(),
-            gitCreatePr(),
-            pwshUnixCommandNotFoundError(),
-            pwshGeneralError()
-        ]) {
-            this._addon.registerCommandFinishedListener(actionOption);
-        }
-    }
+	static readonly ID = 'quickFix';
+
+	static get(instance: ITerminalInstance): TerminalQuickFixContribution | null {
+		return instance.getContribution<TerminalQuickFixContribution>(TerminalQuickFixContribution.ID);
+	}
+
+	private _addon?: TerminalQuickFixAddon;
+	get addon(): TerminalQuickFixAddon | undefined { return this._addon; }
+
+	private readonly _quickFixMenuItems = this.add(new MutableDisposable());
+
+	constructor(
+		private readonly _ctx: ITerminalContributionContext,
+		@IInstantiationService private readonly _instantiationService: IInstantiationService,
+	) {
+		super();
+	}
+
+	xtermReady(xterm: IXtermTerminal & { raw: RawXtermTerminal }): void {
+		// Create addon
+		this._addon = this._instantiationService.createInstance(TerminalQuickFixAddon, undefined, this._ctx.instance.capabilities);
+		xterm.raw.loadAddon(this._addon);
+
+		// Hook up listeners
+		this.add(this._addon.onDidRequestRerunCommand((e) => this._ctx.instance.runCommand(e.command, e.shouldExecute || false)));
+		this.add(this._addon.onDidUpdateQuickFixes(e => {
+			// Only track the latest command's quick fixes
+			this._quickFixMenuItems.value = e.actions ? xterm.decorationAddon.registerMenuItems(e.command, e.actions) : undefined;
+		}));
+
+		// Register quick fixes
+		for (const actionOption of [
+			gitTwoDashes(),
+			gitFastForwardPull(),
+			freePort((port: string, command: string) => this._ctx.instance.freePortKillProcess(port, command)),
+			gitSimilar(),
+			gitPushSetUpstream(),
+			gitCreatePr(),
+			pwshUnixCommandNotFoundError(),
+			pwshGeneralError()
+		]) {
+			this._addon.registerCommandFinishedListener(actionOption);
+		}
+	}
 }
 registerTerminalContribution(TerminalQuickFixContribution.ID, TerminalQuickFixContribution);
 // #endregion

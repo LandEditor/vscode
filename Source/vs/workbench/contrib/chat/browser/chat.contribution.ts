@@ -43,7 +43,7 @@ import { registerChatCodeBlockActions, registerChatCodeCompareBlockActions } fro
 import { registerChatContextActions } from './actions/chatContextActions.js';
 import { registerChatCopyActions } from './actions/chatCopyActions.js';
 import { registerChatDeveloperActions } from './actions/chatDeveloperActions.js';
-import { SubmitAction, registerChatExecuteActions } from './actions/chatExecuteActions.js';
+import { ChatSubmitAction, registerChatExecuteActions } from './actions/chatExecuteActions.js';
 import { registerChatFileTreeActions } from './actions/chatFileTreeActions.js';
 import { registerChatExportActions } from './actions/chatImportExport.js';
 import { registerMoveActions } from './actions/chatMoveActions.js';
@@ -76,75 +76,83 @@ import { ChatViewsWelcomeHandler } from './viewsWelcome/chatViewsWelcomeContribu
 import { ILanguageModelIgnoredFilesService, LanguageModelIgnoredFilesService } from '../common/ignoredFiles.js';
 import { ChatGettingStartedContribution } from './actions/chatGettingStarted.js';
 import { Extensions, IConfigurationMigrationRegistry } from '../../../common/configuration.js';
+import { ChatEditorOverlayController } from './chatEditorOverlay.js';
+
 // Register configuration
 const configurationRegistry = Registry.as<IConfigurationRegistry>(ConfigurationExtensions.Configuration);
 configurationRegistry.registerConfiguration({
-    id: 'chatSidebar',
-    title: nls.localize('interactiveSessionConfigurationTitle', "Chat"),
-    type: 'object',
-    properties: {
-        'chat.editor.fontSize': {
-            type: 'number',
-            description: nls.localize('interactiveSession.editor.fontSize', "Controls the font size in pixels in chat codeblocks."),
-            default: isMacintosh ? 12 : 14,
-        },
-        'chat.editor.fontFamily': {
-            type: 'string',
-            description: nls.localize('interactiveSession.editor.fontFamily', "Controls the font family in chat codeblocks."),
-            default: 'default'
-        },
-        'chat.editor.fontWeight': {
-            type: 'string',
-            description: nls.localize('interactiveSession.editor.fontWeight', "Controls the font weight in chat codeblocks."),
-            default: 'default'
-        },
-        'chat.editor.wordWrap': {
-            type: 'string',
-            description: nls.localize('interactiveSession.editor.wordWrap', "Controls whether lines should wrap in chat codeblocks."),
-            default: 'off',
-            enum: ['on', 'off']
-        },
-        'chat.editor.lineHeight': {
-            type: 'number',
-            description: nls.localize('interactiveSession.editor.lineHeight', "Controls the line height in pixels in chat codeblocks. Use 0 to compute the line height from the font size."),
-            default: 0
-        },
-        'chat.commandCenter.enabled': {
-            type: 'boolean',
-            tags: ['preview'],
-            markdownDescription: nls.localize('chat.commandCenter.enabled', "Controls whether the command center shows a menu for chat actions (requires {0}).", '`#window.commandCenter#`'),
-            default: true
-        },
-        'chat.editing.alwaysSaveWithGeneratedChanges': {
-            type: 'boolean',
-            scope: ConfigurationScope.APPLICATION,
-            markdownDescription: nls.localize('chat.editing.alwaysSaveWithGeneratedChanges', "Whether to always ask before saving files with changes made by chat."),
-            default: false,
-        },
-        'chat.editing.confirmEditRequestRemoval': {
-            type: 'boolean',
-            scope: ConfigurationScope.APPLICATION,
-            markdownDescription: nls.localize('chat.editing.confirmEditRequestRemoval', "Whether to show a confirmation before removing a request and its associated edits."),
-            default: true,
-        },
-        'chat.editing.confirmEditRequestRetry': {
-            type: 'boolean',
-            scope: ConfigurationScope.APPLICATION,
-            markdownDescription: nls.localize('chat.editing.confirmEditRequestRetry', "Whether to show a confirmation before retrying a request and its associated edits."),
-            default: true,
-        },
-        'chat.experimental.detectParticipant.enabled': {
-            type: 'boolean',
-            deprecationMessage: nls.localize('chat.experimental.detectParticipant.enabled.deprecated', "This setting is deprecated. Please use `chat.detectParticipant.enabled` instead."),
-            description: nls.localize('chat.experimental.detectParticipant.enabled', "Enables chat participant autodetection for panel chat."),
-            default: null
-        },
-        'chat.detectParticipant.enabled': {
-            type: 'boolean',
-            description: nls.localize('chat.detectParticipant.enabled', "Enables chat participant autodetection for panel chat."),
-            default: true
-        },
-    }
+	id: 'chatSidebar',
+	title: nls.localize('interactiveSessionConfigurationTitle', "Chat"),
+	type: 'object',
+	properties: {
+		'chat.editor.fontSize': {
+			type: 'number',
+			description: nls.localize('interactiveSession.editor.fontSize', "Controls the font size in pixels in chat codeblocks."),
+			default: isMacintosh ? 12 : 14,
+		},
+		'chat.editor.fontFamily': {
+			type: 'string',
+			description: nls.localize('interactiveSession.editor.fontFamily', "Controls the font family in chat codeblocks."),
+			default: 'default'
+		},
+		'chat.editor.fontWeight': {
+			type: 'string',
+			description: nls.localize('interactiveSession.editor.fontWeight', "Controls the font weight in chat codeblocks."),
+			default: 'default'
+		},
+		'chat.editor.wordWrap': {
+			type: 'string',
+			description: nls.localize('interactiveSession.editor.wordWrap', "Controls whether lines should wrap in chat codeblocks."),
+			default: 'off',
+			enum: ['on', 'off']
+		},
+		'chat.editor.lineHeight': {
+			type: 'number',
+			description: nls.localize('interactiveSession.editor.lineHeight', "Controls the line height in pixels in chat codeblocks. Use 0 to compute the line height from the font size."),
+			default: 0
+		},
+		'chat.commandCenter.enabled': {
+			type: 'boolean',
+			tags: ['preview'],
+			markdownDescription: nls.localize('chat.commandCenter.enabled', "Controls whether the command center shows a menu for chat actions (requires {0}).", '`#window.commandCenter#`'),
+			default: true
+		},
+		'chat.experimental.offerSetup': {
+			type: 'boolean',
+			default: false,
+			markdownDescription: nls.localize('chat.experimental.offerSetup', "Controls whether setup is offered for Chat if not done already."),
+			tags: ['experimental', 'onExP']
+		},
+		'chat.editing.alwaysSaveWithGeneratedChanges': {
+			type: 'boolean',
+			scope: ConfigurationScope.APPLICATION,
+			markdownDescription: nls.localize('chat.editing.alwaysSaveWithGeneratedChanges', "Whether to always ask before saving files with changes made by chat."),
+			default: false,
+		},
+		'chat.editing.confirmEditRequestRemoval': {
+			type: 'boolean',
+			scope: ConfigurationScope.APPLICATION,
+			markdownDescription: nls.localize('chat.editing.confirmEditRequestRemoval', "Whether to show a confirmation before removing a request and its associated edits."),
+			default: true,
+		},
+		'chat.editing.confirmEditRequestRetry': {
+			type: 'boolean',
+			scope: ConfigurationScope.APPLICATION,
+			markdownDescription: nls.localize('chat.editing.confirmEditRequestRetry', "Whether to show a confirmation before retrying a request and its associated edits."),
+			default: true,
+		},
+		'chat.experimental.detectParticipant.enabled': {
+			type: 'boolean',
+			deprecationMessage: nls.localize('chat.experimental.detectParticipant.enabled.deprecated', "This setting is deprecated. Please use `chat.detectParticipant.enabled` instead."),
+			description: nls.localize('chat.experimental.detectParticipant.enabled', "Enables chat participant autodetection for panel chat."),
+			default: null
+		},
+		'chat.detectParticipant.enabled': {
+			type: 'boolean',
+			description: nls.localize('chat.detectParticipant.enabled', "Enables chat participant autodetection for panel chat."),
+			default: true
+		},
+	}
 });
 Registry.as<IEditorPaneRegistry>(EditorExtensions.EditorPane).registerEditorPane(EditorPaneDescriptor.create(ChatEditor, ChatEditorInput.EditorID, nls.localize('chat', "Chat")), [
     new SyncDescriptor(ChatEditorInput)
@@ -184,96 +192,98 @@ AccessibleViewRegistry.register(new ChatResponseAccessibleView());
 AccessibleViewRegistry.register(new PanelChatAccessibilityHelp());
 AccessibleViewRegistry.register(new QuickChatAccessibilityHelp());
 class ChatSlashStaticSlashCommandsContribution extends Disposable {
-    static readonly ID = 'workbench.contrib.chatSlashStaticSlashCommands';
-    constructor(
-    @IChatSlashCommandService
-    slashCommandService: IChatSlashCommandService, 
-    @ICommandService
-    commandService: ICommandService, 
-    @IChatAgentService
-    chatAgentService: IChatAgentService, 
-    @IChatVariablesService
-    chatVariablesService: IChatVariablesService, 
-    @IInstantiationService
-    instantiationService: IInstantiationService) {
-        super();
-        this._store.add(slashCommandService.registerSlashCommand({
-            command: 'clear',
-            detail: nls.localize('clear', "Start a new chat"),
-            sortText: 'z2_clear',
-            executeImmediately: true,
-            locations: [ChatAgentLocation.Panel]
-        }, async () => {
-            commandService.executeCommand(ACTION_ID_NEW_CHAT);
-        }));
-        this._store.add(slashCommandService.registerSlashCommand({
-            command: 'help',
-            detail: '',
-            sortText: 'z1_help',
-            executeImmediately: true,
-            locations: [ChatAgentLocation.Panel]
-        }, async (prompt, progress) => {
-            const defaultAgent = chatAgentService.getDefaultAgent(ChatAgentLocation.Panel);
-            const agents = chatAgentService.getAgents();
-            // Report prefix
-            if (defaultAgent?.metadata.helpTextPrefix) {
-                if (isMarkdownString(defaultAgent.metadata.helpTextPrefix)) {
-                    progress.report({ content: defaultAgent.metadata.helpTextPrefix, kind: 'markdownContent' });
-                }
-                else {
-                    progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextPrefix), kind: 'markdownContent' });
-                }
-                progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
-            }
-            // Report agent list
-            const agentText = (await Promise.all(agents
-                .filter(a => a.id !== defaultAgent?.id)
-                .filter(a => a.locations.includes(ChatAgentLocation.Panel))
-                .map(async (a) => {
-                const description = a.description ? `- ${a.description}` : '';
-                const agentMarkdown = instantiationService.invokeFunction(accessor => agentToMarkdown(a, true, accessor));
-                const agentLine = `- ${agentMarkdown} ${description}`;
-                const commandText = a.slashCommands.map(c => {
-                    const description = c.description ? `- ${c.description}` : '';
-                    return `\t* ${agentSlashCommandToMarkdown(a, c)} ${description}`;
-                }).join('\n');
-                return (agentLine + '\n' + commandText).trim();
-            }))).join('\n');
-            progress.report({ content: new MarkdownString(agentText, { isTrusted: { enabledCommands: [SubmitAction.ID] } }), kind: 'markdownContent' });
-            // Report variables
-            if (defaultAgent?.metadata.helpTextVariablesPrefix) {
-                progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
-                if (isMarkdownString(defaultAgent.metadata.helpTextVariablesPrefix)) {
-                    progress.report({ content: defaultAgent.metadata.helpTextVariablesPrefix, kind: 'markdownContent' });
-                }
-                else {
-                    progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextVariablesPrefix), kind: 'markdownContent' });
-                }
-                const variables = [
-                    ...chatVariablesService.getVariables(ChatAgentLocation.Panel),
-                    { name: 'file', description: nls.localize('file', "Choose a file in the workspace") }
-                ];
-                const variableText = variables
-                    .map(v => `* \`${chatVariableLeader}${v.name}\` - ${v.description}`)
-                    .join('\n');
-                progress.report({ content: new MarkdownString('\n' + variableText), kind: 'markdownContent' });
-            }
-            // Report help text ending
-            if (defaultAgent?.metadata.helpTextPostfix) {
-                progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
-                if (isMarkdownString(defaultAgent.metadata.helpTextPostfix)) {
-                    progress.report({ content: defaultAgent.metadata.helpTextPostfix, kind: 'markdownContent' });
-                }
-                else {
-                    progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextPostfix), kind: 'markdownContent' });
-                }
-            }
-            // Without this, the response will be done before it renders and so it will not stream. This ensures that if the response starts
-            // rendering during the next 200ms, then it will be streamed. Once it starts streaming, the whole response streams even after
-            // it has received all response data has been received.
-            await timeout(200);
-        }));
-    }
+
+	static readonly ID = 'workbench.contrib.chatSlashStaticSlashCommands';
+
+	constructor(
+		@IChatSlashCommandService slashCommandService: IChatSlashCommandService,
+		@ICommandService commandService: ICommandService,
+		@IChatAgentService chatAgentService: IChatAgentService,
+		@IChatVariablesService chatVariablesService: IChatVariablesService,
+		@IInstantiationService instantiationService: IInstantiationService,
+	) {
+		super();
+		this._store.add(slashCommandService.registerSlashCommand({
+			command: 'clear',
+			detail: nls.localize('clear', "Start a new chat"),
+			sortText: 'z2_clear',
+			executeImmediately: true,
+			locations: [ChatAgentLocation.Panel]
+		}, async () => {
+			commandService.executeCommand(ACTION_ID_NEW_CHAT);
+		}));
+		this._store.add(slashCommandService.registerSlashCommand({
+			command: 'help',
+			detail: '',
+			sortText: 'z1_help',
+			executeImmediately: true,
+			locations: [ChatAgentLocation.Panel]
+		}, async (prompt, progress) => {
+			const defaultAgent = chatAgentService.getDefaultAgent(ChatAgentLocation.Panel);
+			const agents = chatAgentService.getAgents();
+
+			// Report prefix
+			if (defaultAgent?.metadata.helpTextPrefix) {
+				if (isMarkdownString(defaultAgent.metadata.helpTextPrefix)) {
+					progress.report({ content: defaultAgent.metadata.helpTextPrefix, kind: 'markdownContent' });
+				} else {
+					progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextPrefix), kind: 'markdownContent' });
+				}
+				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+			}
+
+			// Report agent list
+			const agentText = (await Promise.all(agents
+				.filter(a => a.id !== defaultAgent?.id)
+				.filter(a => a.locations.includes(ChatAgentLocation.Panel))
+				.map(async a => {
+					const description = a.description ? `- ${a.description}` : '';
+					const agentMarkdown = instantiationService.invokeFunction(accessor => agentToMarkdown(a, true, accessor));
+					const agentLine = `- ${agentMarkdown} ${description}`;
+					const commandText = a.slashCommands.map(c => {
+						const description = c.description ? `- ${c.description}` : '';
+						return `\t* ${agentSlashCommandToMarkdown(a, c)} ${description}`;
+					}).join('\n');
+
+					return (agentLine + '\n' + commandText).trim();
+				}))).join('\n');
+			progress.report({ content: new MarkdownString(agentText, { isTrusted: { enabledCommands: [ChatSubmitAction.ID] } }), kind: 'markdownContent' });
+
+			// Report variables
+			if (defaultAgent?.metadata.helpTextVariablesPrefix) {
+				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+				if (isMarkdownString(defaultAgent.metadata.helpTextVariablesPrefix)) {
+					progress.report({ content: defaultAgent.metadata.helpTextVariablesPrefix, kind: 'markdownContent' });
+				} else {
+					progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextVariablesPrefix), kind: 'markdownContent' });
+				}
+
+				const variables = [
+					...chatVariablesService.getVariables(ChatAgentLocation.Panel),
+					{ name: 'file', description: nls.localize('file', "Choose a file in the workspace") }
+				];
+				const variableText = variables
+					.map(v => `* \`${chatVariableLeader}${v.name}\` - ${v.description}`)
+					.join('\n');
+				progress.report({ content: new MarkdownString('\n' + variableText), kind: 'markdownContent' });
+			}
+
+			// Report help text ending
+			if (defaultAgent?.metadata.helpTextPostfix) {
+				progress.report({ content: new MarkdownString('\n\n'), kind: 'markdownContent' });
+				if (isMarkdownString(defaultAgent.metadata.helpTextPostfix)) {
+					progress.report({ content: defaultAgent.metadata.helpTextPostfix, kind: 'markdownContent' });
+				} else {
+					progress.report({ content: new MarkdownString(defaultAgent.metadata.helpTextPostfix), kind: 'markdownContent' });
+				}
+			}
+
+			// Without this, the response will be done before it renders and so it will not stream. This ensures that if the response starts
+			// rendering during the next 200ms, then it will be streamed. Once it starts streaming, the whole response streams even after
+			// it has received all response data has been received.
+			await timeout(200);
+		}));
+	}
 }
 Registry.as<IEditorFactoryRegistry>(EditorExtensions.EditorFactory).registerEditorSerializer(ChatEditorInput.TypeID, ChatEditorInputSerializer);
 registerWorkbenchContribution2(ChatResolverContribution.ID, ChatResolverContribution, WorkbenchPhase.BlockStartup);
@@ -302,6 +312,8 @@ registerChatDeveloperActions();
 registerChatEditorActions();
 registerEditorFeature(ChatPasteProvidersFeature);
 registerEditorContribution(ChatEditorController.ID, ChatEditorController, EditorContributionInstantiation.Eventually);
+registerEditorContribution(ChatEditorOverlayController.ID, ChatEditorOverlayController, EditorContributionInstantiation.Eventually);
+
 registerSingleton(IChatService, ChatService, InstantiationType.Delayed);
 registerSingleton(IChatWidgetService, ChatWidgetService, InstantiationType.Delayed);
 registerSingleton(IQuickChatService, QuickChatService, InstantiationType.Delayed);

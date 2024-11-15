@@ -11,10 +11,11 @@ export const enum ChatViewsWelcomeExtensions {
     ChatViewsWelcomeRegistry = 'workbench.registry.chat.viewsWelcome'
 }
 export interface IChatViewsWelcomeDescriptor {
-    icon?: ThemeIcon;
-    title: string;
-    content: IMarkdownString;
-    when: ContextKeyExpression;
+	icon?: ThemeIcon;
+	title: string;
+	content: IMarkdownString;
+	progress?: string; // TODO@bpasero remove me if not used anymore
+	when: ContextKeyExpression;
 }
 export interface IChatViewsWelcomeContributionRegistry {
     onDidChange: Event<void>;

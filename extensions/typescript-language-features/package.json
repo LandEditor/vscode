@@ -40,71 +40,6 @@
 				"language": "typescriptreact"
 			}
 		],
-		"codeActions": [
-			{
-				"actions": [
-					{
-						"description": "%codeActions.refactor.extract.constant.description%",
-						"kind": "refactor.extract.constant",
-						"title": "%codeActions.refactor.extract.constant.title%"
-					},
-					{
-						"description": "%codeActions.refactor.extract.function.description%",
-						"kind": "refactor.extract.function",
-						"title": "%codeActions.refactor.extract.function.title%"
-					},
-					{
-						"description": "%codeActions.refactor.extract.interface.description%",
-						"kind": "refactor.extract.interface",
-						"title": "%codeActions.refactor.extract.interface.title%"
-					},
-					{
-						"description": "%codeActions.refactor.extract.type.description%",
-						"kind": "refactor.extract.type",
-						"title": "%codeActions.refactor.extract.type.title%"
-					},
-					{
-						"description": "%codeActions.refactor.rewrite.import.description%",
-						"kind": "refactor.rewrite.import",
-						"title": "%codeActions.refactor.rewrite.import.title%"
-					},
-					{
-						"description": "%codeActions.refactor.rewrite.export.description%",
-						"kind": "refactor.rewrite.export",
-						"title": "%codeActions.refactor.rewrite.export.title%"
-					},
-					{
-						"description": "%codeActions.refactor.rewrite.arrow.braces.description%",
-						"kind": "refactor.rewrite.arrow.braces",
-						"title": "%codeActions.refactor.rewrite.arrow.braces.title%"
-					},
-					{
-						"kind": "refactor.rewrite.parameters.toDestructured",
-						"title": "%codeActions.refactor.rewrite.parameters.toDestructured.title%"
-					},
-					{
-						"description": "%codeActions.refactor.rewrite.property.generateAccessors.description%",
-						"kind": "refactor.rewrite.property.generateAccessors",
-						"title": "%codeActions.refactor.rewrite.property.generateAccessors.title%"
-					},
-					{
-						"description": "%codeActions.refactor.move.newFile.description%",
-						"kind": "refactor.move.newFile",
-						"title": "%codeActions.refactor.move.newFile.title%"
-					},
-					{
-						"kind": "source.organizeImports",
-						"title": "%codeActions.source.organizeImports.title%"
-					}
-				],
-				"languages": [
-					"javascript",
-					"javascriptreact",
-					"typescript",
-					"typescriptreact"
-				]
-			}
-		],
 		"commands": [
 			{
 				"category": "TypeScript",
@@ -179,15 +114,6 @@
 					"default": true,
 					"description": "%typescript.autoClosingTags%",
 					"scope": "language-overridable",
-					"type": "boolean"
-				},
-				"javascript.experimental.updateImportsOnPaste": {
-					"default": false,
-					"description": "%configuration.updateImportsOnPaste%",
-					"scope": "window",
-					"tags": [
-						"experimental"
-					],
 					"type": "boolean"
 				},
 				"javascript.format.enable": {
@@ -469,6 +395,11 @@
 								"lower"
 							],
 							"markdownDescription": "%typescript.preferences.organizeImports.caseFirst%",
+							"markdownEnumDescriptions": [
+								"%typescript.preferences.organizeImports.caseFirst.default%",
+								"%typescript.preferences.organizeImports.caseFirst.upper%",
+								"%typescript.preferences.organizeImports.caseFirst.lower%"
+							],
 							"type": "string"
 						},
 						"caseSensitivity": {
@@ -478,6 +409,7 @@
 								"caseInsensitive",
 								"caseSensitive"
 							],
+							"markdownDescription": "%typescript.preferences.organizeImports.caseSensitivity%",
 							"markdownEnumDescriptions": [
 								"%typescript.preferences.organizeImports.caseSensitivity.auto%",
 								"%typescript.preferences.organizeImports.caseSensitivity.insensitive",
@@ -501,6 +433,7 @@
 								"inline",
 								"first"
 							],
+							"markdownDescription": "%typescript.preferences.organizeImports.typeOrder%",
 							"markdownEnumDescriptions": [
 								"%typescript.preferences.organizeImports.typeOrder.auto%",
 								"%typescript.preferences.organizeImports.typeOrder.last%",
@@ -515,6 +448,7 @@
 								"ordinal",
 								"unicode"
 							],
+							"markdownDescription": "%typescript.preferences.organizeImports.unicodeCollation%",
 							"markdownEnumDescriptions": [
 								"%typescript.preferences.organizeImports.unicodeCollation.ordinal%",
 								"%typescript.preferences.organizeImports.unicodeCollation.unicode%"
@@ -653,6 +587,12 @@
 					"scope": "resource",
 					"type": "string"
 				},
+				"javascript.updateImportsOnPaste.enabled": {
+					"default": true,
+					"markdownDescription": "%configuration.updateImportsOnPaste%",
+					"scope": "window",
+					"type": "boolean"
+				},
 				"javascript.validate.enable": {
 					"default": true,
 					"description": "%javascript.validate.enable%",
@@ -755,15 +695,6 @@
 				"typescript.experimental.expandableHover": {
 					"default": false,
 					"description": "%configuration.expandableHover%",
-					"scope": "window",
-					"tags": [
-						"experimental"
-					],
-					"type": "boolean"
-				},
-				"typescript.experimental.updateImportsOnPaste": {
-					"default": false,
-					"description": "%configuration.updateImportsOnPaste%",
 					"scope": "window",
 					"tags": [
 						"experimental"
@@ -1112,6 +1043,11 @@
 								"lower"
 							],
 							"markdownDescription": "%typescript.preferences.organizeImports.caseFirst%",
+							"markdownEnumDescriptions": [
+								"%typescript.preferences.organizeImports.caseFirst.default%",
+								"%typescript.preferences.organizeImports.caseFirst.upper%",
+								"%typescript.preferences.organizeImports.caseFirst.lower%"
+							],
 							"type": "string"
 						},
 						"caseSensitivity": {
@@ -1121,6 +1057,7 @@
 								"caseInsensitive",
 								"caseSensitive"
 							],
+							"markdownDescription": "%typescript.preferences.organizeImports.caseSensitivity%",
 							"markdownEnumDescriptions": [
 								"%typescript.preferences.organizeImports.caseSensitivity.auto%",
 								"%typescript.preferences.organizeImports.caseSensitivity.insensitive",
@@ -1144,6 +1081,7 @@
 								"inline",
 								"first"
 							],
+							"markdownDescription": "%typescript.preferences.organizeImports.typeOrder%",
 							"markdownEnumDescriptions": [
 								"%typescript.preferences.organizeImports.typeOrder.auto%",
 								"%typescript.preferences.organizeImports.typeOrder.last%",
@@ -1158,6 +1096,7 @@
 								"ordinal",
 								"unicode"
 							],
+							"markdownDescription": "%typescript.preferences.organizeImports.unicodeCollation%",
 							"markdownEnumDescriptions": [
 								"%typescript.preferences.organizeImports.unicodeCollation.ordinal%",
 								"%typescript.preferences.organizeImports.unicodeCollation.unicode%"
@@ -1511,6 +1450,12 @@
 					"scope": "resource",
 					"type": "string"
 				},
+				"typescript.updateImportsOnPaste.enabled": {
+					"default": true,
+					"markdownDescription": "%configuration.updateImportsOnPaste%",
+					"scope": "window",
+					"type": "boolean"
+				},
 				"typescript.validate.enable": {
 					"default": true,
 					"description": "%typescript.validate.enable%",
@@ -1801,13 +1746,13 @@
 		]
 	},
 	"dependencies": {
-		"jsonc-parser": "3.3.1",
+		"jsonc-parser": "^3.3.1",
 		"semver": "7.6.3"
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.8.7",
-		"@types/semver": "7.5.8"
+		"@types/node": "22.x",
+		"@types/semver": "^7.5.8"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [

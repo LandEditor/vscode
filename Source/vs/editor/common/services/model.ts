@@ -11,17 +11,23 @@ import { DocumentSemanticTokensProvider, DocumentRangeSemanticTokensProvider } f
 export const IModelService = createDecorator<IModelService>('modelService');
 export type DocumentTokensProvider = DocumentSemanticTokensProvider | DocumentRangeSemanticTokensProvider;
 export interface IModelService {
-    readonly _serviceBrand: undefined;
-    createModel(value: string | ITextBufferFactory, languageSelection: ILanguageSelection | null, resource?: URI, isForSimpleWidget?: boolean): ITextModel;
-    updateModel(model: ITextModel, value: string | ITextBufferFactory): void;
-    destroyModel(resource: URI): void;
-    getModels(): ITextModel[];
-    getCreationOptions(language: string, resource: URI, isForSimpleWidget: boolean): ITextModelCreationOptions;
-    getModel(resource: URI): ITextModel | null;
-    onModelAdded: Event<ITextModel>;
-    onModelRemoved: Event<ITextModel>;
-    onModelLanguageChanged: Event<{
-        model: ITextModel;
-        oldLanguageId: string;
-    }>;
+	readonly _serviceBrand: undefined;
+
+	createModel(value: string | ITextBufferFactory, languageSelection: ILanguageSelection | null, resource?: URI, isForSimpleWidget?: boolean): ITextModel;
+
+	updateModel(model: ITextModel, value: string | ITextBufferFactory): void;
+
+	destroyModel(resource: URI): void;
+
+	getModels(): ITextModel[];
+
+	getCreationOptions(language: string, resource: URI, isForSimpleWidget: boolean): ITextModelCreationOptions;
+
+	getModel(resource: URI): ITextModel | null;
+
+	readonly onModelAdded: Event<ITextModel>;
+
+	readonly onModelRemoved: Event<ITextModel>;
+
+	readonly onModelLanguageChanged: Event<{ readonly model: ITextModel; readonly oldLanguageId: string }>;
 }

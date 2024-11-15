@@ -236,11 +236,12 @@ export function fromGithub({ name, version, repo, sha256, metadata }: IExtension
         .pipe(packageJsonFilter.restore);
 }
 const excludedExtensions = [
-    'vscode-api-tests',
-    'vscode-colorize-tests',
-    'vscode-test-resolver',
-    'ms-vscode.node-debug',
-    'ms-vscode.node-debug2',
+	'vscode-api-tests',
+	'vscode-colorize-tests',
+	'vscode-colorize-perf-tests',
+	'vscode-test-resolver',
+	'ms-vscode.node-debug',
+	'ms-vscode.node-debug2',
 ];
 const marketplaceWebExtensionsExclude = new Set([
     'ms-vscode.node-debug',
