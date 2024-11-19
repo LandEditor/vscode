@@ -36,6 +36,7 @@ interface Params {
     readonly toolVersion: string;
 }
 function getParams(type: string): Params[] {
+<<<<<<< HEAD
     switch (type) {
         case 'sign-windows':
             return [
@@ -113,6 +114,99 @@ function getParams(type: string): Params[] {
         default:
             throw new Error(`Sign type ${type} not found`);
     }
+=======
+	switch (type) {
+		case 'sign-windows':
+			return [
+				{
+					keyCode: 'CP-230012',
+					operationSetCode: 'SigntoolSign',
+					parameters: [
+						{ parameterName: 'OpusName', parameterValue: 'VS Code' },
+						{ parameterName: 'OpusInfo', parameterValue: 'https://code.visualstudio.com/' },
+						{ parameterName: 'Append', parameterValue: '/as' },
+						{ parameterName: 'FileDigest', parameterValue: '/fd "SHA256"' },
+						{ parameterName: 'PageHash', parameterValue: '/NPH' },
+						{ parameterName: 'TimeStamp', parameterValue: '/tr "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer" /td sha256' }
+					],
+					toolName: 'sign',
+					toolVersion: '1.0'
+				},
+				{
+					keyCode: 'CP-230012',
+					operationSetCode: 'SigntoolVerify',
+					parameters: [
+						{ parameterName: 'VerifyAll', parameterValue: '/all' }
+					],
+					toolName: 'sign',
+					toolVersion: '1.0'
+				}
+			];
+		case 'sign-windows-appx':
+			return [
+				{
+					keyCode: 'CP-229979',
+					operationSetCode: 'SigntoolSign',
+					parameters: [
+						{ parameterName: 'OpusName', parameterValue: 'VS Code' },
+						{ parameterName: 'OpusInfo', parameterValue: 'https://code.visualstudio.com/' },
+						{ parameterName: 'FileDigest', parameterValue: '/fd "SHA256"' },
+						{ parameterName: 'PageHash', parameterValue: '/NPH' },
+						{ parameterName: 'TimeStamp', parameterValue: '/tr "http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer" /td sha256' }
+					],
+					toolName: 'sign',
+					toolVersion: '1.0'
+				},
+				{
+					keyCode: 'CP-229979',
+					operationSetCode: 'SigntoolVerify',
+					parameters: [],
+					toolName: 'sign',
+					toolVersion: '1.0'
+				}
+			];
+		case 'sign-pgp':
+			return [{
+				keyCode: 'CP-450779-Pgp',
+				operationSetCode: 'LinuxSign',
+				parameters: [],
+				toolName: 'sign',
+				toolVersion: '1.0'
+			}];
+		case 'sign-darwin':
+			return [{
+				keyCode: 'CP-401337-Apple',
+				operationSetCode: 'MacAppDeveloperSign',
+				parameters: [{ parameterName: 'Hardening', parameterValue: '--options=runtime' }],
+				toolName: 'sign',
+				toolVersion: '1.0'
+			}];
+		case 'notarize-darwin':
+			return [{
+				keyCode: 'CP-401337-Apple',
+				operationSetCode: 'MacAppNotarize',
+				parameters: [],
+				toolName: 'sign',
+				toolVersion: '1.0'
+			}];
+		case 'nuget':
+			return [{
+				keyCode: 'CP-401405',
+				operationSetCode: 'NuGetSign',
+				parameters: [],
+				toolName: 'sign',
+				toolVersion: '1.0'
+			}, {
+				keyCode: 'CP-401405',
+				operationSetCode: 'NuGetVerify',
+				parameters: [],
+				toolName: 'sign',
+				toolVersion: '1.0'
+			}];
+		default:
+			throw new Error(`Sign type ${type} not found`);
+	}
+>>>>>>> 3175b54dd48 (update sign codes (#234183))
 }
 
 export function main([esrpCliPath, type, folderPath, pattern]: string[]) {
