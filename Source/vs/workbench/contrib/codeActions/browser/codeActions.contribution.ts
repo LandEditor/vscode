@@ -7,20 +7,11 @@ import { Registry } from '../../../../platform/registry/common/platform.js';
 import { IWorkbenchContributionsRegistry, Extensions as WorkbenchExtensions } from '../../../common/contributions.js';
 import { LifecyclePhase } from '../../../services/lifecycle/common/lifecycle.js';
 import { CodeActionsContribution, editorConfiguration, notebookEditorConfiguration } from './codeActionsContribution.js';
-import { CodeActionDocumentationContribution } from './documentationContribution.js';
-const codeActionsExtensionPoint = ExtensionsRegistry.registerExtensionPoint<CodeActionsExtensionPoint[]>(codeActionsExtensionPointDescriptor);
-const documentationExtensionPoint = ExtensionsRegistry.registerExtensionPoint<DocumentationExtensionPoint>(documentationExtensionPointDescriptor);
+
 Registry.as<IConfigurationRegistry>(Extensions.Configuration)
     .registerConfiguration(editorConfiguration);
 Registry.as<IConfigurationRegistry>(Extensions.Configuration)
-    .registerConfiguration(notebookEditorConfiguration);
-class WorkbenchConfigurationContribution {
-    constructor(
-    @IInstantiationService
-    instantiationService: IInstantiationService) {
-        instantiationService.createInstance(CodeActionsContribution, codeActionsExtensionPoint);
-        instantiationService.createInstance(CodeActionDocumentationContribution, documentationExtensionPoint);
-    }
-}
+	.registerConfiguration(notebookEditorConfiguration);
+
 Registry.as<IWorkbenchContributionsRegistry>(WorkbenchExtensions.Workbench)
-    .registerWorkbenchContribution(WorkbenchConfigurationContribution, LifecyclePhase.Eventually);
+	.registerWorkbenchContribution(CodeActionsContribution, LifecyclePhase.Eventually);

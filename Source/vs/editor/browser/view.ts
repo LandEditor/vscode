@@ -62,6 +62,7 @@ import { IVisibleRangeProvider, TextAreaEditContext } from './controller/editCon
 import { NativeEditContext } from './controller/editContext/native/nativeEditContext.js';
 import { RulersGpu } from './viewParts/rulersGpu/rulersGpu.js';
 import { EditContext } from './controller/editContext/native/editContextFactory.js';
+import { GpuMarkOverlay } from './viewParts/gpuMark/gpuMark.js';
 
 
 export interface IContentWidgetData {
@@ -111,8 +112,10 @@ export class View extends ViewEventHandler {
 	// Actual mutable state
 	private _shouldRecomputeGlyphMarginLanes: boolean = false;
 	private _renderAnimationFrame: IDisposable | null;
+	private _ownerID: string;
 
 	constructor(
+		ownerID: string,
 		commandDelegate: ICommandDelegate,
 		configuration: IEditorConfiguration,
 		colorTheme: IColorTheme,
@@ -122,6 +125,7 @@ export class View extends ViewEventHandler {
 		@IInstantiationService private readonly _instantiationService: IInstantiationService
 	) {
 		super();
+		this._ownerID = ownerID;
 		this._selections = [new Selection(1, 1, 1, 1)];
 		this._renderAnimationFrame = null;
 
@@ -194,6 +198,9 @@ export class View extends ViewEventHandler {
 		marginViewOverlays.addDynamicOverlay(new MarginViewLineDecorationsOverlay(this._context));
 		marginViewOverlays.addDynamicOverlay(new LinesDecorationsOverlay(this._context));
 		marginViewOverlays.addDynamicOverlay(new LineNumbersOverlay(this._context));
+		if (this._viewGpuContext) {
+			marginViewOverlays.addDynamicOverlay(new GpuMarkOverlay(this._context));
+		}
 
 		// Glyph margin widgets
 		this._glyphMarginWidgets = new GlyphMarginWidgets(this._context);
@@ -270,8 +277,11 @@ export class View extends ViewEventHandler {
 	private _instantiateEditContext(experimentalEditContextEnabled: boolean): AbstractEditContext {
 		const domNode = dom.getWindow(this._overflowGuardContainer.domNode);
 		const isEditContextSupported = EditContext.supported(domNode);
-		const EditContextType = (experimentalEditContextEnabled && isEditContextSupported) ? NativeEditContext : TextAreaEditContext;
-		return this._instantiationService.createInstance(EditContextType, this._context, this._overflowGuardContainer, this._viewController, this._createTextAreaHandlerHelper());
+		if (experimentalEditContextEnabled && isEditContextSupported) {
+			return this._instantiationService.createInstance(NativeEditContext, this._ownerID, this._context, this._overflowGuardContainer, this._viewController, this._createTextAreaHandlerHelper());
+		} else {
+			return this._instantiationService.createInstance(TextAreaEditContext, this._context, this._overflowGuardContainer, this._viewController, this._createTextAreaHandlerHelper());
+		}
 	}
 
 	private _updateEditContext(): void {

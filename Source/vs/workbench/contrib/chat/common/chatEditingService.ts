@@ -63,34 +63,44 @@ export interface IChatRelatedFilesProvider {
 	readonly description: string;
 	provideRelatedFiles(chatRequest: IChatRequestDraft, token: CancellationToken): Promise<IChatRelatedFile[] | undefined>;
 }
+
+export interface WorkingSetDisplayMetadata { state: WorkingSetEntryState; description?: string }
+
 export interface IChatEditingSession {
-    readonly chatSessionId: string;
-    readonly onDidChange: Event<void>;
-    readonly onDidDispose: Event<void>;
-    readonly state: IObservable<ChatEditingSessionState>;
-    readonly entries: IObservable<readonly IModifiedFileEntry[]>;
-    readonly hiddenRequestIds: IObservable<readonly string[]>;
-    readonly workingSet: ResourceMap<WorkingSetEntryState>;
-    readonly isVisible: boolean;
-    addFileToWorkingSet(uri: URI): void;
-    show(): Promise<void>;
-    remove(...uris: URI[]): void;
-    accept(...uris: URI[]): Promise<void>;
-    reject(...uris: URI[]): Promise<void>;
-    /**
-     * Will lead to this object getting disposed
-     */
-    stop(): Promise<void>;
-    undoInteraction(): Promise<void>;
-    redoInteraction(): Promise<void>;
+	readonly chatSessionId: string;
+	readonly onDidChange: Event<ChatEditingSessionChangeType>;
+	readonly onDidDispose: Event<void>;
+	readonly state: IObservable<ChatEditingSessionState>;
+	readonly entries: IObservable<readonly IModifiedFileEntry[]>;
+	readonly hiddenRequestIds: IObservable<readonly string[]>;
+	readonly workingSet: ResourceMap<WorkingSetDisplayMetadata>;
+	readonly isVisible: boolean;
+	addFileToWorkingSet(uri: URI, description?: string, kind?: WorkingSetEntryState.Transient | WorkingSetEntryState.Suggested): void;
+	show(): Promise<void>;
+	remove(...uris: URI[]): void;
+	accept(...uris: URI[]): Promise<void>;
+	reject(...uris: URI[]): Promise<void>;
+	/**
+	 * Will lead to this object getting disposed
+	 */
+	stop(): Promise<void>;
+
+	undoInteraction(): Promise<void>;
+	redoInteraction(): Promise<void>;
 }
 export const enum WorkingSetEntryState {
-    Modified,
-    Accepted,
-    Rejected,
-    Transient,
-    Attached,
-    Sent
+	Modified,
+	Accepted,
+	Rejected,
+	Transient,
+	Attached,
+	Sent, // TODO@joyceerhl remove this
+	Suggested,
+}
+
+export const enum ChatEditingSessionChangeType {
+	WorkingSet,
+	Other,
 }
 export interface IModifiedFileEntry {
 	readonly originalURI: URI;

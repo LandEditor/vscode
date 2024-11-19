@@ -75,102 +75,118 @@ function fromLocal(extensionPath: string, forWeb: boolean, disableMangle: boolea
     return input;
 }
 function fromLocalWebpack(extensionPath: string, webpackConfigFileName: string, disableMangle: boolean): Stream {
-    const vsce = require('@vscode/vsce') as typeof import('@vscode/vsce');
-    const webpack = require('webpack');
-    const webpackGulp = require('webpack-stream');
-    const result = es.through();
-    const packagedDependencies: string[] = [];
-    const packageJsonConfig = require(path.join(extensionPath, 'package.json'));
-    if (packageJsonConfig.dependencies) {
-        const webpackRootConfig = require(path.join(extensionPath, webpackConfigFileName));
-        for (const key in webpackRootConfig.externals) {
-            if (key in packageJsonConfig.dependencies) {
-                packagedDependencies.push(key);
-            }
-        }
-    }
-    // TODO: add prune support based on packagedDependencies to vsce.PackageManager.Npm similar
-    // to vsce.PackageManager.Yarn.
-    // A static analysis showed there are no webpack externals that are dependencies of the current
-    // local extensions so we can use the vsce.PackageManager.None config to ignore dependencies list
-    // as a temporary workaround.
-    vsce.listFiles({ cwd: extensionPath, packageManager: vsce.PackageManager.None, packagedDependencies }).then(fileNames => {
-        const files = fileNames
-            .map(fileName => path.join(extensionPath, fileName))
-            .map(filePath => new File({
-            path: filePath,
-            stat: fs.statSync(filePath),
-            base: extensionPath,
-            contents: fs.createReadStream(filePath) as any
-        }));
-        // check for a webpack configuration files, then invoke webpack
-        // and merge its output with the files stream.
-        const webpackConfigLocations = (<string[]>glob.sync(path.join(extensionPath, '**', webpackConfigFileName), { ignore: ['**/node_modules'] }));
-        const webpackStreams = webpackConfigLocations.flatMap(webpackConfigPath => {
-            const webpackDone = (err: any, stats: any) => {
-                fancyLog(`Bundled extension: ${ansiColors.yellow(path.join(path.basename(extensionPath), path.relative(extensionPath, webpackConfigPath)))}...`);
-                if (err) {
-                    result.emit('error', err);
-                }
-                const { compilation } = stats;
-                if (compilation.errors.length > 0) {
-                    result.emit('error', compilation.errors.join('\n'));
-                }
-                if (compilation.warnings.length > 0) {
-                    result.emit('error', compilation.warnings.join('\n'));
-                }
-            };
-            const exportedConfig = require(webpackConfigPath);
-            return (Array.isArray(exportedConfig) ? exportedConfig : [exportedConfig]).map(config => {
-                const webpackConfig = {
-                    ...config,
-                    ...{ mode: 'production' }
-                };
-                if (disableMangle) {
-                    if (Array.isArray(config.module.rules)) {
-                        for (const rule of config.module.rules) {
-                            if (Array.isArray(rule.use)) {
-                                for (const use of rule.use) {
-                                    if (String(use.loader).endsWith('mangle-loader.js')) {
-                                        use.options.disabled = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                const relativeOutputPath = path.relative(extensionPath, webpackConfig.output.path);
-                return webpackGulp(webpackConfig, webpack, webpackDone)
-                    .pipe(es.through(function (data) {
-                    data.stat = data.stat || {};
-                    data.base = extensionPath;
-                    this.emit('data', data);
-                }))
-                    .pipe(es.through(function (data: File) {
-                    // source map handling:
-                    // * rewrite sourceMappingURL
-                    // * save to disk so that upload-task picks this up
-                    const contents = (<Buffer>data.contents).toString('utf8');
-                    data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
-                        return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
-                    }), 'utf8');
-                    this.emit('data', data);
-                }));
-            });
-        });
-        es.merge(...webpackStreams, es.readArray(files))
-            // .pipe(es.through(function (data) {
-            // 	// debug
-            // 	console.log('out', data.path, data.contents.length);
-            // 	this.emit('data', data);
-            // }))
-            .pipe(result);
-    }).catch(err => {
-        console.error(extensionPath);
-        console.error(packagedDependencies);
-        result.emit('error', err);
-    });
-    return result.pipe(createStatsStream(path.basename(extensionPath)));
+	const vsce = require('@vscode/vsce') as typeof import('@vscode/vsce');
+	const webpack = require('webpack');
+	const webpackGulp = require('webpack-stream');
+	const result = es.through();
+
+	const packagedDependencies: string[] = [];
+	const packageJsonConfig = require(path.join(extensionPath, 'package.json'));
+	if (packageJsonConfig.dependencies) {
+		const webpackRootConfig = require(path.join(extensionPath, webpackConfigFileName));
+		for (const key in webpackRootConfig.externals) {
+			if (key in packageJsonConfig.dependencies) {
+				packagedDependencies.push(key);
+			}
+		}
+	}
+
+	// TODO: add prune support based on packagedDependencies to vsce.PackageManager.Npm similar
+	// to vsce.PackageManager.Yarn.
+	// A static analysis showed there are no webpack externals that are dependencies of the current
+	// local extensions so we can use the vsce.PackageManager.None config to ignore dependencies list
+	// as a temporary workaround.
+	vsce.listFiles({ cwd: extensionPath, packageManager: vsce.PackageManager.None, packagedDependencies }).then(fileNames => {
+		const files = fileNames
+			.map(fileName => path.join(extensionPath, fileName))
+			.map(filePath => new File({
+				path: filePath,
+				stat: fs.statSync(filePath),
+				base: extensionPath,
+				contents: fs.createReadStream(filePath) as any
+			}));
+
+		// check for a webpack configuration files, then invoke webpack
+		// and merge its output with the files stream.
+		const webpackConfigLocations = (<string[]>glob.sync(
+			path.join(extensionPath, '**', webpackConfigFileName),
+			{ ignore: ['**/node_modules'] }
+		));
+
+		const webpackStreams = webpackConfigLocations.flatMap(webpackConfigPath => {
+
+			const webpackDone = (err: any, stats: any) => {
+				fancyLog(`Bundled extension: ${ansiColors.yellow(path.join(path.basename(extensionPath), path.relative(extensionPath, webpackConfigPath)))}...`);
+				if (err) {
+					result.emit('error', err);
+				}
+				const { compilation } = stats;
+				if (compilation.errors.length > 0) {
+					result.emit('error', compilation.errors.join('\n'));
+				}
+				if (compilation.warnings.length > 0) {
+					result.emit('error', compilation.warnings.join('\n'));
+				}
+			};
+
+			const exportedConfig = require(webpackConfigPath);
+			return (Array.isArray(exportedConfig) ? exportedConfig : [exportedConfig]).map(config => {
+				const webpackConfig = {
+					...config,
+					...{ mode: 'production' }
+				};
+				if (disableMangle) {
+					if (Array.isArray(config.module.rules)) {
+						for (const rule of config.module.rules) {
+							if (Array.isArray(rule.use)) {
+								for (const use of rule.use) {
+									if (String(use.loader).endsWith('mangle-loader.js')) {
+										use.options.disabled = true;
+									}
+								}
+							}
+						}
+					}
+				}
+				const relativeOutputPath = path.relative(extensionPath, webpackConfig.output.path);
+
+				return webpackGulp(webpackConfig, webpack, webpackDone)
+					.pipe(es.through(function (data) {
+						data.stat = data.stat || {};
+						data.base = extensionPath;
+						this.emit('data', data);
+					}))
+					.pipe(es.through(function (data: File) {
+						// source map handling:
+						// * rewrite sourceMappingURL
+						// * save to disk so that upload-task picks this up
+						if (path.extname(data.basename) === '.js') {
+							const contents = (<Buffer>data.contents).toString('utf8');
+							data.contents = Buffer.from(contents.replace(/\n\/\/# sourceMappingURL=(.*)$/gm, function (_m, g1) {
+								return `\n//# sourceMappingURL=${sourceMappingURLBase}/extensions/${path.basename(extensionPath)}/${relativeOutputPath}/${g1}`;
+							}), 'utf8');
+						}
+
+						this.emit('data', data);
+					}));
+			});
+		});
+
+		es.merge(...webpackStreams, es.readArray(files))
+			// .pipe(es.through(function (data) {
+			// 	// debug
+			// 	console.log('out', data.path, data.contents.length);
+			// 	this.emit('data', data);
+			// }))
+			.pipe(result);
+
+	}).catch(err => {
+		console.error(extensionPath);
+		console.error(packagedDependencies);
+		result.emit('error', err);
+	});
+
+	return result.pipe(createStatsStream(path.basename(extensionPath)));
 }
 function fromLocalNormal(extensionPath: string): Stream {
     const vsce = require('@vscode/vsce') as typeof import('@vscode/vsce');
@@ -235,6 +251,15 @@ export function fromGithub({ name, version, repo, sha256, metadata }: IExtension
         .pipe(json({ __metadata: metadata }))
         .pipe(packageJsonFilter.restore);
 }
+
+/**
+ * All extensions that are known to have some native component and thus must be built on the
+ * platform that is being built.
+ */
+const nativeExtensions = [
+	'microsoft-authentication',
+];
+
 const excludedExtensions = [
 	'vscode-api-tests',
 	'vscode-colorize-tests',
@@ -290,35 +315,91 @@ function isWebExtension(manifest: IExtensionManifest): boolean {
     }
     return true;
 }
-export function packageLocalExtensionsStream(forWeb: boolean, disableMangle: boolean): Stream {
-    const localExtensionsDescriptions = ((<string[]>glob.sync('extensions/*/package.json'))
-        .map(manifestPath => {
-        const absoluteManifestPath = path.join(root, manifestPath);
-        const extensionPath = path.dirname(path.join(root, manifestPath));
-        const extensionName = path.basename(extensionPath);
-        return { name: extensionName, path: extensionPath, manifestPath: absoluteManifestPath };
-    })
-        .filter(({ name }) => excludedExtensions.indexOf(name) === -1)
-        .filter(({ name }) => builtInExtensions.every(b => b.name !== name))
-        .filter(({ manifestPath }) => (forWeb ? isWebExtension(require(manifestPath)) : true)));
-    const localExtensionsStream = minifyExtensionResources(es.merge(...localExtensionsDescriptions.map(extension => {
-        return fromLocal(extension.path, forWeb, disableMangle)
-            .pipe(rename(p => p.dirname = `extensions/${extension.name}/${p.dirname}`));
-    })));
-    let result: Stream;
-    if (forWeb) {
-        result = localExtensionsStream;
-    }
-    else {
-        // also include shared production node modules
-        const productionDependencies = getProductionDependencies('extensions/');
-        const dependenciesSrc = productionDependencies.map(d => path.relative(root, d)).map(d => [`${d}/**`, `!${d}/**/{test,tests}/**`]).flat();
-        result = es.merge(localExtensionsStream, gulp.src(dependenciesSrc, { base: '.' })
-            .pipe(util2.cleanNodeModules(path.join(root, 'build', '.moduleignore')))
-            .pipe(util2.cleanNodeModules(path.join(root, 'build', `.moduleignore.${process.platform}`))));
-    }
-    return (result
-        .pipe(util2.setExecutableBit(['**/*.sh'])));
+
+/**
+ * Package local extensions that are known to not have native dependencies. Mutually exclusive to {@link packageNativeLocalExtensionsStream}.
+ * @param forWeb build the extensions that have web targets
+ * @param disableMangle disable the mangler
+ * @returns a stream
+ */
+export function packageNonNativeLocalExtensionsStream(forWeb: boolean, disableMangle: boolean): Stream {
+	return doPackageLocalExtensionsStream(forWeb, disableMangle, false);
+}
+
+/**
+ * Package local extensions that are known to have native dependencies. Mutually exclusive to {@link packageNonNativeLocalExtensionsStream}.
+ * @note it's possible that the extension does not have native dependencies for the current platform, especially if building for the web,
+ * but we simplify the logic here by having a flat list of extensions (See {@link nativeExtensions}) that are known to have native
+ * dependencies on some platform and thus should be packaged on the platform that they are building for.
+ * @param forWeb build the extensions that have web targets
+ * @param disableMangle disable the mangler
+ * @returns a stream
+ */
+export function packageNativeLocalExtensionsStream(forWeb: boolean, disableMangle: boolean): Stream {
+	return doPackageLocalExtensionsStream(forWeb, disableMangle, true);
+}
+
+/**
+ * Package all the local extensions... both those that are known to have native dependencies and those that are not.
+ * @param forWeb build the extensions that have web targets
+ * @param disableMangle disable the mangler
+ * @returns a stream
+ */
+export function packageAllLocalExtensionsStream(forWeb: boolean, disableMangle: boolean): Stream {
+	return es.merge([
+		packageNonNativeLocalExtensionsStream(forWeb, disableMangle),
+		packageNativeLocalExtensionsStream(forWeb, disableMangle)
+	]);
+}
+
+/**
+ * @param forWeb build the extensions that have web targets
+ * @param disableMangle disable the mangler
+ * @param native build the extensions that are marked as having native dependencies
+ */
+function doPackageLocalExtensionsStream(forWeb: boolean, disableMangle: boolean, native: boolean): Stream {
+	const nativeExtensionsSet = new Set(nativeExtensions);
+	const localExtensionsDescriptions = (
+		(<string[]>glob.sync('extensions/*/package.json'))
+			.map(manifestPath => {
+				const absoluteManifestPath = path.join(root, manifestPath);
+				const extensionPath = path.dirname(path.join(root, manifestPath));
+				const extensionName = path.basename(extensionPath);
+				return { name: extensionName, path: extensionPath, manifestPath: absoluteManifestPath };
+			})
+			.filter(({ name }) => native ? nativeExtensionsSet.has(name) : !nativeExtensionsSet.has(name))
+			.filter(({ name }) => excludedExtensions.indexOf(name) === -1)
+			.filter(({ name }) => builtInExtensions.every(b => b.name !== name))
+			.filter(({ manifestPath }) => (forWeb ? isWebExtension(require(manifestPath)) : true))
+	);
+	const localExtensionsStream = minifyExtensionResources(
+		es.merge(
+			...localExtensionsDescriptions.map(extension => {
+				return fromLocal(extension.path, forWeb, disableMangle)
+					.pipe(rename(p => p.dirname = `extensions/${extension.name}/${p.dirname}`));
+			})
+		)
+	);
+
+	let result: Stream;
+	if (forWeb) {
+		result = localExtensionsStream;
+	} else {
+		// also include shared production node modules
+		const productionDependencies = getProductionDependencies('extensions/');
+		const dependenciesSrc = productionDependencies.map(d => path.relative(root, d)).map(d => [`${d}/**`, `!${d}/**/{test,tests}/**`]).flat();
+
+		result = es.merge(
+			localExtensionsStream,
+			gulp.src(dependenciesSrc, { base: '.' })
+				.pipe(util2.cleanNodeModules(path.join(root, 'build', '.moduleignore')))
+				.pipe(util2.cleanNodeModules(path.join(root, 'build', `.moduleignore.${process.platform}`))));
+	}
+
+	return (
+		result
+			.pipe(util2.setExecutableBit(['**/*.sh']))
+	);
 }
 export function packageMarketplaceExtensionsStream(forWeb: boolean): Stream {
     const marketplaceExtensionsDescriptions = [

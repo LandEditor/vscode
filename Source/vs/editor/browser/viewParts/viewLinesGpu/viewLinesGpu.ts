@@ -355,8 +355,8 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 						}
 					},
 					{
-						width: page.usedArea.right - page.usedArea.left,
-						height: page.usedArea.bottom - page.usedArea.top
+						width: page.usedArea.right - page.usedArea.left + 1,
+						height: page.usedArea.bottom - page.usedArea.top + 1
 					},
 				);
 			}
@@ -382,22 +382,19 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 	// from that side. Luckily rendering is cheap, it's only when uploaded data changes does it
 	// start to cost.
 
-	override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
-		this._contentLeftObs.set(this._context.configuration.options.get(EditorOption.layoutInfo).contentLeft, undefined);
-		return true;
-	}
 	override onCursorStateChanged(e: viewEvents.ViewCursorStateChangedEvent): boolean { return true; }
 	override onDecorationsChanged(e: viewEvents.ViewDecorationsChangedEvent): boolean { return true; }
 	override onFlushed(e: viewEvents.ViewFlushedEvent): boolean { return true; }
 	override onLinesChanged(e: viewEvents.ViewLinesChangedEvent): boolean { return true; }
+	override onLinesDeleted(e: viewEvents.ViewLinesDeletedEvent): boolean { return true; }
 	override onLinesInserted(e: viewEvents.ViewLinesInsertedEvent): boolean { return true; }
 	override onRevealRangeRequest(e: viewEvents.ViewRevealRangeRequestEvent): boolean { return true; }
 	override onScrollChanged(e: viewEvents.ViewScrollChangedEvent): boolean { return true; }
 	override onThemeChanged(e: viewEvents.ViewThemeChangedEvent): boolean { return true; }
 	override onZonesChanged(e: viewEvents.ViewZonesChangedEvent): boolean { return true; }
 
-	override onLinesDeleted(e: viewEvents.ViewLinesDeletedEvent): boolean {
-		this._renderStrategy.onLinesDeleted(e);
+	override onConfigurationChanged(e: viewEvents.ViewConfigurationChangedEvent): boolean {
+		this._contentLeftObs.set(this._context.configuration.options.get(EditorOption.layoutInfo).contentLeft, undefined);
 		return true;
 	}
 
@@ -428,6 +425,10 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 		pass.setPipeline(this._pipeline);
 		pass.setVertexBuffer(0, this._vertexBuffer);
 
+		// Only draw the content area
+		const contentLeft = Math.ceil(this._contentLeftObs.get() * this._viewGpuContext.devicePixelRatio.get());
+		pass.setScissorRect(contentLeft, 0, this.canvas.width - contentLeft, this.canvas.height);
+
 		pass.setBindGroup(0, this._bindGroup);
 
 		if (this._renderStrategy?.draw) {
@@ -446,9 +447,65 @@ export class ViewLinesGpu extends ViewPart implements IViewLines {
 		this._lastViewLineOptions = options;
 	}
 
-	linesVisibleRangesForRange(range: Range, includeNewLines: boolean): LineVisibleRanges[] | null {
-		// TODO: Implement
-		return null;
+	linesVisibleRangesForRange(_range: Range, includeNewLines: boolean): LineVisibleRanges[] | null {
+		if (!this._lastViewportData) {
+			return null;
+		}
+		const originalEndLineNumber = _range.endLineNumber;
+		const range = Range.intersectRanges(_range, this._lastViewportData.visibleRange);
+		if (!range) {
+			return null;
+		}
+
+		const rendStartLineNumber = this._lastViewportData.startLineNumber;
+		const rendEndLineNumber = this._lastViewportData.endLineNumber;
+
+		const viewportData = this._lastViewportData;
+		const viewLineOptions = this._lastViewLineOptions;
+
+		if (!viewportData || !viewLineOptions) {
+			return null;
+		}
+
+		const visibleRanges: LineVisibleRanges[] = [];
+
+		let nextLineModelLineNumber: number = 0;
+		if (includeNewLines) {
+			nextLineModelLineNumber = this._context.viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(range.startLineNumber, 1)).lineNumber;
+		}
+
+		for (let lineNumber = range.startLineNumber; lineNumber <= range.endLineNumber; lineNumber++) {
+
+			if (lineNumber < rendStartLineNumber || lineNumber > rendEndLineNumber) {
+				continue;
+			}
+			const startColumn = lineNumber === range.startLineNumber ? range.startColumn : 1;
+			const continuesInNextLine = lineNumber !== range.endLineNumber;
+			const endColumn = continuesInNextLine ? this._context.viewModel.getLineMaxColumn(lineNumber) : range.endColumn;
+
+			const visibleRangesForLine = this._visibleRangesForLineRange(lineNumber, startColumn, endColumn);
+
+			if (!visibleRangesForLine) {
+				continue;
+			}
+
+			if (includeNewLines && lineNumber < originalEndLineNumber) {
+				const currentLineModelLineNumber = nextLineModelLineNumber;
+				nextLineModelLineNumber = this._context.viewModel.coordinatesConverter.convertViewPositionToModelPosition(new Position(lineNumber + 1, 1)).lineNumber;
+
+				if (currentLineModelLineNumber !== nextLineModelLineNumber) {
+					visibleRangesForLine.ranges[visibleRangesForLine.ranges.length - 1].width += viewLineOptions.spaceWidth;
+				}
+			}
+
+			visibleRanges.push(new LineVisibleRanges(visibleRangesForLine.outsideRenderedLine, lineNumber, HorizontalRange.from(visibleRangesForLine.ranges), continuesInNextLine));
+		}
+
+		if (visibleRanges.length === 0) {
+			return null;
+		}
+
+		return visibleRanges;
 	}
 
 	private _visibleRangesForLineRange(lineNumber: number, startColumn: number, endColumn: number): VisibleRanges | null {

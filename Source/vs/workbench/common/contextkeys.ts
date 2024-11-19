@@ -15,6 +15,8 @@ import { EditorInput } from './editor/editorInput.js';
 import { IEditorResolverService } from '../services/editor/common/editorResolverService.js';
 import { DEFAULT_EDITOR_ASSOCIATION } from './editor.js';
 import { isLinux } from '../../base/common/platform.js';
+import product from '../../platform/product/common/product.js';
+
 //#region < --- Workbench --- >
 export const WorkbenchStateContext = new RawContextKey<string>('workbenchState', undefined, { type: 'string', description: localize('workbenchState', "The kind of workspace opened in the window, either 'empty' (no workspace), 'folder' (single folder) or 'workspace' (multi-root workspace)") });
 export const WorkspaceFolderCountContext = new RawContextKey<number>('workspaceFolderCount', 0, localize('workspaceFolderCount', "The number of root folders in the workspace"));
@@ -81,7 +83,8 @@ export const ActiveViewletContext = new RawContextKey<string>('activeViewlet', '
 export const StatusBarFocused = new RawContextKey<boolean>('statusBarFocused', false, localize('statusBarFocused', "Whether the status bar has keyboard focus"));
 //#endregion
 //#region < --- Title Bar --- >
-export const TitleBarStyleContext = new RawContextKey<string>('titleBarStyle', isLinux ? 'native' : 'custom', localize('titleBarStyle', "Style of the window title bar"));
+
+export const TitleBarStyleContext = new RawContextKey<string>('titleBarStyle', isLinux && product.quality === 'stable' ? 'native' : 'custom', localize('titleBarStyle', "Style of the window title bar"));
 export const TitleBarVisibleContext = new RawContextKey<boolean>('titleBarVisible', false, localize('titleBarVisible', "Whether the title bar is visible"));
 //#endregion
 //#region < --- Banner --- >

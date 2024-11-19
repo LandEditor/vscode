@@ -1,0 +1,5 @@
+{
+	"description": "OVERRIDE Keytar since we don't need the feature",
+	"main": "index.js",
+	"name": "keytar"
+}

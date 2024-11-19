@@ -55,8 +55,8 @@ export interface IToolConfirmationMessages {
     message: string | IMarkdownString;
 }
 export interface IPreparedToolInvocation {
-    invocationMessage?: string;
-    confirmationMessages?: IToolConfirmationMessages;
+	invocationMessage?: string | IMarkdownString;
+	confirmationMessages?: IToolConfirmationMessages;
 }
 export interface IToolImpl {
     invoke(invocation: IToolInvocation, countTokens: CountTokensCallback, token: CancellationToken): Promise<IToolResult>;

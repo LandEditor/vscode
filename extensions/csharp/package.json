@@ -34,10 +34,35 @@
 			}
 		]
 	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "csharp",
-	"scripts": {
-		"update-grammar": "node ../node_modules/vscode-grammar-updater/bin dotnet/csharp-tmLanguage grammars/csharp.tmLanguage ./syntaxes/csharp.tmLanguage.json"
-	}
+	"grammars": [
+		{
+			"language": "csharp",
+			"path": "./syntaxes/csharp.tmLanguage.json",
+			"scopeName": "source.cs",
+			"tokenTypes": {
+				"meta.interpolation": "other"
+			}
+		}
+	],
+	"languages": [
+		{
+			"aliases": [
+				"C#",
+				"csharp"
+			],
+			"configuration": "./language-configuration.json",
+			"extensions": [
+				".cs",
+				".csx",
+				".cake"
+			],
+			"id": "csharp"
+		}
+	],
+	"snippets": [
+		{
+			"language": "csharp",
+			"path": "./snippets/csharp.code-snippets"
+		}
+	]
 }

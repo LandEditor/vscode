@@ -617,7 +617,7 @@
 			{
 				"category": "Git",
 				"command": "git.pullRef",
-				"enablement": "!operationInProgress",
+				"enablement": "!operationInProgress && scmCurrentHistoryItemRefInFilter && scmCurrentHistoryItemRefHasRemote",
 				"icon": "$(repo-pull)",
 				"title": "%command.pull%"
 			},
@@ -666,7 +666,7 @@
 			{
 				"category": "Git",
 				"command": "git.pushRef",
-				"enablement": "!operationInProgress",
+				"enablement": "!operationInProgress && scmCurrentHistoryItemRefInFilter && scmCurrentHistoryItemRefHasRemote",
 				"icon": "$(repo-push)",
 				"title": "%command.push%"
 			},
@@ -2258,6 +2258,14 @@
 				{
 					"command": "git.cherryPickRef",
 					"when": "false"
+				},
+				{
+					"command": "git.diff.stageHunk",
+					"when": "config.git.enabled && !git.missing && gitOpenRepositoryCount != 0 && diffEditorOriginalUri =~ /^git\\:.*%22ref%22%3A%22~%22%7D$/"
+				},
+				{
+					"command": "git.diff.stageSelection",
+					"when": "config.git.enabled && !git.missing && gitOpenRepositoryCount != 0 && diffEditorOriginalUri =~ /^git\\:.*%22ref%22%3A%22~%22%7D$/"
 				}
 			],
 			"diffEditor/gutter/hunk": [
@@ -2641,8 +2649,23 @@
 			"scm/history/title": [
 				{
 					"command": "git.fetchAll",
-					"group": "navigation@999",
+					"group": "navigation@900",
 					"when": "scmProvider == git"
+				},
+				{
+					"command": "git.pullRef",
+					"group": "navigation@901",
+					"when": "scmProvider == git"
+				},
+				{
+					"command": "git.pushRef",
+					"group": "navigation@902",
+					"when": "scmProvider == git && scmCurrentHistoryItemRefHasRemote"
+				},
+				{
+					"command": "git.publish",
+					"group": "navigation@903",
+					"when": "scmProvider == git && !scmCurrentHistoryItemRefHasRemote"
 				}
 			],
 			"scm/historyItem/context": [
@@ -3339,19 +3362,19 @@
 		]
 	},
 	"dependencies": {
-		"@joaomoreno/unique-names-generator": "5.1.0",
-		"byline": "5.0.0",
-		"file-type": "19.6.0",
+		"@joaomoreno/unique-names-generator": "^5.1.0",
+		"byline": "^5.0.0",
+		"file-type": "16.5.4",
 		"jschardet": "3.1.4",
-		"picomatch": "4.0.2",
-		"which": "5.0.0"
+		"picomatch": "2.3.1",
+		"which": "4.0.0"
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/byline": "4.2.36",
-		"@types/node": "22.9.0",
-		"@types/picomatch": "3.0.1",
-		"@types/which": "3.0.4"
+		"@types/byline": "4.2.31",
+		"@types/node": "20.x",
+		"@types/picomatch": "2.3.0",
+		"@types/which": "3.0.0"
 	},
 	"displayName": "%displayName%",
 	"enabledApiProposals": [
@@ -3379,6 +3402,7 @@
 		"scmValidation",
 		"tabInputMultiDiff",
 		"tabInputTextMerge",
+		"textEditorDiffInformation",
 		"timeline"
 	],
 	"extensionDependencies": [
