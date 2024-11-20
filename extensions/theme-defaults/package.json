@@ -1,4 +1,7 @@
 {
+	"name": "theme-defaults",
+	"displayName": "%displayName%",
+	"description": "%description%",
 	"contributes": {
 		"iconThemes": [
 			{
@@ -57,8 +60,5 @@
 				"uiTheme": "hc-light"
 			}
 		]
-	},
-	"description": "%description%",
-	"displayName": "%displayName%",
-	"name": "theme-defaults"
+	}
 }
