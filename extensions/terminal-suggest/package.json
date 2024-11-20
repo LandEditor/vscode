@@ -1,0 +1,16 @@
+{
+	"activationEvents": [
+		"onTerminalCompletionsRequested"
+	],
+	"description": "%description%",
+	"displayName": "%displayName%",
+	"enabledApiProposals": [
+		"terminalCompletionProvider"
+	],
+	"icon": "./src/media/icon.png",
+	"main": "./out/terminalSuggestMain",
+	"name": "terminal-suggest",
+	"scripts": {
+		"compile": "npx gulp compile-extension:npm"
+	}
+}

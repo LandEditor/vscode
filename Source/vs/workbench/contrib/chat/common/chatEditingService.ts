@@ -77,7 +77,7 @@ export interface IChatEditingSession {
 	readonly isVisible: boolean;
 	addFileToWorkingSet(uri: URI, description?: string, kind?: WorkingSetEntryState.Transient | WorkingSetEntryState.Suggested): void;
 	show(): Promise<void>;
-	remove(...uris: URI[]): void;
+	remove(reason: WorkingSetEntryRemovalReason, ...uris: URI[]): void;
 	accept(...uris: URI[]): Promise<void>;
 	reject(...uris: URI[]): Promise<void>;
 	/**
@@ -88,6 +88,12 @@ export interface IChatEditingSession {
 	undoInteraction(): Promise<void>;
 	redoInteraction(): Promise<void>;
 }
+
+export const enum WorkingSetEntryRemovalReason {
+	User,
+	Programmatic
+}
+
 export const enum WorkingSetEntryState {
 	Modified,
 	Accepted,
