@@ -60,7 +60,7 @@
 	},
 	"description": "%description%",
 	"devDependencies": {
-		"@types/node": "22.9.0",
+		"@types/node": "22.9.1",
 		"@types/which": "3.0.4"
 	},
 	"displayName": "%displayName%",
