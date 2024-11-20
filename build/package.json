@@ -1,4 +1,9 @@
 {
+	"name": "code-oss-dev-build",
+	"scripts": {
+		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
+		"npmCheckJs": "../node_modules/.bin/tsc --noEmit"
+	},
 	"devDependencies": {
 		"@types/ansi-colors": "^3.2.6",
 		"@types/byline": "^4.2.36",
@@ -34,12 +39,7 @@
 		"workerpool": "^9.2.0",
 		"yauzl": "^3.2.0"
 	},
-	"name": "code-oss-dev-build",
 	"optionalDependencies": {
 		"tree-sitter-typescript": "^0.23.2"
-	},
-	"scripts": {
-		"compile": "../node_modules/.bin/tsc -p tsconfig.build.json",
-		"npmCheckJs": "../node_modules/.bin/tsc --noEmit"
 	}
 }
